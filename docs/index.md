@@ -24,9 +24,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 - **PDF Report:** An official, formatted document generated from a Site Inspection record, used for archival and distribution to stewards.
 
-- **Field Notes Reader:** The mobile application that allows stewards to view historical Site Inspection data while offline in the field.
 
-- **Data Bundle:** A complete, self-contained package of all Site Inspection records, associated images, and PDF Reports, downloaded by the Field Notes Reader for offline use.
      
 
 ## User Stories
