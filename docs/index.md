@@ -138,7 +138,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 #### US 1.0.10 – Indicate submissions to iNaturalist | Story Points: 1 
-> As a User, I want to be told about iNaturalist and indicate if I am posting to it, so that it can be documented if my findings have yet been shared to iNaturalist (Q53).
+> **As** a User, **I want** to be told about iNaturalist and indicate if I am posting to it, **so that** it can be documented if my findings have yet been shared to iNaturalist (Q53).
 
 > **Acceptance Tests**
 
@@ -149,7 +149,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 #### US 1.0.11 – Address details of Landscape changes | Story Points: 2 
-> As a User, I want to be able to add details regarding any significant site changes, so that important or significant changes can be tracked in my report
+> **As** a User, **I want** to be able to add details regarding any significant site changes, **so that** important or significant changes can be tracked in my report
 
 > **Acceptance Tests**
 
@@ -158,7 +158,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 #### US 1.0.12 – Address any Biological Observations that is in the Site | Story Points: 1 
-> As a User, I want to be able to add details regarding any biological observations that I saw or noticed on the site so that I can update the site’s information with new / changing / consistent wildlife sightings.
+> **As** a User, **I want** to be able to add details regarding any biological observations that I saw or noticed on the site **so that** I can update the site’s information with new / changing / consistent wildlife sightings.
 
 > **Acceptance Tests**
 
@@ -167,7 +167,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 #### US 1.0.13 - Address Any Human Disturbances - Section 8 | Story Points: 1
-> As a User, I want to be able to add details regarding any human disturbances I noticed during my visit, so that I can be as detailed as possible in my report
+> **As** a User, **I want** to be able to add details regarding any human disturbances I noticed during my visit, **so that** I can be as detailed as possible in my report
 
 > **Acceptance Tests**
 
@@ -180,7 +180,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 #### US 1.0.14 - Add Other Comments | Story Points: 2
-> As a User, I want to be able to add comments/information that aren’t specifically mentioned in the questions, so that I can share all information I see as important, even when it isn’t specifically asked for.
+> **As** a User, **I want** to be able to add comments/information that aren’t specifically mentioned in the questions, **so that** I can share all information I see as important, even when it isn’t specifically asked for.
 
 > **Acceptance Tests**
 
@@ -191,7 +191,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 #### US 1.0.15 – Inform SAPAA of Any Restorative Work that Needs to be Done / Was Done | Story Points: 2
-> As a User, I want to be able to add details regarding any actions I believe need to be taken upon the land or that I took, so that I can relay the necessary restoration information to the right bodies of power.
+> **As** a User, **I want** to be able to add details regarding any actions I believe need to be taken upon the land or that I took, **so that** I can relay the necessary restoration information to the right bodies of power.
 
 > **Acceptance Tests**
 
@@ -203,7 +203,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 #### US 1.0.16 – Add Any Photography Captured During Visit | Story Points: 5
-> As a User, I want to be able to add any photography taken during my visit, so that I can use photos to help make my report clearer and provide visual evidence of my observations.
+> **As** a User, **I want** to be able to add any photography taken during my visit, **so that** I can use photos to help make my report clearer and provide visual evidence of my observations.
 
 > **Acceptance Tests**
 
@@ -215,7 +215,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 #### US 1.0.17 – (Admin) Add Questions Site Inspections Form | Story Points: 3  
 
-> As an admin, I want to be able to add questions on the Site Inspection Form, so that I can add new questions as needed.  
+> **As** an admin, **I want** to be able to add questions on the Site Inspection Form, **so that** I can add new questions as needed.  
 
 > **Acceptance Tests**
 
@@ -225,7 +225,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 #### US 1.0.18 – Adding Image Caption | Story Points: 2 
-> As a User, I want to be able to add captions to the images that I upload, so that context can be given for the images.
+> **As** a User, **I want** to be able to add captions to the images that I upload, **so that** context can be given for the images.
 
 > **Acceptance Tests**
 
@@ -236,7 +236,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 #### US 1.0.19 - Admin Viewing Images and Metadata | Story Points: 2
-> As an Admin. I want to be able to view the images uploaded by the users, so that I can keep track of site inspection and monitor site well-being.
+> **As** an Admin. **I want** to be able to view the images uploaded by the users, **so that** I can keep track of site inspection and monitor site well-being.
 
 > **Acceptance Tests**
 
@@ -249,7 +249,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 #### US 1.0.20 – Admin Editing Image Metadata | Story Points: 3 
 
-> As an Admin. I want to be able to edit image metadata so that I can make sure that the image data is accurate for the report's compliance.
+> **As** an Admin. **I want** to be able to edit image metadata **so that** I can make sure that the image data is accurate for the report's compliance.
 
 > **Acceptance Tests**  
 
@@ -265,9 +265,9 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > Get acquainted with the existing super-base and decide if it is necessary to modify or rebuild it, or migrate to a different database management system
 
 
-#### US 1.0.22 – (User) Edit My Site Inspections Form | Story Points: 2 
+#### US 1.0.22 – (User) Edit My Site Inspections Form | Story Points: 5
 
-> As a User, I want to be able to modify my Site Inspection forms after the fact, so that I can make edits to my forms as needed.
+> **As** a User, **I want** to be able to modify my Site Inspection forms after the fact, **so that** I can make edits to my forms as needed.
 
 > **Acceptance Tests**  
 
@@ -278,7 +278,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 5. The user cannot un-check their agreement to the terms and conditions (would have to delete their report entirely if they required that)
 
 #### US 1.0.23 – Non-Public Information | Story Points: 2
-> As a User. I want to have somewhere to write information that won’t be published publically so that sensitive information / information for SAPAA only isn’t leaked
+> **As** a User. **I want** to have somewhere to write information that won’t be published publically **so that** sensitive information / information for SAPAA only isn’t leaked
 
 > **Acceptance Tests**
 
@@ -288,7 +288,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 #### US 1.0.24 – Modify my Site Inspections Form Questions | Story Points: 3
-> As an admin, I want to be able to modify the questions on the Site Inspection Form, so that I can make any changes / correct any errors as I see fit.
+> **As** an admin, **I want** to be able to modify the questions on the Site Inspection Form, **so that** I can make any changes / correct any errors as I see fit.
 
 > **Acceptance Tests**
 
@@ -299,7 +299,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 #### US 1.0.25 – Hide a Site Inspections Form Questions | Story Points: 3
-> As an admin, I want to be able to hide any of the questions on the Site Inspection Form, so that only the questions I want are visible.
+> **As** an admin, **I want** to be able to hide any of the questions on the Site Inspection Form, **so that** only the questions I want are visible.
 
 > **Acceptance Tests**
 
@@ -327,7 +327,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 #### US 2.0.2 – Image Metadata| Story Points: 2
-> As a User, I want the image I upload to retain its metadata, such as descriptions, so that I do not have to retype previous descriptions.
+> **As** a User, **I want** the image I upload to retain its metadata, such as descriptions, **so that** I do not have to retype previous descriptions.
 
 > **Acceptance Tests**
 
@@ -339,7 +339,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 #### US 2.0.3 – Gallery View | Story Points: 3 
 
-> As a User, I want to be able to see a gallery view of uploaded images, so that I can reference/view multiple images at once.
+> **As** a User, **I want** to be able to see a gallery view of uploaded images, **so that** I can reference/view multiple images at once.
 
 > **Acceptance Tests**  
 
@@ -351,7 +351,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 #### US 2.0.4 – Offline Image Viewing | Story Points: 5
 
-> As a User, I want to be able to view images offline, so that I can reference previous images where I don’t have internet access
+> **As** a User, **I want** to be able to view images offline, **so that** I can reference previous images where I don’t have internet access
 
 > **Acceptance Tests**  
 
@@ -372,7 +372,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 #### US 3.0.1 – Access the mobile version of the Site Inspection Form | Story Points: 5
 
-> As a User, I want to be able to access the Site Inspection form on the mobile app, so that I can make observations and reports while I’m out in the field.
+> **As** a User, **I want** to be able to access the Site Inspection form on the mobile app, **so that** I can make observations and reports while I’m out in the field.
 
 > **Acceptance Tests**  
 
@@ -386,7 +386,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 #### US 3.0.2 – Offline Data Syncing  | Story Points: 8 
 
-> As a User, I want the information that I gather while offline to be automatically uploaded once I regain connection, so that I don’t have to waste time manually reuploading information.  
+> **As** a User, **I want** the information that I gather while offline to be automatically uploaded once I regain connection, **so that** I don’t have to waste time manually reuploading information.  
 
 > **Acceptance Tests**  
 
@@ -402,9 +402,9 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 ### **P4 – Site Management**
 ---
 
-#### US 4.0.3 – View Site Profile of a Particular Site | Story Points: 3
+#### US 4.0.1 – View Site Profile of a Particular Site | Story Points: 3
 
-> As a User, I want to be able to view a profile for each site, so that I can identify important information about the site I’m travelling to / inspecting
+> **As** a User, **I want** to be able to view a profile for each site, **so that** I can identify important information about the site I’m travelling to / inspecting
 
 > **Acceptance Tests** 
 
@@ -415,9 +415,9 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 5. Users can go back to the map/list view from the site profile  
 
 
-#### US 4.0.4 – Add Site Profile of a Particular Site | Story Points: 2
+#### US 4.0.2 – Add Site Profile of a Particular Site | Story Points: 2
 
-> As an Admin, I want to be able to add a profile for a new site, so that I can keep my app up to date with the latest sites
+> **As** an Admin, **I want** to be able to add a profile for a new site, **so that** I can keep my app up to date with the latest sites
 
 > **Acceptance Tests**
 
@@ -430,9 +430,9 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 
-#### US 4.0.5 – Update Site Profile of a Particular Site | Story Points: 3
+#### US 4.0.3 – Update Site Profile of a Particular Site | Story Points: 3
 
-> As an Admin, I want to be able to update a profile for each site, so that users of the app can stay informed about the state of the site
+> **As** an Admin, **I want** to be able to update a profile for each site, **so that** users of the app can stay informed about the state of the site
 
 > **Acceptance Tests**  
 
@@ -445,9 +445,9 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 7. Updates made to a site profile are visible to users
 
 
-#### US 4.0.6 – Delete Site Profile of a Particular Site | Story Points: 3
+#### US 4.0.4 – Delete Site Profile of a Particular Site | Story Points: 3
 
-> As an Admin, I want to be able to remove a profile for each site, so that I can keep what is crown land up to date
+> **As** an Admin, **I want** to be able to remove a profile for each site, **so that** I can keep what is crown land up to date
 
 > **Acceptance Tests**  
 
@@ -458,9 +458,9 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 6. Non-admin users cannot access the option to remove a site profile
 
 
-#### US 4.0.7 – Amenities Information on Site Profile | Story Points: 2
+#### US 4.0.5 – Amenities Information on Site Profile | Story Points: 2
 
-> As a User, I want to be able to view amenities information about individual sites, so that I can find and access any amenities I need (parking, washrooms, facilities)
+> **As** a User, **I want** to be able to view amenities information about individual sites, **so that** I can find and access any amenities I need (parking, washrooms, facilities)
 
 > **Acceptance Tests**  
 
@@ -470,9 +470,9 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 
-#### US 4.0.8 – Site-specific Recommended Gear Lists | Story Points: 2
+#### US 4.0.6 – Site-specific Recommended Gear Lists | Story Points: 2
 
-> As a User, I want to be able to see site-specific gear recommendations, so that I can be prepared for the specific site I’m inspecting
+> **As** a User, **I want** to be able to see site-specific gear recommendations, **so that** I can be prepared for the specific site I’m inspecting
 
 > **Acceptance Tests**  
 
@@ -490,7 +490,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 #### US 5.0.1 – Tutorial / Onboarding for New Users | Story Points: 3
 
-> As a User, I want to be shown a tutorial about using the website and inspection form, so that I can learn how to use the website quickly and easily
+> **As** a User, **I want** to be shown a tutorial about using the website and inspection form, **so that** I can learn how to use the website quickly and easily
 
 > **Acceptance Tests**  
 
@@ -501,13 +501,13 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 ---
-### **P7 – User Accounts User Stories**
+### **P5 – User Accounts User Stories**
 ---
 
 
-#### US 7.0.1 – Sign In Feature | Story Points: 2
+#### US 5.0.1 – Sign In Feature | Story Points: 2
 
-> As a User, I want to be able to sign in to the app so that I can use my previous account.
+> **As** a User, **I want** to be able to sign in to the app **so that** I can use my previous account.
 
 > **Acceptance Tests** 
 
@@ -516,9 +516,9 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 3. User should be forced to input all fields
 
 
-#### US 7.0.2 – Sign Out Feature | Story Points: 2
+#### US 5.0.2 – Sign Out Feature | Story Points: 2
 
-> As a User, I want to be able to sign out of the app so that I can access the app through a different account.
+> **As** a User, **I want** to be able to sign out of the app **so that** I can access the app through a different account.
 
 > **Acceptance Tests**  
 
@@ -530,9 +530,9 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 6. If sign out fails, an error message is displayed and the user can try again
 
 
-#### US 7.0.3 – Edit Account Feature | Story Points: 2
+#### US 5.0.3 – Edit Account Feature | Story Points: 2
 
-> As a User, I want to be able to edit my account information so that I can keep my information up to date.
+> **As** a User, **I want** to be able to edit my account information **so that** I can keep my information up to date.
 
 > **Acceptance Tests**  
 
@@ -544,9 +544,9 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 
-#### US 7.0.4 – Delete Account Feature | Story Points: 2
+#### US 5.0.4 – Delete Account Feature | Story Points: 2
 
-> As a User, I want to be able to delete my account so that my login information is no longer stored or accessible.
+> **As** a User, **I want** to be able to delete my account **so that** my login information is no longer stored or accessible.
 
 > **Acceptance Tests**  
 
@@ -559,13 +559,13 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 ---
-### **P8 – Miscellaneous User Stories**
+### **P6 – Miscellaneous User Stories**
 ---
 
 
-#### US 8.0.1 – Toggle Dark mode for web and mobile applications | Story Points: 2
+#### US 6.0.1 – Toggle Dark mode for web and mobile applications | Story Points: 2
 
-> As a User, I want to enable dark mode for the web and mobile applications so that I can reduce eye strain.
+> **As** a User, **I want** to enable dark mode for the web and mobile applications **so that** I can reduce eye strain.
 
 > **Acceptance Tests**  
 
@@ -575,9 +575,9 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 4. Selecting the current mode causes no change
 
 
-#### US 8.0.2 – Change Text Size on Screen | Story Points: 3
+#### US 6.0.2 – Change Text Size on Screen | Story Points: 3
 
-> As a User, I want to be able to choose the size of text on screen from a set of preset font sizes, so that the app is more accessible my needs and vision..
+> **As** a User, **I want** to be able to choose the size of text on screen from a set of preset font sizes, **so that** the app is more accessible my needs and vision..
 
 > **Acceptance Tests**  
 
@@ -635,33 +635,31 @@ Each user story is categorized into one of the following priority levels:
 * US 2.0.3  - Gallery View
 * US 2.0.4 - Offline Image Viewing
 * US 3.0.1 - Access the mobile version of the Site Inspection Form
-* US 4.0.3 - View Site Profile of a Particular Site
-* US 4.0.4  - Add Site Profile of a Particular Site
+* US 4.0.1 - View Site Profile of a Particular Site
+* US 4.0.2  - Add Site Profile of a Particular Site
+* US 4.0.3  - Update Site Profile of a Particular Site
+* US 4.0.4 - Delete Site Profile of a Particular Site
+* US 4.0.5 - Amenities Information on Site Profile
 * US 1.0.24 – Modify my Site Inspections Form Questions
 * US 1.0.25 – Hide a Site Inspections Form Question
-* US 4.0.5 – Update Site Profile of a Particular Site
-* US 4.0.6 – Delete Site Profile of a Particular Site
-* US 4.0.7  – Amenities Information on Site Profile
-* US 1.0.24  – Modify my Site Inspections Form Questions
-* US 1.0.25 – Hide a Site Inspections Form Question
+
 
 ### Could Have
 * US 1.0.17 - (Admin) Add Questions Site Inspections Form
 * US 1.0.18 - Adding image caption
 * US 1.0.19 - Admin Viewing Images and Metadata
 * US 3.0.2 - Offline Data Syncing
-* US 4.0.8 - Site-specific recommended gear lists
-* US 7.0.1 - Sign in feature
-* US 7.0.2 - Sign out feature
-* US 7.0.3 - Edit account feature
-* US 7.0.4 - Delete account feature
-
+* US 4.0.6 - Site-specific recommended gear lists
+* US 5.0.1 - Sign in feature
+* US 5.0.2 - Sign out feature
+* US 5.0.3 - Edit account feature
+* US 5.0.4 - Delete account feature
+* US 6.0.2 - Change Size of Text on Screen
 
 ### Would Like But Won't Get
 * US 1.0.20 - Admin Editing Image Metadata
-* US 8.0.1 - Toggle Dark mode for web and mobile applications
-* US 5C.04 – Keep Using Familiar Tools
-* US 6B.05 – Read Official PDF Reports Offline
+* US 6.0.1 - Toggle Dark mode for web and mobile applications
+
 
 ## Similar Products
 * [Global2000 Litterbug](https://www.spotteron.app/apps/global2000-litterbug)  

@@ -2,7 +2,7 @@
 This page provides an overview of the team and its members.
 
 ## Team Canvas
-![Team Canvas](images/team_canvas.png)
+![Team Canvas](images/team_canvas.jpg)
 
 # Scrum Roles
 
