@@ -58,10 +58,9 @@ This is a low-fidelity projection of the end-product. The final design may take 
 ![Low-Fidelity User Interface for mobile app](images/MOBILEAPP UI.jpg)
 
 ## List of Technologies Used
-### Backend: Supabase + PostgreSQL 
+### Backend: Supabase + PostgreSQL + AWS
   * [Supabase Documentation](https://supabase.com/docs)  
   * [PostgreSQL Documentation](https://www.postgresql.org/docs/) 
-  * [psqlODBC Driver Documentation](https://odbc.postgresql.org/) 
   * [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) 
 
 

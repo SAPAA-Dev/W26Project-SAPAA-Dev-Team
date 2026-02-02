@@ -698,7 +698,7 @@ Each user story is categorized into one of the following priority levels:
 
 
 ## Technical Resources
-### Backend: Supabase + PostgreSQL
+### Backend: Supabase + PostgreSQL + AWS
   * [Supabase Documentation](https://supabase.com/docs)  
   * [PostgreSQL Documentation](https://www.postgresql.org/docs/) 
   * [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) 
