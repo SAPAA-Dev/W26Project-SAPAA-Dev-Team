@@ -9,9 +9,9 @@ This page provides a general overview of the assigned tasks and roles for the du
 
 ## Project Plan
 
-**Project Scrum Master:** Aaryan Shetty
+**Project Scrum Master:** Jason Liang
 
-**Project Product Owner:** Derrick Chen
+**Project Product Owner:** Harveer Deol
 
 ### Sprint 1
 **Due:** *September 28, 2025*

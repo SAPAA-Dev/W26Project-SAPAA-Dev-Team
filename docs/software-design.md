@@ -14,7 +14,7 @@ This diagram is a description of logical entities of the domain through a UML di
 
 ![UML Class Diagram](images/UML Diagram.png)
 
-# Sequence Diagrams
+## Sequence Diagrams
 
 [View them on Lucidchart](https://lucid.app/lucidchart/97b40fe8-0ea1-4e2c-9118-472d71b630ff/edit?invitationId=inv_d023aae0-265e-478f-a9a1-b356599b6444&page=0_0#)
 
@@ -46,7 +46,7 @@ This diagram is a description of logical entities of the domain through a UML di
 This is a low-fidelity projection of the end-product. The final design may take a different direction.
 
 
-[View them on figma](https://lucid.app/lucidchart/97b40fe8-0ea1-4e2c-9118-472d71b630ff/edit?invitationId=inv_d023aae0-265e-478f-a9a1-b356599b6444&page=0_0#)
+[View them on figma](https://www.figma.com/design/8WLN54CokqHyoJHdGFY6kd/SAPAA-UI?node-id=0-1&t=dd9Or2IMUNQLwult-1)
 
 ### This is a low-fidelity UI for the web app
 
