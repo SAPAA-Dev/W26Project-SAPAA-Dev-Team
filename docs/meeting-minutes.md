@@ -140,8 +140,8 @@
 - Assigned tasks to everyone for sprint 2 
 
 **Action Items**  
--Start working on creating the web application
--Start coding the implementations for user stories in sprint 2
+- Start working on creating the web application
+- Start coding the implementations for user stories in sprint 2
 
 ---
 
