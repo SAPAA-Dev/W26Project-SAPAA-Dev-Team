@@ -1,18 +1,18 @@
-site_name: Fall 2025 SAPAA Project
+site_name: Winter 2026 SAPAA Project
 theme:
   name: material 
   features: 
   language: en
   palette:
     - scheme: default
-      primary: indigo
-      accent: indigo
+      primary: green
+      accent: green
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
     - scheme: slate
-      primary: indigo
-      accent: indigo
+      primary: green
+      accent: green
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
@@ -20,12 +20,5 @@ nav:
   - Project Documentation: 'index.md'
   - Project Management: 'project-management.md'
   - Software Design: 'software-design.md'
-  - UI Design: 'ui-design.md'
   - Teamwork: 'teamwork.md'
-  - Traceability Matrix: 'Traceability-Matrix.md'
   - Meeting Minutes: 'meeting-minutes.md'
-  - Job Description: 'job-description.md'
-  - Expo Go Deployment: 'expo_go_deployment_manual.md'
-  - Web App Deployment: 'webapp-deployment.md'
-  - Field Notes Reader - User Manual: 'FNR-user-manual.md'
-  - Google Sheets - User Manual: 'sheets-manual.md' 

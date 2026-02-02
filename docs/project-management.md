@@ -3,69 +3,92 @@
 This page provides a general overview of the assigned tasks and roles for the duration of five sprints (subject to change).
 
 ## Story Map
-[View the Story Map on MURAL](https://app.mural.co/t/cmput4016794/m/cmput4016794/1759038635808/f93a291a3c9507ee06ef39ab6f8ab171e4ce599b?sender=u7b3ff2cf8c8e8e3b812e9136)
+[View the Story Map on MURAL](https://app.mural.co/t/w26sapaa5191/m/w26sapaa5191/1769738797979/50f464dfdeaa98350a875ad25dff2f1a613ea7a3?sender=ubcb7600326dec09377448403)
 
-![Story Map](images/F25_SAPAA_Storymap.png)
+![Story Map](images/W26-SAPAA-Storymap.png)
 
 ## Project Plan
 
-**Project Scrum Master:** Aaryan Shetty
+**Project Scrum Master:** Jason Liang
 
-**Project Product Owner:** Derrick Chen
+**Project Product Owner:** Harveer Deol
 
 ### Sprint 1
-**Due:** *September 28, 2025*
+**Due:** *February 1, 2026*
 
 #### Tasks
 
 |Task|Related US|Assignee|Due|
 |:---:|:---:|:---:|:---:|
-|User Stories                                   |Documentation  |Mehrdad                        |Sep 28th|
-|Project Requirements Doc                       |Documentation  |Mehrdad, Ashlyn                |Sep 28th|
-|Architecture Diagram                           |Documentation  |Derrick                        |Sep 28th|
-|UML Diagram                                    |Documentation  |Ashlyn, Shane, Aaryan          |Sep 28th|
-|Sequence Diagram                               |Documentation  |Gabe                           |Sep 28th|
-|User Interface Mockup                          |Documentation  |Ashlyn, Shane                  |Sep 28th|
-|Software Design Doc                            |Documentation  |Gabe, Derrick, Shane, Aaryan   |Sep 28th|
-|Project Management Doc                         |Documentation  |Gabe, Mehrdad                  |Sep 28th|
-|Team Canvas                                    |Documentation  |Everyone                       |Sep 28th|
-|Teamwork Doc                                   |Documentation  |Derrick, Aaryan                |Sep 28th|
-|Research and evaluate cloud database options   |US 5A.01       |Everyone                       |Sep 28th|
+|User Stories                                   |Documentation  |Everyone                       |Jan 30th|
+|Project Requirements Doc                       |Documentation  |Raiyana                        |Jan 30th|
+|Architecture Diagram                           |Documentation  |Vishal, Braden                 |Jan 30th|
+|UML Diagram                                    |Documentation  |Braden                         |Jan 30th|
+|Sequence Diagram                               |Documentation  |Vishal                         |Jan 31st|
+|User Interface Mockup                          |Documentation  |Jason, Akib, Braden            |Jan 31st|
+|Software Design Doc                            |Documentation  |Raiyana                        |Feb 1st |
+|Project Management Doc                         |Documentation  |Jason, Raiyana, Vishal         |Feb 1st |
+|Team Canvas                                    |Documentation  |Everyone                       |Jan 31st|
+|Teamwork Doc                                   |Documentation  |Jason                          |Jan 31st|
+|Research and evaluate image management options |TASK 2.0.5     |Harveer, Zoe, Akib, Raiyana    |Jan 29th|
+|Understand the previous project database       |TASK 1.0.21    |Harveer, Jason, Vishal, Braden |Jan 27th|
+
 
 
 ### Sprint 2
 
-**Due:** *October 12, 2025*
+**Due:** *February 14, 2026*
 
 #### User stories
 
 |User Story|Story points|
 |:---:|:---:|
-|US 5C.01 – Automate Data Entry from Google Forms|5|
-|US 6B.01 – View Site Data Offline|5|
-|US 6B.02 - Sort Sites by Name or Inspection Date|2|
-|US 6B.03 - View Full Inspection History Offline|3|
-|US 6B.04 – View Site Photos Offline|3|
-|US 6B.05 – Read Official PDF Reports Offline|3|
-|US 6B.08 - Secure Access to Sensitive Data|5|
+|US 1.0.1 – Access Site Inspection Form on Web Application|3|
+|US 1.0.2 – Add Personal Information to Site Inspection Form [Q11-Q14 + Q16 + Q24 - Section : WhoRYou]|1|
+|US 1.0.3 - Liability Check [Q2 - Section : General]|1|
+|US 1.0.4 - Have access to the Terms and Conditions of Inputting Information [Q3 - Section: The Fine Print Up Front]|1|
+|US 1.0.5 - Add Details Regarding the Overview of my Visit [Q21, Q22, Q23, Q25 - Section : WhereRYou] |1|
+|US 1.0.6 - Rank the Health of the Site [Q31-33 Section : Impression]|1|
+|US 1.0.7 - Add Details Regarding How the Trip Went [Q41 - 43 - Section : How Visit]|1|
+|US 1.0.8 - Address What Amenities are in the Site [Q51 : Section - Be There]|1|
+|US 1.0.9 - Designation as a Protected Site [Q55 - Section : Be There]|1|
+|US 1.0.10 - Indicate submissions to iNaturalist [Q53 - Section : Be There, Q68]|1|
+|US 1.0.11 - Address details of Landscape changes [Q54 - Section : Be There]|2|
+|US 1.0.12 - Address any Biological Observations that are in the Site [Q52 - Section : Be There, Q68]|1|
+|US 1.0.13 - Address Any Human Disturbances - Section 8 [Q61 - Q66 - Section : Not There]|1|
+|US 1.0.14 - Add Other Comments [Q56, Q67, Q74, Q82]|2|
+|US 1.0.15 - Inform SAPAA of Any Restorative Work that Needs to be Done / Was Done [Q71, Q72 - Section : 2B Done]|2|
+|US 1.0.23 - Non-Public Information [Q73, Q83]|2|
+
+
+
+**Sprint Velocity:** 22
+
 
 #### Tasks
 
 |Task|Related US|Assignee|Due|
 |:---:|:---:|:---:|:---:|
-|Set up Supabase project and create PostgreSQL schema|US 5C.01|Derrick|Oct 12th|
-|Automate data transformations in Google Sheets to be ready for manual transfer|US 5C.01|Aaryan|Oct 12th|
-|Initialize React Native + Expo project for Field Notes Reader|US 6B.01|Mehrdad |Oct 12th|
-|Implement Analytics screen with KPIs|US 6B.01|Mehrdad|Oct 12th|
-|Implement mock SQLite data model (sites, inspections, images, pdfs)|US 6B.01|Mehrdad |Oct 12th|
-|Build offline site screen with search and age badges|US 6B.01|Mehrdad|Oct 12th|
-|Implement basic sort (A-Z, newest first)|US 6B.02|Mehrdad|Oct 12th|
-|Implement Site Detail screen with full inspection history|US 6B.03|Mehrdad|Oct 12th|
-|Add photo support (offline, bundled assets)|US 6B.04|Mehrdad|Oct 12th|
-|Add PDF viewer (offline, bundled assets)|US 6B.05|Mehrdad|Oct 12th|
-|Integrate authentication flow (login/logout)|US 6B.08|Ashlyn|Oct 12th|
-|Write acceptance tests|All US|Everyone|Oct 12th|
-|Update documentation|Documentation|Everyone|Oct 12th|
+|Build the Site Inspection Form entry point|US 1.0.1|Vishal, Jason, Raiyana|Feb 7th|
+|Add the liability check and access gate|US 1.0.3|Harveer|Feb 8th|
+|Add the Terms & Conditions acceptance flow|US 6B.01|Harveer|Feb 8th|
+|Create the personal information section|US 1.0.2|Braden|Feb 11th|
+|Create the visit overview and site selection section|US 1.0.5|Vishal|Feb 11th|
+|Add the non‑public information fields|US 1.0.23|Harveer|Feb 11th|
+|Develop the site health and impression section|US 1.0.6|Zoe|Feb 11th|
+|Develop the trip details and visit reasoning section|US 1.0.7|Braden|Feb 11th|
+|Add the landscape change reporting fields |US 1.0.11|Braden|Feb 11th|
+|Add the biological observations section|US 1.0.12|Jason|Feb 11th|
+|Add the human disturbances reporting section|US 1.0.13|Zoe|Feb 11th|
+|Create the amenities and ease‑of‑use section|US 1.0.8|Akib|Feb 11th|
+|Create the protected site designation section |US 1.0.9|Akib|Feb 11th|
+|Add the iNaturalist submission indicator|US 1.0.10|Akib|Feb 11th|
+|Add the additional comments and free‑text section|US 1.0.14|Vishal, Raiyana|Feb 11th|
+|Add the restoration actions and stewardship section|US 1.0.15|Zoe|Feb 12th|
+|Assemble all sections into a unified form schema |All US|Everyone|Feb 14th|
+|Finalize the submission flow and validation logic |All US|Everyone|Feb 14th|
+|Write acceptance tests|All US|Everyone|Feb 14th|
+|Update documentation|Documentation|Everyone|Feb 14th|
 
 
 **Sprint Velocity:** 26
@@ -73,131 +96,63 @@ This page provides a general overview of the assigned tasks and roles for the du
 
 ### Sprint 3
 
-**Due:** *October 26, 2025*
+**Due:** *March 8, 2026*
 
 #### User stories
 
 |User Story|Story points|
 |:---:|:---:|
-|US 5C.01 – Automate Data Entry from Google Forms|5|
-|US 5C.05 – Migrate MS Access Queries into new database system|3|
-|US 5D.01 - View Database Analytics|3|
-|US 5D.02 - View All Registered Users|3|
-|US 5D.03 - Delete Accounts of Registered Users|3|
-|US 5D.04 - Add a New Field Notes Reader Account as an Admin|3|
-|US 6B.03 - View Most Inspection History Offline|3|
-|US 6B.06 – View SAPAA Protected Area Map|5|
-|US 6B.07 – Select and Download Sites for Offline Use|5|
-|US 6B.08 - Secure Access to Sensitive Data|5|
-|US 6B.09 - Install Field Notes Reader via sideloaded APK|3|
-
-#### Tasks
-
-|Task|Related US|Assignee|Due|
-|:---:|:---:|:---:|:---:|
-|Automate manual work on Google Sheets to the best extent to create DB ready data|US 5C.01|Aaryan|Oct 26th|
-|Create Apps Script functions to handle data operations in Google Sheets|US 5C.01|Aaryan|Oct 26th|
-|Handle data validations and error checking before sending data to Supabase|US 5C.01|Aaryan|Oct 26th|
-|Enable the admin to use Google Sheets to make modifications and sync them to Supabase|US 5C.01|Aaryan|Oct 26th|
-|Recreate MS Access queries as PostgreSQL views|US 5C.05|Derrick|Oct 26th|
-|Implement an admin dashboard|US 5D.01|Shane|Oct 26th|
-|Migrate authentication to Supabase (email signup/login + confirmation dialog)|US 6B.08|Ashlyn|Oct 26th|
-|Secure data access with RLS so authenticated users can read site data|US 6B.08|Ashlyn|Oct 26th|
-|Add capability to view all registered FNR users|US 5D.02|Shane|Oct 26th|
-|Add an account deletion feature for FNR accounts|US 5D.03|Shane|Oct 26th|
-|Add an account creation feature for FNR accounts|US 5D.04|Shane|Oct 26th|
-|Add Q31 (naturalness score) and Q32 (inspection details) to Site Detail screen|US 6B.03|Mehrdad|Oct 26th|
-|See naturalness score as color gradient|US 6B.03|Ashlyn|Oct 26th|
-|Add map of SAPAA protected areas to application|US 6B.06|Mehrdad|Oct 26th|
-|Implement data age component on all screens|US 6B.07|Mehrdad|Oct 26th|
-|Connect real Supabase data|Mehrdad|US 6B.07|Oct 26th|
-|Add downloaded icon on downloaded sites|US 6B.07|Mehrdad|Oct 26th|
-|Generate an unsigned .apk for sideloading|US 6B.09|Mehrdad|Oct 26th|
-|Update Offline Reader UI|US 6B|Mehrdad, Ashlyn|Oct 26th|
-|Implement an average naturalness gradient visualization and convert inspection reports into expandable accordion-style cards|US 6B.03|Ashlyn|Oct 26th|
-|Update documentation|Documentation|Everyone|Oct 26th|
+|US 1.0.16 – Add Any Photography Captured During Visit|5|
+|US 1.0.17 – (Admin) Add Questions Site Inspections Form|3|
+|US 1.0.18 – Adding Image Caption|2|
+|US 1.0.19 - Admin Viewing Images and Metadata|2|
+|US 1.0.22 – (User) Edit My Site Inspections Form|5|
+|US 1.0.24 – Modify my Site Inspections Form Questions|3|
+|US 1.0.25 – Hide a Site Inspections Form Questions|3|
+|US 2.0.1 – Manage the uploading and storing of site inspection images|8|
+|US 2.0.2 – Image Metadata|2|
+|US 2.0.3 – Gallery View|3|
 
 
-**Sprint Velocity:** 44
 
+**Sprint Velocity:** 36
 
 ### Sprint 4
 
-**Due:** *November 9, 2025*
+**Due:** *March 22, 2026*
 
 #### User stories
 
 |User Story|Story points|
 |:---:|:---:|
-|US 5C.01 – Automate Data Entry from Google Forms|5|
-|US 5C.02 – Edit Records|3|
-|US 5C.03 – Generate and Preview PDF Reports Instantly|2|
-|US 5D.05 – Visualize Keyword Occurrences as a Heatmap|3|
-|US 6C.01 – Answer Site Inspection Questions on Web Page|3|
-|US 6C.02 - Edit Site Inspections Form|5|
-|US 6B.04 – View Site Photos Offline|5|
-|US 6B.05 – Read Official PDF Reports Offline|3|
-|US 6B.07 – Update My Offline Data When Online|5|
-|US 6B.12 – Configure App Settings|3|
-|US 6B.13 – Manage Offline Data Retention|3|
-|US 6B.14 – Toggle Dark Mode|2|
-|US 6B.15 – Sign in with Google and Microsoft OAuth|5|
-|US 6B.16 - Compare Inspection Answers Across Reports|3|
+|US 2.0.4 – Offline Image Viewing|5|
+|US 3.0.1 – Access the mobile version of the Site Inspection Form|5|
+|US 3.0.2 – Offline Data Syncing|8|
+|US 4.0.1 – View Site Profile of a Particular Site|3|
+|US 4.0.2 – Add Site Profile of a Particular Site|2|
+|US 4.0.3 – Update Site Profile of a Particular Site|3|
+|US 4.0.4 – Delete Site Profile of a Particular Site |3|
+|US 4.0.5 – Amenities Information on Site Profile|2|
 
 
-#### Tasks
-
-|Task|Related US|Assignee|Due|
-|:---:|:---:|:---:|:---:|
-|Implement Settings screen with navigation tab|US 6B.12|Mehrdad|Nov 9th|
-|Add data retention controls (custom and presets)|US 6B.13|Mehrdad|Nov 9th|
-|Add dark mode toggle with theme persistence|US 6B.14|Mehrdad|Nov 9th|
-|Enable site deletion when online|US 6B.07|Mehrdad|Nov 9th|
-|Optimize UI colors and fonts|US 6B|Mehrdad|Nov 9th|
-|Optimize Application Performance|US 6B|Mehrdad|Nov 9th|
-|Implement new web page to answer site inspection forms|US 6C.01|Derrick|Nov 9th|
-|Add ability to edit site inspection form questions|US 6C.02|Derrick|Nov 9th|
-|Edit Records|US 5C.02|Gabe|Nov 9th|
-|Implement offline PDF report viewer with caching|US 6B.05|Ashlyn|Nov 9th|
-|Design and implement PDF generation modal with field selection UI|US 5C.03|Ashlyn|Nov 9th|
-|Implement a basic heatmap for the Admin panel|US 5D.05|Shane|Nov 9th|
-|Implement Preview and Share PDF functionality with error handling|US 5C.03|Ashlyn|Nov 9th|
-|Create collapsible question cards with chronological answer grouping|US 6B.16|Ashlyn|Nov 9th|
-|Implement tab navigation component for By Date/By Question views|US 6B.16|Ashlyn|Nov 9th|
-|Configure Google and Microsoft OAuth providers in Supabase and cloud consoles|US 6B.15|Ashlyn|Nov 9th|
-|Implement OAuth sign-in functions with expo-web-browser integration|US 6B.15|Ashlyn|Nov 9th|
-|Implement the site locator (heatmap) feature for the FNR|US 5D.05|Shane|Nov 9th|
-|Finalize Google Apps Script code|US 5C.01|Aaryan|Nov 9th|
-|Update documentation|Documentation|Everyone|Nov 9th|
-
-Sprint Velocity: 50
-
+**Sprint Velocity:** 31
 
 ### Sprint 5
 
-**Due:** *November 30, 2025*
+**Due:** *March 31, 2026*
 
 #### User stories
 
 |User Story|Story points|
 |:---:|:---:|
-|US 5C.01 – Automate Data Entry from Google Forms|5|
-|US 5C.04 – Keep Using Familiar Tools|2|
-|US 6B.14 – Toggle Dark Mode|2|
-|US 6C.03 - Integrate Field Notes Reader into Web App|8|
-|US 7A.01 – Integrate Field Note Reader with Legacy "acs_checkin" App |8|
+|US 1.0.20 – Admin Editing Image Metadata|3|
+|US 4.0.6 – Site-specific Recommended Gear Lists|2|
+|US 5.0.1 – Sign In Feature|2|
+|US 5.0.2 – Sign Out Feature|2|
+|US 5.0.3 – Edit Account Feature|2|
+|US 5.0.4 – Delete Account Feature|2|
+|US 6.0.1 – Toggle Dark mode for web and mobile applications|2|
+|US 6.0.2 – Change Text Size on Screen|3|
 
-#### Tasks
 
-|Task|Related US|Assignee|Due|
-|:---:|:---:|:---:|:---:|
-|Create Google Sheets documentation|US 5C.01|Aaryan|Nov 30th|
-|Update UX/UI in web app|US 6C.03|Aaryan|Nov 30th|
-|Add dark mode toggle with theme persistence|US 6B.14|Mehrdad|Nov 30th|
-|Create Offline Reader app documentation|US 6B|Mehrdad|Nov 30th|
-|Finzalize steward analytics screen|US 6B|Mehrdad|Nov 30th|
-|Update ui for the admin dashboard|US 5D|Shane|Nov 30th|
-|Port over the admin dashboard and the account management to the web app|6C.03|Shane|Nov 30th|
-|Finalize documentation|Documentation|Everyone|Nov 30th|
-
-Sprint Velocity: 25
+**Sprint Velocity:** 18
