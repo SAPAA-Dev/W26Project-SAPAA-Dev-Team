@@ -74,6 +74,23 @@ export async function getQuestionsOnline(): Promise<question[]> {
   }));
 }
 
+export async function isSteward(userEmail: string): Promise<boolean> {
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from('luperson')
+    .select('id')
+    .eq('email', userEmail)
+    .maybeSingle()
+
+  if (error) {
+    throw error
+  }
+
+  return !!data
+}
+
+
+
 export async function getSitesOnline(): Promise<SiteSummary[]> {
   const supabase = createServerSupabase();
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { getQuestionsOnline } from '@/utils/supabase/queries';
+import { getQuestionsOnline, isSteward } from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -10,7 +10,8 @@ import {
   User, 
   ChevronRight, 
   ShieldCheck, 
-  AlertCircle 
+  AlertCircle,
+  Loader2
 } from "lucide-react";
 import Image from "next/image";
 import MainContent from "./MainContent";
@@ -31,7 +32,6 @@ export async function getCurrentUser() {
   }
 }
 
-
 interface Question {
   id: number;
   title: string | null;
@@ -41,8 +41,6 @@ interface Question {
   answers: any[];
 }
 
-
-
 export default function NewReportPage() {
   const pathname = usePathname();
   const params = useParams();
@@ -50,24 +48,44 @@ export default function NewReportPage() {
   const namesite = decodeURIComponent(params.namesite as string);
   
   const [hasAccepted, setHasAccepted] = useState(false);
-  const [showVerification, setShowVerification] = useState(true);
+  const [showVerification, setShowVerification] = useState(false);
   const [verificationText, setVerificationText] = useState("");
   const [responses, setResponses] = useState<Record<number, any>>({});
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name:string; avatar:string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name: string; avatar: string } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isStewardUser, setIsStewardUser] = useState(false);
 
-    useEffect(() => {
-      const fetchUser = async () => {
-        try {
-          const user = await getCurrentUser();
-          setCurrentUser(user);
-        } catch (err) {
-          setCurrentUser(null);
+  // Fetch user and check steward status
+  useEffect(() => {
+    const fetchUserAndCheckSteward = async () => {
+      try {
+        setIsLoading(true);
+        const user = await getCurrentUser();
+        setCurrentUser(user);
+        
+        if (user?.email) {
+          const stewardStatus = await isSteward(user.email);
+          setIsStewardUser(stewardStatus);
+          
+          // Show verification popup only if NOT a steward
+          setShowVerification(!stewardStatus);
+        } else {
+          setShowVerification(true);
         }
-      };
-      fetchUser();
-    }, []);
+      } catch (err) {
+        console.error('Error fetching user:', err);
+        setCurrentUser(null);
+        setShowVerification(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchUserAndCheckSteward();
+  }, []);
 
+  // Fetch questions
   useEffect(() => {
     async function fetchQuestions() {
       try {
@@ -89,17 +107,24 @@ export default function NewReportPage() {
   };
 
   const handleSubmit = () => {
-
+    // Handle form submission
   };
 
+  // Loading Screen
+  if (isLoading) {
+    return (
+           <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex flex-col items-center justify-center gap-4">
+        <div className="w-16 h-16 border-4 border-[#E4EBE4] border-t-[#356B43] rounded-full animate-spin"></div>
+        <p className="text-[#7A8075] font-medium">Loading inspection form...</p>
+      </div>
+    );
+  }
+
   return (
-
-
-    
     <div className={`min-h-screen bg-[#F7F2EA] flex flex-col ${showVerification ? 'overflow-hidden max-h-screen' : ''}`}>
       
-      {/* --- VERIFICATION POPUP --- */}
-      {showVerification && (
+      {/* --- VERIFICATION POPUP (Only for non-stewards) --- */}
+      {showVerification && !isStewardUser && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
           <div className="absolute inset-0 bg-[#254431]/80 backdrop-blur-sm" />
           
@@ -226,7 +251,7 @@ export default function NewReportPage() {
               <span className="font-bold tracking-widest text-sm opacity-90">SAPAA</span>
             </div>
             <div className="hidden md:flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full border border-white/20">
-            <div className="w-6 h-6 rounded-full overflow-hidden bg-[#356B43] flex items-center justify-center">
+              <div className="w-6 h-6 rounded-full overflow-hidden bg-[#356B43] flex items-center justify-center">
                 {currentUser?.avatar ? (
                   <Image
                     src={currentUser.avatar}
@@ -242,6 +267,9 @@ export default function NewReportPage() {
                 )}
               </div>
               <span className="text-sm font-medium">{currentUser?.name}</span>
+              {isStewardUser && (
+                <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">Steward</span>
+              )}
             </div>
           </div>
 
