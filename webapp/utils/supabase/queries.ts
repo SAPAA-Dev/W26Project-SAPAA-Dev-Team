@@ -34,6 +34,7 @@ export interface InpsectionFrom {
 export interface question {
   id: number;
   section: number | null;
+  title: string | null;
   text: string | null;
   question_type: string | null;
   answers: Array<string> | null;
@@ -49,6 +50,7 @@ export async function getQuestionsOnline(): Promise<question[]> {
       subtext,
       question_type,
       section_id,
+      form_question,
       W26_question_options (
         option_text
       )
@@ -63,6 +65,7 @@ export async function getQuestionsOnline(): Promise<question[]> {
   return (data ?? []).map((q: any) => ({
     id: q.id,
     text: q.subtext,
+    title: q.form_question,
     question_type: q.question_type,
     section: q.section_id,
     answers: q.W26_question_options?.map(

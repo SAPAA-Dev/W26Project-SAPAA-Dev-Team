@@ -16,13 +16,32 @@ import Image from "next/image";
 import MainContent from "./MainContent";
 import StickyFooter from "./Footer";
 
+export async function getCurrentUser() {
+  const supabase = createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return null
+
+  return {
+    email: user.email ?? '',
+    role: user.user_metadata?.role ?? 'steward',
+    name: user.user_metadata?.full_name ?? '',
+    avatar: user.user_metadata?.avatar_url ?? '',
+  }
+}
+
+
 interface Question {
   id: number;
+  title: string | null;
   text: string | null;
   question_type: string;
   section: number;
   answers: any[];
 }
+
+
 
 export default function NewReportPage() {
   const pathname = usePathname();
@@ -35,6 +54,19 @@ export default function NewReportPage() {
   const [verificationText, setVerificationText] = useState("");
   const [responses, setResponses] = useState<Record<number, any>>({});
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name:string; avatar:string } | null>(null);
+
+    useEffect(() => {
+      const fetchUser = async () => {
+        try {
+          const user = await getCurrentUser();
+          setCurrentUser(user);
+        } catch (err) {
+          setCurrentUser(null);
+        }
+      };
+      fetchUser();
+    }, []);
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -48,7 +80,7 @@ export default function NewReportPage() {
     fetchQuestions();
   }, []);
 
-  const requiredPhrase = "I am not a volunteer";
+  const requiredPhrase = "I am not a volunteer of SAPAA";
   const isVerificationValid = verificationText.trim() === requiredPhrase;
   const canProceed = isVerificationValid && hasAccepted;
 
@@ -61,6 +93,9 @@ export default function NewReportPage() {
   };
 
   return (
+
+
+    
     <div className={`min-h-screen bg-[#F7F2EA] flex flex-col ${showVerification ? 'overflow-hidden max-h-screen' : ''}`}>
       
       {/* --- VERIFICATION POPUP --- */}
@@ -73,7 +108,7 @@ export default function NewReportPage() {
               <div className="w-10 h-10 bg-[#F7F2EA] rounded-full flex items-center justify-center">
                 <ShieldCheck className="w-6 h-6 text-[#356B43]" />
               </div>
-              <h2 className="text-xl font-bold text-[#254431]">Verification Required</h2>
+              <h2 className="text-xl font-bold text-[#254431]">The Fine Print Up Front</h2>
             </div>
 
             <div className="p-6 space-y-4">
@@ -191,8 +226,22 @@ export default function NewReportPage() {
               <span className="font-bold tracking-widest text-sm opacity-90">SAPAA</span>
             </div>
             <div className="hidden md:flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full border border-white/20">
-              <div className="w-6 h-6 rounded-full bg-[#356B43] flex items-center justify-center text-xs font-bold">JD</div>
-              <span className="text-sm font-medium">John Doe</span>
+            <div className="w-6 h-6 rounded-full overflow-hidden bg-[#356B43] flex items-center justify-center">
+                {currentUser?.avatar ? (
+                  <Image
+                    src={currentUser.avatar}
+                    alt="User avatar"
+                    width={24}
+                    height={24}
+                    className="object-cover"
+                  />
+                ) : (
+                  <span className="text-xs font-bold text-white">
+                    {currentUser?.name?.[0] ?? "?"}
+                  </span>
+                )}
+              </div>
+              <span className="text-sm font-medium">{currentUser?.name}</span>
             </div>
           </div>
 

@@ -49,9 +49,10 @@ export default function TermsPage() {
                 1. Accuracy of Information
                 </h3>
                 <p>
-                By submitting a Site Inspection Report, you confirm that all information
-                provided is accurate, complete, and based on your own physical observation
-                of the site.
+                By submitting a Site Inspection Report, you confirm thatBy submitting a Site Inspection Report, 
+                you confirm that you have read through the terms and conditions, and understand SAPAA is not liable for the safety
+                of non-SAPAA members. Please do consider joining SAPAA if you passionate about Alberta’s Protected/Natural Areas.
+
                 </p>
             </section>
             <section className="space-y-4">
@@ -241,8 +242,12 @@ export default function TermsPage() {
                 </h3>
                 <p>
                 To better understand how Alberta’s Occupational Health and Safety
-                legislation may apply, please consult official Government of Alberta
-                resources.
+                legislation may apply, vist: <a
+                        href="https://myorgbio.org/2023/11/22/notes-about-a-safe-space-ohs-and-the-non-profit/"
+                        className="underline text-[#356B43]"
+                    >Notes About a Safe Space 
+                – OHS and the Non-Profit | Organizational Biology.
+                </a> 
                 </p>
             </section>
 

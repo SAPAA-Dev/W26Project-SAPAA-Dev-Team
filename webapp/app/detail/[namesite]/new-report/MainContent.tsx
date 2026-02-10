@@ -12,6 +12,7 @@ interface Answer {
 
 interface Question {
   id: number;
+  title: string | null;
   text: string | null;
   question_type: string;
   section: number;
@@ -126,7 +127,7 @@ export default function MainContent({ onResponsesChange }: MainContentProps) {
           </div>
         );
 
-      case 'site_select':
+      case 'site_select': //not used, here just in case
         return (
           <div className="space-y-2">
             <input
@@ -137,8 +138,23 @@ export default function MainContent({ onResponsesChange }: MainContentProps) {
               className="w-full px-4 py-3 border-2 border-[#E4EBE4] rounded-xl focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] font-medium placeholder:text-[#7A8075]"
             />
             <p className="text-xs text-[#7A8075] flex items-center gap-1">
-              <span>💡</span>
               <span>Enter the name of the protected area you visited</span>
+            </p>
+          </div>
+        );
+
+        case 'date':
+        return (
+          <div className="space-y-2">
+            <input
+              type="date"
+              value={response || ''}
+              onChange={(e) => handleResponse(question.id, e.target.value)}
+              placeholder="Start typing to search for a protected area..."
+              className="w-full px-4 py-3 border-2 border-[#E4EBE4] rounded-xl focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] font-medium placeholder:text-[#7A8075]"
+            />
+            <p className="text-xs text-[#7A8075] flex items-center gap-1">
+              <span>Enter the date of the you visited the site</span>
             </p>
           </div>
         );
@@ -263,6 +279,12 @@ export default function MainContent({ onResponsesChange }: MainContentProps) {
             </div>
           ) : (
             currentQuestions.map((question) => {
+              function stripQuestionCode(title: string) {
+                return title.replace(/\s*\(Q\d+\)\s*$/, '')
+              }
+              const formattedTitle = question.title
+              ? stripQuestionCode(question.title)
+              : `Question ${question.id}`
               const isAnswered = (() => {
                 const val = responses[question.id];
                 return val !== undefined && val !== null && val !== '' && (!Array.isArray(val) || val.length > 0);
@@ -288,8 +310,12 @@ export default function MainContent({ onResponsesChange }: MainContentProps) {
                       </span>
                       <div className="flex-1">
                         <h3 className="font-bold text-[#254431] text-lg leading-tight">
-                          {question.text || `Question ${question.id}`}
+                          {formattedTitle}
                         </h3>
+
+                        <h4 className="mt-1 text-sm text-[#254431]/70 leading-snug font-normal">
+                          {question.text || `Question ${question.id}`}
+                        </h4>
                         <div className="flex items-center gap-2 mt-2">
                           <span className="text-xs px-2 py-1 rounded-full bg-[#F7F2EA] text-[#7A8075] font-medium">
                             {question.question_type.trim()}
