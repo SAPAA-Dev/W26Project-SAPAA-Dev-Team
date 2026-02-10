@@ -40,6 +40,61 @@ export interface question {
   answers: Array<string> | null;
 }
 
+
+//for legacy, consult group if we want to edit old tables
+export async function addSiteInspection(namesite: string, responses: Record<number, any>): Promise<{ inspectno: string; id: number } | null> {
+  const supabase = createServerSupabase();
+
+  try {
+    //Get the latest inspection for this year to determine the next number
+    const currentYear = new Date().getFullYear();
+    const yearPrefix = `${currentYear}-`;
+
+    const { data: latestInspections, error: fetchError } = await supabase
+      .from('sites_list_fnr')
+      .select('inspectno')
+      .eq('namesite', namesite)
+
+    if (fetchError) throw new Error(fetchError.message || 'Failed to fetch latest inspection');
+
+    let nextNumber = 1;
+    if (latestInspections && latestInspections.length > 0) {
+      const latestInspectno = latestInspections[0].inspectno;
+      const currentNumber = parseInt(latestInspectno.split('-')[1], 10);
+      nextNumber = currentNumber + 1;
+    }
+
+    const newInspectno = `${currentYear}-${nextNumber}`;
+
+    const inspectionData: any = {
+      namesite: namesite,
+      inspectno: newInspectno,
+      inspectdate: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
+    };
+
+    if (responses[31] !== undefined && responses[31] !== null && responses[31] !== '') {
+      inspectionData.naturalness_score = responses[31];
+    }
+
+    if (responses[32] !== undefined && responses[32] !== null && responses[32] !== '') {
+      inspectionData.naturalness_details = responses[32];
+    }
+
+    const { data: insertedData, error: insertError } = await supabase
+      .from('sites_list_fnr')
+      .insert([inspectionData])
+      .select('id, inspectno')
+      .single();
+
+    if (insertError) throw new Error(insertError.message || 'Failed to insert inspection');
+
+    return insertedData;
+  } catch (error) {
+    console.error('Error adding site inspection:', error);
+    throw error;
+  }
+}
+
 export async function getQuestionsOnline(): Promise<question[]> {
   const supabase = createServerSupabase();
 
@@ -88,8 +143,6 @@ export async function isSteward(userEmail: string): Promise<boolean> {
 
   return !!data
 }
-
-
 
 export async function getSitesOnline(): Promise<SiteSummary[]> {
   const supabase = createServerSupabase();

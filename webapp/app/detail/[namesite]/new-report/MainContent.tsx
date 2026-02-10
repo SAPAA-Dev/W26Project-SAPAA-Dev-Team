@@ -44,6 +44,7 @@ export default function MainContent({ onResponsesChange }: MainContentProps) {
     }
     fetchQuestions();
   }, []);
+  
   const questionsBySection = questions.reduce((acc, question) => {
     if (!acc[question.section-3]) {
       acc[question.section-3] = [];
@@ -51,6 +52,7 @@ export default function MainContent({ onResponsesChange }: MainContentProps) {
     acc[question.section-3].push(question);
     return acc;
   }, {} as Record<number, Question[]>);
+  
   const sections = Object.keys(questionsBySection)
     .map(Number)
     .sort((a, b) => a - b);
@@ -95,6 +97,49 @@ export default function MainContent({ onResponsesChange }: MainContentProps) {
                 </label>
               );
             })}
+          </div>
+        );
+
+      case 'selectall':
+        return (
+          <div className="space-y-2">
+            {question.answers.map((answer, index) => {
+              const answerText = typeof answer === 'string' ? answer : (answer.text || answer);
+              const selectedAnswers = Array.isArray(response) ? response : [];
+              const isChecked = selectedAnswers.includes(answerText);
+              
+              return (
+                <label
+                  key={index}
+                  className="flex items-center gap-3 p-4 border-2 border-[#E4EBE4] rounded-xl hover:border-[#356B43] cursor-pointer transition-all group"
+                >
+                  <input
+                    type="checkbox"
+                    value={answerText}
+                    checked={isChecked}
+                    onChange={(e) => {
+                      const currentSelections = Array.isArray(response) ? [...response] : [];
+                      if (e.target.checked) {
+                        handleResponse(question.id, [...currentSelections, answerText]);
+                      } else {
+                        handleResponse(question.id, currentSelections.filter(item => item !== answerText));
+                      }
+                    }}
+                    className="w-5 h-5 rounded border-2 border-[#E4EBE4] text-[#356B43] focus:ring-[#356B43] focus:ring-2"
+                  />
+                  <span className="text-[#254431] font-medium group-hover:text-[#356B43] transition-colors">
+                    {answerText}
+                  </span>
+                </label>
+              );
+            })}
+            {response && Array.isArray(response) && response.length > 0 && (
+              <div className="mt-3 p-3 bg-[#356B43]/10 rounded-lg">
+                <p className="text-sm text-[#356B43] font-semibold">
+                  {response.length} option{response.length > 1 ? 's' : ''} selected
+                </p>
+              </div>
+            )}
           </div>
         );
 
@@ -143,7 +188,7 @@ export default function MainContent({ onResponsesChange }: MainContentProps) {
           </div>
         );
 
-        case 'date':
+      case 'date':
         return (
           <div className="space-y-2">
             <input

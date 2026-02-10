@@ -56,7 +56,6 @@ export default function NewReportPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isStewardUser, setIsStewardUser] = useState(false);
 
-  // Fetch user and check steward status
   useEffect(() => {
     const fetchUserAndCheckSteward = async () => {
       try {
@@ -67,8 +66,7 @@ export default function NewReportPage() {
         if (user?.email) {
           const stewardStatus = await isSteward(user.email);
           setIsStewardUser(stewardStatus);
-          
-          // Show verification popup only if NOT a steward
+
           setShowVerification(!stewardStatus);
         } else {
           setShowVerification(true);
@@ -85,7 +83,6 @@ export default function NewReportPage() {
     fetchUserAndCheckSteward();
   }, []);
 
-  // Fetch questions
   useEffect(() => {
     async function fetchQuestions() {
       try {
@@ -107,10 +104,81 @@ export default function NewReportPage() {
   };
 
   const handleSubmit = () => {
-    // Handle form submission
+    /**
+     * FORM DATA CAPTURED:
+     * 
+     * 1. USER INFORMATION:
+     *    - currentUser.email: User's email address
+     *    - currentUser.name: User's full name
+     *    - currentUser.role: User's role (e.g., 'steward')
+     *    - currentUser.avatar: User's avatar URL
+     *    - isStewardUser: Boolean indicating if user is a verified steward
+     * 
+     * 2. SITE INFORMATION:
+     *    - namesite: Name of the protected area being inspected (from URL params)
+     *    - pathname: Current page pathname
+     * 
+     * 3. VERIFICATION DATA (for non-stewards):
+     *    - hasAccepted: Boolean - user accepted terms and conditions
+     *    - verificationText: String - confirmation text typed by user
+     *    - showVerification: Boolean - whether verification popup was shown
+     * 
+     * 4. QUESTION RESPONSES:
+     *    - responses: Record<number, any> - Object mapping question IDs to answers
+     *      Structure: { [questionId]: answer }
+     *      Answer types vary by question_type:
+     *        - 'option': String (selected radio option text)
+     *        - 'text'/'text\n': String (textarea content)
+     *        - 'agreement': Boolean (checkbox state)
+     *        - 'site_select': String (protected area name)
+     *        - 'date': String (date in YYYY-MM-DD format)
+     *        - 'image': File[] (array of uploaded image files)
+     * 
+     * 5. QUESTIONS METADATA:
+     *    - questions: Question[] - Array of all questions from database
+     *      Each question contains:
+     *        - id: number
+     *        - title: string | null
+     *        - text: string | null
+     *        - question_type: string
+     *        - section: number
+     *        - answers: any[] (available answer options)
+     * 
+     * EXAMPLE DATA STRUCTURE TO SUBMIT:
+     * {
+     *   user: {
+     *     email: currentUser?.email,
+     *     name: currentUser?.name,
+     *     role: currentUser?.role,
+     *     isSteward: isStewardUser
+     *   },
+     *   site: {
+     *     name: namesite,
+     *     inspectionDate: new Date().toISOString()
+     *   },
+     *   verification: {
+     *     termsAccepted: hasAccepted,
+     *     verificationCompleted: !showVerification
+     *   },
+     *   responses: responses,
+     *   metadata: {
+     *     totalQuestions: questions.length,
+     *     answeredQuestions: Object.keys(responses).length,
+     *     completionRate: (Object.keys(responses).length / questions.length) * 100
+     *   }
+     * }
+     */
+    
+    //TODO: Handle form submission
+    console.log('Form data to submit:', {
+      user: currentUser,
+      site: namesite,
+      responses: responses,
+      isSteward: isStewardUser,
+      termsAccepted: hasAccepted
+    });
   };
 
-  // Loading Screen
   if (isLoading) {
     return (
            <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex flex-col items-center justify-center gap-4">
