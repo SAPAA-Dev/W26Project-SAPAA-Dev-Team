@@ -29,7 +29,7 @@ function getInspectionStatus(days: number): { label: string; color: string; bgCo
   return { label: 'Needs Review', color: '#7A8075', bgColor: '#E4EBE4' };
 }
 
-async function getCurrentUser(): Promise<{ email: string; role: string } | null> {
+async function getCurrentUser(): Promise<{ email: string; role: string; name: string} | null> {
   try {
     const supabase = createClient();
     
@@ -42,10 +42,13 @@ async function getCurrentUser(): Promise<{ email: string; role: string } | null>
     
     const email = session.user.email ?? '';
     const role = session.user.user_metadata?.role ?? 'steward';
+    const name  = session.user.user_metadata?.full_name ?? '';
+    console.log(session.user)
     
     return {
       email,
-      role
+      role,
+      name
     };
   } catch (error) {
     return null;
@@ -63,7 +66,7 @@ export default function HomeClient() {
     direction: 'asc',
   });
   const [showSortMenu, setShowSortMenu] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{ email: string; role: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name:string } | null>(null);
   const [userLoading, setUserLoading] = useState(true);
 
   useEffect(() => {

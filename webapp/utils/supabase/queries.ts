@@ -10,6 +10,7 @@ export interface SiteSummary {
 }
 
 
+
 export interface InspectionDetail {
   id: number;
   namesite: string;
