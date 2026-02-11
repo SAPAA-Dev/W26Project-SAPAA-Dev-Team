@@ -1,6 +1,6 @@
 'use server';
 
-import { createServerSupabase } from './server';
+import { createServerSupabase, createClient } from './server';
 
 export interface SiteSummary {
   id: number;
@@ -59,15 +59,29 @@ export async function addSiteInspectionReport(siteId: number, userId: any) {
 }
 
 export async function getCurrentUserUid() {
-  const supabase = createServerSupabase();
+    const supabase = await createClient();
 
-  const { data, error } = await supabase.auth.getUser();
-  console.log('Current user data:', data);
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    return user?.id;
+}
+
+export async function getCurrentSiteId(siteName: string) {
+  const supabase = await createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('W26_sites-pa')
+    .select('id')
+    .eq('namesite', siteName)
+    .single();
 
   if (error) {
-    throw new Error(error.message);
+    throw new Error(error.message || 'Failed to get site ID');
   }
-  return data.user?.id;
+  return data?.id;
 }
 
 //for legacy, consult group if we want to edit old tables

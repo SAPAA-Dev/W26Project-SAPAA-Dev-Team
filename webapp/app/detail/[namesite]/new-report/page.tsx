@@ -1,6 +1,6 @@
 "use client";
 
-import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid } from '@/utils/supabase/queries';
+import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId } from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -25,6 +25,7 @@ export async function getCurrentUser() {
   if (!user) return null
 
   return {
+    id: user.id,
     email: user.email ?? '',
     role: user.user_metadata?.role ?? 'steward',
     name: user.user_metadata?.full_name ?? '',
@@ -105,10 +106,10 @@ export default function NewReportPage() {
 
   const handleSubmit = async () => {
     try {
-      const sites = await getSitesOnline();
+      const siteId = await getCurrentSiteId(namesite);
       const userUid = await getCurrentUserUid();
       console.log("User Uid: " + userUid);
-      addSiteInspectionReport(sites[0].id, userUid)
+      addSiteInspectionReport(siteId, userUid)
     } catch (error) {
       console.error(error);
     }
