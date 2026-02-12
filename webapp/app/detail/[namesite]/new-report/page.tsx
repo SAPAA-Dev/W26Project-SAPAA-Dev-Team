@@ -118,42 +118,36 @@ export default function NewReportPage() {
       const userUid = await getCurrentUserUid();
       const siteInspectionReportId = (await addSiteInspectionReport(siteId, userUid)).id
 
+      // We need to figure out whether the answer to each question should be placed in the obs_value or obs_comm column in Supabase
+      // So we convert the question response types into a map that we can search for it
       const data = await getQuestionResponseType();
       const observationTypeMap = new Map(
         data.map(q => [
-          String(q.question_key_id), // The Key (Now a String)
-          { obs_value: q.obs_value, obs_comm: q.obs_comm } // The Value
+          String(q.question_id), 
+          { obs_value: q.obs_value, obs_comm: q.obs_comm }
         ])
       );
 
-      console.table(observationTypeMap);
-
-    
+      // Initialize an array to hold all the objects/dictionaries that represent each row in the W26_answers table
       let answersArray: SupabaseAnswer[] = [];  
-
       for (const [questionId, answer] of Object.entries(responses)) {
-    
-            // 1. Get the rules for THIS specific question from the Map
             const questionConfig = observationTypeMap.get(questionId);
-            console.log(`Config for question ${questionId}:`, questionConfig);
-
-            // 2. Decide if this question is meant for 'value' or 'comment'
-            // We check the Map's stored boolean flags
+            // Decide if this question's answer is supposed to go into the obs_value column or obs_comm column
             const isValueType = questionConfig?.obs_value == 1;
             const isCommType = questionConfig?.obs_comm == 1;
-            console.log(`Processing question ${questionId}: isValueType=${isValueType}, isCommType=${isCommType}, answer=`, answer);
 
+            // If the answer has an array containing subAnswers, add each subAnswer as a new object/dictionary inside answersArray
             if (Array.isArray(answer)) {
                 answer.forEach(subAnswer => {
                     answersArray.push({
                         response_Id: siteInspectionReportId,
                         question_Id: Number(questionId),
-                        // Assign based on the Map config we found above
+                        // Put the subAnswer in either the obs_value column or obs_comm column and the other one is set to null
                         obs_value: isValueType ? String(subAnswer) : null,
                         obs_comm: isCommType ? String(subAnswer) : null,
                     });
                 });
-            } else {
+            } else { // Otherwise, the answer is just a single string so we can add it directly to answersArray
                 answersArray.push({
                     response_Id: siteInspectionReportId,
                     question_Id: Number(questionId),
@@ -162,9 +156,6 @@ export default function NewReportPage() {
                 });
             }
       }
-      console.table(answersArray);
-      console.table(observationTypeMap);
-
     } catch (error) {
       console.error(error);
     }

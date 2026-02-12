@@ -41,12 +41,13 @@ export interface question {
   answers: Array<string> | null;
 }
 
+// Queries the Supabase database for all the questions and whether they have their answers in the obs_value column or obs_comm column
 export async function getQuestionResponseType() {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
     .from('W26_questions')
-    .select('question_key_id, obs_value, obs_comm')
+    .select('id, obs_value, obs_comm')
     .eq('is_active', true);
 
   if (error) {
@@ -54,7 +55,7 @@ export async function getQuestionResponseType() {
   }
 
   return (data ?? []).map((q: any) => ({
-    question_key_id: q.question_key_id,
+    question_id: q.id,
     obs_value: q.obs_value,
     obs_comm: q.obs_comm,
   }));
