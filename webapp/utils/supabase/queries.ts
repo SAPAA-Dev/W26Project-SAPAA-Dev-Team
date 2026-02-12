@@ -38,6 +38,10 @@ export interface question {
   text: string | null;
   question_type: string | null;
   answers: Array<string> | null;
+  formorder?: number | null; 
+  sectionTitle?: string | null;
+  sectionDescription?: string | null;
+  sectionHeader?: string | null;
 }
 
 export async function addSiteInspectionReport(siteId: number, userId: number) {
@@ -124,6 +128,14 @@ export async function getQuestionsOnline(): Promise<question[]> {
       form_question,
       W26_question_options (
         option_text
+      ),
+      W26_question_keys!W26_questions_question_key_id_fkey (
+        formorder
+      ),
+      W26_form_sections!W26_questions_section_id_fkey (
+        title,
+        description,
+        header
       )
     `)
     .eq('is_active', true)
@@ -142,6 +154,10 @@ export async function getQuestionsOnline(): Promise<question[]> {
     answers: q.W26_question_options?.map(
       (opt: any) => opt.option_text
     ) ?? null,
+    formorder: q.W26_question_keys?.formorder ?? null,
+    sectionTitle: q.W26_form_sections?.title ?? null,
+    sectionDescription: q.W26_form_sections?.description ?? null,
+    sectionHeader: q.W26_form_sections?.header ?? null,
   }));
 }
 
