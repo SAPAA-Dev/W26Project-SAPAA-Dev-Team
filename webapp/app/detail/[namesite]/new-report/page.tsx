@@ -1,6 +1,6 @@
 "use client";
 
-import { getQuestionsOnline, isSteward, addSiteInspectionReport } from '@/utils/supabase/queries';
+import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId } from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -25,6 +25,7 @@ export async function getCurrentUser() {
   if (!user) return null
 
   return {
+    id: user.id,
     email: user.email ?? '',
     role: user.user_metadata?.role ?? 'steward',
     name: user.user_metadata?.full_name ?? '',
@@ -147,18 +148,14 @@ export default function NewReportPage() {
   };
 
   const handleSubmit = async () => {
-    const questionNumberMap = buildQuestionNumberMap(questions);
-    const missingRequiredNumbers = questions
-      .filter((question) => question.is_required === true && !isAnswered(responses[question.id]))
-      .map((question) => questionNumberMap[question.id] ?? `Question ${question.id}`);
-
-    if (missingRequiredNumbers.length > 0) {
-      setMissingRequiredQuestionNumbers(missingRequiredNumbers);
-      setShowRequiredPopup(true);
-      return;
+    try {
+      const siteId = await getCurrentSiteId(namesite);
+      const userUid = await getCurrentUserUid();
+      console.log("User Uid: " + userUid);
+      addSiteInspectionReport(siteId, userUid)
+    } catch (error) {
+      console.error(error);
     }
-
-    addSiteInspectionReport(1, "28120881-5795-4c19-af67-99dee6db1062")
     /**
      * FORM DATA CAPTURED:
      * 

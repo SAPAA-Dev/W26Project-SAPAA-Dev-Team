@@ -1,6 +1,6 @@
 'use server';
 
-import { createServerSupabase } from './server';
+import { createServerSupabase, createClient } from './server';
 
 export interface SiteSummary {
   id: number;
@@ -8,6 +8,7 @@ export interface SiteSummary {
   county: string | null;
   inspectdate: string | null;
 }
+
 
 
 export interface InspectionDetail {
@@ -45,7 +46,7 @@ export interface question {
   sectionHeader?: string | null;
 }
 
-export async function addSiteInspectionReport(siteId: number, userId: number) {
+export async function addSiteInspectionReport(siteId: number, userId: any) {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
@@ -60,6 +61,32 @@ export async function addSiteInspectionReport(siteId: number, userId: number) {
     throw new Error(error.message || 'Failed to add site inspection report');
   }
   return data;
+}
+
+export async function getCurrentUserUid() {
+    const supabase = await createClient();
+
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    return user?.id;
+}
+
+export async function getCurrentSiteId(siteName: string) {
+  const supabase = await createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('W26_sites-pa')
+    .select('id')
+    .eq('namesite', siteName)
+    .single();
+
+  if (error) {
+    throw new Error(error.message || 'Failed to get site ID');
+  }
+  return data?.id;
 }
 
 //for legacy, consult group if we want to edit old tables

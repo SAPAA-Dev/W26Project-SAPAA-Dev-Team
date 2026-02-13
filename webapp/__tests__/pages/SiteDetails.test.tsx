@@ -246,6 +246,38 @@ describe('SiteDetailScreen', () => {
     });
   });
 
+  describe('New Site Inspection Report', () => {
+    it('should have the New Site Inspection Report button visible and enabled', async () => {
+      render(<SiteDetailScreen />);
+
+      await waitFor(() => {
+        const newReportButton = screen.getByText(/New Site Inspection Report/i);
+        expect(newReportButton).toBeInTheDocument();
+      });
+
+      // Ensure the button is not disabled
+      const button = screen.getByRole('button', { name: /New Site Inspection Report/i });
+      expect(button).not.toBeDisabled();
+    });
+
+    it('should navigate to the new report page when clicking the "New Site Inspection Report" button', async () => {
+      render(<SiteDetailScreen />);
+      await waitFor(() => {
+        expect(screen.getByText('Aspen Grove Reserve')).toBeInTheDocument();
+      });
+
+      // Find the button by its text content and click it
+      const newReportButton = screen.getByText(/New Site Inspection Report/i);
+      fireEvent.click(newReportButton);
+
+      // Verify that the router was called with the correct path 
+      // The path should be /detail/Aspen Grove Reserve/new-report
+      expect(mockRouter.push).toHaveBeenCalledWith(
+        '/detail/Aspen%20Grove%20Reserve/new-report'
+      );
+    });
+  });
+
   describe('Inspection Reports View', () => {
     it('should display inspection reports section', async () => {
       render(<SiteDetailScreen />);
