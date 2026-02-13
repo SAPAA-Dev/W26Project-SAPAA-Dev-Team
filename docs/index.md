@@ -322,6 +322,24 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 5. Draft data is automatically cleared once the form is successfully submitted.
 > 6. Draft persistence must not interfere with normal form submission behavior.
 
+
+
+
+#### US 1.0.27 – Enforce Required Questions on Site Inspection Form | Story Points: 3
+> **As** a user, **I want** to be prevented from submitting the form if required questions are unanswered, **so that** the report is complete and contains all mandatory information.
+
+> **Acceptance Tests**
+
+> 1. If a user attempts to submit the Site Inspection Form without answering all required questions, a pop up message is displayed indicating that required questions must be completed before submission
+> 2. The pop up clearly states which required questions are missing
+> 3. The form submission is blocked until all required questions are answered
+> 4. If a user answers all required questions and clicks submit, the form is successfully submitted
+> 5. Optional questions do not prevent submission if left unanswered
+
+
+
+
+
 ---
 ### **P2 – Site Image Management System**
 ---
