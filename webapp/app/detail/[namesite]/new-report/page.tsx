@@ -66,8 +66,9 @@ export default function NewReportPage() {
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name: string; avatar: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStewardUser, setIsStewardUser] = useState(false);
-  const [showRequiredPopup, setShowRequiredPopup] = useState(false);
-  const [missingRequiredQuestionNumbers, setMissingRequiredQuestionNumbers] = useState<string[]>([]);
+  const [draftKey, setDraftKey] = useState<string | null>(null);
+  const [isDraftLoaded, setIsDraftLoaded] = useState(false);
+
 
   useEffect(() => {
     const fetchUserAndCheckSteward = async () => {
@@ -108,13 +109,66 @@ export default function NewReportPage() {
     fetchQuestions();
   }, []);
 
+
+
+  //added 
+  useEffect(() => {
+    const initDraftKey = async () => {
+      const userUid = await getCurrentUserUid();
+      const siteId = await getCurrentSiteId(namesite);
+      console.log("userUid:", userUid);
+      console.log("siteId:", siteId);
+
+      if (userUid && siteId) {
+        const key = `inspection-draft-${userUid}-${siteId}`;
+        console.log("Draft key created:", key);
+        setDraftKey(key);
+      }
+    };
+
+    initDraftKey();
+  }, [namesite]);
+
+
+  useEffect(() => {
+    if (!draftKey) return;
+
+    const savedDraft = localStorage.getItem(draftKey);
+
+    if (savedDraft) {
+      setResponses(JSON.parse(savedDraft));
+      console.log("Draft restored");
+    }
+
+    setIsDraftLoaded(true); // VERY IMPORTANT
+  }, [draftKey]);
+
+
+
+    
+
+  useEffect(() => {
+    if (!draftKey || !isDraftLoaded) return;
+
+    localStorage.setItem(draftKey, JSON.stringify(responses));
+    console.log("Draft saved");
+  }, [responses, draftKey, isDraftLoaded]);
+
+
+
+
+
   const requiredPhrase = "I am not a volunteer of SAPAA";
   const isVerificationValid = verificationText.trim() === requiredPhrase;
   const canProceed = isVerificationValid && hasAccepted;
 
   const handleResponsesChange = (newResponses: Record<number, any>) => {
+
+
     setResponses(newResponses);
   };
+
+
 
   const isAnswered = (value: unknown): boolean => {
     if (value === null || value === undefined) return false;
@@ -200,6 +254,11 @@ export default function NewReportPage() {
             }
       }
       await uploadSiteInspectionAnswers(answersArray);
+      if (draftKey) {
+        localStorage.removeItem(draftKey);
+      }
+
+      console.log("Draft cleared after successful submission");
     } catch (error) {
       console.error(error);
     }
@@ -498,7 +557,11 @@ export default function NewReportPage() {
       </header>
 
       {/* --- MAIN LAYOUT --- */}
-      <MainContent onResponsesChange={handleResponsesChange} />
+      <MainContent 
+        responses={responses}
+        onResponsesChange={handleResponsesChange}
+      />
+
 
       {/* --- STICKY FOOTER --- */}
       <StickyFooter 

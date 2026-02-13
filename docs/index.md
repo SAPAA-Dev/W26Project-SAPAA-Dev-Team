@@ -84,7 +84,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > **Acceptance Tests**
 
 > 1. Able to enter the date and time of the visit
-> 2. The user can enter a future date or time.
+> 2. The user can't enter a future date or time.
 > 3. Able to enter which site the user is/was inspecting (pre-populated list)
 > 4. Able to specify the parcel / site name if not listed previously (text box)
 > 5. Able to optionally enter an ‘inspection number’ for personal record keeping

@@ -25,13 +25,14 @@ interface Question {
 }
 
 interface MainContentProps {
-  onResponsesChange?: (responses: Record<number, any>) => void;
+  responses: Record<number, any>;
+  onResponsesChange: (responses: Record<number, any>) => void;
 }
 
-export default function MainContent({ onResponsesChange }: MainContentProps) {
+
+export default function MainContent({ responses, onResponsesChange }: MainContentProps) {
   const [activeSection, setActiveSection] = useState(1);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [responses, setResponses] = useState<Record<number, any>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -89,13 +90,13 @@ export default function MainContent({ onResponsesChange }: MainContentProps) {
   console.log(currentQuestions);
 
   const handleResponse = (questionId: number, value: any) => {
-    const newResponses = {
-      ...responses,
-      [questionId]: value
-    };
-    setResponses(newResponses);
-    onResponsesChange?.(newResponses);
+  const newResponses = {
+    ...responses,
+    [questionId]: value
   };
+  onResponsesChange(newResponses);
+};
+
 
   const renderQuestionInput = (question: Question) => {
     const response = responses[question.id];
