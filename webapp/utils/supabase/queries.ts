@@ -38,7 +38,12 @@ export interface question {
   title: string | null;
   text: string | null;
   question_type: string | null;
+  is_required: boolean | null;
   answers: Array<string> | null;
+  formorder?: number | null; 
+  sectionTitle?: string | null;
+  sectionDescription?: string | null;
+  sectionHeader?: string | null;
 }
 
 interface SupabaseAnswer {
@@ -186,10 +191,19 @@ export async function getQuestionsOnline(): Promise<question[]> {
       id,
       subtext,
       question_type,
+      is_required,
       section_id,
       form_question,
       W26_question_options (
         option_text
+      ),
+      W26_question_keys!W26_questions_question_key_id_fkey (
+        formorder
+      ),
+      W26_form_sections!W26_questions_section_id_fkey (
+        title,
+        description,
+        header
       )
     `)
     .eq('is_active', true)
@@ -204,10 +218,15 @@ export async function getQuestionsOnline(): Promise<question[]> {
     text: q.subtext,
     title: q.form_question,
     question_type: q.question_type,
+    is_required: q.is_required ?? null,
     section: q.section_id,
     answers: q.W26_question_options?.map(
       (opt: any) => opt.option_text
     ) ?? null,
+    formorder: q.W26_question_keys?.formorder ?? null,
+    sectionTitle: q.W26_form_sections?.title ?? null,
+    sectionDescription: q.W26_form_sections?.description ?? null,
+    sectionHeader: q.W26_form_sections?.header ?? null,
   }));
 }
 

@@ -310,7 +310,17 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 4. If an admin toggles a question to be visible, users will be able to access it when filling out the form
 > 5. If an admin toggles a question to be visible, users will be able edit their responses to it in previous forms
 
+#### US 1.0.26 – Persist Site Inspection Form Draft | Story Points: 5
+> **As** a user, **I want** my answers to be automatically saved as a draft, **so that** I do not lose my progress if I refresh, navigate away, or accidentally close my tab.
 
+> **Acceptance Tests**
+
+> 1. If a user enters any response in the Site Inspection Form, the response is automatically saved as a draft locally
+> 2. If a user refreshes the page, previously entered responses are restored
+> 3. If a user navigates away from the form and later returns, previously entered responses are restored.
+> 4. Drafts are saved per user and per site (a draft from one site must not appear on another site).
+> 5. Draft data is automatically cleared once the form is successfully submitted.
+> 6. Draft persistence must not interfere with normal form submission behavior.
 
 ---
 ### **P2 – Site Image Management System**
