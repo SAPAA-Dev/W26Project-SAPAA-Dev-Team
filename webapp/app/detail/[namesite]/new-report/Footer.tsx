@@ -35,7 +35,7 @@ export default function StickyFooter({
     ? (answeredCount / totalQuestions) * 100 
     : 0;
 
-  const canSubmit = answeredCount > 0;
+  const canSubmit = questions.length > 0;
 
   return (
     <footer className="sticky bottom-0 bg-white border-t-2 border-[#E4EBE4] p-4 md:px-8 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-50">

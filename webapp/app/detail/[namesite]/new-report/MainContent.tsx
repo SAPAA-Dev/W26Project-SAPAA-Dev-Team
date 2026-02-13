@@ -17,6 +17,11 @@ interface Question {
   question_type: string;
   section: number;
   answers: Answer[];
+  formorder?: number | null;
+  sectionTitle?: string | null;
+  sectionDescription?: string | null;
+  sectionHeader?: string | null;
+  is_required?: boolean | null;
 }
 
 interface MainContentProps {
@@ -394,6 +399,11 @@ export default function MainContent({ onResponsesChange }: MainContentProps) {
                           <span className="text-xs px-2 py-1 rounded-full bg-[#F7F2EA] text-[#7A8075] font-medium">
                             {question.question_type.trim()}
                           </span>
+                          {question.is_required === true && (
+                            <span className="text-xs px-2 py-1 rounded-full bg-[#FEE2E2] text-[#B91C1C] font-semibold">
+                              Required
+                            </span>
+                          )}
                           {isAnswered && (
                             <span className="text-xs px-2 py-1 rounded-full bg-[#356B43] text-white font-medium flex items-center gap-1">
                               <span className="w-1.5 h-1.5 rounded-full bg-white"></span>

@@ -39,6 +39,8 @@ interface Question {
   question_type: string;
   section: number;
   answers: any[];
+  formorder?: number | null;
+  is_required?: boolean | null;
 }
 
 export default function NewReportPage() {
@@ -55,6 +57,8 @@ export default function NewReportPage() {
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name: string; avatar: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStewardUser, setIsStewardUser] = useState(false);
+  const [showRequiredPopup, setShowRequiredPopup] = useState(false);
+  const [missingRequiredQuestionNumbers, setMissingRequiredQuestionNumbers] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchUserAndCheckSteward = async () => {
@@ -103,7 +107,57 @@ export default function NewReportPage() {
     setResponses(newResponses);
   };
 
+  const isAnswered = (value: unknown): boolean => {
+    if (value === null || value === undefined) return false;
+    if (Array.isArray(value)) return value.length > 0;
+    if (typeof value === "boolean") return value === true;
+    if (typeof value === "string") return value.trim().length > 0;
+    return true;
+  };
+
+  const buildQuestionNumberMap = (formQuestions: Question[]): Record<number, string> => {
+    const questionsBySection = formQuestions.reduce((acc, question) => {
+      const normalizedSection = question.section - 3;
+      if (!acc[normalizedSection]) {
+        acc[normalizedSection] = [];
+      }
+      acc[normalizedSection].push(question);
+      return acc;
+    }, {} as Record<number, Question[]>);
+
+    Object.keys(questionsBySection).forEach((sectionKey) => {
+      questionsBySection[Number(sectionKey)].sort((a, b) => {
+        const orderA = a.formorder ?? Infinity;
+        const orderB = b.formorder ?? Infinity;
+        return orderA - orderB;
+      });
+    });
+
+    const questionNumberMap: Record<number, string> = {};
+    Object.keys(questionsBySection)
+      .map(Number)
+      .sort((a, b) => a - b)
+      .forEach((sectionNum) => {
+        questionsBySection[sectionNum].forEach((question, index) => {
+          questionNumberMap[question.id] = `${sectionNum}.${index + 1}`;
+        });
+      });
+
+    return questionNumberMap;
+  };
+
   const handleSubmit = async () => {
+    const questionNumberMap = buildQuestionNumberMap(questions);
+    const missingRequiredNumbers = questions
+      .filter((question) => question.is_required === true && !isAnswered(responses[question.id]))
+      .map((question) => questionNumberMap[question.id] ?? `Question ${question.id}`);
+
+    if (missingRequiredNumbers.length > 0) {
+      setMissingRequiredQuestionNumbers(missingRequiredNumbers);
+      setShowRequiredPopup(true);
+      return;
+    }
+
     addSiteInspectionReport(1, "28120881-5795-4c19-af67-99dee6db1062")
     /**
      * FORM DATA CAPTURED:
@@ -305,6 +359,45 @@ export default function NewReportPage() {
                   Continue to Form
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showRequiredPopup && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6">
+          <div className="absolute inset-0 bg-[#254431]/80 backdrop-blur-sm" />
+          <div className="relative bg-white w-full max-w-lg sm:max-w-xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div className="p-6 border-b border-[#E4EBE4] flex items-center gap-3">
+              <div className="w-10 h-10 bg-[#F7F2EA] rounded-full flex items-center justify-center">
+                <AlertCircle className="w-6 h-6 text-[#B91C1C]" />
+              </div>
+              <h2 className="text-xl font-bold text-[#254431]">Required Questions Missing</h2>
+            </div>
+
+            <div className="p-6 space-y-4 overflow-y-auto">
+              <p className="text-[#254431] font-medium">
+                You must answer all required questions before submitting this report.
+              </p>
+              <div className="bg-[#F7F2EA] border border-[#E4EBE4] rounded-xl p-4 max-h-64 overflow-y-auto">
+                <p className="text-sm font-semibold text-[#254431] mb-2">
+                  Missing required question numbers:
+                </p>
+                <ul className="list-disc pl-5 text-sm text-[#7A8075] space-y-1">
+                  {missingRequiredQuestionNumbers.map((questionNumber) => (
+                    <li key={questionNumber}>{questionNumber}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-[#E4EBE4] bg-[#F7F2EA]/50">
+              <button
+                onClick={() => setShowRequiredPopup(false)}
+                className="w-full py-3 bg-[#356B43] text-white font-bold rounded-xl shadow-lg hover:bg-[#254431] transition-all"
+              >
+                Back to Form
+              </button>
             </div>
           </div>
         </div>
