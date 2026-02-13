@@ -1,6 +1,6 @@
 "use client";
 
-import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId } from '@/utils/supabase/queries';
+import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers } from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -11,7 +11,8 @@ import {
   ChevronRight, 
   ShieldCheck, 
   AlertCircle,
-  Loader2
+  Loader2,
+  List
 } from "lucide-react";
 import Image from "next/image";
 import MainContent from "./MainContent";
@@ -42,6 +43,13 @@ interface Question {
   answers: any[];
   formorder?: number | null;
   is_required?: boolean | null;
+}
+
+interface SupabaseAnswer {
+  response_id: number; 
+  question_id: number;
+  obs_value: string | null;
+  obs_comm: string | null;
 }
 
 export default function NewReportPage() {
@@ -151,8 +159,47 @@ export default function NewReportPage() {
     try {
       const siteId = await getCurrentSiteId(namesite);
       const userUid = await getCurrentUserUid();
-      console.log("User Uid: " + userUid);
-      addSiteInspectionReport(siteId, userUid)
+      const siteInspectionReportId = (await addSiteInspectionReport(siteId, userUid)).id
+
+      // We need to figure out whether the answer to each question should be placed in the obs_value or obs_comm column in Supabase
+      // So we convert the question response types into a map that we can search for it
+      const data = await getQuestionResponseType();
+      const observationTypeMap = new Map(
+        data.map(q => [
+          String(q.question_id), 
+          { obs_value: q.obs_value, obs_comm: q.obs_comm }
+        ])
+      );
+
+      // Initialize an array to hold all the objects/dictionaries that represent each row in the W26_answers table
+      let answersArray: SupabaseAnswer[] = [];  
+      for (const [questionId, answer] of Object.entries(responses)) {
+            const questionConfig = observationTypeMap.get(questionId);
+            // Decide if this question's answer is supposed to go into the obs_value column or obs_comm column
+            const isValueType = questionConfig?.obs_value == 1;
+            const isCommType = questionConfig?.obs_comm == 1;
+
+            // If the answer has an array containing subAnswers, add each subAnswer as a new object/dictionary inside answersArray
+            if (Array.isArray(answer)) {
+                answer.forEach(subAnswer => {
+                    answersArray.push({
+                        response_id: siteInspectionReportId,
+                        question_id: Number(questionId),
+                        // Put the subAnswer in either the obs_value column or obs_comm column and the other one is set to null
+                        obs_value: isValueType ? String(subAnswer) : null,
+                        obs_comm: isCommType ? String(subAnswer) : null,
+                    });
+                });
+            } else { // Otherwise, the answer is just a single string so we can add it directly to answersArray
+                answersArray.push({
+                    response_id: siteInspectionReportId,
+                    question_id: Number(questionId),
+                    obs_value: isValueType ? String(answer) : null,
+                    obs_comm: isCommType ? String(answer) : null,
+                });
+            }
+      }
+      await uploadSiteInspectionAnswers(answersArray);
     } catch (error) {
       console.error(error);
     }

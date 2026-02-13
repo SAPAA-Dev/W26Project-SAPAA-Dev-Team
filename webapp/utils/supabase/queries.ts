@@ -46,6 +46,45 @@ export interface question {
   sectionHeader?: string | null;
 }
 
+interface SupabaseAnswer {
+  response_id: number; 
+  question_id: number;
+  obs_value: string | null;
+  obs_comm: string | null;
+}
+
+export async function uploadSiteInspectionAnswers(batchArray: SupabaseAnswer[]) {
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from('W26_answers')
+    .insert(batchArray);
+
+  if (error) {
+    throw new Error(error.message || 'Failed to add site inspection answers');
+  }
+  return data;
+}
+
+// Queries the Supabase database for all the questions and whether they have their answers in the obs_value column or obs_comm column
+export async function getQuestionResponseType() {
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('W26_questions')
+    .select('id, obs_value, obs_comm')
+    .eq('is_active', true);
+
+  if (error) {
+    throw new Error(error.message || 'Failed to fetch question response types');
+  }
+
+  return (data ?? []).map((q: any) => ({
+    question_id: q.id,
+    obs_value: q.obs_value,
+    obs_comm: q.obs_comm,
+  }));
+}
+
 export async function addSiteInspectionReport(siteId: number, userId: any) {
   const supabase = createServerSupabase();
 
