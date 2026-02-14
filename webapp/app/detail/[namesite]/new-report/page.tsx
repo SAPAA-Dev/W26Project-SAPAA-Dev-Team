@@ -66,6 +66,8 @@ export default function NewReportPage() {
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name: string; avatar: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStewardUser, setIsStewardUser] = useState(false);
+  const [showRequiredPopup, setShowRequiredPopup] = useState(false);
+  const [missingRequiredQuestionNumbers, setMissingRequiredQuestionNumbers] = useState<string[]>([]);
   const [draftKey, setDraftKey] = useState<string | null>(null);
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
 
