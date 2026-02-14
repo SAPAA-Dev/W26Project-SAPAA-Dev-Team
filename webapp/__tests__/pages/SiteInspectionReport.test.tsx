@@ -70,6 +70,31 @@ const personalInfoQuestions = [
   { id: 7, title: 'SAPAA Membership', text: 'Are you a member of SAPAA?', question_type: 'option', section: 4, answers: [{ text: 'Yes' }, { text: 'No' }], formorder: 7, is_required: true, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
 ];
 
+const easeToVisitQuestion = [
+  {
+    id: 41,
+    title: 'Ease to Visit',
+    text: "How easy is this site to visit? How friendly for those not used to the 'bush' (e.g. toilets)?",
+    question_type: 'selectall',
+    section: 7,
+    answers: [
+      { text: 'Parking lot for 2 or more cars' },
+      { text: 'Washroom' },
+      { text: 'Directional signs on Feeder roads' },
+      { text: 'Entrance signs, information, etc.' },
+      { text: 'Trails (other than animal)' },
+      { text: 'No Amenities' },
+      { text: 'No Signage' },
+      { text: 'None noted' },
+    ],
+    formorder: 1,
+    is_required: true,
+    sectionTitle: 'Site Accessibility',
+    sectionDescription: 'Accessibility and amenities available at site',
+    sectionHeader: 'Site Access',
+  },
+];
+
 // --- Helpers ---
 
 function setupStewardMocks() {
@@ -86,6 +111,29 @@ function setupGuestMocks() {
   mockGetQuestionsOnline.mockResolvedValue(personalInfoQuestions);
   mockGetCurrentUserUid.mockResolvedValue('user-2');
   mockGetCurrentSiteId.mockResolvedValue('site-1');
+}
+
+async function renderEaseToVisitMainContent(mockOnChange: jest.Mock) {
+  mockGetQuestionsOnline.mockResolvedValue(easeToVisitQuestion);
+  function ControlledMainContent() {
+    const [responses, setResponses] = React.useState<Record<number, any>>({});
+
+    const handleChange = (nextResponses: Record<number, any>) => {
+      setResponses(nextResponses);
+      mockOnChange(nextResponses);
+    };
+
+    return <MainContent responses={responses} onResponsesChange={handleChange} />;
+  }
+
+  render(<ControlledMainContent />);
+  await waitFor(() => {
+    expect(screen.getByText('Site Access')).toBeInTheDocument();
+  });
+  fireEvent.click(screen.getByText('Site Access'));
+  await waitFor(() => {
+    expect(screen.getByText(/Ease to Visit/i)).toBeInTheDocument();
+  });
 }
 
 // --- Tests ---
@@ -240,5 +288,47 @@ describe('US 1.0.2 – Add Personal Information to Site Inspection Form', () => 
     // Some responses, empty values not counted
     render(<StickyFooter questions={personalInfoQuestions} responses={{ 1: 'Jane', 5: 'test@example.com', 3: '', 4: [] }} />);
     expect(screen.getByText('2 / 6 answered')).toBeInTheDocument();
+  });
+
+  it('user can select amenities options for ease to visit', async () => {
+    const mockOnChange = jest.fn();
+    await renderEaseToVisitMainContent(mockOnChange);
+
+    fireEvent.click(screen.getByText('Parking lot for 2 or more cars'));
+    fireEvent.click(screen.getByText('Washroom'));
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[41]).toEqual(
+      expect.arrayContaining(['Parking lot for 2 or more cars', 'Washroom'])
+    );
+  });
+
+  it('user can select signage and trails options for ease-of-use details', async () => {
+    const mockOnChange = jest.fn();
+    await renderEaseToVisitMainContent(mockOnChange);
+
+    fireEvent.click(screen.getByText('Directional signs on Feeder roads'));
+    fireEvent.click(screen.getByText('Entrance signs, information, etc.'));
+    fireEvent.click(screen.getByText('Trails (other than animal)'));
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[41]).toEqual(
+      expect.arrayContaining([
+        'Directional signs on Feeder roads',
+        'Entrance signs, information, etc.',
+        'Trails (other than animal)',
+      ])
+    );
+  });
+
+  it('user can unselect a previously selected ease-to-visit option', async () => {
+    const mockOnChange = jest.fn();
+    await renderEaseToVisitMainContent(mockOnChange);
+
+    fireEvent.click(screen.getByText('Washroom'));
+    fireEvent.click(screen.getByText('Washroom'));
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[41]).not.toContain('Washroom');
   });
 });
