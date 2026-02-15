@@ -16,7 +16,7 @@ interface Question {
   text: string | null;
   question_type: string;
   section: number;
-  answers: string[];
+  answers: (string | { text: string })[];
   formorder?: number | null;
   sectionTitle?: string | null;
   sectionDescription?: string | null;
@@ -156,7 +156,9 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
         return (
           <div className="space-y-2">
             {(question.answers ?? []).map((answer, index) => {
-              const answerText = answer;
+              const answerText = typeof answer === 'object' && answer !== null 
+              ? (answer as { text: string }).text 
+              : String(answer);
               return (
                 <label
                   key={index}
@@ -183,7 +185,9 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
         return (
           <div className="space-y-2">
             {(question.answers ?? []).map((answer, index) => {
-              const answerText = answer;
+              const answerText = typeof answer === 'object' && answer !== null 
+              ? (answer as { text: string }).text 
+              : String(answer);
               const selectedAnswers = Array.isArray(response) ? response : [];
               const isChecked = selectedAnswers.includes(answerText);
               
