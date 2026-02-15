@@ -106,6 +106,19 @@ const beThereQuestions = [
     sectionDescription: 'What plants, animals, landscapes, signage or facility features did you see? Comments can be provided. There are 6 questions in this section.',
     sectionHeader: 'Be There',
   },
+  {
+    id: 13,
+    title: 'Other comments? (Q56)',
+    text: 'Any other comments on what is in the site that should be and not covered by the above questions?',
+    question_type: 'text',
+    section: 7,
+    answers: [],
+    formorder: 530,
+    is_required: false, 
+    sectionTitle: 'What is in the Site (that should be there)?',
+    sectionDescription: 'What plants, animals, landscapes, signage or facility features did you see? Comments can be provided.',
+    sectionHeader: 'Be There',
+  },
 ];
 
 const WhereUGoQuestions = [
@@ -156,6 +169,54 @@ const WhereUGoQuestions = [
   },
 ];
 
+const notThereQuestions = [
+  {
+    id: 20,
+    title: 'Comments (Q67)',
+    text: 'Any Comments on how the site is being used or disturbed by humans not covered by the above?',
+    question_type: 'text',
+    section: 8,
+    answers: [],
+    formorder: 635,
+    is_required: false,
+    sectionTitle: 'What are the human activities/disturbances affecting the Site?',
+    sectionDescription: 'What human activities are in the site? Note, some of these activities may be permitted (e.g. grazing) and others may be illegal.',
+    sectionHeader: 'Not There',
+  },
+]
+
+const twoBDoneQuestions = [
+  {
+    id: 25,
+    title: 'Comments (Q74)',
+    text: 'Any comments, notes, or explanations not covered by the above?',
+    question_type: 'text',
+    section: 9,
+    answers: [],
+    formorder: 720,
+    is_required: false,
+    sectionTitle: 'What Needs to be (Has Been) Done?',
+    sectionDescription: 'What, if anything, does the site need to improve/protect it?',
+    sectionHeader: '2B Done',
+  },
+]
+
+const closeQuestions = [
+  {
+    id: 28,
+    title: 'Any Last Words? (Q82)',
+    text: 'Have we missed anything? Do you have other comments, ideas, or thoughts about this site?',
+    question_type: 'text',
+    section: 10,
+    answers: [],
+    formorder: 815,
+    is_required: false,
+    sectionTitle: 'Digital File Management',
+    sectionDescription: 'SAPAA loves pictures. If you have digital files (pictures, videos, audio files, geo-location data – gpx, kml, screenshot of the location)...',
+    sectionHeader: 'Close',
+  },
+];
+
 // --- Helpers ---
 
 function setupStewardMocks() {
@@ -200,8 +261,9 @@ async function renderBeThereMainContent(mockOnChange: jest.Mock) {
     expect(screen.getByText('Be There')).toBeInTheDocument();
   });
   fireEvent.click(screen.getByText('Be There'));
+  
   await waitFor(() => {
-    expect(screen.getByText(/What is in the Site (that should be there)?/i)).toBeInTheDocument();
+    expect(screen.getByText('Ease to Visit')).toBeInTheDocument();
   });
 }
 
@@ -563,8 +625,8 @@ describe('US 1.0.8 - Address What Amenities are in the Site', () => {
       const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
       expect(latestResponses[41]).toEqual(
         expect.arrayContaining(['Parking lot for 2 or more cars', 'Washroom'])
-      );
-    });
+    );
+  });
 
   it('user can select signage and trails options for ease-of-use details', async () => {
     const mockOnChange = jest.fn();
@@ -595,7 +657,6 @@ describe('US 1.0.8 - Address What Amenities are in the Site', () => {
     expect(latestResponses[41]).not.toContain('Washroom');
   });
 });
-
     
 describe('US 1.0.12 - Address any Biological Observations that is in the Site', () => {
   beforeEach(() => {
@@ -750,18 +811,28 @@ it('user can input duration of trip and comments (Q42)', async () => {
   });
 });
 
+<<<<<<< HEAD
 describe('US 1.0.11 – Add Details Regarding Significant Site Changes', () => {
+=======
+describe('US 1.0.14 - Add Other Comments', () => {
+>>>>>>> Sprint-2
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
   });
 
+<<<<<<< HEAD
   it('user can enter details about recent landscape changes (Q54)', async () => {
     mockGetQuestionsOnline.mockResolvedValue(siteChangesQuestions);
+=======
+  it('user can enter their comments in beThere section', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(beThereQuestions);
+>>>>>>> Sprint-2
     const mockOnChange = jest.fn();
     render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
 
     await waitFor(() => {
+<<<<<<< HEAD
       expect(screen.getByText(/significant recent landscape changes/i)).toBeInTheDocument();
     });
 
@@ -788,3 +859,109 @@ describe('US 1.0.11 – Add Details Regarding Significant Site Changes', () => {
     expect(screen.getByText('0 / 1 answered')).toBeInTheDocument();
   });
 });
+=======
+      expect(screen.getByText('Be There')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('Be There'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Other comments?')).toBeInTheDocument();
+    });
+
+    const beThereComments = await screen.findByTestId("question-input-13");
+    fireEvent.change(beThereComments, { target: { value: 'Comment Test - beThere' } });
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][13]).toBe('Comment Test - beThere');
+  }); 
+
+  it('user can enter their comments in notThere section', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(notThereQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Not There')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('Not There'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Comments')).toBeInTheDocument();
+    });
+
+    const notThereComments = await screen.findByTestId("question-input-20");
+    fireEvent.change(notThereComments, { target: { value: 'Comment Test - NotThere' } });
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][20]).toBe('Comment Test - NotThere');
+  });
+
+  it('user can enter their comments in 2BDone section', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(twoBDoneQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('2B Done')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('2B Done'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Comments')).toBeInTheDocument();
+    });
+
+    const twoBDoneComments = await screen.findByTestId("question-input-25");
+    fireEvent.change(twoBDoneComments, { target: { value: 'Comment Test - 2BDone' } });
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][25]).toBe('Comment Test - 2BDone');
+  });
+
+  it('user can enter their comments in Close section', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(closeQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Close')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('Close'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Any Last Words?')).toBeInTheDocument();
+    });
+
+    const closeComments = await screen.findByTestId("question-input-28");
+    fireEvent.change(closeComments, { target: { value: 'Comment Test - Close' } });
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][28]).toBe('Comment Test - Close');
+  }); 
+
+  it('does not include comments in the missing required questions popup when answered', async () => {
+    const allQuestions = [
+      ...beThereQuestions,  
+      ...notThereQuestions, 
+      ...twoBDoneQuestions, 
+      ...closeQuestions     
+    ];
+    mockGetQuestionsOnline.mockResolvedValue(allQuestions);
+    render(<NewReportPage />);
+
+    // Mock window.alert to capture the popup message
+    const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+    
+    await waitFor(() => {
+      expect(screen.getByText('Close')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('Close'));
+
+    const submitButton = screen.getByRole('button', { name: 'Review & Submit' });
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      if (alertSpy.mock.calls.length > 0) {
+        const alertMessage = alertSpy.mock.calls[0][0];
+        expect(alertMessage).not.toContain('4.6'); 
+        expect(alertMessage).not.toContain('5.8'); 
+        expect(alertMessage).not.toContain('6.4'); 
+        expect(alertMessage).not.toContain('7.1');
+      }
+    });
+    
+    alertSpy.mockRestore();
+  });
+});
+>>>>>>> Sprint-2
