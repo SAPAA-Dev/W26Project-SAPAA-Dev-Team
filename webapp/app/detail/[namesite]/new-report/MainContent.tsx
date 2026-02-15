@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ChevronRight, Upload, Image as ImageIcon, Loader2 } from "lucide-react";
 import { getQuestionsOnline } from '@/utils/supabase/queries';
 
@@ -27,13 +27,22 @@ interface Question {
 interface MainContentProps {
   responses: Record<number, any>;
   onResponsesChange: (responses: Record<number, any>) => void;
+  siteName?: string;
+  currentUser?: {
+    email?: string;
+    role?: string;
+    name?: string;
+    avatar?: string;
+    phone?: string;
+  } | null;
 }
 
-
-export default function MainContent({ responses, onResponsesChange }: MainContentProps) {
+export default function MainContent({ responses, onResponsesChange, siteName, currentUser }: MainContentProps) {
   const [activeSection, setActiveSection] = useState(1);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
+  const hasAutofilled = useRef(false);
+  
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -41,6 +50,10 @@ export default function MainContent({ responses, onResponsesChange }: MainConten
         setLoading(true);
         const data = await getQuestionsOnline();
         console.log('Fetched questions:', data);
+        console.log('Email question:', data.find(q => 
+        (q.title ?? '').toLowerCase().includes('email') || 
+        (q.text ?? '').toLowerCase().includes('email')
+      ));
         setQuestions(data || []);
       } catch (error) {
         console.error('Error fetching questions:', error);
@@ -50,6 +63,44 @@ export default function MainContent({ responses, onResponsesChange }: MainConten
     }
     fetchQuestions();
   }, []);
+
+  useEffect(() => {
+    if (questions.length === 0 || hasAutofilled.current) return;
+
+    const autofilled: Record<number, any> = {};
+
+    const AUTOFILL_MAP: Record<number, () => string | undefined> = {
+      32: () => currentUser?.email,
+      //37: () => new Date().toISOString().split('T')[0], // Autofills to current date but idk if i want that
+      35: () => currentUser?.phone ?? undefined,
+      34: () => currentUser?.name,
+    };
+
+    questions.forEach((question) => {
+      // Handle site_select by type — this is unambiguous
+      if (question.question_type.trim() === 'site_select' && siteName) {
+        autofilled[question.id] = siteName;
+        return;
+      }
+
+      // Everything else goes through the explicit map
+      const getValue = AUTOFILL_MAP[question.id];
+      if (getValue) {
+        const value = getValue();
+        if (value) autofilled[question.id] = value;
+      }
+    });
+
+    if (Object.keys(autofilled).length > 0) {
+      setResponses((prev) => {
+        const merged = { ...autofilled, ...prev };
+        onResponsesChange?.(merged);
+        return merged;
+      });
+    }
+
+    hasAutofilled.current = true;
+  }, [questions]);
   
   const questionsBySection = questions.reduce((acc, question) => {
     if (!acc[question.section-3]) {
