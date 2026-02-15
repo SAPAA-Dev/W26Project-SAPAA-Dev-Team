@@ -407,7 +407,7 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
               function stripQuestionCode(title: string) {
                 return title.replace(/\s*\(Q\d+\)\s*$/, '')
               }
-
+              
               const formattedTitle = question.title 
               ? stripQuestionCode(question.title)
               : `Question ${activeSection}.${index + 1}`
@@ -443,7 +443,7 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
                         </h3>
 
                         <h4 className="mt-1 text-sm text-[#254431]/70 leading-snug font-normal">
-                          {question.text || `Question ${questionNumber}`}
+                          {question.text || ``}
                         </h4>
                         <div className="flex items-center gap-2 mt-2">
                           <span className="text-xs px-2 py-1 rounded-full bg-[#F7F2EA] text-[#7A8075] font-medium">
