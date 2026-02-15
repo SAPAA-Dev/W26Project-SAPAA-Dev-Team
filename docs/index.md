@@ -713,16 +713,6 @@ Each user story is categorized into one of the following priority levels:
     - **Source of insights:** Example implementations for file storage policies and signed URLs.
     - **Risks/notes:** Free-tier and pricing limits can change; large media can impact storage/egress. We’ll set a monthly budget cap in the Project Plan and monitor usage.
 
-* [AWS S3](https://aws.amazon.com/s3/)
-    - **What it is:** Object storage service for scalable and cost-effective file storage.
-    - **How we’ll use it (external interface):**  
-      - Store all uploaded site inspection images.  
-      - Serve images via signed URLs for secure, time-limited access.  
-      - Separate media storage from the core database to reduce costs.
-    - **Reference/inspiration:** Standard architecture pattern for media-heavy applications.
-    - **Source of insights:** AWS S3 best practices for IAM policies, bucket privacy, and lifecycle rules.
-    - **Risks/notes:** Misconfigured permissions can expose data; billing alerts and access policies will be enforced.
-
 * [LimeSurvey](https://www.limesurvey.org/)
     - **What it is:** Open-source alternative to survey platforms like Google Forms
     - **How we’ll use it (external interface):**  
@@ -734,7 +724,16 @@ Each user story is categorized into one of the following priority levels:
     - **How we’ll use it (external interface):**  
       - Analyze the way the code handles offline data recording and the cross-platform React Native app structure
 
-
+## Cloud Services & Infrastructure
+* [AWS S3](https://aws.amazon.com/s3/)
+    - **What it is:** Object storage service for scalable and cost-effective file storage.
+    - **How we’ll use it (external interface):**  
+      - Store all uploaded site inspection images.  
+      - Serve images via signed URLs for secure, time-limited access.  
+      - Separate media storage from the core database to reduce costs.
+    - **Reference/inspiration:** Standard architecture pattern for media-heavy applications.
+    - **Source of insights:** AWS S3 best practices for IAM policies, bucket privacy, and lifecycle rules.
+    - **Risks/notes:** Misconfigured permissions can expose data; billing alerts and access policies will be enforced.
 
 ## Technical Resources
 ### Backend: Supabase + PostgreSQL + AWS
