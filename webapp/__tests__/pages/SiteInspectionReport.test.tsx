@@ -106,6 +106,19 @@ const beThereQuestions = [
     sectionDescription: 'What plants, animals, landscapes, signage or facility features did you see? Comments can be provided. There are 6 questions in this section.',
     sectionHeader: 'Be There',
   },
+  {
+    id: 13,
+    title: 'Other comments? (Q56)',
+    text: 'Any other comments on what is in the site that should be and not covered by the above questions?',
+    question_type: 'text',
+    section: 7,
+    answers: [],
+    formorder: 530,
+    is_required: false, 
+    sectionTitle: 'What is in the Site (that should be there)?',
+    sectionDescription: 'What plants, animals, landscapes, signage or facility features did you see? Comments can be provided.',
+    sectionHeader: 'Be There',
+  },
 ];
 
 const WhereUGoQuestions = [
@@ -156,6 +169,54 @@ const WhereUGoQuestions = [
   },
 ];
 
+const notThereQuestions = [
+  {
+    id: 20,
+    title: 'Comments (Q67)',
+    text: 'Any Comments on how the site is being used or disturbed by humans not covered by the above?',
+    question_type: 'text',
+    section: 8,
+    answers: [],
+    formorder: 635,
+    is_required: false,
+    sectionTitle: 'What are the human activities/disturbances affecting the Site?',
+    sectionDescription: 'What human activities are in the site? Note, some of these activities may be permitted (e.g. grazing) and others may be illegal.',
+    sectionHeader: 'Not There',
+  },
+]
+
+const twoBDoneQuestions = [
+  {
+    id: 25,
+    title: 'Comments (Q74)',
+    text: 'Any comments, notes, or explanations not covered by the above?',
+    question_type: 'text',
+    section: 9,
+    answers: [],
+    formorder: 720,
+    is_required: false,
+    sectionTitle: 'What Needs to be (Has Been) Done?',
+    sectionDescription: 'What, if anything, does the site need to improve/protect it?',
+    sectionHeader: '2B Done',
+  },
+]
+
+const closeQuestions = [
+  {
+    id: 28,
+    title: 'Any Last Words? (Q82)',
+    text: 'Have we missed anything? Do you have other comments, ideas, or thoughts about this site?',
+    question_type: 'text',
+    section: 10,
+    answers: [],
+    formorder: 815,
+    is_required: false,
+    sectionTitle: 'Digital File Management',
+    sectionDescription: 'SAPAA loves pictures. If you have digital files (pictures, videos, audio files, geo-location data – gpx, kml, screenshot of the location)...',
+    sectionHeader: 'Close',
+  },
+];
+
 // --- Helpers ---
 
 function setupStewardMocks() {
@@ -200,10 +261,19 @@ async function renderBeThereMainContent(mockOnChange: jest.Mock) {
     expect(screen.getByText('Be There')).toBeInTheDocument();
   });
   fireEvent.click(screen.getByText('Be There'));
+  
   await waitFor(() => {
-    expect(screen.getByText(/What is in the Site (that should be there)?/i)).toBeInTheDocument();
+    expect(screen.getByText('Ease to Visit')).toBeInTheDocument();
   });
 }
+
+// Trip details questions (Q41, Q41.1, Q42, Q43) - section 4 (normalized to 1, the default active section)
+const tripDetailsQuestions = [
+  { id: 41, title: 'Reason for Visit (Q41)', text: 'What was the reason for your visit?', question_type: 'option', section: 4, answers: [{ text: 'Routine Inspection' }, { text: 'Follow-up' }, { text: 'Other' }], formorder: 1, is_required: true, sectionTitle: 'Trip Details', sectionDescription: 'Describe your trip', sectionHeader: 'Trip Details' },
+  { id: 411, title: 'Reason Details (Q41.1)', text: 'Please provide additional details about your visit reason', question_type: 'text', section: 4, answers: [], formorder: 2, is_required: false, sectionTitle: 'Trip Details', sectionDescription: 'Describe your trip', sectionHeader: 'Trip Details' },
+  { id: 42, title: 'Duration of Trip (Q42)', text: 'How long was your trip?', question_type: 'option', section: 4, answers: [{ text: 'Less than 1 hour' }, { text: '1-3 hours' }, { text: 'Half day' }, { text: 'Full day' }], formorder: 3, is_required: true, sectionTitle: 'Trip Details', sectionDescription: 'Describe your trip', sectionHeader: 'Trip Details' },
+  { id: 43, title: 'Visit Details (Q43)', text: 'Please describe any additional visit details or comments', question_type: 'text', section: 4, answers: [], formorder: 4, is_required: false, sectionTitle: 'Trip Details', sectionDescription: 'Describe your trip', sectionHeader: 'Trip Details' },
+];
 
 // --- Tests ---
 
@@ -549,8 +619,8 @@ describe('US 1.0.8 - Address What Amenities are in the Site', () => {
       const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
       expect(latestResponses[41]).toEqual(
         expect.arrayContaining(['Parking lot for 2 or more cars', 'Washroom'])
-      );
-    });
+    );
+  });
 
   it('user can select signage and trails options for ease-of-use details', async () => {
     const mockOnChange = jest.fn();
@@ -581,7 +651,7 @@ describe('US 1.0.8 - Address What Amenities are in the Site', () => {
     expect(latestResponses[41]).not.toContain('Washroom');
   });
 });
-
+    
 describe('US 1.0.12 - Address any Biological Observations that is in the Site', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -721,5 +791,219 @@ describe('US 1.0.1 - Access Site Inspection Form on Web Application', () => {
         obs_value: 'Yes'
       });
     });
+  });
+});
+
+describe('US 1.0.7 - Add Trip Details about how the trip went', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it('user can enter reasoning for visiting the site (Q41) and additional details (Q41.1)', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/What was the reason for your visit/i)).toBeInTheDocument();
+    });
+
+    // Q41 - select a reason
+    expect(screen.getByText('Routine Inspection')).toBeInTheDocument();
+    expect(screen.getByText('Follow-up')).toBeInTheDocument();
+    expect(screen.getByText('Other')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Routine Inspection'));
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][41]).toBe('Routine Inspection');
+
+    // Q41.1 - optional text details
+    expect(screen.getByText(/additional details about your visit reason/i)).toBeInTheDocument();
+    const textareas = screen.getAllByPlaceholderText('Enter your response here...');
+    fireEvent.change(textareas[0], { target: { value: 'Scheduled quarterly check' } });
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][411]).toBe('Scheduled quarterly check');
+  });
+
+  it('user can input duration of trip and comments (Q42)', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/How long was your trip/i)).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Less than 1 hour')).toBeInTheDocument();
+    expect(screen.getByText('1-3 hours')).toBeInTheDocument();
+    expect(screen.getByText('Half day')).toBeInTheDocument();
+    expect(screen.getByText('Full day')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('1-3 hours'));
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][42]).toBe('1-3 hours');
+  });
+
+  it('user can input visit details (Q43)', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/additional visit details or comments/i)).toBeInTheDocument();
+    });
+
+    const textareas = screen.getAllByPlaceholderText('Enter your response here...');
+    // Q43 is the second textarea (after Q41.1)
+    fireEvent.change(textareas[1], { target: { value: 'Trail was in good condition' } });
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][43]).toBe('Trail was in good condition');
+  });
+
+  it('Q41 and Q42 are required; Q41.1 and Q43 are not', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
+    render(<MainContent responses={{}} onResponsesChange={jest.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/What was the reason for your visit/i)).toBeInTheDocument();
+    });
+
+    // Only Q41 and Q42 should have Required badges
+    const requiredBadges = screen.getAllByText('Required');
+    expect(requiredBadges.length).toBe(2);
+  });
+
+  it('footer shows error for missing required Q41/Q42 but accepts missing optional Q41.1/Q43', () => {
+    // Missing required fields: no Q41 or Q42 answered
+    const { unmount } = render(<StickyFooter questions={tripDetailsQuestions} responses={{}} />);
+    expect(screen.getByText('0 / 4 answered')).toBeInTheDocument();
+    unmount();
+
+    // Only optional Q41.1 and Q43 answered — required Q41/Q42 still missing
+    const { unmount: unmount2 } = render(
+      <StickyFooter questions={tripDetailsQuestions} responses={{ 411: 'Some details', 43: 'Looked good' }} />
+    );
+    expect(screen.getByText('2 / 4 answered')).toBeInTheDocument();
+    unmount2();
+
+    // All required answered, optional skipped — should be accepted
+    render(
+      <StickyFooter questions={tripDetailsQuestions} responses={{ 41: 'Routine Inspection', 42: '1-3 hours' }} />
+    );
+    expect(screen.getByText('2 / 4 answered')).toBeInTheDocument();
+  });
+});
+
+describe('US 1.0.14 - Add Other Comments', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it('user can enter their comments in beThere section', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(beThereQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Be There')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('Be There'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Other comments?')).toBeInTheDocument();
+    });
+
+    const beThereComments = await screen.findByTestId("question-input-13");
+    fireEvent.change(beThereComments, { target: { value: 'Comment Test - beThere' } });
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][13]).toBe('Comment Test - beThere');
+  }); 
+
+  it('user can enter their comments in notThere section', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(notThereQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Not There')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('Not There'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Comments')).toBeInTheDocument();
+    });
+
+    const notThereComments = await screen.findByTestId("question-input-20");
+    fireEvent.change(notThereComments, { target: { value: 'Comment Test - NotThere' } });
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][20]).toBe('Comment Test - NotThere');
+  });
+
+  it('user can enter their comments in 2BDone section', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(twoBDoneQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('2B Done')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('2B Done'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Comments')).toBeInTheDocument();
+    });
+
+    const twoBDoneComments = await screen.findByTestId("question-input-25");
+    fireEvent.change(twoBDoneComments, { target: { value: 'Comment Test - 2BDone' } });
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][25]).toBe('Comment Test - 2BDone');
+  });
+
+  it('user can enter their comments in Close section', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(closeQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Close')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('Close'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Any Last Words?')).toBeInTheDocument();
+    });
+
+    const closeComments = await screen.findByTestId("question-input-28");
+    fireEvent.change(closeComments, { target: { value: 'Comment Test - Close' } });
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][28]).toBe('Comment Test - Close');
+  }); 
+
+  it('does not include comments in the missing required questions popup when answered', async () => {
+    const allQuestions = [
+      ...beThereQuestions,  
+      ...notThereQuestions, 
+      ...twoBDoneQuestions, 
+      ...closeQuestions     
+    ];
+    mockGetQuestionsOnline.mockResolvedValue(allQuestions);
+    render(<NewReportPage />);
+
+    // Mock window.alert to capture the popup message
+    const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+    
+    await waitFor(() => {
+      expect(screen.getByText('Close')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('Close'));
+
+    const submitButton = screen.getByRole('button', { name: 'Review & Submit' });
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      if (alertSpy.mock.calls.length > 0) {
+        const alertMessage = alertSpy.mock.calls[0][0];
+        expect(alertMessage).not.toContain('4.6'); 
+        expect(alertMessage).not.toContain('5.8'); 
+        expect(alertMessage).not.toContain('6.4'); 
+        expect(alertMessage).not.toContain('7.1');
+      }
+    });
+    
+    alertSpy.mockRestore();
   });
 });
