@@ -772,5 +772,19 @@ describe('US 1.0.11 – Add Details Regarding Significant Site Changes', () => {
       .toBe('Recent wildfire damage on the north ridge, significant tree loss observed');
   });
 
- 
+  it('Q54 is optional and submitting without it does not show an error', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(siteChangesQuestions);
+    render(<MainContent responses={{}} onResponsesChange={jest.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Significant Site Changes/i)).toBeInTheDocument();
+    });
+
+    // Q54 should NOT have a Required badge
+    expect(screen.queryByText('Required')).not.toBeInTheDocument();
+
+    // Footer confirms form is submittable with 0 answers
+    render(<StickyFooter questions={siteChangesQuestions} responses={{}} />);
+    expect(screen.getByText('0 / 1 answered')).toBeInTheDocument();
+  });
 });
