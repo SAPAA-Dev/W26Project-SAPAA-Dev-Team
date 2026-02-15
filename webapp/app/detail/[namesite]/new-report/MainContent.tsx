@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ChevronRight, Upload, Image as ImageIcon, Loader2 } from "lucide-react";
 import { getQuestionsOnline } from '@/utils/supabase/queries';
 
@@ -22,18 +22,28 @@ interface Question {
   sectionDescription?: string | null;
   sectionHeader?: string | null;
   is_required?: boolean | null;
+  autofill_key?: string | null;
 }
 
 interface MainContentProps {
   responses: Record<number, any>;
   onResponsesChange: (responses: Record<number, any>) => void;
+  siteName?: string;
+  currentUser?: {
+    email?: string;
+    role?: string;
+    name?: string;
+    avatar?: string;
+    phone?: string;
+  } | null;
 }
 
-
-export default function MainContent({ responses, onResponsesChange }: MainContentProps) {
+export default function MainContent({ responses, onResponsesChange, siteName, currentUser }: MainContentProps) {
   const [activeSection, setActiveSection] = useState(1);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
+  const hasAutofilled = useRef(false);
+  
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -41,6 +51,10 @@ export default function MainContent({ responses, onResponsesChange }: MainConten
         setLoading(true);
         const data = await getQuestionsOnline();
         console.log('Fetched questions:', data);
+        console.log('Email question:', data.find(q => 
+        (q.title ?? '').toLowerCase().includes('email') || 
+        (q.text ?? '').toLowerCase().includes('email')
+      ));
         setQuestions(data || []);
       } catch (error) {
         console.error('Error fetching questions:', error);
@@ -50,6 +64,35 @@ export default function MainContent({ responses, onResponsesChange }: MainConten
     }
     fetchQuestions();
   }, []);
+
+  useEffect(() => {
+    if (questions.length === 0 || hasAutofilled.current) return;
+
+    const autofilled: Record<number, any> = {};
+
+    const autofillValues: Record<string, string | undefined> = {
+      user_email: currentUser?.email,
+      user_name: currentUser?.name,
+      user_phone: currentUser?.phone,
+      visit_date: new Date().toISOString().split('T')[0],
+      site_name: siteName,
+    };
+
+    questions.forEach((question) => {
+      const key = question.autofill_key;
+      if (!key) return;
+
+      const value = autofillValues[key];
+      if (value) autofilled[question.id] = value;
+    });
+
+    if (Object.keys(autofilled).length > 0) {
+      const merged = { ...autofilled, ...responses };
+      onResponsesChange(merged);
+    }
+
+    hasAutofilled.current = true;
+  }, [questions, responses]);
   
   const questionsBySection = questions.reduce((acc, question) => {
     if (!acc[question.section-3]) {
@@ -179,6 +222,7 @@ export default function MainContent({ responses, onResponsesChange }: MainConten
           <textarea
             value={response || ''}
             onChange={(e) => handleResponse(question.id, e.target.value)}
+            data-testid={`question-input-${question.id}`}
             placeholder="Enter your response here..."
             rows={4}
             className="w-full px-4 py-3 border-2 border-[#E4EBE4] rounded-xl focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] font-medium resize-none placeholder:text-[#7A8075]"
@@ -225,7 +269,7 @@ export default function MainContent({ responses, onResponsesChange }: MainConten
               type="date"
               value={response || ''}
               onChange={(e) => handleResponse(question.id, e.target.value)}
-              placeholder="Start typing to search for a protected area..."
+              placeholder=""
               className="w-full px-4 py-3 border-2 border-[#E4EBE4] rounded-xl focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] font-medium placeholder:text-[#7A8075]"
             />
             <p className="text-xs text-[#7A8075] flex items-center gap-1">
@@ -358,7 +402,7 @@ export default function MainContent({ responses, onResponsesChange }: MainConten
               function stripQuestionCode(title: string) {
                 return title.replace(/\s*\(Q\d+\)\s*$/, '')
               }
-
+              
               const formattedTitle = question.title 
               ? stripQuestionCode(question.title)
               : `Question ${activeSection}.${index + 1}`
@@ -394,7 +438,7 @@ export default function MainContent({ responses, onResponsesChange }: MainConten
                         </h3>
 
                         <h4 className="mt-1 text-sm text-[#254431]/70 leading-snug font-normal">
-                          {question.text || `Question ${questionNumber}`}
+                          {question.text || ``}
                         </h4>
                         <div className="flex items-center gap-2 mt-2">
                           <span className="text-xs px-2 py-1 rounded-full bg-[#F7F2EA] text-[#7A8075] font-medium">

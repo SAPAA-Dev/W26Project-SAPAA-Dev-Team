@@ -31,6 +31,7 @@ export async function getCurrentUser() {
     role: user.user_metadata?.role ?? 'steward',
     name: user.user_metadata?.full_name ?? '',
     avatar: user.user_metadata?.avatar_url ?? '',
+    phone: user.user_metadata?.phone ?? user.phone ?? undefined,
   }
 }
 
@@ -66,6 +67,8 @@ export default function NewReportPage() {
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name: string; avatar: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStewardUser, setIsStewardUser] = useState(false);
+  const [showRequiredPopup, setShowRequiredPopup] = useState(false);
+  const [missingRequiredQuestionNumbers, setMissingRequiredQuestionNumbers] = useState<string[]>([]);
   const [draftKey, setDraftKey] = useState<string | null>(null);
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
 
@@ -210,6 +213,20 @@ export default function NewReportPage() {
   };
 
   const handleSubmit = async () => {
+    const questionNumberMap = buildQuestionNumberMap(questions);
+    const missingRequiredNumbers = questions
+      .filter((question) => question.is_required === true && !isAnswered(responses[question.id]))
+      .map((question) => questionNumberMap[question.id] ?? `Question ${question.id}`);
+
+    if (missingRequiredNumbers.length > 0) {
+      setMissingRequiredQuestionNumbers(missingRequiredNumbers);
+      setShowRequiredPopup(true);
+      return;
+    }
+
+    setShowRequiredPopup(false);
+    setMissingRequiredQuestionNumbers([]);
+
     try {
       const siteId = await getCurrentSiteId(namesite);
       const userUid = await getCurrentUserUid();
@@ -560,6 +577,8 @@ export default function NewReportPage() {
       <MainContent 
         responses={responses}
         onResponsesChange={handleResponsesChange}
+        siteName={namesite}
+        currentUser={currentUser}
       />
 
 
