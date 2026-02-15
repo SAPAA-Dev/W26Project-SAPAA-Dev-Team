@@ -205,6 +205,11 @@ async function renderBeThereMainContent(mockOnChange: jest.Mock) {
   });
 }
 
+// Significant site changes question (Q54) - section 4 (normalized to 1, the default active section)
+const siteChangesQuestions = [
+  { id: 54, title: 'Significant Site Changes (Q54)', text: 'Describe any significant recent landscape changes (e.g. wildfires, flooding, erosion, land clearing)', question_type: 'text', section: 4, answers: [], formorder: 1, is_required: false, sectionTitle: 'Site Changes', sectionDescription: 'Report any significant changes to the site', sectionHeader: 'Site Changes' },
+];
+
 // Trip details questions (Q41, Q41.1, Q42, Q43) - section 4 (normalized to 1, the default active section)
 const tripDetailsQuestions = [
   { id: 41, title: 'Reason for Visit (Q41)', text: 'What was the reason for your visit?', question_type: 'option', section: 4, answers: [{ text: 'Routine Inspection' }, { text: 'Follow-up' }, { text: 'Other' }], formorder: 1, is_required: true, sectionTitle: 'Trip Details', sectionDescription: 'Describe your trip', sectionHeader: 'Trip Details' },
@@ -743,4 +748,13 @@ it('user can input duration of trip and comments (Q42)', async () => {
     );
     expect(screen.getByText('2 / 4 answered')).toBeInTheDocument();
   });
+});
+
+describe('US 1.0.11 – Add Details Regarding Significant Site Changes', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+  });
+
+
 });
