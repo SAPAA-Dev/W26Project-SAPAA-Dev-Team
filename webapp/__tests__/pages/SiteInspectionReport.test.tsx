@@ -714,152 +714,18 @@ describe('US 1.0.12 - Address any Biological Observations that is in the Site', 
   });
 });
 
-describe('US 1.0.7 – Add Trip Details about how the trip went', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    localStorage.clear();
-  });
-
-it('user can enter reasoning for visiting the site (Q41) and additional details (Q41.1)', async () => {
-    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
-    const mockOnChange = jest.fn();
-    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/What was the reason for your visit/i)).toBeInTheDocument();
-    });
-
-    // Q41 - select a reason
-    expect(screen.getByText('Routine Inspection')).toBeInTheDocument();
-    expect(screen.getByText('Follow-up')).toBeInTheDocument();
-    expect(screen.getByText('Other')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByText('Routine Inspection'));
-    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][41]).toBe('Routine Inspection');
-
-    // Q41.1 - optional text details
-    expect(screen.getByText(/additional details about your visit reason/i)).toBeInTheDocument();
-    const textareas = screen.getAllByPlaceholderText('Enter your response here...');
-    fireEvent.change(textareas[0], { target: { value: 'Scheduled quarterly check' } });
-    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][411]).toBe('Scheduled quarterly check');
-  });
-
-it('user can input duration of trip and comments (Q42)', async () => {
-    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
-    const mockOnChange = jest.fn();
-    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/How long was your trip/i)).toBeInTheDocument();
-    });
-
-    expect(screen.getByText('Less than 1 hour')).toBeInTheDocument();
-    expect(screen.getByText('1-3 hours')).toBeInTheDocument();
-    expect(screen.getByText('Half day')).toBeInTheDocument();
-    expect(screen.getByText('Full day')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByText('1-3 hours'));
-    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][42]).toBe('1-3 hours');
-  });
-
-  it('user can input visit details (Q43)', async () => {
-    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
-    const mockOnChange = jest.fn();
-    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/additional visit details or comments/i)).toBeInTheDocument();
-    });
-
-    const textareas = screen.getAllByPlaceholderText('Enter your response here...');
-    // Q43 is the second textarea (after Q41.1)
-    fireEvent.change(textareas[1], { target: { value: 'Trail was in good condition' } });
-    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][43]).toBe('Trail was in good condition');
-  });
-
-  it('Q41 and Q42 are required; Q41.1 and Q43 are not', async () => {
-    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
-    render(<MainContent responses={{}} onResponsesChange={jest.fn()} />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/What was the reason for your visit/i)).toBeInTheDocument();
-    });
-
-    // Only Q41 and Q42 should have Required badges
-    const requiredBadges = screen.getAllByText('Required');
-    expect(requiredBadges.length).toBe(2);
-  });
-
-  it('footer shows error for missing required Q41/Q42 but accepts missing optional Q41.1/Q43', () => {
-    // Missing required fields: no Q41 or Q42 answered
-    const { unmount } = render(<StickyFooter questions={tripDetailsQuestions} responses={{}} />);
-    expect(screen.getByText('0 / 4 answered')).toBeInTheDocument();
-    unmount();
-
-    // Only optional Q41.1 and Q43 answered — required Q41/Q42 still missing
-    const { unmount: unmount2 } = render(
-      <StickyFooter questions={tripDetailsQuestions} responses={{ 411: 'Some details', 43: 'Looked good' }} />
-    );
-    expect(screen.getByText('2 / 4 answered')).toBeInTheDocument();
-    unmount2();
-
-    // All required answered, optional skipped — should be accepted
-    render(
-      <StickyFooter questions={tripDetailsQuestions} responses={{ 41: 'Routine Inspection', 42: '1-3 hours' }} />
-    );
-    expect(screen.getByText('2 / 4 answered')).toBeInTheDocument();
-  });
-});
-
-<<<<<<< HEAD
-describe('US 1.0.11 – Add Details Regarding Significant Site Changes', () => {
-=======
 describe('US 1.0.14 - Add Other Comments', () => {
->>>>>>> Sprint-2
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
   });
 
-<<<<<<< HEAD
-  it('user can enter details about recent landscape changes (Q54)', async () => {
-    mockGetQuestionsOnline.mockResolvedValue(siteChangesQuestions);
-=======
   it('user can enter their comments in beThere section', async () => {
     mockGetQuestionsOnline.mockResolvedValue(beThereQuestions);
->>>>>>> Sprint-2
     const mockOnChange = jest.fn();
     render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
 
     await waitFor(() => {
-<<<<<<< HEAD
-      expect(screen.getByText(/significant recent landscape changes/i)).toBeInTheDocument();
-    });
-
-    const textarea = screen.getByPlaceholderText('Enter your response here...');
-    fireEvent.change(textarea, { target: { value: 'Recent wildfire damage on the north ridge, significant tree loss observed' } });
-
-    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][54])
-      .toBe('Recent wildfire damage on the north ridge, significant tree loss observed');
-  });
-
-  it('Q54 is optional and submitting without it does not show an error', async () => {
-    mockGetQuestionsOnline.mockResolvedValue(siteChangesQuestions);
-    render(<MainContent responses={{}} onResponsesChange={jest.fn()} />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Significant Site Changes/i)).toBeInTheDocument();
-    });
-
-    // Q54 should NOT have a Required badge
-    expect(screen.queryByText('Required')).not.toBeInTheDocument();
-
-    // Footer confirms form is submittable with 0 answers
-    render(<StickyFooter questions={siteChangesQuestions} responses={{}} />);
-    expect(screen.getByText('0 / 1 answered')).toBeInTheDocument();
-  });
-});
-=======
       expect(screen.getByText('Be There')).toBeInTheDocument();
     });
     fireEvent.click(screen.getByText('Be There'));
@@ -964,4 +830,42 @@ describe('US 1.0.14 - Add Other Comments', () => {
     alertSpy.mockRestore();
   });
 });
->>>>>>> Sprint-2
+
+describe('US 1.0.11 – Add Details Regarding Significant Site Changes', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it('user can enter details about recent landscape changes (Q54)', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(siteChangesQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/significant recent landscape changes/i)).toBeInTheDocument();
+    });
+
+    const textarea = screen.getByPlaceholderText('Enter your response here...');
+    fireEvent.change(textarea, { target: { value: 'Recent wildfire damage on the north ridge, significant tree loss observed' } });
+
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][54])
+      .toBe('Recent wildfire damage on the north ridge, significant tree loss observed');
+  });
+
+  it('Q54 is optional and submitting without it does not show an error', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(siteChangesQuestions);
+    render(<MainContent responses={{}} onResponsesChange={jest.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Significant Site Changes/i)).toBeInTheDocument();
+    });
+
+    // Q54 should NOT have a Required badge
+    expect(screen.queryByText('Required')).not.toBeInTheDocument();
+
+    // Footer confirms form is submittable with 0 answers
+    render(<StickyFooter questions={siteChangesQuestions} responses={{}} />);
+    expect(screen.getByText('0 / 1 answered')).toBeInTheDocument();
+  });
+});
