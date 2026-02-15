@@ -208,13 +208,37 @@
 
 --
 
-### Feb 9, 2026
+### Feb 11, 2026
 **Key Discussions & Decisions**
-- Raiyana Rahman presented the updates made to the database schema to the entire team.
-- Finished refactoring the Supabase and creating the ER diagram to show the table relations
-- Finished the frontend entry point of the Site Inspection Form webapp
+- Had usual TA meeting in lab session
+- Discussed what we did last week and continued implementations of Sprint 2
+- Members discussed their progress with their user stories
 
 **Action Items**
-- The team plans to continue with the development and start integrating the new database schema.
+- Add new user stories based on issues that came up while working on Sprint 2 user stories
+- Have an in-person meeting on Friday to work on Sprint 2 requirements and Git related things (E.g. merging pull requests, closing issues)
+
+--
+
+### Feb 13, 2026
+**Key Discussions & Decisions**
+- Members met in-person to work together on Sprint 2
+- Resolved Git pull requests as a team to make sure we were following proper Git conventions
+
+**Action Items**
+- Finish up Sprint 2 user stories by adding tests to resolve user story acceptance tests
+- Work on other Sprint 2 requirements like the traceability matrix
+- Document all Sprint 2 requirements on the documentation website
+
+--
+
+### Feb 15, 2026
+**Key Discussions & Decisions**
+- Members met online to finish merging the remaining pull requests, adding missing tests, and cleaning up the codebase
+- Finished up other Sprint 2 requirements
+- Moved all required documentation into the documentation website
+
+**Action Items**
+- Start planning over the reading week for Sprint 3
 
 --
