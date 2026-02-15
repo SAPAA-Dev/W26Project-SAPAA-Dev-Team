@@ -1,18 +1,10 @@
 
-/**
- * @jest-environment jsdom
- */
-
 import React from "react";
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
 import NewReportPage from "../../app/detail/[namesite]/new-report/page";
-// ---------------------------------------------------------------------------
-// Mocks
-// ---------------------------------------------------------------------------
 
-// Mock Next.js navigation hooks
 const mockRouterBack = jest.fn();
 const mockPush = jest.fn();
 
@@ -39,7 +31,7 @@ jest.mock("next/link", () => ({
   },
 }));
 
-// Mock all Supabase queries used by the component
+
 jest.mock("@/utils/supabase/queries", () => ({
   getQuestionsOnline: jest.fn().mockResolvedValue([]),
   isSteward: jest.fn().mockResolvedValue(false),   // default: NOT a steward → shows popup
@@ -51,7 +43,6 @@ jest.mock("@/utils/supabase/queries", () => ({
   uploadSiteInspectionAnswers: jest.fn().mockResolvedValue({}),
 }));
 
-// Mock the Supabase client so getCurrentUser() resolves
 jest.mock("@/utils/supabase/client", () => ({
   createClient: () => ({
     auth: {
@@ -68,13 +59,12 @@ jest.mock("@/utils/supabase/client", () => ({
   }),
 }));
 
-// Silence unimportant console noise
 beforeAll(() => {
   jest.spyOn(console, "log").mockImplementation(() => {});
   jest.spyOn(console, "error").mockImplementation(() => {});
 });
 
-// Reset router mock call counts before every test so they do not bleed across
+
 beforeEach(() => {
   mockRouterBack.mockClear();
   mockPush.mockClear();
@@ -84,27 +74,18 @@ afterAll(() => {
   jest.restoreAllMocks();
 });
 
-// Helpers --------------------------------------------------------------------
 
-/** Wait for the loading spinner to disappear */
 async function waitForFormReady() {
   await waitFor(() => {
     expect(screen.queryByText(/loading inspection form/i)).not.toBeInTheDocument();
   });
 }
 
-/** The exact phrase the user must type */
-const REQUIRED_PHRASE = "I am not a volunteer of SAPAA";
 
-// ---------------------------------------------------------------------------
-// Test suites
-// ---------------------------------------------------------------------------
+const REQUIRED_PHRASE = "I am not a volunteer of SAPAA";
 
 describe("NewReportPage – Liability / Verification Popup", () => {
 
-  // -------------------------------------------------------------------------
-  // 1.  Popup renders for non-stewards
-  // -------------------------------------------------------------------------
   describe("Initial render", () => {
     it("shows the loading spinner while data is being fetched", () => {
       render(<NewReportPage />);
@@ -129,8 +110,6 @@ describe("NewReportPage – Liability / Verification Popup", () => {
       render(<NewReportPage />);
       await waitForFormReady();
 
-      // "Call" and "911" live in separate DOM nodes (<strong>), so we query
-      // the list item whose full text content contains both words.
       const listItem = screen.getByText((_content, element) => {
         if (!element) return false;
         const text = element.textContent ?? "";
@@ -167,9 +146,6 @@ describe("NewReportPage – Liability / Verification Popup", () => {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // 2.  Typing in the verification field
-  // -------------------------------------------------------------------------
   describe("Verification text input", () => {
     it("does not show an error when the field is empty", async () => {
       render(<NewReportPage />);
@@ -221,9 +197,6 @@ describe("NewReportPage – Liability / Verification Popup", () => {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // 3.  Terms & Conditions checkbox
-  // -------------------------------------------------------------------------
   describe("Terms and conditions checkbox", () => {
     it("can be toggled on", async () => {
       render(<NewReportPage />);
@@ -260,14 +233,10 @@ describe("NewReportPage – Liability / Verification Popup", () => {
 
       const termsLink = screen.getByRole("link", { name: /terms and conditions/i });
 
-      // The improved next/link mock resolves { pathname: "/terms", ... } to "/terms"
       expect(termsLink.getAttribute("href")).toMatch(/terms/i);
     });
   });
 
-  // -------------------------------------------------------------------------
-  // 4.  Full happy-path: user fills out both requirements and proceeds
-  // -------------------------------------------------------------------------
   describe("Happy path – full liability check completion", () => {
     async function completeVerification() {
       render(<NewReportPage />);
@@ -325,9 +294,6 @@ describe("NewReportPage – Liability / Verification Popup", () => {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // 5.  Cancel / back navigation
-  // -------------------------------------------------------------------------
   describe("Cancel button", () => {
     it("calls router.back() when Cancel is clicked", async () => {
       render(<NewReportPage />);
@@ -340,9 +306,6 @@ describe("NewReportPage – Liability / Verification Popup", () => {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // 6.  Steward users bypass the verification popup entirely
-  // -------------------------------------------------------------------------
   describe("Steward user – popup bypassed", () => {
     beforeEach(() => {
       const { isSteward } = require("@/utils/supabase/queries");
@@ -369,26 +332,19 @@ describe("NewReportPage – Liability / Verification Popup", () => {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // 7.  Edge cases
-  // -------------------------------------------------------------------------
   describe("Edge cases", () => {
     it("requires an exact case-sensitive match — trailing space makes it invalid", async () => {
       render(<NewReportPage />);
       await waitForFormReady();
 
       const input = screen.getByPlaceholderText(/type here/i);
-      // Type phrase with a trailing space
       await userEvent.type(input, `${REQUIRED_PHRASE} `);
 
       const continueBtn = screen.getByRole("button", { name: /continue to form/i });
 
-      // Button should stay disabled (phrase doesn't match after trim fails on extra space)
       const checkbox = screen.getByRole("checkbox");
       await userEvent.click(checkbox);
 
-      // The required phrase check in the component uses .trim(), so trailing
-      // spaces are actually stripped. This confirms the component's trim behaviour.
       await waitFor(() => {
         expect(continueBtn).toBeEnabled();
       });
@@ -416,9 +372,6 @@ describe("NewReportPage – Liability / Verification Popup", () => {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // 8.  Terms & Conditions – link access
-  // -------------------------------------------------------------------------
   describe("Terms and conditions – link access", () => {
 
     it("renders exactly one terms and conditions link inside the popup", async () => {
@@ -441,7 +394,6 @@ describe("NewReportPage – Liability / Verification Popup", () => {
       render(<NewReportPage />);
       await waitForFormReady();
 
-      // accessible name must be non-empty so screen-reader / keyboard users can find it
       const termsLink = screen.getByRole("link", { name: /terms and conditions/i });
       expect(termsLink).toHaveAccessibleName();
     });
@@ -485,8 +437,6 @@ describe("NewReportPage – Liability / Verification Popup", () => {
 
       const termsLink = screen.getByRole("link", { name: /terms and conditions/i });
 
-      // jsdom does not navigate on anchor clicks, so we assert the popup
-      // heading is still visible and that router was not invoked
       fireEvent.click(termsLink);
 
       expect(screen.getByText(/the fine print up front/i)).toBeInTheDocument();
@@ -495,10 +445,7 @@ describe("NewReportPage – Liability / Verification Popup", () => {
     });
 
     it("the terms link passes the current pathname as a from query param via Next.js Link", async () => {
-      // The component passes: { pathname: "/terms", query: { from: pathname } }
-      // Our mock resolves the pathname portion to "/terms".
-      // Verifying the resolved href is correct confirms the full Link object was
-      // passed (not just a bare string) and that the mock handles it correctly.
+
       render(<NewReportPage />);
       await waitForFormReady();
 
@@ -518,7 +465,6 @@ describe("NewReportPage – Liability / Verification Popup", () => {
         screen.queryByRole("link", { name: /terms and conditions/i })
       ).not.toBeInTheDocument();
 
-      // restore default for subsequent tests
       (isSteward as jest.Mock).mockResolvedValue(false);
     });
   });
