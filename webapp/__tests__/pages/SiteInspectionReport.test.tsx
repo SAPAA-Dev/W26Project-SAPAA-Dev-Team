@@ -314,6 +314,20 @@ it('user can input duration of trip and comments (Q42)', async () => {
     expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][43]).toBe('Trail was in good condition');
   });
 
+  it('Q41 and Q42 are required; Q41.1 and Q43 are not', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
+    render(<MainContent responses={{}} onResponsesChange={jest.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/What was the reason for your visit/i)).toBeInTheDocument();
+    });
+
+    // Only Q41 and Q42 should have Required badges
+    const requiredBadges = screen.getAllByText('Required');
+    expect(requiredBadges.length).toBe(2);
+  });
+
+
   
   
 });
