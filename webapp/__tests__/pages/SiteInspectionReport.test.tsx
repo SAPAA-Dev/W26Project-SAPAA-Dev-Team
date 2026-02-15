@@ -512,7 +512,7 @@ describe('US 1.0.5 – Add Details Regarding the Overview of my Visit', () => {
 
     // Fill all required fields
     const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
-    fireEvent.change(dateInput, { target: { value: '2025-02-12' } });
+    fireEvent.change(dateInput, { target: { value: '2026-02-12' } });
 
     const siteInput = screen.getByPlaceholderText('Start typing to search for a protected area...');
     fireEvent.change(siteInput, { target: { value: 'Elk Island National Park' } });
@@ -527,7 +527,7 @@ describe('US 1.0.5 – Add Details Regarding the Overview of my Visit', () => {
       expect(mockAddSiteInspectionReport).toHaveBeenCalledWith('site-1', 'user-1');
       expect(mockUploadSiteInspectionAnswers).toHaveBeenCalledWith(
         expect.arrayContaining([
-          expect.objectContaining({ question_id: 37, obs_value: '2025-02-12' }),
+          expect.objectContaining({ question_id: 37, obs_value: '2026-02-12' }),
           expect.objectContaining({ question_id: 38, obs_value: 'Elk Island National Park' }),
           expect.objectContaining({ question_id: 39, obs_value: 'Citizen Steward' }),
         ])
