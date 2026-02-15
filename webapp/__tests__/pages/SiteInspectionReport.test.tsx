@@ -442,8 +442,7 @@ describe('US 1.0.2 - Add Personal Information to Site Inspection Form', () => {
   });
 });
 
-
-describe('US 1.0.5 – Add Details Regarding the Overview of my Visit', () => {
+describe('US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
@@ -657,7 +656,7 @@ describe('US 1.0.8 - Address What Amenities are in the Site', () => {
     expect(latestResponses[41]).not.toContain('Washroom');
   });
 });
-    
+
 describe('US 1.0.12 - Address any Biological Observations that is in the Site', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -714,37 +713,123 @@ describe('US 1.0.12 - Address any Biological Observations that is in the Site', 
   });
 });
 
-describe('US 1.0.7 – Add Trip Details about how the trip went', () => {
+describe('US 1.0.1 - Access Site Inspection Form on Web Application', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
   });
 
-it('user can enter reasoning for visiting the site (Q41) and additional details (Q41.1)', async () => {
+  it('blocks submission and shows the required questions popup when a mandatory field is missing', async () => {
+    // 1. Mock the dependencies to provide one required question
+    const mockQuestion = [
+      { 
+        id: 1, 
+        title: 'Test Required Question', 
+        text: 'Test Required Answer', 
+        question_type: 'option', 
+        section: 3, 
+        answers: [{ text: 'Yes' }, { text: 'No' }], 
+        formorder: 1, 
+        is_required: true, 
+        sectionTitle: 'Test', 
+        sectionDescription: 'Test', 
+        sectionHeader: 'Test' }
+    ];
+    
+    mockGetQuestionsOnline.mockResolvedValue(mockQuestion);
+    render(<NewReportPage />);
+
+    // Use findByRole instead of getByRole to wait for the loading state to end
+    const submitButton = await screen.findByRole('button', { name: /Review & Submit/i });
+    
+    fireEvent.click(submitButton);
+
+    const popupTitle = await screen.findByText(/Required Questions Missing/i);
+    expect(popupTitle).toBeInTheDocument();
+
+    // 5. Assert that the specific missing question number is displayed
+    // Based on your buildQuestionNumberMap logic: section (4-3) = 1, index (0+1) = 1 -> "1.1"
+    const missingNumber = screen.getAllByText('0.1');
+    expect(missingNumber[0]).toBeInTheDocument();
+
+    // 6. Verify that the final submission functions were NEVER called
+    expect(mockAddSiteInspectionReport).not.toHaveBeenCalled();
+  });
+
+  it('successfully calls uploadSiteInspectionAnswers when all required questions are answered', async () => {
+    const mockQuestion = [
+      { 
+        id: 1, 
+        title: 'Test Required Question', 
+        text: 'Test Required Answer', 
+        question_type: 'option', 
+        section: 4, 
+        answers: [{ text: 'Yes' }, { text: 'No' }], 
+        formorder: 1, 
+        is_required: true, 
+        sectionTitle: 'Test', 
+        sectionDescription: 'Test', 
+        sectionHeader: 'Test' }
+    ];
+
+    mockGetQuestionsOnline.mockResolvedValue(mockQuestion);
+    mockAddSiteInspectionReport.mockResolvedValue({ id: 500 });
+    mockGetQuestionResponseType.mockResolvedValue([{ question_id: 1, obs_value: 1, obs_comm: 0 }]);
+    render(<NewReportPage />);
+
+    // Answer the required question and then submit the form
+    const option = await screen.findByText('Yes');
+    fireEvent.click(option);
+
+    const submitButton = screen.getByRole('button', { name: /Review & Submit/i });
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      // Check that the upload function was called
+      expect(mockUploadSiteInspectionAnswers).toHaveBeenCalled();
+      
+      // Verify the data structure sent to the Supabase
+      const uploadedData = mockUploadSiteInspectionAnswers.mock.calls[0][0];
+      expect(uploadedData[0]).toMatchObject({
+        response_id: 500,
+        question_id: 1,
+        obs_value: 'Yes'
+      });
+    });
+  });
+});
+
+describe('US 1.0.7 - Add Trip Details about how the trip went', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it('user can enter reasoning for visiting the site (Q41) and additional details (Q41.1)', async () => {
     mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
     const mockOnChange = jest.fn();
     render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
 
-    await waitFor(() => {
-      expect(screen.getByText(/What was the reason for your visit/i)).toBeInTheDocument();
-    });
+      await waitFor(() => {
+        expect(screen.getByText(/What was the reason for your visit/i)).toBeInTheDocument();
+      });
 
-    // Q41 - select a reason
-    expect(screen.getByText('Routine Inspection')).toBeInTheDocument();
-    expect(screen.getByText('Follow-up')).toBeInTheDocument();
-    expect(screen.getByText('Other')).toBeInTheDocument();
+      // Q41 - select a reason
+      expect(screen.getByText('Routine Inspection')).toBeInTheDocument();
+      expect(screen.getByText('Follow-up')).toBeInTheDocument();
+      expect(screen.getByText('Other')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByText('Routine Inspection'));
-    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][41]).toBe('Routine Inspection');
+      fireEvent.click(screen.getByText('Routine Inspection'));
+      expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][41]).toBe('Routine Inspection');
 
-    // Q41.1 - optional text details
-    expect(screen.getByText(/additional details about your visit reason/i)).toBeInTheDocument();
-    const textareas = screen.getAllByPlaceholderText('Enter your response here...');
-    fireEvent.change(textareas[0], { target: { value: 'Scheduled quarterly check' } });
-    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][411]).toBe('Scheduled quarterly check');
+      // Q41.1 - optional text details
+      expect(screen.getByText(/additional details about your visit reason/i)).toBeInTheDocument();
+      const textareas = screen.getAllByPlaceholderText('Enter your response here...');
+      fireEvent.change(textareas[0], { target: { value: 'Scheduled quarterly check' } });
+      expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][411]).toBe('Scheduled quarterly check');
   });
 
-it('user can input duration of trip and comments (Q42)', async () => {
+  it('user can input duration of trip and comments (Q42)', async () => {
     mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
     const mockOnChange = jest.fn();
     render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
@@ -809,6 +894,7 @@ it('user can input duration of trip and comments (Q42)', async () => {
     );
     expect(screen.getByText('2 / 4 answered')).toBeInTheDocument();
   });
+  
 });
 
 describe('US 1.0.14 - Add Other Comments', () => {
@@ -926,8 +1012,9 @@ describe('US 1.0.14 - Add Other Comments', () => {
     
     alertSpy.mockRestore();
   });
+});
 
-  describe('US 1.0.11 – Add Details Regarding Significant Site Changes', () => {
+describe('US 1.0.11 - Add Details Regarding Significant Site Changes', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
@@ -964,6 +1051,4 @@ describe('US 1.0.14 - Add Other Comments', () => {
     render(<StickyFooter questions={siteChangesQuestions} responses={{}} />);
     expect(screen.getByText('0 / 1 answered')).toBeInTheDocument();
   });
-});
-
 });
