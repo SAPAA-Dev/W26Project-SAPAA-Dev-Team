@@ -1,6 +1,6 @@
 'use server';
 
-import { createServerSupabase } from './server';
+import { createServerSupabase, createClient } from './server';
 
 export interface SiteSummary {
   id: number;
@@ -8,6 +8,7 @@ export interface SiteSummary {
   county: string | null;
   inspectdate: string | null;
 }
+
 
 
 export interface InspectionDetail {
@@ -37,10 +38,54 @@ export interface question {
   title: string | null;
   text: string | null;
   question_type: string | null;
+  is_required: boolean | null;
   answers: Array<string> | null;
+  formorder?: number | null; 
+  sectionTitle?: string | null;
+  sectionDescription?: string | null;
+  sectionHeader?: string | null;
 }
 
-export async function addSiteInspectionReport(siteId: number, userId: number) {
+interface SupabaseAnswer {
+  response_id: number; 
+  question_id: number;
+  obs_value: string | null;
+  obs_comm: string | null;
+}
+
+export async function uploadSiteInspectionAnswers(batchArray: SupabaseAnswer[]) {
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from('W26_answers')
+    .insert(batchArray);
+
+  if (error) {
+    throw new Error(error.message || 'Failed to add site inspection answers');
+  }
+  return data;
+}
+
+// Queries the Supabase database for all the questions and whether they have their answers in the obs_value column or obs_comm column
+export async function getQuestionResponseType() {
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('W26_questions')
+    .select('id, obs_value, obs_comm')
+    .eq('is_active', true);
+
+  if (error) {
+    throw new Error(error.message || 'Failed to fetch question response types');
+  }
+
+  return (data ?? []).map((q: any) => ({
+    question_id: q.id,
+    obs_value: q.obs_value,
+    obs_comm: q.obs_comm,
+  }));
+}
+
+export async function addSiteInspectionReport(siteId: number, userId: any) {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
@@ -55,6 +100,32 @@ export async function addSiteInspectionReport(siteId: number, userId: number) {
     throw new Error(error.message || 'Failed to add site inspection report');
   }
   return data;
+}
+
+export async function getCurrentUserUid() {
+    const supabase = await createClient();
+
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    return user?.id;
+}
+
+export async function getCurrentSiteId(siteName: string) {
+  const supabase = await createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('W26_sites-pa')
+    .select('id')
+    .eq('namesite', siteName)
+    .single();
+
+  if (error) {
+    throw new Error(error.message || 'Failed to get site ID');
+  }
+  return data?.id;
 }
 
 //for legacy, consult group if we want to edit old tables
@@ -120,10 +191,19 @@ export async function getQuestionsOnline(): Promise<question[]> {
       id,
       subtext,
       question_type,
+      is_required,
       section_id,
       form_question,
       W26_question_options (
         option_text
+      ),
+      W26_question_keys!W26_questions_question_key_id_fkey (
+        formorder
+      ),
+      W26_form_sections!W26_questions_section_id_fkey (
+        title,
+        description,
+        header
       )
     `)
     .eq('is_active', true)
@@ -138,10 +218,15 @@ export async function getQuestionsOnline(): Promise<question[]> {
     text: q.subtext,
     title: q.form_question,
     question_type: q.question_type,
+    is_required: q.is_required ?? null,
     section: q.section_id,
     answers: q.W26_question_options?.map(
       (opt: any) => opt.option_text
     ) ?? null,
+    formorder: q.W26_question_keys?.formorder ?? null,
+    sectionTitle: q.W26_form_sections?.title ?? null,
+    sectionDescription: q.W26_form_sections?.description ?? null,
+    sectionHeader: q.W26_form_sections?.header ?? null,
   }));
 }
 
