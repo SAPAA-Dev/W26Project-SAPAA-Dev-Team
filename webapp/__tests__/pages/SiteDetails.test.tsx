@@ -246,7 +246,7 @@ describe('SiteDetailScreen', () => {
     });
   });
 
-  describe('New Site Inspection Report', () => {
+  describe('US 1.0.1 - Access Site Inspection Form on Web Application', () => {
     it('should have the New Site Inspection Report button visible and enabled', async () => {
       render(<SiteDetailScreen />);
 

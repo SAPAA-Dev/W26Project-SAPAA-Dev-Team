@@ -366,7 +366,6 @@ describe('US 1.0.12 - Address any Biological Observations that is in the Site', 
     localStorage.clear();
   });
 
-  // US 1.0.12 – Address any Biological Observations that is in the Site
   it('allows the user to enter biological wildlife observations', async () => {
     const mockOnChange = jest.fn();
     await renderBeThereMainContent(mockOnChange);
@@ -376,5 +375,44 @@ describe('US 1.0.12 - Address any Biological Observations that is in the Site', 
 
     const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
     expect(latestResponses[9]).toContain('Saw a bald eagle and several deer.');
+  });
+
+  it('allows the user to delete text from the biological observations box and ensures it is empty', async () => {
+    const mockOnChange = jest.fn();
+    await renderBeThereMainContent(mockOnChange);
+
+    const biologicalObservations = await screen.findByTestId("question-input-9");
+
+    fireEvent.change(biologicalObservations, { target: { value: 'Temporary observation' } });
+    fireEvent.change(biologicalObservations, { target: { value: '' } });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[9]).toBe('');
+  });
+
+  it('does not include question number 4.3 in the missing required questions popup when answered', async () => {
+    const mockOnChange = jest.fn();
+    await renderBeThereMainContent(mockOnChange);
+    mockGetQuestionsOnline.mockResolvedValue(beThereQuestions);
+    render(<NewReportPage />);
+
+    // Mock window.alert to capture the popup message
+    const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+    
+    const input = await screen.findByTestId("question-input-9");
+    fireEvent.change(input, { target: { value: 'Observation recorded' } });
+
+    const submitButton = screen.getByRole('button', { name: /Review & Submit/i });
+    fireEvent.click(submitButton);
+
+    // Assert that the alert does NOT contain "4.3" because it isn't a required question
+    await waitFor(() => {
+      if (alertSpy.mock.calls.length > 0) {
+        const alertMessage = alertSpy.mock.calls[0][0];
+        expect(alertMessage).not.toContain('4.3');
+      }
+    });
+    
+    alertSpy.mockRestore();
   });
 });
