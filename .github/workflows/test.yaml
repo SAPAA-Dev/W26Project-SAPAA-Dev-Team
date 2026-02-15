@@ -1,10 +1,13 @@
-name: run FNR tests 
+name: Webapp CI 
 
 on:
   push:
     branches:
       - main
-      - master
+      - Sprint-2
+      - Sprint-3
+      - Sprint-4
+      - Sprint-5
   pull_request:
     branches:
       - '**'   # Run tests on PRs from any branch
@@ -15,40 +18,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-fnr:
-    runs-on: self-hosted
-
-    steps:
-      # Checkout the latest code
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # Setup Node.js
-      - name: Use Node.js 18
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      # Install dependencies
-      - name: Install dependencies
-        working-directory: FNR
-        run: |
-          npm ci || npm install
-
-      # Install Jest type definitions
-      - name: Install Jest types
-        working-directory: FNR
-        run: |
-          npm install --save-dev @types/jest
-
-      # Run tests
-      - name: Run tests
-        working-directory: FNR
-        run: |
-          npm test
-
+  
   test-webapp:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -63,9 +35,7 @@ jobs:
         run: |
           npm ci || npm install
 
-      - name: Install Jest types & ts-node (Webapp)
-        working-directory: webapp
-        run: npm install --save-dev @types/jest ts-node
+ 
 
       - name: Run Webapp tests
         working-directory: webapp

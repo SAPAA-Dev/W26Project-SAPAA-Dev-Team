@@ -195,6 +195,7 @@ export async function getQuestionsOnline(): Promise<question[]> {
       is_required,
       section_id,
       form_question,
+      autofill_key,
       W26_question_options (
         option_text
       ),
@@ -221,6 +222,7 @@ export async function getQuestionsOnline(): Promise<question[]> {
     question_type: q.question_type,
     is_required: q.is_required ?? null,
     section: q.section_id,
+    autofill_key: q.autofill_key ?? null,
     answers: q.W26_question_options?.map(
       (opt: any) => opt.option_text
     ) ?? null,

@@ -267,6 +267,19 @@ async function renderBeThereMainContent(mockOnChange: jest.Mock) {
   });
 }
 
+// Significant site changes question (Q54) - section 4 (normalized to 1, the default active section)
+const siteChangesQuestions = [
+  { id: 54, title: 'Significant Site Changes (Q54)', text: 'Describe any significant recent landscape changes (e.g. wildfires, flooding, erosion, land clearing)', question_type: 'text', section: 4, answers: [], formorder: 1, is_required: false, sectionTitle: 'Site Changes', sectionDescription: 'Report any significant changes to the site', sectionHeader: 'Site Changes' },
+];
+
+// Trip details questions (Q41, Q41.1, Q42, Q43) - section 4 (normalized to 1, the default active section)
+const tripDetailsQuestions = [
+  { id: 41, title: 'Reason for Visit (Q41)', text: 'What was the reason for your visit?', question_type: 'option', section: 4, answers: [{ text: 'Routine Inspection' }, { text: 'Follow-up' }, { text: 'Other' }], formorder: 1, is_required: true, sectionTitle: 'Trip Details', sectionDescription: 'Describe your trip', sectionHeader: 'Trip Details' },
+  { id: 411, title: 'Reason Details (Q41.1)', text: 'Please provide additional details about your visit reason', question_type: 'text', section: 4, answers: [], formorder: 2, is_required: false, sectionTitle: 'Trip Details', sectionDescription: 'Describe your trip', sectionHeader: 'Trip Details' },
+  { id: 42, title: 'Duration of Trip (Q42)', text: 'How long was your trip?', question_type: 'option', section: 4, answers: [{ text: 'Less than 1 hour' }, { text: '1-3 hours' }, { text: 'Half day' }, { text: 'Full day' }], formorder: 3, is_required: true, sectionTitle: 'Trip Details', sectionDescription: 'Describe your trip', sectionHeader: 'Trip Details' },
+  { id: 43, title: 'Visit Details (Q43)', text: 'Please describe any additional visit details or comments', question_type: 'text', section: 4, answers: [], formorder: 4, is_required: false, sectionTitle: 'Trip Details', sectionDescription: 'Describe your trip', sectionHeader: 'Trip Details' },
+];
+
 // --- Tests ---
 
 describe('US 1.0.4 - Have access to the Terms and Conditions of Inputting Information', () => {
@@ -429,8 +442,7 @@ describe('US 1.0.2 - Add Personal Information to Site Inspection Form', () => {
   });
 });
 
-
-describe('US 1.0.5 – Add Details Regarding the Overview of my Visit', () => {
+describe('US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
@@ -644,7 +656,7 @@ describe('US 1.0.8 - Address What Amenities are in the Site', () => {
     expect(latestResponses[41]).not.toContain('Washroom');
   });
 });
-    
+
 describe('US 1.0.12 - Address any Biological Observations that is in the Site', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -699,6 +711,190 @@ describe('US 1.0.12 - Address any Biological Observations that is in the Site', 
     
     alertSpy.mockRestore();
   });
+});
+
+describe('US 1.0.1 - Access Site Inspection Form on Web Application', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it('blocks submission and shows the required questions popup when a mandatory field is missing', async () => {
+    // 1. Mock the dependencies to provide one required question
+    const mockQuestion = [
+      { 
+        id: 1, 
+        title: 'Test Required Question', 
+        text: 'Test Required Answer', 
+        question_type: 'option', 
+        section: 3, 
+        answers: [{ text: 'Yes' }, { text: 'No' }], 
+        formorder: 1, 
+        is_required: true, 
+        sectionTitle: 'Test', 
+        sectionDescription: 'Test', 
+        sectionHeader: 'Test' }
+    ];
+    
+    mockGetQuestionsOnline.mockResolvedValue(mockQuestion);
+    render(<NewReportPage />);
+
+    // Use findByRole instead of getByRole to wait for the loading state to end
+    const submitButton = await screen.findByRole('button', { name: /Review & Submit/i });
+    
+    fireEvent.click(submitButton);
+
+    const popupTitle = await screen.findByText(/Required Questions Missing/i);
+    expect(popupTitle).toBeInTheDocument();
+
+    // 5. Assert that the specific missing question number is displayed
+    // Based on your buildQuestionNumberMap logic: section (4-3) = 1, index (0+1) = 1 -> "1.1"
+    const missingNumber = screen.getAllByText('0.1');
+    expect(missingNumber[0]).toBeInTheDocument();
+
+    // 6. Verify that the final submission functions were NEVER called
+    expect(mockAddSiteInspectionReport).not.toHaveBeenCalled();
+  });
+
+  it('successfully calls uploadSiteInspectionAnswers when all required questions are answered', async () => {
+    const mockQuestion = [
+      { 
+        id: 1, 
+        title: 'Test Required Question', 
+        text: 'Test Required Answer', 
+        question_type: 'option', 
+        section: 4, 
+        answers: [{ text: 'Yes' }, { text: 'No' }], 
+        formorder: 1, 
+        is_required: true, 
+        sectionTitle: 'Test', 
+        sectionDescription: 'Test', 
+        sectionHeader: 'Test' }
+    ];
+
+    mockGetQuestionsOnline.mockResolvedValue(mockQuestion);
+    mockAddSiteInspectionReport.mockResolvedValue({ id: 500 });
+    mockGetQuestionResponseType.mockResolvedValue([{ question_id: 1, obs_value: 1, obs_comm: 0 }]);
+    render(<NewReportPage />);
+
+    // Answer the required question and then submit the form
+    const option = await screen.findByText('Yes');
+    fireEvent.click(option);
+
+    const submitButton = screen.getByRole('button', { name: /Review & Submit/i });
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      // Check that the upload function was called
+      expect(mockUploadSiteInspectionAnswers).toHaveBeenCalled();
+      
+      // Verify the data structure sent to the Supabase
+      const uploadedData = mockUploadSiteInspectionAnswers.mock.calls[0][0];
+      expect(uploadedData[0]).toMatchObject({
+        response_id: 500,
+        question_id: 1,
+        obs_value: 'Yes'
+      });
+    });
+  });
+});
+
+describe('US 1.0.7 - Add Trip Details about how the trip went', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it('user can enter reasoning for visiting the site (Q41) and additional details (Q41.1)', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/What was the reason for your visit/i)).toBeInTheDocument();
+      });
+
+      // Q41 - select a reason
+      expect(screen.getByText('Routine Inspection')).toBeInTheDocument();
+      expect(screen.getByText('Follow-up')).toBeInTheDocument();
+      expect(screen.getByText('Other')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByText('Routine Inspection'));
+      expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][41]).toBe('Routine Inspection');
+
+      // Q41.1 - optional text details
+      expect(screen.getByText(/additional details about your visit reason/i)).toBeInTheDocument();
+      const textareas = screen.getAllByPlaceholderText('Enter your response here...');
+      fireEvent.change(textareas[0], { target: { value: 'Scheduled quarterly check' } });
+      expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][411]).toBe('Scheduled quarterly check');
+  });
+
+  it('user can input duration of trip and comments (Q42)', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/How long was your trip/i)).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Less than 1 hour')).toBeInTheDocument();
+    expect(screen.getByText('1-3 hours')).toBeInTheDocument();
+    expect(screen.getByText('Half day')).toBeInTheDocument();
+    expect(screen.getByText('Full day')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('1-3 hours'));
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][42]).toBe('1-3 hours');
+  });
+
+  it('user can input visit details (Q43)', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/additional visit details or comments/i)).toBeInTheDocument();
+    });
+
+    const textareas = screen.getAllByPlaceholderText('Enter your response here...');
+    // Q43 is the second textarea (after Q41.1)
+    fireEvent.change(textareas[1], { target: { value: 'Trail was in good condition' } });
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][43]).toBe('Trail was in good condition');
+  });
+
+  it('Q41 and Q42 are required; Q41.1 and Q43 are not', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
+    render(<MainContent responses={{}} onResponsesChange={jest.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/What was the reason for your visit/i)).toBeInTheDocument();
+    });
+
+    // Only Q41 and Q42 should have Required badges
+    const requiredBadges = screen.getAllByText('Required');
+    expect(requiredBadges.length).toBe(2);
+  });
+
+  it('footer shows error for missing required Q41/Q42 but accepts missing optional Q41.1/Q43', () => {
+    // Missing required fields: no Q41 or Q42 answered
+    const { unmount } = render(<StickyFooter questions={tripDetailsQuestions} responses={{}} />);
+    expect(screen.getByText('0 / 4 answered')).toBeInTheDocument();
+    unmount();
+
+    // Only optional Q41.1 and Q43 answered — required Q41/Q42 still missing
+    const { unmount: unmount2 } = render(
+      <StickyFooter questions={tripDetailsQuestions} responses={{ 411: 'Some details', 43: 'Looked good' }} />
+    );
+    expect(screen.getByText('2 / 4 answered')).toBeInTheDocument();
+    unmount2();
+
+    // All required answered, optional skipped — should be accepted
+    render(
+      <StickyFooter questions={tripDetailsQuestions} responses={{ 41: 'Routine Inspection', 42: '1-3 hours' }} />
+    );
+    expect(screen.getByText('2 / 4 answered')).toBeInTheDocument();
+  });
+  
 });
 
 describe('US 1.0.14 - Add Other Comments', () => {
@@ -815,5 +1011,243 @@ describe('US 1.0.14 - Add Other Comments', () => {
     });
     
     alertSpy.mockRestore();
+  });
+});
+
+describe('US 1.0.11 - Add Details Regarding Significant Site Changes', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it('user can enter details about recent landscape changes (Q54)', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(siteChangesQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/significant recent landscape changes/i)).toBeInTheDocument();
+    });
+
+    const textarea = screen.getByPlaceholderText('Enter your response here...');
+    fireEvent.change(textarea, { target: { value: 'Recent wildfire damage on the north ridge, significant tree loss observed' } });
+
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][54])
+      .toBe('Recent wildfire damage on the north ridge, significant tree loss observed');
+  });
+
+  it('Q54 is optional and submitting without it does not show an error', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(siteChangesQuestions);
+    render(<MainContent responses={{}} onResponsesChange={jest.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Significant Site Changes/i)).toBeInTheDocument();
+    });
+
+    // Q54 should NOT have a Required badge
+    expect(screen.queryByText('Required')).not.toBeInTheDocument();
+
+    // Footer confirms form is submittable with 0 answers
+    render(<StickyFooter questions={siteChangesQuestions} responses={{}} />);
+    expect(screen.getByText('0 / 1 answered')).toBeInTheDocument();
+  });
+});
+
+// Tests for US 1.0.28
+describe('US 1.0.28 - Autofill Form Fields from User Account', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+  });
+
+  // Mock questions with autofill_key
+  const autofillQuestions = [
+    {
+      id: 32, title: 'Email (Q11)', text: 'Enter your email address',
+      question_type: 'text', section: 4, answers: [], formorder: 1,
+      is_required: false, autofill_key: 'user_email',
+      sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info',
+    },
+    {
+      id: 34, title: 'Name (Q13)', text: 'Enter your name',
+      question_type: 'text', section: 4, answers: [], formorder: 2,
+      is_required: false, autofill_key: 'user_name',
+      sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info',
+    },
+    {
+      id: 35, title: 'Phone (Q14)', text: 'Enter your phone number',
+      question_type: 'text', section: 4, answers: [], formorder: 3,
+      is_required: false, autofill_key: 'user_phone',
+      sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info',
+    },
+    {
+      id: 37, title: 'Date of Your Visit (Q21)', text: 'Date of Visit',
+      question_type: 'date', section: 4, answers: [], formorder: 4,
+      is_required: true, autofill_key: 'visit_date',
+      sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info',
+    },
+  ];
+
+  const fullUser = {
+    email: 'jane@sapaa.org',
+    name: 'Jane Steward',
+    phone: '780-555-1234',
+    role: 'steward',
+    avatar: '',
+  };
+
+  // Helper function : renders MainContent with controlled state and optional user/site props
+  function renderAutofillContent(
+    mockOnChange: jest.Mock,
+    currentUser: typeof fullUser | Partial<typeof fullUser> | null = fullUser,
+    siteName = 'Test Site'
+  ) {
+    function ControlledMainContent() {
+      const [responses, setResponses] = React.useState<Record<number, any>>({});
+      const handleChange = (next: Record<number, any>) => {
+        setResponses(next);
+        mockOnChange(next);
+      };
+      return (
+        <MainContent
+          responses={responses}
+          onResponsesChange={handleChange}
+          currentUser={currentUser as any}
+          siteName={siteName}
+        />
+      );
+    }
+    render(<ControlledMainContent />);
+  }
+
+  it('autofills all available fields when a new form is opened', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(autofillQuestions);
+    const mockOnChange = jest.fn();
+    renderAutofillContent(mockOnChange);
+
+    await waitFor(() => {
+      expect(mockOnChange).toHaveBeenCalled();
+    });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[32]).toBe('jane@sapaa.org');
+    expect(latestResponses[34]).toBe('Jane Steward');
+    expect(latestResponses[35]).toBe('780-555-1234');
+    expect(latestResponses[37]).toBe(new Date().toISOString().split('T')[0]);
+  });
+
+  it("autofills user's name into question Q13", async () => {
+    mockGetQuestionsOnline.mockResolvedValue(autofillQuestions);
+    const mockOnChange = jest.fn();
+    renderAutofillContent(mockOnChange);
+
+    await waitFor(() => {
+      expect(mockOnChange).toHaveBeenCalled();
+    });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[34]).toBe('Jane Steward');
+  });
+
+  it("autofills user's email into question Q11", async () => {
+    mockGetQuestionsOnline.mockResolvedValue(autofillQuestions);
+    const mockOnChange = jest.fn();
+    renderAutofillContent(mockOnChange);
+
+    await waitFor(() => {
+      expect(mockOnChange).toHaveBeenCalled();
+    });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[32]).toBe('jane@sapaa.org');
+  });
+
+  it("autofills user's phone number into question Q14", async () => {
+    mockGetQuestionsOnline.mockResolvedValue(autofillQuestions);
+    const mockOnChange = jest.fn();
+    renderAutofillContent(mockOnChange);
+
+    await waitFor(() => {
+      expect(mockOnChange).toHaveBeenCalled();
+    });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[35]).toBe('780-555-1234');
+  });
+
+  it('autofills date of visit (Q21) with the current date', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(autofillQuestions);
+    const mockOnChange = jest.fn();
+    renderAutofillContent(mockOnChange);
+
+    await waitFor(() => {
+      expect(mockOnChange).toHaveBeenCalled();
+    });
+
+    const today = new Date().toISOString().split('T')[0];
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[37]).toBe(today);
+  });
+
+  it('does not autofill fields when the user has no data for them', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(autofillQuestions);
+    const mockOnChange = jest.fn();
+
+    // User with no phone or name
+    const partialUser = { email: 'partial@sapaa.org', role: 'steward', avatar: '' };
+    renderAutofillContent(mockOnChange, partialUser);
+
+    await waitFor(() => {
+      expect(mockOnChange).toHaveBeenCalled();
+    });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[32]).toBe('partial@sapaa.org'); // email present - should fill
+    expect(latestResponses[34]).toBeUndefined();           // name missing - should not fill
+    expect(latestResponses[35]).toBeUndefined();           // phone missing - should not fill
+  });
+
+  it('does not autofill any user fields when currentUser is null', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(autofillQuestions);
+    const mockOnChange = jest.fn();
+    renderAutofillContent(mockOnChange, null);
+
+    // If autofill were to run, it would call onResponsesChange
+    await waitFor(() => {
+      expect(screen.getByText('Enter your email address')).toBeInTheDocument();
+    });
+
+    // visit_date still autofills (it doesn't depend on user), but user fields should not
+    const calls = mockOnChange.mock.calls;
+    if (calls.length > 0) {
+      const latestResponses = calls[calls.length - 1][0];
+      expect(latestResponses[32]).toBeUndefined();
+      expect(latestResponses[34]).toBeUndefined();
+      expect(latestResponses[35]).toBeUndefined();
+    }
+  });
+
+  it('autofilled fields can be manually edited', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(autofillQuestions);
+    const mockOnChange = jest.fn();
+    renderAutofillContent(mockOnChange);
+
+    // Wait for autofill to run
+    await waitFor(() => {
+      expect(mockOnChange).toHaveBeenCalled();
+    });
+
+    // Confirm email was autofilled
+    const textareas = screen.getAllByPlaceholderText('Enter your response here...');
+    const emailTextarea = textareas.find(
+      (el) => (el as HTMLTextAreaElement).value === 'jane@sapaa.org'
+    ) as HTMLTextAreaElement;
+    expect(emailTextarea).toBeTruthy();
+
+    // User edits the autofilled email
+    fireEvent.change(emailTextarea, { target: { value: 'newemail@example.com' } });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[32]).toBe('newemail@example.com');
   });
 });
