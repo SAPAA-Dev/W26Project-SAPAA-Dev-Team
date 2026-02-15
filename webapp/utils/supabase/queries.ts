@@ -21,6 +21,7 @@ export interface InspectionDetail {
   naturalness_score: string | null;
   naturalness_details: string | null;
   notes: string | null;
+  steward: string | null;
 }
 
 
@@ -34,12 +35,12 @@ export interface InpsectionFrom {
 
 export interface question {
   id: number;
-  section: number | null;
+  section: number;
   title: string | null;
   text: string | null;
-  question_type: string | null;
+  question_type: string;
   is_required: boolean | null;
-  answers: Array<string> | null;
+  answers: Array<string>;
   formorder?: number | null; 
   sectionTitle?: string | null;
   sectionDescription?: string | null;
@@ -304,5 +305,6 @@ export async function getInspectionDetailsOnline(namesite: string): Promise<Insp
     naturalness_score: insp.naturalness_score,
     naturalness_details: insp.naturalness_details,
     notes: insp.notes,
+    steward: insp.steward
   }));
 }

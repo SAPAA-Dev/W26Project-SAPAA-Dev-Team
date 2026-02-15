@@ -6,6 +6,8 @@ import { getSitesOnline, SiteSummary } from '@/utils/supabase/queries';
 import { Award, Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import Image from 'next/image';
+import { Suspense } from "react";
+import { SubmissionToast } from "./SubmissionToast";
 
 type UnifiedSite = SiteSummary;
 
@@ -168,6 +170,9 @@ export default function HomeClient() {
     <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
       {/* Header */}
       <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-8 shadow-lg">
+        <Suspense fallback={null}>
+          <SubmissionToast />
+        </Suspense>
         <div className="max-w-7xl mx-auto">
           {/* Top row: title + admin */}
           <div className="flex items-center justify-between mb-6">
