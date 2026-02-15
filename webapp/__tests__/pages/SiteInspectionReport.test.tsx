@@ -267,6 +267,14 @@ async function renderBeThereMainContent(mockOnChange: jest.Mock) {
   });
 }
 
+// Trip details questions (Q41, Q41.1, Q42, Q43) - section 4 (normalized to 1, the default active section)
+const tripDetailsQuestions = [
+  { id: 41, title: 'Reason for Visit (Q41)', text: 'What was the reason for your visit?', question_type: 'option', section: 4, answers: [{ text: 'Routine Inspection' }, { text: 'Follow-up' }, { text: 'Other' }], formorder: 1, is_required: true, sectionTitle: 'Trip Details', sectionDescription: 'Describe your trip', sectionHeader: 'Trip Details' },
+  { id: 411, title: 'Reason Details (Q41.1)', text: 'Please provide additional details about your visit reason', question_type: 'text', section: 4, answers: [], formorder: 2, is_required: false, sectionTitle: 'Trip Details', sectionDescription: 'Describe your trip', sectionHeader: 'Trip Details' },
+  { id: 42, title: 'Duration of Trip (Q42)', text: 'How long was your trip?', question_type: 'option', section: 4, answers: [{ text: 'Less than 1 hour' }, { text: '1-3 hours' }, { text: 'Half day' }, { text: 'Full day' }], formorder: 3, is_required: true, sectionTitle: 'Trip Details', sectionDescription: 'Describe your trip', sectionHeader: 'Trip Details' },
+  { id: 43, title: 'Visit Details (Q43)', text: 'Please describe any additional visit details or comments', question_type: 'text', section: 4, answers: [], formorder: 4, is_required: false, sectionTitle: 'Trip Details', sectionDescription: 'Describe your trip', sectionHeader: 'Trip Details' },
+];
+
 // --- Tests ---
 
 describe('US 1.0.4 - Have access to the Terms and Conditions of Inputting Information', () => {
@@ -698,6 +706,103 @@ describe('US 1.0.12 - Address any Biological Observations that is in the Site', 
     });
     
     alertSpy.mockRestore();
+  });
+});
+
+describe('US 1.0.7 – Add Trip Details about how the trip went', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+  });
+
+it('user can enter reasoning for visiting the site (Q41) and additional details (Q41.1)', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/What was the reason for your visit/i)).toBeInTheDocument();
+    });
+
+    // Q41 - select a reason
+    expect(screen.getByText('Routine Inspection')).toBeInTheDocument();
+    expect(screen.getByText('Follow-up')).toBeInTheDocument();
+    expect(screen.getByText('Other')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Routine Inspection'));
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][41]).toBe('Routine Inspection');
+
+    // Q41.1 - optional text details
+    expect(screen.getByText(/additional details about your visit reason/i)).toBeInTheDocument();
+    const textareas = screen.getAllByPlaceholderText('Enter your response here...');
+    fireEvent.change(textareas[0], { target: { value: 'Scheduled quarterly check' } });
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][411]).toBe('Scheduled quarterly check');
+  });
+
+it('user can input duration of trip and comments (Q42)', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/How long was your trip/i)).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Less than 1 hour')).toBeInTheDocument();
+    expect(screen.getByText('1-3 hours')).toBeInTheDocument();
+    expect(screen.getByText('Half day')).toBeInTheDocument();
+    expect(screen.getByText('Full day')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('1-3 hours'));
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][42]).toBe('1-3 hours');
+  });
+
+  it('user can input visit details (Q43)', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/additional visit details or comments/i)).toBeInTheDocument();
+    });
+
+    const textareas = screen.getAllByPlaceholderText('Enter your response here...');
+    // Q43 is the second textarea (after Q41.1)
+    fireEvent.change(textareas[1], { target: { value: 'Trail was in good condition' } });
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][43]).toBe('Trail was in good condition');
+  });
+
+  it('Q41 and Q42 are required; Q41.1 and Q43 are not', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
+    render(<MainContent responses={{}} onResponsesChange={jest.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/What was the reason for your visit/i)).toBeInTheDocument();
+    });
+
+    // Only Q41 and Q42 should have Required badges
+    const requiredBadges = screen.getAllByText('Required');
+    expect(requiredBadges.length).toBe(2);
+  });
+
+  it('footer shows error for missing required Q41/Q42 but accepts missing optional Q41.1/Q43', () => {
+    // Missing required fields: no Q41 or Q42 answered
+    const { unmount } = render(<StickyFooter questions={tripDetailsQuestions} responses={{}} />);
+    expect(screen.getByText('0 / 4 answered')).toBeInTheDocument();
+    unmount();
+
+    // Only optional Q41.1 and Q43 answered — required Q41/Q42 still missing
+    const { unmount: unmount2 } = render(
+      <StickyFooter questions={tripDetailsQuestions} responses={{ 411: 'Some details', 43: 'Looked good' }} />
+    );
+    expect(screen.getByText('2 / 4 answered')).toBeInTheDocument();
+    unmount2();
+
+    // All required answered, optional skipped — should be accepted
+    render(
+      <StickyFooter questions={tripDetailsQuestions} responses={{ 41: 'Routine Inspection', 42: '1-3 hours' }} />
+    );
+    expect(screen.getByText('2 / 4 answered')).toBeInTheDocument();
   });
 });
 
