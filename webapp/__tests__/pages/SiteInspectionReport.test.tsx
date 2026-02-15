@@ -327,7 +327,23 @@ it('user can input duration of trip and comments (Q42)', async () => {
     expect(requiredBadges.length).toBe(2);
   });
 
+  it('footer shows error for missing required Q41/Q42 but accepts missing optional Q41.1/Q43', () => {
+    // Missing required fields: no Q41 or Q42 answered
+    const { unmount } = render(<StickyFooter questions={tripDetailsQuestions} responses={{}} />);
+    expect(screen.getByText('0 / 4 answered')).toBeInTheDocument();
+    unmount();
 
-  
-  
+    // Only optional Q41.1 and Q43 answered — required Q41/Q42 still missing
+    const { unmount: unmount2 } = render(
+      <StickyFooter questions={tripDetailsQuestions} responses={{ 411: 'Some details', 43: 'Looked good' }} />
+    );
+    expect(screen.getByText('2 / 4 answered')).toBeInTheDocument();
+    unmount2();
+
+    // All required answered, optional skipped — should be accepted
+    render(
+      <StickyFooter questions={tripDetailsQuestions} responses={{ 41: 'Routine Inspection', 42: '1-3 hours' }} />
+    );
+    expect(screen.getByText('2 / 4 answered')).toBeInTheDocument();
+  });
 });
