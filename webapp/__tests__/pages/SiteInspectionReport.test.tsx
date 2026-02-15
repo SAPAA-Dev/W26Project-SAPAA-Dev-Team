@@ -257,5 +257,30 @@ describe('US 1.0.7 – Add Trip Details about how the trip went', () => {
     localStorage.clear();
   });
 
+it('user can enter reasoning for visiting the site (Q41) and additional details (Q41.1)', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(tripDetailsQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/What was the reason for your visit/i)).toBeInTheDocument();
+    });
+
+    // Q41 - select a reason
+    expect(screen.getByText('Routine Inspection')).toBeInTheDocument();
+    expect(screen.getByText('Follow-up')).toBeInTheDocument();
+    expect(screen.getByText('Other')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Routine Inspection'));
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][41]).toBe('Routine Inspection');
+
+    // Q41.1 - optional text details
+    expect(screen.getByText(/additional details about your visit reason/i)).toBeInTheDocument();
+    const textareas = screen.getAllByPlaceholderText('Enter your response here...');
+    fireEvent.change(textareas[0], { target: { value: 'Scheduled quarterly check' } });
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][411]).toBe('Scheduled quarterly check');
+  });
+
+  
   
 });
