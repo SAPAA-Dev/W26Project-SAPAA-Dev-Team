@@ -267,6 +267,11 @@ async function renderBeThereMainContent(mockOnChange: jest.Mock) {
   });
 }
 
+// Significant site changes question (Q54) - section 4 (normalized to 1, the default active section)
+const siteChangesQuestions = [
+  { id: 54, title: 'Significant Site Changes (Q54)', text: 'Describe any significant recent landscape changes (e.g. wildfires, flooding, erosion, land clearing)', question_type: 'text', section: 4, answers: [], formorder: 1, is_required: false, sectionTitle: 'Site Changes', sectionDescription: 'Report any significant changes to the site', sectionHeader: 'Site Changes' },
+];
+
 // Trip details questions (Q41, Q41.1, Q42, Q43) - section 4 (normalized to 1, the default active section)
 const tripDetailsQuestions = [
   { id: 41, title: 'Reason for Visit (Q41)', text: 'What was the reason for your visit?', question_type: 'option', section: 4, answers: [{ text: 'Routine Inspection' }, { text: 'Follow-up' }, { text: 'Other' }], formorder: 1, is_required: true, sectionTitle: 'Trip Details', sectionDescription: 'Describe your trip', sectionHeader: 'Trip Details' },
@@ -921,4 +926,44 @@ describe('US 1.0.14 - Add Other Comments', () => {
     
     alertSpy.mockRestore();
   });
+
+  describe('US 1.0.11 – Add Details Regarding Significant Site Changes', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it('user can enter details about recent landscape changes (Q54)', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(siteChangesQuestions);
+    const mockOnChange = jest.fn();
+    render(<MainContent responses={{}} onResponsesChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/significant recent landscape changes/i)).toBeInTheDocument();
+    });
+
+    const textarea = screen.getByPlaceholderText('Enter your response here...');
+    fireEvent.change(textarea, { target: { value: 'Recent wildfire damage on the north ridge, significant tree loss observed' } });
+
+    expect(mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0][54])
+      .toBe('Recent wildfire damage on the north ridge, significant tree loss observed');
+  });
+
+  it('Q54 is optional and submitting without it does not show an error', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(siteChangesQuestions);
+    render(<MainContent responses={{}} onResponsesChange={jest.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Significant Site Changes/i)).toBeInTheDocument();
+    });
+
+    // Q54 should NOT have a Required badge
+    expect(screen.queryByText('Required')).not.toBeInTheDocument();
+
+    // Footer confirms form is submittable with 0 answers
+    render(<StickyFooter questions={siteChangesQuestions} responses={{}} />);
+    expect(screen.getByText('0 / 1 answered')).toBeInTheDocument();
+  });
+});
+
 });
