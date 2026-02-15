@@ -686,7 +686,7 @@ describe('US 1.0.12 - Address any Biological Observations that is in the Site', 
     expect(latestResponses[9]).toBe('');
   });
 
-  it('does not include question number 4.3 in the missing required questions popup when answered', async () => {
+  it('does not include optional question number in the missing required questions popup when answered', async () => {
     const mockOnChange = jest.fn();
     await renderBeThereMainContent(mockOnChange);
     mockGetQuestionsOnline.mockResolvedValue(beThereQuestions);
@@ -701,7 +701,7 @@ describe('US 1.0.12 - Address any Biological Observations that is in the Site', 
     const submitButton = screen.getByRole('button', { name: /Review & Submit/i });
     fireEvent.click(submitButton);
 
-    // Assert that the alert does NOT contain "4.3" because it isn't a required question
+    // Assert that the alert does not contain "4.3" because it isn't a required question
     await waitFor(() => {
       if (alertSpy.mock.calls.length > 0) {
         const alertMessage = alertSpy.mock.calls[0][0];
@@ -713,14 +713,14 @@ describe('US 1.0.12 - Address any Biological Observations that is in the Site', 
   });
 });
 
-describe('US 1.0.1 - Access Site Inspection Form on Web Application', () => {
+describe('US 1.0.27 - Enforce Required Questions on Site Inspection Form (also covers the submission acceptance test for US 1.0.1)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
   });
 
   it('blocks submission and shows the required questions popup when a mandatory field is missing', async () => {
-    // 1. Mock the dependencies to provide one required question
+    // Mock the dependencies to provide one required question
     const mockQuestion = [
       { 
         id: 1, 
@@ -747,17 +747,16 @@ describe('US 1.0.1 - Access Site Inspection Form on Web Application', () => {
     const popupTitle = await screen.findByText(/Required Questions Missing/i);
     expect(popupTitle).toBeInTheDocument();
 
-    // 5. Assert that the specific missing question number is displayed
-    // Based on your buildQuestionNumberMap logic: section (4-3) = 1, index (0+1) = 1 -> "1.1"
+    // Assert that the specific missing question number is displayed
     const missingNumber = screen.getAllByText('0.1');
     expect(missingNumber[0]).toBeInTheDocument();
 
-    // 6. Verify that the final submission functions were NEVER called
+    // Verify that the final submission functions were not called
     expect(mockAddSiteInspectionReport).not.toHaveBeenCalled();
   });
 
   it('successfully calls uploadSiteInspectionAnswers when all required questions are answered', async () => {
-    const mockQuestion = [
+    const mockRequiredQuestion = [
       { 
         id: 1, 
         title: 'Test Required Question', 
@@ -769,15 +768,30 @@ describe('US 1.0.1 - Access Site Inspection Form on Web Application', () => {
         is_required: true, 
         sectionTitle: 'Test', 
         sectionDescription: 'Test', 
-        sectionHeader: 'Test' }
+        sectionHeader: 'Test' },
     ];
 
-    mockGetQuestionsOnline.mockResolvedValue(mockQuestion);
+    const mockOptionalQuestion = [
+      { 
+        id: 2, 
+        title: 'Test Optional Question', 
+        text: 'Test Optional Answer', 
+        question_type: 'option', 
+        section: 4, 
+        answers: [{ text: 'Yes' }, { text: 'No' }], 
+        formorder: 2, 
+        is_required: false, 
+        sectionTitle: 'Test', 
+        sectionDescription: 'Test', 
+        sectionHeader: 'Test' }
+    ]
+
+    mockGetQuestionsOnline.mockResolvedValue(mockRequiredQuestion);
     mockAddSiteInspectionReport.mockResolvedValue({ id: 500 });
     mockGetQuestionResponseType.mockResolvedValue([{ question_id: 1, obs_value: 1, obs_comm: 0 }]);
     render(<NewReportPage />);
 
-    // Answer the required question and then submit the form
+    // Answer the required question but not the optional question and then submit the form
     const option = await screen.findByText('Yes');
     fireEvent.click(option);
 
