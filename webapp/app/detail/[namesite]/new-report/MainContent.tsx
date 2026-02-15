@@ -22,6 +22,7 @@ interface Question {
   sectionDescription?: string | null;
   sectionHeader?: string | null;
   is_required?: boolean | null;
+  autofill_key?: string | null;
 }
 
 interface MainContentProps {
@@ -69,26 +70,20 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
 
     const autofilled: Record<number, any> = {};
 
-    const AUTOFILL_MAP: Record<number, () => string | undefined> = {
-      32: () => currentUser?.email,
-      37: () => new Date().toISOString().split('T')[0], // Autofills to current date but idk if i want that
-      35: () => currentUser?.phone ?? undefined,
-      34: () => currentUser?.name,
+    const autofillValues: Record<string, string | undefined> = {
+      user_email: currentUser?.email,
+      user_name: currentUser?.name,
+      user_phone: currentUser?.phone,
+      visit_date: new Date().toISOString().split('T')[0],
+      site_name: siteName,
     };
 
     questions.forEach((question) => {
-      // Handle site_select by type
-      if (question.question_type.trim() === 'site_select' && siteName) {
-        autofilled[question.id] = siteName;
-        return;
-      }
+      const key = question.autofill_key;
+      if (!key) return;
 
-      // Handle other auto-filled questions by explicit map to id
-      const getValue = AUTOFILL_MAP[question.id];
-      if (getValue) {
-        const value = getValue();
-        if (value) autofilled[question.id] = value;
-      }
+      const value = autofillValues[key];
+      if (value) autofilled[question.id] = value;
     });
 
     if (Object.keys(autofilled).length > 0) {
