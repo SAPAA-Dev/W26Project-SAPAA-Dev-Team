@@ -142,13 +142,15 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 #### US 1.0.10 – Indicate submissions to iNaturalist | Story Points: 1 
 > **As** a User, **I want** to be told about iNaturalist and indicate if I am posting to it, **so that** it can be documented if my findings have yet been shared to iNaturalist (Q53).
 
-> **Acceptance Tests** [needs to be updated]
+> **Acceptance Tests** 
 
-> 1. There is a link / url available to iNaturalist
-> 2. Users are able to indicate if they have addressed any submissions to iNaturalist.ca.
-> 3. Submitting the Site Inspection Form without entering the required details (Q53) will result in an error message.
-
-
+> 1. Renders section 4 and the 4.2 Submissions to iNaturalist question
+> 2. User can select "Yes" for submissions to iNaturalist
+> 3. User can select "No, Not this time" for submissions to iNaturalist
+> 4. User can select "No, not a member of iNaturalist" for submissions to iNaturalist
+> 5. User can select "What is iNaturalist?" for submissions to iNaturalist 
+> 6. User can select "Other/Not Applicable" for submissions to iNaturalist 
+> 7. Selecting a new iNaturalist option replaces the previous one
 
 #### US 1.0.11 – Address details of Landscape changes | Story Points: 2 
 > **As** a User, **I want** to be able to add details regarding any significant site changes, **so that** important or significant changes can be tracked in my report
@@ -318,14 +320,12 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 #### US 1.0.26 – Persist Site Inspection Form Draft | Story Points: 5
 > **As** a user, **I want** my answers to be automatically saved as a draft, **so that** I do not lose my progress if I refresh, navigate away, or accidentally close my tab.
 
-> **Acceptance Tests** [needs to be done]
+> **Acceptance Tests** 
 
-> 1. If a user enters any response in the Site Inspection Form, the response is automatically saved as a draft locally
-> 2. If a user refreshes the page, previously entered responses are restored
-> 3. If a user navigates away from the form and later returns, previously entered responses are restored.
-> 4. Drafts are saved per user and per site (a draft from one site must not appear on another site).
-> 5. Draft data is automatically cleared once the form is successfully submitted.
-> 6. Draft persistence must not interfere with normal form submission behavior.
+> 1. Saves responses to local storage on change and restores them after rerendering
+> 2. Separates drafts by site so Site A data does not appear on Site B
+> 3. Restores draft when returning to the page after navigating away
+> 4. Clears draft data from localStorage after successful submission
 
 #### US 1.0.27 – Enforce Required Questions on Site Inspection Form | Story Points: 3
 > **As** a user, **I want** to be prevented from submitting the form if required questions are unanswered, **so that** the report is complete and contains all mandatory information.

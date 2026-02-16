@@ -119,7 +119,7 @@ This page provides a general overview of the assigned tasks and roles for the du
 |US 2.0.1 – Manage the uploading and storing of site inspection images|8|
 |US 2.0.2 – Image Metadata|2|
 |US 2.0.3 – Gallery View|3|
-
+|TASK 2.0.6 - Refactor Report Rendering to Use Updated Database Schema|N/A|
 
 **Sprint Velocity:** 36
 
@@ -140,6 +140,7 @@ This page provides a general overview of the assigned tasks and roles for the du
 |Manage the uploading and storing of site inspection images onto S3|US 2.0.1|Harveer|Mar 5th|
 |Image Metadata|US 2.0.2|Akib|Mar 5th|
 |Gallery View|US 1.0.12|Akib|Mar 5th|
+|Refactor Report Rendering to Use Updated Database Schema|TASK 2.0.6|Everyone|Mar 7th|
 |Finalize the submission flow and validation logic |All US|Everyone|Mar 7th|
 |Write acceptance tests|All US|Everyone|Mar 7th|
 |Update documentation|Documentation|Everyone|Mar 8th|
