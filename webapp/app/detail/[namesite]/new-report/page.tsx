@@ -119,12 +119,12 @@ export default function NewReportPage() {
     const initDraftKey = async () => {
       const userUid = await getCurrentUserUid();
       const siteId = await getCurrentSiteId(namesite);
-      console.log("userUid:", userUid);
-      console.log("siteId:", siteId);
+      // console.log("userUid:", userUid);
+      // console.log("siteId:", siteId);
 
       if (userUid && siteId) {
         const key = `inspection-draft-${userUid}-${siteId}`;
-        console.log("Draft key created:", key);
+        // console.log("Draft key created:", key);
         setDraftKey(key);
       }
     };
@@ -274,8 +274,8 @@ export default function NewReportPage() {
       if (draftKey) {
         localStorage.removeItem(draftKey);
       }
-
       console.log("Draft cleared after successful submission");
+      router.push('/sites?submitted=true');
     } catch (error) {
       console.error(error);
     }
@@ -346,13 +346,13 @@ export default function NewReportPage() {
     
     //TODO: Handle form submission
 
-    console.log('Form data to submit:', {
-      user: currentUser,
-      site: namesite,
-      responses: responses,
-      isSteward: isStewardUser,
-      termsAccepted: hasAccepted
-    });
+    // console.log('Form data to submit:', {
+    //   user: currentUser,
+    //   site: namesite,
+    //   responses: responses,
+    //   isSteward: isStewardUser,
+    //   termsAccepted: hasAccepted
+    // });
   };
 
   if (isLoading) {

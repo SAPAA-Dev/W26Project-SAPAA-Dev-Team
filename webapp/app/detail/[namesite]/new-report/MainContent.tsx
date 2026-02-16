@@ -16,7 +16,7 @@ interface Question {
   text: string | null;
   question_type: string;
   section: number;
-  answers: Answer[];
+  answers: (string | { text: string })[];
   formorder?: number | null;
   sectionTitle?: string | null;
   sectionDescription?: string | null;
@@ -50,11 +50,12 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
       try {
         setLoading(true);
         const data = await getQuestionsOnline();
-        console.log('Fetched questions:', data);
-        console.log('Email question:', data.find(q => 
-        (q.title ?? '').toLowerCase().includes('email') || 
-        (q.text ?? '').toLowerCase().includes('email')
-      ));
+      //   console.log('Fetched questions:', data);
+      //   console.log('Email question:', data.find(q => 
+      //   (q.title ?? '').toLowerCase().includes('email') || 
+      //   (q.text ?? '').toLowerCase().includes('email')
+      // ));
+
         setQuestions(data || []);
       } catch (error) {
         console.error('Error fetching questions:', error);
@@ -111,7 +112,7 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
     });
   });
   
-  const sectionMetadata: Record<number, { title: string; description: string }> = {};
+  const sectionMetadata: Record<number, { title: string; description: string; header: string}> = {};
     Object.keys(questionsBySection).forEach(sectionKey => {
       const sectionNum = Number(sectionKey);
       const firstQuestion = questionsBySection[sectionNum]?.[0];
@@ -149,8 +150,10 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
       case 'option':
         return (
           <div className="space-y-2">
-            {question.answers.map((answer, index) => {
-              const answerText = typeof answer === 'string' ? answer : (answer.text || answer);
+            {(question.answers ?? []).map((answer, index) => {
+              const answerText = typeof answer === 'object' && answer !== null 
+              ? (answer as { text: string }).text 
+              : String(answer);
               return (
                 <label
                   key={index}
@@ -176,8 +179,10 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
       case 'selectall':
         return (
           <div className="space-y-2">
-            {question.answers.map((answer, index) => {
-              const answerText = typeof answer === 'string' ? answer : (answer.text || answer);
+            {(question.answers ?? []).map((answer, index) => {
+              const answerText = typeof answer === 'object' && answer !== null 
+              ? (answer as { text: string }).text 
+              : String(answer);
               const selectedAnswers = Array.isArray(response) ? response : [];
               const isChecked = selectedAnswers.includes(answerText);
               

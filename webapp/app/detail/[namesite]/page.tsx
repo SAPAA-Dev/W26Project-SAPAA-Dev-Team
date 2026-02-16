@@ -140,8 +140,8 @@ export default function SiteDetailScreen() {
   
         entry.answers.push({
           inspectionId: inspection.id,
-          date: inspection.inspectdate,
-          displayDate: new Date(inspection.inspectdate).toLocaleDateString(),
+          date: inspection.inspectdate || '',
+          displayDate: inspection.inspectdate ? new Date(inspection.inspectdate).toLocaleDateString() : 'N/A',
           answer: answerText || q.questionText,
         });
       });
@@ -229,9 +229,11 @@ export default function SiteDetailScreen() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
+
       {/* Header */}
       <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-6 shadow-lg">
         <div className="max-w-7xl mx-auto">
+
           <button
             onClick={() => router.push('/sites')}
             className="flex items-center gap-2 text-[#E4EBE4] hover:text-white transition-colors mb-4 group"
@@ -428,11 +430,11 @@ export default function SiteDetailScreen() {
                       </div>
                       <div>
                         <h3 className="text-lg font-bold text-[#254431]">
-                          {new Date(inspection.inspectdate).toLocaleDateString('en-US', {
+                          {inspection.inspectdate ? new Date(inspection.inspectdate).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric'
-                          })}
+                          }) : 'N/A'}
                         </h3>
                         <p className="text-sm text-[#7A8075]">Score: {normalizeScore(inspection.naturalness_score)}</p>
                       </div>

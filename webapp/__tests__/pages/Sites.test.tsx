@@ -9,6 +9,8 @@ jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
+  usePathname: () => '/sites',
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // Mock Next.js Image component
@@ -186,9 +188,10 @@ describe('HomeClient', () => {
 
       // Find the Total Sites card and check its value
       const totalSitesLabel = screen.getByText('Total Sites');
-      const totalSitesCard = totalSitesLabel.closest('div.bg-white\\/10');
+      const totalSitesCard = totalSitesLabel.closest('div.bg-white\\/10') as HTMLElement | null;
       expect(totalSitesCard).toBeInTheDocument();
       expect(within(totalSitesCard!).getByText('4')).toBeInTheDocument();
+
     });
 
     it('should display total inspections count', async () => {
