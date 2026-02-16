@@ -170,15 +170,18 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 #### US 1.0.13 - Address Any Human Disturbances - Section 8 | Story Points: 1
 > **As** a User, **I want** to be able to add details regarding any human disturbances I noticed during my visit, **so that** I can be as detailed as possible in my report
 
-> **Acceptance Tests** [needs to be done]
+> **Acceptance Tests**
 
-> 1. Able to describe what other visitors were doing on their visit
-> 2. Able to indicate agricultural and / or resource extraction use by other
-> 3. Able to indicate any motorized disturbances (ATVs, etc.)
-> 4. Able to indicate human gathering / dumping activities
-> 5. Able to indicate infrastructure encroachment into the site
-> 6. Submitting the Site Inspection Form without entering the required details (Q61-66) will result in an error message.
-
+> 1. Renders section 5 questions 5.1 through 5.8 
+> 2. User can indicate what other visitors were doing
+> 3. User can indicate agricultural activity 
+> 4. User can indicate resource extraction activity
+> 5. User can indicate motorized disturbance 
+> 6. User can indicate gathering and dumping activity 
+> 7. User can indicate infrastructure encroachment 
+> 8. User can enter invasive plants or disease comments 
+> 9. User can enter comments on human disturbances
+> 10. Comments can be cleared when not applicable
 
 #### US 1.0.14 - Add Other Comments | Story Points: 2
 > **As** a User, **I want** to be able to add comments/information that aren’t specifically mentioned in the questions, **so that** I can share all information I see as important, even when it isn’t specifically asked for.
@@ -324,20 +327,16 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 5. Draft data is automatically cleared once the form is successfully submitted.
 > 6. Draft persistence must not interfere with normal form submission behavior.
 
-
-
-
 #### US 1.0.27 – Enforce Required Questions on Site Inspection Form | Story Points: 3
 > **As** a user, **I want** to be prevented from submitting the form if required questions are unanswered, **so that** the report is complete and contains all mandatory information.
 
-> **Acceptance Tests** [needs to be done]
+> **Acceptance Tests** 
 
 > 1. If a user attempts to submit the Site Inspection Form without answering all required questions, a pop up message is displayed indicating that required questions must be completed before submission
-> 2. The pop up clearly states which required questions are missing
+> 2. Blocks submission and shows the required questions popup when a mandatory field is missing
 > 3. The form submission is blocked until all required questions are answered
-> 4. If a user answers all required questions and clicks submit, the form is successfully submitted
-> 5. Optional questions do not prevent submission if left unanswered
-
+> 4. Successfully calls uploadSiteInspectionAnswers when all required questions are answered 
+> 5. Optional questions do not prevent submission if left unanswered 
 
 #### US 1.0.28 – Autofill Applicable Form Questions | Story Points: 3
 > **As** a user, **I want** applicable information to be auto-filled into my report form, **so that** I can save time from having to manually enter that information myself.
@@ -757,3 +756,4 @@ Each user story is categorized into one of the following priority levels:
 ### Testing & Tools
   * [Jest Testing Framework](https://jestjs.io/)
   * [Postman](https://www.postman.com/) for API testing  
+
