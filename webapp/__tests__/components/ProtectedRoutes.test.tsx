@@ -9,6 +9,8 @@ jest.mock('@/hooks/useAuth');
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
   usePathname: jest.fn(),
+  useParams: jest.fn(),
+  useSearchParams: () => new URLSearchParams(), 
 }));
 jest.mock('@/utils/supabase/client');
 
