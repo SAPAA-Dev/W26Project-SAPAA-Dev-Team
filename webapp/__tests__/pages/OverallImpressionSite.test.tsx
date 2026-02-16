@@ -86,7 +86,7 @@ async function renderOverallImpressionMainContent(mockOnChange: jest.Mock) {
   });
 }
 
-describe('US 1.0.X - Overall Impression of the Site', () => {
+describe('US 1.0.6 - Rank the Health of the Site', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
