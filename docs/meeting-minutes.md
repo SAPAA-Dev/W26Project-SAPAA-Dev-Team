@@ -201,18 +201,6 @@
 
 ---
 
-
-### Feb 9, 2026
-**Key Discussions & Decisions**
-- Raiyana Rahman presented the updates made to the database schema to the entire team.
-- Finished refactoring the Supabase and creating the ER diagram to show the table relations
-- Finished the frontend entry point of the Site Inspection Form webapp
-
-**Action Items**
-- The team plans to continue with the development and start integrating the new database schema.
-
----
-
 ### Feb 11, 2026
 **Key Discussions & Decisions**
 - Had usual TA meeting in lab session

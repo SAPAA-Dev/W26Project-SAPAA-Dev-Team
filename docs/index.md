@@ -413,7 +413,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 #### TASK 2.0.6 - Refactor Report Rendering to Use Updated Database Schema
-> Updated report rendering logic to fetch and display data using the refactored Supabase schema. Modified queries and joins to align with the new Form Responses and Answers tables and verified correct rendering of all question types.
+> Update report rendering logic to fetch and display data using the refactored Supabase schema. Modify queries and joins to align with the new Form Responses and Answers tables and verified correct rendering of all question types.
 
 
 
