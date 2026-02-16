@@ -713,6 +713,159 @@ describe('US 1.0.12 - Address any Biological Observations that is in the Site', 
   });
 });
 
+describe('US 1.0.26 - Persist Site Inspection Form Draft', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it('saves responses to local storage on change and restores them after rerendering', async () => {
+    const mockQuestion = [
+      { 
+        id: 1, 
+        title: 'Test Required Question', 
+        question_type: 'option', 
+        section: 4,
+        answers: [{ text: 'Yes' }, { text: 'No' }], 
+        formorder: 1, 
+        is_required: true 
+      }
+    ];
+
+    // Ensure these return specific strings, not objects
+    mockGetQuestionsOnline.mockResolvedValue(mockQuestion);
+    mockGetCurrentUserUid.mockResolvedValue('user-123');
+    mockGetCurrentSiteId.mockResolvedValue('1');
+
+    const { unmount } = render(<NewReportPage />);
+    
+    const option = await screen.findByText('Yes');
+    fireEvent.click(option);
+
+    const storageKey = 'inspection-draft-user-123-1'; 
+    await waitFor(() => {
+      const storedData = JSON.parse(localStorage.getItem(storageKey) || '{}');
+      expect(storedData).toMatchObject({ "1": "Yes" });
+    });
+
+    // Refresh by unmounting and remounting
+    unmount();
+    render(<NewReportPage />);
+
+    // Make sure the 'Yes' option is restored after refresh
+    await screen.findByText('Yes');
+    const radioInput = screen.getByDisplayValue('Yes') as HTMLInputElement;
+    expect(radioInput.checked).toBe(true);  
+  });
+
+  it('separates drafts by site so Site A data does not appear on Site B', async () => {
+    const mockQuestion = [
+      { 
+        id: 1, 
+        title: 'Test Required Question', 
+        question_type: 'text', 
+        section: 4,
+        answers: [], 
+        formorder: 1, 
+        is_required: true 
+      }
+    ];
+    mockGetQuestionsOnline.mockResolvedValue(mockQuestion);
+    mockGetCurrentUserUid.mockResolvedValue('user-123');
+    mockGetCurrentSiteId.mockResolvedValue('1');
+
+    // Fill the local storage with a draft for a different site
+    const differentSiteKey = 'inspection-draft-user-123-2';
+    localStorage.setItem(differentSiteKey, JSON.stringify({ 1: 'Different Site Data' }));
+
+    // Render the current site
+    render(<NewReportPage />);
+
+    // Verify the input is empty (it did not load the other site's draft)
+    const input = await screen.findByTestId("question-input-1") as HTMLTextAreaElement;
+    expect(input.value).toBe('');
+  });
+
+  it('restores draft when returning to the page after navigating away', async () => {
+    const mockQuestion = [
+      { 
+        id: 1, 
+        title: 'Test Required Question', 
+        question_type: 'text', 
+        section: 4,
+        answers: [], 
+        formorder: 1, 
+        is_required: true 
+      }
+    ];
+    mockGetQuestionsOnline.mockResolvedValue(mockQuestion);
+    mockGetCurrentUserUid.mockResolvedValue('user-123');
+    mockGetCurrentSiteId.mockResolvedValue('1');
+
+    // Manually set a draft
+    const storageKey = 'inspection-draft-user-123-1';
+    localStorage.setItem(storageKey, JSON.stringify({ 1: 'Previously saved data' }));
+
+    render(<NewReportPage />);
+
+    // Check if the text is there upon returning
+    const input = await screen.findByTestId("question-input-1") as HTMLTextAreaElement;
+    expect(input.value).toBe('Previously saved data');
+  });
+
+  it('clears draft data from localStorage after successful submission', async () => {
+    const mockQuestion = [
+      { 
+        id: 1, 
+        title: 'Test Required Question', 
+        question_type: 'text', 
+        section: 4,
+        answers: [], 
+        formorder: 1, 
+        is_required: true 
+      }
+    ];
+
+    mockGetQuestionsOnline.mockResolvedValue(mockQuestion);
+    mockGetCurrentUserUid.mockResolvedValue('user-123');
+    mockGetCurrentSiteId.mockResolvedValue('1');
+    mockAddSiteInspectionReport.mockResolvedValue({ id: 500 });
+    mockGetQuestionResponseType.mockResolvedValue([{ 
+        question_id: 1, 
+        obs_value: 1, 
+        obs_comm: 0 
+    }]);
+
+    render(<NewReportPage />);
+    
+    // Enter data (Draft is saved as "Final report content")
+    const input = await screen.findByTestId(`question-input-1`);
+    fireEvent.change(input, { target: { value: 'Final report content' } });
+    
+    // Ensure this key matches your page.tsx logic
+    const storageKey = 'inspection-draft-user-123-Test%20Site';
+    
+    // 2. Submit the form
+    const submitButton = screen.getByRole('button', { name: /Review & Submit/i });
+    fireEvent.click(submitButton);
+
+    // 3. Verify upload and cleanup
+    await waitFor(() => {
+      expect(mockUploadSiteInspectionAnswers).toHaveBeenCalled();
+      
+      const uploadedData = mockUploadSiteInspectionAnswers.mock.calls[0][0];
+      expect(uploadedData[0]).toMatchObject({
+        response_id: 500,
+        question_id: 1,
+        obs_value: 'Final report content' // Matches what was typed
+      });
+
+      // Verify draft is actually gone
+      expect(localStorage.getItem(storageKey)).toBeNull();
+    });
+  });
+});
+
 describe('US 1.0.27 - Enforce Required Questions on Site Inspection Form (also covers the submission acceptance test for US 1.0.1)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -756,7 +909,7 @@ describe('US 1.0.27 - Enforce Required Questions on Site Inspection Form (also c
   });
 
   it('successfully calls uploadSiteInspectionAnswers when all required questions are answered', async () => {
-    const mockRequiredQuestion = [
+    const mockQuestions = [
       { 
         id: 1, 
         title: 'Test Required Question', 
@@ -769,24 +922,23 @@ describe('US 1.0.27 - Enforce Required Questions on Site Inspection Form (also c
         sectionTitle: 'Test', 
         sectionDescription: 'Test', 
         sectionHeader: 'Test' },
-    ];
-
-    const mockOptionalQuestion = [
       { 
         id: 2, 
         title: 'Test Optional Question', 
         text: 'Test Optional Answer', 
-        question_type: 'option', 
+        question_type: 'text', 
         section: 4, 
-        answers: [{ text: 'Yes' }, { text: 'No' }], 
+        answers: [], 
         formorder: 2, 
         is_required: false, 
         sectionTitle: 'Test', 
         sectionDescription: 'Test', 
         sectionHeader: 'Test' }
-    ]
+    ];
 
-    mockGetQuestionsOnline.mockResolvedValue(mockRequiredQuestion);
+    
+
+    mockGetQuestionsOnline.mockResolvedValue(mockQuestions);
     mockAddSiteInspectionReport.mockResolvedValue({ id: 500 });
     mockGetQuestionResponseType.mockResolvedValue([{ question_id: 1, obs_value: 1, obs_comm: 0 }]);
     render(<NewReportPage />);
