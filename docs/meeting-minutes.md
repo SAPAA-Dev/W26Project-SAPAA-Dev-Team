@@ -100,7 +100,6 @@
 
 ---
 
----
 
 ### January 30, 2026
 **Key Discussions & Decisions**  
@@ -121,27 +120,118 @@
 
 ---
 
-
-
 ### Afternoon of January 31, 2026
 **Key Discussions & Decisions**  
 - Visited Riverlot 56 with the client, Frank Potter, and discussed how stewards will use the web application and mobile app in the field  
-- Gained clearer understanding of steward workflows and validated several existing user stories based on on-site discussions  
+- Gained clearer understanding of steward workflows and validated several existing user stories based on on-site discussions   
 - Proposed cross referencing user stories with specific site inspection questions to improve clarity 
+
 
 **Action Items**  
 - Continue refining user stories and system functionalities based on client and field feedback  
 
+---
 
-### February 1, 2026
+
+
+
+###  February 1, 2026
 **Key Discussions & Decisions**  
-- Key Discussions & Decisions
-- Team finished up the rest of the sprint 1 requirements
-- Assigned tasks to everyone for sprint 2 
+- Team finished up the rest of the sprint 1 requirements 
+- Assigned tasks to everyone for sprint 2  
+
 
 **Action Items**  
-- Start working on creating the web application
+- Start working on creating the web application  
 - Start coding the implementations for user stories in sprint 2
 
 ---
 
+
+## Sprint 2
+
+### Feb 4, 2026
+**Key Discussions & Decisions**
+- Had usual TA meeting in lab session
+- Discussed what we did last week and started planning how to approach sprint 2
+- Discussed if we wanted to refactor the Supabase
+- Looked into current Google Sheets code that acts as a middleman between Google Forms and Supabase
+
+**Action Items**
+- Create a plan to refactor the Supabase by creating new tables to put all our Site Inspection Form data into
+- Create diagrams showing the new refactored Supabase to show Frank for approval
+
+---
+
+### Feb 6, 2026
+**Key Discussions & Decisions**
+- Met with Frank for our weekly meeting to discuss our plans going forwards
+- Created a draft for the diagrams for Supabase refactoring
+- There will be no meeting next week due to conflicts with Frank's schedule
+
+**Action Items**
+- Set up a meeting with Frank to setup an AWS account for our s3 image management and possibly a separate Email account for SAPAA
+- Continue on with refactoring Supabase
+- Start on developing the frontend entry point for the Site Inspection Form webapp
+
+---
+
+
+
+### Feb 7, 2026
+**Key Discussions & Decisions**
+- Members met to work in-person on the project
+- Finished refactoring the Supabase and creating diagrams to show the table relations
+- Finished the frontend entry point of the Site Inspection Form webapp
+
+**Action Items**
+- Continue working through the other user stories related to the Site Inspection Form questions
+- Have a meeting to explain to other team members about how the new Supabase schema works
+
+---
+
+### Feb 9, 2026
+**Key Discussions & Decisions**
+- Raiyana Rahman presented the updates made to the database schema to the entire team.
+- Finished refactoring the Supabase and creating the ER diagram to show the table relations
+- Finished the frontend entry point of the Site Inspection Form webapp
+
+**Action Items**
+- The team plans to continue with the development and start integrating the new database schema.
+
+---
+
+### Feb 11, 2026
+**Key Discussions & Decisions**
+- Had usual TA meeting in lab session
+- Discussed what we did last week and continued implementations of Sprint 2
+- Members discussed their progress with their user stories
+
+**Action Items**
+- Add new user stories based on issues that came up while working on Sprint 2 user stories
+- Have an in-person meeting on Friday to work on Sprint 2 requirements and Git related things (E.g. merging pull requests, closing issues)
+
+---
+
+### Feb 13, 2026
+**Key Discussions & Decisions**
+- Members met in-person to work together on Sprint 2
+- Resolved Git pull requests as a team to make sure we were following proper Git conventions
+
+**Action Items**
+- Finish up Sprint 2 user stories by adding tests to resolve user story acceptance tests
+- Work on other Sprint 2 requirements like the traceability matrix
+- Document all Sprint 2 requirements on the documentation website
+
+---
+
+### Feb 15, 2026
+**Key Discussions & Decisions**
+- Members met online to finish merging the remaining pull requests, adding missing tests, and cleaning up the codebase
+- Finished up other Sprint 2 requirements
+- Moved all required documentation into the documentation website
+
+**Action Items**
+- Start planning over the reading week for Sprint 3
+
+---

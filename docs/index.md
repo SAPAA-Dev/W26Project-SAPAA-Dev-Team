@@ -38,170 +38,175 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests**
 
->1. Able to enter a website link and access the web application
->2. Able to click a button to access the Site Inspection Form
->3. Able to submit the Site Inspection Form
-
+> 1. Should have the New Site Inspection Report button visible and enabled
+> 2. Should navigate to the new report page when clicking the "New Site Inspection Report" button
+> 3. Blocks submission and shows the required questions popup when a mandatory field is missing 
+> 4. Successfully calls uploadSiteInspectionAnswers when all required questions are answered
 
 #### US 1.0.2 – Add Personal Information to Site Inspection Form | Story Points: 1    
 > **As** a User, **I want** to be able to add my personal details, **so that** I can be identified for completing the Site Inspection.
 
 > **Acceptance Tests**
 
-> 1. User can enter steward name and rank
-> 2. User can enter first and last names of guests
-> 3. User can enter contact information (email and phone)
+> 1. User can enter steward name 
+> 2. User can enter first and last names of guests 
+> 3. User can enter contact information (email and phone) 
 > 4. User can indicate SAPAA membership
-> 5. Missing required fields display an error message
-
+> 5. Footer tracks progress correctly 
 
 #### US 1.0.3 – Liability Check | Story Points: 1
 **As** a User, **I want** to be prompted to verify that I am not a volunteer and this is not an emergency, **so that** I can ensure I am accessing the correct resource(s).
 
 > **Acceptance Tests**
 
-> 1. User is prompted to answer if they are a volunteer or not before gaining access to the rest of the form
-> 2. User is prompted to answer if this is an emergency
-> 3. User cannot access or submit the form without answering
-> 4. If a user answers that they are a SAPAA volunteer and/or that this is an emergency then access is denied
-> 5. If user answers yes to either question, they are notified that they cannot access the form
-
-
+> 1. System displays a loading spinner followed by a mandatory verification popup before form access is granted
+> 2. Popup explicitly displays an emergency notice regarding 911 and a "310-LAND" contact link
+> 3. System requires the user to type an exact, case-sensitive phrase (shown in a code block) to proceed
+> 4. System displays real-time validation errors for incorrect, partial, or trailing-space phrase entries
+> 5. Verified stewards bypass the liability popup entirely and see a "Steward Badge" in the header
+> 6. Users can click "Cancel" to exit the process, which triggers a navigation back to the previous page.
+> 7. The popup state is fresh upon re-navigation, ensuring users cannot "trick" the system by going back and forward.
 
 #### US 1.0.4 – Have access to the Terms and Conditions of Inputting Information | Story Points: 1
 **As** a User, **I want** to be able to see the Terms and Conditions of filling out the Site Inspection Form, **so that** I am aware of how my information will be used for and the level of privacy I am agreeing to.
 
 > **Acceptance Tests**
 
-> 1. Able to easily access a link to the Terms and Conditions at any time during Form completion while saving progress
-> 2. If user has not read the terms and conditions and agreed, they will not be able to fill out the form
-
-
+> 1. "Continue to Form" button remains disabled by default and only enables when the Terms and Conditions checkbox is explicitly checked
+> 2. "Continue" button reacts dynamically to checkbox toggling, and non-steward verification blocks form access until all terms are accepted
+> 3. Keyboard-accessible link to the Terms is available within the popup; clicking it allows viewing terms without closing the active verification state
+> 4. The terms link includes a from query parameter for tracking, and the "checked" state is preserved after the popup is dismissed to record the agreement.
 
 #### US 1.0.5 – Add Details Regarding the Overview of my Visit | Story Points: 1   
 > **As** a User, **I want** to be able to add details regarding my visit, **so that** I can describe which site I went to and when I visited it.
 
 > **Acceptance Tests**
 
-> 1. Able to enter the date and time of the visit
-> 2. The user can't enter a future date or time.
-> 3. Able to enter which site the user is/was inspecting (pre-populated list)
-> 4. Able to specify the parcel / site name if not listed previously (text box)
-> 5. Able to optionally enter an ‘inspection number’ for personal record keeping
-> 6. Submitting the Site Inspection Form without entering the required details will display an error message
-
-
-
-
+> 1. User can enter date of visit 
+> 2. User can enter which site they are inspecting
+> 3. User can select their designated steward status 
+> 4. User can select only ONE designated steward option (radio button behavior) 
+> 5. Displays all required fields with Required badge
+> 6. Footer tracks progress correctly 
+> 7. Allows submission when all required fields are filled
+> 8. Displays error when submitting without required fields
 
 #### US 1.0.6 – Rank the Health of the Site | Story Points: 1   
 > **As** a User, **I want** to be able to rank the state of the site during my visit, **so that** I can describe its health and my thoughts on its current condition.
 
 > **Acceptance Tests**
 
-> 1. Able to enter the naturalness of the site (scale from 0 to 4)
-> 2. Able to enter comments on how healthy the user felt the site was (textbox)
-> 3. Able to enter comments about changes that occurred from the last time they visited (textbox / if applicable)
-> 4. Submitting the Site Inspection Form without answering questions 32 (healthy) and 33 (changes) does not display an error message (not required fields)
-> 5. Submitting the Site Inspection Form without answering Question 31 (naturalness of the site) will display an error message
-
-
-
+> 1. Renders the overall impression section and reaches questions 2.1 to 2.3 
+> 2. User can select naturalness score "4 = Great"
+> 3. User can select naturalness score "3 = Good" 
+> 4. User can select naturalness score "2 = Passable" 
+> 5. User can select naturalness score "1 = Bad"
+> 6. User can select naturalness score "0 = Terrible"
+> 7. User can enter comments on how healthy they felt the site was
+> 8. User can enter comments about changes from their previous visit 
+> 9. User can clear change-in-conditions comments if not applicable
 
 #### US 1.0.7 – Add Details Regarding How the Trip Went | Story Points: 1
 > **As** a User, **I want** to be able to add details regarding how my trip went, **so that** I can describe the duration and the reason for my visit.
 
 > **Acceptance Tests**
 
-> 1. Able to enter reasoning for visiting the sit
-> 2. Able to input duration of trip and comments relating to trip duration
-> 3. Able to input visit details (Q43)
-> 4. Submitting the Site Inspection Form without entering the required details (Q41 and Q42) will result in an error message.
-> 5. Submitting the Site Inspection Form without answering Questions 41.1 and 43 will not result in an error message and will be accepted
-
+> 1. User can enter reasoning for visiting the site (Q41) and additional details (Q41.1) 
+> 2. User can input duration of trip and comments (Q42) 
+> 3. User can input visit details (Q43) 
+> 4. Q41 and Q42 are required; Q41.1 and Q43 are not 
+> 5. Footer shows error for missing required Q41/Q42 but accepts missing optional Q41.1/Q43
 
 #### US 1.0.8 – Address What Amenities are in the Site | Story Points: 1 
 > **As** a User, **I want** to be able to add details regarding ease of use of the site, **so that** I can be as detailed as possible in my report.
 
 > **Acceptance Tests**
 
-> 1. Able to enter any amenities the user had access to (such as washrooms, parking lots, etc.)
-> 2. Able to answer any details regarding ease of use of the site (presence of signage, trails, etc.)
-> 3. Submitting the Site Inspection Form without entering the required details (Q51) will result in an error message.
+> 1. User can select amenities options for ease to visit 
+> 2. User can select signage and trails options for ease-of-use details 
+> 3. User can unselect a previously selected ease-to-visit option 
 
 #### US 1.0.9 – Designation as a Protected Site | Story Points: 1 
 > **As** a User, **I want** to indicate how I know the site is a protected area, **so that** it can be ensured that the sites are properly designated as protected areas.
 
 > **Acceptance Tests**
 
-> 1. Users should be able to indicate how they know the area is protected (signage, fencing, a note, etc.)
-> 2. Submitting the Site Inspection Form without entering the required details (Q55) will result in an error message.
-
+> 1. User can indicate protected status by selecting signage
+> 2. User can indicate protected status by selecting fencing
+> 3. User can select "Signage" as protected-area evidence
+> 4. User can select "Fencing" as protected-area evidence 
+> 5. User can select "Exists but in disrepair" as protected-area evidence 
+> 6. User can select "Not Applicable" as protected-area evidence
+> 7. User can deselect a protected-area indicator option
 
 #### US 1.0.10 – Indicate submissions to iNaturalist | Story Points: 1 
 > **As** a User, **I want** to be told about iNaturalist and indicate if I am posting to it, **so that** it can be documented if my findings have yet been shared to iNaturalist (Q53).
 
-> **Acceptance Tests**
+> **Acceptance Tests** 
 
-> 1. There is a link / url available to iNaturalist
-> 2. Users are able to indicate if they have addressed any submissions to iNaturalist.ca.
-> 3. Submitting the Site Inspection Form without entering the required details (Q53) will result in an error message.
-
-
+> 1. Renders section 4 and the 4.2 Submissions to iNaturalist question
+> 2. User can select "Yes" for submissions to iNaturalist
+> 3. User can select "No, Not this time" for submissions to iNaturalist
+> 4. User can select "No, not a member of iNaturalist" for submissions to iNaturalist
+> 5. User can select "What is iNaturalist?" for submissions to iNaturalist 
+> 6. User can select "Other/Not Applicable" for submissions to iNaturalist 
+> 7. Selecting a new iNaturalist option replaces the previous one
 
 #### US 1.0.11 – Address details of Landscape changes | Story Points: 2 
 > **As** a User, **I want** to be able to add details regarding any significant site changes, **so that** important or significant changes can be tracked in my report
 
 > **Acceptance Tests**
 
-> 1. Able to enter any details about recent landscape changes (like wildfires). 
-> 2. Submitting the Site Inspection Form without answering question 54 will not result in any error messaging and will be accepted.
-
+> 1. User can enter details about recent landscape changes (Q54)
+> 2. Q54 is optional and submitting without it does not show an error 
 
 #### US 1.0.12 – Address any Biological Observations that is in the Site | Story Points: 1 
 > **As** a User, **I want** to be able to add details regarding any biological observations that I saw or noticed on the site **so that** I can update the site’s information with new / changing / consistent wildlife sightings.
 
 > **Acceptance Tests**
 
-> 1. Able to indicate any biological wildlife/observations the user saw or noticed
-> 2. Submitting the Site Inspection Form without answering Q52 will not result in an error message and will be accepted.
-
+> 1. Allows the user to enter biological wildlife observations
+> 2. Allows the user to delete text from the biological observations box and ensures it is empty
+> 3. Does not include question number 4.3 in the missing required questions popup when answered
 
 #### US 1.0.13 - Address Any Human Disturbances - Section 8 | Story Points: 1
 > **As** a User, **I want** to be able to add details regarding any human disturbances I noticed during my visit, **so that** I can be as detailed as possible in my report
 
 > **Acceptance Tests**
 
-> 1. Able to describe what other visitors were doing on their visit
-> 2. Able to indicate agricultural and / or resource extraction use by other
-> 3. Able to indicate any motorized disturbances (ATVs, etc.)
-> 4. Able to indicate human gathering / dumping activities
-> 5. Able to indicate infrastructure encroachment into the site
-> 6. Submitting the Site Inspection Form without entering the required details (Q61-66) will result in an error message.
-
+> 1. Renders section 5 questions 5.1 through 5.8 
+> 2. User can indicate what other visitors were doing
+> 3. User can indicate agricultural activity 
+> 4. User can indicate resource extraction activity
+> 5. User can indicate motorized disturbance 
+> 6. User can indicate gathering and dumping activity 
+> 7. User can indicate infrastructure encroachment 
+> 8. User can enter invasive plants or disease comments 
+> 9. User can enter comments on human disturbances
+> 10. Comments can be cleared when not applicable
 
 #### US 1.0.14 - Add Other Comments | Story Points: 2
 > **As** a User, **I want** to be able to add comments/information that aren’t specifically mentioned in the questions, **so that** I can share all information I see as important, even when it isn’t specifically asked for.
 
 > **Acceptance Tests**
 
-> 1. Able to enter any additional details in the field. (textbox)
-> 2. Get properly updated / stored on the supabase
-> 3. Submitting the Site Inspection Form without answering any of these questions (Q56, !67, Q74, Q82) will not result in an error message and will be accepted.
-
-
+> 1. User can enter their comments in beThere section
+> 2. User can enter their comments in notThere section
+> 3. User can enter their comments in 2BDone section
+> 4. User can enter their comments in Close section
+> 5. Does not include comments in the missing required questions popup when answered
 
 #### US 1.0.15 – Inform SAPAA of Any Restorative Work that Needs to be Done / Was Done | Story Points: 2
 > **As** a User, **I want** to be able to add details regarding any actions I believe need to be taken upon the land or that I took, **so that** I can relay the necessary restoration information to the right bodies of power.
 
-> **Acceptance Tests**
+> **Acceptance Tests** 
 
-> 1. Able to indicate what the user believes to be the most urgently needed restorative action needed at the site
-> 2. Able to indicate what actions the user has taken to help restore / protect the site
-> 3. Able to add contact information for nearby residents who may be interested in stewardship (See US 1.0.23)
-> 4. Submitting the Site Inspection Form without entering the required details (Q71 and Q72) will result in an error message.
-> 5. Submitting the Site Inspection Form without answering question 73 will not result in an error message and will be accepted
-
+> 1. Renders section 6 questions 6.1 through 6.4
+> 2. User can indicate urgently needed restorative actions
+> 3. User can add nearby resident contact information
+> 4. User can indicate actions they have taken to help restore/protect the site
+> 5. User can add general comments
+> 6. Comments can be cleared when not applicable
 
 #### US 1.0.16 – Add Any Photography Captured During Visit | Story Points: 5
 > **As** a User, **I want** to be able to add any photography taken during my visit, **so that** I can use photos to help make my report clearer and provide visual evidence of my observations.
@@ -275,7 +280,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 1. If user modifies a previous form, the form is updated to show the new info  
 > 2. If user attempts to modify their forms but cancels the information reverts and is not change
 > 3. If user attempts to modify their form the form is prefilled with the current data
-> 4. If the user attempts to modify their form, they cannot submit the modifications if required information / questions are cleared / deleted
+> 4. If the user attempts to modify their form, they cannot submit the modifications if required information / questions are cleared / disabled
 > 5. The user cannot un-check their agreement to the terms and conditions (would have to delete their report entirely if they required that)
 
 #### US 1.0.23 – Non-Public Information | Story Points: 2
@@ -283,10 +288,12 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests**
 
-> 1. Non-public information is not displayed anywhere on the public website.
-> 2. API protection: given a public API, non public fields should not be included in the response
-> 2. When data is exported, then non-public information is excluded.
-
+> 1. System ensures that name, email, and user_id are never included in the site inspection answers payload
+> 2. User roles and avatar URLs are explicitly excluded from the database submission for inspection records
+> 3. The submission payload is restricted to only the four allowed data columns; no unauthorized keys are permitted
+> 4. The uid is used only for internal report linking and is never stored within the publicly accessible answers array
+> 5. The response_id in the database refers to the report itself, not the private ID of the user who submitted it
+> 6. Automated checks confirm that sensitive user strings (like the actual email text) never appear within any submitted row values
 
 #### US 1.0.24 – Modify my Site Inspections Form Questions | Story Points: 3
 > **As** an admin, **I want** to be able to modify the questions on the Site Inspection Form, **so that** I can make any changes / correct any errors as I see fit.
@@ -313,29 +320,41 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 #### US 1.0.26 – Persist Site Inspection Form Draft | Story Points: 5
 > **As** a user, **I want** my answers to be automatically saved as a draft, **so that** I do not lose my progress if I refresh, navigate away, or accidentally close my tab.
 
-> **Acceptance Tests**
+> **Acceptance Tests** 
 
-> 1. If a user enters any response in the Site Inspection Form, the response is automatically saved as a draft locally
-> 2. If a user refreshes the page, previously entered responses are restored
-> 3. If a user navigates away from the form and later returns, previously entered responses are restored.
-> 4. Drafts are saved per user and per site (a draft from one site must not appear on another site).
-> 5. Draft data is automatically cleared once the form is successfully submitted.
-> 6. Draft persistence must not interfere with normal form submission behavior.
-
-
-
+> 1. Saves responses to local storage on change and restores them after rerendering
+> 2. Separates drafts by site so Site A data does not appear on Site B
+> 3. Restores draft when returning to the page after navigating away
+> 4. Clears draft data from localStorage after successful submission
 
 #### US 1.0.27 – Enforce Required Questions on Site Inspection Form | Story Points: 3
 > **As** a user, **I want** to be prevented from submitting the form if required questions are unanswered, **so that** the report is complete and contains all mandatory information.
 
-> **Acceptance Tests**
+> **Acceptance Tests** 
 
 > 1. If a user attempts to submit the Site Inspection Form without answering all required questions, a pop up message is displayed indicating that required questions must be completed before submission
-> 2. The pop up clearly states which required questions are missing
+> 2. Blocks submission and shows the required questions popup when a mandatory field is missing
 > 3. The form submission is blocked until all required questions are answered
-> 4. If a user answers all required questions and clicks submit, the form is successfully submitted
-> 5. Optional questions do not prevent submission if left unanswered
+> 4. Successfully calls uploadSiteInspectionAnswers when all required questions are answered 
+> 5. Optional questions do not prevent submission if left unanswered 
 
+#### US 1.0.28 – Autofill Applicable Form Questions | Story Points: 3
+> **As** a user, **I want** applicable information to be auto-filled into my report form, **so that** I can save time from having to manually enter that information myself.
+
+> **Acceptance Tests**
+
+> 1. Information is auto-filled when a new form is opened
+> 2. User's name is auto-filled 
+> 3. User's email is auto-filled 
+> 4. User's phone number is auto-filled 
+> 5. Date of visit is auto-filled with the current date
+> 6. Information is only auto-filled when it exists for the given user (not all user's have all of this information saved on their account)
+> 7. Auto-filled information can be manually edited afterwards
+
+
+
+#### TASK 1.0.29 - Refactor the Database Schema and Produce an Updated ER Diagram 
+> Analyze the existing Supabase database schema, identify structural issues and inconsistencies, and refactor the design to better support the Site Inspection Form functionality. Update relationships, normalize tables where necessary, and produce a clear ER diagram that reflects the revised data model.
 
 
 
@@ -392,6 +411,9 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 #### TASK 2.0.5 - Discover other suitable image storage platforms
 > Discover more viable and cheaper solutions to be able to upload and store images online (as opposed to supabase). The budget is under CAD$50 per month.
 
+
+#### TASK 2.0.6 - Refactor Report Rendering to Use Updated Database Schema
+> Update report rendering logic to fetch and display data using the refactored Supabase schema. Modify queries and joins to align with the new Form Responses and Answers tables and verified correct rendering of all question types.
 
 
 
@@ -474,14 +496,14 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 7. Updates made to a site profile are visible to users
 
 
-#### US 4.0.4 – Delete Site Profile of a Particular Site | Story Points: 3
+#### US 4.0.4 – Disable Site Profile of a Particular Site | Story Points: 3
 
-> **As** an Admin, **I want** to be able to remove a profile for each site, **so that** I can keep what is crown land up to date
+> **As** an Admin, **I want** to be able to remove a profile for each site, **so that** I can keep what crown land is up to date
 
 > **Acceptance Tests**  
 
 > 1. Site is removed from the app
-> 2. Any associated inspection forms are pushed to admin’s drive then deleted
+> 2. Any associated inspection forms are pushed to admin’s drive then disable
 > 4. Users cannot interact with the site anymore
 > 5. Admins have access to the option to remove a site profile
 > 6. Non-admin users cannot access the option to remove a site profile
@@ -556,18 +578,18 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 
 
-#### US 5.0.4 – Delete Account Feature | Story Points: 2
+#### US 5.0.4 – Disable Account Feature | Story Points: 2
 
-> **As** a User, **I want** to be able to delete my account **so that** my login information is no longer stored or accessible.
+> **As** a User, **I want** to be able to disable my account **so that** my login information is no longer stored or accessible.
 
 > **Acceptance Tests**  
 
-> 1. Deleted accounts cannot log in again
-> 2. If User deletes their account they should be taken back to the home screen
-> 3. Users can only delete their own account
-> 4. A user trying to delete their account should be prompted by a confirmation message first (‘Are you sure you want to delete your account?’)
-> 5. A user should be able to accept the confirmation and their account should then be deleted
-> 6. A user should be able to deny the confirmation and their account should not be deleted
+> 1. Disabled accounts cannot log in again
+> 2. If User disabled their account they should be taken back to the home screen
+> 3. Users can only disable their own account
+> 4. A user trying to disable their account should be prompted by a confirmation message first (‘Are you sure you want to disable your account?’)
+> 5. A user should be able to accept the confirmation and their account should then be disabled
+> 6. A user should be able to deny the confirmation and their account should not be disabled
 
 
 ---
@@ -638,6 +660,10 @@ Each user story is categorized into one of the following priority levels:
 
 * US 1.0.22 - (User) Edit My Site Inspections Form 
 * US 1.0.23 - Non-Public Information (Q73, Q83)
+* US 1.0.26 – Persist Site Inspection Form Draft
+* US 1.0.27 – Enforce Required Questions on Site Inspection Form
+* US 1.0.28 – Autofill Applicable Form Questions
+* TASK 1.0.29 - Refactor the Database Schema and Produce an Updated ER Diagram
 * US 2.0.1 - Manage the uploading and storing of site inspection images
 * TASK 2.0.5 - Discover other suitable image storage platforms
 
@@ -646,6 +672,7 @@ Each user story is categorized into one of the following priority levels:
 * US 2.0.2 – Image Metadata
 * US 2.0.3  - Gallery View
 * US 2.0.4 - Offline Image Viewing
+* TASK 2.0.6 - Refactor Report Rendering to Use Updated Database Schema
 * US 3.0.1 - Access the mobile version of the Site Inspection Form
 * US 4.0.1 - View Site Profile of a Particular Site
 * US 4.0.2  - Add Site Profile of a Particular Site
@@ -702,16 +729,6 @@ Each user story is categorized into one of the following priority levels:
     - **Source of insights:** Example implementations for file storage policies and signed URLs.
     - **Risks/notes:** Free-tier and pricing limits can change; large media can impact storage/egress. We’ll set a monthly budget cap in the Project Plan and monitor usage.
 
-* [AWS S3](https://aws.amazon.com/s3/)
-    - **What it is:** Object storage service for scalable and cost-effective file storage.
-    - **How we’ll use it (external interface):**  
-      - Store all uploaded site inspection images.  
-      - Serve images via signed URLs for secure, time-limited access.  
-      - Separate media storage from the core database to reduce costs.
-    - **Reference/inspiration:** Standard architecture pattern for media-heavy applications.
-    - **Source of insights:** AWS S3 best practices for IAM policies, bucket privacy, and lifecycle rules.
-    - **Risks/notes:** Misconfigured permissions can expose data; billing alerts and access policies will be enforced.
-
 * [LimeSurvey](https://www.limesurvey.org/)
     - **What it is:** Open-source alternative to survey platforms like Google Forms
     - **How we’ll use it (external interface):**  
@@ -723,7 +740,16 @@ Each user story is categorized into one of the following priority levels:
     - **How we’ll use it (external interface):**  
       - Analyze the way the code handles offline data recording and the cross-platform React Native app structure
 
-
+## Cloud Services & Infrastructure
+* [AWS S3](https://aws.amazon.com/s3/)
+    - **What it is:** Object storage service for scalable and cost-effective file storage.
+    - **How we’ll use it (external interface):**  
+      - Store all uploaded site inspection images.  
+      - Serve images via signed URLs for secure, time-limited access.  
+      - Separate media storage from the core database to reduce costs.
+    - **Reference/inspiration:** Standard architecture pattern for media-heavy applications.
+    - **Source of insights:** AWS S3 best practices for IAM policies, bucket privacy, and lifecycle rules.
+    - **Risks/notes:** Misconfigured permissions can expose data; billing alerts and access policies will be enforced.
 
 ## Technical Resources
 ### Backend: Supabase + PostgreSQL + AWS
@@ -745,3 +771,4 @@ Each user story is categorized into one of the following priority levels:
 ### Testing & Tools
   * [Jest Testing Framework](https://jestjs.io/)
   * [Postman](https://www.postman.com/) for API testing  
+

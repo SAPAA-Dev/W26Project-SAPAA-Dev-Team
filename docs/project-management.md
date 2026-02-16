@@ -37,7 +37,7 @@ This page provides a general overview of the assigned tasks and roles for the du
 
 ### Sprint 2
 
-**Due:** *February 14, 2026*
+**Due:** *February 15, 2026*
 
 #### User stories
 
@@ -59,17 +59,21 @@ This page provides a general overview of the assigned tasks and roles for the du
 |US 1.0.14 - Add Other Comments [Q56, Q67, Q74, Q82]|2|
 |US 1.0.15 - Inform SAPAA of Any Restorative Work that Needs to be Done / Was Done [Q71, Q72 - Section : 2B Done]|2|
 |US 1.0.23 - Non-Public Information [Q73, Q83]|2|
+|US 1.0.26 - Persist Site Inspection Form Draft|5|
+|US 1.0.27 - Enforce Required Questions on Site Inspection Form|3|
+|US 1.0.28 - Autofill Applicable Form Questions|3|
+|TASK 1.0.29 - Refactor the Database Schema and Produce an Updated ER Diagram|N/A|
 
-
-
-**Sprint Velocity:** 22
-
+**Sprint Velocity:** 33
 
 #### Tasks
 
 |Task|Related US|Assignee|Due|
 |:---:|:---:|:---:|:---:|
 |Build the Site Inspection Form entry point|US 1.0.1|Vishal, Jason, Raiyana|Feb 7th|
+|Refactor the Database Schema|TASK 1.0.29|Raiyana, Zoe|Feb 7th|
+|Understand previous team's implementation to repurpose for our schema|US 1.0.1|Vishal, Harveer, Jason, Braden|Feb 7th|
+|Produce an Updated ER Diagram|TASK 1.0.29|Raiyana|Feb 7th|
 |Add the liability check and access gate|US 1.0.3|Harveer|Feb 8th|
 |Add the Terms & Conditions acceptance flow|US 6B.01|Harveer|Feb 8th|
 |Create the personal information section|US 1.0.2|Braden|Feb 11th|
@@ -85,13 +89,16 @@ This page provides a general overview of the assigned tasks and roles for the du
 |Add the iNaturalist submission indicator|US 1.0.10|Akib|Feb 11th|
 |Add the additional comments and free‑text section|US 1.0.14|Vishal, Raiyana|Feb 11th|
 |Add the restoration actions and stewardship section|US 1.0.15|Zoe|Feb 12th|
+|Persist Site Inspection Form Draft|US 1.0.26|Jason, Raiyana|Feb 12th|
+|Enforce Required Questions on Site Inspection Form|US 1.0.27|Jason, Akib|Feb 12th|
+|Autofill Applicable Form Questions|US 1.0.15|Zoe|Feb 12th|
 |Assemble all sections into a unified form schema |All US|Everyone|Feb 14th|
 |Finalize the submission flow and validation logic |All US|Everyone|Feb 14th|
 |Write acceptance tests|All US|Everyone|Feb 14th|
 |Update documentation|Documentation|Everyone|Feb 14th|
 
 
-**Sprint Velocity:** 26
+**Sprint Velocity:** 33
 
 
 ### Sprint 3
@@ -112,10 +119,34 @@ This page provides a general overview of the assigned tasks and roles for the du
 |US 2.0.1 – Manage the uploading and storing of site inspection images|8|
 |US 2.0.2 – Image Metadata|2|
 |US 2.0.3 – Gallery View|3|
-
-
+|TASK 2.0.6 - Refactor Report Rendering to Use Updated Database Schema|N/A|
 
 **Sprint Velocity:** 36
+
+
+#### Tasks
+
+|Task|Related US|Assignee|Due|
+|:---:|:---:|:---:|:---:|
+|Setup AWS account with client|All US|Harveer|Feb 20th|
+|Setup developer email for vercel with client|All US|Harveer|Feb 20th|
+|Add any photography captured during visit|US 1.0.16|Raiyana|Feb 25th|
+|Allow admin to add Questions Site Inspections Form|US 1.0.17|Braden|Feb 27th|
+|Adding Image Caption to the inspection form|US 1.0.18|Zoe|Feb 27th|
+|Add a dashboard for admin to view images and metadata|US 1.0.19|Zoe|Mar 3rd|
+|Add the ability to edit previous site inspections forms for users|US 1.0.22|Vishal|Mar 3rd|
+|Let admin modify the site inspections form questions|US 1.0.24|Jason|Mar 3rd|
+|Add ability to hide site inspection form questions|US 1.0.25|Braden, Jason|Mar 5th|
+|Manage the uploading and storing of site inspection images onto S3|US 2.0.1|Harveer|Mar 5th|
+|Image Metadata|US 2.0.2|Akib|Mar 5th|
+|Gallery View|US 1.0.12|Akib|Mar 5th|
+|Refactor Report Rendering to Use Updated Database Schema|TASK 2.0.6|Everyone|Mar 7th|
+|Finalize the submission flow and validation logic |All US|Everyone|Mar 7th|
+|Write acceptance tests|All US|Everyone|Mar 7th|
+|Update documentation|Documentation|Everyone|Mar 8th|
+
+**Sprint Velocity:** 36
+
 
 ### Sprint 4
 
@@ -131,7 +162,7 @@ This page provides a general overview of the assigned tasks and roles for the du
 |US 4.0.1 – View Site Profile of a Particular Site|3|
 |US 4.0.2 – Add Site Profile of a Particular Site|2|
 |US 4.0.3 – Update Site Profile of a Particular Site|3|
-|US 4.0.4 – Delete Site Profile of a Particular Site |3|
+|US 4.0.4 – Disable Site Profile of a Particular Site |3|
 |US 4.0.5 – Amenities Information on Site Profile|2|
 
 
@@ -150,7 +181,7 @@ This page provides a general overview of the assigned tasks and roles for the du
 |US 5.0.1 – Sign In Feature|2|
 |US 5.0.2 – Sign Out Feature|2|
 |US 5.0.3 – Edit Account Feature|2|
-|US 5.0.4 – Delete Account Feature|2|
+|US 5.0.4 – Disable Account Feature|2|
 |US 6.0.1 – Toggle Dark mode for web and mobile applications|2|
 |US 6.0.2 – Change Text Size on Screen|3|
 
