@@ -16,12 +16,13 @@ interface Question {
   text: string | null;
   question_type: string;
   section: number;
-  answers: Answer[];
+  answers: (string | { text: string })[];
   formorder?: number | null;
   sectionTitle?: string | null;
   sectionDescription?: string | null;
   sectionHeader?: string | null;
   is_required?: boolean | null;
+  autofill_key?: string | null;
 }
 
 interface MainContentProps {
@@ -49,11 +50,12 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
       try {
         setLoading(true);
         const data = await getQuestionsOnline();
-        console.log('Fetched questions:', data);
-        console.log('Email question:', data.find(q => 
-        (q.title ?? '').toLowerCase().includes('email') || 
-        (q.text ?? '').toLowerCase().includes('email')
-      ));
+      //   console.log('Fetched questions:', data);
+      //   console.log('Email question:', data.find(q => 
+      //   (q.title ?? '').toLowerCase().includes('email') || 
+      //   (q.text ?? '').toLowerCase().includes('email')
+      // ));
+
         setQuestions(data || []);
       } catch (error) {
         console.error('Error fetching questions:', error);
@@ -69,26 +71,20 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
 
     const autofilled: Record<number, any> = {};
 
-    const AUTOFILL_MAP: Record<number, () => string | undefined> = {
-      32: () => currentUser?.email,
-      37: () => new Date().toISOString().split('T')[0], // Autofills to current date but idk if i want that
-      35: () => currentUser?.phone ?? undefined,
-      34: () => currentUser?.name,
+    const autofillValues: Record<string, string | undefined> = {
+      user_email: currentUser?.email,
+      user_name: currentUser?.name,
+      user_phone: currentUser?.phone,
+      visit_date: new Date().toISOString().split('T')[0],
+      site_name: siteName,
     };
 
     questions.forEach((question) => {
-      // Handle site_select by type
-      if (question.question_type.trim() === 'site_select' && siteName) {
-        autofilled[question.id] = siteName;
-        return;
-      }
+      const key = question.autofill_key;
+      if (!key) return;
 
-      // Handle other auto-filled questions by explicit map to id
-      const getValue = AUTOFILL_MAP[question.id];
-      if (getValue) {
-        const value = getValue();
-        if (value) autofilled[question.id] = value;
-      }
+      const value = autofillValues[key];
+      if (value) autofilled[question.id] = value;
     });
 
     if (Object.keys(autofilled).length > 0) {
@@ -116,7 +112,7 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
     });
   });
   
-  const sectionMetadata: Record<number, { title: string; description: string }> = {};
+  const sectionMetadata: Record<number, { title: string; description: string; header: string}> = {};
     Object.keys(questionsBySection).forEach(sectionKey => {
       const sectionNum = Number(sectionKey);
       const firstQuestion = questionsBySection[sectionNum]?.[0];
@@ -154,8 +150,10 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
       case 'option':
         return (
           <div className="space-y-2">
-            {question.answers.map((answer, index) => {
-              const answerText = typeof answer === 'string' ? answer : (answer.text || answer);
+            {(question.answers ?? []).map((answer, index) => {
+              const answerText = typeof answer === 'object' && answer !== null 
+              ? (answer as { text: string }).text 
+              : String(answer);
               return (
                 <label
                   key={index}
@@ -181,8 +179,10 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
       case 'selectall':
         return (
           <div className="space-y-2">
-            {question.answers.map((answer, index) => {
-              const answerText = typeof answer === 'string' ? answer : (answer.text || answer);
+            {(question.answers ?? []).map((answer, index) => {
+              const answerText = typeof answer === 'object' && answer !== null 
+              ? (answer as { text: string }).text 
+              : String(answer);
               const selectedAnswers = Array.isArray(response) ? response : [];
               const isChecked = selectedAnswers.includes(answerText);
               

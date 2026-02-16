@@ -686,7 +686,7 @@ describe('US 1.0.12 - Address any Biological Observations that is in the Site', 
     expect(latestResponses[9]).toBe('');
   });
 
-  it('does not include question number 4.3 in the missing required questions popup when answered', async () => {
+  it('does not include optional question number in the missing required questions popup when answered', async () => {
     const mockOnChange = jest.fn();
     await renderBeThereMainContent(mockOnChange);
     mockGetQuestionsOnline.mockResolvedValue(beThereQuestions);
@@ -701,7 +701,7 @@ describe('US 1.0.12 - Address any Biological Observations that is in the Site', 
     const submitButton = screen.getByRole('button', { name: /Review & Submit/i });
     fireEvent.click(submitButton);
 
-    // Assert that the alert does NOT contain "4.3" because it isn't a required question
+    // Assert that the alert does not contain "4.3" because it isn't a required question
     await waitFor(() => {
       if (alertSpy.mock.calls.length > 0) {
         const alertMessage = alertSpy.mock.calls[0][0];
@@ -713,14 +713,14 @@ describe('US 1.0.12 - Address any Biological Observations that is in the Site', 
   });
 });
 
-describe('US 1.0.1 - Access Site Inspection Form on Web Application', () => {
+describe('US 1.0.27 - Enforce Required Questions on Site Inspection Form (also covers the submission acceptance test for US 1.0.1)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
   });
 
   it('blocks submission and shows the required questions popup when a mandatory field is missing', async () => {
-    // 1. Mock the dependencies to provide one required question
+    // Mock the dependencies to provide one required question
     const mockQuestion = [
       { 
         id: 1, 
@@ -747,17 +747,16 @@ describe('US 1.0.1 - Access Site Inspection Form on Web Application', () => {
     const popupTitle = await screen.findByText(/Required Questions Missing/i);
     expect(popupTitle).toBeInTheDocument();
 
-    // 5. Assert that the specific missing question number is displayed
-    // Based on your buildQuestionNumberMap logic: section (4-3) = 1, index (0+1) = 1 -> "1.1"
+    // Assert that the specific missing question number is displayed
     const missingNumber = screen.getAllByText('0.1');
     expect(missingNumber[0]).toBeInTheDocument();
 
-    // 6. Verify that the final submission functions were NEVER called
+    // Verify that the final submission functions were not called
     expect(mockAddSiteInspectionReport).not.toHaveBeenCalled();
   });
 
   it('successfully calls uploadSiteInspectionAnswers when all required questions are answered', async () => {
-    const mockQuestion = [
+    const mockRequiredQuestion = [
       { 
         id: 1, 
         title: 'Test Required Question', 
@@ -769,15 +768,30 @@ describe('US 1.0.1 - Access Site Inspection Form on Web Application', () => {
         is_required: true, 
         sectionTitle: 'Test', 
         sectionDescription: 'Test', 
-        sectionHeader: 'Test' }
+        sectionHeader: 'Test' },
     ];
 
-    mockGetQuestionsOnline.mockResolvedValue(mockQuestion);
+    const mockOptionalQuestion = [
+      { 
+        id: 2, 
+        title: 'Test Optional Question', 
+        text: 'Test Optional Answer', 
+        question_type: 'option', 
+        section: 4, 
+        answers: [{ text: 'Yes' }, { text: 'No' }], 
+        formorder: 2, 
+        is_required: false, 
+        sectionTitle: 'Test', 
+        sectionDescription: 'Test', 
+        sectionHeader: 'Test' }
+    ]
+
+    mockGetQuestionsOnline.mockResolvedValue(mockRequiredQuestion);
     mockAddSiteInspectionReport.mockResolvedValue({ id: 500 });
     mockGetQuestionResponseType.mockResolvedValue([{ question_id: 1, obs_value: 1, obs_comm: 0 }]);
     render(<NewReportPage />);
 
-    // Answer the required question and then submit the form
+    // Answer the required question but not the optional question and then submit the form
     const option = await screen.findByText('Yes');
     fireEvent.click(option);
 
@@ -1050,5 +1064,204 @@ describe('US 1.0.11 - Add Details Regarding Significant Site Changes', () => {
     // Footer confirms form is submittable with 0 answers
     render(<StickyFooter questions={siteChangesQuestions} responses={{}} />);
     expect(screen.getByText('0 / 1 answered')).toBeInTheDocument();
+  });
+});
+
+// Tests for US 1.0.28
+describe('US 1.0.28 - Autofill Form Fields from User Account', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+  });
+
+  // Mock questions with autofill_key
+  const autofillQuestions = [
+    {
+      id: 32, title: 'Email (Q11)', text: 'Enter your email address',
+      question_type: 'text', section: 4, answers: [], formorder: 1,
+      is_required: false, autofill_key: 'user_email',
+      sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info',
+    },
+    {
+      id: 34, title: 'Name (Q13)', text: 'Enter your name',
+      question_type: 'text', section: 4, answers: [], formorder: 2,
+      is_required: false, autofill_key: 'user_name',
+      sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info',
+    },
+    {
+      id: 35, title: 'Phone (Q14)', text: 'Enter your phone number',
+      question_type: 'text', section: 4, answers: [], formorder: 3,
+      is_required: false, autofill_key: 'user_phone',
+      sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info',
+    },
+    {
+      id: 37, title: 'Date of Your Visit (Q21)', text: 'Date of Visit',
+      question_type: 'date', section: 4, answers: [], formorder: 4,
+      is_required: true, autofill_key: 'visit_date',
+      sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info',
+    },
+  ];
+
+  const fullUser = {
+    email: 'jane@sapaa.org',
+    name: 'Jane Steward',
+    phone: '780-555-1234',
+    role: 'steward',
+    avatar: '',
+  };
+
+  // Helper function : renders MainContent with controlled state and optional user/site props
+  function renderAutofillContent(
+    mockOnChange: jest.Mock,
+    currentUser: typeof fullUser | Partial<typeof fullUser> | null = fullUser,
+    siteName = 'Test Site'
+  ) {
+    function ControlledMainContent() {
+      const [responses, setResponses] = React.useState<Record<number, any>>({});
+      const handleChange = (next: Record<number, any>) => {
+        setResponses(next);
+        mockOnChange(next);
+      };
+      return (
+        <MainContent
+          responses={responses}
+          onResponsesChange={handleChange}
+          currentUser={currentUser as any}
+          siteName={siteName}
+        />
+      );
+    }
+    render(<ControlledMainContent />);
+  }
+
+  it('autofills all available fields when a new form is opened', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(autofillQuestions);
+    const mockOnChange = jest.fn();
+    renderAutofillContent(mockOnChange);
+
+    await waitFor(() => {
+      expect(mockOnChange).toHaveBeenCalled();
+    });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[32]).toBe('jane@sapaa.org');
+    expect(latestResponses[34]).toBe('Jane Steward');
+    expect(latestResponses[35]).toBe('780-555-1234');
+    expect(latestResponses[37]).toBe(new Date().toISOString().split('T')[0]);
+  });
+
+  it("autofills user's name into question Q13", async () => {
+    mockGetQuestionsOnline.mockResolvedValue(autofillQuestions);
+    const mockOnChange = jest.fn();
+    renderAutofillContent(mockOnChange);
+
+    await waitFor(() => {
+      expect(mockOnChange).toHaveBeenCalled();
+    });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[34]).toBe('Jane Steward');
+  });
+
+  it("autofills user's email into question Q11", async () => {
+    mockGetQuestionsOnline.mockResolvedValue(autofillQuestions);
+    const mockOnChange = jest.fn();
+    renderAutofillContent(mockOnChange);
+
+    await waitFor(() => {
+      expect(mockOnChange).toHaveBeenCalled();
+    });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[32]).toBe('jane@sapaa.org');
+  });
+
+  it("autofills user's phone number into question Q14", async () => {
+    mockGetQuestionsOnline.mockResolvedValue(autofillQuestions);
+    const mockOnChange = jest.fn();
+    renderAutofillContent(mockOnChange);
+
+    await waitFor(() => {
+      expect(mockOnChange).toHaveBeenCalled();
+    });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[35]).toBe('780-555-1234');
+  });
+
+  it('autofills date of visit (Q21) with the current date', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(autofillQuestions);
+    const mockOnChange = jest.fn();
+    renderAutofillContent(mockOnChange);
+
+    await waitFor(() => {
+      expect(mockOnChange).toHaveBeenCalled();
+    });
+
+    const today = new Date().toISOString().split('T')[0];
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[37]).toBe(today);
+  });
+
+  it('does not autofill fields when the user has no data for them', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(autofillQuestions);
+    const mockOnChange = jest.fn();
+
+    // User with no phone or name
+    const partialUser = { email: 'partial@sapaa.org', role: 'steward', avatar: '' };
+    renderAutofillContent(mockOnChange, partialUser);
+
+    await waitFor(() => {
+      expect(mockOnChange).toHaveBeenCalled();
+    });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[32]).toBe('partial@sapaa.org'); // email present - should fill
+    expect(latestResponses[34]).toBeUndefined();           // name missing - should not fill
+    expect(latestResponses[35]).toBeUndefined();           // phone missing - should not fill
+  });
+
+  it('does not autofill any user fields when currentUser is null', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(autofillQuestions);
+    const mockOnChange = jest.fn();
+    renderAutofillContent(mockOnChange, null);
+
+    // If autofill were to run, it would call onResponsesChange
+    await waitFor(() => {
+      expect(screen.getByText('Enter your email address')).toBeInTheDocument();
+    });
+
+    // visit_date still autofills (it doesn't depend on user), but user fields should not
+    const calls = mockOnChange.mock.calls;
+    if (calls.length > 0) {
+      const latestResponses = calls[calls.length - 1][0];
+      expect(latestResponses[32]).toBeUndefined();
+      expect(latestResponses[34]).toBeUndefined();
+      expect(latestResponses[35]).toBeUndefined();
+    }
+  });
+
+  it('autofilled fields can be manually edited', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(autofillQuestions);
+    const mockOnChange = jest.fn();
+    renderAutofillContent(mockOnChange);
+
+    // Wait for autofill to run
+    await waitFor(() => {
+      expect(mockOnChange).toHaveBeenCalled();
+    });
+
+    // Confirm email was autofilled
+    const textareas = screen.getAllByPlaceholderText('Enter your response here...');
+    const emailTextarea = textareas.find(
+      (el) => (el as HTMLTextAreaElement).value === 'jane@sapaa.org'
+    ) as HTMLTextAreaElement;
+    expect(emailTextarea).toBeTruthy();
+
+    // User edits the autofilled email
+    fireEvent.change(emailTextarea, { target: { value: 'newemail@example.com' } });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[32]).toBe('newemail@example.com');
   });
 });
