@@ -8,6 +8,11 @@ This diagram provides a high-level understanding of the architecture involved in
 
 ![Architecture Diagram](images/Architecture.png)
 
+## ER Diagram for the database schema
+
+![ER Diagram](images/ER_Diagram.png)
+
+
 ## UML Class Diagram
 
 This diagram is a description of logical entities of the domain through a UML diagram.
