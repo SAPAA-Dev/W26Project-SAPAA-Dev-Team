@@ -114,8 +114,31 @@ This page provides a general overview of the assigned tasks and roles for the du
 |US 2.0.3 – Gallery View|3|
 
 
+**Sprint Velocity:** 36
+
+
+#### Tasks
+
+|Task|Related US|Assignee|Due|
+|:---:|:---:|:---:|:---:|
+|Setup AWS account with client|All US|Harveer|Feb 20th|
+|Setup developer email for vercel with client|All US|Harveer|Feb 20th|
+|Add any photography captured during visit|US 1.0.16|Raiyana|Feb 25th|
+|Allow admin to add Questions Site Inspections Form|US 1.0.17|Braden|Feb 27th|
+|Adding Image Caption to the inspection form|US 1.0.18|Zoe|Feb 27th|
+|Add a dashboard for admin to view images and metadata|US 1.0.19|Zoe|Mar 3rd|
+|Add the ability to edit previous site inspections forms for users|US 1.0.22|Vishal|Mar 3rd|
+|Let admin modify the site inspections form questions|US 1.0.24|Jason|Mar 3rd|
+|Add ability to hide site inspection form questions|US 1.0.25|Braden, Jason|Mar 5th|
+|Manage the uploading and storing of site inspection images onto S3|US 2.0.1|Harveer|Mar 5th|
+|Image Metadata|US 2.0.2|Akib|Mar 5th|
+|Gallery View|US 1.0.12|Akib|Mar 5th|
+|Finalize the submission flow and validation logic |All US|Everyone|Mar 7th|
+|Write acceptance tests|All US|Everyone|Mar 7th|
+|Update documentation|Documentation|Everyone|Mar 8th|
 
 **Sprint Velocity:** 36
+
 
 ### Sprint 4
 
