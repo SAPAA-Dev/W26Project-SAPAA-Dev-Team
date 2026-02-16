@@ -10,6 +10,8 @@ This diagram provides a high-level understanding of the architecture involved in
 
 ## ER Diagram for the database schema
 
+[View it on Lucidchart](https://lucid.app/lucidchart/931f3cc9-cd72-4e46-9774-e4711ff0f562/edit?viewport_loc=-1219%2C-2790%2C4401%2C2199%2C0_0&invitationId=inv_aa3bd897-4385-4a31-a50a-6a9642316355)
+
 ![ER Diagram](images/ER_Diagram.png)
 
 
