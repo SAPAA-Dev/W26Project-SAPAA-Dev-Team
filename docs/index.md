@@ -197,7 +197,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 #### US 1.0.15 – Inform SAPAA of Any Restorative Work that Needs to be Done / Was Done | Story Points: 2
 > **As** a User, **I want** to be able to add details regarding any actions I believe need to be taken upon the land or that I took, **so that** I can relay the necessary restoration information to the right bodies of power.
 
-> **Acceptance Tests** [needs to be done]
+> **Acceptance Tests** 
 
 > 1. Renders section 6 questions 6.1 through 6.4
 > 2. User can indicate urgently needed restorative actions
