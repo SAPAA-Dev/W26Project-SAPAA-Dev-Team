@@ -1,0 +1,1073 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../project-management/">
+      
+      
+        <link rel="next" href="../teamwork/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>Software Design - Winter 2026 SAPAA Project</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#software-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Winter 2026 SAPAA Project" class="md-header__button md-logo" aria-label="Winter 2026 SAPAA Project" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Winter 2026 SAPAA Project
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Software Design
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Winter 2026 SAPAA Project" class="md-nav__button md-logo" aria-label="Winter 2026 SAPAA Project" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Winter 2026 SAPAA Project
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Software Design
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Software Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Diagram
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#er-diagram-for-the-database-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ER Diagram for the database schema
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uml-class-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UML Class Diagram
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sequence-diagrams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sequence Diagrams
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sequence Diagrams">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#site-inspection-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Site Inspection Form
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update Form
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#image-upload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Image Upload
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gallery-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gallery View
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#site-profiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Site Profiles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#account-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Account Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#low-fidelity-user-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Low-Fidelity User Interface
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Low-Fidelity User Interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#this-is-a-low-fidelity-ui-for-the-web-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        This is a low-fidelity UI for the web app
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#this-is-a-low-fidelity-ui-for-the-mobile-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        This is a low-fidelity UI for the mobile app
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#list-of-technologies-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List of Technologies Used
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="List of Technologies Used">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend-supabase-postgresql-aws" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend: Supabase + PostgreSQL + AWS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cloud-infrastructure-cost-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cloud Infrastructure &amp; Cost Control
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deployment-cybera" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment: Cybera
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobile-react-native" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile: React Native
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing &amp; Tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../teamwork/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Teamwork
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../traceability-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Traceability Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meeting-minutes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Meeting Minutes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Diagram
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#er-diagram-for-the-database-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ER Diagram for the database schema
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uml-class-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UML Class Diagram
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sequence-diagrams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sequence Diagrams
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sequence Diagrams">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#site-inspection-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Site Inspection Form
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update Form
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#image-upload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Image Upload
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gallery-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gallery View
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#site-profiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Site Profiles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#account-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Account Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#low-fidelity-user-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Low-Fidelity User Interface
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Low-Fidelity User Interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#this-is-a-low-fidelity-ui-for-the-web-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        This is a low-fidelity UI for the web app
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#this-is-a-low-fidelity-ui-for-the-mobile-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        This is a low-fidelity UI for the mobile app
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#list-of-technologies-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List of Technologies Used
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="List of Technologies Used">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend-supabase-postgresql-aws" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend: Supabase + PostgreSQL + AWS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cloud-infrastructure-cost-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cloud Infrastructure &amp; Cost Control
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deployment-cybera" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment: Cybera
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobile-react-native" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile: React Native
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing &amp; Tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="software-design">Software Design</h1>
+<p>This page includes a short description of the overall architecture style of the system, its high-level system components, and their logical (what data they exchange) and control (how they invoke each other) dependencies.</p>
+<h2 id="architecture-diagram">Architecture Diagram</h2>
+<p>This diagram provides a high-level understanding of the architecture involved in the project.</p>
+<p><img alt="Architecture Diagram" src="../images/Architecture.png" /></p>
+<h2 id="er-diagram-for-the-database-schema">ER Diagram for the database schema</h2>
+<p><a href="https://lucid.app/lucidchart/931f3cc9-cd72-4e46-9774-e4711ff0f562/edit?viewport_loc=-1219%2C-2790%2C4401%2C2199%2C0_0&amp;invitationId=inv_aa3bd897-4385-4a31-a50a-6a9642316355">View it on Lucidchart</a></p>
+<p><img alt="ER Diagram" src="../images/ER_Diagram.png" /></p>
+<h2 id="uml-class-diagram">UML Class Diagram</h2>
+<p>This diagram is a description of logical entities of the domain through a UML diagram.</p>
+<p><a href="https://mermaid.live/edit#pako:eNrlWv9v1DYU_1esSJOO7Vo6aEsbAVXHAUPiS-FASKPTyZf47jwSO9hOyw343_ccJ5fEsX0HY9K09Yf2Lv685_f9-Tn9FCU8JVEcJRmWckLxUuD8kqHq54cf0MOPigiGMzRdS0Vy2SxVcPSWzM-LAn1qnuqfu3dJTXP_fvf5c3i8_4dEPx-jm-gVwYlCP582gC-XrM_5GZ_TjOzM3PB7jhW9IsD-4ceCe1lPywLPsSS_4OQ9YeluG1xwqZaCTF8-RT-h81KtvOyf8gRngKOK7MaagLB78kMGBA6m4ANjCzQl4oomxHKBlqVe6W_305KoalFhRUY3UIw233owWc5lIuicvOYaMALpszmYRlO8YZvVHk3Gl5SNSI5pFiOpBGXLMSpAnGsu0uaJZjAlUlLO-hvSJSuLb6Wutn5L1eox58vMKBbEPaOJ4JIvVAjKS7N8xWnq9ewEqypwvOaeggvlC5ZRVssF36dlnmOxfvfj7zb6CZMFSRRIMyEKbNFQSqB6jnPStYSN7fEqixSc2kJqPnTzYEhv61rxSUlGQGDY_hUpuFABeQa0jfYbvYMKG1j73QXO8bJmV310QC7ShQHAh87ywG8vFgutiNttKb9mGceplvmXkqXZ7gpPalKStqr3n9lCJxnBEPtQnqhoqN4TUkzwWp7FiJX5nAjndjnQ4Wyy8ZDcSCkbMd_97qSk3Yicc65F8JrqPM0pC5eULHsjiTDa6k-2jjhN9eNt-T1GAkTpmtiSrROSFb8Sfj1JtxGYXHAQjFEl0NlQorO-SGeBLQb2upg88lmKEYGNrwA0Squ0GybiGCWcLegy1qweUZKlD6rvenMjRo9tIcgVJdffmatcYVHxW0CfucBq5Yv8gf5VarotUBY6DypAxTdGj-D3GLVlSTunDfkK6akCQRo7AE3MmI2p_r09aqrqtWQkfSMyF03fZv3uDGcgDMcUd3fWB6T_WYPW1E_sDj2oSi2q358HwF2bM1j6ZUnE-js156odrHV9HTGrFUypIv9YLwdeoIasmmRH2OaZo9hqcVqWzh1Nwjiys097zuS1ruzY_I03J2Wz4OkvAxHM4WEkiCxACdJm7Bhp4foZ7OqrD0ohCFO6iL-h6chTtKicKnKNRdoP1F2qts5K3ej-g03OLIHv-PwPcEfYGlC9zi-eoFeQYHbheky4Hgz1sjXECI3uTzCPH75GN3FBby4N1dmHe00Yen3wK8Eqx8VXbrAyVGfvyVrb-R7MU7lbsaniAuo4ZBtgFhi8PCoyzKDG37DGQQO8EPyKpkTY0tCGvi9RnUC9zlZYndMRtM1pc2RjNQdHUAxwnu6l-1Z4--FR7-20sVFP5b15CXOx6taQ_4ri1SwN_K1Y14lk1QCaOrXopXtvpZvnfpM3_d3eTeoVKHk0gcXUk_QgpSlG6DMU0CzzX3C0nc2hlqMZ6A6nE9apWcJLptbNkrW34WpKvy48Htjw3Gj1wN3kbI-Bs2_RZKbWBQkpMoPD1DbMdnPMGJyml9XY_XdsVuujSoEzBuesmUy42BlsJgMZhHNFggCaNvOFHwOq4tkKb4XgJCx7bQ_GQyBpGv4OkE58hFBLfawKehv8s-RiHWKWkgVlVPkdPrxI6l0S_Ety1Jy2sVTnCYwxkgzEcA9_3ytzdT9hjp4zHLnTxW57amt97W692T2ddc0VugPojNiWbO1x3FXTG7-51lqTTSopXJjmPO1aM4XMtdJUJ9eaTlYfFaQw1vLg7BzkuoKQ1_XDhe1UoqmpWltQk6ZcObVs0t61yOfQEa8quXzkuMD4KWXvPXZ-bsR4hovtk0Mzh-0Ygc31q794KKqyYEYq8jFYoT7UEm1tblTOBPlQ6ovHjZ7Oct1Mf82togu04CKH87c-kQSqrFH_dUBF78sZM3JaZm5GSl9Wb2zhWYdYmV3hrAzaSYMSnufbJW5fzej3VK9IZqJwRYvNAbN9jbW3d7_3riZGcKDz4OwXDSGsdbkdgg4ud0Pgzs1mCNa7AGyA_dsxv3Xq14eaj3VR1t-yj-td84SAvRnfC3RqMEB15mEvpjPSOizRDFvNGIr20PQ24ixbbwbSniiaoz2b9re2V-9-3t_vjnUxonmRkRwGC0uUegvFUf0StFns-qASwHpXGiPcefdpx6mbArJS0FbqQRR69tEwxNtgsQLdTSXXLOnoakXVdo3s8NpJIzvUdlSoEy5btum4rrZC4_uAcbrvoWOUY6Zv0kOe6xNAr0_lcHR2J7Jt5HbQ1YygvTIvtBpoB_I5HBfg6UDbbIMh25mXB7xdBIPpdTeq3CTlBhoMupBMLoLtMrmoNueZndBWc4Z0K-c57RYXRxxaw47DJ51W49WkCkYn3Dp-x_WrrxLOOWi-9hHBEBGj5qDfkcVZnfwxaqe9L-y67vTouMIbzoPVbviAevCsddTGhU4PmdNcxxTROFoKmkaxEiUZRzkROdZfo-qodRmpFTSMyyiGjzDY4jJTl9El-wJkBWa_cZ43lIKXy1UUL3Am4Zu5d67_f2gDgTpGxAM95ETxUcUhij9FH6P4zvH-wenp6cnx8fHJ0e2TQ1hcR_Gtg-P9w-M7JyeHhwe3jo-OTm9_GUd_Vnse7J8c3bl1eHrr6PT08OTO7QOgICmFKvis_v8l_efLX0d3X0w">View it on mermaid</a></p>
+<p><img alt="UML Class Diagram" src="../images/UML%20Diagram.png" /></p>
+<h2 id="sequence-diagrams">Sequence Diagrams</h2>
+<p><a href="https://lucid.app/lucidchart/97b40fe8-0ea1-4e2c-9118-472d71b630ff/edit?invitationId=inv_d023aae0-265e-478f-a9a1-b356599b6444&amp;page=0_0#">View them on Lucidchart</a></p>
+<h3 id="authentication">Authentication</h3>
+<p><img alt="Sequence Diagram" src="../images/Winter%20401%20SAPAA%20Sequence%20Diagram%20-%20Authentication.svg" /></p>
+<h3 id="site-inspection-form">Site Inspection Form</h3>
+<p><img alt="Sequence Diagram" src="../images/Winter%20401%20SAPAA%20Sequence%20Diagram%20-%20Site%20Inspection%20Form.svg" /></p>
+<h3 id="update-form">Update Form</h3>
+<p><img alt="Sequence Diagram" src="../images/Winter%20401%20SAPAA%20Sequence%20Diagram%20-%20Update%20Form.svg" /></p>
+<h3 id="image-upload">Image Upload</h3>
+<p><img alt="Sequence Diagram" src="../images/Winter%20401%20SAPAA%20Sequence%20Diagram%20-%20Image%20Upload.svg" /></p>
+<h3 id="gallery-view">Gallery View</h3>
+<p><img alt="Sequence Diagram" src="../images/Winter%20401%20SAPAA%20Sequence%20Diagram%20-%20Gallery%20View.svg" /></p>
+<h3 id="site-profiles">Site Profiles</h3>
+<p><img alt="Sequence Diagram" src="../images/Winter%20401%20SAPAA%20Sequence%20Diagram%20-%20Site%20Profiles.svg" /></p>
+<h3 id="account-management">Account Management</h3>
+<p><img alt="Sequence Diagram" src="../images/Winter%20401%20SAPAA%20Sequence%20Diagram%20-%20Account%20Management.svg" /></p>
+<h2 id="low-fidelity-user-interface">Low-Fidelity User Interface</h2>
+<p>This is a low-fidelity projection of the end-product. The final design may take a different direction.</p>
+<p><a href="https://www.figma.com/design/8WLN54CokqHyoJHdGFY6kd/SAPAA-UI?node-id=0-1&amp;p=f&amp;t=dd9Or2IMUNQLwult-0">View them on figma</a></p>
+<h3 id="this-is-a-low-fidelity-ui-for-the-web-app">This is a low-fidelity UI for the web app</h3>
+<p><img alt="Low-Fidelity User Interface for web app" src="../images/WEBAPP%20UI.jpg" /></p>
+<h3 id="this-is-a-low-fidelity-ui-for-the-mobile-app">This is a low-fidelity UI for the mobile app</h3>
+<p><img alt="Low-Fidelity User Interface for mobile app" src="../images/MOBILEAPP%20UI.jpg" /></p>
+<h2 id="list-of-technologies-used">List of Technologies Used</h2>
+<h3 id="backend-supabase-postgresql-aws">Backend: Supabase + PostgreSQL + AWS</h3>
+<ul>
+<li><a href="https://supabase.com/docs">Supabase Documentation</a>  </li>
+<li><a href="https://www.postgresql.org/docs/">PostgreSQL Documentation</a> </li>
+<li><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html">Amazon S3</a> </li>
+</ul>
+<h3 id="cloud-infrastructure-cost-control">Cloud Infrastructure &amp; Cost Control</h3>
+<ul>
+<li><a href="https://docs.aws.amazon.com/iam/">AWS IAM</a></li>
+<li><a href="https://docs.aws.amazon.com/cost-management/">AWS Budgets &amp; Billing Alerts</a></li>
+</ul>
+<h3 id="deployment-cybera">Deployment: Cybera</h3>
+<ul>
+<li><a href="https://wiki.cybera.ca/spaces/RAC/pages/8880558/Rapid+Access+Cloud">Cybera Documentation</a></li>
+</ul>
+<h3 id="mobile-react-native">Mobile: React Native</h3>
+<ul>
+<li><a href="https://reactnative.dev/docs/getting-started">React Native Documentation</a></li>
+<li><a href="https://mozilla.github.io/pdf.js/">PDF.js Documentation</a>  </li>
+</ul>
+<h3 id="testing-tools">Testing &amp; Tools</h3>
+<ul>
+<li><a href="https://jestjs.io/">Jest Testing Framework</a></li>
+<li><a href="https://www.postman.com/">Postman</a> for API testing  </li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

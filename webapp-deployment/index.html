@@ -1,0 +1,2104 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>SAPAA Web Application Deployment Documentation - Winter 2026 SAPAA Project</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sapaa-web-application-deployment-documentation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Winter 2026 SAPAA Project" class="md-header__button md-logo" aria-label="Winter 2026 SAPAA Project" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Winter 2026 SAPAA Project
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SAPAA Web Application Deployment Documentation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Winter 2026 SAPAA Project" class="md-nav__button md-logo" aria-label="Winter 2026 SAPAA Project" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Winter 2026 SAPAA Project
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../software-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Software Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../teamwork/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Teamwork
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../traceability-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Traceability Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meeting-minutes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Meeting Minutes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#required-services-and-api-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Services and API Keys
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Required Services and API Keys">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-supabase-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Supabase Setup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Supabase Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-supabase-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating a Supabase Project
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getting-supabase-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting Supabase Credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#required-database-tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Database Tables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-opencage-geocoding-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. OpenCage Geocoding API
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. OpenCage Geocoding API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#getting-an-opencage-api-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting an OpenCage API Key
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Environment Variables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environment-variable-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variable Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#local-development-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Development Setup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Local Development Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-clone-the-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Clone the Repository
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-install-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Install Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-configure-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Configure Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-run-the-development-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Run the Development Server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-verify-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Verify Installation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#available-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Scripts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deploying-to-vercel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deploying to Vercel
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Deploying to Vercel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-1-deploy-via-vercel-dashboard-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option 1: Deploy via Vercel Dashboard (Recommended)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Option 1: Deploy via Vercel Dashboard (Recommended)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-install-vercel-cli-optional-but-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Install Vercel CLI (Optional but Recommended)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-login-to-vercel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Login to Vercel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-link-your-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Link Your Project
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-configure-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Configure Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-deploy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Deploy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-2-deploy-via-vercel-dashboard-web-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option 2: Deploy via Vercel Dashboard (Web Interface)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Post-Deployment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-domain-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Domain (Optional)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database Setup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Database Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-database-tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating Database Tables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-row-level-security-rls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting Up Row Level Security (RLS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-roles-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User Roles Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#post-deployment-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Post-Deployment Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Post-Deployment Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-verify-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Verify Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-test-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Test Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-test-database-connection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Test Database Connection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-test-admin-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Test Admin Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-configure-supabase-redirect-urls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Configure Supabase Redirect URLs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-test-api-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Test API Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Checklist
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security Checklist">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#removing-debug-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removing Debug Code
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#issue-unable-to-connect-to-supabase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Issue: "Unable to connect to Supabase"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#issue-authentication-not-working" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Issue: "Authentication not working"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#issue-no-sites-found-or-empty-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Issue: "No sites found" or empty data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#issue-geocoding-not-working" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Issue: "Geocoding not working"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#issue-build-fails-on-vercel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Issue: "Build fails on Vercel"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#issue-environment-variables-not-working" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Issue: "Environment variables not working"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getting-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting Help
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Documentation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-geocoding-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Geocoding API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-heatmap-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Heatmap API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-authentication-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Authentication Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#required-libraries-and-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Libraries and Dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Required Libraries and Dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#production-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#development-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Development Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#maintenance-and-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Maintenance and Updates
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Maintenance and Updates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#updating-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Updating Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backup-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup Strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#support-and-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Support and Resources
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Support and Resources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#documentation-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation Links
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#contact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contact
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="sapaa-web-application-deployment-documentation">SAPAA Web Application Deployment Documentation</h1>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#required-services-and-api-keys">Required Services and API Keys</a></li>
+<li><a href="#environment-variables">Environment Variables</a></li>
+<li><a href="#local-development-setup">Local Development Setup</a></li>
+<li><a href="#deploying-to-vercel">Deploying to Vercel</a></li>
+<li><a href="#database-setup">Database Setup</a></li>
+<li><a href="#post-deployment-configuration">Post-Deployment Configuration</a></li>
+<li><a href="#security-checklist">Security Checklist</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#api-documentation">API Documentation</a></li>
+</ol>
+<hr />
+<h2 id="overview">Overview</h2>
+<p>The SAPAA Web Application is a Next.js 16 application that provides a web interface for stewards and administrators to view and manage protected area inspection data. The application uses:</p>
+<ul>
+<li><strong>Next.js 16.0.1</strong> - React framework with App Router</li>
+<li><strong>Supabase</strong> - Database and authentication service</li>
+<li><strong>OpenCage Geocoding API</strong> - For location-based features</li>
+<li><strong>Vercel</strong> - Deployment platform</li>
+</ul>
+<p><strong>Deployed URL:</strong> https://sapaa-webapp.vercel.app/</p>
+<hr />
+<h2 id="prerequisites">Prerequisites</h2>
+<p>Before deploying the application, ensure you have:</p>
+<ol>
+<li><strong>Node.js</strong> (version 18.x or higher)</li>
+<li>Download from <a href="https://nodejs.org/">nodejs.org</a></li>
+<li>
+<p>Verify installation: <code>node --version</code></p>
+</li>
+<li>
+<p><strong>npm</strong> (comes with Node.js)</p>
+</li>
+<li>
+<p>Verify installation: <code>npm --version</code></p>
+</li>
+<li>
+<p><strong>Git</strong> (for cloning the repository)</p>
+</li>
+<li>Download from <a href="https://git-scm.com/">git-scm.com</a></li>
+<li>
+<p>Verify installation: <code>git --version</code></p>
+</li>
+<li>
+<p><strong>Vercel Account</strong> (free tier available)</p>
+</li>
+<li>
+<p>Sign up at <a href="https://vercel.com">vercel.com</a></p>
+</li>
+<li>
+<p><strong>Supabase Account</strong> (free tier available)</p>
+</li>
+<li>
+<p>Sign up at <a href="https://supabase.com">supabase.com</a></p>
+</li>
+<li>
+<p><strong>OpenCage API Key</strong> (free tier available)</p>
+</li>
+<li>Sign up at <a href="https://opencagedata.com">opencagedata.com</a></li>
+</ol>
+<hr />
+<h2 id="required-services-and-api-keys">Required Services and API Keys</h2>
+<h3 id="1-supabase-setup">1. Supabase Setup</h3>
+<p>The application requires a Supabase project with the following components:</p>
+<h4 id="creating-a-supabase-project">Creating a Supabase Project</h4>
+<ol>
+<li>Go to <a href="https://supabase.com">supabase.com</a> and sign in</li>
+<li>Click <strong>"New Project"</strong></li>
+<li>Fill in:</li>
+<li><strong>Project Name</strong>: <code>sapaa-webapp</code> (or your preferred name)</li>
+<li><strong>Database Password</strong>: Choose a strong password (save this securely)</li>
+<li><strong>Region</strong>: Select the closest region to your users</li>
+<li>Click <strong>"Create new project"</strong></li>
+<li>Wait for the project to be provisioned (2-3 minutes)</li>
+</ol>
+<h4 id="getting-supabase-credentials">Getting Supabase Credentials</h4>
+<ol>
+<li>In your Supabase project dashboard, go to <strong>Settings</strong> → <strong>API</strong></li>
+<li>You'll need the following values:</li>
+<li><strong>Project URL</strong>: <code>https://yizmvkfkgahyoqeznvki.supabase.co</code></li>
+<li><strong>anon/public key</strong>: <code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlpem12a2ZrZ2FoeW9xZXpudmtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjQ4NzIsImV4cCI6MjA3NTEwMDg3Mn0.cHeCjiv7NEPHO6EzU0hD2JaWFXEEFlYb532QBOkdZUA</code></li>
+<li><strong>service_role key</strong> (under "Project API keys" → "service_role" - <strong>KEEP THIS SECRET</strong>)</li>
+</ol>
+<h4 id="required-database-tables">Required Database Tables</h4>
+<p>The application expects the following tables/views in your Supabase database:</p>
+<ul>
+<li><code>sites_list_fnr</code> - Main list of protected sites</li>
+<li><code>sites_report_fnr_test</code> - Inspection reports (or <code>sites_report_fnr</code> for production)</li>
+<li><code>sites_detail_fnr_test</code> - Site detail view (or <code>sites_detail_fnr</code> for production)</li>
+<li><code>inspectheader</code> - Inspection header records</li>
+<li><code>inspectdetails_fnr_test</code> - Inspection detail records (or <code>inspectdetails_fnr</code> for production)</li>
+<li><code>inspectquestions</code> - Inspection question definitions</li>
+</ul>
+<h3 id="2-opencage-geocoding-api">2. OpenCage Geocoding API</h3>
+<p>The application uses OpenCage for geocoding site locations on the admin dashboard heatmap.</p>
+<h4 id="getting-an-opencage-api-key">Getting an OpenCage API Key</h4>
+<ol>
+<li>Go to <a href="https://opencagedata.com">opencagedata.com</a></li>
+<li>Sign up for a free account</li>
+<li>Navigate to <strong>API Keys</strong> in your dashboard</li>
+<li>Copy your API key</li>
+<li>The free tier includes 2,500 requests per day</li>
+</ol>
+<hr />
+<h2 id="environment-variables">Environment Variables</h2>
+<p>The application requires the following environment variables:</p>
+<h3 id="required-variables">Required Variables</h3>
+<table>
+<thead>
+<tr>
+<th>Variable Name</th>
+<th>Description</th>
+<th>Where to Get It</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NEXT_PUBLIC_SUPABASE_URL</code></td>
+<td>Your Supabase project URL</td>
+<td>Supabase Dashboard → Settings → API</td>
+</tr>
+<tr>
+<td><code>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code></td>
+<td>Supabase anon/public key</td>
+<td>Supabase Dashboard → Settings → API → anon public</td>
+</tr>
+<tr>
+<td><code>SUPABASE_SECRET</code></td>
+<td>Supabase service role key (server-side only)</td>
+<td>Supabase Dashboard → Settings → API → service_role</td>
+</tr>
+<tr>
+<td><code>OPENCAGE_API_KEY</code></td>
+<td>OpenCage Geocoding API key</td>
+<td>OpenCage Dashboard → API Keys</td>
+</tr>
+</tbody>
+</table>
+<h3 id="environment-variable-format">Environment Variable Format</h3>
+<p>Create a <code>.env.local</code> file in the <code>webapp</code> directory for local development:</p>
+<pre><code class="language-env">NEXT_PUBLIC_SUPABASE_URL=https://yizmvkfkgahyoqeznvki.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlpem12a2ZrZ2FoeW9xZXpudmtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjQ4NzIsImV4cCI6MjA3NTEwMDg3Mn0.cHeCjiv7NEPHO6EzU0hD2JaWFXEEFlYb532QBOkdZUA
+SUPABASE_SECRET=your-service-role-key-here
+OPENCAGE_API_KEY=your-opencage-key-here
+</code></pre>
+<p><strong>Note:</strong> 
+- Replace <code>SUPABASE_SECRET</code> with your actual service role key from Supabase Dashboard → Settings → API → service_role
+- Replace <code>OPENCAGE_API_KEY</code> with your actual OpenCage API key from your OpenCage dashboard</p>
+<p><strong>⚠️ Important:</strong> 
+- Never commit <code>.env.local</code> to version control
+- The <code>.env.local</code> file is already in <code>.gitignore</code>
+- For Vercel deployment, add these variables in the Vercel dashboard (see below)</p>
+<hr />
+<h2 id="local-development-setup">Local Development Setup</h2>
+<h3 id="step-1-clone-the-repository">Step 1: Clone the Repository</h3>
+<pre><code class="language-bash"># Clone the repository
+git clone https://github.com/UAlberta-CMPUT401/f25project-SAPAA.git
+cd f25project-SAPAA/webapp
+</code></pre>
+<h3 id="step-2-install-dependencies">Step 2: Install Dependencies</h3>
+<pre><code class="language-bash">npm install
+</code></pre>
+<p>This will install all required packages listed in <code>package.json</code>:
+- Next.js and React
+- Supabase client libraries
+- Material-UI components
+- Chart.js for data visualization
+- Leaflet for maps
+- Testing libraries (Jest, React Testing Library)</p>
+<h3 id="step-3-configure-environment-variables">Step 3: Configure Environment Variables</h3>
+<ol>
+<li>Create a <code>.env.local</code> file in the <code>webapp</code> directory:</li>
+</ol>
+<pre><code class="language-bash"># On Windows (PowerShell)
+New-Item -Path .env.local -ItemType File
+
+# On Mac/Linux
+touch .env.local
+</code></pre>
+<ol>
+<li>Add your environment variables to <code>.env.local</code>:</li>
+</ol>
+<pre><code class="language-env">NEXT_PUBLIC_SUPABASE_URL=https://yizmvkfkgahyoqeznvki.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlpem12a2ZrZ2FoeW9xZXpudmtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjQ4NzIsImV4cCI6MjA3NTEwMDg3Mn0.cHeCjiv7NEPHO6EzU0hD2JaWFXEEFlYb532QBOkdZUA
+SUPABASE_SECRET=your-service-role-key-here
+OPENCAGE_API_KEY=your-opencage-key-here
+</code></pre>
+<p><strong>Note:</strong> 
+- Replace <code>SUPABASE_SECRET</code> with your actual service role key from Supabase Dashboard → Settings → API → service_role
+- Replace <code>OPENCAGE_API_KEY</code> with your actual OpenCage API key</p>
+<h3 id="step-4-run-the-development-server">Step 4: Run the Development Server</h3>
+<pre><code class="language-bash">npm run dev
+</code></pre>
+<p>The application will start on <a href="http://localhost:3000">http://localhost:3000</a></p>
+<h3 id="step-5-verify-installation">Step 5: Verify Installation</h3>
+<ol>
+<li>Open <a href="http://localhost:3000">http://localhost:3000</a> in your browser</li>
+<li>You should see the login page</li>
+<li>If you see errors, check:</li>
+<li>All environment variables are set correctly</li>
+<li>Supabase project is active</li>
+<li>Database tables are created</li>
+</ol>
+<h3 id="available-scripts">Available Scripts</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>npm run dev</code></td>
+<td>Start development server on port 3000</td>
+</tr>
+<tr>
+<td><code>npm run build</code></td>
+<td>Build production bundle</td>
+</tr>
+<tr>
+<td><code>npm run start</code></td>
+<td>Start production server (after build)</td>
+</tr>
+<tr>
+<td><code>npm run lint</code></td>
+<td>Run ESLint to check code quality</td>
+</tr>
+<tr>
+<td><code>npm test</code></td>
+<td>Run Jest test suite</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="deploying-to-vercel">Deploying to Vercel</h2>
+<p>Vercel is the recommended deployment platform for Next.js applications. It provides automatic deployments, SSL certificates, and global CDN.</p>
+<h3 id="option-1-deploy-via-vercel-dashboard-recommended">Option 1: Deploy via Vercel Dashboard (Recommended)</h3>
+<h4 id="step-1-install-vercel-cli-optional-but-recommended">Step 1: Install Vercel CLI (Optional but Recommended)</h4>
+<pre><code class="language-bash">npm install -g vercel
+</code></pre>
+<h4 id="step-2-login-to-vercel">Step 2: Login to Vercel</h4>
+<pre><code class="language-bash">vercel login
+</code></pre>
+<p>Follow the prompts to authenticate.</p>
+<h4 id="step-3-link-your-project">Step 3: Link Your Project</h4>
+<p>Navigate to the <code>webapp</code> directory:</p>
+<pre><code class="language-bash">cd webapp
+vercel link
+</code></pre>
+<p>This will:
+- Ask if you want to link to an existing project or create a new one
+- If creating new, provide a project name (e.g., <code>sapaa-webapp</code>)</p>
+<h4 id="step-4-configure-environment-variables">Step 4: Configure Environment Variables</h4>
+<ol>
+<li>Go to <a href="https://vercel.com/dashboard">vercel.com/dashboard</a></li>
+<li>Select your project</li>
+<li>Go to <strong>Settings</strong> → <strong>Environment Variables</strong></li>
+<li>Add each required variable:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Variable Name</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NEXT_PUBLIC_SUPABASE_URL</code></td>
+<td><code>https://yizmvkfkgahyoqeznvki.supabase.co</code></td>
+</tr>
+<tr>
+<td><code>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code></td>
+<td><code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlpem12a2ZrZ2FoeW9xZXpudmtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjQ4NzIsImV4cCI6MjA3NTEwMDg3Mn0.cHeCjiv7NEPHO6EzU0hD2JaWFXEEFlYb532QBOkdZUA</code></td>
+</tr>
+<tr>
+<td><code>SUPABASE_SECRET</code></td>
+<td>Your Supabase service role key (get from Supabase Dashboard → Settings → API → service_role)</td>
+</tr>
+<tr>
+<td><code>OPENCAGE_API_KEY</code></td>
+<td>Your OpenCage API key (get from your OpenCage dashboard)</td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li>Select <strong>Production</strong>, <strong>Preview</strong>, and <strong>Development</strong> environments for each variable</li>
+<li>Click <strong>Save</strong></li>
+</ol>
+<h4 id="step-5-deploy">Step 5: Deploy</h4>
+<pre><code class="language-bash">vercel --prod
+</code></pre>
+<p>Or push to your main branch if you've connected a Git repository:</p>
+<pre><code class="language-bash">git push origin main
+</code></pre>
+<p>Vercel will automatically deploy on push.</p>
+<h3 id="option-2-deploy-via-vercel-dashboard-web-interface">Option 2: Deploy via Vercel Dashboard (Web Interface)</h3>
+<ol>
+<li>Go to <a href="https://vercel.com/new">vercel.com/new</a></li>
+<li>Import your Git repository</li>
+<li>Configure the project:</li>
+<li><strong>Framework Preset</strong>: Next.js (auto-detected)</li>
+<li><strong>Root Directory</strong>: <code>webapp</code> (if repository root is parent directory)</li>
+<li><strong>Build Command</strong>: <code>npm run build</code> (default)</li>
+<li><strong>Output Directory</strong>: <code>.next</code> (default)</li>
+<li>Add environment variables (see Step 4 above)</li>
+<li>Click <strong>Deploy</strong></li>
+</ol>
+<h3 id="post-deployment">Post-Deployment</h3>
+<p>After deployment:</p>
+<ol>
+<li>Your app will be available at: <code>https://sapaa-webapp.vercel.app/</code> (or your custom domain)</li>
+<li>Test the deployment:</li>
+<li>Visit the login page</li>
+<li>Verify authentication works</li>
+<li>Check that data loads correctly</li>
+<li>Test admin features (if you have admin access)</li>
+</ol>
+<h3 id="custom-domain-optional">Custom Domain (Optional)</h3>
+<ol>
+<li>In Vercel dashboard, go to <strong>Settings</strong> → <strong>Domains</strong></li>
+<li>Add your custom domain (e.g., <code>sapaa.yourorg.ca</code>)</li>
+<li>Follow DNS configuration instructions</li>
+<li>Vercel will automatically provision SSL certificates</li>
+</ol>
+<hr />
+<h2 id="database-setup">Database Setup</h2>
+<h3 id="creating-database-tables">Creating Database Tables</h3>
+<p>You need to set up the following database structure in Supabase:</p>
+<ol>
+<li><strong>Log into Supabase Dashboard</strong></li>
+<li>Go to <strong>SQL Editor</strong></li>
+<li>Run the SQL scripts to create:</li>
+<li>Tables: <code>inspectheader</code>, <code>inspectquestions</code></li>
+<li>Views: <code>sites_list_fnr</code>, <code>sites_report_fnr_test</code>, <code>sites_detail_fnr_test</code></li>
+<li>Tables: <code>inspectdetails_fnr_test</code></li>
+</ol>
+<p><strong>Note:</strong> Contact your development team for the complete SQL schema.</p>
+<h3 id="setting-up-row-level-security-rls">Setting Up Row Level Security (RLS)</h3>
+<p>Supabase uses Row Level Security to control data access. You may need to configure RLS policies:</p>
+<ol>
+<li>Go to <strong>Authentication</strong> → <strong>Policies</strong> in Supabase</li>
+<li>Create policies for each table to allow:</li>
+<li>Authenticated users to read data</li>
+<li>Admins to read/write data (if applicable)</li>
+</ol>
+<p><strong>Example Policy:</strong></p>
+<pre><code class="language-sql">-- Allow authenticated users to read sites
+CREATE POLICY &quot;Allow authenticated users to read sites&quot;
+ON sites_list_fnr
+FOR SELECT
+TO authenticated
+USING (true);
+</code></pre>
+<h3 id="user-roles-setup">User Roles Setup</h3>
+<p>The application uses Supabase Auth <code>user_metadata</code> to store user roles. Roles are stored in the <code>user_metadata.role</code> field of each user.</p>
+<p><strong>How Roles Work:</strong>
+- Default role: <code>steward</code> (assigned automatically if no role is set)
+- Admin role: <code>admin</code> (must be set manually)
+- Roles are stored in: <code>user.user_metadata.role</code></p>
+<p><strong>Setting Admin Role:</strong></p>
+<ol>
+<li>Go to Supabase Dashboard → Authentication → Users</li>
+<li>Find the user you want to make an admin</li>
+<li>Click on the user to edit</li>
+<li>In the <strong>Raw User Meta Data</strong> section, add or update:
+   <code>json
+   {
+     "role": "admin"
+   }</code></li>
+<li>Click <strong>Save</strong></li>
+</ol>
+<p><strong>Note:</strong> New users created through the app's signup page will default to <code>steward</code> role. Only admins can change user roles through the Account Management interface.</p>
+<hr />
+<h2 id="post-deployment-configuration">Post-Deployment Configuration</h2>
+<h3 id="1-verify-environment-variables">1. Verify Environment Variables</h3>
+<p>After deployment, verify all environment variables are set:</p>
+<ol>
+<li>Go to Vercel Dashboard → Your Project → Settings → Environment Variables</li>
+<li>Ensure all 4 required variables are present</li>
+<li>Check that they're enabled for Production environment</li>
+</ol>
+<h3 id="2-test-authentication">2. Test Authentication</h3>
+<ol>
+<li>Visit your deployed URL</li>
+<li>Try logging in with a test account</li>
+<li>Verify:</li>
+<li>Login works</li>
+<li>Signup works (if enabled)</li>
+<li>Session persists after page refresh</li>
+<li>Logout works</li>
+</ol>
+<h3 id="3-test-database-connection">3. Test Database Connection</h3>
+<ol>
+<li>Log in to the application</li>
+<li>Navigate to the Protected Areas page</li>
+<li>Verify sites load correctly</li>
+<li>Check browser console for errors</li>
+</ol>
+<h3 id="4-test-admin-features">4. Test Admin Features</h3>
+<ol>
+<li>Log in with an admin account</li>
+<li>Verify:</li>
+<li>Admin Dashboard loads</li>
+<li>Charts display data</li>
+<li>Heatmap search works</li>
+<li>Account Management page is accessible</li>
+</ol>
+<h3 id="5-configure-supabase-redirect-urls">5. Configure Supabase Redirect URLs</h3>
+<ol>
+<li>Go to Supabase Dashboard → Authentication → URL Configuration</li>
+<li>Add your Vercel URL to <strong>Redirect URLs</strong>:</li>
+<li><code>https://sapaa-webapp.vercel.app/auth/callback</code></li>
+<li><code>https://sapaa-webapp.vercel.app/auth/confirm</code></li>
+<li>Add to <strong>Site URL</strong>: <code>https://sapaa-webapp.vercel.app</code></li>
+</ol>
+<h3 id="6-test-api-endpoints">6. Test API Endpoints</h3>
+<p>The application has the following API routes:</p>
+<ul>
+<li><code>/api/geocode?q=&lt;location&gt;</code> - Geocoding endpoint</li>
+<li><code>/api/heatmap?keyword=&lt;term&gt;</code> - Site search for heatmap</li>
+</ul>
+<p>Test these endpoints:</p>
+<pre><code class="language-bash"># Test geocoding
+curl https://sapaa-webapp.vercel.app/api/geocode?q=Alberta
+
+# Test heatmap (requires authentication)
+# Use browser dev tools Network tab to inspect requests
+</code></pre>
+<hr />
+<h2 id="security-checklist">Security Checklist</h2>
+<p>Before going to production, ensure:</p>
+<ul>
+<li>[ ] All environment variables are set in Vercel (not in code)</li>
+<li>[ ] <code>SUPABASE_SECRET</code> is never exposed to client-side code</li>
+<li>[ ] Debug/test credentials are removed</li>
+<li>[ ] Default passwords are changed</li>
+<li>[ ] Row Level Security (RLS) is enabled on Supabase tables</li>
+<li>[ ] API rate limiting is configured (if needed)</li>
+<li>[ ] CORS is properly configured in Supabase</li>
+<li>[ ] SSL/HTTPS is enabled (automatic with Vercel)</li>
+<li>[ ] Error messages don't expose sensitive information</li>
+<li>[ ] Authentication is required for all protected routes</li>
+<li>[ ] Admin routes are properly protected</li>
+<li>[ ] No console.log statements with sensitive data in production</li>
+</ul>
+<h3 id="removing-debug-code">Removing Debug Code</h3>
+<p>Before production deployment:</p>
+<ol>
+<li>Remove or comment out <code>console.log</code> statements with sensitive data</li>
+<li>Remove test credentials from code</li>
+<li>Ensure error messages are user-friendly and don't expose internals</li>
+<li>Review the codebase for hardcoded secrets</li>
+</ol>
+<hr />
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="common-issues">Common Issues</h3>
+<h4 id="issue-unable-to-connect-to-supabase">Issue: "Unable to connect to Supabase"</h4>
+<p><strong>Symptoms:</strong>
+- Login fails
+- Sites don't load
+- Error messages about Supabase connection</p>
+<p><strong>Solutions:</strong>
+1. Verify <code>NEXT_PUBLIC_SUPABASE_URL</code> is correct
+2. Check Supabase project is active (not paused)
+3. Verify network connectivity
+4. Check Supabase status page: <a href="https://status.supabase.com">status.supabase.com</a></p>
+<h4 id="issue-authentication-not-working">Issue: "Authentication not working"</h4>
+<p><strong>Symptoms:</strong>
+- Users can't log in
+- Redirect loops
+- "Invalid credentials" errors</p>
+<p><strong>Solutions:</strong>
+1. Verify Supabase redirect URLs are configured correctly
+2. Check <code>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code> is correct
+3. Verify Supabase Auth is enabled
+4. Check browser console for specific error messages</p>
+<h4 id="issue-no-sites-found-or-empty-data">Issue: "No sites found" or empty data</h4>
+<p><strong>Symptoms:</strong>
+- Protected Areas page shows no sites
+- Dashboard shows zero statistics</p>
+<p><strong>Solutions:</strong>
+1. Verify database tables exist and have data
+2. Check Row Level Security policies allow read access
+3. Verify <code>SUPABASE_SECRET</code> is set correctly (for server-side queries)
+4. Check Supabase logs for query errors</p>
+<h4 id="issue-geocoding-not-working">Issue: "Geocoding not working"</h4>
+<p><strong>Symptoms:</strong>
+- Heatmap doesn't show locations
+- Admin dashboard search returns no results</p>
+<p><strong>Solutions:</strong>
+1. Verify <code>OPENCAGE_API_KEY</code> is set
+2. Check OpenCage API quota (free tier: 2,500/day)
+3. Verify API key is valid in OpenCage dashboard
+4. Check browser console for API errors</p>
+<h4 id="issue-build-fails-on-vercel">Issue: "Build fails on Vercel"</h4>
+<p><strong>Symptoms:</strong>
+- Deployment fails during build
+- Build logs show errors</p>
+<p><strong>Solutions:</strong>
+1. Check build logs in Vercel dashboard
+2. Verify all dependencies are in <code>package.json</code>
+3. Ensure Node.js version is compatible (Vercel auto-detects)
+4. Check for TypeScript errors: <code>npm run build</code> locally first</p>
+<h4 id="issue-environment-variables-not-working">Issue: "Environment variables not working"</h4>
+<p><strong>Symptoms:</strong>
+- App works locally but not on Vercel
+- API calls fail</p>
+<p><strong>Solutions:</strong>
+1. Verify variables are set in Vercel dashboard (not just <code>.env.local</code>)
+2. Ensure variables are enabled for Production environment
+3. Redeploy after adding variables
+4. Variables starting with <code>NEXT_PUBLIC_</code> are exposed to client-side</p>
+<h3 id="getting-help">Getting Help</h3>
+<p>If you encounter issues not covered here:</p>
+<ol>
+<li>Check Vercel deployment logs</li>
+<li>Check Supabase logs (Dashboard → Logs)</li>
+<li>Review browser console for client-side errors</li>
+<li>Check network tab for failed API requests</li>
+<li>Contact your development team with:</li>
+<li>Error messages</li>
+<li>Steps to reproduce</li>
+<li>Browser/OS information</li>
+<li>Screenshots if applicable</li>
+</ol>
+<hr />
+<h2 id="api-documentation">API Documentation</h2>
+<p>The web application exposes the following API endpoints:</p>
+<h3 id="1-geocoding-api">1. Geocoding API</h3>
+<p><strong>Endpoint:</strong> <code>GET /api/geocode</code></p>
+<p><strong>Description:</strong> Geocodes a location name to coordinates using OpenCage API.</p>
+<p><strong>Query Parameters:</strong>
+- <code>q</code> (required): Location name to geocode</p>
+<p><strong>Example Request:</strong></p>
+<pre><code class="language-bash">GET /api/geocode?q=Elk Island Provincial Park
+</code></pre>
+<p><strong>Example Response:</strong></p>
+<pre><code class="language-json">{
+  &quot;latitude&quot;: 53.5731,
+  &quot;longitude&quot;: -112.8583
+}
+</code></pre>
+<p><strong>Error Response:</strong></p>
+<pre><code class="language-json">{
+  &quot;error&quot;: &quot;Missing q param&quot;
+}
+</code></pre>
+<p>Status: 400</p>
+<p><strong>Rate Limits:</strong>
+- Limited by OpenCage API quota (2,500 requests/day on free tier)</p>
+<hr />
+<h3 id="2-heatmap-api">2. Heatmap API</h3>
+<p><strong>Endpoint:</strong> <code>GET /api/heatmap</code></p>
+<p><strong>Description:</strong> Searches for sites matching a keyword and returns counts for heatmap visualization.</p>
+<p><strong>Query Parameters:</strong>
+- <code>keyword</code> (optional): Search term to match against site names</p>
+<p><strong>Example Request:</strong></p>
+<pre><code class="language-bash">GET /api/heatmap?keyword=park
+</code></pre>
+<p><strong>Example Response:</strong></p>
+<pre><code class="language-json">{
+  &quot;data&quot;: [
+    {
+      &quot;namesite&quot;: &quot;Elk Island Provincial Park&quot;,
+      &quot;count&quot;: 15
+    },
+    {
+      &quot;namesite&quot;: &quot;Writing-on-Stone Provincial Park&quot;,
+      &quot;count&quot;: 12
+    }
+  ]
+}
+</code></pre>
+<p><strong>Empty Response:</strong></p>
+<pre><code class="language-json">{
+  &quot;data&quot;: [],
+  &quot;message&quot;: &quot;No sites found&quot;
+}
+</code></pre>
+<p><strong>Error Response:</strong></p>
+<pre><code class="language-json">{
+  &quot;error&quot;: &quot;Database query failed&quot;
+}
+</code></pre>
+<p>Status: 400 or 500</p>
+<p><strong>Authentication:</strong>
+- Requires authenticated user session (handled by middleware)</p>
+<hr />
+<h3 id="3-authentication-endpoints">3. Authentication Endpoints</h3>
+<p>These endpoints are handled by Next.js and Supabase:</p>
+<ul>
+<li><code>POST /login</code> - User login</li>
+<li><code>POST /signup</code> - User registration</li>
+<li><code>GET /auth/callback</code> - OAuth callback handler</li>
+<li><code>GET /auth/confirm</code> - Email confirmation handler</li>
+</ul>
+<p><strong>Note:</strong> These are internal API routes. Use the frontend login/signup pages instead of calling these directly.</p>
+<hr />
+<h2 id="required-libraries-and-dependencies">Required Libraries and Dependencies</h2>
+<h3 id="production-dependencies">Production Dependencies</h3>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>next</code></td>
+<td>16.0.1</td>
+<td>Next.js framework</td>
+</tr>
+<tr>
+<td><code>react</code></td>
+<td>19.2.0</td>
+<td>React library</td>
+</tr>
+<tr>
+<td><code>react-dom</code></td>
+<td>19.2.0</td>
+<td>React DOM rendering</td>
+</tr>
+<tr>
+<td><code>@supabase/ssr</code></td>
+<td>^0.7.0</td>
+<td>Supabase server-side rendering</td>
+</tr>
+<tr>
+<td><code>@supabase/supabase-js</code></td>
+<td>^2.84.0</td>
+<td>Supabase JavaScript client</td>
+</tr>
+<tr>
+<td><code>@mui/material</code></td>
+<td>^7.3.5</td>
+<td>Material-UI components</td>
+</tr>
+<tr>
+<td><code>@mui/icons-material</code></td>
+<td>^7.3.5</td>
+<td>Material-UI icons</td>
+</tr>
+<tr>
+<td><code>chart.js</code></td>
+<td>^4.5.1</td>
+<td>Chart library</td>
+</tr>
+<tr>
+<td><code>react-chartjs-2</code></td>
+<td>^5.3.1</td>
+<td>React wrapper for Chart.js</td>
+</tr>
+<tr>
+<td><code>leaflet</code></td>
+<td>^1.9.4</td>
+<td>Map library</td>
+</tr>
+<tr>
+<td><code>react-leaflet</code></td>
+<td>^5.0.0</td>
+<td>React wrapper for Leaflet</td>
+</tr>
+<tr>
+<td><code>leaflet.heat</code></td>
+<td>^0.2.0</td>
+<td>Heatmap plugin for Leaflet</td>
+</tr>
+<tr>
+<td><code>axios</code></td>
+<td>^1.13.2</td>
+<td>HTTP client</td>
+</tr>
+<tr>
+<td><code>lucide-react</code></td>
+<td>^0.554.0</td>
+<td>Icon library</td>
+</tr>
+<tr>
+<td><code>react-icons</code></td>
+<td>^5.5.0</td>
+<td>Additional icons</td>
+</tr>
+</tbody>
+</table>
+<h3 id="development-dependencies">Development Dependencies</h3>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>typescript</code></td>
+<td>^5</td>
+<td>TypeScript compiler</td>
+</tr>
+<tr>
+<td><code>eslint</code></td>
+<td>^9</td>
+<td>Code linting</td>
+</tr>
+<tr>
+<td><code>jest</code></td>
+<td>^30.2.0</td>
+<td>Testing framework</td>
+</tr>
+<tr>
+<td><code>@testing-library/react</code></td>
+<td>^16.3.0</td>
+<td>React testing utilities</td>
+</tr>
+<tr>
+<td><code>tailwindcss</code></td>
+<td>^4</td>
+<td>CSS framework</td>
+</tr>
+</tbody>
+</table>
+<h3 id="installation">Installation</h3>
+<p>All dependencies are installed with:</p>
+<pre><code class="language-bash">npm install
+</code></pre>
+<p>This reads <code>package.json</code> and installs all listed dependencies.</p>
+<hr />
+<h2 id="maintenance-and-updates">Maintenance and Updates</h2>
+<h3 id="updating-dependencies">Updating Dependencies</h3>
+<ol>
+<li>Check for outdated packages:</li>
+</ol>
+<pre><code class="language-bash">npm outdated
+</code></pre>
+<ol>
+<li>Update specific packages:</li>
+</ol>
+<pre><code class="language-bash">npm update &lt;package-name&gt;
+</code></pre>
+<ol>
+<li>Update all packages (use with caution):</li>
+</ol>
+<pre><code class="language-bash">npm update
+</code></pre>
+<ol>
+<li>Test thoroughly after updates</li>
+<li>Commit <code>package-lock.json</code> changes</li>
+</ol>
+<h3 id="monitoring">Monitoring</h3>
+<ul>
+<li><strong>Vercel Analytics</strong>: Monitor performance and errors</li>
+<li><strong>Supabase Dashboard</strong>: Monitor database usage and performance</li>
+<li><strong>OpenCage Dashboard</strong>: Monitor API usage and quota</li>
+</ul>
+<h3 id="backup-strategy">Backup Strategy</h3>
+<ol>
+<li><strong>Database Backups</strong>: Supabase provides automatic daily backups (on paid plans)</li>
+<li><strong>Code Backups</strong>: Git repository serves as code backup</li>
+<li><strong>Environment Variables</strong>: Document all environment variables securely (use password manager)</li>
+</ol>
+<hr />
+<h2 id="support-and-resources">Support and Resources</h2>
+<h3 id="documentation-links">Documentation Links</h3>
+<ul>
+<li><a href="https://nextjs.org/docs">Next.js Documentation</a></li>
+<li><a href="https://supabase.com/docs">Supabase Documentation</a></li>
+<li><a href="https://vercel.com/docs">Vercel Documentation</a></li>
+<li><a href="https://opencagedata.com/api">OpenCage API Documentation</a></li>
+</ul>
+<h3 id="contact">Contact</h3>
+<p>For deployment support or issues:
+- Contact your development team
+- Check project repository issues
+- Review Vercel deployment logs</p>
+<hr />
+<p><strong>Document Version:</strong> 1.0<br />
+<strong>Last Updated:</strong> November 2025<br />
+<strong>Prepared for:</strong> Stewards of Alberta's Protected Areas Association</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
