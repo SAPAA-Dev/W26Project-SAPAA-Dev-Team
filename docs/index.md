@@ -677,7 +677,7 @@ Each user story is categorized into one of the following priority levels:
 * US 4.0.1 - View Site Profile of a Particular Site
 * US 4.0.2  - Add Site Profile of a Particular Site
 * US 4.0.3  - Update Site Profile of a Particular Site
-* US 4.0.4 - Delete Site Profile of a Particular Site
+* US 4.0.4 - Disable Site Profile of a Particular Site
 * US 4.0.5 - Amenities Information on Site Profile
 * US 1.0.24 – Modify my Site Inspections Form Questions
 * US 1.0.25 – Hide a Site Inspections Form Question
@@ -692,7 +692,7 @@ Each user story is categorized into one of the following priority levels:
 * US 5.0.1 - Sign in feature
 * US 5.0.2 - Sign out feature
 * US 5.0.3 - Edit account feature
-* US 5.0.4 - Delete account feature
+* US 5.0.4 - Disable account feature
 * US 6.0.2 - Change Size of Text on Screen
 
 ### Would Like But Won't Get
