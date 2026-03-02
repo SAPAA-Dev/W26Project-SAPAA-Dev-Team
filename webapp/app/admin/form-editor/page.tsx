@@ -156,16 +156,17 @@ export default function FormEditorPage() {
     question_type: string;
     is_required: boolean;
     options: string[];
+    question_key: string;
   }) => {
     if (!activeSection) return;
     setSaving(true);
     setError(null);
     try {
-      const maxOrder = currentQuestions.reduce(
-        (max, q) => Math.max(max, q.formorder ?? 0),
-        0
-      );
-      await addQuestion(activeSection, maxOrder, newQuestion);
+      // const maxOrder = currentQuestions.reduce(
+      //   (max, q) => Math.max(max, q.formorder ?? 0),
+      //   0
+      // );
+      await addQuestion(activeSection, newQuestion);
       await loadQuestions();
       setShowAddQuestion(false);
       showSuccess("Question added successfully");
@@ -844,6 +845,7 @@ function AddQuestionForm({
     question_type: string;
     is_required: boolean;
     options: string[];
+    question_key: string;
   }) => void;
   onCancel: () => void;
 }) {
@@ -852,6 +854,7 @@ function AddQuestionForm({
   const [type, setType] = useState("option");
   const [required, setRequired] = useState(false);
   const [options, setOptions] = useState(["", ""]);
+  const [questionKey, setQuestionKey] = useState("");
 
   const needsOptions = ["option", "selectall"].includes(type);
 
@@ -885,6 +888,19 @@ function AddQuestionForm({
             placeholder="Additional context for the question (optional)"
             rows={2}
             className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] resize-none transition-colors placeholder:text-[#7A8075]"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
+            Question Key
+          </label>
+          <input
+            type="text"
+            value={questionKey}
+            onChange={(e) => setQuestionKey(e.target.value)}
+            placeholder="e.g. Q111_erosion"
+            className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] transition-colors placeholder:text-[#7A8075]"
           />
         </div>
 
@@ -980,6 +996,7 @@ function AddQuestionForm({
               question_type: type,
               is_required: required,
               options: needsOptions ? options.filter((o) => o.trim()) : [],
+              question_key: questionKey.trim(),
             })
           }
           disabled={saving || !title.trim()}
