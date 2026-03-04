@@ -108,7 +108,6 @@ export default function FormEditorPage() {
   // ─── Derived State ───────────────────────────────────────────────
   const currentQuestions = questions
     .filter((q) => q.section_id === activeSection)
-    .sort((a, b) => (a.formorder ?? Infinity) - (b.formorder ?? Infinity));
 
   const currentSection = sections.find((s) => s.id === activeSection);
 
@@ -162,11 +161,12 @@ export default function FormEditorPage() {
     setSaving(true);
     setError(null);
     try {
-      // const maxOrder = currentQuestions.reduce(
-      //   (max, q) => Math.max(max, q.formorder ?? 0),
-      //   0
-      // );
-      await addQuestion(activeSection, newQuestion);
+      const maxOrder = currentQuestions.reduce(
+        (max, q) => Math.max(max, q.formorder ?? 0),
+        0
+      );
+      console.log("helloworld");
+      await addQuestion(activeSection, maxOrder, newQuestion);
       await loadQuestions();
       setShowAddQuestion(false);
       showSuccess("Question added successfully");
