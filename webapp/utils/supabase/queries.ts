@@ -306,3 +306,27 @@ export async function getInspectionDetailsOnline(namesite: string): Promise<Insp
     steward: insp.steward
   }));
 }
+
+
+export async function insertInspectionAttachments(rows: Array<{
+  response_id: number;
+  question_id: number;
+  storage_key: string; // placeholder for now
+  filename?: string | null;
+  content_type?: string | null;
+  file_size_bytes?: number | null;
+  caption?: string | null;
+  description?: string | null;
+}>) {
+  const supabase = createServerSupabase();  
+
+  const { data, error } = await supabase
+    .from('W26_attachments')
+    .insert(rows);
+
+  if (error) {
+    throw new Error(error.message || 'Failed to insert attachments');
+  }
+
+  return data;
+}

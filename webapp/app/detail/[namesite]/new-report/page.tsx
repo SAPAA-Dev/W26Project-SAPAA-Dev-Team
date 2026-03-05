@@ -1,6 +1,6 @@
 "use client";
 
-import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers } from '@/utils/supabase/queries';
+import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers, insertInspectionAttachments} from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -243,8 +243,48 @@ export default function NewReportPage() {
       );
 
       // Initialize an array to hold all the objects/dictionaries that represent each row in the W26_answers table
+      //what goes into W26_answers table: response_id, question_id, obs_value, obs_comm
       let answersArray: SupabaseAnswer[] = [];  
+
+
+      //what goes into W26_attachments table: response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, description
+      // We also need to prepare the data for the attachments table, which means we need to generate the S3 keys for each uploaded file and store those in an array of objects/dictionaries as well
+      const attachmentsRows: Array<{
+        response_id: number;
+        question_id: number;
+        storage_key: string;
+        filename?: string | null;
+        content_type?: string | null;
+        file_size_bytes?: number | null;
+        caption?: string | null;
+        description?: string | null;
+      }> = [];
+
+
+
+
       for (const [questionId, answer] of Object.entries(responses)) {
+
+          if (Array.isArray(answer) && answer.length > 0 && answer[0] instanceof File) {
+              const fileList = answer as File[];
+
+              for (const file of fileList) {
+                attachmentsRows.push({
+                  response_id: siteInspectionReportId,
+                  question_id: Number(questionId),
+                  storage_key: "PENDING_UPLOAD", 
+                  filename: file.name,
+                  content_type: file.type,
+                  file_size_bytes: file.size,
+                  caption: null,
+                  description: null,
+                });
+              }
+
+              // Do NOT put image data into W26_answers
+              continue;
+            }
+
             const questionConfig = observationTypeMap.get(questionId);
             // Decide if this question's answer is supposed to go into the obs_value column or obs_comm column
             const isValueType = questionConfig?.obs_value == 1;
@@ -270,7 +310,16 @@ export default function NewReportPage() {
                 });
             }
       }
+      if (answersArray.length > 0) {
       await uploadSiteInspectionAnswers(answersArray);
+    }
+
+    if (attachmentsRows.length > 0) {
+      await insertInspectionAttachments(attachmentsRows);
+    }
+
+
+
       if (draftKey) {
         localStorage.removeItem(draftKey);
       }
