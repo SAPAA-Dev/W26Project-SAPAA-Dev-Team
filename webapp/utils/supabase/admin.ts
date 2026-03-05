@@ -151,6 +151,16 @@ export async function deleteQuestion(questionId: number): Promise<void> {
   if (error) throw error;
 }
 
+export async function toggleQuestionActive(questionId: number, currentState: boolean) {
+  const supabase = createServerSupabase();
+  const { error } = await supabase
+    .from("W26_questions")
+    .update({ is_active: !currentState }) // Flip the status
+    .eq("id", questionId);
+
+  if (error) throw new Error("Failed to update question status: " + error.message);
+}
+
 export async function addQuestion(
   sectionId: number,
   maxFormorder: number,

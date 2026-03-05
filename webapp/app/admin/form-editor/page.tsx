@@ -12,6 +12,7 @@ import {
   ChevronUp,
   Loader2,
   Eye,
+  EyeOff,
   FileText,
   Type,
   List,
@@ -19,7 +20,7 @@ import {
   Image as ImageIcon,
   Calendar,
   FileCheck,
-  AlertCircle,
+  AlertCircle,  
 } from "lucide-react";
 import Image from "next/image";
 
@@ -30,6 +31,7 @@ import {
   fetchFormQuestions,
   saveQuestion,
   deleteQuestion,
+  toggleQuestionActive,
   addQuestion,
   swapQuestionOrder,
   addFormSection,
@@ -44,7 +46,6 @@ const QUESTION_TYPES = [
   { value: "text", label: "Text", icon: Type },
   { value: "image", label: "Image", icon: ImageIcon },
   { value: "date", label: "Date", icon: Calendar },
-  { value: "agreement", label: "Agreement", icon: FileCheck },
 ];
 
 function getTypeIcon(type: string) {
@@ -149,6 +150,21 @@ export default function FormEditorPage() {
     }
   };
 
+  const handleToggleActive = async (id: number, currentStatus: boolean) => {
+    try {
+      // Optimistic Update
+      setQuestions(prev => 
+        prev.map(q => q.id === id ? { ...q, is_active: !currentStatus } : q)
+      );
+      
+      await toggleQuestionActive(id, currentStatus);
+    } catch (err) {
+      // Revert on error
+      loadQuestions(); 
+      alert("Could not update question status.");
+    }
+  };
+
   const handleAddQuestion = async (newQuestion: {
     form_question: string;
     subtext: string;
@@ -250,7 +266,7 @@ export default function FormEditorPage() {
 
         {/* Header */}
         <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-8 shadow-lg">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-[100vw] mx-auto">
             <div className="flex items-center gap-3 mb-2">
               <Image
                 src="/images/sapaa-icon-white.png"
@@ -289,7 +305,7 @@ export default function FormEditorPage() {
 
         {/* Main Layout */}
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex gap-6 min-h-[calc(100vh-260px)]">
+          <div className="flex gap-8 min-h-[calc(100vh-260px)]">
             {/* ── Sidebar: Sections ── */}
             <div className="w-[220px] flex-shrink-0">
               <div className="bg-white rounded-2xl border-2 border-[#E4EBE4] p-4">
@@ -316,6 +332,7 @@ export default function FormEditorPage() {
                         key={section.id}
                         onClick={() => {
                           setActiveSection(section.id);
+                          setSelectedQuestion(null);
                           setEditingQuestion(null);
                           setShowAddQuestion(false);
                         }}
@@ -485,9 +502,11 @@ export default function FormEditorPage() {
                       saving={saving}
                       onSelect={() => setSelectedQuestion(question)}
                       onEdit={() => {
+                        setSelectedQuestion(question);
                         setEditingQuestion({ ...question });
                         setShowAddQuestion(false);
                       }}
+                      onToggleActive={() => handleToggleActive(question.id, question.is_active)}
                       onDelete={() => handleDeleteQuestion(question.id)}
                       onMoveUp={() => handleMoveQuestion(question.id, "up")}
                       onMoveDown={() =>
@@ -544,6 +563,7 @@ function QuestionCard({
   onSelect,
   onEdit,
   onDelete,
+  onToggleActive,
   onMoveUp,
   onMoveDown,
   onSave,
@@ -560,6 +580,7 @@ function QuestionCard({
   onSelect: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onToggleActive: (id: number, currentStatus: boolean) => Promise<void>;
   onMoveUp: () => void;
   onMoveDown: () => void;
   onSave: (q: FormQuestion) => void;
@@ -588,13 +609,17 @@ function QuestionCard({
         isSelected
           ? "border-[#356B43] shadow-sm"
           : "border-[#E4EBE4] hover:border-[#86A98A]"
+      } ${
+        !question.is_active ? "opacity-60 bg-gray-50/50 border-dashed" : "" // Visual changes for hidden questions
       }`}
     >
       <div className="flex items-center gap-3 min-w-0">
         <GripVertical className="w-4 h-4 text-[#7A8075] flex-shrink-0 cursor-grab" />
         <div
           className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-            isSelected
+            !question.is_active 
+            ? "bg-gray-200 text-gray-500" // Dimmed icon background
+            : isSelected
               ? "bg-[#356B43] text-white"
               : "bg-[#E4EBE4] text-[#356B43]"
           }`}
@@ -605,6 +630,11 @@ function QuestionCard({
           <p className="text-sm font-semibold text-[#254431] truncate">
             {question.form_question || "Untitled Question"}
           </p>
+          {!question.is_active && (
+            <span className="text-[10px] px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded-full font-bold uppercase tracking-tight">
+              Hidden
+            </span>
+          )}
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-xs text-[#7A8075]">
               {getTypeLabel(question.question_type)}
@@ -654,13 +684,16 @@ function QuestionCard({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onDelete();
+            onToggleActive(question.id, question.is_active);
           }}
-          disabled={saving}
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-[#B91C1C] hover:bg-[#FEE2E2] transition-all"
-          title="Delete"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
+          className={`p-1.5 rounded-md transition-colors ${
+            question.is_active 
+              ? "text-[#7A8075] hover:text-[#254431] hover:bg-[#F7F2EA]" 
+              : "text-amber-600 bg-amber-50 hover:bg-amber-100"
+          }`}
+          title={question.is_active ? "Hide Question" : "Show Question"}
+          >
+          {question.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
         </button>
       </div>
     </div>
@@ -721,7 +754,7 @@ function EditQuestionForm({
         <div className="flex gap-4">
           <div className="flex-1">
             <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
-              Type
+              Question Type
             </label>
             <select
               value={question.question_type.trim()}
@@ -1098,12 +1131,6 @@ function PreviewPanel({ question }: { question: FormQuestion }) {
           </div>
         )}
 
-        {questionType === "agreement" && (
-          <div className="flex items-center gap-3 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm text-[#254431]">
-            <div className="w-5 h-5 border-2 border-[#E4EBE4] rounded flex-shrink-0" />
-            I agree to the terms
-          </div>
-        )}
       </div>
     </div>
   );
