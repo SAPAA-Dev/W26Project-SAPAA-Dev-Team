@@ -271,40 +271,98 @@ export default function FormEditorPage() {
   //   }
   // };
 
+  // const handleDragEnd = async (event: DragEndEvent) => {
+  //   const { active, over } = event;
+
+  //   if (over && active.id !== over.id) {
+  //     // 1. Find the current indices in the full questions state
+  //     const oldIndex = questions.findIndex((q) => q.id === active.id);
+  //     const newIndex = questions.findIndex((q) => q.id === over.id);
+
+  //     // 2. Create the new array order
+  //     const newOrder = arrayMove(questions, oldIndex, newIndex);
+      
+  //     // 3. Update local state immediately for a smooth UI
+  //     // We map through and assign a fresh, unique formorder based on the new index
+  //     const updatedQuestions = newOrder.map((q, index) => ({
+  //       ...q,
+  //       formorder: index + 1 // Unique global sequence
+  //     }));
+      
+  //     setQuestions(updatedQuestions);
+
+  //     // 4. Persist to Supabase
+  //     try {
+  //       const updates = updatedQuestions.map((q) => ({
+  //         questionName: q.form_question,
+  //         questionId: q.id,
+  //         newOrder: q.formorder as number,
+  //       }));
+  //       await reorderQuestions(updates);
+  //     } catch (error) {
+  //       console.error("Failed to persist new order:", error);
+  //       // Optional: Refresh data from server to rollback on failure
+  //     }
+  //   }
+  // };
+
+
+
+
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+    if (!over || active.id === over.id) return;
 
-    if (over && active.id !== over.id) {
-      // 1. Find the current indices in the full questions state
-      const oldIndex = questions.findIndex((q) => q.id === active.id);
-      const newIndex = questions.findIndex((q) => q.id === over.id);
+    const overId = String(over.id);
+    if (overId.startsWith("section-")) return;
 
-      // 2. Create the new array order
-      const newOrder = arrayMove(questions, oldIndex, newIndex);
-      
-      // 3. Update local state immediately for a smooth UI
-      // We map through and assign a fresh, unique formorder based on the new index
-      const updatedQuestions = newOrder.map((q, index) => ({
-        ...q,
-        formorder: index + 1 // Unique global sequence
+    const oldIndex = currentQuestions.findIndex((q) => q.id === active.id);
+    const newIndex = currentQuestions.findIndex((q) => q.id === over.id);
+
+    if (oldIndex < 0 || newIndex < 0) return;
+
+    const reorderedSectionQuestions = arrayMove(currentQuestions, oldIndex, newIndex);
+
+    const reorderedSectionIds = reorderedSectionQuestions.map((q) => q.id);
+    const reorderedSectionMap = new Map(
+      reorderedSectionQuestions.map((q) => [q.id, q])
+    );
+
+    let sectionInsertIndex = 0;
+    const mergedQuestions = questions.map((q) => {
+      if (q.section_id !== activeSection) return q;
+
+      const replacement = reorderedSectionMap.get(reorderedSectionIds[sectionInsertIndex]);
+      sectionInsertIndex++;
+      return replacement ?? q;
+    });
+
+    const globallyOrderedQuestions = mergedQuestions.map((q, index) => ({
+      ...q,
+      formorder: index + 1,
+    }));
+
+    const prevQuestions = [...questions];
+    setQuestions(globallyOrderedQuestions);
+
+    try {
+      const updates = globallyOrderedQuestions.map((q) => ({
+        questionId: q.id,
+        questionName: q.form_question,
+        newOrder: q.formorder as number,
       }));
-      
-      setQuestions(updatedQuestions);
 
-      // 4. Persist to Supabase
-      try {
-        const updates = updatedQuestions.map((q) => ({
-          questionName: q.form_question,
-          questionId: q.id,
-          newOrder: q.formorder as number,
-        }));
-        await reorderQuestions(updates);
-      } catch (error) {
-        console.error("Failed to persist new order:", error);
-        // Optional: Refresh data from server to rollback on failure
-      }
+      await reorderQuestions(updates);
+    } catch (err: any) {
+      setQuestions(prevQuestions);
+      setError("Failed to reorder: " + err.message);
     }
   };
+
+
+
+
 
   // ─── Section CRUD ────────────────────────────────────────────────
   const handleAddSection = async () => {
