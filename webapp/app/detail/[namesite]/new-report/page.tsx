@@ -182,33 +182,11 @@ export default function NewReportPage() {
   };
 
   const buildQuestionNumberMap = (formQuestions: Question[]): Record<number, string> => {
-    const questionsBySection = formQuestions.reduce((acc, question) => {
-      const normalizedSection = question.section - 3;
-      if (!acc[normalizedSection]) {
-        acc[normalizedSection] = [];
-      }
-      acc[normalizedSection].push(question);
-      return acc;
-    }, {} as Record<number, Question[]>);
-
-    Object.keys(questionsBySection).forEach((sectionKey) => {
-      questionsBySection[Number(sectionKey)].sort((a, b) => {
-        const orderA = a.formorder ?? Infinity;
-        const orderB = b.formorder ?? Infinity;
-        return orderA - orderB;
-      });
-    });
-
     const questionNumberMap: Record<number, string> = {};
-    Object.keys(questionsBySection)
-      .map(Number)
-      .sort((a, b) => a - b)
-      .forEach((sectionNum) => {
-        questionsBySection[sectionNum].forEach((question, index) => {
-          questionNumberMap[question.id] = `${sectionNum}.${index + 1}`;
-        });
-      });
-
+    for (const question of formQuestions) {
+      const match = (question.title ?? '').match(/\(Q(\d+)\)/i);
+      questionNumberMap[question.id] = match ? `Q${match[1]}` : `Question ${question.id}`;
+    }
     return questionNumberMap;
   };
 
