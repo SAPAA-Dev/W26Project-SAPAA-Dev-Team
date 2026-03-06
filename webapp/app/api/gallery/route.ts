@@ -3,6 +3,24 @@ import { createClient } from "@/utils/supabase/server";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
+
+interface Attachment {
+  id: string;
+  response_id: string;
+  question_id: string;
+  caption?: string | null;
+  description?: string | null;
+  storage_key: string;
+  content_type: string;
+  file_size_bytes?: number | null;
+  filename: string;
+  site_id: string;
+
+  site?: {
+    namesite: string;
+  } | null;
+}
+
 // AWS configuration
 const REGION = process.env.AWS_REGION!;
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
@@ -35,22 +53,23 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: attachments, error: attachmentsError } = await supabase
-      .from("W26_attachments")
-      .select(`
-        id,
-        response_id,
-        question_id,
-        caption,
-        description,
-        storage_key,
-        content_type,
-        file_size_bytes,
-        filename,
-        site_id
-      `)
-      .in("content_type", ALLOWED_IMAGE_TYPES)
-      .order("id", { ascending: false });
+  const { data: attachments, error: attachmentsError } = await supabase
+    .from("W26_attachments")
+    .select(`
+      id,
+      response_id,
+      question_id,
+      caption,
+      description,
+      storage_key,
+      content_type,
+      file_size_bytes,
+      filename,
+      site_id
+    `)
+    .in("content_type", ALLOWED_IMAGE_TYPES)
+    .order("id", { ascending: false });
+
 
     console.log("attachmentsError:", attachmentsError);
     console.log("attachments count:", attachments?.length || 0);
@@ -64,6 +83,32 @@ export async function GET() {
       );
     }
 
+
+    const siteIds = [
+      ...new Set((attachments || []).map((attachment) => attachment.site_id).filter(Boolean)),
+    ];
+
+    console.log("siteIds:", siteIds);
+
+    const { data: sites, error: sitesError } = await supabase
+      .from("W26_sites-pa")
+      .select("id, namesite")
+      .in("id", siteIds);
+
+    if (sitesError) {
+      console.error("Error fetching sites:", sitesError);
+      return NextResponse.json(
+        { error: sitesError.message },
+        { status: 500 }
+      );
+    }
+
+    const siteMap = new Map(
+      (sites || []).map((site) => [site.id, site.namesite])
+    );
+
+    console.log("siteMap:", Array.from(siteMap.entries()));
+    
     const items = await Promise.all(
       (attachments || []).map(async (attachment) => {
         let imageUrl: string | null = null;
@@ -94,18 +139,19 @@ export async function GET() {
         }
 
         return {
-          id: attachment.id,
-          response_id: attachment.response_id,
-          question_id: attachment.question_id,
-          caption: attachment.caption,
-          description: attachment.description,
-          storage_key: attachment.storage_key,
-          content_type: attachment.content_type,
-          file_size_bytes: attachment.file_size_bytes,
-          filename: attachment.filename,
-          site_id: attachment.site_id,
-          imageUrl,
-        };
+            id: attachment.id,
+            response_id: attachment.response_id,
+            question_id: attachment.question_id,
+            caption: attachment.caption,
+            description: attachment.description,
+            storage_key: attachment.storage_key,
+            content_type: attachment.content_type,
+            file_size_bytes: attachment.file_size_bytes,
+            filename: attachment.filename,
+            site_id: attachment.site_id,
+            site_name: siteMap.get(attachment.site_id) ?? null,
+            imageUrl,
+          };
       })
     );
 
