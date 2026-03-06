@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSitesOnline, SiteSummary } from '@/utils/supabase/queries';
+import { getSitesOnline, getTotalInspectionCount, SiteSummary } from '@/utils/supabase/queries';
 import { Award, Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import Image from 'next/image';
@@ -17,18 +17,32 @@ export function daysSince(date: string): number {
   return Math.floor((Date.now() - new Date(date).getTime()) / MSEC_PER_DAY);
 }
 
-function formatAgeBadge(days: number): string {
-  if (!days || days < 0) return 'New';
+// Check if date is missing or set to the "never inspected" placeholder
+function formatAgeBadge(days: number, inspectDate: string | null): string | null {
+  if (!inspectDate || inspectDate === '1900-01-01') return null;
+  
+  if (days <= 0) return 'New';
   if (days < 30) return `${days}d ago`;
   if (days < 365) return `${Math.floor(days / 30)}mo ago`;
-  return `${Math.floor(days / 365)}yr ago`;
+  
+  const years = Math.floor(days / 365);
+  return `${years}yr${years > 1 ? 's' : ''} ago`;
 }
 
-function getInspectionStatus(days: number): { label: string; color: string; bgColor: string } {
-  if (days < 180) return { label: 'Recently Visited', color: '#1C7C4D', bgColor: '#E4EBE4' };
-  if (days <= 365) return { label: 'Visited This Year', color: '#E0A63A', bgColor: '#FEF3C7' };
-  if (days <= 730) return { label: 'Visited Recently', color: '#C76930', bgColor: '#FED7AA' };
-  return { label: 'Needs Review', color: '#7A8075', bgColor: '#E4EBE4' };
+function getInspectionStatus(days: number, inspectDate: string | null): { label: string; color: string; bgColor: string } {
+  if (!inspectDate || inspectDate === '1900-01-01') {
+    return { label: 'Never Inspected', color: '#475569', bgColor: '#F1F5F9' }; 
+  }
+  if (days < 180) {
+    return { label: 'Recent', color: '#065F46', bgColor: '#D1FAE5' }; 
+  }
+  if (days <= 365) {
+    return { label: 'Past Year', color: '#92400E', bgColor: '#FEF3C7' }; 
+  }
+  if (days <= 730) {
+    return { label: 'Over 1 Year', color: '#9A3412', bgColor: '#FFEDD5' }; 
+  }
+  return { label: 'Needs Review', color: '#7F1D1D', bgColor: '#FEE2E2' }; 
 }
 
 async function getCurrentUser(): Promise<{ email: string; role: string; name: string} | null> {
@@ -70,6 +84,11 @@ export default function HomeClient() {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name:string } | null>(null);
   const [userLoading, setUserLoading] = useState(true);
+  const [totalResponses, setTotalResponses] = useState<number>(0);
+
+  useEffect(() => {
+    getTotalInspectionCount().then(setTotalResponses).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -132,9 +151,13 @@ export default function HomeClient() {
     const activeThisYear = sites.filter(s => daysSince(s.inspectdate ?? '1900-01-01') <= 365).length;
     
     // Needs attention (> 730 days / 2 years)
-    const needsAttention = sites.filter(s => daysSince(s.inspectdate ?? '1900-01-01') > 730).length;
+    const needsAttention = sites.filter(s => 
+      s.inspectdate && 
+      s.inspectdate !== '1900-01-01' && 
+      daysSince(s.inspectdate) > 730
+    ).length;
     
-    return { totalSites, totalInspections, activeThisYear, needsAttention };
+    return { totalSites, totalInspections, totalResponses, activeThisYear, needsAttention };
   }, [sites]);
 
   if (error) {
@@ -210,7 +233,7 @@ export default function HomeClient() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
               <div className="flex items-center gap-2 mb-2">
                 <MapPin className="w-5 h-5 text-[#86A98A]" />
@@ -222,22 +245,31 @@ export default function HomeClient() {
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
               <div className="flex items-center gap-2 mb-2">
                 <ClipboardList className="w-5 h-5 text-[#86A98A]" />
-                <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Total Inspections</div>
+                <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Total Inspected Sites</div>
               </div>
               <div className="text-3xl font-bold">{stats.totalInspections}</div>
             </div>
-            
-            <div className="bg-[#1C7C4D]/20 backdrop-blur-sm rounded-xl p-4 border border-[#1C7C4D]/30">
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
               <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-5 h-5 text-[#86A98A]" />
-                <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Active This Year</div>
+                <ClipboardList className="w-5 h-5 text-[#86A98A]" />
+                <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Total Responses</div>
+              </div>
+              <div className="text-3xl font-bold">{stats.totalResponses}</div>
+            </div>
+            
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+              <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-5 h-5 text-[#00FF00]" />
+                <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Active over 365 Days</div>
               </div>
               <div className="text-3xl font-bold">{stats.activeThisYear}</div>
             </div>
             
+            
             <div className="bg-[#C76930]/20 backdrop-blur-sm rounded-xl p-4 border border-[#C76930]/30">
               <div className="flex items-center gap-2 mb-2">
-                <Clock className="w-5 h-5 text-[#86A98A]" />
+                <Clock className="w-5 h-5 text-[#FF0000]" />
                 <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Needs Attention</div>
               </div>
               <div className="text-3xl font-bold">{stats.needsAttention}</div>
@@ -330,8 +362,9 @@ export default function HomeClient() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredSites.map((item) => {
               const age = daysSince(item.inspectdate ?? '1900-01-01');
-              const ageText = formatAgeBadge(age);
-              const status = getInspectionStatus(age);
+              const ageText = formatAgeBadge(age, item.inspectdate);
+              const status = getInspectionStatus(age, item.inspectdate);
+              const hasDate = item.inspectdate && item.inspectdate !== '1900-01-01';
 
               return (
                 <button
@@ -358,13 +391,13 @@ export default function HomeClient() {
                     <div className="flex items-center gap-2 text-sm text-[#7A8075]">
                       <Calendar className="w-4 h-4" />
                       <span>
-                        {item.inspectdate
-                          ? new Date(item.inspectdate).toLocaleDateString('en-US', {
+                        {hasDate
+                          ? new Date(item.inspectdate!).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'short',
                               day: 'numeric',
                             })
-                          : 'No inspection date'}
+                          : 'Never inspected'}
                       </span>
                     </div>
 
@@ -375,9 +408,12 @@ export default function HomeClient() {
                       >
                         {status.label}
                       </span>
-                      <span className="text-xs font-medium text-[#7A8075]">
-                        {ageText}
-                      </span>
+                      
+                      {ageText && (
+                        <span className="text-xs font-medium text-[#7A8075]">
+                          {ageText}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </button>
