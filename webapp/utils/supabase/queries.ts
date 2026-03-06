@@ -22,7 +22,7 @@ export interface InspectionDetail {
   steward: string | null;
 }
 
-export interface InpsectionFrom {
+export interface InspectionForm {
   id: number;
   namesite: string;
   questions: Array<question> | null;
@@ -207,9 +207,6 @@ export async function getQuestionsOnline(): Promise<question[]> {
       W26_question_options (
         option_text
       ),
-      W26_question_keys!W26_questions_question_key_id_fkey (
-        formorder
-      ),
       W26_form_sections!W26_questions_section_id_fkey (
         title,
         description,
@@ -232,7 +229,6 @@ export async function getQuestionsOnline(): Promise<question[]> {
     section: q.section_id,
     autofill_key: q.autofill_key ?? null,
     answers: q.W26_question_options?.map((opt: any) => opt.option_text) ?? null,
-    formorder: q.W26_question_keys?.formorder ?? null,
     sectionTitle: q.W26_form_sections?.title ?? null,
     sectionDescription: q.W26_form_sections?.description ?? null,
     sectionHeader: q.W26_form_sections?.header ?? null,
@@ -347,6 +343,30 @@ export async function getInspectionDetailsOnline(namesite: string): Promise<Insp
   }));
 }
 
+
+export async function insertInspectionAttachments(rows: Array<{
+  response_id: number;
+  question_id: number;
+  storage_key: string; // placeholder for now
+  filename?: string | null;
+  content_type?: string | null;
+  file_size_bytes?: number | null;
+  caption?: string | null;
+  description?: string | null;
+}>) {
+  const supabase = createServerSupabase();  
+
+  const { data, error } = await supabase
+    .from('W26_attachments')
+    .insert(rows);
+
+  if (error) {
+    throw new Error(error.message || 'Failed to insert attachments');
+  }
+
+  return data;
+}
+
 export async function getFormResponsesBySite(siteName: string): Promise<FormResponse[]> {
   const supabase = createServerSupabase();
 
@@ -456,7 +476,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
 
 // Returns raw answers for a single response shaped as Record<questionId, value>
 // ready to drop straight into the form's `responses` state.
-export async function getFormResponseById(responseId: number): Promise<Record<number, any>> {
+export async function getFormResponseById(responseId: number): Promise<Record<string | number, any>> {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
@@ -473,19 +493,20 @@ export async function getFormResponseById(responseId: number): Promise<Record<nu
 
   if (error) throw new Error(error.message || 'Failed to fetch response answers');
 
-  const map: Record<number, any> = {};
+  const map: Record<string | number, any> = {}; // 2. Update local map type
 
   for (const row of data ?? []) {
     const qid: number = row.question_id;
     const questionType: string = (row as any).W26_questions?.question_type ?? '';
 
     if (row.obs_value === 'Other' && row.obs_comm) {
-      // Restore "Other" multi-select entry plus its free-text comment
       if (!map[qid]) map[qid] = [];
       if (Array.isArray(map[qid]) && !map[qid].includes('Other')) {
         map[qid].push('Other');
       }
-      map[`${qid}_comm`] = row.obs_comm;
+      // 3. Fix: Use backticks for template literals
+      map[`${qid}_comm`] = row.obs_comm; 
+      
     } else if (row.obs_value) {
         if (questionType === 'checkbox' || questionType === 'multi' || questionType === 'selectall') {
           if (!map[qid]) map[qid] = [];
