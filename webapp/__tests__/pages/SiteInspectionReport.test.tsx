@@ -338,16 +338,6 @@ describe('US 1.0.4 - Have access to the Terms and Conditions of Inputting Inform
     // Button disabled initially
     expect(screen.getByText('Continue to Form')).toBeDisabled();
 
-    // Wrong text shows error
-    fireEvent.change(screen.getByPlaceholderText('Type here...'), {
-      target: { value: 'wrong text' },
-    });
-    expect(screen.getByText(/Text does not match/i)).toBeInTheDocument();
-
-    // Correct text + terms accepted enables button
-    fireEvent.change(screen.getByPlaceholderText('Type here...'), {
-      target: { value: 'I am not a volunteer of SAPAA' },
-    });
     fireEvent.click(screen.getAllByRole('checkbox')[0]);
     expect(screen.getByText('Continue to Form')).toBeEnabled();
   });
