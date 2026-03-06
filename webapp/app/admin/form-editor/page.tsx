@@ -330,6 +330,7 @@ export default function FormEditorPage() {
                     return (
                       <button
                         key={section.id}
+                        data-testid={`section-button-${section.id}`}
                         onClick={() => {
                           setActiveSection(section.id);
                           setSelectedQuestion(null);
@@ -351,6 +352,7 @@ export default function FormEditorPage() {
                               ? "bg-[#356B43] text-white"
                               : "bg-[#E4EBE4] text-[#7A8075]"
                           }`}
+                          data-testid={`section-count-${section.id}`}
                         >
                           {count}
                         </span>
@@ -678,6 +680,7 @@ function QuestionCard({
           }}
           className="w-7 h-7 rounded-lg flex items-center justify-center text-[#356B43] hover:bg-[#EEF5EF] transition-all"
           title="Edit"
+          data-testid="edit-question-button"
         >
           <Pencil className="w-3.5 h-3.5" />
         </button>
@@ -729,6 +732,7 @@ function EditQuestionForm({
           </label>
           <input
             type="text"
+            data-testid="edit-question-title"
             value={question.form_question || ""}
             onChange={(e) =>
               onChange({ ...question, form_question: e.target.value })
@@ -742,6 +746,7 @@ function EditQuestionForm({
             Description / Subtext
           </label>
           <textarea
+            data-testid="edit-question-subtext"
             value={question.subtext || ""}
             onChange={(e) =>
               onChange({ ...question, subtext: e.target.value })
@@ -756,19 +761,25 @@ function EditQuestionForm({
             <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
               Question Type
             </label>
-            <select
-              value={question.question_type.trim()}
-              onChange={(e) =>
-                onChange({ ...question, question_type: e.target.value })
-              }
-              className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] bg-white transition-colors"
-            >
-              {QUESTION_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
+            <div className="grid grid-cols-5 gap-2 opacity-60 cursor-not-allowed">
+              {QUESTION_TYPES.map((type) => {
+                const Icon = type.icon;
+                const isSelected = question.question_type === type.value;
+                return (
+                  <div
+                    key={type.value}
+                    className={`flex flex-col items-center gap-1 p-1 rounded-xl border-2 transition-all ${
+                      isSelected
+                        ? "border-[#356B43] bg-[#356B43]/5 text-[#356B43]"
+                        : "border-[#E4EBE4] text-[#7A8075]"
+                    }`}
+                  >
+                    <Icon size={15} />
+                    <span className="text-[10px] font-medium">{type.label}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
           <div className="flex items-end">
             <label className="flex items-center gap-2 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl cursor-pointer hover:border-[#86A98A] transition-colors">
@@ -844,6 +855,7 @@ function EditQuestionForm({
           onClick={onSave}
           disabled={saving}
           className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#356B43] to-[#254431] text-white text-sm font-semibold rounded-xl disabled:opacity-50 hover:shadow-lg transition-all"
+          data-testid="save-question-button"
         >
           {saving ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -855,6 +867,7 @@ function EditQuestionForm({
         <button
           onClick={onCancel}
           className="px-4 py-2.5 border-2 border-[#E4EBE4] text-[#7A8075] text-sm font-semibold rounded-xl hover:bg-[#E4EBE4] transition-all"
+          data-testid="cancel-button"
         >
           Cancel
         </button>
