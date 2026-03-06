@@ -13,7 +13,6 @@ export default function AdminNavBar() {
     { name: "Dashboard", href: "/admin/dashboard" },
     { name: "Account Management", href: "/admin/account-management" },
     { name: "Sites", href: "/admin/sites" },
-    { name: "Form Editor", href: "/admin/form-editor" },
   ];
 
   return (
@@ -29,7 +28,6 @@ export default function AdminNavBar() {
       {/* Hamburger Menu - always visible */}
       <button
         className="p-2 rounded-full transition-all hover:bg-white/20 hover:scale-110"
-        title = "admin dropdown menu"
         onClick={() => setMenuOpen(!menuOpen)}
       >
         {menuOpen ? <X className="w-6 h-6 text-white" /> : <Menu className="w-6 h-6 text-white" />}

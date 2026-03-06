@@ -283,28 +283,7 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
           </div>
         );
 
-      case 'image': {
-
-         // Make sure response is always treated as a File[]
-        const files: File[] = Array.isArray(response) ? (response as File[]) : [];
-
-
-
-        // Add new files instead of replacing
-      const addFiles = (newFiles: File[]) => {
-        const combined = [...files, ...newFiles];
-        handleResponse(question.id, combined);
-      };
-      
-
-        // Remove one file by index
-      const removeFile = (idx: number) => {
-        const next = files.filter((_, i) => i !== idx);
-        handleResponse(question.id, next);
-      };
-
-
-
+      case 'image':
         return (
           <div className="space-y-3">
             <div className="border-2 border-dashed border-[#E4EBE4] rounded-xl p-8 text-center hover:border-[#356B43] transition-colors bg-[#F7F2EA]/30">
@@ -313,9 +292,8 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
                 accept="image/*"
                 multiple
                 onChange={(e) => {
-                  const newFiles = Array.from(e.target.files || []);
-                  if (newFiles.length > 0) addFiles(newFiles);
-                  e.currentTarget.value = "";
+                  const files = Array.from(e.target.files || []);
+                  handleResponse(question.id, files);
                 }}
                 className="hidden"
                 id={`image-upload-${question.id}`}
@@ -333,55 +311,16 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
                 </div>
               </label>
             </div>
-
-            {files.length > 0 && (
+            {response && response.length > 0 && (
               <div className="flex items-center gap-2 p-3 bg-[#356B43]/10 rounded-lg">
                 <ImageIcon className="w-5 h-5 text-[#356B43]" />
                 <span className="text-sm text-[#356B43] font-semibold">
-                  {files.length} image{files.length > 1 ? "s" : ""} selected
+                  {response.length} image{response.length > 1 ? 's' : ''} selected
                 </span>
               </div>
             )}
-
-            {/* Names + previews + remove */}
-            {files.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {files.map((file, idx) => {
-
-                  return (
-                    <div
-                      key={`${file.name}-${file.size}-${file.lastModified}-${idx}`}
-                      className="flex gap-3 p-3 bg-white border-2 border-[#E4EBE4] rounded-xl"
-                    >
-                      {/* Preview */}
-                      <div className="w-20 h-20 rounded-lg overflow-hidden bg-[#F7F2EA] flex-shrink-0">
-                        <img
-                          alt={file.name}
-                          className="w-full h-full object-cover"                        />
-                      </div>
-
-                      {/* File info */}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-[#254431] truncate">
-                          {file.name}
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => removeFile(idx)}
-                          className="mt-2 text-sm font-semibold text-[#B91C1C] hover:underline"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-             )}
-          </div>  
-          );
-       }
-
+          </div>
+        );
 
       default:
         return (
@@ -390,9 +329,7 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
           </div>
         );
     }
-
-
-  }
+  };
 
   if (loading) {
     return (
