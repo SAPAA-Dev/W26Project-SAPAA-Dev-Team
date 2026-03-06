@@ -46,12 +46,22 @@ interface Question {
   is_required?: boolean | null;
 }
 
+
 interface SupabaseAnswer {
   response_id: number; 
   question_id: number;
   obs_value: string | null;
   obs_comm: string | null;
 }
+
+
+interface ImageWithMeta {
+  id: string;
+  file: File;
+  caption: string;
+  description: string;
+}
+
 
 export default function NewReportPage() {
   const pathname = usePathname();
@@ -271,16 +281,16 @@ export default function NewReportPage() {
   }
 }
 
-  // async function uploadFileToS3(uploadUrl: string, file: File) {
-  //   const putRes = await fetch(uploadUrl, {
-  //     method: "PUT",
-  //     body: file,
-  //   });
 
-  //   if (!putRes.ok) {
-  //     throw new Error(`S3 upload failed (${putRes.status})`);
-  //   }
-  // }
+  const isImageWithMetaArray = (value: any): value is ImageWithMeta[] => {
+    return (
+      Array.isArray(value) &&
+      value.length > 0 &&
+      value[0] &&
+      value[0].file instanceof File  //Now answer[0] is not a File anymore.
+                                     //It is an object that contains a file
+    );
+  };
 
 
   const handleSubmit = async () => {
@@ -334,13 +344,14 @@ export default function NewReportPage() {
 
 
 
-
+      //image  
       for (const [questionId, answer] of Object.entries(responses)) {
 
-          if (Array.isArray(answer) && answer.length > 0 && answer[0] instanceof File) {
-              const fileList = answer as File[];
+          if (isImageWithMetaArray(answer)) {
+              const imageList = answer;
 
-              for (const file of fileList) {
+              for (const image of imageList) {
+                const file = image.file;
                 // 1) get presigned URL + generated key from your API
                 const { uploadUrl, key } = await getPresignedUrl({
                   filename: file.name,
@@ -362,8 +373,8 @@ export default function NewReportPage() {
                   filename: file.name,
                   content_type: file.type,
                   file_size_bytes: file.size,
-                  caption: null,
-                  description: null,
+                  caption: image.caption.trim() || null,
+                  description: image.description.trim() || null,
                 });
               }
 
@@ -395,25 +406,25 @@ export default function NewReportPage() {
                     obs_comm: isCommType ? String(answer) : null,
                 });
             }
-      }
-      if (answersArray.length > 0) {
-      await uploadSiteInspectionAnswers(answersArray);
-    }
+          }
+            if (answersArray.length > 0) {
+            await uploadSiteInspectionAnswers(answersArray);
+          }
 
-    if (attachmentsRows.length > 0) {
-      await insertInspectionAttachments(attachmentsRows);
-    }
+          if (attachmentsRows.length > 0) {
+            await insertInspectionAttachments(attachmentsRows);
+          }
 
 
 
-      if (draftKey) {
-        localStorage.removeItem(draftKey);
-      }
-      console.log("Draft cleared after successful submission");
-      router.push('/sites?submitted=true');
-    } catch (error) {
-      console.error(error);
-    }
+            if (draftKey) {
+              localStorage.removeItem(draftKey);
+            }
+            console.log("Draft cleared after successful submission");
+            router.push('/sites?submitted=true');
+          } catch (error) {
+            console.error(error);
+          }
     /**
      * FORM DATA CAPTURED:
      * 
