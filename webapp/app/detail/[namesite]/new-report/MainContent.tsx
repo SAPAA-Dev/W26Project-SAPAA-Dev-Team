@@ -364,7 +364,7 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-[#254431] truncate">
                           {file.name}
-                        </p>
+                        </p> 
                         <button
                           type="button"
                           onClick={() => removeFile(idx)}

@@ -212,6 +212,77 @@ export default function NewReportPage() {
     return questionNumberMap;
   };
 
+
+  const PRESIGN_ROUTE = "/api/s3/presign";
+
+  async function getPresignedUrl(input: {
+    filename: string;
+    contentType: string;
+    fileSize: number;
+    siteId: number;
+    responseId: number;
+    questionId: number;
+  }) {
+    const res = await fetch(PRESIGN_ROUTE, {
+      method: "POST",
+      credentials: "include",
+      redirect: "error",  
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error || "Failed to get presigned URL");
+    }
+
+    return (await res.json()) as { uploadUrl: string; key: string };
+  }
+
+  async function uploadFileToS3(uploadUrl: string, file: File) {
+  // 1) Validate URL + detect mixed content
+  const u = new URL(uploadUrl);
+  console.log("S3 upload URL origin:", u.origin);
+  console.log("App origin:", window.location.origin);
+  console.log("S3 upload URL protocol:", u.protocol);
+
+  if (window.location.protocol === "https:" && u.protocol !== "https:") {
+    throw new Error("Blocked: uploadUrl is not https (mixed content).");
+  }
+
+  // 2) Actually upload
+  try {
+    const putRes = await fetch(uploadUrl, {
+      method: "PUT",
+      mode: "cors", // explicit
+      body: file,
+    });
+
+    // If we reach here, browser allowed the request.
+    if (!putRes.ok) {
+      const text = await putRes.text().catch(() => "");
+      console.error("S3 responded:", putRes.status, text);
+      throw new Error(`S3 upload failed (${putRes.status})`);
+    }
+  } catch (e) {
+    // If we're here, browser blocked the request (CORS/network/mixed content)
+    console.error("Upload blocked at fetch level:", e);
+    throw e;
+  }
+}
+
+  // async function uploadFileToS3(uploadUrl: string, file: File) {
+  //   const putRes = await fetch(uploadUrl, {
+  //     method: "PUT",
+  //     body: file,
+  //   });
+
+  //   if (!putRes.ok) {
+  //     throw new Error(`S3 upload failed (${putRes.status})`);
+  //   }
+  // }
+
+
   const handleSubmit = async () => {
     const questionNumberMap = buildQuestionNumberMap(questions);
     const missingRequiredNumbers = questions
@@ -252,6 +323,7 @@ export default function NewReportPage() {
       const attachmentsRows: Array<{
         response_id: number;
         question_id: number;
+        site_id: number;
         storage_key: string;
         filename?: string | null;
         content_type?: string | null;
@@ -269,10 +341,24 @@ export default function NewReportPage() {
               const fileList = answer as File[];
 
               for (const file of fileList) {
+                // 1) get presigned URL + generated key from your API
+                const { uploadUrl, key } = await getPresignedUrl({
+                  filename: file.name,
+                  contentType: file.type,
+                  fileSize: file.size,
+                  responseId: siteInspectionReportId,
+                  questionId: Number(questionId),
+                  siteId: Number(siteId),
+                }); 
+
+                // 2) upload the file to S3 using the presigned URL
+                await uploadFileToS3(uploadUrl, file);
+
                 attachmentsRows.push({
                   response_id: siteInspectionReportId,
                   question_id: Number(questionId),
-                  storage_key: "PENDING_UPLOAD", 
+                  site_id: Number(siteId),
+                  storage_key: key, 
                   filename: file.name,
                   content_type: file.type,
                   file_size_bytes: file.size,
