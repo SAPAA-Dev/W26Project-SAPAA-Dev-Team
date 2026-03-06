@@ -255,38 +255,71 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
-    .from('sites_list_fnr')
-    .select('namesite, county, inspectdate')
+    .from('W26_sites-pa')
+    .select(`
+      id,
+      namesite,
+      W26_ab_counties (
+        county
+      ),
+      W26_form_responses (
+        created_at
+      )
+    `)
+    .eq('is_active', true)
     .order('namesite', { ascending: true });
 
   if (error) throw new Error(error.message || 'Failed to fetch sites');
 
-  return (data ?? []).map((site: any, i: number) => ({
-    id: i + 1,
-    namesite: site.namesite,
-    county: site.county,
-    inspectdate: site.inspectdate,
-  }));
+  return (data ?? []).map((site: any, i: number) => {
+    const responses = site.W26_form_responses ?? [];
+    const latestDate = responses.length > 0
+      ? responses.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at
+      : null;
+
+    return {
+      id: site.id,
+      namesite: site.namesite,
+      county: site.W26_ab_counties?.county ?? null,
+      inspectdate: latestDate,
+    };
+  });
 }
 
 export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
-    .from('sites_list_fnr')
-    .select('namesite, county, inspectdate')
+    .from('W26_sites-pa')
+    .select(`
+      id,
+      namesite,
+      W26_ab_counties (
+        county
+      ),
+      W26_form_responses (
+        created_at
+      )
+    `)
     .eq('namesite', namesite)
-    .order('inspectdate', { ascending: false })
+    .eq('is_active', true)
     .limit(1);
 
   if (error) throw new Error(error.message || 'Failed to fetch site');
 
-  return (data ?? []).map((site: any, i: number) => ({
-    id: i + 1,
-    namesite: site.namesite,
-    county: site.county,
-    inspectdate: site.inspectdate,
-  }));
+  return (data ?? []).map((site: any) => {
+    const responses = site.W26_form_responses ?? [];
+    const latestDate = responses.length > 0
+      ? responses.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at
+      : null;
+
+    return {
+      id: site.id,
+      namesite: site.namesite,
+      county: site.W26_ab_counties?.county ?? null,
+      inspectdate: latestDate,
+    };
+  });
 }
 
 export async function getInspectionDetailsOnline(namesite: string): Promise<InspectionDetail[]> {
@@ -504,4 +537,13 @@ export async function getResponseOwnerId(responseId: number): Promise<string | n
 
   if (error || !data) return null;
   return data.user_id;
+}
+
+export async function getTotalInspectionCount(): Promise<number> {
+  const supabase = createServerSupabase();
+  const { count, error } = await supabase
+    .from('W26_form_responses')
+    .select('*', { count: 'exact', head: true });
+  if (error) throw new Error(error.message);
+  return count ?? 0;
 }
