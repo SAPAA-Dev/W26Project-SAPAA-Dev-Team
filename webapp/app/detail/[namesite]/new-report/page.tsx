@@ -1,6 +1,6 @@
 "use client";
 
-import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers } from '@/utils/supabase/queries';
+import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers, insertInspectionAttachments} from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -212,6 +212,77 @@ export default function NewReportPage() {
     return questionNumberMap;
   };
 
+
+  const PRESIGN_ROUTE = "/api/s3/presign";
+
+  async function getPresignedUrl(input: {
+    filename: string;
+    contentType: string;
+    fileSize: number;
+    siteId: number;
+    responseId: number;
+    questionId: number;
+  }) {
+    const res = await fetch(PRESIGN_ROUTE, {
+      method: "POST",
+      credentials: "include",
+      redirect: "error",  
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error || "Failed to get presigned URL");
+    }
+
+    return (await res.json()) as { uploadUrl: string; key: string };
+  }
+
+  async function uploadFileToS3(uploadUrl: string, file: File) {
+  // 1) Validate URL + detect mixed content
+  const u = new URL(uploadUrl);
+  console.log("S3 upload URL origin:", u.origin);
+  console.log("App origin:", window.location.origin);
+  console.log("S3 upload URL protocol:", u.protocol);
+
+  if (window.location.protocol === "https:" && u.protocol !== "https:") {
+    throw new Error("Blocked: uploadUrl is not https (mixed content).");
+  }
+
+  // 2) Actually upload
+  try {
+    const putRes = await fetch(uploadUrl, {
+      method: "PUT",
+      mode: "cors", // explicit
+      body: file,
+    });
+
+    // If we reach here, browser allowed the request.
+    if (!putRes.ok) {
+      const text = await putRes.text().catch(() => "");
+      console.error("S3 responded:", putRes.status, text);
+      throw new Error(`S3 upload failed (${putRes.status})`);
+    }
+  } catch (e) {
+    // If we're here, browser blocked the request (CORS/network/mixed content)
+    console.error("Upload blocked at fetch level:", e);
+    throw e;
+  }
+}
+
+  // async function uploadFileToS3(uploadUrl: string, file: File) {
+  //   const putRes = await fetch(uploadUrl, {
+  //     method: "PUT",
+  //     body: file,
+  //   });
+
+  //   if (!putRes.ok) {
+  //     throw new Error(`S3 upload failed (${putRes.status})`);
+  //   }
+  // }
+
+
   const handleSubmit = async () => {
     const questionNumberMap = buildQuestionNumberMap(questions);
     const missingRequiredNumbers = questions
@@ -243,8 +314,63 @@ export default function NewReportPage() {
       );
 
       // Initialize an array to hold all the objects/dictionaries that represent each row in the W26_answers table
+      //what goes into W26_answers table: response_id, question_id, obs_value, obs_comm
       let answersArray: SupabaseAnswer[] = [];  
+
+
+      //what goes into W26_attachments table: response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, description
+      // We also need to prepare the data for the attachments table, which means we need to generate the S3 keys for each uploaded file and store those in an array of objects/dictionaries as well
+      const attachmentsRows: Array<{
+        response_id: number;
+        question_id: number;
+        site_id: number;
+        storage_key: string;
+        filename?: string | null;
+        content_type?: string | null;
+        file_size_bytes?: number | null;
+        caption?: string | null;
+        description?: string | null;
+      }> = [];
+
+
+
+
       for (const [questionId, answer] of Object.entries(responses)) {
+
+          if (Array.isArray(answer) && answer.length > 0 && answer[0] instanceof File) {
+              const fileList = answer as File[];
+
+              for (const file of fileList) {
+                // 1) get presigned URL + generated key from your API
+                const { uploadUrl, key } = await getPresignedUrl({
+                  filename: file.name,
+                  contentType: file.type,
+                  fileSize: file.size,
+                  responseId: siteInspectionReportId,
+                  questionId: Number(questionId),
+                  siteId: Number(siteId),
+                }); 
+
+                // 2) upload the file to S3 using the presigned URL
+                await uploadFileToS3(uploadUrl, file);
+
+                attachmentsRows.push({
+                  response_id: siteInspectionReportId,
+                  question_id: Number(questionId),
+                  site_id: Number(siteId),
+                  storage_key: key, 
+                  filename: file.name,
+                  content_type: file.type,
+                  file_size_bytes: file.size,
+                  caption: null,
+                  description: null,
+                });
+              }
+
+              // Do NOT put image data into W26_answers
+              continue;
+            }
+
             const questionConfig = observationTypeMap.get(questionId);
             // Decide if this question's answer is supposed to go into the obs_value column or obs_comm column
             const isValueType = questionConfig?.obs_value == 1;
@@ -270,7 +396,16 @@ export default function NewReportPage() {
                 });
             }
       }
+      if (answersArray.length > 0) {
       await uploadSiteInspectionAnswers(answersArray);
+    }
+
+    if (attachmentsRows.length > 0) {
+      await insertInspectionAttachments(attachmentsRows);
+    }
+
+
+
       if (draftKey) {
         localStorage.removeItem(draftKey);
       }
