@@ -50,24 +50,3 @@ h1.font-bold, h2.font-bold, h3.font-bold,
 h4.font-bold, h5.font-bold, h6.font-bold {
   font-weight: 700;
 }
-
-/* Force high contrast text for all form inputs */
-input, 
-textarea, 
-select {
-  color: #1a1a1a !important; /* Very dark gray/black */
-  background-color: #ffffff !important;
-}
-
-/* Ensure placeholder text is still visible but distinct */
-input::placeholder, 
-textarea::placeholder {
-  color: #6b7280 !important; /* Standard gray-500 */
-}
-
-/* Specific fix for the focused state to ensure readability while typing */
-input:focus, 
-textarea:focus {
-  color: #000000 !important;
-  outline: none;
-}
