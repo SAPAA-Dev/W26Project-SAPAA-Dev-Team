@@ -577,14 +577,14 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
           ) : (
             currentQuestions.map((question, index) => {
               function stripQuestionCode(title: string) {
-                return title.replace(/\s*\(Q\d+\)\s*$/, '')
+                return title.replace(/\(Q(\d+(?:\.\d+)?)\)/i, '')
               }
               
               const formattedTitle = question.title 
               ? stripQuestionCode(question.title)
               : `Question ${activeSection}.${index + 1}`
 
-              const match = (question.title ?? '').match(/\(Q(\d+)\)/i);
+              const match = (question.title ?? '').match(/\(Q(\d+(?:\.\d+)?)\)/i);
               const questionNumber = match ? `Q${match[1]}` : `${activeSection}.${index + 1}`;
 
               const isAnswered = (() => {
@@ -603,7 +603,7 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
                 >
                   <div className="mb-5">
                     <div className="flex items-start gap-3">
-                      <span className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg transition-colors ${
+                      <span className={`flex-shrink-0 w-12 h-10 rounded-lg flex items-center justify-center font-bold text-lg transition-colors ${
                         isAnswered 
                           ? 'bg-[#356B43] text-white' 
                           : 'bg-[#F7F2EA] text-[#356B43]'
