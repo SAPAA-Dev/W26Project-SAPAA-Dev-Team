@@ -1,4 +1,4 @@
-import * as queries from "../../utils/supabase/queries"; // adjust path
+import * as queries from "../../utils/supabase/queries";
 import { createServerSupabase } from "../../utils/supabase/server";
 
 jest.mock("../../utils/supabase/server", () => ({
@@ -18,12 +18,23 @@ describe("Supabase site functions", () => {
   describe("getSitesOnline", () => {
     it("returns mapped sites on success", async () => {
       const mockData = [
-        { namesite: "Alpha", county: "County1", inspectdate: "2025-11-30" },
-        { namesite: "Beta", county: null, inspectdate: null },
+        {
+          id: 1,
+          namesite: "Alpha",
+          W26_ab_counties: { county: "County1" },
+          W26_form_responses: [{ created_at: "2025-11-30" }],
+        },
+        {
+          id: 2,
+          namesite: "Beta",
+          W26_ab_counties: null,
+          W26_form_responses: [],
+        },
       ];
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({ data: mockData, error: null }),
       });
 
@@ -38,6 +49,7 @@ describe("Supabase site functions", () => {
     it("throws error if Supabase returns error", async () => {
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({ data: null, error: { message: "Failed" } }),
       });
 
@@ -47,12 +59,18 @@ describe("Supabase site functions", () => {
 
   describe("getSiteByName", () => {
     it("returns site filtered by name", async () => {
-      const mockData = [{ namesite: "Alpha", county: "County1", inspectdate: "2025-11-30" }];
+      const mockData = [
+        {
+          id: 1,
+          namesite: "Alpha",
+          W26_ab_counties: { county: "County1" },
+          W26_form_responses: [{ created_at: "2025-11-30" }],
+        },
+      ];
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
         limit: jest.fn().mockResolvedValue({ data: mockData, error: null }),
       });
 
@@ -64,7 +82,6 @@ describe("Supabase site functions", () => {
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
         limit: jest.fn().mockResolvedValue({ data: null, error: { message: "Error" } }),
       });
 

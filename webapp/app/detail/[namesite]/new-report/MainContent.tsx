@@ -47,7 +47,7 @@ interface ImageWithMeta {
 }
 
 export default function MainContent({ responses, onResponsesChange, siteName, currentUser }: MainContentProps) {
-  const [activeSection, setActiveSection] = useState(1);
+  const [activeSection, setActiveSection] = useState<number | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const hasAutofilled = useRef(false);
@@ -120,10 +120,10 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
   }, [questions, responses]);
   
   const questionsBySection = questions.reduce((acc, question) => {
-    if (!acc[question.section-3]) {
-      acc[question.section-3] = [];
+    if (!acc[question.section-2]) {
+      acc[question.section-2] = [];
     }
-    acc[question.section-3].push(question);
+    acc[question.section-2].push(question);
     return acc;
   }, {} as Record<number, Question[]>);
 
@@ -150,10 +150,16 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
   const sections = Object.keys(questionsBySection)
     .map(Number)
     .sort((a, b) => a - b);
-
+  
+  useEffect(() => {
+    if (sections.length > 0 && activeSection === null) {
+      setActiveSection(sections[0]);
+    }
+  }, [sections.length]);
+  
   console.log(sections);
   
-  const currentQuestions = questionsBySection[activeSection] || [];
+  const currentQuestions = questionsBySection[activeSection ?? sections[0] ?? 1] || [];
 
   console.log(currentQuestions);
 
@@ -516,13 +522,49 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
           })}
         </nav>
       </aside>
+
+      <div className="flex-1 flex flex-col">
+      
+      {/* Top navigation */}
+      {sections.length > 1 && (
+        <div className="grid grid-cols-2 gap-3 px-4 md:px-8 pt-4 md:pt-8">
+          <div>
+            {sections.indexOf(activeSection ?? sections[0]) > 0 && (
+              <button
+                onClick={() => {
+                  const currentIndex = sections.indexOf(activeSection ?? sections[0]);
+                  setActiveSection(sections[currentIndex - 1]);
+                }}
+                className="w-full px-4 py-2 border-2 border-[#E4EBE4] text-[#254431] font-bold rounded-xl hover:bg-[#E4EBE4] transition-all text-sm"
+              >
+                ← Previous
+              </button>
+            )}
+          </div>
+          <div>
+            {sections.indexOf(activeSection ?? sections[0]) < sections.length - 1 && (
+              <button
+                onClick={() => {
+                  const currentIndex = sections.indexOf(activeSection ?? sections[0]);
+                  setActiveSection(sections[currentIndex + 1]);
+                }}
+                className="w-full px-4 py-2 bg-[#356B43] text-white font-bold rounded-xl hover:bg-[#254431] transition-all text-sm"
+              >
+                Next →
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       <section className="flex-1 p-4 md:p-8">
+  
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-[#254431]">
-            {sectionMetadata[activeSection]?.title ?? `Section ${activeSection}`}
+            {sectionMetadata[activeSection ?? sections[0] ?? 1]?.title ?? `Section ${activeSection}`}
           </h2>
           <p className="text-[#7A8075]">
-            {sectionMetadata[activeSection]?.description && `${sectionMetadata[activeSection].description} `}
+            {sectionMetadata[activeSection ?? sections[0] ?? 1]?.description && `${sectionMetadata[activeSection ?? sections[0] ?? 1].description} `}
             There are {currentQuestions.length} question{currentQuestions.length !== 1 ? 's' : ''} in this section.
           </p>
         </div>
@@ -542,7 +584,8 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
               ? stripQuestionCode(question.title)
               : `Question ${activeSection}.${index + 1}`
 
-              const questionNumber = `${activeSection}.${index + 1}`;
+              const match = (question.title ?? '').match(/\(Q(\d+)\)/i);
+              const questionNumber = match ? `Q${match[1]}` : `${activeSection}.${index + 1}`;
 
               const isAnswered = (() => {
                 const val = responses[question.id];
@@ -603,36 +646,8 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
             })
           )}
         </div>
-
-        {sections.length > 1 && (
-          <div className="flex gap-3 mt-8">
-            <button
-              onClick={() => {
-                const currentIndex = sections.indexOf(activeSection);
-                if (currentIndex > 0) {
-                  setActiveSection(sections[currentIndex - 1]);
-                }
-              }}
-              disabled={sections.indexOf(activeSection) === 0}
-              className="px-6 py-3 border-2 border-[#E4EBE4] text-[#254431] font-bold rounded-xl hover:bg-[#E4EBE4] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              ← Previous Section
-            </button>
-            <button
-              onClick={() => {
-                const currentIndex = sections.indexOf(activeSection);
-                if (currentIndex < sections.length - 1) {
-                  setActiveSection(sections[currentIndex + 1]);
-                }
-              }}
-              disabled={sections.indexOf(activeSection) === sections.length - 1}
-              className="flex-1 px-6 py-3 bg-[#356B43] text-white font-bold rounded-xl hover:bg-[#254431] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              Next Section →
-            </button>
-          </div>
-        )}
       </section>
+      </div>
     </main>
   );
 }
