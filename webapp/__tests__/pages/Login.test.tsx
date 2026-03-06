@@ -17,7 +17,18 @@ jest.mock('@/services/auth', () => ({
 }));
 
 // Mock next/image
-jest.mock('next/image', () => (props: any) => <img {...props} alt={props.alt} />);
+jest.mock('next/image', () => {
+  return function MockImage({
+    priority,
+    fill,
+    placeholder,
+    blurDataURL,
+    quality,
+    ...props
+  }: any) {
+    return <img {...props} alt={props.alt} />;
+  };
+});
 
 describe('LoginPage', () => {
   const mockPush = jest.fn();
