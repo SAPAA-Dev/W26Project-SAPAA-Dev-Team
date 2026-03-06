@@ -28,8 +28,8 @@ export interface FormQuestion {
   section_id: number;
   autofill_key: string | null;
   question_key_id: number | null;
-  options: QuestionOption[];
   formorder: number | null;
+  options: QuestionOption[];
 }
 
 interface questionOptions {
@@ -69,13 +69,14 @@ export async function fetchFormQuestions(): Promise<FormQuestion[]> {
       section_id,
       autofill_key,
       question_key_id,
+      formorder,
       W26_question_options (
         id,
         option_text,
         is_active
       )
-    `);
-
+    `)
+  .order("formorder", { ascending: true });
   if (error) throw new Error("Failed to load questions: " + error.message);
 
   return (data || []).map((q: any) => ({
@@ -88,15 +89,29 @@ export async function fetchFormQuestions(): Promise<FormQuestion[]> {
     section_id: q.section_id,
     autofill_key: q.autofill_key,
     question_key_id: q.question_key_id,
+    formorder: q.formorder ?? null,
     options: (q.W26_question_options || []).filter((o: any) => o.is_active),
-    formorder: q.formorder
   }));
 }
+
+export async function getMaxFormOrder(): Promise<number> {
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from("W26_questions")
+    .select("formorder")
+    .order("formorder", { ascending: false })
+    .limit(1)
+    .single();
+
+  return data?.formorder ?? 0;
+}
+
 
 export async function saveQuestion(question: FormQuestion): Promise<void> {
   const supabase = createServerSupabase();
 
-  const { error: updateError } = await supabase
+  const { error: editingError } = await supabase
     .from("W26_questions")
     .update({
       form_question: question.form_question,
@@ -108,7 +123,10 @@ export async function saveQuestion(question: FormQuestion): Promise<void> {
     })
     .eq("id", question.id);
 
-  if (updateError) throw updateError;
+  if (editingError) {
+    console.error("Error updating question:", editingError);
+    throw new Error(editingError.message);
+  }
 
   // Soft-delete options that were removed
   const existingOptionIds = question.options
@@ -124,33 +142,34 @@ export async function saveQuestion(question: FormQuestion): Promise<void> {
       .not("id", "in", `(${existingOptionIds.join(",")})`);
   }
 
-  // Upsert options
-  for (const opt of question.options) {
+  // 3. Upsert options with the correct position
+  // We use the index in the .map() or forEach() to set the order
+  for (let i = 0; i < question.options.length; i++) {
+    const opt = question.options[i];
+    
     if (opt.id > 0) {
+      // Update existing option with new text, active status, AND position
       await supabase
         .from("W26_question_options")
-        .update({ option_text: opt.option_text, is_active: true })
+        .update({ 
+          option_text: opt.option_text, 
+          is_active: opt.is_active, // Matches your 'X' button logic
+          position: i 
+        })
         .eq("id", opt.id);
     } else {
+      // Insert new option with the current index as position
       await supabase.from("W26_question_options").insert({
         question_id: question.id,
         option_text: opt.option_text,
         is_active: true,
+        position: i,
       });
     }
   }
 }
 
-export async function deleteQuestion(questionId: number): Promise<void> {
-  const supabase = createServerSupabase();
-  const { error } = await supabase
-    .from("W26_questions")
-    .update({ is_active: false })
-    .eq("id", questionId);
-
-  if (error) throw error;
-}
-
+// Admin should only be able to toggle question visibility and never delete questions (request from client)
 export async function toggleQuestionActive(questionId: number, currentState: boolean) {
   const supabase = createServerSupabase();
   const { error } = await supabase
@@ -163,7 +182,6 @@ export async function toggleQuestionActive(questionId: number, currentState: boo
 
 export async function addQuestion(
   sectionId: number,
-  maxFormorder: number,
   newQuestion: {
     form_question: string;
     subtext: string;
@@ -173,7 +191,6 @@ export async function addQuestion(
     question_key: string;
   }
 ): Promise<void> {
-  console.log("this is being called");
   const supabase = createServerSupabase();
 
   // create query to insert a row into W26_question_keys
@@ -250,7 +267,7 @@ export async function addQuestion(
       is_required: newQuestion.is_required,
       subtext: newQuestion.subtext,
       autofill_key: null,
-      formorder: null // TODO once it is setup for the other questions
+      formorder: (await getMaxFormOrder()) + 1,
     })
     .select("id")
     .single();
@@ -269,7 +286,7 @@ export async function addQuestion(
 
   // if the question has multiple choices, create query to insert however many rows into W26_question_options as necessary
 
-  if (newQuestion.question_type === "option" || newQuestion.question_type === "selectall") { // TODO maybe change this condition if the logic behind it changes
+  if (newQuestion.question_type === "option" || newQuestion.question_type === "selectall") {
     let optionsArray: questionOptions[] = [];
     for (const option of newQuestion.options) {
       optionsArray.push({
@@ -291,23 +308,23 @@ export async function addQuestion(
   }
 }
 
-export async function swapQuestionOrder(
-  keyId1: number,
-  order1: number | null,
-  keyId2: number,
-  order2: number | null
-): Promise<void> {
+export async function reorderQuestions(
+  updates: { questionId: number; questionName?: string; newOrder: number }[]
+) {
   const supabase = createServerSupabase();
-  await Promise.all([
-    supabase
+
+  for (const update of updates) {
+    const { error } = await supabase
       .from("W26_questions")
-      .update({ formorder: order2 })
-      .eq("id", keyId1),
-    supabase
-      .from("W26_questions")
-      .update({ formorder: order1 })
-      .eq("id", keyId2),
-  ]);
+      .update({ formorder: update.newOrder })
+      .eq("id", update.questionId);
+
+    if (error) {
+      throw new Error(
+        `Failed to update question ${update.questionId}: ${error.message}`
+      );
+    }
+  }
 }
 
 export async function addFormSection(section: {

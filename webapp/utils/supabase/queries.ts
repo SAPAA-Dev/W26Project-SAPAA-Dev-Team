@@ -22,7 +22,7 @@ export interface InspectionDetail {
   steward: string | null;
 }
 
-export interface InspectionFrom {
+export interface InspectionForm {
   id: number;
   namesite: string;
   questions: Array<question> | null;
@@ -207,6 +207,7 @@ export async function getQuestionsOnline(): Promise<question[]> {
       W26_question_options (
         option_text
       ),
+      formorder,
       W26_form_sections!W26_questions_section_id_fkey (
         title,
         description,
@@ -229,7 +230,7 @@ export async function getQuestionsOnline(): Promise<question[]> {
     section: q.section_id,
     autofill_key: q.autofill_key ?? null,
     answers: q.W26_question_options?.map((opt: any) => opt.option_text) ?? null,
-    formorder: q.W26_question_keys?.formorder ?? null,
+    formorder: q.formorder ?? null,
     sectionTitle: q.W26_form_sections?.title ?? null,
     sectionDescription: q.W26_form_sections?.description ?? null,
     sectionHeader: q.W26_form_sections?.header ?? null,
@@ -252,38 +253,71 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
-    .from('sites_list_fnr')
-    .select('namesite, county, inspectdate')
+    .from('W26_sites-pa')
+    .select(`
+      id,
+      namesite,
+      W26_ab_counties (
+        county
+      ),
+      W26_form_responses (
+        created_at
+      )
+    `)
+    .eq('is_active', true)
     .order('namesite', { ascending: true });
 
   if (error) throw new Error(error.message || 'Failed to fetch sites');
 
-  return (data ?? []).map((site: any, i: number) => ({
-    id: i + 1,
-    namesite: site.namesite,
-    county: site.county,
-    inspectdate: site.inspectdate,
-  }));
+  return (data ?? []).map((site: any, i: number) => {
+    const responses = site.W26_form_responses ?? [];
+    const latestDate = responses.length > 0
+      ? responses.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at
+      : null;
+
+    return {
+      id: site.id,
+      namesite: site.namesite,
+      county: site.W26_ab_counties?.county ?? null,
+      inspectdate: latestDate,
+    };
+  });
 }
 
 export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
-    .from('sites_list_fnr')
-    .select('namesite, county, inspectdate')
+    .from('W26_sites-pa')
+    .select(`
+      id,
+      namesite,
+      W26_ab_counties (
+        county
+      ),
+      W26_form_responses (
+        created_at
+      )
+    `)
     .eq('namesite', namesite)
-    .order('inspectdate', { ascending: false })
+    .eq('is_active', true)
     .limit(1);
 
   if (error) throw new Error(error.message || 'Failed to fetch site');
 
-  return (data ?? []).map((site: any, i: number) => ({
-    id: i + 1,
-    namesite: site.namesite,
-    county: site.county,
-    inspectdate: site.inspectdate,
-  }));
+  return (data ?? []).map((site: any) => {
+    const responses = site.W26_form_responses ?? [];
+    const latestDate = responses.length > 0
+      ? responses.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at
+      : null;
+
+    return {
+      id: site.id,
+      namesite: site.namesite,
+      county: site.W26_ab_counties?.county ?? null,
+      inspectdate: latestDate,
+    };
+  });
 }
 
 export async function getInspectionDetailsOnline(namesite: string): Promise<InspectionDetail[]> {
@@ -444,7 +478,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
 
 // Returns raw answers for a single response shaped as Record<questionId, value>
 // ready to drop straight into the form's `responses` state.
-export async function getFormResponseById(responseId: number): Promise<Record<number, any>> {
+export async function getFormResponseById(responseId: number): Promise<Record<string | number, any>> {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
@@ -461,19 +495,20 @@ export async function getFormResponseById(responseId: number): Promise<Record<nu
 
   if (error) throw new Error(error.message || 'Failed to fetch response answers');
 
-  const map: Record<number, any> = {};
+  const map: Record<string | number, any> = {}; // 2. Update local map type
 
   for (const row of data ?? []) {
     const qid: number = row.question_id;
     const questionType: string = (row as any).W26_questions?.question_type ?? '';
 
     if (row.obs_value === 'Other' && row.obs_comm) {
-      // Restore "Other" multi-select entry plus its free-text comment
       if (!map[qid]) map[qid] = [];
       if (Array.isArray(map[qid]) && !map[qid].includes('Other')) {
         map[qid].push('Other');
       }
-      map[`${qid}_comm`] = row.obs_comm;
+      // 3. Fix: Use backticks for template literals
+      map[`${qid}_comm`] = row.obs_comm; 
+      
     } else if (row.obs_value) {
         if (questionType === 'checkbox' || questionType === 'multi' || questionType === 'selectall') {
           if (!map[qid]) map[qid] = [];
@@ -525,4 +560,13 @@ export async function getResponseOwnerId(responseId: number): Promise<string | n
 
   if (error || !data) return null;
   return data.user_id;
+}
+
+export async function getTotalInspectionCount(): Promise<number> {
+  const supabase = createServerSupabase();
+  const { count, error } = await supabase
+    .from('W26_form_responses')
+    .select('*', { count: 'exact', head: true });
+  if (error) throw new Error(error.message);
+  return count ?? 0;
 }

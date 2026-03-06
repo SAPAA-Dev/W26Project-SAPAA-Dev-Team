@@ -9,6 +9,13 @@ import * as sitesPage from '@/app/sites/page';
 // Mock dependencies
 jest.mock('next/navigation');
 jest.mock('@/utils/supabase/queries');
+jest.mock('@/utils/supabase/client', () => ({
+  createClient: () => ({
+    auth: {
+      getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'user-123' } } }),
+    },
+  }),
+}));
 jest.mock('next/image', () => ({
   __esModule: true,
   default: (props: any) => {
@@ -33,33 +40,54 @@ const mockSite = {
   inspectdate: '2024-06-15',
 };
 
+// Matches the real FormResponse shape returned by getFormResponsesBySite
 const mockInspections = [
   {
-    id: 1,
-    namesite: 'Aspen Grove Reserve',
-    inspectdate: '2024-06-15',
-    steward: 'John Doe',
-    naturalness_score: '3.5',
+    id: 3207,
+    user_id: 'user-123',
+    created_at: '2024-06-15T19:28:47.017305+00:00',
+    inspection_no: null,
+    naturalness_score: '4 = Great',
     naturalness_details: 'Site is in good condition',
-    notes: 'Q1: Natural vegetation present; Q2: Water quality excellent; Q3: Wildlife observed',
+    steward: 'John Doe',
+    answers: [
+      { question_id: 32, question_text: 'Email (Q11)', obs_value: null, obs_comm: 'john@example.com', section_id: 3, section_title: 'Who Are You?' },
+      { question_id: 33, question_text: "Steward's Name (Individual or Group) (Q12)", obs_value: 'Guest / Other', obs_comm: null, section_id: 3, section_title: 'Who Are You?' },
+      { question_id: 36, question_text: 'SAPAA Member? (Q16)', obs_value: 'No', obs_comm: null, section_id: 3, section_title: 'Who Are You?' },
+      { question_id: 37, question_text: 'Date of Your Visit (Q21)', obs_value: '2024-06-15', obs_comm: null, section_id: 4, section_title: 'Site Visit Info' },
+      { question_id: 38, question_text: 'Site Name (Q22)', obs_value: 'Aspen Grove Reserve', obs_comm: null, section_id: 4, section_title: 'Site Visit Info' },
+      { question_id: 14, question_text: 'Agricultural Activities (Q61)', obs_value: 'Domestic Animal Grazing; Land Clearing', obs_comm: null, section_id: 8, section_title: 'Disturbances' },
+      { question_id: 22, question_text: 'Remediation/ Protection Activities Needed (Q71)', obs_value: 'Invasive Weed Removal', obs_comm: null, section_id: 9, section_title: 'What Needs to be Done?' },
+      { question_id: 23, question_text: 'How have you helped to protect this site? (Q72)', obs_value: 'Natural vegetation present', obs_comm: null, section_id: 9, section_title: 'What Needs to be Done?' },
+    ],
   },
   {
-    id: 2,
-    namesite: 'Aspen Grove Reserve',
-    inspectdate: '2024-03-10',
-    steward: 'Jane Smith',
-    naturalness_score: '3.2',
+    id: 3208,
+    user_id: 'user-456',
+    created_at: '2024-03-10T10:00:00.000000+00:00',
+    inspection_no: null,
+    naturalness_score: '3 = Good',
     naturalness_details: 'Minor erosion detected',
-    notes: 'Q1: Some degradation visible; Q2: Water clarity good; Q3: No wildlife observed',
+    steward: 'Jane Smith',
+    answers: [
+      { question_id: 32, question_text: 'Email (Q11)', obs_value: null, obs_comm: 'jane@example.com', section_id: 3, section_title: 'Who Are You?' },
+      { question_id: 37, question_text: 'Date of Your Visit (Q21)', obs_value: '2024-03-10', obs_comm: null, section_id: 4, section_title: 'Site Visit Info' },
+      { question_id: 14, question_text: 'Agricultural Activities (Q61)', obs_value: 'Some degradation visible', obs_comm: null, section_id: 8, section_title: 'Disturbances' },
+    ],
   },
   {
-    id: 3,
-    namesite: 'Aspen Grove Reserve',
-    inspectdate: '2023-12-01',
-    steward: 'Bob Johnson',
-    naturalness_score: '2.8',
+    id: 3209,
+    user_id: 'user-789',
+    created_at: '2023-12-01T08:00:00.000000+00:00',
+    inspection_no: null,
+    naturalness_score: '2 = Fair',
     naturalness_details: 'Requires maintenance',
-    notes: 'Q1: Vegetation sparse; Q2: Water turbid; Q3: Invasive species present',
+    steward: 'Bob Johnson',
+    answers: [
+      { question_id: 32, question_text: 'Email (Q11)', obs_value: null, obs_comm: 'bob@example.com', section_id: 3, section_title: 'Who Are You?' },
+      { question_id: 37, question_text: 'Date of Your Visit (Q21)', obs_value: '2023-12-01', obs_comm: null, section_id: 4, section_title: 'Site Visit Info' },
+      { question_id: 14, question_text: 'Agricultural Activities (Q61)', obs_value: 'Vegetation sparse', obs_comm: null, section_id: 8, section_title: 'Disturbances' },
+    ],
   },
 ];
 
@@ -77,12 +105,13 @@ describe('SiteDetailScreen', () => {
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
     (useParams as jest.Mock).mockReturnValue(mockParams);
     (supabaseQueries.getSiteByName as jest.Mock).mockResolvedValue([mockSite]);
-    (supabaseQueries.getInspectionDetailsOnline as jest.Mock).mockResolvedValue(mockInspections);
+    (supabaseQueries.getFormResponsesBySite as jest.Mock).mockResolvedValue(mockInspections);
+    (supabaseQueries.getCurrentUserUid as jest.Mock).mockResolvedValue('user-123');
   });
 
   describe('Loading and Error states', () => {
     it('should display loading spinner on initial load', () => {
-      (supabaseQueries.getInspectionDetailsOnline as jest.Mock).mockImplementation(
+      (supabaseQueries.getFormResponsesBySite as jest.Mock).mockImplementation(
         () => new Promise(() => {}) // Never resolves
       );
       render(<SiteDetailScreen />);
@@ -110,7 +139,6 @@ describe('SiteDetailScreen', () => {
         const backButton = screen.getByText('Back to Sites');
         fireEvent.click(backButton);
       });
-
       expect(mockRouter.push).toHaveBeenCalledWith('/sites');
     });
   });
@@ -134,7 +162,6 @@ describe('SiteDetailScreen', () => {
       render(<SiteDetailScreen />);
       await waitFor(() => {
         expect(screen.getByText(/Last Inspection:/i)).toBeInTheDocument();
-        // Date may be rendered across multiple elements, so check for partial match
         const dateElements = screen.queryAllByText(/June|2024/);
         expect(dateElements.length).toBeGreaterThan(0);
       });
@@ -154,7 +181,6 @@ describe('SiteDetailScreen', () => {
         const backButtons = screen.getAllByText(/Back to Sites/i);
         fireEvent.click(backButtons[0]);
       });
-
       expect(mockRouter.push).toHaveBeenCalledWith('/sites');
     });
   });
@@ -172,8 +198,8 @@ describe('SiteDetailScreen', () => {
       render(<SiteDetailScreen />);
       await waitFor(() => {
         expect(screen.getByText(/Avg. Score/i)).toBeInTheDocument();
-        // Find the average score in the stats card (not the large gradient display)
-        const scoreElements = screen.getAllByText('3.2');
+        // scores are strings like "4 = Great", "3 = Good", "2 = Fair" — numeric prefixes average to 3.0
+        const scoreElements = screen.getAllByText('3.0');
         expect(scoreElements.length).toBeGreaterThan(0);
       });
     });
@@ -222,7 +248,6 @@ describe('SiteDetailScreen', () => {
         const compareButton = screen.getByRole('button', { name: /Compare by Question/i });
         fireEvent.click(compareButton);
       });
-
       await waitFor(() => {
         expect(screen.getByText(/Question Comparison/i)).toBeInTheDocument();
       });
@@ -234,12 +259,10 @@ describe('SiteDetailScreen', () => {
         const compareButton = screen.getByRole('button', { name: /Compare by Question/i });
         fireEvent.click(compareButton);
       });
-
       await waitFor(() => {
         const byDateButton = screen.getByRole('button', { name: /View by Date/i });
         fireEvent.click(byDateButton);
       });
-
       await waitFor(() => {
         expect(screen.getByText(/Inspection Reports/i)).toBeInTheDocument();
       });
@@ -249,13 +272,10 @@ describe('SiteDetailScreen', () => {
   describe('US 1.0.1 - Access Site Inspection Form on Web Application', () => {
     it('should have the New Site Inspection Report button visible and enabled', async () => {
       render(<SiteDetailScreen />);
-
       await waitFor(() => {
         const newReportButton = screen.getByText(/New Site Inspection Report/i);
         expect(newReportButton).toBeInTheDocument();
       });
-
-      // Ensure the button is not disabled
       const button = screen.getByRole('button', { name: /New Site Inspection Report/i });
       expect(button).not.toBeDisabled();
     });
@@ -265,13 +285,8 @@ describe('SiteDetailScreen', () => {
       await waitFor(() => {
         expect(screen.getByText('Aspen Grove Reserve')).toBeInTheDocument();
       });
-
-      // Find the button by its text content and click it
       const newReportButton = screen.getByText(/New Site Inspection Report/i);
       fireEvent.click(newReportButton);
-
-      // Verify that the router was called with the correct path 
-      // The path should be /detail/Aspen Grove Reserve/new-report
       expect(mockRouter.push).toHaveBeenCalledWith(
         '/detail/Aspen%20Grove%20Reserve/new-report'
       );
@@ -289,11 +304,8 @@ describe('SiteDetailScreen', () => {
     it('should display inspection dates', async () => {
       render(<SiteDetailScreen />);
       await waitFor(() => {
-        // Check for date components - they appear in inspection report headers
         const juneElements = screen.queryAllByText(/June/);
         const marchElements = screen.queryAllByText(/March/);
-        
-        // At least June and March should appear
         expect(juneElements.length).toBeGreaterThan(0);
         expect(marchElements.length).toBeGreaterThan(0);
       });
@@ -314,11 +326,10 @@ describe('SiteDetailScreen', () => {
       });
 
       const inspectionButtons = screen.getAllByRole('button');
-      const dateButton = inspectionButtons.find(btn => btn.textContent?.includes('2024'));
-      
+      const dateButton = inspectionButtons.find(btn => btn.textContent?.includes('June'));
+
       if (dateButton) {
         fireEvent.click(dateButton);
-
         await waitFor(() => {
           expect(screen.getByText('John Doe')).toBeInTheDocument();
           expect(screen.getByText('Site is in good condition')).toBeInTheDocument();
@@ -333,11 +344,10 @@ describe('SiteDetailScreen', () => {
       });
 
       const inspectionButtons = screen.getAllByRole('button');
-      const dateButton = inspectionButtons.find(btn => btn.textContent?.includes('2024'));
-      
+      const dateButton = inspectionButtons.find(btn => btn.textContent?.includes('June'));
+
       if (dateButton) {
         fireEvent.click(dateButton);
-
         await waitFor(() => {
           expect(screen.getByText('John Doe')).toBeInTheDocument();
         });
@@ -351,11 +361,10 @@ describe('SiteDetailScreen', () => {
       });
 
       const inspectionButtons = screen.getAllByRole('button');
-      const dateButton = inspectionButtons.find(btn => btn.textContent?.includes('2024'));
-      
+      const dateButton = inspectionButtons.find(btn => btn.textContent?.includes('June'));
+
       if (dateButton) {
         fireEvent.click(dateButton);
-
         await waitFor(() => {
           expect(screen.getByText('Site is in good condition')).toBeInTheDocument();
         });
@@ -369,11 +378,10 @@ describe('SiteDetailScreen', () => {
       });
 
       const inspectionButtons = screen.getAllByRole('button');
-      const dateButton = inspectionButtons.find(btn => btn.textContent?.includes('2024'));
-      
+      const dateButton = inspectionButtons.find(btn => btn.textContent?.includes('June'));
+
       if (dateButton) {
         fireEvent.click(dateButton);
-
         await waitFor(() => {
           expect(screen.getByText(/Natural vegetation present/i)).toBeInTheDocument();
         });
@@ -387,19 +395,17 @@ describe('SiteDetailScreen', () => {
       });
 
       const inspectionButtons = screen.getAllByRole('button');
-      const dateButton = inspectionButtons.find(btn => btn.textContent?.includes('2024'));
-      
+      const dateButton = inspectionButtons.find(btn => btn.textContent?.includes('June'));
+
       if (dateButton) {
         fireEvent.click(dateButton);
-
         await waitFor(() => {
-          expect(screen.getByText('John Doe')).toBeInTheDocument();
+          expect(screen.getByText('Site is in good condition')).toBeInTheDocument();
         });
 
         fireEvent.click(dateButton);
-
         await waitFor(() => {
-          expect(screen.queryByText('John Doe')).not.toBeInTheDocument();
+          expect(screen.queryByText('Site is in good condition')).not.toBeInTheDocument();
         });
       }
     });
@@ -412,7 +418,6 @@ describe('SiteDetailScreen', () => {
         const compareButton = screen.getByRole('button', { name: /Compare by Question/i });
         fireEvent.click(compareButton);
       });
-
       await waitFor(() => {
         expect(screen.getByText(/Question Comparison/i)).toBeInTheDocument();
       });
@@ -424,12 +429,9 @@ describe('SiteDetailScreen', () => {
         const compareButton = screen.getByRole('button', { name: /Compare by Question/i });
         fireEvent.click(compareButton);
       });
-
       await waitFor(() => {
-        const q1Button = screen.queryByText(/Q1/);
-        if (q1Button) {
-          expect(q1Button.closest('button')).toBeInTheDocument();
-        }
+        const responseCounts = screen.queryAllByText(/responses? across inspections/i);
+        expect(responseCounts.length).toBeGreaterThan(0);
       });
     });
 
@@ -439,15 +441,11 @@ describe('SiteDetailScreen', () => {
         const compareButton = screen.getByRole('button', { name: /Compare by Question/i });
         fireEvent.click(compareButton);
       });
-
       await waitFor(() => {
-        // Find a question button and click it
         const questionButtons = screen.queryAllByText(/responses? across inspections/i);
         if (questionButtons.length > 0) {
           const parent = questionButtons[0].closest('button');
-          if (parent) {
-            fireEvent.click(parent);
-          }
+          if (parent) fireEvent.click(parent);
         }
       });
     });
@@ -458,19 +456,14 @@ describe('SiteDetailScreen', () => {
         const compareButton = screen.getByRole('button', { name: /Compare by Question/i });
         fireEvent.click(compareButton);
       });
-
       await waitFor(() => {
         const questionButtons = screen.queryAllByText(/responses? across inspections/i);
         if (questionButtons.length > 0) {
           const parent = questionButtons[0].closest('button');
-          if (parent) {
-            fireEvent.click(parent);
-          }
+          if (parent) fireEvent.click(parent);
         }
       });
-
       await waitFor(() => {
-        // Check if any date text appears (dates from inspections)
         const dateElement = screen.queryByText(/June 15, 2024|March 10, 2024|December 1, 2023/);
         if (dateElement) {
           expect(dateElement).toBeInTheDocument();
@@ -490,7 +483,6 @@ describe('SiteDetailScreen', () => {
       await waitFor(() => {
         expect(screen.getByText('Aspen Grove Reserve')).toBeInTheDocument();
       });
-
       // Modal is initialized but not visible until selectedInspection is set
       // Current implementation doesn't have a trigger to open modal from UI
       // This test validates the modal structure exists
@@ -500,28 +492,21 @@ describe('SiteDetailScreen', () => {
   describe('Data normalization', () => {
     it('should handle missing inspection notes gracefully', async () => {
       const inspectionsWithoutNotes = [
-        {
-          ...mockInspections[0],
-          notes: null,
-        },
+        { ...mockInspections[0], answers: [] },
       ];
-      (supabaseQueries.getInspectionDetailsOnline as jest.Mock).mockResolvedValue(
+      (supabaseQueries.getFormResponsesBySite as jest.Mock).mockResolvedValue(
         inspectionsWithoutNotes
       );
-
       render(<SiteDetailScreen />);
       await waitFor(() => {
         expect(screen.getByText('Aspen Grove Reserve')).toBeInTheDocument();
       });
 
-      // Should not throw error
       const inspectionButtons = screen.getAllByRole('button');
-      const dateButton = inspectionButtons.find(btn => btn.textContent?.includes('2024'));
-      
+      const dateButton = inspectionButtons.find(btn => btn.textContent?.includes('June'));
+
       if (dateButton) {
         fireEvent.click(dateButton);
-
-        // Should still display other information
         await waitFor(() => {
           expect(screen.getByText('John Doe')).toBeInTheDocument();
         });
@@ -530,15 +515,11 @@ describe('SiteDetailScreen', () => {
 
     it('should handle "Cannot Answer" score', async () => {
       const inspectionsWithSpecialScore = [
-        {
-          ...mockInspections[0],
-          naturalness_score: 'Cannot Answer',
-        },
+        { ...mockInspections[0], naturalness_score: 'Cannot Answer' },
       ];
-      (supabaseQueries.getInspectionDetailsOnline as jest.Mock).mockResolvedValue(
+      (supabaseQueries.getFormResponsesBySite as jest.Mock).mockResolvedValue(
         inspectionsWithSpecialScore
       );
-
       render(<SiteDetailScreen />);
       await waitFor(() => {
         expect(screen.getByText(/Score: Cannot Answer/i)).toBeInTheDocument();
@@ -547,15 +528,11 @@ describe('SiteDetailScreen', () => {
 
     it('should display N/A for missing naturalness score', async () => {
       const inspectionsWithoutScore = [
-        {
-          ...mockInspections[0],
-          naturalness_score: null,
-        },
+        { ...mockInspections[0], naturalness_score: null },
       ];
-      (supabaseQueries.getInspectionDetailsOnline as jest.Mock).mockResolvedValue(
+      (supabaseQueries.getFormResponsesBySite as jest.Mock).mockResolvedValue(
         inspectionsWithoutScore
       );
-
       render(<SiteDetailScreen />);
       await waitFor(() => {
         expect(screen.getByText(/Score: N\/A/i)).toBeInTheDocument();
@@ -574,7 +551,7 @@ describe('SiteDetailScreen', () => {
     it('should fetch inspections for the site', async () => {
       render(<SiteDetailScreen />);
       await waitFor(() => {
-        expect(supabaseQueries.getInspectionDetailsOnline).toHaveBeenCalledWith(
+        expect(supabaseQueries.getFormResponsesBySite).toHaveBeenCalledWith(
           'Aspen Grove Reserve'
         );
       });
