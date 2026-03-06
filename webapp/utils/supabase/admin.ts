@@ -264,18 +264,79 @@ export async function swapQuestionOrder(
   ]);
 }
 
+// export async function reorderQuestions(
+//   updates: { questionId: number; newOrder: number }[]
+// ): Promise<void> {
+//   const supabase = createServerSupabase();
+//   await Promise.all(
+//     updates.map(({ questionId, newOrder }) =>
+//       supabase
+//         .from("W26_questions")
+//         .update({ formorder: newOrder })
+//         .eq("id", questionId)
+//     )
+//   );
+// }
+
+// export async function reorderQuestions(
+//   updates: { questionId: number; newOrder: number }[]
+// ): Promise<void> {
+//   const supabase = createServerSupabase();
+
+//   // We perform all updates in parallel
+//   // This ensures every question gets its unique index assigned
+//   const results = await Promise.all(
+//     updates.map(({ questionId, newOrder }) =>
+//       supabase
+//         .from("W26_questions")
+//         .update({ formorder: newOrder })
+//         .eq("id", questionId)
+//     )
+//   );
+
+//   const error = results.find((r) => r.error);
+//   if (error) {
+//     console.error("Error in reorderQuestions:", error);
+//     throw new Error("Could not update question order.");
+//   }
+// }
+
 export async function reorderQuestions(
-  updates: { questionId: number; newOrder: number }[]
+  updates: { questionName: string | null; questionId: number; newOrder: number }[]
 ): Promise<void> {
-  const supabase = createServerSupabase();
-  await Promise.all(
-    updates.map(({ questionId, newOrder }) =>
-      supabase
-        .from("W26_questions")
-        .update({ formorder: newOrder })
-        .eq("id", questionId)
-    )
-  );
+  // const supabase = createServerSupabase();
+  console.log("these are the updates for reordering:");
+  console.log(updates);
+  // 1. Move all affected questions to a temporary "negative" order.
+  // This clears the 'positive' slots (1, 2, 3...) so no conflicts occur.
+  // const tempResults = await Promise.all(
+  //   updates.map(({ questionId, newOrder }) =>
+  //     supabase
+  //       .from("W26_questions")
+  //       .update({ formorder: -newOrder }) // Temporary negative value
+  //       .eq("id", questionId)
+  //   )
+  // );
+
+  // if (tempResults.find(r => r.error)) {
+  //   throw new Error("Failed during temporary reorder phase");
+  // }
+
+  // // 2. Move them to their final positive positions.
+  // const finalResults = await Promise.all(
+  //   updates.map(({ questionId, newOrder }) =>
+  //     supabase
+  //       .from("W26_questions")
+  //       .update({ formorder: newOrder }) 
+  //       .eq("id", questionId)
+  //   )
+  // );
+
+  // const error = finalResults.find((r) => r.error);
+  // if (error) {
+  //   console.error("Error in reorderQuestions:", error);
+  //   throw new Error("Could not update question order.");
+  // }
 }
 
 export async function moveQuestionToSection(

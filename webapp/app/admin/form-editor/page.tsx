@@ -87,6 +87,8 @@ export default function FormEditorPage() {
   const [newSectionHeader, setNewSectionHeader] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const handleUpdatePreview = useCallback((draft: Partial<FormQuestion>) => {
+  setSelectedQuestion(draft as FormQuestion);}, []);
 
   // ─── Data Fetching ───────────────────────────────────────────────
   const loadSections = useCallback(async () => {
@@ -122,7 +124,7 @@ export default function FormEditorPage() {
   // ─── Derived State ───────────────────────────────────────────────
   const currentQuestions = questions
     .filter((q) => q.section_id === activeSection)
-    .sort((a, b) => (a.formorder ?? Infinity) - (b.formorder ?? Infinity));
+    .sort((a, b) => (a.formorder ?? 0) - (b.formorder ?? 0));
 
   const currentSection = sections.find((s) => s.id === activeSection);
 
@@ -178,75 +180,110 @@ export default function FormEditorPage() {
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
 
+  // const handleDragEnd = async (event: DragEndEvent) => {
+  //   const { active, over } = event;
+  //   if (!over || active.id === over.id) return;
+
+  //   const overId = String(over.id);
+
+  //   // ── Cross-section move: dropped on a sidebar section button ──
+  //   if (overId.startsWith("section-")) {
+  //     const targetSectionId = Number(overId.replace("section-", ""));
+  //     const draggedQuestion = questions.find((q) => q.id === active.id);
+  //     if (!draggedQuestion || draggedQuestion.section_id === targetSectionId) return;
+
+  //     const targetSectionQuestions = questions.filter(
+  //       (q) => q.section_id === targetSectionId
+  //     );
+  //     const newOrder =
+  //       targetSectionQuestions.reduce(
+  //         (max, q) => Math.max(max, q.formorder ?? 0),
+  //         0
+  //       ) + 1;
+
+  //     // Optimistic update
+  //     const prevQuestions = [...questions];
+  //     setQuestions((prev) =>
+  //       prev.map((q) =>
+  //         q.id === active.id
+  //           ? { ...q, section_id: targetSectionId, formorder: newOrder }
+  //           : q
+  //       )
+  //     );
+
+  //     try {
+  //       await moveQuestionToSection(
+  //         draggedQuestion.id,
+  //         targetSectionId,
+  //         newOrder
+  //       );
+  //     } catch (err: any) {
+  //       setQuestions(prevQuestions);
+  //       setError("Failed to move question: " + err.message);
+  //     }
+  //     return;
+  //   }
+
+  //   // ── Same-section reorder ──
+  //   const oldIndex = currentQuestions.findIndex((q) => q.id === active.id);
+  //   const newIndex = currentQuestions.findIndex((q) => q.id === over.id);
+  //   if (oldIndex < 0 || newIndex < 0) return;
+
+  //   const reordered = arrayMove(currentQuestions, oldIndex, newIndex);
+
+  //   const updates = reordered.map((q, i) => ({
+  //     questionId: q.id,
+  //     newOrder: i + 1,
+  //   }));
+
+  //   const prevQuestions = [...questions];
+  //   setQuestions((prev) =>
+  //     prev.map((q) => {
+  //       const update = updates.find((u) => u.questionId === q.id);
+  //       return update ? { ...q, formorder: update.newOrder } : q;
+  //     })
+  //   );
+
+  //   try {
+  //     await reorderQuestions(updates);
+  //   } catch (err: any) {
+  //     setQuestions(prevQuestions);
+  //     setError("Failed to reorder: " + err.message);
+  //   }
+  // };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-    if (!over || active.id === over.id) return;
 
-    const overId = String(over.id);
+    if (over && active.id !== over.id) {
+      // 1. Find the current indices in the full questions state
+      const oldIndex = questions.findIndex((q) => q.id === active.id);
+      const newIndex = questions.findIndex((q) => q.id === over.id);
 
-    // ── Cross-section move: dropped on a sidebar section button ──
-    if (overId.startsWith("section-")) {
-      const targetSectionId = Number(overId.replace("section-", ""));
-      const draggedQuestion = questions.find((q) => q.id === active.id);
-      if (!draggedQuestion || draggedQuestion.section_id === targetSectionId) return;
+      // 2. Create the new array order
+      const newOrder = arrayMove(questions, oldIndex, newIndex);
+      
+      // 3. Update local state immediately for a smooth UI
+      // We map through and assign a fresh, unique formorder based on the new index
+      const updatedQuestions = newOrder.map((q, index) => ({
+        ...q,
+        formorder: index + 1 // Unique global sequence
+      }));
+      
+      setQuestions(updatedQuestions);
 
-      const targetSectionQuestions = questions.filter(
-        (q) => q.section_id === targetSectionId
-      );
-      const newOrder =
-        targetSectionQuestions.reduce(
-          (max, q) => Math.max(max, q.formorder ?? 0),
-          0
-        ) + 1;
-
-      // Optimistic update
-      const prevQuestions = [...questions];
-      setQuestions((prev) =>
-        prev.map((q) =>
-          q.id === active.id
-            ? { ...q, section_id: targetSectionId, formorder: newOrder }
-            : q
-        )
-      );
-
+      // 4. Persist to Supabase
       try {
-        await moveQuestionToSection(
-          draggedQuestion.id,
-          targetSectionId,
-          newOrder
-        );
-      } catch (err: any) {
-        setQuestions(prevQuestions);
-        setError("Failed to move question: " + err.message);
+        const updates = updatedQuestions.map((q) => ({
+          questionName: q.form_question,
+          questionId: q.id,
+          newOrder: q.formorder as number,
+        }));
+        await reorderQuestions(updates);
+      } catch (error) {
+        console.error("Failed to persist new order:", error);
+        // Optional: Refresh data from server to rollback on failure
       }
-      return;
-    }
-
-    // ── Same-section reorder ──
-    const oldIndex = currentQuestions.findIndex((q) => q.id === active.id);
-    const newIndex = currentQuestions.findIndex((q) => q.id === over.id);
-    if (oldIndex < 0 || newIndex < 0) return;
-
-    const reordered = arrayMove(currentQuestions, oldIndex, newIndex);
-
-    const updates = reordered.map((q, i) => ({
-      questionId: q.id,
-      newOrder: i + 1,
-    }));
-
-    const prevQuestions = [...questions];
-    setQuestions((prev) =>
-      prev.map((q) => {
-        const update = updates.find((u) => u.questionId === q.id);
-        return update ? { ...q, formorder: update.newOrder } : q;
-      })
-    );
-
-    try {
-      await reorderQuestions(updates);
-    } catch (err: any) {
-      setQuestions(prevQuestions);
-      setError("Failed to reorder: " + err.message);
     }
   };
 
@@ -489,7 +526,12 @@ export default function FormEditorPage() {
                   sectionId={activeSection!}
                   saving={saving}
                   onSave={handleAddQuestion}
-                  onCancel={() => setShowAddQuestion(false)}
+                  onCancel={() => {
+                    setShowAddQuestion(false);
+                    setSelectedQuestion(null); // Clear preview on cancel
+                  }}
+                  // Update the preview panel as the user types
+                  onUpdate={handleUpdatePreview}
                 />
               )}
 
@@ -544,17 +586,25 @@ export default function FormEditorPage() {
             {/* ── Right: Preview Panel ── */}
             <div className="w-[340px] flex-shrink-0 hidden lg:block">
               <div className="bg-[#F7F2EA] rounded-2xl border-2 border-[#E4EBE4] p-5 sticky top-6">
-                <h3 className="text-xs font-bold text-[#7A8075] uppercase tracking-wider mb-4">
-                  Preview
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xs font-bold text-[#7A8075] uppercase tracking-wider">
+                    Preview
+                  </h3>
+                  {/* Badge to show user they are looking at the 'Add Question' draft */}
+                  {selectedQuestion?.id === -1 && (
+                    <span className="text-[10px] bg-[#356B43] text-white px-2 py-0.5 rounded-full font-bold animate-pulse">
+                      LIVE DRAFT
+                    </span>
+                  )}
+                </div>
+
                 {selectedQuestion ? (
                   <PreviewPanel question={selectedQuestion} />
                 ) : (
                   <div className="text-center py-12">
                     <Eye className="w-10 h-10 text-[#E4EBE4] mx-auto mb-3" />
                     <p className="text-sm text-[#7A8075]">
-                      Select a question to preview how it will appear in the
-                      inspection form
+                      Select a question or start adding one to see a preview
                     </p>
                   </div>
                 )}
@@ -927,7 +977,8 @@ function AddQuestionForm({
   saving,
   onSave,
   onCancel,
-}: {
+  onUpdate,
+} : {
   sectionId: number;
   saving: boolean;
   onSave: (q: {
@@ -938,6 +989,7 @@ function AddQuestionForm({
     options: string[];
   }) => void;
   onCancel: () => void;
+  onUpdate: (q: Partial<FormQuestion>) => void; // New prop
 }) {
   const [title, setTitle] = useState("");
   const [subtext, setSubtext] = useState("");
@@ -946,6 +998,23 @@ function AddQuestionForm({
   const [options, setOptions] = useState(["", ""]);
 
   const needsOptions = ["option", "selectall"].includes(type);
+
+  // Sync with preview panel whenever local state changes
+  useEffect(() => {
+  onUpdate({
+    id: -1, // Temporary ID to mark as draft
+    form_question: title || "Untitled Question", // Fallback for preview
+    subtext,
+    question_type: type,
+    is_required: required,
+    options: options.map((opt, i) => ({ 
+      id: i, 
+      option_text: opt || `Option ${i + 1}`, // Shows "Option 1" in preview if empty
+      is_active: true 
+    })),
+    section_id: sectionId,
+  });
+}, [title, subtext, type, required, options, sectionId, onUpdate]);
 
   return (
     <div className="bg-white border-2 border-[#356B43] rounded-xl p-5 shadow-md mb-4">
