@@ -22,7 +22,7 @@ export interface InspectionDetail {
   steward: string | null;
 }
 
-export interface InpsectionFrom {
+export interface InspectionFrom {
   id: number;
   namesite: string;
   questions: Array<question> | null;
@@ -207,9 +207,6 @@ export async function getQuestionsOnline(): Promise<question[]> {
       W26_question_options (
         option_text
       ),
-      W26_question_keys!W26_questions_question_key_id_fkey (
-        formorder
-      ),
       W26_form_sections!W26_questions_section_id_fkey (
         title,
         description,
@@ -312,6 +309,30 @@ export async function getInspectionDetailsOnline(namesite: string): Promise<Insp
     notes: insp.notes,
     steward: insp.steward,
   }));
+}
+
+
+export async function insertInspectionAttachments(rows: Array<{
+  response_id: number;
+  question_id: number;
+  storage_key: string; // placeholder for now
+  filename?: string | null;
+  content_type?: string | null;
+  file_size_bytes?: number | null;
+  caption?: string | null;
+  description?: string | null;
+}>) {
+  const supabase = createServerSupabase();  
+
+  const { data, error } = await supabase
+    .from('W26_attachments')
+    .insert(rows);
+
+  if (error) {
+    throw new Error(error.message || 'Failed to insert attachments');
+  }
+
+  return data;
 }
 
 export async function getFormResponsesBySite(siteName: string): Promise<FormResponse[]> {
