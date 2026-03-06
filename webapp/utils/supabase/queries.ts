@@ -207,6 +207,7 @@ export async function getQuestionsOnline(): Promise<question[]> {
       W26_question_options (
         option_text
       ),
+      formorder,
       W26_form_sections!W26_questions_section_id_fkey (
         title,
         description,
@@ -229,6 +230,7 @@ export async function getQuestionsOnline(): Promise<question[]> {
     section: q.section_id,
     autofill_key: q.autofill_key ?? null,
     answers: q.W26_question_options?.map((opt: any) => opt.option_text) ?? null,
+    formorder: q.formorder ?? null,
     sectionTitle: q.W26_form_sections?.title ?? null,
     sectionDescription: q.W26_form_sections?.description ?? null,
     sectionHeader: q.W26_form_sections?.header ?? null,
