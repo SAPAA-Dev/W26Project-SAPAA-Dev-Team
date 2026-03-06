@@ -51,6 +51,7 @@ jest.mock("@/utils/supabase/queries", () => ({
   getCurrentSiteId:            jest.fn().mockResolvedValue("site-456"),
   getQuestionResponseType:     jest.fn().mockResolvedValue([]),
   uploadSiteInspectionAnswers: jest.fn().mockResolvedValue({}),
+  insertInspectionAttachments: jest.fn().mockResolvedValue({}),
 }));
 
 jest.mock("@/utils/supabase/client", () => ({
