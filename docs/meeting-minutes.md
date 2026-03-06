@@ -235,3 +235,32 @@
 - Start planning over the reading week for Sprint 3
 
 ---
+
+
+## Sprint 3
+
+### Feb 20, 2026
+**Key Discussions & Decisions**
+- Attempted to set up AWS account for deployment, payment verification required before activation
+- Decided to wait for AWS verification before proceeding with hosting setup
+- Set up development email account for deployment and configuration purposes
+- Demoed the current version Site Inspection form to the client (running locally)
+- Discussed replacing emergency/terms text with a single checkbox stating agreement
+- Agreed to refactor section names to match the official SAPAA website structure.
+- Discussed question numbering format; decided to keep original Q-number format (e.g., Q21, Q37) to maintain consistency with 40+ years of historical data
+- Confirmed inspection numbers should be auto-generated based on calendar year
+- Discussed future migration of old inspection data into new database tables
+- Reviewed upcoming Sprint goals including question management and admin features
+
+
+
+**Action Items**
+- Wait for AWS payment verification and complete hosting setup
+- Change development email password and finalize configuration
+- Refactor section names to match official SAPAA websit
+- Revert and maintain original Q-number format for all question
+- Implement yearly auto increment inspection number system
+- Plan and document deployment strategy for production release
+- Begin preparing data migration plan for legacy inspection record
+
+---
