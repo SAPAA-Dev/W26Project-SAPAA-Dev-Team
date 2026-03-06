@@ -94,6 +94,20 @@ export async function fetchFormQuestions(): Promise<FormQuestion[]> {
   }));
 }
 
+export async function getMaxFormOrder(): Promise<number> {
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from("W26_questions")
+    .select("formorder")
+    .order("formorder", { ascending: false })
+    .limit(1)
+    .single();
+
+  return data?.formorder ?? 0;
+}
+
+
 export async function saveQuestion(question: FormQuestion): Promise<void> {
   const supabase = createServerSupabase();
 
@@ -155,16 +169,7 @@ export async function saveQuestion(question: FormQuestion): Promise<void> {
   }
 }
 
-export async function deleteQuestion(questionId: number): Promise<void> {
-  const supabase = createServerSupabase();
-  const { error } = await supabase
-    .from("W26_questions")
-    .update({ is_active: false })
-    .eq("id", questionId);
-
-  if (error) throw error;
-}
-
+// Admin should only be able to toggle question visibility and never delete questions (request from client)
 export async function toggleQuestionActive(questionId: number, currentState: boolean) {
   const supabase = createServerSupabase();
   const { error } = await supabase
@@ -177,7 +182,6 @@ export async function toggleQuestionActive(questionId: number, currentState: boo
 
 export async function addQuestion(
   sectionId: number,
-  maxFormorder: number,
   newQuestion: {
     form_question: string;
     subtext: string;
@@ -263,7 +267,7 @@ export async function addQuestion(
       is_required: newQuestion.is_required,
       subtext: newQuestion.subtext,
       autofill_key: null,
-      formorder: null // TODO once it is setup for the other questions
+      formorder: (await getMaxFormOrder()) + 1,
     })
     .select("id")
     .single();
@@ -304,27 +308,6 @@ export async function addQuestion(
   }
 }
 
-export async function swapQuestionOrder(
-  keyId1: number,
-  order1: number | null,
-  keyId2: number,
-  order2: number | null
-): Promise<void> {
-  const supabase = createServerSupabase();
-  await Promise.all([
-    supabase
-      .from("W26_questions")
-      .update({ formorder: order2 })
-      .eq("id", keyId1),
-    supabase
-      .from("W26_questions")
-      .update({ formorder: order1 })
-      .eq("id", keyId2),
-  ]);
-}
-
-
-
 export async function reorderQuestions(
   updates: { questionId: number; questionName?: string; newOrder: number }[]
 ) {
@@ -342,21 +325,6 @@ export async function reorderQuestions(
       );
     }
   }
-}
-
-
-export async function moveQuestionToSection(
-  questionId: number,
-  newSectionId: number,
-  newOrder: number
-): Promise<void> {
-  const supabase = createServerSupabase();
-  const { error } = await supabase
-    .from("W26_questions")
-    .update({ section_id: newSectionId, formorder: newOrder })
-    .eq("id", questionId);
-
-  if (error) throw new Error("Failed to move question: " + error.message);
 }
 
 export async function addFormSection(section: {

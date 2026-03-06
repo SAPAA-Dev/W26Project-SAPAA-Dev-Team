@@ -44,11 +44,9 @@ import {
   fetchFormSections,
   fetchFormQuestions,
   saveQuestion,
-  deleteQuestion,
   toggleQuestionActive,
   addQuestion,
   reorderQuestions,
-  moveQuestionToSection,
   addFormSection,
   type FormSection,
   type FormQuestion,
@@ -178,12 +176,7 @@ export default function FormEditorPage() {
     setSaving(true);
     setError(null);
     try {
-      const maxOrder = currentQuestions.reduce(
-        (max, q) => Math.max(max, q.formorder ?? 0),
-        0
-      );
-      console.log("helloworld");
-      await addQuestion(activeSection, maxOrder, newQuestion);
+      await addQuestion(activeSection, newQuestion);
       await loadQuestions();
       setShowAddQuestion(false);
       showSuccess("Question added successfully");
@@ -198,117 +191,6 @@ export default function FormEditorPage() {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
-
-  // const handleDragEnd = async (event: DragEndEvent) => {
-  //   const { active, over } = event;
-  //   if (!over || active.id === over.id) return;
-
-  //   const overId = String(over.id);
-
-  //   // ── Cross-section move: dropped on a sidebar section button ──
-  //   if (overId.startsWith("section-")) {
-  //     const targetSectionId = Number(overId.replace("section-", ""));
-  //     const draggedQuestion = questions.find((q) => q.id === active.id);
-  //     if (!draggedQuestion || draggedQuestion.section_id === targetSectionId) return;
-
-  //     const targetSectionQuestions = questions.filter(
-  //       (q) => q.section_id === targetSectionId
-  //     );
-  //     const newOrder =
-  //       targetSectionQuestions.reduce(
-  //         (max, q) => Math.max(max, q.formorder ?? 0),
-  //         0
-  //       ) + 1;
-
-  //     // Optimistic update
-  //     const prevQuestions = [...questions];
-  //     setQuestions((prev) =>
-  //       prev.map((q) =>
-  //         q.id === active.id
-  //           ? { ...q, section_id: targetSectionId, formorder: newOrder }
-  //           : q
-  //       )
-  //     );
-
-  //     try {
-  //       await moveQuestionToSection(
-  //         draggedQuestion.id,
-  //         targetSectionId,
-  //         newOrder
-  //       );
-  //     } catch (err: any) {
-  //       setQuestions(prevQuestions);
-  //       setError("Failed to move question: " + err.message);
-  //     }
-  //     return;
-  //   }
-
-  //   // ── Same-section reorder ──
-  //   const oldIndex = currentQuestions.findIndex((q) => q.id === active.id);
-  //   const newIndex = currentQuestions.findIndex((q) => q.id === over.id);
-  //   if (oldIndex < 0 || newIndex < 0) return;
-
-  //   const reordered = arrayMove(currentQuestions, oldIndex, newIndex);
-
-  //   const updates = reordered.map((q, i) => ({
-  //     questionId: q.id,
-  //     newOrder: i + 1,
-  //   }));
-
-  //   const prevQuestions = [...questions];
-  //   setQuestions((prev) =>
-  //     prev.map((q) => {
-  //       const update = updates.find((u) => u.questionId === q.id);
-  //       return update ? { ...q, formorder: update.newOrder } : q;
-  //     })
-  //   );
-
-  //   try {
-  //     await reorderQuestions(updates);
-  //   } catch (err: any) {
-  //     setQuestions(prevQuestions);
-  //     setError("Failed to reorder: " + err.message);
-  //   }
-  // };
-
-  // const handleDragEnd = async (event: DragEndEvent) => {
-  //   const { active, over } = event;
-
-  //   if (over && active.id !== over.id) {
-  //     // 1. Find the current indices in the full questions state
-  //     const oldIndex = questions.findIndex((q) => q.id === active.id);
-  //     const newIndex = questions.findIndex((q) => q.id === over.id);
-
-  //     // 2. Create the new array order
-  //     const newOrder = arrayMove(questions, oldIndex, newIndex);
-      
-  //     // 3. Update local state immediately for a smooth UI
-  //     // We map through and assign a fresh, unique formorder based on the new index
-  //     const updatedQuestions = newOrder.map((q, index) => ({
-  //       ...q,
-  //       formorder: index + 1 // Unique global sequence
-  //     }));
-      
-  //     setQuestions(updatedQuestions);
-
-  //     // 4. Persist to Supabase
-  //     try {
-  //       const updates = updatedQuestions.map((q) => ({
-  //         questionName: q.form_question,
-  //         questionId: q.id,
-  //         newOrder: q.formorder as number,
-  //       }));
-  //       await reorderQuestions(updates);
-  //     } catch (error) {
-  //       console.error("Failed to persist new order:", error);
-  //       // Optional: Refresh data from server to rollback on failure
-  //     }
-  //   }
-  // };
-
-
-
-
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
@@ -359,10 +241,6 @@ export default function FormEditorPage() {
       setError("Failed to reorder: " + err.message);
     }
   };
-
-
-
-
 
   // ─── Section CRUD ────────────────────────────────────────────────
   const handleAddSection = async () => {
