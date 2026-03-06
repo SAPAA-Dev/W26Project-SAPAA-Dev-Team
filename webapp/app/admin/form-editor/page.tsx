@@ -8,8 +8,6 @@ import {
   Trash2,
   Save,
   X,
-  ChevronDown,
-  ChevronUp,
   Loader2,
   Eye,
   FileText,
@@ -22,6 +20,22 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Image from "next/image";
+import {
+  DndContext,
+  rectIntersection,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  useDroppable,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 import AdminNavBar from "../AdminNavBar";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -29,9 +43,9 @@ import {
   fetchFormSections,
   fetchFormQuestions,
   saveQuestion,
-  deleteQuestion,
   addQuestion,
-  swapQuestionOrder,
+  reorderQuestions,
+  moveQuestionToSection,
   addFormSection,
   type FormSection,
   type FormQuestion,
@@ -133,23 +147,6 @@ export default function FormEditorPage() {
     }
   };
 
-  const handleDeleteQuestion = async (questionId: number) => {
-    if (!confirm("Are you sure you want to delete this question?")) return;
-    setSaving(true);
-    setError(null);
-    try {
-      await deleteQuestion(questionId);
-      await loadQuestions();
-      if (selectedQuestion?.id === questionId) setSelectedQuestion(null);
-      if (editingQuestion?.id === questionId) setEditingQuestion(null);
-      showSuccess("Question deleted");
-    } catch (err: any) {
-      setError("Failed to delete question: " + err.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleAddQuestion = async (newQuestion: {
     form_question: string;
     subtext: string;
@@ -176,31 +173,80 @@ export default function FormEditorPage() {
     }
   };
 
-  const handleMoveQuestion = async (
-    questionId: number,
-    direction: "up" | "down"
-  ) => {
-    const idx = currentQuestions.findIndex((q) => q.id === questionId);
-    if (idx < 0) return;
-    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
-    if (swapIdx < 0 || swapIdx >= currentQuestions.length) return;
-    const thisQ = currentQuestions[idx];
-    const swapQ = currentQuestions[swapIdx];
-    if (!thisQ.question_key_id || !swapQ.question_key_id) return;
+  // ─── Drag-and-Drop ─────────────────────────────────────────────
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
 
-    setSaving(true);
-    try {
-      await swapQuestionOrder(
-        thisQ.question_key_id,
-        thisQ.formorder,
-        swapQ.question_key_id,
-        swapQ.formorder
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const overId = String(over.id);
+
+    // ── Cross-section move: dropped on a sidebar section button ──
+    if (overId.startsWith("section-")) {
+      const targetSectionId = Number(overId.replace("section-", ""));
+      const draggedQuestion = questions.find((q) => q.id === active.id);
+      if (!draggedQuestion || draggedQuestion.section_id === targetSectionId) return;
+
+      const targetSectionQuestions = questions.filter(
+        (q) => q.section_id === targetSectionId
       );
-      await loadQuestions();
+      const newOrder =
+        targetSectionQuestions.reduce(
+          (max, q) => Math.max(max, q.formorder ?? 0),
+          0
+        ) + 1;
+
+      // Optimistic update
+      const prevQuestions = [...questions];
+      setQuestions((prev) =>
+        prev.map((q) =>
+          q.id === active.id
+            ? { ...q, section_id: targetSectionId, formorder: newOrder }
+            : q
+        )
+      );
+
+      try {
+        await moveQuestionToSection(
+          draggedQuestion.id,
+          targetSectionId,
+          newOrder
+        );
+      } catch (err: any) {
+        setQuestions(prevQuestions);
+        setError("Failed to move question: " + err.message);
+      }
+      return;
+    }
+
+    // ── Same-section reorder ──
+    const oldIndex = currentQuestions.findIndex((q) => q.id === active.id);
+    const newIndex = currentQuestions.findIndex((q) => q.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+
+    const reordered = arrayMove(currentQuestions, oldIndex, newIndex);
+
+    const updates = reordered.map((q, i) => ({
+      questionId: q.id,
+      newOrder: i + 1,
+    }));
+
+    const prevQuestions = [...questions];
+    setQuestions((prev) =>
+      prev.map((q) => {
+        const update = updates.find((u) => u.questionId === q.id);
+        return update ? { ...q, formorder: update.newOrder } : q;
+      })
+    );
+
+    try {
+      await reorderQuestions(updates);
     } catch (err: any) {
+      setQuestions(prevQuestions);
       setError("Failed to reorder: " + err.message);
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -288,6 +334,11 @@ export default function FormEditorPage() {
 
         {/* Main Layout */}
         <div className="max-w-7xl mx-auto px-6 py-6">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={rectIntersection}
+            onDragEnd={handleDragEnd}
+          >
           <div className="flex gap-6 min-h-[calc(100vh-260px)]">
             {/* ── Sidebar: Sections ── */}
             <div className="w-[220px] flex-shrink-0">
@@ -311,34 +362,17 @@ export default function FormEditorPage() {
                       (q) => q.section_id === section.id
                     ).length;
                     return (
-                      <button
+                      <DroppableSectionButton
                         key={section.id}
-                        data-testid={`section-button-${section.id}`}
+                        section={section}
+                        count={count}
+                        isActive={activeSection === section.id}
                         onClick={() => {
                           setActiveSection(section.id);
                           setEditingQuestion(null);
                           setShowAddQuestion(false);
                         }}
-                        className={`w-full text-left px-3 py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-between ${
-                          activeSection === section.id
-                            ? "bg-[#EEF5EF] text-[#356B43] border-2 border-[#356B43]"
-                            : "text-[#7A8075] border-2 border-[#E4EBE4] hover:border-[#86A98A]"
-                        }`}
-                      >
-                        <span className="truncate">
-                          {section.header || section.title}
-                        </span>
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
-                            activeSection === section.id
-                              ? "bg-[#356B43] text-white"
-                              : "bg-[#E4EBE4] text-[#7A8075]"
-                          }`}
-                          data-testid={`section-count-${section.id}`}
-                        >
-                          {count}
-                        </span>
-                      </button>
+                      />
                     );
                   })}
                 </div>
@@ -474,37 +508,36 @@ export default function FormEditorPage() {
                   </button>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {currentQuestions.map((question, idx) => (
-                    <QuestionCard
-                      key={question.id}
-                      question={question}
-                      index={idx}
-                      total={currentQuestions.length}
-                      isSelected={selectedQuestion?.id === question.id}
-                      isEditing={editingQuestion?.id === question.id}
-                      saving={saving}
-                      onSelect={() => setSelectedQuestion(question)}
-                      onEdit={() => {
-                        setEditingQuestion({ ...question });
-                        setShowAddQuestion(false);
-                      }}
-                      onDelete={() => handleDeleteQuestion(question.id)}
-                      onMoveUp={() => handleMoveQuestion(question.id, "up")}
-                      onMoveDown={() =>
-                        handleMoveQuestion(question.id, "down")
-                      }
-                      onSave={handleSaveQuestion}
-                      onCancelEdit={() => setEditingQuestion(null)}
-                      editingQuestion={
-                        editingQuestion?.id === question.id
-                          ? editingQuestion
-                          : null
-                      }
-                      onEditingChange={setEditingQuestion}
-                    />
-                  ))}
-                </div>
+                <SortableContext
+                  items={currentQuestions.map((q) => q.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-3">
+                    {currentQuestions.map((question) => (
+                      <SortableQuestionCard
+                        key={question.id}
+                        question={question}
+                        isSelected={selectedQuestion?.id === question.id}
+                        isEditing={editingQuestion?.id === question.id}
+                        saving={saving}
+                        onSelect={() => setSelectedQuestion(question)}
+                        onEdit={() => {
+                          setEditingQuestion({ ...question });
+                          setShowAddQuestion(false);
+                        }}
+                        onDelete={async () => {}}
+                        onSave={handleSaveQuestion}
+                        onCancelEdit={() => setEditingQuestion(null)}
+                        editingQuestion={
+                          editingQuestion?.id === question.id
+                            ? editingQuestion
+                            : null
+                        }
+                        onEditingChange={setEditingQuestion}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
               )}
             </div>
 
@@ -528,71 +561,139 @@ export default function FormEditorPage() {
               </div>
             </div>
           </div>
+          </DndContext>
         </div>
       </div>
     </ProtectedRoute>
   );
 }
 
-// ─── QuestionCard Component ──────────────────────────────────────────
-function QuestionCard({
+// ─── DroppableSectionButton Component ────────────────────────────────
+function DroppableSectionButton({
+  section,
+  count,
+  isActive,
+  onClick,
+}: {
+  section: FormSection;
+  count: number;
+  isActive: boolean;
+  onClick: () => void;
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `section-${section.id}`,
+  });
+
+  return (
+    <button
+      ref={setNodeRef}
+      onClick={onClick}
+      className={`w-full text-left px-3 py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-between ${
+        isOver
+          ? "bg-[#DCFCE7] text-[#166534] border-2 border-[#22C55E] scale-[1.03] shadow-md"
+          : isActive
+            ? "bg-[#EEF5EF] text-[#356B43] border-2 border-[#356B43]"
+            : "text-[#7A8075] border-2 border-[#E4EBE4] hover:border-[#86A98A]"
+      }`}
+    >
+      <span className="truncate">
+        {section.header || section.title}
+      </span>
+      <span
+        className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
+          isOver
+            ? "bg-[#22C55E] text-white"
+            : isActive
+              ? "bg-[#356B43] text-white"
+              : "bg-[#E4EBE4] text-[#7A8075]"
+        }`}
+      >
+        {count}
+      </span>
+    </button>
+  );
+}
+
+// ─── SortableQuestionCard Component ──────────────────────────────────
+function SortableQuestionCard({
   question,
-  index,
-  total,
   isSelected,
   isEditing,
   saving,
   onSelect,
   onEdit,
   onDelete,
-  onMoveUp,
-  onMoveDown,
   onSave,
   onCancelEdit,
   editingQuestion,
   onEditingChange,
 }: {
   question: FormQuestion;
-  index: number;
-  total: number;
   isSelected: boolean;
   isEditing: boolean;
   saving: boolean;
   onSelect: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
   onSave: (q: FormQuestion) => void;
   onCancelEdit: () => void;
   editingQuestion: FormQuestion | null;
   onEditingChange: (q: FormQuestion | null) => void;
 }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: question.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : undefined,
+  };
+
   const TypeIcon = getTypeIcon(question.question_type);
 
   if (isEditing && editingQuestion) {
     return (
-      <EditQuestionForm
-        question={editingQuestion}
-        saving={saving}
-        onChange={onEditingChange}
-        onSave={() => onSave(editingQuestion)}
-        onCancel={onCancelEdit}
-      />
+      <div ref={setNodeRef} style={style}>
+        <EditQuestionForm
+          question={editingQuestion}
+          saving={saving}
+          onChange={onEditingChange}
+          onSave={() => onSave(editingQuestion)}
+          onCancel={onCancelEdit}
+        />
+      </div>
     );
   }
 
   return (
     <div
+      ref={setNodeRef}
+      style={style}
       onClick={onSelect}
       className={`bg-white border-2 rounded-xl p-4 flex items-center justify-between cursor-pointer transition-all hover:shadow-sm ${
+        isDragging ? "shadow-lg scale-[1.02]" : ""
+      } ${
         isSelected
           ? "border-[#356B43] shadow-sm"
           : "border-[#E4EBE4] hover:border-[#86A98A]"
       }`}
     >
       <div className="flex items-center gap-3 min-w-0">
-        <GripVertical className="w-4 h-4 text-[#7A8075] flex-shrink-0 cursor-grab" />
+        <button
+          {...attributes}
+          {...listeners}
+          className="touch-none flex-shrink-0 cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-[#E4EBE4] transition-colors"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GripVertical className="w-4 h-4 text-[#7A8075]" />
+        </button>
         <div
           className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
             isSelected
@@ -620,28 +721,6 @@ function QuestionCard({
       </div>
 
       <div className="flex items-center gap-1 flex-shrink-0">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onMoveUp();
-          }}
-          disabled={index === 0 || saving}
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-[#7A8075] hover:bg-[#E4EBE4] disabled:opacity-30 transition-all"
-          title="Move up"
-        >
-          <ChevronUp className="w-4 h-4" />
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onMoveDown();
-          }}
-          disabled={index === total - 1 || saving}
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-[#7A8075] hover:bg-[#E4EBE4] disabled:opacity-30 transition-all"
-          title="Move down"
-        >
-          <ChevronDown className="w-4 h-4" />
-        </button>
         <button
           onClick={(e) => {
             e.stopPropagation();

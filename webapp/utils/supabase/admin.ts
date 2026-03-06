@@ -26,6 +26,7 @@ export interface FormQuestion {
   section_id: number;
   autofill_key: string | null;
   question_key_id: number | null;
+  formorder: number | null;
   options: QuestionOption[];
 }
 
@@ -59,6 +60,7 @@ export async function fetchFormQuestions(): Promise<FormQuestion[]> {
       section_id,
       autofill_key,
       question_key_id,
+      formorder,
       W26_question_options (
         id,
         option_text,
@@ -78,6 +80,7 @@ export async function fetchFormQuestions(): Promise<FormQuestion[]> {
     section_id: q.section_id,
     autofill_key: q.autofill_key,
     question_key_id: q.question_key_id,
+    formorder: q.formorder ?? null,
     options: (q.W26_question_options || []).filter((o: any) => o.is_active),
   }));
 }
@@ -259,6 +262,34 @@ export async function swapQuestionOrder(
       .update({ formorder: order1 })
       .eq("id", keyId2),
   ]);
+}
+
+export async function reorderQuestions(
+  updates: { questionId: number; newOrder: number }[]
+): Promise<void> {
+  const supabase = createServerSupabase();
+  await Promise.all(
+    updates.map(({ questionId, newOrder }) =>
+      supabase
+        .from("W26_questions")
+        .update({ formorder: newOrder })
+        .eq("id", questionId)
+    )
+  );
+}
+
+export async function moveQuestionToSection(
+  questionId: number,
+  newSectionId: number,
+  newOrder: number
+): Promise<void> {
+  const supabase = createServerSupabase();
+  const { error } = await supabase
+    .from("W26_questions")
+    .update({ section_id: newSectionId, formorder: newOrder })
+    .eq("id", questionId);
+
+  if (error) throw new Error("Failed to move question: " + error.message);
 }
 
 export async function addFormSection(section: {
