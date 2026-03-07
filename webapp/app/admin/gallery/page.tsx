@@ -17,7 +17,7 @@ type GalleryItem = {
   content_type: string;
   file_size_bytes?: number | null;
   filename: string;
-  site_id: string;
+  site_id: string | null; 
   site_name?: string | null;
   imageUrl: string;
 };
@@ -183,6 +183,15 @@ export default function GalleryPage() {
                     </p>
                     <p className="text-sm text-[#4B5563] break-all">
                       {selectedImage.filename}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
+                      Storage Path
+                    </p>
+                    <p className="text-sm text-[#4B5563] break-all">
+                      {selectedImage.storage_key}
                     </p>
                   </div>
 
