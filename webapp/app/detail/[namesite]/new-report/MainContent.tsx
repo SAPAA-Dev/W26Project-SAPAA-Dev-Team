@@ -225,6 +225,20 @@ export default function MainContent({
                 </label>
               );
             })}
+            {response && (
+              <button
+                type="button"
+                onClick={() => {
+                  const newResponses = { ...responses };
+                  delete (newResponses as Record<string, any>)[`${question.id}_comm`];
+                  delete newResponses[question.id];
+                  onResponsesChange(newResponses);
+                }}
+                className="text-sm font-semibold text-[#7A8075] hover:text-[#B91C1C] transition-colors"
+              >
+                ✕ Clear selection
+              </button>
+            )}
           </div>
         );
       
