@@ -44,11 +44,9 @@ import {
   fetchFormSections,
   fetchFormQuestions,
   saveQuestion,
-  deleteQuestion,
   toggleQuestionActive,
   addQuestion,
   reorderQuestions,
-  moveQuestionToSection,
   addFormSection,
   type FormSection,
   type FormQuestion,
@@ -89,6 +87,8 @@ export default function FormEditorPage() {
   const [newSectionHeader, setNewSectionHeader] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const handleUpdatePreview = useCallback((draft: Partial<FormQuestion>) => {
+  setSelectedQuestion(draft as FormQuestion);}, []);
 
   // ─── Data Fetching ───────────────────────────────────────────────
   const loadSections = useCallback(async () => {
@@ -124,6 +124,7 @@ export default function FormEditorPage() {
   // ─── Derived State ───────────────────────────────────────────────
   const currentQuestions = questions
     .filter((q) => q.section_id === activeSection)
+    .sort((a, b) => (a.formorder ?? 0) - (b.formorder ?? 0));
 
   const currentSection = sections.find((s) => s.id === activeSection);
 
@@ -175,12 +176,7 @@ export default function FormEditorPage() {
     setSaving(true);
     setError(null);
     try {
-      const maxOrder = currentQuestions.reduce(
-        (max, q) => Math.max(max, q.formorder ?? 0),
-        0
-      );
-      console.log("helloworld");
-      await addQuestion(activeSection, maxOrder, newQuestion);
+      await addQuestion(activeSection, newQuestion);
       await loadQuestions();
       setShowAddQuestion(false);
       showSuccess("Question added successfully");
@@ -201,66 +197,44 @@ export default function FormEditorPage() {
     if (!over || active.id === over.id) return;
 
     const overId = String(over.id);
+    if (overId.startsWith("section-")) return;
 
-    // ── Cross-section move: dropped on a sidebar section button ──
-    if (overId.startsWith("section-")) {
-      const targetSectionId = Number(overId.replace("section-", ""));
-      const draggedQuestion = questions.find((q) => q.id === active.id);
-      if (!draggedQuestion || draggedQuestion.section_id === targetSectionId) return;
-
-      const targetSectionQuestions = questions.filter(
-        (q) => q.section_id === targetSectionId
-      );
-      const newOrder =
-        targetSectionQuestions.reduce(
-          (max, q) => Math.max(max, q.formorder ?? 0),
-          0
-        ) + 1;
-
-      // Optimistic update
-      const prevQuestions = [...questions];
-      setQuestions((prev) =>
-        prev.map((q) =>
-          q.id === active.id
-            ? { ...q, section_id: targetSectionId, formorder: newOrder }
-            : q
-        )
-      );
-
-      try {
-        await moveQuestionToSection(
-          draggedQuestion.id,
-          targetSectionId,
-          newOrder
-        );
-      } catch (err: any) {
-        setQuestions(prevQuestions);
-        setError("Failed to move question: " + err.message);
-      }
-      return;
-    }
-
-    // ── Same-section reorder ──
     const oldIndex = currentQuestions.findIndex((q) => q.id === active.id);
     const newIndex = currentQuestions.findIndex((q) => q.id === over.id);
+
     if (oldIndex < 0 || newIndex < 0) return;
 
-    const reordered = arrayMove(currentQuestions, oldIndex, newIndex);
+    const reorderedSectionQuestions = arrayMove(currentQuestions, oldIndex, newIndex);
 
-    const updates = reordered.map((q, i) => ({
-      questionId: q.id,
-      newOrder: i + 1,
+    const reorderedSectionIds = reorderedSectionQuestions.map((q) => q.id);
+    const reorderedSectionMap = new Map(
+      reorderedSectionQuestions.map((q) => [q.id, q])
+    );
+
+    let sectionInsertIndex = 0;
+    const mergedQuestions = questions.map((q) => {
+      if (q.section_id !== activeSection) return q;
+
+      const replacement = reorderedSectionMap.get(reorderedSectionIds[sectionInsertIndex]);
+      sectionInsertIndex++;
+      return replacement ?? q;
+    });
+
+    const globallyOrderedQuestions = mergedQuestions.map((q, index) => ({
+      ...q,
+      formorder: index + 1,
     }));
 
     const prevQuestions = [...questions];
-    setQuestions((prev) =>
-      prev.map((q) => {
-        const update = updates.find((u) => u.questionId === q.id);
-        return update ? { ...q, formorder: update.newOrder } : q;
-      })
-    );
+    setQuestions(globallyOrderedQuestions);
 
     try {
+      const updates = globallyOrderedQuestions.map((q) => ({
+        questionId: q.id,
+        questionName: q.form_question,
+        newOrder: q.formorder as number,
+      }));
+
       await reorderQuestions(updates);
     } catch (err: any) {
       setQuestions(prevQuestions);
@@ -509,7 +483,12 @@ export default function FormEditorPage() {
                   sectionId={activeSection!}
                   saving={saving}
                   onSave={handleAddQuestion}
-                  onCancel={() => setShowAddQuestion(false)}
+                  onCancel={() => {
+                    setShowAddQuestion(false);
+                    setSelectedQuestion(null); // Clear preview on cancel
+                  }}
+                  // Update the preview panel as the user types
+                  onUpdate={handleUpdatePreview}
                 />
               )}
 
@@ -566,17 +545,25 @@ export default function FormEditorPage() {
             {/* ── Right: Preview Panel ── */}
             <div className="w-[340px] flex-shrink-0 hidden lg:block">
               <div className="bg-[#F7F2EA] rounded-2xl border-2 border-[#E4EBE4] p-5 sticky top-6">
-                <h3 className="text-xs font-bold text-[#7A8075] uppercase tracking-wider mb-4">
-                  Preview
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xs font-bold text-[#7A8075] uppercase tracking-wider">
+                    Preview
+                  </h3>
+                  {/* Badge to show user they are looking at the 'Add Question' draft */}
+                  {selectedQuestion?.id === -1 && (
+                    <span className="text-[10px] bg-[#356B43] text-white px-2 py-0.5 rounded-full font-bold animate-pulse">
+                      LIVE DRAFT
+                    </span>
+                  )}
+                </div>
+
                 {selectedQuestion ? (
                   <PreviewPanel question={selectedQuestion} />
                 ) : (
                   <div className="text-center py-12">
                     <Eye className="w-10 h-10 text-[#E4EBE4] mx-auto mb-3" />
                     <p className="text-sm text-[#7A8075]">
-                      Select a question to preview how it will appear in the
-                      inspection form
+                      Select a question or start adding one to see a preview
                     </p>
                   </div>
                 )}
@@ -970,7 +957,8 @@ function AddQuestionForm({
   saving,
   onSave,
   onCancel,
-}: {
+  onUpdate,
+} : {
   sectionId: number;
   saving: boolean;
   onSave: (q: {
@@ -982,6 +970,7 @@ function AddQuestionForm({
     question_key: string;
   }) => void;
   onCancel: () => void;
+  onUpdate: (q: Partial<FormQuestion>) => void; // New prop
 }) {
   const [title, setTitle] = useState("");
   const [subtext, setSubtext] = useState("");
@@ -991,6 +980,23 @@ function AddQuestionForm({
   const [questionKey, setQuestionKey] = useState("");
 
   const needsOptions = ["option", "selectall"].includes(type);
+
+  // Sync with preview panel whenever local state changes
+  useEffect(() => {
+  onUpdate({
+    id: -1, // Temporary ID to mark as draft
+    form_question: title || "Untitled Question", // Fallback for preview
+    subtext,
+    question_type: type,
+    is_required: required,
+    options: options.map((opt, i) => ({ 
+      id: i, 
+      option_text: opt || `Option ${i + 1}`, // Shows "Option 1" in preview if empty
+      is_active: true 
+    })),
+    section_id: sectionId,
+  });
+}, [title, subtext, type, required, options, sectionId, onUpdate]);
 
   return (
     <div className="bg-white border-2 border-[#356B43] rounded-xl p-5 shadow-md mb-4">

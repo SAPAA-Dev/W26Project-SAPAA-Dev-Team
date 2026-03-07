@@ -75,8 +75,8 @@ export async function fetchFormQuestions(): Promise<FormQuestion[]> {
         option_text,
         is_active
       )
-    `);
-
+    `)
+  .order("formorder", { ascending: true });
   if (error) throw new Error("Failed to load questions: " + error.message);
 
   return (data || []).map((q: any) => ({
@@ -93,6 +93,20 @@ export async function fetchFormQuestions(): Promise<FormQuestion[]> {
     options: (q.W26_question_options || []).filter((o: any) => o.is_active),
   }));
 }
+
+export async function getMaxFormOrder(): Promise<number> {
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from("W26_questions")
+    .select("formorder")
+    .order("formorder", { ascending: false })
+    .limit(1)
+    .single();
+
+  return data?.formorder ?? 0;
+}
+
 
 export async function saveQuestion(question: FormQuestion): Promise<void> {
   const supabase = createServerSupabase();
@@ -155,16 +169,7 @@ export async function saveQuestion(question: FormQuestion): Promise<void> {
   }
 }
 
-export async function deleteQuestion(questionId: number): Promise<void> {
-  const supabase = createServerSupabase();
-  const { error } = await supabase
-    .from("W26_questions")
-    .update({ is_active: false })
-    .eq("id", questionId);
-
-  if (error) throw error;
-}
-
+// Admin should only be able to toggle question visibility and never delete questions (request from client)
 export async function toggleQuestionActive(questionId: number, currentState: boolean) {
   const supabase = createServerSupabase();
   const { error } = await supabase
@@ -177,7 +182,6 @@ export async function toggleQuestionActive(questionId: number, currentState: boo
 
 export async function addQuestion(
   sectionId: number,
-  maxFormorder: number,
   newQuestion: {
     form_question: string;
     subtext: string;
@@ -263,7 +267,7 @@ export async function addQuestion(
       is_required: newQuestion.is_required,
       subtext: newQuestion.subtext,
       autofill_key: null,
-      formorder: null // TODO once it is setup for the other questions
+      formorder: (await getMaxFormOrder()) + 1,
     })
     .select("id")
     .single();
@@ -304,51 +308,23 @@ export async function addQuestion(
   }
 }
 
-export async function swapQuestionOrder(
-  keyId1: number,
-  order1: number | null,
-  keyId2: number,
-  order2: number | null
-): Promise<void> {
-  const supabase = createServerSupabase();
-  await Promise.all([
-    supabase
-      .from("W26_questions")
-      .update({ formorder: order2 })
-      .eq("id", keyId1),
-    supabase
-      .from("W26_questions")
-      .update({ formorder: order1 })
-      .eq("id", keyId2),
-  ]);
-}
-
 export async function reorderQuestions(
-  updates: { questionId: number; newOrder: number }[]
-): Promise<void> {
+  updates: { questionId: number; questionName?: string; newOrder: number }[]
+) {
   const supabase = createServerSupabase();
-  await Promise.all(
-    updates.map(({ questionId, newOrder }) =>
-      supabase
-        .from("W26_questions")
-        .update({ formorder: newOrder })
-        .eq("id", questionId)
-    )
-  );
-}
 
-export async function moveQuestionToSection(
-  questionId: number,
-  newSectionId: number,
-  newOrder: number
-): Promise<void> {
-  const supabase = createServerSupabase();
-  const { error } = await supabase
-    .from("W26_questions")
-    .update({ section_id: newSectionId, formorder: newOrder })
-    .eq("id", questionId);
+  for (const update of updates) {
+    const { error } = await supabase
+      .from("W26_questions")
+      .update({ formorder: update.newOrder })
+      .eq("id", update.questionId);
 
-  if (error) throw new Error("Failed to move question: " + error.message);
+    if (error) {
+      throw new Error(
+        `Failed to update question ${update.questionId}: ${error.message}`
+      );
+    }
+  }
 }
 
 export async function addFormSection(section: {
