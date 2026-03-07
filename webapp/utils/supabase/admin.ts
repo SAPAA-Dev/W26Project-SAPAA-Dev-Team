@@ -20,7 +20,7 @@ export interface QuestionOption {
 
 export interface FormQuestion {
   id: number;
-  form_question: string | null;
+  form_question: string;
   subtext: string | null;
   question_type: string;
   is_required: boolean;
@@ -309,7 +309,7 @@ export async function addQuestion(
 }
 
 export async function reorderQuestions(
-  updates: { questionId: number; questionName?: string; newOrder: number }[]
+  updates: { questionId: number; questionName: string; newOrder: number }[]
 ) {
   const supabase = createServerSupabase();
 

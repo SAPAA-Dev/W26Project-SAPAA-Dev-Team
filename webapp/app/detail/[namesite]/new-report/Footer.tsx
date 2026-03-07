@@ -14,12 +14,14 @@ interface StickyFooterProps {
   questions?: Question[];
   responses?: Record<number, any>;
   onSubmit?: () => void;
+  submitLabel?: string;
 }
 
 export default function StickyFooter({ 
   questions = [], 
   responses = {},
-  onSubmit 
+  onSubmit,
+  submitLabel
 }: StickyFooterProps) {
   const totalQuestions = questions.length;
 
@@ -59,7 +61,7 @@ export default function StickyFooter({
           onClick={onSubmit}
           className="w-full md:w-auto px-8 py-3 bg-[#254431] text-white font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#1e3828] transition-colors shadow-lg"
         >
-          Review & Submit
+          {submitLabel ?? "Review & Submit"}
         </button>
       </div>
     </footer>

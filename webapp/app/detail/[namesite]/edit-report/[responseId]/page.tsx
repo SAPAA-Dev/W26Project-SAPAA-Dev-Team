@@ -57,7 +57,7 @@ export default function EditReportPage() {
   const namesite = decodeURIComponent(params.namesite as string);
   const responseId = Number(params.responseId);
 
-  const [responses, setResponses] = useState<Record<number, any>>({});
+  const [responses, setResponses] = useState<Record<number | string, any>>({});
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name: string; avatar: string } | null>(null);
   const [isStewardUser, setIsStewardUser] = useState(false);
