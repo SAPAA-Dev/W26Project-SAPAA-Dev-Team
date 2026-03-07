@@ -670,6 +670,7 @@ export default function NewReportPage() {
               <button 
                 onClick={() => router.back()}
                 className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                data-testid="back-button"
               >
                 <ArrowLeft className="w-6 h-6" />
               </button>

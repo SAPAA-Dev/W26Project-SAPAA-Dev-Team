@@ -611,7 +611,11 @@ export default function MainContent({ responses, onResponsesChange, siteName, cu
                         {questionNumber}
                       </span>
                       <div className="flex-1">
-                        <h3 className="font-bold text-[#254431] text-lg leading-tight">
+                        <h3 
+                          className="font-bold text-[#254431] text-lg leading-tight">
+                          <span
+                            data-testid={`${question.title}-question-title`}>
+                          </span>
                           {formattedTitle}
                         </h3>
 

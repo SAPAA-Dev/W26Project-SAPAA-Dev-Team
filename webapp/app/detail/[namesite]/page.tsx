@@ -439,6 +439,7 @@ export default function SiteDetailScreen() {
                     <button
                       onClick={() => toggleInspection(response.id)}
                       className="flex-1 flex items-center justify-between p-6 pr-4 text-left hover:bg-[#F7F2EA] transition-colors"
+                      data-testid={`expand-inspection-button`}
                     >
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-[#E4EBE4] rounded-xl flex items-center justify-center">
