@@ -305,7 +305,7 @@ export default function EditReportPage() {
         if (Array.isArray(answer)) {
           answer.forEach((subAnswer: any) => {
             const isOther = subAnswer === 'Other';
-            const commValue = isOther ? (responses[`${questionId}_comm`] ?? null) : null;
+            const commValue = isOther ? ((responses as Record<string, any>)[`${questionId}_comm`] ?? null) : null;
             answersArray.push({
               question_id: Number(questionId),
               obs_value: isValueType ? String(subAnswer) : null,
@@ -520,7 +520,6 @@ export default function EditReportPage() {
         questions={questions}
         responses={responses}
         onSubmit={handleSubmit}
-        submitLabel={isSaving ? 'Saving…' : 'Save Changes'}
       />
     </div>
   );

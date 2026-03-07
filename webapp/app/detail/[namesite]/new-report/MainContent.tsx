@@ -227,52 +227,77 @@ export default function MainContent({
             })}
           </div>
         );
-
-      case 'selectall':
-        return (
-          <div className="space-y-2">
-            {(question.answers ?? []).map((answer, index) => {
-              const answerText =
-                typeof answer === 'object' && answer !== null
-                  ? (answer as { text: string }).text
-                  : String(answer);
-              const selectedAnswers = Array.isArray(response) ? response : [];
-              const isChecked = selectedAnswers.includes(answerText);
-              return (
-                <label
-                  key={index}
-                  className="flex items-center gap-3 p-4 border-2 border-[#E4EBE4] rounded-xl hover:border-[#356B43] cursor-pointer transition-all group"
-                >
-                  <input
-                    type="checkbox"
-                    value={answerText}
-                    checked={isChecked}
-                    onChange={(e) => {
-                      const currentSelections = Array.isArray(response) ? [...response] : [];
-                      if (e.target.checked) {
-                        handleResponse(question.id, [...currentSelections, answerText]);
-                      } else {
-                        handleResponse(question.id, currentSelections.filter((item) => item !== answerText));
-                      }
-                    }}
-                    className="w-5 h-5 rounded border-2 border-[#E4EBE4] text-[#356B43] focus:ring-[#356B43] focus:ring-2"
+      
+        case 'selectall':
+          return (
+            <div className="space-y-2">
+              {(question.answers ?? []).map((answer, index) => {
+                const answerText =
+                  typeof answer === 'object' && answer !== null
+                    ? (answer as { text: string }).text
+                    : String(answer);
+                const selectedAnswers = Array.isArray(response) ? response : [];
+                const isChecked = selectedAnswers.includes(answerText);
+                return (
+                  <label
+                    key={index}
+                    className="flex items-center gap-3 p-4 border-2 border-[#E4EBE4] rounded-xl hover:border-[#356B43] cursor-pointer transition-all group"
+                  >
+                    <input
+                      type="checkbox"
+                      value={answerText}
+                      checked={isChecked}
+                      onChange={(e) => {
+                        const currentSelections = Array.isArray(response) ? [...response] : [];
+                        if (e.target.checked) {
+                          handleResponse(question.id, [...currentSelections, answerText]);
+                        } else {
+                          // ── Single onResponsesChange call to avoid overwrite bug ──
+                          const newSelections = currentSelections.filter((item) => item !== answerText);
+                          const newResponses = { ...responses, [question.id]: newSelections };
+                          if (answerText === 'Other') {
+                            delete (newResponses as Record<string, any>)[`${question.id}_comm`];
+                          }
+                          onResponsesChange(newResponses);
+                        }
+                      }}
+                      className="w-5 h-5 rounded border-2 border-[#E4EBE4] text-[#356B43] focus:ring-[#356B43] focus:ring-2"
+                    />
+                    <span className="text-[#254431] font-medium group-hover:text-[#356B43] transition-colors">
+                      {answerText}
+                    </span>
+                  </label>
+                );
+              })}
+        
+              {/* Other free-text — only when Other is checked */}
+              {Array.isArray(response) && response.includes('Other') && (
+                <div className="ml-2 pl-4 border-l-2 border-[#356B43]/30">
+                  <label className="block text-sm font-semibold text-[#254431] mb-1">
+                    Please specify "Other":
+                  </label>
+                  <textarea
+                    value={(responses as Record<string, any>)[`${question.id}_comm`] ?? ''}
+                    onChange={(e) =>
+                      onResponsesChange({ ...responses, [`${question.id}_comm`]: e.target.value })
+                    }
+                    placeholder='Describe what "Other" means here...'
+                    rows={3}
+                    className="w-full px-4 py-3 border-2 border-[#E4EBE4] rounded-xl focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] font-medium resize-none placeholder:text-[#7A8075]"
                   />
-                  <span className="text-[#254431] font-medium group-hover:text-[#356B43] transition-colors">
-                    {answerText}
-                  </span>
-                </label>
-              );
-            })}
-            {response && Array.isArray(response) && response.length > 0 && (
-              <div className="mt-3 p-3 bg-[#356B43]/10 rounded-lg">
-                <p className="text-sm text-[#356B43] font-semibold">
-                  {response.length} option{response.length > 1 ? 's' : ''} selected
-                </p>
-              </div>
-            )}
-          </div>
-        );
-
+                </div>
+              )}
+        
+              {response && Array.isArray(response) && response.length > 0 && (
+                <div className="mt-3 p-3 bg-[#356B43]/10 rounded-lg">
+                  <p className="text-sm text-[#356B43] font-semibold">
+                    {response.length} option{response.length > 1 ? 's' : ''} selected
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+          
       case 'text':
       case 'text\n':
         return (

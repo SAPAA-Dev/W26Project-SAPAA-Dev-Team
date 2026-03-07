@@ -439,6 +439,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
           };
         }
         if (a.obs_value === 'Other' && a.obs_comm) {
+          acc[qid].obs_value.push('Other');  
           acc[qid].obs_comm = a.obs_comm;
         } else if (a.obs_value) {
           acc[qid].obs_value.push(a.obs_value);
