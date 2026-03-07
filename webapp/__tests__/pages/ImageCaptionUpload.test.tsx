@@ -92,7 +92,7 @@ describe("US 1.0.18 - Image Caption Behavior in Upload Question", () => {
     const captionInput = screen.getByPlaceholderText("Caption (optional)") as HTMLInputElement;
     expect(captionInput).toBeInTheDocument();
     expect(captionInput.value).toBe("");
-    expect(screen.getByText("1 image selected")).toBeInTheDocument();
+    expect(screen.getByText("1 image total")).toBeInTheDocument();
 
     const latestResponses = getLatestResponses(mockOnChange);
     expect(latestResponses[IMAGE_QUESTION_ID][0]).toMatchObject({
