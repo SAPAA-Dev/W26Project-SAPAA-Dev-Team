@@ -138,6 +138,9 @@ export default function FormEditorPage() {
     setSaving(true);
     setError(null);
     try {
+      if (question.subtext == '') {
+        question.subtext = null;
+      }
       await saveQuestion(question);
       await loadQuestions();
       setEditingQuestion(null);
