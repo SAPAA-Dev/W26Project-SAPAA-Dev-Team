@@ -99,7 +99,8 @@ export default function EditReportPage() {
         setCurrentUser(user);
         setQuestions(questionsData || []);
         setResponses(existingAnswers);
-  
+        console.log(questionsData);
+        console.log(existingAnswers);
         const { items = [] } = await siteImagesRes.json();
   
         const hydrated: ExistingAttachment[] = items.map((a: any) => ({
@@ -285,6 +286,7 @@ export default function EditReportPage() {
     try {
       // 2. Persist regular (non-image) answers — same delete+reinsert logic as before
       const data = await getQuestionResponseType();
+      console.log(data);
       const observationTypeMap = new Map(
         data.map((q) => [String(q.question_id), { obs_value: q.obs_value, obs_comm: q.obs_comm }])
       );
