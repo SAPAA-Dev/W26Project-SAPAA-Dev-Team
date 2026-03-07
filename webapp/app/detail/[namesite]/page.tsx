@@ -419,32 +419,46 @@ export default function SiteDetailScreen() {
               const questions = parseQuestions(inspection.notes);
               
               return (
-                <div key={inspection.id} className="bg-white rounded-2xl border-2 border-[#E4EBE4] overflow-hidden shadow-sm hover:shadow-md transition-all">
-                  <button
-                    onClick={() => toggleInspection(inspection.id)}
-                    className="w-full flex items-center justify-between p-6 text-left hover:bg-[#F7F2EA] transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-[#E4EBE4] rounded-xl flex items-center justify-center">
-                        <FileText className="w-6 h-6 text-[#356B43]" />
+                <div key={response.id} className="bg-white rounded-2xl border-2 border-[#E4EBE4] overflow-hidden shadow-sm hover:shadow-md transition-all">
+                  <div className="flex items-center">
+                    {/* Main clickable area */}
+                    <button
+                      onClick={() => toggleInspection(response.id)}
+                      className="flex-1 flex items-center justify-between p-6 pr-4 text-left hover:bg-[#F7F2EA] transition-colors"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-[#E4EBE4] rounded-xl flex items-center justify-center">
+                          <FileText className="w-6 h-6 text-[#356B43]" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold text-[#254431]">
+                            {response.created_at ? new Date(response.created_at).toLocaleDateString('en-US', {
+                              year: 'numeric', month: 'long', day: 'numeric'
+                            }) : 'N/A'}
+                          </h3>
+                          <p className="text-sm text-[#7A8075]">Score: {normalizeScore(response.naturalness_score)}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-[#254431]">
-                          {inspection.inspectdate ? new Date(inspection.inspectdate).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          }) : 'N/A'}
-                        </h3>
-                        <p className="text-sm text-[#7A8075]">Score: {normalizeScore(inspection.naturalness_score)}</p>
-                      </div>
-                    </div>
-                    {isExpanded ? (
-                      <ChevronUp className="w-6 h-6 text-[#7A8075]" />
-                    ) : (
-                      <ChevronDown className="w-6 h-6 text-[#7A8075]" />
+                      {isExpanded ? (
+                        <ChevronUp className="w-6 h-6 text-[#7A8075]" />
+                      ) : (
+                        <ChevronDown className="w-6 h-6 text-[#7A8075]" />
+                      )}
+                    </button>
+
+                    {/* Edit button — only visible to the submitting user */}
+                    {isOwner && (
+                      <button
+                        onClick={() => router.push(`/detail/${params.namesite}/edit-report/${response.id}`)}
+                        className="flex items-center gap-1.5 mx-4 px-4 py-2 rounded-xl text-sm font-semibold text-[#356B43] bg-[#E4EBE4] hover:bg-[#356B43] hover:text-white transition-all"
+                        title="Edit this report"
+                        data-testid="edit-form-button"
+                      >
+                        <Pencil className="w-4 h-4" />
+                        Edit
+                      </button>
                     )}
-                  </button>
+                  </div>
 
                   {isExpanded && (
                     <div className="px-6 pb-6 space-y-4 border-t-2 border-[#E4EBE4] pt-4">

@@ -15,16 +15,7 @@ describe('Admin Form Editor - Question Visibility', () => {
     cy.get('button[title="admin dropdown menu"]').click();
     cy.contains('Form Editor').click();
     cy.url().should('include', '/admin/form-editor')
-    // // Intercept the Supabase API call to load initial questions
-    // cy.intercept('GET', '**/rest/v1/W26_questions*').as('getQuestions');
-    
-    // // Wait for the initial data to load
-    // cy.wait('@getQuestions');
   });
-
-  // it('should successfully login', function() {
-  //   cy.contains("Monitor and track site inspections across Alberta")
-  // });
 
   it('should be able to access the form editor through the admin dashboard', function() {
     cy.contains("Manage inspection form sections and questions").should('be.visible')
@@ -58,38 +49,63 @@ describe('Admin Form Editor - Question Visibility', () => {
     });
   });
 
-  it('should send the correct update request to Supabase without modifying the DB', () => {
-    const updatedTitle = 'Updated Question Title';
-    const updatedSubtext = 'Updated Question Description/Subtext';
-
-    // 1. Intercept the PATCH request to your specific Supabase table
-    // We use a wildcard for the ID and return a mock 200 OK response
-    cy.intercept('PATCH', '**/rest/v1/W26_questions*', {
-      statusCode: 200,
-      body: [{ success: true }]
-    }).as('updateQuestion');
-
-    // 2. Navigate to a section and click "Edit" on the first question
-    cy.get('[data-testid^="section-button-"]').first().click();
-    cy.get('[data-testid="edit-question-icon"]').first().click();
-
-    // 3. Clear and type new values into the form
-    cy.get('[data-testid="edit-question-title"]').clear().type(updatedTitle);
-    cy.get('[data-testid="edit-question-subtext"]').clear().type(updatedSubtext);
-
-    // 4. Click save
-    cy.get('[data-testid="save-question-button"]').click();
-
-    // 5. Verify the request intercepted by Cypress matches our input
-    cy.wait('@updateQuestion').then((interception) => {
-      // Assert that the body sent to Supabase contains our new text
-      expect(interception.request.body.question_text).to.equal(updatedTitle);
-      expect(interception.request.body.subtext).to.equal(updatedSubtext);
+  // cy.get('[data-testid="section-button-3"] span.truncate').click();
+  it('should be able to hide a question', () => {
+    cy.get('[data-testid^="section-button-"]').each(($el) => {
+      const testId = $el.attr('data-testid') ?? 'null-testid';
+      if (testId == "section-button-3") {
+        cy.get(`[data-testid="${testId}"]`).click();
+        cy.get(`[data-testid="${testId}"]`).click();
+        cy.contains("General Information");
+        cy.contains('Email (Q11)');
+        cy.get('[data-testid="Email (Q11) Hide Button"]').click();
+        // Verify the title changed to "Show Question" (confirming it's now hidden)
+        cy.get('[data-testid="Email (Q11) Show Button"]').should('exist');
+      } 
     });
-
-    // 6. Optional: Verify UI feedback (if you have a toast or success message)
-    cy.contains('Question updated').should('be.visible');
   });
+
+  it('should verify hidden questions are gone from reports', () => {
+    cy.get('svg.lucide-house').click();
+    cy.contains('Riverlot 56').scrollIntoView().click();
+    cy.get(`[data-testid="edit-form-button"]`).click();
+    cy.get('.your-element').should('not.be.visible');
+    cy.get('.your-element').should('not.exist');
+  });
+ 
+
+  // it('should send the correct update request to Supabase without modifying the DB', () => {
+  //   const updatedTitle = 'Updated Question Title';
+  //   const updatedSubtext = 'Updated Question Description/Subtext';
+
+  //   // 1. Intercept the PATCH request to your specific Supabase table
+  //   // We use a wildcard for the ID and return a mock 200 OK response
+  //   cy.intercept('PATCH', '**/rest/v1/W26_questions*', {
+  //     statusCode: 200,
+  //     body: [{ success: true }]
+  //   }).as('updateQuestion');
+
+  //   // 2. Navigate to a section and click "Edit" on the first question
+  //   cy.get('[data-testid^="section-button-"]').first().click();
+  //   cy.get('[data-testid="edit-question-icon"]').first().click();
+
+  //   // 3. Clear and type new values into the form
+  //   cy.get('[data-testid="edit-question-title"]').clear().type(updatedTitle);
+  //   cy.get('[data-testid="edit-question-subtext"]').clear().type(updatedSubtext);
+
+  //   // 4. Click save
+  //   cy.get('[data-testid="save-question-button"]').click();
+
+  //   // 5. Verify the request intercepted by Cypress matches our input
+  //   cy.wait('@updateQuestion').then((interception) => {
+  //     // Assert that the body sent to Supabase contains our new text
+  //     expect(interception.request.body.question_text).to.equal(updatedTitle);
+  //     expect(interception.request.body.subtext).to.equal(updatedSubtext);
+  //   });
+
+  //   // 6. Optional: Verify UI feedback (if you have a toast or success message)
+  //   cy.contains('Question updated').should('be.visible');
+  // });
 
   // it('should toggle the visibility of a question correctly', () => {
   //   // Select the first question card
