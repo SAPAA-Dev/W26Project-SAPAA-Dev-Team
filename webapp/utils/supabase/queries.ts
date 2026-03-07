@@ -439,6 +439,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
           };
         }
         if (a.obs_value === 'Other' && a.obs_comm) {
+          acc[qid].obs_value.push('Other');  
           acc[qid].obs_comm = a.obs_comm;
         } else if (a.obs_value) {
           acc[qid].obs_value.push(a.obs_value);
@@ -526,6 +527,44 @@ export async function getFormResponseById(responseId: number): Promise<Record<st
   return map;
 }
 
+// Fetches all W26_attachments rows for a given response_id
+export async function getAttachmentsByResponseId(responseId: number): Promise<Array<{
+  id: number;
+  question_id: number | null;
+  storage_key: string | null;
+  filename: string | null;
+  content_type: string | null;
+  file_size_bytes: number | null;
+  caption: string | null;
+  description: string | null;
+  site_id: number | null;
+}>> {
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('W26_attachments')
+    .select('id, question_id, storage_key, filename, content_type, file_size_bytes, caption, description, site_id')
+    .eq('response_id', responseId);
+
+  if (error) throw new Error(error.message || 'Failed to fetch attachments');
+  return data ?? [];
+}
+
+// Updates caption and description for an existing W26_attachments row
+export async function updateAttachmentMetadata(
+  attachmentId: number,
+  fields: { caption?: string | null; description?: string | null }
+) {
+  const supabase = createServerSupabase();
+
+  const { error } = await supabase
+    .from('W26_attachments')
+    .update(fields)
+    .eq('id', attachmentId);
+
+  if (error) throw new Error(error.message || 'Failed to update attachment metadata');
+}
+
 // Replaces all answers for an existing response (delete + reinsert), keeping the same response_id
 export async function updateSiteInspectionAnswers(
   responseId: number,
@@ -562,6 +601,17 @@ export async function getResponseOwnerId(responseId: number): Promise<string | n
 
   if (error || !data) return null;
   return data.user_id;
+}
+
+export async function getSiteIdForResponse(responseId: number): Promise<number | null> {
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from('W26_form_responses')
+    .select('site_id')
+    .eq('id', responseId)
+    .single();
+  if (error || !data) return null;
+  return (data as any).site_id ?? null;
 }
 
 export async function getTotalInspectionCount(): Promise<number> {

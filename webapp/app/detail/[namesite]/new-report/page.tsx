@@ -356,28 +356,31 @@ export default function NewReportPage() {
               continue;
             }
 
+            if (String(questionId).includes('_comm')) continue;
+
             const questionConfig = observationTypeMap.get(questionId);
-            // Decide if this question's answer is supposed to go into the obs_value column or obs_comm column
             const isValueType = questionConfig?.obs_value == 1;
             const isCommType = questionConfig?.obs_comm == 1;
-
-            // If the answer has an array containing subAnswers, add each subAnswer as a new object/dictionary inside answersArray
+            
+            const commValue = (responses as Record<string, any>)[`${questionId}_comm`] ?? null;
+            
             if (Array.isArray(answer)) {
                 answer.forEach(subAnswer => {
+                    const isOther = subAnswer === 'Other';
                     answersArray.push({
                         response_id: siteInspectionReportId,
                         question_id: Number(questionId),
-                        // Put the subAnswer in either the obs_value column or obs_comm column and the other one is set to null
                         obs_value: isValueType ? String(subAnswer) : null,
-                        obs_comm: isCommType ? String(subAnswer) : null,
+                        obs_comm: isOther ? commValue : (isCommType ? String(subAnswer) : null),
                     });
                 });
-            } else { // Otherwise, the answer is just a single string so we can add it directly to answersArray
+            } else {
+                const isOther = answer === 'Other';
                 answersArray.push({
                     response_id: siteInspectionReportId,
                     question_id: Number(questionId),
                     obs_value: isValueType ? String(answer) : null,
-                    obs_comm: isCommType ? String(answer) : null,
+                    obs_comm: isOther ? commValue : (isCommType ? String(answer) : null),
                 });
             }
           }
