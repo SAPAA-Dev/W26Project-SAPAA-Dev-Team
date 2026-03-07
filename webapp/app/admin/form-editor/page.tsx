@@ -138,6 +138,9 @@ export default function FormEditorPage() {
     setSaving(true);
     setError(null);
     try {
+      if (question.subtext == '') {
+        question.subtext = null;
+      }
       await saveQuestion(question);
       await loadQuestions();
       setEditingQuestion(null);
@@ -1012,9 +1015,11 @@ function AddQuestionForm({
           <input
             type="text"
             value={title}
+            title="add-question-title"
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Are there signs of erosion?"
+            placeholder="Must be in this format -> Question Test (Q70)"
             className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] transition-colors placeholder:text-[#7A8075]"
+            data-testid="add-question-title"
           />
         </div>
 
@@ -1024,10 +1029,12 @@ function AddQuestionForm({
           </label>
           <textarea
             value={subtext}
+            title="add-question-subtext"
             onChange={(e) => setSubtext(e.target.value)}
             placeholder="Additional context for the question (optional)"
             rows={2}
             className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] resize-none transition-colors placeholder:text-[#7A8075]"
+            data-testid="add-question-subtext"
           />
         </div>
 
@@ -1037,10 +1044,12 @@ function AddQuestionForm({
           </label>
           <input
             type="text"
+            title="add-question-key"
             value={questionKey}
             onChange={(e) => setQuestionKey(e.target.value)}
-            placeholder="e.g. Q111_erosion"
+            placeholder="Must be in this format -> Q70_QuestionTest"
             className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] transition-colors placeholder:text-[#7A8075]"
+            data-testid="add-question-key"
           />
         </div>
 
@@ -1061,6 +1070,7 @@ function AddQuestionForm({
                         ? "border-[#356B43] bg-[#EEF5EF] text-[#356B43]"
                         : "border-[#E4EBE4] text-[#7A8075] hover:border-[#86A98A]"
                     }`}
+                    data-testid={`question-type-${t.label}`}
                   >
                     <Icon className="w-3.5 h-3.5" />
                     {t.label}
@@ -1141,6 +1151,7 @@ function AddQuestionForm({
           }
           disabled={saving || !title.trim()}
           className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#356B43] to-[#254431] text-white text-sm font-semibold rounded-xl disabled:opacity-50 hover:shadow-lg transition-all"
+          data-testid="save-new-question"
         >
           {saving ? (
             <Loader2 className="w-4 h-4 animate-spin" />

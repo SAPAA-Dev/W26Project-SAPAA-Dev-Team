@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { CheckCircle, X } from "lucide-react";
@@ -9,9 +8,18 @@ export function SubmissionToast() {
   const router = useRouter();
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
+  const [text, setText] = useState("");
 
   useEffect(() => {
     if (searchParams.get("submitted") === "true") {
+      setText("Submitted");
+      setVisible(true);
+      router.replace(pathname, { scroll: false });
+      const t = setTimeout(() => setVisible(false), 3000);
+      return () => clearTimeout(t);
+    }
+    if (searchParams.get("edited") === "true") {
+      setText("Edited");
       setVisible(true);
       router.replace(pathname, { scroll: false });
       const t = setTimeout(() => setVisible(false), 3000);
@@ -28,7 +36,7 @@ export function SubmissionToast() {
           <CheckCircle className="w-5 h-5" />
         </div>
         <div className="flex-1">
-          <p className="font-bold text-sm">Report Submitted!</p>
+          <p className="font-bold text-sm">Report {text}!</p>
           <p className="text-xs text-[#E4EBE4]/80 mt-0.5">Your site inspection has been recorded.</p>
         </div>
         <button

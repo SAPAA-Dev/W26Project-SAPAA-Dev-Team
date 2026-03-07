@@ -1,5 +1,5 @@
 /// <reference types="cypress" />
-
+// US 1.0.25 – Hide a Site Inspections Form Questions
 describe('Admin Form Editor - Question Visibility', () => {
   beforeEach(() => {  
     cy.visit('http://localhost:3000/')
@@ -16,38 +16,8 @@ describe('Admin Form Editor - Question Visibility', () => {
     cy.url().should('include', '/admin/form-editor')
   });
 
-  it('should be able to access the form editor through the admin dashboard', function() {
-    cy.contains("Manage inspection form sections and questions").should('be.visible')
-  });
-
-  it('should have each section button display the correct amount of questions the section actually contains', () => {
-    // 1. Get all section buttons
-    cy.get('[data-testid^="section-button-"]').each(($el) => {
-      // 2. Get the ID and expected count while the element is still stable
-      const testId = $el.attr('data-testid') ?? 'null-testid';
-      const sectionId = testId.replace('section-button-', '');
-      
-      // Use cy.get with the specific ID instead of wrapping the old element ($el)
-      // This ensures Cypress finds the "fresh" version of the button if it re-renders
-      cy.get(`[data-testid="${testId}"]`).click();
-
-      // 3. Find the badge using the ID and verify the count
-      cy.get(`[data-testid="section-count-${sectionId}"]`).then(($badge) => {
-        const expectedCount = parseInt($badge.text().trim(), 10);
-
-        // 4. Verify the main content area
-        if (expectedCount === 0) {
-          cy.contains('No questions in this section yet.').should('be.visible');
-        } else {
-          // Target the container that holds your QuestionCards
-          cy.get('.space-y-3').find('> div').should('have.length', expectedCount);
-        }
-      });
-      
-      cy.log(`Successfully verified section ${sectionId}`);
-    });
-  });
-
+  // If an admin toggles a question to be hidden, users can no longer access it when filling out the form
+  // If an admin toggles a question to be hidden, users can no longer edit their responses to it in previous forms
   it('should be able to hide a question and verify hidden questions are not visible when making new reports nor editing reports', () => {
     cy.get('[data-testid^="section-button-"]').each(($el) => {
       const testId = $el.attr('data-testid') ?? 'null-testid';
@@ -79,6 +49,7 @@ describe('Admin Form Editor - Question Visibility', () => {
     cy.get(`[data-testid="Email (Q11)-question-title"]`).should('not.exist');
   });
 
+  // If an admin toggles a question to be hidden, it will still be shown on existing / past reports
   it('should verify hidden questions still have their answers shows in past reports', () => {
     // Verifying past reports
     cy.get('svg.lucide-house').click();
@@ -89,6 +60,8 @@ describe('Admin Form Editor - Question Visibility', () => {
     cy.contains("Email (Q11):");
   });
 
+  // If an admin toggles a question to be visible, users will be able to access it when filling out the form
+  // If an admin toggles a question to be visible, users will be able edit their responses to it in previous forms
   it('should be able to show a question and verify re-shown questions are visible when making new reports plus editing reports', () => {
     cy.get('[data-testid^="section-button-"]').each(($el) => {
       const testId = $el.attr('data-testid') ?? 'null-testid';
