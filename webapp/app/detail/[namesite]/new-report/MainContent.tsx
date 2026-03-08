@@ -701,7 +701,6 @@ export default function MainContent({
                         </span>
                         <div className="flex-1">
                           <h3 className="font-bold text-[#254431] text-lg leading-tight">
-                            <span>data-testid={`${question.title}-question-title`}</span>
                             {formattedTitle}
                           </h3>
                           <h4 className="mt-1 text-sm text-[#254431]/70 leading-snug font-normal">

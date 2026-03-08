@@ -642,7 +642,6 @@ export default function NewReportPage() {
         <button
           onClick={() => router.back()}
           className="flex items-center gap-1.5 text-[#86A98A] hover:text-white transition-colors mb-4 group"
-          data-testid="back-button"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm font-medium">Back to Site</span>
