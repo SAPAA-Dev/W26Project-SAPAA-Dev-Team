@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import FormEditorPage from '../../app/admin/form-editor/page';
-import * as adminModule from '../../utils/supabase/admin';
+import * as formActions from '../../utils/form-actions';
 import * as queries from '../../utils/supabase/queries';
 
 // Mock next/navigation
@@ -54,7 +54,7 @@ jest.mock('@dnd-kit/utilities', () => ({
 }));
 
 // Mock admin functions
-jest.mock('../../utils/supabase/admin', () => ({
+jest.mock('../../utils/form-actions', () => ({
   fetchFormSections: jest.fn(),
   fetchFormQuestions: jest.fn(),
   saveQuestion: jest.fn(),
@@ -81,12 +81,12 @@ jest.mock('../../utils/supabase/queries', () => ({
 
 // ─── Test Data ────────────────────────────────────────────────────────
 
-const mockSections: adminModule.FormSection[] = [
+const mockSections: formActions.FormSection[] = [
   { id: 1, title: 'General Information', description: 'Basic site details', header: 'General' },
   { id: 2, title: 'Environmental', description: 'Environmental observations', header: 'Environment' },
 ];
 
-const mockQuestions: adminModule.FormQuestion[] = [
+const mockQuestions: formActions.FormQuestion[] = [
   {
     id: 101,
     form_question: 'Site Name (Q1)',
@@ -120,7 +120,7 @@ const mockQuestions: adminModule.FormQuestion[] = [
 ];
 
 // Helper: convert admin questions to the user-facing format returned by getQuestionsOnline
-function toUserFacingQuestions(adminQs: adminModule.FormQuestion[]): queries.question[] {
+function toUserFacingQuestions(adminQs: formActions.FormQuestion[]): queries.question[] {
   return adminQs
     .filter(q => q.is_active)
     .map(q => ({
@@ -143,12 +143,12 @@ function toUserFacingQuestions(adminQs: adminModule.FormQuestion[]): queries.que
 describe('Admin Add Questions to Site Inspection Form', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (adminModule.fetchFormSections as jest.Mock).mockResolvedValue(mockSections);
-    (adminModule.fetchFormQuestions as jest.Mock).mockResolvedValue(mockQuestions);
-    (adminModule.addQuestion as jest.Mock).mockResolvedValue(undefined);
-    (adminModule.saveQuestion as jest.Mock).mockResolvedValue(undefined);
-    (adminModule.toggleQuestionActive as jest.Mock).mockResolvedValue(undefined);
-    (adminModule.addFormSection as jest.Mock).mockResolvedValue(3);
+    (formActions.fetchFormSections as jest.Mock).mockResolvedValue(mockSections);
+    (formActions.fetchFormQuestions as jest.Mock).mockResolvedValue(mockQuestions);
+    (formActions.addQuestion as jest.Mock).mockResolvedValue(undefined);
+    (formActions.saveQuestion as jest.Mock).mockResolvedValue(undefined);
+    (formActions.toggleQuestionActive as jest.Mock).mockResolvedValue(undefined);
+    (formActions.addFormSection as jest.Mock).mockResolvedValue(3);
     (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(toUserFacingQuestions(mockQuestions));
   });
 
@@ -192,7 +192,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
       fireEvent.click(screen.getByTestId('save-new-question'));
 
       await waitFor(() => {
-        expect(adminModule.addQuestion).toHaveBeenCalledWith(
+        expect(formActions.addQuestion).toHaveBeenCalledWith(
           1,
           expect.objectContaining({
             form_question: 'Steward Comments (Q70)',
@@ -230,7 +230,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
       fireEvent.click(screen.getByTestId('save-new-question'));
 
       await waitFor(() => {
-        expect(adminModule.addQuestion).toHaveBeenCalledWith(
+        expect(formActions.addQuestion).toHaveBeenCalledWith(
           1,
           expect.objectContaining({
             form_question: 'Trail Condition (Q71)',
@@ -266,7 +266,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
       fireEvent.click(screen.getByTestId('save-new-question'));
 
       await waitFor(() => {
-        expect(adminModule.addQuestion).toHaveBeenCalledWith(
+        expect(formActions.addQuestion).toHaveBeenCalledWith(
           1,
           expect.objectContaining({
             question_type: 'selectall',
@@ -298,7 +298,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
       fireEvent.click(screen.getByTestId('save-new-question'));
 
       await waitFor(() => {
-        expect(adminModule.addQuestion).toHaveBeenCalledWith(
+        expect(formActions.addQuestion).toHaveBeenCalledWith(
           1,
           expect.objectContaining({
             is_required: true,
@@ -364,7 +364,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
       expect(screen.getByTestId('save-new-question')).toBeDisabled();
 
       // addQuestion should never be called
-      expect(adminModule.addQuestion).not.toHaveBeenCalled();
+      expect(formActions.addQuestion).not.toHaveBeenCalled();
     });
 
     // ─── Question title and key format validation ───────────────────────
@@ -387,7 +387,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
 
       expect(screen.getByTestId('save-new-question')).toBeDisabled();
       expect(screen.getByText(/Must be in this format: Question Test \(Q70\)/)).toBeInTheDocument();
-      expect(adminModule.addQuestion).not.toHaveBeenCalled();
+      expect(formActions.addQuestion).not.toHaveBeenCalled();
     });
 
     it('prevents saving when question title has (Q) without number', async () => {
@@ -406,7 +406,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
       });
 
       expect(screen.getByTestId('save-new-question')).toBeDisabled();
-      expect(adminModule.addQuestion).not.toHaveBeenCalled();
+      expect(formActions.addQuestion).not.toHaveBeenCalled();
     });
 
     it('prevents saving when question key has wrong format (underscore after first)', async () => {
@@ -428,7 +428,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
       expect(
         screen.getByText(/Must be in format: Q70_QuestionTest \(letters and numbers only after underscore, no spaces\)/)
       ).toBeInTheDocument();
-      expect(adminModule.addQuestion).not.toHaveBeenCalled();
+      expect(formActions.addQuestion).not.toHaveBeenCalled();
     });
 
     it('prevents saving when question key contains spaces after underscore', async () => {
@@ -447,7 +447,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
       });
 
       expect(screen.getByTestId('save-new-question')).toBeDisabled();
-      expect(adminModule.addQuestion).not.toHaveBeenCalled();
+      expect(formActions.addQuestion).not.toHaveBeenCalled();
     });
 
     it('prevents saving when Q number in title does not match question key', async () => {
@@ -467,7 +467,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
 
       expect(screen.getByTestId('save-new-question')).toBeDisabled();
       expect(screen.getByText('Q number in title must match question key')).toBeInTheDocument();
-      expect(adminModule.addQuestion).not.toHaveBeenCalled();
+      expect(formActions.addQuestion).not.toHaveBeenCalled();
     });
 
     it('allows saving when title and key are valid and Q numbers match', async () => {
@@ -490,7 +490,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
       fireEvent.click(screen.getByTestId('save-new-question'));
 
       await waitFor(() => {
-        expect(adminModule.addQuestion).toHaveBeenCalledWith(
+        expect(formActions.addQuestion).toHaveBeenCalledWith(
           1,
           expect.objectContaining({
             form_question: 'Valid Question (Q70)',
@@ -518,7 +518,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
       fireEvent.click(screen.getByTestId('save-new-question'));
 
       await waitFor(() => {
-        expect(adminModule.addQuestion).toHaveBeenCalledWith(
+        expect(formActions.addQuestion).toHaveBeenCalledWith(
           1,
           expect.objectContaining({
             form_question: 'Alphanumeric Key (Q80)',
@@ -530,7 +530,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
     });
 
     it('displays error when addQuestion fails', async () => {
-      (adminModule.addQuestion as jest.Mock).mockRejectedValue(new Error('DB insert failed'));
+      (formActions.addQuestion as jest.Mock).mockRejectedValue(new Error('DB insert failed'));
 
       render(<FormEditorPage />);
       await waitFor(() => {
@@ -580,7 +580,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
       fireEvent.click(screen.getByTestId('save-new-question'));
 
       await waitFor(() => {
-        expect(adminModule.addQuestion).toHaveBeenCalledWith(
+        expect(formActions.addQuestion).toHaveBeenCalledWith(
           2, // section id for "Environmental"
           expect.objectContaining({
             form_question: 'Last Rainfall (Q77)',
@@ -596,7 +596,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
         expect(screen.getByText('Site Name (Q1)')).toBeInTheDocument();
       });
 
-      const callsBefore = (adminModule.fetchFormQuestions as jest.Mock).mock.calls.length;
+      const callsBefore = (formActions.fetchFormQuestions as jest.Mock).mock.calls.length;
 
       fireEvent.click(screen.getByRole('button', { name: /Add Question/i }));
 
@@ -610,7 +610,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
       fireEvent.click(screen.getByTestId('save-new-question'));
 
       await waitFor(() => {
-        expect((adminModule.fetchFormQuestions as jest.Mock).mock.calls.length).toBeGreaterThan(callsBefore);
+        expect((formActions.fetchFormQuestions as jest.Mock).mock.calls.length).toBeGreaterThan(callsBefore);
       });
     });
   });
@@ -639,11 +639,11 @@ describe('Admin Add Questions to Site Inspection Form', () => {
       fireEvent.click(screen.getByTestId('save-new-question'));
 
       await waitFor(() => {
-        expect(adminModule.addQuestion).toHaveBeenCalled();
+        expect(formActions.addQuestion).toHaveBeenCalled();
       });
 
       // Simulate the DB state after the add: the new question now exists
-      const newQuestion: adminModule.FormQuestion = {
+      const newQuestion: formActions.FormQuestion = {
         id: 200,
         form_question: 'New Visible Question (Q80)',
         subtext: '',
@@ -681,7 +681,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
       });
 
       // After adding, mock fetchFormQuestions to return updated list including the new question
-      const newQuestion: adminModule.FormQuestion = {
+      const newQuestion: formActions.FormQuestion = {
         id: 201,
         form_question: 'Brand New Question (Q81)',
         subtext: null,
@@ -694,7 +694,7 @@ describe('Admin Add Questions to Site Inspection Form', () => {
         formorder: 3,
         options: [],
       };
-      (adminModule.fetchFormQuestions as jest.Mock).mockResolvedValue([...mockQuestions, newQuestion]);
+      (formActions.fetchFormQuestions as jest.Mock).mockResolvedValue([...mockQuestions, newQuestion]);
 
       fireEvent.click(screen.getByRole('button', { name: /Add Question/i }));
 
