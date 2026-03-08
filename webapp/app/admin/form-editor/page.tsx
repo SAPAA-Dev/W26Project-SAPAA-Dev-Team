@@ -51,7 +51,7 @@ import {
   type FormSection,
   type FormQuestion,
   type QuestionOption,
-} from "@/utils/supabase/admin";
+} from "@/utils/form-actions";
 
 const QUESTION_TYPES = [
   { value: "option", label: "Radio", icon: List },
@@ -138,6 +138,9 @@ export default function FormEditorPage() {
     setSaving(true);
     setError(null);
     try {
+      if (question.subtext == '') {
+        question.subtext = null;
+      }
       await saveQuestion(question);
       await loadQuestions();
       setEditingQuestion(null);
@@ -356,6 +359,7 @@ export default function FormEditorPage() {
                     return (
                       <DroppableSectionButton
                         key={section.id}
+                        data-testid={`section-button-${section.id}`}
                         section={section}
                         count={count}
                         isActive={activeSection === section.id}
@@ -514,6 +518,7 @@ export default function FormEditorPage() {
                     {currentQuestions.map((question) => (
                       <SortableQuestionCard
                         key={question.id}
+                        data-testid={`question-card-${question.id}`}
                         question={question}
                         isSelected={selectedQuestion?.id === question.id}
                         isEditing={editingQuestion?.id === question.id}
@@ -581,11 +586,13 @@ function DroppableSectionButton({
   count,
   isActive,
   onClick,
+  "data-testid": dataTestId,
 }: {
   section: FormSection;
   count: number;
   isActive: boolean;
   onClick: () => void;
+  "data-testid"?: string;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `section-${section.id}`,
@@ -595,6 +602,7 @@ function DroppableSectionButton({
     <button
       ref={setNodeRef}
       onClick={onClick}
+      data-testid={dataTestId}
       className={`w-full text-left px-3 py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-between ${
         isOver
           ? "bg-[#DCFCE7] text-[#166534] border-2 border-[#22C55E] scale-[1.03] shadow-md"
@@ -614,6 +622,7 @@ function DroppableSectionButton({
               ? "bg-[#356B43] text-white"
               : "bg-[#E4EBE4] text-[#7A8075]"
         }`}
+        data-testid={`section-count-${section.id}`}
       >
         {count}
       </span>
@@ -763,6 +772,7 @@ function SortableQuestionCard({
               : "text-amber-600 bg-amber-50 hover:bg-amber-100"
           }`}
           title={question.is_active ? "Hide Question" : "Show Question"}
+          data-testid={question.is_active ? question.form_question + " Hide Button" : question.form_question + " Show Button"}
           >
           {question.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
         </button>
@@ -1005,9 +1015,11 @@ function AddQuestionForm({
           <input
             type="text"
             value={title}
+            title="add-question-title"
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Are there signs of erosion?"
+            placeholder="Must be in this format -> Question Test (Q70)"
             className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] transition-colors placeholder:text-[#7A8075]"
+            data-testid="add-question-title"
           />
         </div>
 
@@ -1017,10 +1029,12 @@ function AddQuestionForm({
           </label>
           <textarea
             value={subtext}
+            title="add-question-subtext"
             onChange={(e) => setSubtext(e.target.value)}
             placeholder="Additional context for the question (optional)"
             rows={2}
             className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] resize-none transition-colors placeholder:text-[#7A8075]"
+            data-testid="add-question-subtext"
           />
         </div>
 
@@ -1030,10 +1044,12 @@ function AddQuestionForm({
           </label>
           <input
             type="text"
+            title="add-question-key"
             value={questionKey}
             onChange={(e) => setQuestionKey(e.target.value)}
-            placeholder="e.g. Q111_erosion"
+            placeholder="Must be in this format -> Q70_QuestionTest"
             className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] transition-colors placeholder:text-[#7A8075]"
+            data-testid="add-question-key"
           />
         </div>
 
@@ -1054,6 +1070,7 @@ function AddQuestionForm({
                         ? "border-[#356B43] bg-[#EEF5EF] text-[#356B43]"
                         : "border-[#E4EBE4] text-[#7A8075] hover:border-[#86A98A]"
                     }`}
+                    data-testid={`question-type-${t.label}`}
                   >
                     <Icon className="w-3.5 h-3.5" />
                     {t.label}
@@ -1134,6 +1151,7 @@ function AddQuestionForm({
           }
           disabled={saving || !title.trim()}
           className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#356B43] to-[#254431] text-white text-sm font-semibold rounded-xl disabled:opacity-50 hover:shadow-lg transition-all"
+          data-testid="save-new-question"
         >
           {saving ? (
             <Loader2 className="w-4 h-4 animate-spin" />

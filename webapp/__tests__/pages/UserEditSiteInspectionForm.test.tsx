@@ -718,7 +718,7 @@ describe('US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         expect((emailInput as HTMLTextAreaElement).value).toBe('');
         
         // Attempt to submit
-        const saveButton = screen.getByRole('button', { name: /Review & Submit/i });
+        const saveButton = screen.getByRole('button', { name: /Save Changes/i });
         fireEvent.click(saveButton);
         
         // Validation popup should appear, submit should not fire
@@ -745,7 +745,7 @@ describe('US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         expect((emailInput as HTMLTextAreaElement).value).toBe('newemail@gmail.com');
         
         // Attempt to submit
-        const saveButton = screen.getByRole('button', { name: /Review & Submit/i });
+        const saveButton = screen.getByRole('button', { name: /Save Changes/i });
         fireEvent.click(saveButton);
     
         await waitFor(() => expect(queries.updateSiteInspectionAnswers).toHaveBeenCalled());
