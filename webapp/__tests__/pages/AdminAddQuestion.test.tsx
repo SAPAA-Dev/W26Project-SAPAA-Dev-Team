@@ -367,6 +367,168 @@ describe('Admin Add Questions to Site Inspection Form', () => {
       expect(adminModule.addQuestion).not.toHaveBeenCalled();
     });
 
+    // ─── Question title and key format validation ───────────────────────
+
+    describe('Question title and key validation', () => {
+    it('prevents saving when question title does not end with (Q<number>) format', async () => {
+      render(<FormEditorPage />);
+      await waitFor(() => {
+        expect(screen.getByText('Site Name (Q1)')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /Add Question/i }));
+
+      fireEvent.change(screen.getByTestId('add-question-title'), {
+        target: { value: 'My Question' },
+      });
+      fireEvent.change(screen.getByTestId('add-question-key'), {
+        target: { value: 'Q70_MyQuestion' },
+      });
+
+      expect(screen.getByTestId('save-new-question')).toBeDisabled();
+      expect(screen.getByText(/Must be in this format: Question Test \(Q70\)/)).toBeInTheDocument();
+      expect(adminModule.addQuestion).not.toHaveBeenCalled();
+    });
+
+    it('prevents saving when question title has (Q) without number', async () => {
+      render(<FormEditorPage />);
+      await waitFor(() => {
+        expect(screen.getByText('Site Name (Q1)')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /Add Question/i }));
+
+      fireEvent.change(screen.getByTestId('add-question-title'), {
+        target: { value: 'Test Question (Q)' },
+      });
+      fireEvent.change(screen.getByTestId('add-question-key'), {
+        target: { value: 'Q70_TestQuestion' },
+      });
+
+      expect(screen.getByTestId('save-new-question')).toBeDisabled();
+      expect(adminModule.addQuestion).not.toHaveBeenCalled();
+    });
+
+    it('prevents saving when question key has wrong format (underscore after first)', async () => {
+      render(<FormEditorPage />);
+      await waitFor(() => {
+        expect(screen.getByText('Site Name (Q1)')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /Add Question/i }));
+
+      fireEvent.change(screen.getByTestId('add-question-title'), {
+        target: { value: 'Some Question (Q70)' },
+      });
+      fireEvent.change(screen.getByTestId('add-question-key'), {
+        target: { value: 'Q70_Some_Question_Here' },
+      });
+
+      expect(screen.getByTestId('save-new-question')).toBeDisabled();
+      expect(
+        screen.getByText(/Must be in format: Q70_QuestionTest \(letters and numbers only after underscore, no spaces\)/)
+      ).toBeInTheDocument();
+      expect(adminModule.addQuestion).not.toHaveBeenCalled();
+    });
+
+    it('prevents saving when question key contains spaces after underscore', async () => {
+      render(<FormEditorPage />);
+      await waitFor(() => {
+        expect(screen.getByText('Site Name (Q1)')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /Add Question/i }));
+
+      fireEvent.change(screen.getByTestId('add-question-title'), {
+        target: { value: 'Question With Spaces (Q70)' },
+      });
+      fireEvent.change(screen.getByTestId('add-question-key'), {
+        target: { value: 'Q70_Question With Spaces' },
+      });
+
+      expect(screen.getByTestId('save-new-question')).toBeDisabled();
+      expect(adminModule.addQuestion).not.toHaveBeenCalled();
+    });
+
+    it('prevents saving when Q number in title does not match question key', async () => {
+      render(<FormEditorPage />);
+      await waitFor(() => {
+        expect(screen.getByText('Site Name (Q1)')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /Add Question/i }));
+
+      fireEvent.change(screen.getByTestId('add-question-title'), {
+        target: { value: 'Title Q70 (Q70)' },
+      });
+      fireEvent.change(screen.getByTestId('add-question-key'), {
+        target: { value: 'Q71_TitleQ70' },
+      });
+
+      expect(screen.getByTestId('save-new-question')).toBeDisabled();
+      expect(screen.getByText('Q number in title must match question key')).toBeInTheDocument();
+      expect(adminModule.addQuestion).not.toHaveBeenCalled();
+    });
+
+    it('allows saving when title and key are valid and Q numbers match', async () => {
+      render(<FormEditorPage />);
+      await waitFor(() => {
+        expect(screen.getByText('Site Name (Q1)')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /Add Question/i }));
+
+      fireEvent.change(screen.getByTestId('add-question-title'), {
+        target: { value: 'Valid Question (Q70)' },
+      });
+      fireEvent.change(screen.getByTestId('add-question-key'), {
+        target: { value: 'Q70_ValidQuestion' },
+      });
+
+      expect(screen.getByTestId('save-new-question')).not.toBeDisabled();
+
+      fireEvent.click(screen.getByTestId('save-new-question'));
+
+      await waitFor(() => {
+        expect(adminModule.addQuestion).toHaveBeenCalledWith(
+          1,
+          expect.objectContaining({
+            form_question: 'Valid Question (Q70)',
+            question_key: 'Q70_ValidQuestion',
+          })
+        );
+      });
+    });
+
+    it('accepts question key with only letters and numbers after underscore', async () => {
+      render(<FormEditorPage />);
+      await waitFor(() => {
+        expect(screen.getByText('Site Name (Q1)')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /Add Question/i }));
+
+      fireEvent.change(screen.getByTestId('add-question-title'), {
+        target: { value: 'Alphanumeric Key (Q80)' },
+      });
+      fireEvent.change(screen.getByTestId('add-question-key'), {
+        target: { value: 'Q80_Abc123' },
+      });
+
+      fireEvent.click(screen.getByTestId('save-new-question'));
+
+      await waitFor(() => {
+        expect(adminModule.addQuestion).toHaveBeenCalledWith(
+          1,
+          expect.objectContaining({
+            form_question: 'Alphanumeric Key (Q80)',
+            question_key: 'Q80_Abc123',
+          })
+        );
+      });
+    });
+    });
+
     it('displays error when addQuestion fails', async () => {
       (adminModule.addQuestion as jest.Mock).mockRejectedValue(new Error('DB insert failed'));
 
