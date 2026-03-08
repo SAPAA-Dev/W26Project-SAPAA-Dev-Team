@@ -1,15 +1,27 @@
 import { TextEncoder, TextDecoder } from "util";
 import { ReadableStream, TransformStream } from "stream/web";
+import { MessageChannel } from "worker_threads";
 
 Object.assign(global, {
   TextEncoder,
   TextDecoder,
   ReadableStream,
   TransformStream,
+  MessageChannel,
+  // MessagePort comes automatically from MessageChannel
+  MessageEvent: class MessageEvent extends Event {
+    data: any;
+    constructor(type: string, init?: any) {
+      super(type);
+      this.data = init?.data;
+    }
+  },
 });
 
-const { Request, Response, Headers, fetch } = require("undici");
-Object.assign(global, { Request, Response, Headers, fetch });
+const fetch = require("node-fetch");
+const { Request, Response, Headers } = fetch;
+Object.assign(global, { fetch, Request, Response, Headers });
+
 
 jest.mock("@aws-sdk/s3-request-presigner", () => ({
   getSignedUrl: jest.fn(),
