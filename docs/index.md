@@ -230,15 +230,15 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 3. Users who are not admins cannot add questions to the form
 
 
-#### US 1.0.18 – Adding Image Caption | Story Points: 2 
-> **As** a User, **I want** to be able to add captions to the images that I upload, **so that** context can be given for the images.
+#### US 1.0.18 – Adding Image Identifier | Story Points: 2 
+> **As** a User, **I want** to be able to add Identifier to the images that I upload, **so that** context can be given for the images.
 
 > **Acceptance Tests**
 
-> 1. Able to view the image caption by clicking on it
-> 2. Able to add an image caption if no image caption is present
-> 3. Able to modify an image caption
-> 4. Able to remove an image caption
+> 1. Able to view the image identifier after being entered
+> 2. Able to modify an image identifier
+> 3. Able to remove an image identifier
+> 4. Uanable to enter more than 20 characters for identifier
 
 
 #### US 1.0.19 - Admin Viewing Images and Metadata | Story Points: 2
@@ -295,7 +295,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 5. The response_id in the database refers to the report itself, not the private ID of the user who submitted it
 > 6. Automated checks confirm that sensitive user strings (like the actual email text) never appear within any submitted row values
 
-#### US 1.0.24 – Modify my Site Inspections Form Questions | Story Points: 3
+#### US 1.0.24 – Modify my Site Inspections Form Questions | Story Points: 8
 > **As** an admin, **I want** to be able to modify the questions on the Site Inspection Form, **so that** I can make any changes / correct any errors as I see fit.
 
 > **Acceptance Tests**
@@ -415,7 +415,32 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 #### TASK 2.0.6 - Refactor Report Rendering to Use Updated Database Schema
 > Update report rendering logic to fetch and display data using the refactored Supabase schema. Modify queries and joins to align with the new Form Responses and Answers tables and verified correct rendering of all question types.
 
+#### US 2.0.7 – Admin Management of Media Files  | Story Points: 13
 
+> **As** an Admin, **I want** all uploaded media files to be stored with standardized metadata and linked to a site, **so that** I can organize, search, and manage images regardless of whether they were uploaded through an SIR or as standalone media
+
+> **Acceptance Tests**  
+
+> 1. All uploaded media files are linked to one existing site
+> 2. The system stores metadata for each media file, including site, date, uploader name, and identifier.
+> 3. Media files are saved using the SAPAA naming format derived from the metadata. e.g. ClydeFen-2025-01-23-BobSuruncle-ATVTrack.jpg.
+> 4. Admins can view all media files in the image gallery with their associated metadata.
+> 5. Admins can search or filter media files using stored metadata fields.
+
+
+#### US 2.0.8 – User Upload of Standalone Site Images  | Story Points: 8
+
+> **As** a User, **I want** to upload a standalone image without creating an SIR, **so that** I can store site-related photos with metadata even when they are not tied to a specific inspection report.
+
+> **Acceptance Tests**  
+
+> 1. A user can upload an image without creating or submitting an SIR.
+> 2. The user must select one site from the site dropdown before uploading the image.
+> 3. The user must enter metadata for the image, including identifier and date.
+> 4. The system automatically records the uploader’s name from the authenticated user.
+> 5. The user may optionally enter a Photographer field if the image was taken by someone else.
+> 6. The image is saved with the associated metadata and linked to the selected site.
+> 7. The image appears in the site’s image gallery after upload.
 
 ---
 ### **P3 – Site Inspection Mobile Application (Android & iOS)**
@@ -666,6 +691,8 @@ Each user story is categorized into one of the following priority levels:
 * TASK 1.0.29 - Refactor the Database Schema and Produce an Updated ER Diagram
 * US 2.0.1 - Manage the uploading and storing of site inspection images
 * TASK 2.0.5 - Discover other suitable image storage platforms
+* US 2.0.7 - Admin Management of Media Files
+* US 2.0.8 - User Upload of Standalone Site Images
 
 
 ### Should Have

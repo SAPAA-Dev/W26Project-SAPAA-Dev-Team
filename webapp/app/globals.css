@@ -4,7 +4,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #ffffff;
 }
 
 @theme inline {
@@ -31,7 +31,6 @@
 
 /* 4. Global font for the whole app - Inter for body, UI text, buttons */
 body {
-  background: var(--background);
   color: var(--foreground);
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
