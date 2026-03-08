@@ -40,7 +40,9 @@ describe('Admin Form Editor - Question Visibility', () => {
     cy.contains('Riverlot 56').scrollIntoView().click();
     cy.contains('New Site Inspection Report').click();
     cy.contains('I have read and agree to the terms and conditions').click();
+    cy.wait(1000);
     cy.contains('Continue to Form').click();
+    cy.wait(1000);
     cy.get(`[data-testid="Email (Q11)-question-title"]`).should('not.exist');
     cy.get(`[data-testid="back-button"]`).click();
 
@@ -85,8 +87,9 @@ describe('Admin Form Editor - Question Visibility', () => {
     cy.contains('Riverlot 56').scrollIntoView().click();
     cy.contains('New Site Inspection Report').click();
     cy.contains('I have read and agree to the terms and conditions').click();
+    cy.wait(1000);
     cy.contains('Continue to Form').click();
-    cy.contains('Continue to Form').click();
+    cy.wait(1000);
     cy.get(`[data-testid="Email (Q11)-question-title"]`).should('exist');
     cy.get(`[data-testid="back-button"]`).click();
 
