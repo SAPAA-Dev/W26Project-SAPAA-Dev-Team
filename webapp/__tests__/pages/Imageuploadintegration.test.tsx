@@ -8,6 +8,18 @@ jest.mock("next/server", () => ({
   },
 }));
 
+
+jest.mock("next/server", () => ({
+  NextResponse: {
+    json: jest.fn((body, init) => ({
+      body,
+      status: init?.status ?? 200,
+      json: async () => body,
+      text: async () => JSON.stringify(body), // <-- add this
+    })),
+  },
+}));
+
 jest.mock("@aws-sdk/s3-request-presigner", () => ({
   getSignedUrl: jest.fn(),
 }));
