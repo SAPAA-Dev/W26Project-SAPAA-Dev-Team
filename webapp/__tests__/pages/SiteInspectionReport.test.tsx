@@ -1417,3 +1417,262 @@ describe('US 1.0.28 - Autofill Form Fields from User Account', () => {
     expect(latestResponses[32]).toBe('newemail@example.com');
   });
 });
+
+// --- Test data for US 1.0.16 ---
+
+const photographyQuestions = [
+  {
+    id: 100,
+    title: 'Site Photography (Q80)',
+    text: 'Upload any photography captured during your visit',
+    question_type: 'image',
+    section: 10,
+    answers: [],
+    formorder: 800,
+    is_required: false,
+    sectionTitle: 'Digital File Management',
+    sectionDescription: 'SAPAA loves pictures. Upload digital files from your visit.',
+    sectionHeader: 'Close',
+  },
+  {
+    id: 101,
+    title: 'Final Remarks (Q81)',
+    text: 'Add any final remarks about your visit',
+    question_type: 'text',
+    section: 10,
+    answers: [],
+    formorder: 810,
+    is_required: false,
+    sectionTitle: 'Digital File Management',
+    sectionDescription: 'SAPAA loves pictures. Upload digital files from your visit.',
+    sectionHeader: 'Close',
+  },
+];
+
+function createMockFile(name: string, size: number = 1024, type: string = 'image/png'): File {
+  const content = new Array(size).fill('a').join('');
+  return new File([content], name, { type });
+}
+
+async function renderPhotographyMainContent(mockOnChange: jest.Mock) {
+  mockGetQuestionsOnline.mockResolvedValue(photographyQuestions);
+  function ControlledMainContent() {
+    const [responses, setResponses] = React.useState<Record<number, any>>({});
+
+    const handleChange = (nextResponses: Record<number, any>) => {
+      setResponses(nextResponses);
+      mockOnChange(nextResponses);
+    };
+
+    return <MainContent responses={responses} onResponsesChange={handleChange} />;
+  }
+
+  render(<ControlledMainContent />);
+  await waitFor(() => {
+    expect(screen.getByText('Close')).toBeInTheDocument();
+  });
+  fireEvent.click(screen.getByText('Close'));
+
+  await waitFor(() => {
+    expect(screen.getByText('Site Photography')).toBeInTheDocument();
+  });
+}
+
+describe('US 1.0.16 - Add Photography Captured During Visit', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it('user can upload images taken during their visit', async () => {
+    const mockOnChange = jest.fn();
+    await renderPhotographyMainContent(mockOnChange);
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(fileInput).toBeTruthy();
+    expect(fileInput.accept).toBe('image/*');
+    expect(fileInput.multiple).toBe(true);
+
+    const file1 = createMockFile('site-photo-1.png');
+    const file2 = createMockFile('site-photo-2.jpg', 2048, 'image/jpeg');
+
+    fireEvent.change(fileInput, { target: { files: [file1, file2] } });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[100]).toHaveLength(2);
+    expect(latestResponses[100][0].name).toBe('site-photo-1.png');
+    expect(latestResponses[100][1].name).toBe('site-photo-2.jpg');
+  });
+
+  it('user can add final remarks alongside photography', async () => {
+    const mockOnChange = jest.fn();
+    await renderPhotographyMainContent(mockOnChange);
+
+    // Upload an image
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = createMockFile('observation.png');
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    // Add final remarks in the text field
+    const remarksInput = await screen.findByTestId('question-input-101');
+    fireEvent.change(remarksInput, { target: { value: 'Trail erosion noted near the north entrance.' } });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[101]).toBe('Trail erosion noted near the north entrance.');
+  });
+
+  it('displays uploaded image file names and count', async () => {
+    const mockOnChange = jest.fn();
+    await renderPhotographyMainContent(mockOnChange);
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file1 = createMockFile('wildflower.png');
+    const file2 = createMockFile('trail-damage.jpg', 2048, 'image/jpeg');
+
+    fireEvent.change(fileInput, { target: { files: [file1, file2] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('2 images selected')).toBeInTheDocument();
+      expect(screen.getByText('wildflower.png')).toBeInTheDocument();
+      expect(screen.getByText('trail-damage.jpg')).toBeInTheDocument();
+    });
+  });
+
+  it('user can remove uploaded media', async () => {
+    const mockOnChange = jest.fn();
+    await renderPhotographyMainContent(mockOnChange);
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file1 = createMockFile('keep-this.png');
+    const file2 = createMockFile('remove-this.jpg', 2048, 'image/jpeg');
+
+    fireEvent.change(fileInput, { target: { files: [file1, file2] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('2 images selected')).toBeInTheDocument();
+    });
+
+    // Click Remove on the second file
+    const removeButtons = screen.getAllByText('Remove');
+    fireEvent.click(removeButtons[1]);
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[100]).toHaveLength(1);
+    expect(latestResponses[100][0].name).toBe('keep-this.png');
+  });
+
+  it('user can replace uploaded media by uploading new files', async () => {
+    const mockOnChange = jest.fn();
+    await renderPhotographyMainContent(mockOnChange);
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    // Upload initial file
+    const originalFile = createMockFile('original-photo.png');
+    fireEvent.change(fileInput, { target: { files: [originalFile] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('1 image selected')).toBeInTheDocument();
+    });
+
+    // Remove the original
+    const removeButton = screen.getByText('Remove');
+    fireEvent.click(removeButton);
+
+    // Upload a replacement file
+    const replacementFile = createMockFile('replacement-photo.jpg', 2048, 'image/jpeg');
+    fireEvent.change(fileInput, { target: { files: [replacementFile] } });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[100]).toHaveLength(1);
+    expect(latestResponses[100][0].name).toBe('replacement-photo.jpg');
+  });
+
+  it('user can add additional images to existing uploads', async () => {
+    const mockOnChange = jest.fn();
+    await renderPhotographyMainContent(mockOnChange);
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    // Upload first batch
+    const file1 = createMockFile('batch1.png');
+    fireEvent.change(fileInput, { target: { files: [file1] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('1 image selected')).toBeInTheDocument();
+    });
+
+    // Upload second batch (should append, not replace)
+    const file2 = createMockFile('batch2.jpg', 2048, 'image/jpeg');
+    fireEvent.change(fileInput, { target: { files: [file2] } });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[100]).toHaveLength(2);
+    expect(latestResponses[100][0].name).toBe('batch1.png');
+    expect(latestResponses[100][1].name).toBe('batch2.jpg');
+  });
+
+  it('submitting the form without uploading images does not result in any error', async () => {
+    // Setup as steward so no verification popup
+    mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
+    mockIsSteward.mockResolvedValue(true);
+    mockGetQuestionsOnline.mockResolvedValue(photographyQuestions);
+    mockGetCurrentUserUid.mockResolvedValue('user-1');
+    mockGetCurrentSiteId.mockResolvedValue('site-1');
+    mockAddSiteInspectionReport.mockResolvedValue({ id: 'report-456' });
+    mockGetQuestionResponseType.mockResolvedValue([
+      { question_id: 100, obs_value: 0, obs_comm: 1 },
+      { question_id: 101, obs_value: 0, obs_comm: 1 },
+    ]);
+
+    render(<NewReportPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Review & Submit')).toBeInTheDocument();
+    });
+
+    // Submit without uploading any images or entering remarks
+    const submitButton = screen.getByText('Review & Submit');
+    fireEvent.click(submitButton);
+
+    // Should NOT show the required questions popup
+    await waitFor(() => {
+      expect(screen.queryByText(/Required Questions Missing/i)).not.toBeInTheDocument();
+    });
+
+    // Should successfully call the upload function
+    await waitFor(() => {
+      expect(mockAddSiteInspectionReport).toHaveBeenCalledWith('site-1', 'user-1');
+    });
+  });
+
+  it('photography question is not marked as required', async () => {
+    const mockOnChange = jest.fn();
+    await renderPhotographyMainContent(mockOnChange);
+
+    // Neither the image nor remarks question should show a Required badge
+    expect(screen.queryByText('Required')).not.toBeInTheDocument();
+  });
+
+  it('removing all images clears the file count display', async () => {
+    const mockOnChange = jest.fn();
+    await renderPhotographyMainContent(mockOnChange);
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = createMockFile('temporary.png');
+
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('1 image selected')).toBeInTheDocument();
+    });
+
+    // Remove the only file
+    const removeButton = screen.getByText('Remove');
+    fireEvent.click(removeButton);
+
+    await waitFor(() => {
+      expect(screen.queryByText(/image.* selected/i)).not.toBeInTheDocument();
+    });
+  });
+});
