@@ -430,7 +430,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 #### US 2.0.8 – User Upload of Standalone Site Images  | Story Points: 8
 
-> **As** a User, I want to upload a standalone image without creating an SIR, **so that** I can store site-related photos with metadata even when they are not tied to a specific inspection report.
+> **As** a User, **I want** to upload a standalone image without creating an SIR, **so that** I can store site-related photos with metadata even when they are not tied to a specific inspection report.
 
 > **Acceptance Tests**  
 

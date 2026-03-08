@@ -2,11 +2,22 @@
 
 This page includes a short description of the overall architecture style of the system, its high-level system components, and their logical (what data they exchange) and control (how they invoke each other) dependencies.
 
+---
+
 ## Architecture Diagram
 
 This diagram provides a high-level understanding of the architecture involved in the project.
 
 ![Architecture Diagram](images/Architecture.png)
+
+---
+
+## AWS Architecture 
+
+For details about how images are stored and retrieved, see the
+[Media Storage Architecture](aws-architecture.md).
+
+---
 
 ## ER Diagram for the database schema
 
@@ -14,6 +25,7 @@ This diagram provides a high-level understanding of the architecture involved in
 
 ![ER Diagram](images/ER_Diagram.png)
 
+---
 
 ## UML Class Diagram
 
@@ -23,6 +35,8 @@ This diagram is a description of logical entities of the domain through a UML di
 )
 
 ![UML Class Diagram](images/UML Diagram.png)
+
+---
 
 ## Sequence Diagrams
 
@@ -51,6 +65,8 @@ This diagram is a description of logical entities of the domain through a UML di
 ![Sequence Diagram](images/Winter 401 SAPAA Sequence Diagram - Account Management.svg)
 
 
+---
+
 ## Low-Fidelity User Interface
 
 This is a low-fidelity projection of the end-product. The final design may take a different direction.
@@ -66,6 +82,8 @@ This is a low-fidelity projection of the end-product. The final design may take 
 ### This is a low-fidelity UI for the mobile app
 
 ![Low-Fidelity User Interface for mobile app](images/MOBILEAPP UI.jpg)
+
+---
 
 ## List of Technologies Used
 ### Backend: Supabase + PostgreSQL + AWS
