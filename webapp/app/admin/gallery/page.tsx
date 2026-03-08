@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import AdminNavBar from "../AdminNavBar";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import Image from "next/image";
 import { Loader2, MapPin, FileText, ImageIcon, X, Maximize2 } from "lucide-react";
 
 type GalleryItem = {
@@ -54,14 +55,31 @@ export default function GalleryPage() {
   return (
     <ProtectedRoute requireAdmin>
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-        <AdminNavBar />
-
-        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-8 shadow-lg">
+      <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-4xl font-bold">Image Gallery</h1>
-            <p className="text-[#E4EBE4] text-lg">
-              View all uploaded inspection images and metadata
-            </p>
+            <div className="flex items-center justify-between mb-3">
+              {/* Left: icon + title + subtitle */}
+              <div className="flex items-center gap-4">
+                <Image
+                  src="/images/sapaa-icon-white.png"
+                  alt="SAPAA"
+                  width={140}
+                  height={140}
+                  priority
+                  className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+                />
+                <div>
+                  <h1 className="text-3xl font-bold mt-3">Image Gallery</h1>
+                  <p className="text-[#E4EBE4] text-base mt-0.5">
+                  View all uploaded inspection images and metadata
+                  </p>
+                </div>
+              </div>
+              {/* Right: navbar — rendered inline, bg overridden to transparent */}
+              <div className="[&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
+                <AdminNavBar />
+              </div>
+            </div>
           </div>
         </div>
 

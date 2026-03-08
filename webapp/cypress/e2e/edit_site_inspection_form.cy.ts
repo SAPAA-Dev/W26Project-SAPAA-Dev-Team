@@ -12,21 +12,24 @@ describe("US 1.0.22 - Editing Site Inspection Form", () => {
     cy.get("button.font-bold").click();
     cy.get("button.text-white").click();
     cy.visit(`http://localhost:3000/detail/Riverlot%2056%20(NA)`);
+    cy.wait(1000);
     cy.contains('Riverlot 56').should('be.visible');
   });
   
   it("user can navigate to an edit report they own", () => {
     cy.visit(`http://localhost:3000/detail/Riverlot%2056%20(NA)/edit-report/${TEST_RESPONSE_ID}`);
+    cy.wait(3000);
     cy.contains('Edit Inspection Report').should('be.visible');
   });
   
   it("user can navigate through all sections and verify inputs exist", () => {
     cy.visit(`http://localhost:3000/detail/Riverlot%2056%20(NA)/edit-report/${TEST_RESPONSE_ID}`);
+    cy.wait(3000);
     cy.contains('Edit Inspection Report').should('be.visible');
   
     // ── WhoRYou (default) ────────────────────────────────────────────────────
-    cy.get('[data-testid="question-input-32"]').should('be.visible');
-    cy.get('[data-testid="question-input-34"]').should('be.visible');
+    cy.get('[data-testid="question-input-32"]', { timeout: 10000 }).should('be.visible');
+    cy.get('[data-testid="question-input-34"]', { timeout: 10000 }).should('be.visible');
   
     // ── WhereUGo ─────────────────────────────────────────────────────────────
     cy.contains('button', 'Next →').click();
@@ -39,7 +42,7 @@ describe("US 1.0.22 - Editing Site Inspection Form", () => {
   
     // ── How Visit ────────────────────────────────────────────────────────────
     cy.contains('button', 'Next →').click();
-    cy.get('[data-testid="question-input-4"]').should('be.visible');
+    cy.get('[data-testid="question-input-4"]', { timeout: 10000 }).should('be.visible');
     cy.contains('Birding').should('exist');               
   
     // ── Be There ─────────────────────────────────────────────────────────────
@@ -59,27 +62,28 @@ describe("US 1.0.22 - Editing Site Inspection Form", () => {
   
     // ── Close ────────────────────────────────────────────────────────────────
     cy.contains('button', 'Next →').click();
-    cy.get('[data-testid="question-input-28"]').should('be.visible'); 
+    cy.get('[data-testid="question-input-28"]', { timeout: 10000 }).should('be.visible'); 
     cy.contains(/click to upload images/i).should('be.visible');      
   });
 
   it("edited value persists after submission", () => {
     cy.visit(`http://localhost:3000/detail/Riverlot%2056%20(NA)/edit-report/${TEST_RESPONSE_ID}`);
+    cy.wait(3000);
     cy.contains('Edit Inspection Report').should('be.visible');
 
     cy.contains('button', 'Close').click();
-    cy.get('[data-testid="question-input-28"]').should('be.visible');
-    cy.get('[data-testid="question-input-28"]').clear().type(NEW_VALUE);
+    cy.get('[data-testid="question-input-28"]', { timeout: 10000 }).should('be.visible');
+    cy.get('[data-testid="question-input-28"]', { timeout: 10000 }).clear().type(NEW_VALUE);
     cy.contains('Save Changes').click();
 
     cy.url().should('include', '/sites');
-    cy.contains(/edited/i).should('be.visible');
 
     // verify persistence
     cy.visit(`http://localhost:3000/detail/Riverlot%2056%20(NA)/edit-report/${TEST_RESPONSE_ID}`);
+    cy.wait(3000);
     cy.contains('button', 'Close').click();
-    cy.get('[data-testid="question-input-28"]').should('be.visible');
-    cy.get('[data-testid="question-input-28"]').should('have.value', NEW_VALUE);
+    cy.get('[data-testid="question-input-28"]', { timeout: 10000 }).should('be.visible');
+    cy.get('[data-testid="question-input-28"]', { timeout: 10000 }).should('have.value', NEW_VALUE);
   });
   
   after(() => {

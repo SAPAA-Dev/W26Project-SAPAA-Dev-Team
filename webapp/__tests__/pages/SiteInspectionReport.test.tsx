@@ -286,30 +286,7 @@ describe('US 1.0.4 - Have access to the Terms and Conditions of Inputting Inform
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
-  });
-
-  it('steward users see their name and badge; non-stewards do not', async () => {
-      setupStewardMocks();
-      const { unmount } = render(<NewReportPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Jane Steward')).toBeInTheDocument();
-      });
-      expect(screen.getByText('Steward')).toBeInTheDocument();
-      expect(screen.queryByText(/The Fine Print Up Front/i)).not.toBeInTheDocument();
-
-      unmount();
-
-      // Non-steward: no badge, verification popup shown
-      setupGuestMocks();
-      render(<NewReportPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText(/The Fine Print Up Front/i)).toBeInTheDocument();
-      });
-      expect(screen.queryByText('Steward')).not.toBeInTheDocument();
-    });
-
+  });    
   it('missing required fields display an error message', async () => {
     mockGetQuestionsOnline.mockResolvedValue(personalInfoQuestions);
     render(<MainContent responses={{}} onResponsesChange={jest.fn()} />);

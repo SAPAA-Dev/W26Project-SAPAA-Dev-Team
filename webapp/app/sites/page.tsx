@@ -31,21 +31,21 @@ function formatAgeBadge(days: number, inspectDate: string | null): string | null
 
 function getInspectionStatus(days: number, inspectDate: string | null): { label: string; color: string; bgColor: string } {
   if (!inspectDate || inspectDate === '1900-01-01') {
-    return { label: 'Never Inspected', color: '#475569', bgColor: '#F1F5F9' }; 
+    return { label: 'Never Inspected', color: '#475569', bgColor: '#F1F5F9' };
   }
   if (days < 180) {
-    return { label: 'Recent', color: '#065F46', bgColor: '#D1FAE5' }; 
+    return { label: 'Recent', color: '#065F46', bgColor: '#D1FAE5' };
   }
   if (days <= 365) {
-    return { label: 'Past Year', color: '#92400E', bgColor: '#FEF3C7' }; 
+    return { label: 'Past Year', color: '#92400E', bgColor: '#FEF3C7' };
   }
   if (days <= 730) {
-    return { label: 'Over 1 Year', color: '#9A3412', bgColor: '#FFEDD5' }; 
+    return { label: 'Over 1 Year', color: '#9A3412', bgColor: '#FFEDD5' };
   }
-  return { label: 'Needs Review', color: '#7F1D1D', bgColor: '#FEE2E2' }; 
+  return { label: 'Needs Review', color: '#7F1D1D', bgColor: '#FEE2E2' };
 }
 
-async function getCurrentUser(): Promise<{ email: string; role: string; name: string} | null> {
+async function getCurrentUser(): Promise<{ email: string; role: string; name: string; avatar: string} | null> {
   try {
     const supabase = createClient();
     
@@ -59,12 +59,14 @@ async function getCurrentUser(): Promise<{ email: string; role: string; name: st
     const email = session.user.email ?? '';
     const role = session.user.user_metadata?.role ?? 'steward';
     const name  = session.user.user_metadata?.full_name ?? '';
+    const avatar = session.user.user_metadata?.avatar_url ?? '';
     console.log(session.user)
     
     return {
       email,
       role,
-      name
+      name,
+      avatar
     };
   } catch (error) {
     return null;
@@ -82,7 +84,7 @@ export default function HomeClient() {
     direction: 'asc',
   });
   const [showSortMenu, setShowSortMenu] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name:string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name:string; avatar:string } | null>(null);
   const [userLoading, setUserLoading] = useState(true);
   const [totalResponses, setTotalResponses] = useState<number>(0);
 
@@ -191,92 +193,80 @@ export default function HomeClient() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-8 shadow-lg">
-        <Suspense fallback={null}>
-          <SubmissionToast />
-        </Suspense>
-        <div className="max-w-7xl mx-auto">
-          {/* Top row: title + admin */}
-          <div className="flex items-center justify-between mb-6">
-            {/* Left side: logo + title */}
-            <div className="flex items-center gap-3">
-              <Image 
-                src="/images/sapaa-icon-white.png" 
-                alt="SAPAA"
-                width={48}
-                height={48}
-                className="w-12 h-12 flex-shrink-0"
-              />
-              <div>
-                <h1 className="text-3xl font-bold">Protected Areas</h1>
-                <p className="text-[#E4EBE4] text-sm">Monitor and track site inspections across Alberta</p>
-              </div>
-            </div>
+    <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+  <div className="max-w-7xl mx-auto">
+    <div className="flex items-start justify-between mt-2.5 mb-3">
 
-            {/* Right side: Admin button - only visible to admins */}
-            {(() => {
-              console.log('Render - currentUser:', currentUser);
-              console.log('Render - currentUser?.role:', currentUser?.role);
-              console.log('Render - is admin?:', currentUser?.role === 'admin');
-              return null;
-            })()}
-            {currentUser?.role === 'admin' && (
+      {/* Left: icon + SAPAA info */}
+      <div className="flex items-start gap-4 mb-2">
+        <Image
+          src="/images/sapaa-full-white.png"
+          alt="SAPAA"
+          width={140}
+          height={140}
+          priority
+          className="h-16 w-auto flex-shrink-0 opacity-100"
+        />
+      </div>
+
+      {currentUser?.role === 'admin' && (
               <button
                 onClick={() => router.push('/admin/dashboard')}
-                className="bg-[#356B43] hover:bg-[#254431] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-semibold transition-all"
+                className="bg-[#356B43] hover:bg-[#254431] mt-2 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-semibold transition-all"
               >
                 <Award className="w-5 h-5" />
                 Admin
               </button>
             )}
-          </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-              <div className="flex items-center gap-2 mb-2">
-                <MapPin className="w-5 h-5 text-[#86A98A]" />
-                <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Total Sites</div>
-              </div>
-              <div className="text-3xl font-bold">{stats.totalSites}</div>
-            </div>
-            
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-              <div className="flex items-center gap-2 mb-2">
-                <ClipboardList className="w-5 h-5 text-[#86A98A]" />
-                <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Total Inspected Sites</div>
-              </div>
-              <div className="text-3xl font-bold">{stats.totalInspections}</div>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-              <div className="flex items-center gap-2 mb-2">
-                <ClipboardList className="w-5 h-5 text-[#86A98A]" />
-                <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Total Responses</div>
-              </div>
-              <div className="text-3xl font-bold">{stats.totalResponses}</div>
-            </div>
-            
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-              <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-5 h-5 text-[#00FF00]" />
-                <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Active over 365 Days</div>
-              </div>
-              <div className="text-3xl font-bold">{stats.activeThisYear}</div>
-            </div>
-            
-            
-            <div className="bg-[#C76930]/20 backdrop-blur-sm rounded-xl p-4 border border-[#C76930]/30">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="w-5 h-5 text-[#FF0000]" />
-                <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Needs Attention</div>
-              </div>
-              <div className="text-3xl font-bold">{stats.needsAttention}</div>
-            </div>
+    </div>
+  </div>
+</div>
+    
+    {/* Stats Cards */}
+    <div className="max-w-7xl mx-auto px-6 py-6 mt-2">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <MapPin className="w-5 h-5 text-[#356B43]" />
+            <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Sites</div>
           </div>
+          <div className="text-3xl font-bold text-[#254431]">{stats.totalSites}</div>
+        </div>
+
+        <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <ClipboardList className="w-5 h-5 text-[#356B43]" />
+            <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Inspected Sites</div>
+          </div>
+          <div className="text-3xl font-bold text-[#254431]">{stats.totalInspections}</div>
+        </div>
+
+        <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <ClipboardList className="w-5 h-5 text-[#356B43]" />
+            <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Responses</div>
+          </div>
+          <div className="text-3xl font-bold text-[#254431]">{stats.totalResponses}</div>
+        </div>
+
+        <div className="bg-[#D1FAE5] rounded-xl p-4 border-2 border-[#065F46]/20 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="w-5 h-5 text-[#065F46]" />
+            <div className="text-xs text-[#065F46] font-medium uppercase tracking-wide">Active over 365 Days</div>
+          </div>
+          <div className="text-3xl font-bold text-[#065F46]">{stats.activeThisYear}</div>
+        </div>
+
+        <div className="bg-[#FEE2E2] rounded-xl p-4 border-2 border-[#B91C1C]/20 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <Clock className="w-5 h-5 text-[#B91C1C]" />
+            <div className="text-xs text-[#B91C1C] font-medium uppercase tracking-wide">Needs Attention</div>
+          </div>
+          <div className="text-3xl font-bold text-[#7F1D1D]">{stats.needsAttention}</div>
         </div>
       </div>
+    </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">

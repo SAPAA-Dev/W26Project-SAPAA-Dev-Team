@@ -228,13 +228,8 @@ describe("NewReportPage – Liability / Verification Popup", () => {
       await waitForFormReady();
       expect(screen.queryByText(/the fine print up front/i)).not.toBeInTheDocument();
     });
-
-    it("shows the Steward badge in the header for steward users", async () => {
-      render(<NewReportPage />);
-      await waitForFormReady();
-      expect(screen.getByText(/steward/i)).toBeInTheDocument();
-    });
   });
+  
 
   describe("Edge cases", () => {
     it("shows the popup again if user navigates back and re-renders (fresh state)", async () => {

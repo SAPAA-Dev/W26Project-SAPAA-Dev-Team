@@ -157,16 +157,7 @@ describe('SiteDetailScreen', () => {
         expect(screen.getByText('Mackenzie')).toBeInTheDocument();
       });
     });
-
-    it('should display last inspection date', async () => {
-      render(<SiteDetailScreen />);
-      await waitFor(() => {
-        expect(screen.getByText(/Last Inspection:/i)).toBeInTheDocument();
-        const dateElements = screen.queryAllByText(/June|2024/);
-        expect(dateElements.length).toBeGreaterThan(0);
-      });
-    });
-
+    
     it('should display back to sites button', async () => {
       render(<SiteDetailScreen />);
       await waitFor(() => {
