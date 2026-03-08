@@ -14,7 +14,7 @@ import {
 import { createClient } from '@/utils/supabase/client';
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, AlertCircle } from "lucide-react";
+import { ArrowLeft, AlertCircle, Pencil } from "lucide-react";
 import Image from "next/image";
 import MainContent, { ExistingAttachment, LocalImage } from "../../new-report/MainContent";
 import StickyFooter from "../../new-report/Footer";
@@ -60,7 +60,7 @@ export default function EditReportPage() {
   const namesite = decodeURIComponent(params.namesite as string);
   const responseId = Number(params.responseId);
 
-  const [responses, setResponses] = useState<Record<number, any>>({});
+  const [responses, setResponses] = useState<Record<number | string, any>>({});
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentUser, setCurrentUser] = useState<{
     id?: string; email: string; role: string; name: string; avatar: string;
@@ -500,7 +500,9 @@ export default function EditReportPage() {
                 <ArrowLeft className="w-6 h-6" />
               </button>
               <div>
-                <h1 className="text-2xl font-bold">Edit Inspection Report</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold">Edit Inspection Report</h1>
+                </div>
                 <p className="text-[#E4EBE4] text-sm">{namesite}</p>
               </div>
             </div>
@@ -522,6 +524,7 @@ export default function EditReportPage() {
         questions={questions}
         responses={responses}
         onSubmit={handleSubmit}
+        submitLabel="Save Changes"
       />
     </div>
   );

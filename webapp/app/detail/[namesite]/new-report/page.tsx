@@ -80,6 +80,7 @@ export default function NewReportPage() {
   const [missingRequiredQuestionNumbers, setMissingRequiredQuestionNumbers] = useState<string[]>([]);
   const [draftKey, setDraftKey] = useState<string | null>(null);
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 
   useEffect(() => {
@@ -268,6 +269,9 @@ export default function NewReportPage() {
 
 
   const handleSubmit = async () => {
+    // Prevent multiple submissions
+    if (isSubmitting) return;
+    
     const questionNumberMap = buildQuestionNumberMap(questions);
     const missingRequiredNumbers = questions
       .filter((question) => question.is_required === true && !isAnswered(responses[question.id]))
@@ -281,6 +285,7 @@ export default function NewReportPage() {
 
     setShowRequiredPopup(false);
     setMissingRequiredQuestionNumbers([]);
+    setIsSubmitting(true);
 
     try {
       const siteId = await getCurrentSiteId(namesite);
@@ -401,6 +406,7 @@ export default function NewReportPage() {
             router.push('/sites?submitted=true');
           } catch (error) {
             console.error(error);
+            setIsSubmitting(false);
           }
     /**
      * FORM DATA CAPTURED:
@@ -673,6 +679,7 @@ export default function NewReportPage() {
               <button 
                 onClick={() => router.back()}
                 className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                data-testid="back-button"
               >
                 <ArrowLeft className="w-6 h-6" />
               </button>
@@ -699,6 +706,7 @@ export default function NewReportPage() {
         questions={questions}
         responses={responses}
         onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
       />
     </div>
   );
