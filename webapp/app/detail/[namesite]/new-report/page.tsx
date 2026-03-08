@@ -636,54 +636,39 @@ export default function NewReportPage() {
       )}
 
       {/* --- CONSOLIDATED HEADER --- */}
-      <header className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between py-3 border-b border-white/10">
-            <div className="flex items-center gap-2">
-              <div className="bg-white/20 p-1 rounded-lg">
-                <Image src="/images/sapaa-icon-white.png" alt="Logo" width={24} height={24} />
-              </div>
-              <span className="font-bold tracking-widest text-sm opacity-90">SAPAA</span>
-            </div>
-            <div className="hidden md:flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full border border-white/20">
-              <div className="w-6 h-6 rounded-full overflow-hidden bg-[#356B43] flex items-center justify-center">
-                {currentUser?.avatar ? (
-                  <Image
-                    src={currentUser.avatar}
-                    alt="User avatar"
-                    width={24}
-                    height={24}
-                    className="object-cover"
-                  />
-                ) : (
-                  <span className="text-xs font-bold text-white">
-                    {currentUser?.name?.[0] ?? "?"}
-                  </span>
-                )}
-              </div>
-              <span className="text-sm font-medium">{currentUser?.name}</span>
-              {isStewardUser && (
-                <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">Steward</span>
-              )}
-            </div>
-          </div>
+      <header className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+        <div className="max-w-7xl mx-auto">
 
-          <div className="flex items-center justify-between py-6">
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => router.back()}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors"
-              >
-                <ArrowLeft className="w-6 h-6" />
-              </button>
-              <div>
-                <h1 className="text-2xl font-bold">Site Inspection Form</h1>
-                <p className="text-[#E4EBE4] text-sm">{namesite}</p>
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-[#86A98A] hover:text-white transition-colors mb-4 group"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-sm font-medium">Back to Site</span>
+        </button>
+
+        <div className="flex items-start justify-between">
+
+          {/* Left: icon + form info */}
+          <div className="flex items-start gap-4">
+            <Image
+              src="/images/sapaa-icon-white.png"
+              alt="SAPAA"
+              width={140}
+              height={140}
+              priority
+              className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+            />
+            <div>
+              <h1 className="text-3xl font-bold mt-2.5">Site Inspection Form</h1>
+              <div className="text-[#E4EBE4]">
+                <span className="text-base">{namesite}</span>
               </div>
             </div>
           </div>
         </div>
-      </header>
+      </div>
+    </header>
 
       {/* --- MAIN LAYOUT --- */}
       <MainContent 
