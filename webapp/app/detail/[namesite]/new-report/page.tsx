@@ -46,12 +46,22 @@ interface Question {
   is_required?: boolean | null;
 }
 
+
 interface SupabaseAnswer {
   response_id: number; 
   question_id: number;
   obs_value: string | null;
   obs_comm: string | null;
 }
+
+
+interface ImageWithMeta {
+  id: string;
+  file: File;
+  caption: string;
+  description: string;
+}
+
 
 export default function NewReportPage() {
   const pathname = usePathname();
@@ -61,7 +71,6 @@ export default function NewReportPage() {
   
   const [hasAccepted, setHasAccepted] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
-  const [verificationText, setVerificationText] = useState("");
   const [responses, setResponses] = useState<Record<number, any>>({});
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name: string; avatar: string } | null>(null);
@@ -71,6 +80,7 @@ export default function NewReportPage() {
   const [missingRequiredQuestionNumbers, setMissingRequiredQuestionNumbers] = useState<string[]>([]);
   const [draftKey, setDraftKey] = useState<string | null>(null);
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 
   useEffect(() => {
@@ -161,9 +171,6 @@ export default function NewReportPage() {
 
 
 
-  const requiredPhrase = "I am not a volunteer of SAPAA";
-  const isVerificationValid = verificationText.trim() === requiredPhrase;
-  const canProceed = isVerificationValid && hasAccepted;
 
   const handleResponsesChange = (newResponses: Record<number, any>) => {
 
@@ -182,33 +189,11 @@ export default function NewReportPage() {
   };
 
   const buildQuestionNumberMap = (formQuestions: Question[]): Record<number, string> => {
-    const questionsBySection = formQuestions.reduce((acc, question) => {
-      const normalizedSection = question.section - 3;
-      if (!acc[normalizedSection]) {
-        acc[normalizedSection] = [];
-      }
-      acc[normalizedSection].push(question);
-      return acc;
-    }, {} as Record<number, Question[]>);
-
-    Object.keys(questionsBySection).forEach((sectionKey) => {
-      questionsBySection[Number(sectionKey)].sort((a, b) => {
-        const orderA = a.formorder ?? Infinity;
-        const orderB = b.formorder ?? Infinity;
-        return orderA - orderB;
-      });
-    });
-
     const questionNumberMap: Record<number, string> = {};
-    Object.keys(questionsBySection)
-      .map(Number)
-      .sort((a, b) => a - b)
-      .forEach((sectionNum) => {
-        questionsBySection[sectionNum].forEach((question, index) => {
-          questionNumberMap[question.id] = `${sectionNum}.${index + 1}`;
-        });
-      });
-
+    for (const question of formQuestions) {
+      const match = (question.title ?? '').match(/\(Q(\d+)\)/i);
+      questionNumberMap[question.id] = match ? `Q${match[1]}` : `Question ${question.id}`;
+    }
     return questionNumberMap;
   };
 
@@ -271,19 +256,22 @@ export default function NewReportPage() {
   }
 }
 
-  // async function uploadFileToS3(uploadUrl: string, file: File) {
-  //   const putRes = await fetch(uploadUrl, {
-  //     method: "PUT",
-  //     body: file,
-  //   });
 
-  //   if (!putRes.ok) {
-  //     throw new Error(`S3 upload failed (${putRes.status})`);
-  //   }
-  // }
+  const isImageWithMetaArray = (value: any): value is ImageWithMeta[] => {
+    return (
+      Array.isArray(value) &&
+      value.length > 0 &&
+      value[0] &&
+      value[0].file instanceof File  //Now answer[0] is not a File anymore.
+                                     //It is an object that contains a file
+    );
+  };
 
 
   const handleSubmit = async () => {
+    // Prevent multiple submissions
+    if (isSubmitting) return;
+    
     const questionNumberMap = buildQuestionNumberMap(questions);
     const missingRequiredNumbers = questions
       .filter((question) => question.is_required === true && !isAnswered(responses[question.id]))
@@ -297,6 +285,7 @@ export default function NewReportPage() {
 
     setShowRequiredPopup(false);
     setMissingRequiredQuestionNumbers([]);
+    setIsSubmitting(true);
 
     try {
       const siteId = await getCurrentSiteId(namesite);
@@ -334,13 +323,14 @@ export default function NewReportPage() {
 
 
 
-
+      //image  
       for (const [questionId, answer] of Object.entries(responses)) {
 
-          if (Array.isArray(answer) && answer.length > 0 && answer[0] instanceof File) {
-              const fileList = answer as File[];
+          if (isImageWithMetaArray(answer)) {
+              const imageList = answer;
 
-              for (const file of fileList) {
+              for (const image of imageList) {
+                const file = image.file;
                 // 1) get presigned URL + generated key from your API
                 const { uploadUrl, key } = await getPresignedUrl({
                   filename: file.name,
@@ -362,8 +352,8 @@ export default function NewReportPage() {
                   filename: file.name,
                   content_type: file.type,
                   file_size_bytes: file.size,
-                  caption: null,
-                  description: null,
+                  caption: image.caption.trim() || null,
+                  description: image.description.trim() || null,
                 });
               }
 
@@ -371,49 +361,53 @@ export default function NewReportPage() {
               continue;
             }
 
+            if (String(questionId).includes('_comm')) continue;
+
             const questionConfig = observationTypeMap.get(questionId);
-            // Decide if this question's answer is supposed to go into the obs_value column or obs_comm column
             const isValueType = questionConfig?.obs_value == 1;
             const isCommType = questionConfig?.obs_comm == 1;
-
-            // If the answer has an array containing subAnswers, add each subAnswer as a new object/dictionary inside answersArray
+            
+            const commValue = (responses as Record<string, any>)[`${questionId}_comm`] ?? null;
+            
             if (Array.isArray(answer)) {
                 answer.forEach(subAnswer => {
+                    const isOther = subAnswer === 'Other';
                     answersArray.push({
                         response_id: siteInspectionReportId,
                         question_id: Number(questionId),
-                        // Put the subAnswer in either the obs_value column or obs_comm column and the other one is set to null
                         obs_value: isValueType ? String(subAnswer) : null,
-                        obs_comm: isCommType ? String(subAnswer) : null,
+                        obs_comm: isOther ? commValue : (isCommType ? String(subAnswer) : null),
                     });
                 });
-            } else { // Otherwise, the answer is just a single string so we can add it directly to answersArray
+            } else {
+                const isOther = answer === 'Other';
                 answersArray.push({
                     response_id: siteInspectionReportId,
                     question_id: Number(questionId),
                     obs_value: isValueType ? String(answer) : null,
-                    obs_comm: isCommType ? String(answer) : null,
+                    obs_comm: isOther ? commValue : (isCommType ? String(answer) : null),
                 });
             }
-      }
-      if (answersArray.length > 0) {
-      await uploadSiteInspectionAnswers(answersArray);
-    }
+          }
+            if (answersArray.length > 0) {
+            await uploadSiteInspectionAnswers(answersArray);
+          }
 
-    if (attachmentsRows.length > 0) {
-      await insertInspectionAttachments(attachmentsRows);
-    }
+          if (attachmentsRows.length > 0) {
+            await insertInspectionAttachments(attachmentsRows);
+          }
 
 
 
-      if (draftKey) {
-        localStorage.removeItem(draftKey);
-      }
-      console.log("Draft cleared after successful submission");
-      router.push('/sites?submitted=true');
-    } catch (error) {
-      console.error(error);
-    }
+            if (draftKey) {
+              localStorage.removeItem(draftKey);
+            }
+            console.log("Draft cleared after successful submission");
+            router.push('/sites?submitted=true');
+          } catch (error) {
+            console.error(error);
+            setIsSubmitting(false);
+          }
     /**
      * FORM DATA CAPTURED:
      * 
@@ -562,26 +556,7 @@ export default function NewReportPage() {
                   </section>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-[#254431]">
-                  Please type the following to confirm:
-                </label>
-                <p className="text-sm font-mono bg-[#E4EBE4] px-3 py-2 rounded-lg text-[#254431]">
-                  {requiredPhrase}
-                </p>
-                <input
-                  type="text"
-                  value={verificationText}
-                  onChange={(e) => setVerificationText(e.target.value)}
-                  placeholder="Type here..."
-                  className="w-full px-4 py-3 border-2 border-[#E4EBE4] rounded-xl focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] font-medium placeholder:text-[#7A8075]"
-                />
-                {verificationText.length > 0 && !isVerificationValid && (
-                  <p className="text-xs text-red-600">Text does not match. Please type exactly as shown above.</p>
-                )}
-              </div>
-
+              
               <label className="flex items-center gap-3 cursor-pointer">
                 <input 
                   type="checkbox" 
@@ -589,11 +564,19 @@ export default function NewReportPage() {
                   onChange={(e) => setHasAccepted(e.target.checked)}
                   className="w-5 h-5 rounded border-[#E4EBE4] text-[#356B43] focus:ring-[#356B43]"
                 />
-                <span className="text-sm font-semibold text-[#254431]">
-                  I have read and agree to the{" "}
-                  <Link href={{ pathname: "/terms", query: { from: pathname } }}>
-                    <span style={{ textDecoration: "underline" }}>terms and conditions</span>
-                  </Link>
+                <span className="text-sm text-[#4B5563] leading-relaxed">
+                  By agreeing to this, I understand that this form is being used solely for 
+                  filling out <strong>Site Inspections</strong> and <strong>not for EMERGENCIES</strong>. I also
+                  acknowledge that this Site Inspection is carried out on my own accord.
+                  
+                  <div className="mt-3">
+                    I have read and agree to the{" "}
+                    <Link href={{ pathname: "/terms", query: { from: pathname } }}>
+                      <span className="text-[#356B43] underline font-medium hover:text-[#254431] transition-colors">
+                        terms and conditions
+                      </span>
+                    </Link>
+                  </div>
                 </span>
               </label>
             </div>
@@ -607,7 +590,7 @@ export default function NewReportPage() {
                   Cancel
                 </button>
                 <button 
-                  disabled={!canProceed}
+                  disabled={!hasAccepted}
                   onClick={() => setShowVerification(false)}
                   className="flex-[2] py-3 bg-[#356B43] text-white font-bold rounded-xl shadow-lg hover:bg-[#254431] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
@@ -696,6 +679,7 @@ export default function NewReportPage() {
               <button 
                 onClick={() => router.back()}
                 className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                data-testid="back-button"
               >
                 <ArrowLeft className="w-6 h-6" />
               </button>
@@ -722,6 +706,7 @@ export default function NewReportPage() {
         questions={questions}
         responses={responses}
         onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
       />
     </div>
   );
