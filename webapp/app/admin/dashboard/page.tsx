@@ -199,7 +199,7 @@ export default function Dashboard() {
     }
   };
 
-  // THIS IS THE MISSING useEffect - CRITICAL!
+
   useEffect(() => {
     console.log("⚡ useEffect running - about to call fetchStats");
     fetchStats();
@@ -271,39 +271,52 @@ export default function Dashboard() {
         
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-  <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
-    <div className="flex items-center gap-2 mb-2">
-      <FileText className="w-5 h-5 text-[#356B43]" />
-      <div className="text-sm text-[#7A8075] font-medium uppercase tracking-wide">Total Records</div>
-    </div>
-    <div className="text-2xl font-bold text-[#254431]">{stats.totalInspections.toLocaleString()}</div>
-  </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            {/* Total Records */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Total Records</div>
+                  <div className="text-3xl font-bold text-[#254431]">{stats.totalInspections}</div>
+                </div>
+              </div>
+            </div>
 
-  <Link href="/admin/gallery" className="block">
-    <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm hover:border-[#86A98A] hover:shadow-lg transition-all h-full">
-      <div className="flex items-center gap-2 mb-2">
-        <ImageIcon className="w-5 h-5 text-[#356B43]" />
-        <div className="text-sm text-[#7A8075] font-medium uppercase tracking-wide">Image Gallery</div>
-      </div>
-      <div className="text-2xl font-bold text-[#254431]">{items.length} images</div>
-      
-    </div>
-  </Link>
+            {/* Image Gallery */}
+            <Link href="/admin/gallery" className="block">
+              <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm hover:border-[#86A98A] hover:shadow-lg transition-all h-full">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
+                    <ImageIcon className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Image Gallery</div>
+                    <div className="text-3xl font-bold text-[#254431]">{items.length} images</div>
+                  </div>
+                </div>
+              </div>
+            </Link>
 
-  <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
-    <div className="flex items-center gap-2 mb-2">
-      <Calendar className="w-5 h-5 text-[#356B43]" />
-      <div className="text-sm text-[#7A8075] font-medium uppercase tracking-wide">Last Record</div>
-    </div>
-    <div className="text-2xl font-bold text-[#254431]">
-      {stats.lastInspectionDate
-        ? new Date(stats.lastInspectionDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-        : 'N/A'}
-    </div>
-  </div>
-</div>
+            {/* Last Record */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Last Record</div>
+                  <div className="text-3xl font-bold text-[#254431]">
+                    {stats.lastInspectionDate
+                      ? new Date(stats.lastInspectionDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                      : "N/A"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           
 
