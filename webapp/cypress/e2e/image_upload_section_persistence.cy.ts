@@ -29,10 +29,12 @@ function dismissVerificationModalIfVisible() {
   cy.get("body").then(($body) => {
     if ($body.text().includes("The Fine Print Up Front")) {
       cy.get('label:has(input[type="checkbox"]) input[type="checkbox"]').check({ force: true });
+      cy.wait(1000);
       cy.contains("button", "Continue to Form")
         .should("be.visible")
         .and("not.be.disabled")
         .click({ force: true });
+      cy.wait(1000);
       cy.contains("The Fine Print Up Front").should("not.exist");
     }
   });

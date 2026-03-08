@@ -704,8 +704,7 @@ export default function MainContent({
                             <span
                               data-testid={`${question.title}-question-title`}>
                             </span>
-                            {formattedTitle}
-                          </h3>
+                            {formattedTitle}</h3>
                           <h4 className="mt-1 text-sm text-[#254431]/70 leading-snug font-normal">
                             {question.text || ''}
                           </h4>
