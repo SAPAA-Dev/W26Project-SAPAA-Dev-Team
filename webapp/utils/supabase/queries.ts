@@ -622,3 +622,34 @@ export async function getTotalInspectionCount(): Promise<number> {
   if (error) throw new Error(error.message);
   return count ?? 0;
 }
+
+export async function getLastInspectionDate(): Promise<string | null> {
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from('W26_form_responses')
+    .select('created_at')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+  if (error || !data) return null;
+  return data.created_at;
+}
+export async function getNaturalnessDistribution(): Promise<{ naturalness_score: string; count: number }[]> {
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase.rpc('get_naturalness_distribution');
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r: any) => ({
+    naturalness_score: r.naturalness_score,
+    count: Number(r.count),
+  }));
+}
+
+export async function getTopSitesDistribution(): Promise<{ namesite: string; count: number }[]> {
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase.rpc('get_top_sites_distribution');
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r: any) => ({
+    namesite: r.namesite,
+    count: Number(r.count),
+  }));
+}

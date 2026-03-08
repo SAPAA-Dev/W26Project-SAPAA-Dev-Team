@@ -19,7 +19,7 @@ import {
   Loader2
 } from "lucide-react";
 import Image from 'next/image';
-
+import { getTotalInspectionCount, getLastInspectionDate, getNaturalnessDistribution, getTopSitesDistribution } from '@/utils/supabase/queries';
 import AdminNavBar from "../AdminNavBar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -54,7 +54,10 @@ export default function Dashboard() {
   const supabaseClient = createClient();
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState("");
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<{
+    totalInspections: number;
+    lastInspectionDate: string | null;
+  }>({
     totalInspections: 0,
     lastInspectionDate: null,
   });
@@ -65,61 +68,19 @@ export default function Dashboard() {
   const [searchLoading, setSearchLoading] = useState(false);
 
   const fetchStats = async () => {
-    console.log("=== DASHBOARD STATS DEBUG ===");
-    console.log("ENV URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
-    console.log("ENV KEY:", process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
     setLoading(true);
-  
     try {
-      // Test 1: Count records
-      console.log("1️⃣ Fetching total count...");
-      const { count, error: countError } = await supabaseClient
-        .from("sites_report_fnr_test")
-        .select("namesite", { count: "exact", head: true });
-  
-      console.log("Count result:", count);
-      console.log("Count error:", countError);
-  
-      // Test 2: Last inspection date
-      console.log("2️⃣ Fetching last inspection...");
-      const { data: lastRows, error: lastError } = await supabaseClient
-        .from("sites_report_fnr_test")
-        .select("inspectdate")
-        .order("inspectdate", { ascending: false })
-        .limit(1);
-  
-      console.log("Last rows:", lastRows);
-      console.log("Last error:", lastError);
-  
-      // Test 3: Naturalness distribution
-      console.log("3️⃣ Calling get_naturalness_distribution...");
-      const { data: naturalness, error: natError } = await supabaseClient.rpc(
-        "get_naturalness_distribution"
-      );
-  
-      console.log("Naturalness data:", naturalness);
-      console.log("Naturalness error:", natError);
-  
-      // Test 4: Top sites
-      console.log("4️⃣ Calling get_top_sites_distribution...");
-      const { data: topSites, error: topError } = await supabaseClient.rpc(
-        "get_top_sites_distribution"
-      );
- 
-      console.log("Top sites data:", topSites);
-      console.log("Top sites error:", topError);
-  
-      setStats({
-        totalInspections: count || 0,
-        lastInspectionDate: lastRows?.[0]?.inspectdate || null,
-      });
-  
-      setNaturalnessData(naturalness || []);
-      setSiteData(topSites || []);
-  
-      console.log("✅ Stats loaded successfully");
+      const [total, lastDate, naturalness, topSites] = await Promise.all([
+        getTotalInspectionCount(),
+        getLastInspectionDate(),
+        getNaturalnessDistribution(),
+        getTopSitesDistribution(),
+      ]);
+      setStats({ totalInspections: total, lastInspectionDate: lastDate });
+      setNaturalnessData(naturalness as any);
+      setSiteData(topSites as any);
     } catch (error) {
-      console.error("❌ Error loading stats:", error);
+      console.error('Error loading stats:', error);
     } finally {
       setLoading(false);
     }
