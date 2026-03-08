@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import FormEditorPage from '../../app/admin/form-editor/page';
-import * as adminModule from '../../utils/supabase/admin';
+import * as formActions from '../../utils/form-actions';
 import * as queries from '../../utils/supabase/queries';
 
 // Mock next/navigation
@@ -52,7 +52,7 @@ jest.mock('@dnd-kit/utilities', () => ({
 }));
 
 // Mock admin functions
-jest.mock('../../utils/supabase/admin', () => ({
+jest.mock('../../utils/form-actions', () => ({
   fetchFormSections: jest.fn(),
   fetchFormQuestions: jest.fn(),
   saveQuestion: jest.fn(),
@@ -79,12 +79,12 @@ jest.mock('../../utils/supabase/queries', () => ({
 
 // ─── Test Data ────────────────────────────────────────────────────────
 
-const mockSections: adminModule.FormSection[] = [
+const mockSections: formActions.FormSection[] = [
   { id: 1, title: 'General Information', description: 'Basic site details', header: 'General' },
 ];
 
 // All questions as they appear in the admin form editor (includes is_active flag)
-const allAdminQuestions: adminModule.FormQuestion[] = [
+const allAdminQuestions: formActions.FormQuestion[] = [
   {
     id: 101,
     form_question: 'Site Name (Q1)',
@@ -131,7 +131,7 @@ const allAdminQuestions: adminModule.FormQuestion[] = [
 ];
 
 // Questions as returned by getQuestionsOnline (user-facing, only is_active=true)
-function getUserFacingQuestions(adminQuestions: adminModule.FormQuestion[]): queries.question[] {
+function getUserFacingQuestions(adminQuestions: formActions.FormQuestion[]): queries.question[] {
   return adminQuestions
     .filter(q => q.is_active)
     .map(q => ({
@@ -154,9 +154,9 @@ function getUserFacingQuestions(adminQuestions: adminModule.FormQuestion[]): que
 describe('Admin Hide/Show Questions on Site Inspection Form', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (adminModule.fetchFormSections as jest.Mock).mockResolvedValue(mockSections);
-    (adminModule.fetchFormQuestions as jest.Mock).mockResolvedValue(allAdminQuestions);
-    (adminModule.toggleQuestionActive as jest.Mock).mockResolvedValue(undefined);
+    (formActions.fetchFormSections as jest.Mock).mockResolvedValue(mockSections);
+    (formActions.fetchFormQuestions as jest.Mock).mockResolvedValue(allAdminQuestions);
+    (formActions.toggleQuestionActive as jest.Mock).mockResolvedValue(undefined);
     (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(getUserFacingQuestions(allAdminQuestions));
   });
 
@@ -173,7 +173,7 @@ describe('Admin Hide/Show Questions on Site Inspection Form', () => {
       fireEvent.click(screen.getByTestId('Water Quality (Q2) Hide Button'));
 
       await waitFor(() => {
-        expect(adminModule.toggleQuestionActive).toHaveBeenCalledWith(102, true);
+        expect(formActions.toggleQuestionActive).toHaveBeenCalledWith(102, true);
       });
 
       // After the toggle, the DB now has is_active=false for question 102.
@@ -209,7 +209,7 @@ describe('Admin Hide/Show Questions on Site Inspection Form', () => {
       fireEvent.click(screen.getByTestId('Water Quality (Q2) Hide Button'));
 
       await waitFor(() => {
-        expect(adminModule.toggleQuestionActive).toHaveBeenCalledWith(102, true);
+        expect(formActions.toggleQuestionActive).toHaveBeenCalledWith(102, true);
       });
 
       // Simulate post-hide state
@@ -249,7 +249,7 @@ describe('Admin Hide/Show Questions on Site Inspection Form', () => {
       fireEvent.click(screen.getByTestId('Water Quality (Q2) Hide Button'));
 
       await waitFor(() => {
-        expect(adminModule.toggleQuestionActive).toHaveBeenCalledWith(102, true);
+        expect(formActions.toggleQuestionActive).toHaveBeenCalledWith(102, true);
       });
 
       // Past report data is fetched by response ID — no is_active filter
@@ -271,7 +271,7 @@ describe('Admin Hide/Show Questions on Site Inspection Form', () => {
       const questionsWithHidden = allAdminQuestions.map(q =>
         q.id === 102 ? { ...q, is_active: false } : q
       );
-      (adminModule.fetchFormQuestions as jest.Mock).mockResolvedValue(questionsWithHidden);
+      (formActions.fetchFormQuestions as jest.Mock).mockResolvedValue(questionsWithHidden);
       (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(
         getUserFacingQuestions(questionsWithHidden)
       );
@@ -288,7 +288,7 @@ describe('Admin Hide/Show Questions on Site Inspection Form', () => {
       fireEvent.click(screen.getByTestId('Water Quality (Q2) Show Button'));
 
       await waitFor(() => {
-        expect(adminModule.toggleQuestionActive).toHaveBeenCalledWith(102, false);
+        expect(formActions.toggleQuestionActive).toHaveBeenCalledWith(102, false);
       });
 
       // After re-enabling, getQuestionsOnline now returns all 3 questions
@@ -312,7 +312,7 @@ describe('Admin Hide/Show Questions on Site Inspection Form', () => {
       const questionsWithHidden = allAdminQuestions.map(q =>
         q.id === 102 ? { ...q, is_active: false } : q
       );
-      (adminModule.fetchFormQuestions as jest.Mock).mockResolvedValue(questionsWithHidden);
+      (formActions.fetchFormQuestions as jest.Mock).mockResolvedValue(questionsWithHidden);
       (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(
         getUserFacingQuestions(questionsWithHidden)
       );
@@ -326,7 +326,7 @@ describe('Admin Hide/Show Questions on Site Inspection Form', () => {
       fireEvent.click(screen.getByTestId('Water Quality (Q2) Show Button'));
 
       await waitFor(() => {
-        expect(adminModule.toggleQuestionActive).toHaveBeenCalledWith(102, false);
+        expect(formActions.toggleQuestionActive).toHaveBeenCalledWith(102, false);
       });
 
       // Now getQuestionsOnline returns all questions including the re-enabled one
@@ -350,7 +350,7 @@ describe('Admin Hide/Show Questions on Site Inspection Form', () => {
       const questionsWithHidden = allAdminQuestions.map(q =>
         q.id === 102 ? { ...q, is_active: false } : q
       );
-      (adminModule.fetchFormQuestions as jest.Mock).mockResolvedValue(questionsWithHidden);
+      (formActions.fetchFormQuestions as jest.Mock).mockResolvedValue(questionsWithHidden);
 
       render(<FormEditorPage />);
       await waitFor(() => {
@@ -395,7 +395,7 @@ describe('Admin Hide/Show Questions on Site Inspection Form', () => {
       const questionsWithHidden = allAdminQuestions.map(q =>
         q.id === 102 ? { ...q, is_active: false } : q
       );
-      (adminModule.fetchFormQuestions as jest.Mock).mockResolvedValue(questionsWithHidden);
+      (formActions.fetchFormQuestions as jest.Mock).mockResolvedValue(questionsWithHidden);
 
       render(<FormEditorPage />);
       await waitFor(() => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import FormEditorPage from '../../app/admin/form-editor/page';
-import * as adminModule from '../../utils/supabase/admin';
+import * as formActions from '../../utils/form-actions';
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
@@ -52,7 +52,7 @@ jest.mock('@dnd-kit/utilities', () => ({
 }));
 
 // Mock admin functions
-jest.mock('../../utils/supabase/admin', () => ({
+jest.mock('../../utils/form-actions', () => ({
   fetchFormSections: jest.fn(),
   fetchFormQuestions: jest.fn(),
   saveQuestion: jest.fn(),
@@ -64,12 +64,12 @@ jest.mock('../../utils/supabase/admin', () => ({
 
 // ─── Test Data ────────────────────────────────────────────────────────
 
-const mockSections: adminModule.FormSection[] = [
+const mockSections: formActions.FormSection[] = [
   { id: 1, title: 'General Information', description: 'Basic site details', header: 'General' },
   { id: 2, title: 'Environmental', description: 'Environmental observations', header: 'Environment' },
 ];
 
-const mockQuestions: adminModule.FormQuestion[] = [
+const mockQuestions: formActions.FormQuestion[] = [
   {
     id: 101,
     form_question: 'Site Name (Q1)',
@@ -120,12 +120,12 @@ const mockQuestions: adminModule.FormQuestion[] = [
 describe('FormEditorPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (adminModule.fetchFormSections as jest.Mock).mockResolvedValue(mockSections);
-    (adminModule.fetchFormQuestions as jest.Mock).mockResolvedValue(mockQuestions);
-    (adminModule.saveQuestion as jest.Mock).mockResolvedValue(undefined);
-    (adminModule.toggleQuestionActive as jest.Mock).mockResolvedValue(undefined);
-    (adminModule.addQuestion as jest.Mock).mockResolvedValue(undefined);
-    (adminModule.addFormSection as jest.Mock).mockResolvedValue(3);
+    (formActions.fetchFormSections as jest.Mock).mockResolvedValue(mockSections);
+    (formActions.fetchFormQuestions as jest.Mock).mockResolvedValue(mockQuestions);
+    (formActions.saveQuestion as jest.Mock).mockResolvedValue(undefined);
+    (formActions.toggleQuestionActive as jest.Mock).mockResolvedValue(undefined);
+    (formActions.addQuestion as jest.Mock).mockResolvedValue(undefined);
+    (formActions.addFormSection as jest.Mock).mockResolvedValue(3);
   });
 
   // ─── Loading & Initial Render ───────────────────────────────────────
@@ -236,7 +236,7 @@ describe('FormEditorPage', () => {
       fireEvent.click(screen.getByTestId('save-question-button'));
 
       await waitFor(() => {
-        expect(adminModule.saveQuestion).toHaveBeenCalledWith(
+        expect(formActions.saveQuestion).toHaveBeenCalledWith(
           expect.objectContaining({
             id: 101,
             form_question: 'Updated Site Name (Q1)',
@@ -314,7 +314,7 @@ describe('FormEditorPage', () => {
       fireEvent.click(screen.getByTestId('save-new-question'));
 
       await waitFor(() => {
-        expect(adminModule.addQuestion).toHaveBeenCalledWith(
+        expect(formActions.addQuestion).toHaveBeenCalledWith(
           1, // active section id
           expect.objectContaining({
             form_question: 'New Test Question (Q70)',
@@ -387,7 +387,7 @@ describe('FormEditorPage', () => {
       fireEvent.click(screen.getByTestId('Site Name (Q1) Hide Button'));
 
       await waitFor(() => {
-        expect(adminModule.toggleQuestionActive).toHaveBeenCalledWith(101, true);
+        expect(formActions.toggleQuestionActive).toHaveBeenCalledWith(101, true);
       });
     });
 
@@ -414,14 +414,14 @@ describe('FormEditorPage', () => {
         expect(screen.getByText('Site Name (Q1)')).toBeInTheDocument();
       });
 
-      const callsBefore = (adminModule.fetchFormQuestions as jest.Mock).mock.calls.length;
+      const callsBefore = (formActions.fetchFormQuestions as jest.Mock).mock.calls.length;
 
       const editButtons = screen.getAllByTestId('edit-question-button');
       fireEvent.click(editButtons[0]);
       fireEvent.click(screen.getByTestId('save-question-button'));
 
       await waitFor(() => {
-        expect((adminModule.fetchFormQuestions as jest.Mock).mock.calls.length).toBeGreaterThan(callsBefore);
+        expect((formActions.fetchFormQuestions as jest.Mock).mock.calls.length).toBeGreaterThan(callsBefore);
       });
     });
 
@@ -431,7 +431,7 @@ describe('FormEditorPage', () => {
         expect(screen.getByText('Site Name (Q1)')).toBeInTheDocument();
       });
 
-      const callsBefore = (adminModule.fetchFormQuestions as jest.Mock).mock.calls.length;
+      const callsBefore = (formActions.fetchFormQuestions as jest.Mock).mock.calls.length;
 
       fireEvent.click(screen.getByRole('button', { name: /Add Question/i }));
       fireEvent.change(screen.getByTestId('add-question-title'), {
@@ -443,7 +443,7 @@ describe('FormEditorPage', () => {
       fireEvent.click(screen.getByTestId('save-new-question'));
 
       await waitFor(() => {
-        expect((adminModule.fetchFormQuestions as jest.Mock).mock.calls.length).toBeGreaterThan(callsBefore);
+        expect((formActions.fetchFormQuestions as jest.Mock).mock.calls.length).toBeGreaterThan(callsBefore);
       });
     });
 
@@ -457,7 +457,7 @@ describe('FormEditorPage', () => {
       const updatedQuestions = mockQuestions.map(q =>
         q.id === 101 ? { ...q, form_question: 'Renamed Site (Q1)' } : q
       );
-      (adminModule.fetchFormQuestions as jest.Mock).mockResolvedValue(updatedQuestions);
+      (formActions.fetchFormQuestions as jest.Mock).mockResolvedValue(updatedQuestions);
 
       const editButtons = screen.getAllByTestId('edit-question-button');
       fireEvent.click(editButtons[0]);
@@ -496,7 +496,7 @@ describe('FormEditorPage', () => {
       // Edit form should be closed
       expect(screen.queryByTestId('edit-question-title')).not.toBeInTheDocument();
       // saveQuestion should NOT have been called
-      expect(adminModule.saveQuestion).not.toHaveBeenCalled();
+      expect(formActions.saveQuestion).not.toHaveBeenCalled();
       // Original question title should still be displayed
       expect(screen.queryAllByText('Site Name (Q1)').length).toBeGreaterThan(0);
     });
@@ -521,7 +521,7 @@ describe('FormEditorPage', () => {
       // Add form should be hidden
       expect(screen.queryByTestId('add-question-title')).not.toBeInTheDocument();
       // addQuestion should NOT have been called
-      expect(adminModule.addQuestion).not.toHaveBeenCalled();
+      expect(formActions.addQuestion).not.toHaveBeenCalled();
     });
   });
 
@@ -542,7 +542,7 @@ describe('FormEditorPage', () => {
 
   describe('Error Handling', () => {
     it('displays error when saving a question fails', async () => {
-      (adminModule.saveQuestion as jest.Mock).mockRejectedValue(new Error('Database error'));
+      (formActions.saveQuestion as jest.Mock).mockRejectedValue(new Error('Database error'));
 
       render(<FormEditorPage />);
       await waitFor(() => {
@@ -559,7 +559,7 @@ describe('FormEditorPage', () => {
     });
 
     it('displays error when adding a question fails', async () => {
-      (adminModule.addQuestion as jest.Mock).mockRejectedValue(new Error('Insert failed'));
+      (formActions.addQuestion as jest.Mock).mockRejectedValue(new Error('Insert failed'));
 
       render(<FormEditorPage />);
       await waitFor(() => {
@@ -581,7 +581,7 @@ describe('FormEditorPage', () => {
     });
 
     it('shows alert when toggling question visibility fails', async () => {
-      (adminModule.toggleQuestionActive as jest.Mock).mockRejectedValue(new Error('Toggle failed'));
+      (formActions.toggleQuestionActive as jest.Mock).mockRejectedValue(new Error('Toggle failed'));
       const alertSpy = jest.spyOn(window, 'alert').mockImplementation();
 
       render(<FormEditorPage />);
