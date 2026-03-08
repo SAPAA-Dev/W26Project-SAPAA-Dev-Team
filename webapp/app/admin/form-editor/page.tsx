@@ -51,7 +51,7 @@ import {
   type FormSection,
   type FormQuestion,
   type QuestionOption,
-} from "@/utils/supabase/admin";
+} from "@/utils/form-actions";
 
 const QUESTION_TYPES = [
   { value: "option", label: "Radio", icon: List },
