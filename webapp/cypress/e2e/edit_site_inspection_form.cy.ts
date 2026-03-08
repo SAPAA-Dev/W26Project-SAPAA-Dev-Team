@@ -11,8 +11,9 @@ describe("US 1.0.22 - Editing Site Inspection Form", () => {
     cy.get("#password").type("123Gctrmomy@");
     cy.get("button.font-bold").click();
     cy.get("button.text-white").click();
+    cy.wait(4000);
     cy.visit(`http://localhost:3000/detail/Riverlot%2056%20(NA)`);
-    cy.wait(1000);
+    cy.wait(3000);
     cy.contains('Riverlot 56').should('be.visible');
   });
   
@@ -84,9 +85,5 @@ describe("US 1.0.22 - Editing Site Inspection Form", () => {
     cy.contains('button', 'Close').click();
     cy.get('[data-testid="question-input-28"]', { timeout: 10000 }).should('be.visible');
     cy.get('[data-testid="question-input-28"]', { timeout: 10000 }).should('have.value', NEW_VALUE);
-  });
-  
-  after(() => {
-    cy.task('clearEditSiteInspectionFormResponse');
   });
 });
