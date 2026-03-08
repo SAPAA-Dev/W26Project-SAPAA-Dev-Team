@@ -53,6 +53,14 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const role = user.user_metadata?.role;
+    console.log(user.user_metadata);
+    
+
+    if (role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
   const { data: attachments, error: attachmentsError } = await supabase
     .from("W26_attachments")
     .select(`

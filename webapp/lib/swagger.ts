@@ -1,3 +1,5 @@
+// was generated with the help of ChatGPT based on the API implementation in the route.ts files. It is used to generate the OpenAPI spec for our API routes, which can be used for documentation.
+
 export const openApiSpec = {
   openapi: "3.0.3",
   info: {
@@ -175,8 +177,152 @@ export const openApiSpec = {
             },
           },
         },
+        },
       },
-    },
+
+      
+    "/api/site-images": {
+        get: {
+            summary: "Get site images by site or response",
+            tags: ["Gallery"],
+            description:
+            "Returns uploaded image attachments filtered by site ID and/or response ID. At least one query parameter must be provided.",
+            parameters: [
+            {
+                name: "siteid",
+                in: "query",
+                required: false,
+                schema: {
+                type: "integer",
+                },
+                description: "Filter images by site ID",
+                example: 207,
+            },
+            {
+                name: "responseid",
+                in: "query",
+                required: false,
+                schema: {
+                type: "integer",
+                },
+                description: "Filter images by response ID",
+                example: 3235,
+            },
+            ],
+            responses: {
+            "200": {
+                description: "Site images returned successfully",
+                content: {
+                "application/json": {
+                    schema: {
+                    type: "object",
+                    properties: {
+                        items: {
+                        type: "array",
+                        items: {
+                            type: "object",
+                            properties: {
+                            id: { type: "integer", example: 14 },
+                            response_id: { type: "integer", example: 3235 },
+                            question_id: { type: "integer", example: 27 },
+                            storage_key: {
+                                type: "string",
+                                example:
+                                "inspections/207/3235/27/ClydeFen-2025-01-23-BobSuruncle-ATVTrack-a1b2c3d4.jpg",
+                            },
+                            filename: {
+                                type: "string",
+                                example:
+                                "ClydeFen-2025-01-23-BobSuruncle-ATVTrack.jpg",
+                            },
+                            content_type: {
+                                type: "string",
+                                example: "image/jpeg",
+                            },
+                            file_size_bytes: {
+                                type: "integer",
+                                nullable: true,
+                                example: 2433304,
+                            },
+                            caption: {
+                                type: "string",
+                                nullable: true,
+                                example: "Cracked Tree",
+                            },
+                            description: {
+                                type: "string",
+                                nullable: true,
+                                example:
+                                "Large crack running up the trunk of a tree.",
+                            },
+                            site_id: {
+                                type: "integer",
+                                example: 207,
+                            },
+                            imageUrl: {
+                                type: "string",
+                                example:
+                                "https://sapaa-inspection-images.s3.ca-central-1.amazonaws.com/...",
+                            },
+                            },
+                        },
+                        },
+                    },
+                    },
+                },
+                },
+            },
+            "400": {
+                description: "Missing required query parameters",
+                content: {
+                "application/json": {
+                    schema: {
+                    type: "object",
+                    properties: {
+                        error: {
+                        type: "string",
+                        example: "Provide at least one of: siteid, responseid",
+                        },
+                    },
+                    },
+                },
+                },
+            },
+            "401": {
+                description: "Unauthorized",
+                content: {
+                "application/json": {
+                    schema: {
+                    type: "object",
+                    properties: {
+                        error: {
+                        type: "string",
+                        example: "Unauthorized",
+                        },
+                    },
+                    },
+                },
+                },
+            },
+            "500": {
+                description: "Failed to fetch site images",
+                content: {
+                "application/json": {
+                    schema: {
+                    type: "object",
+                    properties: {
+                        error: {
+                        type: "string",
+                        example: "Failed to fetch site images",
+                        },
+                    },
+                    },
+                },
+                },
+            },
+            },
+        },
+        },
 
     "/api/gallery": {
       get: {
@@ -214,7 +360,7 @@ export const openApiSpec = {
                           storage_key: {
                             type: "string",
                             example:
-                              "inspections/207/3226/27/4c99c01f-8afb-4085-9140-c3bc41e3e00d.jpg",
+                              "inspections/207/3226/27/4c88c01f-8afb-4085-9140-c3bc41e3e00d.jpg",
                           },
                           content_type: {
                             type: "string",
