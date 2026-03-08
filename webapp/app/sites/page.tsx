@@ -209,29 +209,15 @@ export default function HomeClient() {
         />
       </div>
 
-      {/* Right: user pill */}
-      {currentUser && (
-        <button
-          onClick={() => {
-            if (currentUser.role === 'admin') router.push('/admin/dashboard');
-          }}
-          className={`hidden md:flex items-center gap-2 bg-white/10 px-3 py-1.5 mt-5 rounded-full border border-white/20 transition-colors ${
-            currentUser.role === 'admin' ? 'hover:bg-white/20 cursor-pointer' : 'cursor-default'
-          }`}
-        >
-          <div className="w-6 h-6 rounded-full overflow-hidden bg-[#356B43] flex items-center justify-center">
-            {currentUser.avatar ? (
-              <Image src={currentUser.avatar} alt="User avatar" width={24} height={24} className="object-cover" />
-            ) : (
-              <span className="text-xs font-bold text-white">
-                {currentUser.name?.[0] ?? currentUser.email?.[0] ?? '?'}
-              </span>
+      {currentUser?.role === 'admin' && (
+              <button
+                onClick={() => router.push('/admin/dashboard')}
+                className="bg-[#356B43] hover:bg-[#254431] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-semibold transition-all"
+              >
+                <Award className="w-5 h-5" />
+                Admin
+              </button>
             )}
-          </div>
-          <span className="text-sm font-medium">{currentUser.name || currentUser.email}</span>
-          {currentUser.role === 'admin' && <Award className="w-4 h-4 text-[#86A98A]" />}
-        </button>
-      )}
 
     </div>
   </div>

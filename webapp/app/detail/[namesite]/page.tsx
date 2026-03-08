@@ -503,6 +503,7 @@ export default function SiteDetailScreen() {
                     <button
                       onClick={() => toggleInspection(response.id)}
                       className="flex-1 flex items-center justify-between p-6 pr-4 text-left hover:bg-[#F7F2EA] transition-colors"
+                      data-testid={`expand-inspection-button`}
                     >
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-[#E4EBE4] rounded-xl flex items-center justify-center">
@@ -530,6 +531,7 @@ export default function SiteDetailScreen() {
                         onClick={() => router.push(`/detail/${params.namesite}/edit-report/${response.id}`)}
                         className="flex items-center gap-1.5 mx-4 px-4 py-2 rounded-xl text-sm font-semibold text-[#356B43] bg-[#E4EBE4] hover:bg-[#356B43] hover:text-white transition-all"
                         title="Edit this report"
+                        data-testid="edit-form-button"
                       >
                         <Pencil className="w-4 h-4" />
                         Edit

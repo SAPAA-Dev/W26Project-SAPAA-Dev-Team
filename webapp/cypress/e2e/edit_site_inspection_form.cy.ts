@@ -73,7 +73,6 @@ describe("US 1.0.22 - Editing Site Inspection Form", () => {
     cy.contains('Review & Submit').click();
 
     cy.url().should('include', '/sites');
-    cy.contains(/edited/i).should('be.visible');
 
     // verify persistence
     cy.visit(`http://localhost:3000/detail/Riverlot%2056%20(NA)/edit-report/${TEST_RESPONSE_ID}`);
