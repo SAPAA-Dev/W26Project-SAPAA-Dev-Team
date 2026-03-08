@@ -111,10 +111,9 @@ This page provides a general overview of the assigned tasks and roles for the du
 |US 2.0.1 – Manage the uploading and storing of site inspection images|8|
 |US 2.0.2 – Image Metadata|2|
 |US 2.0.3 – Gallery View|3|
-|US 2.0.7 – Admin Management of Media Files|13|
 |TASK 2.0.6 - Refactor Report Rendering to Use Updated Database Schema|N/A|
 
-**Sprint Velocity:** 54
+**Sprint Velocity:** 41
 
 #### Tasks
 
@@ -132,11 +131,12 @@ This page provides a general overview of the assigned tasks and roles for the du
 |Manage the uploading and storing of site inspection images onto S3|US 2.0.1|Raiyana, Harveer|Mar 5th|
 |Image Metadata|US 2.0.2|Raiyana, Akib|Mar 5th|
 |Gallery View|US 2.0.3|Raiyana, Akib|Mar 5th|
-|Admin Management of Media Files|US 2.0.7|Raiyana|Mar 6th|
 |Refactor Report Rendering to Use Updated Database Schema|TASK 2.0.6|Vishal|Mar 7th|
 |Finalize the submission flow and validation logic|All US|Everyone|Mar 7th|
 |Write acceptance tests|All US|Everyone|Mar 7th|
 |Update documentation|Documentation|Everyone|Mar 8th|
+
+
 
 ### Sprint 4
 **Due:** *March 22, 2026*
@@ -146,6 +146,7 @@ This page provides a general overview of the assigned tasks and roles for the du
 |User Story|Story points|
 |:---:|:---:|
 |US 2.0.4 – Offline Image Viewing|5|
+|US 2.0.7 – Admin Management of Media Files|13|
 |US 2.0.8 – User Upload of Standalone Site Images|8|
 |US 3.0.1 – Access the mobile version of the Site Inspection Form|5|
 |US 3.0.2 – Offline Data Syncing|8|
@@ -155,18 +156,19 @@ This page provides a general overview of the assigned tasks and roles for the du
 |US 4.0.4 – Disable Site Profile of a Particular Site|3|
 |US 4.0.5 – Amenities Information on Site Profile|2|
 
-**Sprint Velocity:** 39
+**Sprint Velocity:** 52
 
 #### Tasks
 
 |Task|Related US|Assignee|Due|
 |:---:|:---:|:---:|:---:|
-|Implement offline image viewing|US 2.0.4|Raiyana|Mar 15th|
-|Enable user upload of standalone site images|US 2.0.8|Harveer, Zoe|Mar 16th|
+|Implement offline image viewing|US 2.0.4|Harveer, Zoe|Mar 15th|
+|Admin Management of Media Files|US 2.0.7|Raiyana|Mar 16th|
+|Enable user upload of standalone site images|US 2.0.8|Raiyana, Harveer|Mar 16th|
 |Develop mobile version entry point|US 3.0.1|Vishal, Jason|Mar 17th|
-|Implement offline data syncing|US 3.0.2|Zoe|Mar 18th|
+|Implement offline data syncing|US 3.0.2|Zoe, Akib|Mar 18th|
 |Create view site profile page|US 4.0.1|Braden|Mar 19th|
-|Add new site profiles|US 4.0.2|Raiyana|Mar 19th|
+|Add new site profiles|US 4.0.2|Raiyana, Zoe|Mar 19th|
 |Update existing site profiles|US 4.0.3|Vishal|Mar 20th|
 |Disable site profiles as needed|US 4.0.4|Braden|Mar 20th|
 |Add amenities information on site profile|US 4.0.5|Akib|Mar 21st|
