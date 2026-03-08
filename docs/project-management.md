@@ -11,7 +11,7 @@ This page provides a general overview of the assigned tasks and roles for the du
 
 **Project Scrum Master:** Jason Liang
 
-**Project Product Owner:** Harveer Deol
+**Project Product Owner:** Harveer Deol, Raiyana Rahman
 
 ### Sprint 1
 **Due:** *February 1, 2026*
@@ -111,17 +111,18 @@ This page provides a general overview of the assigned tasks and roles for the du
 |:---:|:---:|
 |US 1.0.16 – Add Any Photography Captured During Visit|5|
 |US 1.0.17 – (Admin) Add Questions Site Inspections Form|3|
-|US 1.0.18 – Adding Image Caption|2|
+|US 1.0.18 – Adding Image Identifier|2|
 |US 1.0.19 - Admin Viewing Images and Metadata|2|
 |US 1.0.22 – (User) Edit My Site Inspections Form|5|
-|US 1.0.24 – Modify my Site Inspections Form Questions|3|
+|US 1.0.24 – Modify my Site Inspections Form Questions|8|
 |US 1.0.25 – Hide a Site Inspections Form Questions|3|
 |US 2.0.1 – Manage the uploading and storing of site inspection images|8|
 |US 2.0.2 – Image Metadata|2|
 |US 2.0.3 – Gallery View|3|
+|US 2.0.7 – Admin Management of Media Files|13|
 |TASK 2.0.6 - Refactor Report Rendering to Use Updated Database Schema|N/A|
 
-**Sprint Velocity:** 36
+**Sprint Velocity:** 54
 
 
 #### Tasks
@@ -132,20 +133,21 @@ This page provides a general overview of the assigned tasks and roles for the du
 |Setup developer email for vercel with client|All US|Harveer|Feb 20th|
 |Add any photography captured during visit|US 1.0.16|Raiyana|Feb 25th|
 |Allow admin to add Questions Site Inspections Form|US 1.0.17|Braden|Feb 27th|
-|Adding Image Caption to the inspection form|US 1.0.18|Zoe|Feb 27th|
-|Add a dashboard for admin to view images and metadata|US 1.0.19|Zoe|Mar 3rd|
+|Adding Image Identifier to the inspection form|US 1.0.18|Raiyana, Zoe|Feb 27th|
+|Add a dashboard for admin to view images and metadata|US 1.0.19|Raiyana|Mar 3rd|
 |Add the ability to edit previous site inspections forms for users|US 1.0.22|Vishal|Mar 3rd|
-|Let admin modify the site inspections form questions|US 1.0.24|Jason|Mar 3rd|
+|Let admin modify the site inspections form questions|US 1.0.24|Braden, Jason|Mar 3rd|
 |Add ability to hide site inspection form questions|US 1.0.25|Braden, Jason|Mar 5th|
-|Manage the uploading and storing of site inspection images onto S3|US 2.0.1|Harveer|Mar 5th|
-|Image Metadata|US 2.0.2|Akib|Mar 5th|
-|Gallery View|US 1.0.12|Akib|Mar 5th|
-|Refactor Report Rendering to Use Updated Database Schema|TASK 2.0.6|Everyone|Mar 7th|
+|Manage the uploading and storing of site inspection images onto S3|US 2.0.1|Raiyana, Harveer|Mar 5th|
+|Image Metadata|US 2.0.2|Raiyana, Akib|Mar 5th|
+|Gallery View|US 2.0.3|Raiyana, Akib|Mar 5th|
+|Admin Management of Media Files|US 2.0.7|Raiyana|Mar 6th|
+|Refactor Report Rendering to Use Updated Database Schema|TASK 2.0.6|Vishal|Mar 7th|
 |Finalize the submission flow and validation logic |All US|Everyone|Mar 7th|
 |Write acceptance tests|All US|Everyone|Mar 7th|
 |Update documentation|Documentation|Everyone|Mar 8th|
 
-**Sprint Velocity:** 36
+**Sprint Velocity:** 54
 
 
 ### Sprint 4
@@ -157,6 +159,7 @@ This page provides a general overview of the assigned tasks and roles for the du
 |User Story|Story points|
 |:---:|:---:|
 |US 2.0.4 – Offline Image Viewing|5|
+|US 2.0.8 – User Upload of Standalone Site Images|8|
 |US 3.0.1 – Access the mobile version of the Site Inspection Form|5|
 |US 3.0.2 – Offline Data Syncing|8|
 |US 4.0.1 – View Site Profile of a Particular Site|3|
@@ -166,7 +169,15 @@ This page provides a general overview of the assigned tasks and roles for the du
 |US 4.0.5 – Amenities Information on Site Profile|2|
 
 
-**Sprint Velocity:** 31
+**Sprint Velocity:** 39
+
+#### Tasks
+
+|Task|Related US|Assignee|Due|
+|:---:|:---:|:---:|:---:|
+
+
+**Sprint Velocity:** 39
 
 ### Sprint 5
 
@@ -177,6 +188,7 @@ This page provides a general overview of the assigned tasks and roles for the du
 |User Story|Story points|
 |:---:|:---:|
 |US 1.0.20 – Admin Editing Image Metadata|3|
+|US 2.0.8 – User Upload of Standalone Site Images|8|
 |US 4.0.6 – Site-specific Recommended Gear Lists|2|
 |US 5.0.1 – Sign In Feature|2|
 |US 5.0.2 – Sign Out Feature|2|
