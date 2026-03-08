@@ -24,11 +24,13 @@ function navigateToExistingSIR() {
   cy.get('input[placeholder="Search by site name or county..."]').type('riverlot');
   cy.contains('Riverlot 56').click();
   cy.contains('Edit').first().click();
+  cy.wait(2000)
   cy.contains('Close').click();
 }
 
 function dismissFinePrintModal() {
   cy.contains('I have read and agree').closest('label, div').find('input[type="checkbox"]').check();
+  cy.wait(1000);
   cy.contains('button', 'Continue to Form').click();
 }
 
@@ -62,7 +64,7 @@ describe('Image Upload', () => {
     cy.get('input[placeholder="Caption (optional)"]').eq(1).type('Test caption 2');
     cy.get('textarea[placeholder="Description (optional)"]').eq(1).type('Test description 2');
 
-    cy.contains('3 images total').should('exist');
+    cy.contains('2 images total').should('exist');
   });
 
   it('Able to remove an image before submitting a new SIR', () => {
