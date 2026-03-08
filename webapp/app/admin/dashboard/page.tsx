@@ -14,6 +14,7 @@ import {
   Search,
   MapPin,
   BarChart3,
+  ImageIcon,
   PieChart,
   Loader2
 } from "lucide-react";
@@ -34,6 +35,21 @@ type HeatPoint = {
   namesite?: string;
 };
 
+type GalleryItem = {
+  id: string;
+  response_id: string;
+  question_id: string;
+  caption?: string | null;
+  description?: string | null;
+  storage_key: string;
+  content_type: string;
+  file_size_bytes?: number | null;
+  filename: string;
+  site_id: string | null; 
+  site_name?: string | null;
+  imageUrl: string;
+};
+
 export default function Dashboard() {
   const supabaseClient = createClient();
   const [loading, setLoading] = useState(true);
@@ -42,7 +58,7 @@ export default function Dashboard() {
     totalInspections: 0,
     lastInspectionDate: null,
   });
-
+  const [items, setItems] = useState<GalleryItem[]>([]);
   const [naturalnessData, setNaturalnessData] = useState([]);
   const [siteData, setSiteData] = useState([]);
   const [points, setPoints] = useState<HeatPoint[]>([]);
@@ -228,6 +244,30 @@ export default function Dashboard() {
     fetchStats();
   }, []);
 
+  useEffect(() => {
+    const fetchGallery = async () => {
+      try {
+        console.log("Fetching gallery from /api/gallery...");
+        const res = await fetch("/api/gallery");
+        const data = await res.json();
+
+        console.log("Gallery response:", data);
+
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to load gallery");
+        }
+
+        setItems(data.items || []);
+      } catch (err) {
+        console.error("Gallery fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGallery();
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex flex-col items-center justify-center gap-4">
@@ -240,106 +280,69 @@ export default function Dashboard() {
   return (
     <ProtectedRoute requireAdmin>
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-      
-        
-      <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
-  <div className="max-w-7xl mx-auto">
-    <div className="flex items-center justify-between mb-3">
-      {/* Left: icon + title + subtitle */}
-      <div className="flex items-center gap-4">
-        <Image
-          src="/images/sapaa-icon-white.png"
-          alt="SAPAA"
-          width={140}
-          height={140}
-          priority
-          className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
-        />
-        <div>
-          <h1 className="text-3xl font-bold mt-3">Admin Dashboard</h1>
-          <p className="text-[#E4EBE4] text-base mt-0.5">
-            Monitor and analyze site inspection data
-          </p>
+        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between mb-3">
+              {/* Left: icon + title + subtitle */}
+              <div className="flex items-center gap-4">
+                <Image
+                  src="/images/sapaa-icon-white.png"
+                  alt="SAPAA"
+                  width={140}
+                  height={140}
+                  priority
+                  className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+                />
+                <div>
+                  <h1 className="text-3xl font-bold mt-3">Admin Dashboard</h1>
+                  <p className="text-[#E4EBE4] text-base mt-0.5">
+                    Monitor and analyze site inspection data
+                  </p>
+                </div>
+              </div>
+              {/* Right: navbar — rendered inline, bg overridden to transparent */}
+              <div className="[&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
+                <AdminNavBar />
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      {/* Right: navbar — rendered inline, bg overridden to transparent */}
-      <div className="[&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
-        <AdminNavBar />
-      </div>
-    </div>
-  </div>
-</div>
         
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
           {/* Stats Cards */}
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Total Records Card */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm hover:shadow-md transition-all">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center shadow-md">
-                  <FileText className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Total Records</div>
-                  <div className="text-4xl font-bold text-[#254431] mt-1">{stats.totalInspections.toLocaleString()}</div>
-                </div>
-              </div>
-            <div className="pt-4 border-t-2 border-[#E4EBE4]">
-                <div className="flex items-center gap-2 text-sm text-[#7A8075]">
-                  <TrendingUp className="w-4 h-4 text-[#1C7C4D]" />
-                  <span>All inspection records in database</span>
-                </div>
-              </div>
-            </div>
-        <Link href="/admin/gallery" className="block">
-          <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm hover:shadow-md transition-all">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center shadow-md">
-                  <FileText className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Image Gallery</div>
-                  <div className="text-4xl font-bold text-[#254431] mt-1">{stats.totalInspections.toLocaleString()}</div>
-                </div>
-              </div>
-            <div className="pt-4 border-t-2 border-[#E4EBE4]">
-                <div className="flex items-center gap-2 text-sm text-[#7A8075]">
-                  <TrendingUp className="w-4 h-4 text-[#1C7C4D]" />
-                  <span>All inspection images from sites</span>
-                </div>
-              </div>
-            </div>
-        </Link>
-            
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+  <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+    <div className="flex items-center gap-2 mb-2">
+      <FileText className="w-5 h-5 text-[#356B43]" />
+      <div className="text-sm text-[#7A8075] font-medium uppercase tracking-wide">Total Records</div>
+    </div>
+    <div className="text-2xl font-bold text-[#254431]">{stats.totalInspections.toLocaleString()}</div>
+  </div>
 
-            {/* Last Record Card */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm hover:shadow-md transition-all">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center shadow-md">
-                  <Calendar className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Last Record</div>
-                  <div className="text-2xl font-bold text-[#254431] mt-1">
-                    {stats.lastInspectionDate
-                      ? new Date(stats.lastInspectionDate).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })
-                      : "N/A"}
-                  </div>
-                </div>
-              </div>
-              <div className="pt-4 border-t-2 border-[#E4EBE4]">
-                <div className="flex items-center gap-2 text-sm text-[#7A8075]">
-                  <Calendar className="w-4 h-4 text-[#356B43]" />
-                  <span>Most recent inspection date</span>
-                </div>
-              </div>
-            </div>
-          </div>
+  <Link href="/admin/gallery" className="block">
+    <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm hover:border-[#86A98A] hover:shadow-lg transition-all h-full">
+      <div className="flex items-center gap-2 mb-2">
+        <ImageIcon className="w-5 h-5 text-[#356B43]" />
+        <div className="text-sm text-[#7A8075] font-medium uppercase tracking-wide">Image Gallery</div>
+      </div>
+      <div className="text-2xl font-bold text-[#254431]">{items.length} images</div>
+      
+    </div>
+  </Link>
+
+  <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+    <div className="flex items-center gap-2 mb-2">
+      <Calendar className="w-5 h-5 text-[#356B43]" />
+      <div className="text-sm text-[#7A8075] font-medium uppercase tracking-wide">Last Record</div>
+    </div>
+    <div className="text-2xl font-bold text-[#254431]">
+      {stats.lastInspectionDate
+        ? new Date(stats.lastInspectionDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : 'N/A'}
+    </div>
+  </div>
+</div>
 
           
 
