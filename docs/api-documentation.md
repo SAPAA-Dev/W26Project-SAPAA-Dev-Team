@@ -1,5 +1,20 @@
 ## API Documentation From Winter 2026
 
+Interactive API documentation is available through Swagger.
+
+You can view and test all API endpoints here:
+
+[Swagger API Documentation](http://localhost:3000/api-docs)
+
+**Swagger (Local)**: http://localhost:3000/api-docs
+
+You can explore the API, view request/response formats, and test endpoints directly from the browser.
+
+##For a detailed explanation of the API endpoints see:
+
+[Media Storage Architecture](aws-architecture.md)
+
+---
 
 ## API Documentation From Fall 2025
 
