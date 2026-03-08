@@ -1469,9 +1469,15 @@ async function renderPhotographyMainContent(mockOnChange: jest.Mock) {
 }
 
 describe('US 1.0.16 - Add Photography Captured During Visit', () => {
+  let uuidCounter: number;
+
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
+    uuidCounter = 0;
+    (global.URL.createObjectURL as any) = jest.fn(() => 'blob:fake-preview');
+    (global.URL.revokeObjectURL as any) = jest.fn();
+    jest.spyOn(global.crypto, 'randomUUID').mockImplementation(() => `uuid-${uuidCounter++}` as `${string}-${string}-${string}-${string}-${string}`);
   });
 
   it('user can upload images taken during their visit', async () => {
@@ -1490,8 +1496,8 @@ describe('US 1.0.16 - Add Photography Captured During Visit', () => {
 
     const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
     expect(latestResponses[100]).toHaveLength(2);
-    expect(latestResponses[100][0].name).toBe('site-photo-1.png');
-    expect(latestResponses[100][1].name).toBe('site-photo-2.jpg');
+    expect(latestResponses[100][0].file.name).toBe('site-photo-1.png');
+    expect(latestResponses[100][1].file.name).toBe('site-photo-2.jpg');
   });
 
   it('user can add final remarks alongside photography', async () => {
@@ -1522,7 +1528,7 @@ describe('US 1.0.16 - Add Photography Captured During Visit', () => {
     fireEvent.change(fileInput, { target: { files: [file1, file2] } });
 
     await waitFor(() => {
-      expect(screen.getByText('2 images selected')).toBeInTheDocument();
+      expect(screen.getByText('2 images total')).toBeInTheDocument();
       expect(screen.getByText('wildflower.png')).toBeInTheDocument();
       expect(screen.getByText('trail-damage.jpg')).toBeInTheDocument();
     });
@@ -1539,7 +1545,7 @@ describe('US 1.0.16 - Add Photography Captured During Visit', () => {
     fireEvent.change(fileInput, { target: { files: [file1, file2] } });
 
     await waitFor(() => {
-      expect(screen.getByText('2 images selected')).toBeInTheDocument();
+      expect(screen.getByText('2 images total')).toBeInTheDocument();
     });
 
     // Click Remove on the second file
@@ -1548,7 +1554,7 @@ describe('US 1.0.16 - Add Photography Captured During Visit', () => {
 
     const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
     expect(latestResponses[100]).toHaveLength(1);
-    expect(latestResponses[100][0].name).toBe('keep-this.png');
+    expect(latestResponses[100][0].file.name).toBe('keep-this.png');
   });
 
   it('user can replace uploaded media by uploading new files', async () => {
@@ -1562,7 +1568,7 @@ describe('US 1.0.16 - Add Photography Captured During Visit', () => {
     fireEvent.change(fileInput, { target: { files: [originalFile] } });
 
     await waitFor(() => {
-      expect(screen.getByText('1 image selected')).toBeInTheDocument();
+      expect(screen.getByText('1 image total')).toBeInTheDocument();
     });
 
     // Remove the original
@@ -1575,7 +1581,7 @@ describe('US 1.0.16 - Add Photography Captured During Visit', () => {
 
     const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
     expect(latestResponses[100]).toHaveLength(1);
-    expect(latestResponses[100][0].name).toBe('replacement-photo.jpg');
+    expect(latestResponses[100][0].file.name).toBe('replacement-photo.jpg');
   });
 
   it('user can add additional images to existing uploads', async () => {
@@ -1589,7 +1595,7 @@ describe('US 1.0.16 - Add Photography Captured During Visit', () => {
     fireEvent.change(fileInput, { target: { files: [file1] } });
 
     await waitFor(() => {
-      expect(screen.getByText('1 image selected')).toBeInTheDocument();
+      expect(screen.getByText('1 image total')).toBeInTheDocument();
     });
 
     // Upload second batch (should append, not replace)
@@ -1598,8 +1604,8 @@ describe('US 1.0.16 - Add Photography Captured During Visit', () => {
 
     const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
     expect(latestResponses[100]).toHaveLength(2);
-    expect(latestResponses[100][0].name).toBe('batch1.png');
-    expect(latestResponses[100][1].name).toBe('batch2.jpg');
+    expect(latestResponses[100][0].file.name).toBe('batch1.png');
+    expect(latestResponses[100][1].file.name).toBe('batch2.jpg');
   });
 
   it('submitting the form without uploading images does not result in any error', async () => {
@@ -1654,7 +1660,7 @@ describe('US 1.0.16 - Add Photography Captured During Visit', () => {
     fireEvent.change(fileInput, { target: { files: [file] } });
 
     await waitFor(() => {
-      expect(screen.getByText('1 image selected')).toBeInTheDocument();
+      expect(screen.getByText('1 image total')).toBeInTheDocument();
     });
 
     // Remove the only file
@@ -1662,7 +1668,7 @@ describe('US 1.0.16 - Add Photography Captured During Visit', () => {
     fireEvent.click(removeButton);
 
     await waitFor(() => {
-      expect(screen.queryByText(/image.* selected/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/image.* total/i)).not.toBeInTheDocument();
     });
   });
 });
