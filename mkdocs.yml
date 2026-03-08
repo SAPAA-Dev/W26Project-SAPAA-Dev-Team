@@ -23,3 +23,5 @@ nav:
   - Teamwork: 'teamwork.md'
   - Traceability Matrix: 'traceability-matrix.md'
   - Meeting Minutes: 'meeting-minutes.md'
+  - UI/UX design: 'ui-design.md'
+  - API Documentation: 'api-documentation.md'
