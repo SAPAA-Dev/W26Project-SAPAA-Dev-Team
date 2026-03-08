@@ -8,7 +8,7 @@ Object.assign(global, {
   ReadableStream,
   TransformStream,
   MessageChannel,
-  // MessagePort comes automatically from MessageChannel
+  MessagePort: MessageChannel.prototype.port1?.constructor || require("worker_threads").MessagePort,
   MessageEvent: class MessageEvent extends Event {
     data: any;
     constructor(type: string, init?: any) {
@@ -18,11 +18,9 @@ Object.assign(global, {
   },
 });
 
-const fetch = require("cross-fetch");
-const { Request, Response, Headers } = fetch;
-Object.assign(global, { fetch, Request, Response, Headers });
+import { fetch, Headers, Request, Response } from "undici";
 
-
+Object.assign(global, { fetch, Headers, Request, Response });
 jest.mock("@aws-sdk/s3-request-presigner", () => ({
   getSignedUrl: jest.fn(),
 }));
