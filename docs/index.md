@@ -213,10 +213,15 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests**
 
-> 1. Able to add pictures taken during the user's visit. The user should be able to add any final remarks as well 
-> 2. Able to remove the uploaded media if needed
-> 3. Able to replace the uploaded media by clicking on it
-> 4. Submitting the Site Inspection Form without uploading questions will not result in any error messaging and will be accepted.
+> 1. User can upload images taken during their visit 
+> 2. User can add final remarks alongside photography 
+> 3. Displays uploaded image file names and count
+> 4. User can remove uploaded media
+> 5. User can replace uploaded media by uploading new files
+> 6. User can add additional images to existing uploads 
+> 7. Submitting the form without uploading images does not result in any error
+> 8. Photography question is not marked as required
+> 9. Removing all images clears the file count display 
 
 
 #### US 1.0.17 – (Admin) Add Questions Site Inspections Form | Story Points: 3  
@@ -225,32 +230,39 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests**
 
-> 1. Able to add new questions to the Site Inspection Form and save the form.
-> 2. Other users who access the Site Inspection Form will be able to see the new questions
-> 3. Users who are not admins cannot add questions to the form
-
+> 1. Renders page with header and navbar after loading
+> 2. Displays sections in the sidebar
+> 3. Displays questions for the initially selected section
+> 4. Switches sections when a section button is clicked 
+> 5. Shows add question form when Add Question button is clicked
+> 6. Adds a new question when form is filled and saved
+> 7. Shows success message after adding a question 
+> 8. Disables save button when question title is empty
+> 9. Can select different question types when adding
+> 10. Refetches questions after adding a new question
+> 11. Discards add question form when cancel is clicked
+> 12. Displays error when adding a question fails
 
 #### US 1.0.18 – Adding Image Identifier | Story Points: 2 
 > **As** a User, **I want** to be able to add Identifier to the images that I upload, **so that** context can be given for the images.
 
 > **Acceptance Tests**
 
-> 1. Able to view the image identifier after being entered
-> 2. Able to modify an image identifier
-> 3. Able to remove an image identifier
-> 4. Uanable to enter more than 20 characters for identifier
-
+> 1. Shows optional caption input after uploading an image
+> 2. Allows adding caption when initially empty
+> 3. Allows editing the image caption before submitting
+> 4. Allows deleting the image caption before submitting 
+> 5. Removing image clears uploaded entry and revokes object URL
 
 #### US 1.0.19 - Admin Viewing Images and Metadata | Story Points: 2
 > **As** an Admin. **I want** to be able to view the images uploaded by the users, **so that** I can keep track of site inspection and monitor site well-being.
 
 > **Acceptance Tests**
 
-> 1. Admin can click a button to look at all uploaded images, their metadata, and the site they are associated with
-> 2. Admin can remove the image if it’s not appropriate
-
-
-
+> 1. Renders all uploaded image cards after fetch
+> 2. Admin can click an image card to open modal with metadata and associated site
+> 3. Shows empty state when API returns no images
+> 4. Handles API error response without crashing
 
 
 #### US 1.0.20 – Admin Editing Image Metadata | Story Points: 3 
@@ -264,9 +276,6 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 3. Admin can save the changes to the metadata
 > 4. Other users can see the updated image’s metadata
 
-
-
-
 #### TASK 1.0.21 - View and understand the Supabase and decide if it is suitable 
 > Get acquainted with the existing super-base and decide if it is necessary to modify or rebuild it, or migrate to a different database management system
 
@@ -277,11 +286,11 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests**  
 
-> 1. If user modifies a previous form, the form is updated to show the new info  
-> 2. If user attempts to modify their forms but cancels the information reverts and is not change
-> 3. If user attempts to modify their form the form is prefilled with the current data
-> 4. If the user attempts to modify their form, they cannot submit the modifications if required information / questions are cleared / disabled
-> 5. The user cannot un-check their agreement to the terms and conditions (would have to delete their report entirely if they required that)
+> 1. Renders the edit form when user is authorized
+> 2. Shows access denied when user is not the owner 
+> 3. All previous responses are filled correctly
+> 4. Shows required popup if user clears a required question and attempts to submit
+> 5. If user changes a required question, submission is changed
 
 #### US 1.0.23 – Non-Public Information | Story Points: 2
 > **As** a User. **I want** to have somewhere to write information that won’t be published publically **so that** sensitive information / information for SAPAA only isn’t leaked
@@ -300,23 +309,27 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests**
 
-> 1. Able to modify questions in the Site Inspection Form to add, remove, or change information from a particular question
-> 2. Other users who access the Site Inspection Form will be able to see the modified questions
-> 3. If admin begins to edit a question, they can discard edits before officially submitting the change
-> 4. Non-admin users cannot change or edit any questions
-
+> 1. Opens edit form when edit button is clicked 
+> 2. Populates edit form with existing question data
+> 3. Can modify question title and subtext
+> 4. Saves modified question when save is clicked
+> 5. Shows success message and closes edit form after saving 
+> 6. Can modify option text in an existing question with options 
+> 7. Refetches questions after saving an edit
+> 8. Displays updated question data after saving changes
+> 9. Discards edit changes when cancel is clicked
+> 10. Displays error when saving a question fails
 
 #### US 1.0.25 – Hide a Site Inspections Form Questions | Story Points: 3
 > **As** an admin, **I want** to be able to hide any of the questions on the Site Inspection Form, **so that** only the questions I want are visible.
 
 > **Acceptance Tests**
 
-> 1. If an admin toggles a question to be hidden, users can no longer access it when filling out the form
-> 2. If an admin toggles a question to be hidden, users can no longer edit their responses to it in previous forms
-> 3. If an admin toggles a question to be hidden, it will still be shown on existing / past reports
-> 4. If an admin toggles a question to be visible, users will be able to access it when filling out the form
-> 5. If an admin toggles a question to be visible, users will be able edit their responses to it in previous forms
-
+> 1. Admin can toggle a question to be hidden
+> 2. Updates button from Hide to Show when toggled
+> 3. Non-admin users cannot change or edit questions
+> 4. Shows alert when toggling question visibility fails
+    
 #### US 1.0.26 – Persist Site Inspection Form Draft | Story Points: 5
 > **As** a user, **I want** my answers to be automatically saved as a draft, **so that** I do not lose my progress if I refresh, navigate away, or accidentally close my tab.
 
@@ -369,21 +382,17 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests**
 
-> 1. Uploaded images are stored in an AWS S3 bucket
-> 2. Image metadata and references are stored in the database
+> 1. Images are stored in AWS S3 (tests for generating presigned and preventing upload for unsupported and large size files)
+> 2. Image metadata is stored in the database (metadata consistency across AWS and Supabase)
 > 3. Uploaded images are accessible through the application
-
 
 #### US 2.0.2 – Image Metadata| Story Points: 2
 > **As** a User, **I want** the image I upload to retain its metadata, such as descriptions, **so that** I do not have to retype previous descriptions.
 
 > **Acceptance Tests**
 
-> 1. When a user uploads an image, the system preserves existing metadata
-> 2. Image descriptions/captions entered during upload are saved with the image.
-> 3. Stored metadata persists when images are viewed later.
-
-
+> 1. Keeps uploaded image visible after switching sections and returning
+> 2. Keeps caption and description values after switching sections and returning
 
 #### US 2.0.3 – Gallery View | Story Points: 3 
 
@@ -391,11 +400,10 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests**  
 
-> 1. Users can view multiple images for a site in a gallery layout.
-> 2. The gallery displays only images associated with the selected site or inspection.
-> 3. Users can open individual images from the gallery for detailed viewing.
-> 4. Images added to a report for a site after initially being posted will also be added to the gallery view
-> 5. Images removed from a report for a site after initially being posted will also be removed from the gallery view
+> 1. Renders multiple site images in gallery layout
+> 2. Uses site-scoped gallery endpoint for selected site 
+> 3. Opens image detail modal with metadata from selected card 
+> 4. Switches detailed view when another image is opened
 
 #### US 2.0.4 – Offline Image Viewing | Story Points: 5
 
