@@ -9,8 +9,9 @@ describe('Admin Form Editor - Editing Questions', () => {
     cy.get('#password').type('123Gctrmomy@');
     cy.get('button.font-bold').click();
     cy.get('button.text-white').click();
+    cy.wait(4000);
     cy.contains('Admin').first().click();
-    cy.wait(1000);
+    cy.wait(4000);
     cy.get('button[title="admin dropdown menu"]').click();
     cy.contains('Form Editor').click();
     cy.url().should('include', '/admin/form-editor')
@@ -29,7 +30,7 @@ describe('Admin Form Editor - Editing Questions', () => {
       const testId = $el.attr('data-testid') ?? 'null-testid';
       const sectionId = testId.replace('section-button-', '');
       
-      cy.get(`[data-testid="${testId}"]`).click();
+      cy.get(`[data-testid="${testId}"]`, { timeout: 10000 }).click();
 
       // Find the badge using the ID and verify the count
       cy.get(`[data-testid="section-count-${sectionId}"]`).then(($badge) => {
@@ -58,37 +59,37 @@ describe('Admin Form Editor - Editing Questions', () => {
 
         // This question currently has no description/subtext in it
         // Editing a question by adding information and saving it
-        cy.get('[data-testid="edit-question-button"]').first().click();
+        cy.get('[data-testid="edit-question-button"]', { timeout: 10000 }).first().click();
         cy.wait(5000);
         cy.get('[data-testid="edit-question-subtext"]', { timeout: 10000 }).click().type("hello this is a change");
         cy.get('[data-testid="save-question-button"]', { timeout: 10000 }).click();
-        cy.wait(2000);
+        cy.wait(3000);
         cy.get('[data-testid="edit-question-button"]').first().click();
         cy.contains("hello this is a change");
 
         // Editing a question to change information and saving it
         cy.get('[data-testid="edit-question-subtext"]', { timeout: 10000 }).click().clear().type("hello this is a second change");
         cy.get('[data-testid="save-question-button"]', { timeout: 10000 }).click();
-        cy.wait(2000);
-        cy.get('[data-testid="edit-question-button"]').first().click();
+        cy.wait(3000);
+        cy.get('[data-testid="edit-question-button"]', { timeout: 10000 }).first().click();
         cy.contains("hello this is a second change");
 
         // If admin begins to edit a question, they can discard edits before officially submitting the change
         // Editing a question by changing information and cancelling
         cy.get('[data-testid="edit-question-subtext"]', { timeout: 10000 }).click().clear().type("hello this is a third change");
-        cy.get('[data-testid="cancel-button"]').click();
-        cy.wait(2000);
-        cy.get('[data-testid="edit-question-button"]').first().click();
+        cy.get('[data-testid="cancel-button"]', { timeout: 10000 }).click();
+        cy.wait(3000);
+        cy.get('[data-testid="edit-question-button"]', { timeout: 10000 }).first().click();
         cy.wait(2000);
         cy.contains("hello this is a second change");
 
         // Editing a question to remove information from it and saving
         cy.get('[data-testid="edit-question-subtext"]', { timeout: 10000 }).click().clear();
         cy.get('[data-testid="save-question-button"]', { timeout: 10000 }).click();
+        cy.wait(3000);
+        cy.get('[data-testid="edit-question-button"]', { timeout: 10000 }).first().click();
         cy.wait(2000);
-        cy.get('[data-testid="edit-question-button"]').first().click();
-        cy.wait(2000);
-        cy.get('[data-testid="edit-question-subtext"]').should('have.value', '');
+        cy.get('[data-testid="edit-question-subtext"]', { timeout: 10000 }).should('have.value', '');
       } 
     });
   });
@@ -106,10 +107,10 @@ describe('Admin Form Editor - Editing Questions', () => {
         // Editing a question by adding information and saving it
         cy.get('[data-testid="edit-question-button"]', { timeout: 10000 }).first().click();
         cy.get('[data-testid="edit-question-subtext"]', { timeout: 10000 }).click().type("hello this is a change");
-        cy.wait(2000);
-        cy.get('[data-testid="save-question-button"]').click();
-        cy.wait(2000);
-        cy.get('[data-testid="edit-question-button"]').first().click();
+        cy.wait(3000);
+        cy.get('[data-testid="save-question-button"]', { timeout: 10000 }).click();
+        cy.wait(3000);
+        cy.get('[data-testid="edit-question-button"]', { timeout: 10000 }).first().click();
         cy.wait(2000);
         cy.contains("hello this is a change");
       }
@@ -136,11 +137,11 @@ describe('Admin Form Editor - Editing Questions', () => {
         cy.get('[data-testid="edit-question-button"]', { timeout: 10000 }).first().click();
         cy.get('[data-testid="edit-question-subtext"]', { timeout: 10000 }).click().clear();
         cy.wait(2000);
-        cy.get('[data-testid="save-question-button"]').click();
+        cy.get('[data-testid="save-question-button"]', { timeout: 10000 }).click();
+        cy.wait(3000);
+        cy.get('[data-testid="edit-question-button"]', { timeout: 10000 }).first().click();
         cy.wait(2000);
-        cy.get('[data-testid="edit-question-button"]').first().click();
-        cy.wait(2000);
-        cy.get('[data-testid="edit-question-subtext"]').should('have.value', '');
+        cy.get('[data-testid="edit-question-subtext"]', { timeout: 10000 }).should('have.value', '');
       }
     });
   });

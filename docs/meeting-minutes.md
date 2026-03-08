@@ -1,266 +1,430 @@
-## Sprint 1
-
-### January 22, 2026
-**Key Discussions & Decisions**  
-- Discussed the previous project codebase and familiarized themselves with it  
-- Reviewed the previous project documentation website  
-- Looked at the Site Inspection Excel spreadsheet  
-- Discussed the rough draft roadmap for this term’s project prepared by previous project members  
-- Began preparing a cleaned-up roadmap for the new project, including:
-  - Core and optional requirements  
-  - Rough UI features  
-  - Success criteria for the end of the project  
-- Planned another meeting on January 23 for a video call with the SAPAA president and client, Frank Potter  
-
-**Action Items**  
-- Finish the project roadmap to serve as a high-level plan for project features  
-- As a team, create user stories based on the roadmap and organize them using the MoSCoW method  
-- Communicate with previous project members, Gabriel and Mehrdad, to gain access to the Supabase database and gather general information about last term’s development  
+# Sprint 1
 
 ---
-
-### January 23, 2026
-**Key Discussions & Decisions**  
-- Team introduced themselves to the client, Frank Potter, and shared individual strengths and areas of expertise  
-- Client outlined how meetings should be structured going forward:
-  1. What was done over the past week (least important)  
-  2. What will be done over the next two weeks (important)  
-  3. Questions or concerns from CMPUT 401 for SAPAA (very important)  
-  4. Questions or concerns from SAPAA for CMPUT 401 (critical)  
-- Discussed how SAPAA operates as an organization and the importance of Site Inspections  
-- Received an overview of the project scope and expectations  
-
-**Action Items**  
-- Prepare a weekly slide deck for Friday meetings to summarize progress and upcoming work  
-- Modify the high-level project roadmap based on feedback from Frank Potter  
-- Schedule a meeting on January 25 to begin creating user stories  
-
+### January 22, 2026 – Meeting #1
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** 8:00 PM – 9:00 PM  
+**Attendees**  
+- Akib, Braden, Harveer, Jason, Raiyana, Vishal, Zoe
+---
+### Key Discussions & Decisions
+- To discuss the previous project codebase and familiarize themselves with it.
+- To review the previous project documentation website.
+- To look at the Site Inspection Excel spreadsheet.
+- To discuss the rough draft roadmap for this term's project prepared by previous project members.
+- To begin preparing a cleaned-up roadmap for the new project, including core and optional requirements, rough UI features, and success criteria for the end of the project.
+---
+### Action Items
+- Finish the project roadmap to serve as a high-level plan for project features (Everyone).
+- Create user stories based on the roadmap and organize them using the MoSCoW method (Everyone).
+- Communicate with previous project members, Gabriel and Mehrdad, to gain access to the Supabase and gather general information about last term's development (Braden, Harveer, Jason, Vishal).
+---
+### Next Meeting Agenda
+- Video call with the SAPAA president and client, Frank Potter (January 23).
+---
+### January 23, 2026 – Meeting #2
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** 1:05 PM – 2:00 PM  
+**Attendees**  
+- Akib, Braden, Frank, Gabriel, Harveer, Jason, Mehrdad, Raiyana, Vishal, Zoe
+---
+### Key Discussions & Decisions
+- The team met with the SAPAA president, Frank Potter, for official introductions and to establish project expectations.
+- Frank provided a prioritized framework for future meetings and shared insights into SAPAA's organizational operations, specifically regarding the importance of Site Inspections.
+- The session concluded with a high-level overview of the project scope.
+- Introduced the team to the client and shared individual strengths and areas of expertise.
+- Outlined the structure for future meetings (Weekly progress, upcoming work, and CMPUT 401/SAPAA concerns).
+- Discussed SAPAA organizational operations and the importance of Site Inspections.
+- Reviewed the project scope and client expectations.
+---
+### Action Items
+- Prepare a weekly slide deck for Friday meetings to summarize progress and upcoming work (Harveer).
+- Modify the high-level project roadmap based on feedback from Frank Potter (Everyone).
+- Schedule a meeting on January 25 to begin creating user stories (Everyone).
+---
+### Next Meeting Agenda
+- Meeting on January 25 to begin creating user stories.
+---
+### January 25, 2026 – Meeting #3
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** 7:00 PM – 9:00 PM  
+**Attendees**  
+- Akib, Braden, Harveer, Jason, Raiyana, Vishal, Zoe
+---
+### Key Discussions & Decisions
+- The team focused on refining the project roadmap by categorizing requirements into core and "if-time-permits" features.
+- The session involved reorganizing priorities and collaboratively drafting the first set of user stories and acceptance tests to guide the upcoming sprint.
+- Reviewed the high-level project roadmap and classified requirements as core or "if-time-permits" features.
+- Reorganized requirements based on agreed-upon priorities.
+- Collaboratively drafted initial user stories and potential acceptance tests.
+---
+### Action Items
+- Add story points to user stories as a team decision (Everyone).
+- Organize draft user stories into MoSCoW format during the January 28 lab session (Everyone).
+- Begin work on Sprint 1 User Story and Project Management requirements (Everyone).
+---
+### Next Meeting Agenda
+- Meeting to communicate with previous project members to gain access to the Supabase and gather general information about last term's development (January 27).
+- Lab session to organize user stories into MoSCoW format (January 28).
+---
+### January 27, 2026 – Meeting #4
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** 11:00 AM – 12:00 PM  
+**Attendees**  
+- Braden, Gabriel, Harveer, Jason, Mehrdad, Vishal
+---
+### Key Discussions & Decisions
+- The team consulted with previous developers to understand the Supabase architecture and tackle image management hurdles.
+- A strategic decision was made to prioritize the web-app transition from Google Forms and to hold off on UI mockups until Frank approves the core user stories.
+- Met with previous project members (Gabriel and Mehrdad) to clarify the Supabase database structure.
+- Confirmed the priority of developing a web-based application to replace Google Forms for stewards and administrators.
+- Discussed unresolved image management issues and explored potential solutions (compression vs. storage investment).
+- Decided on the focus for Sprint 1 requirements and the timeline for UI mockup development.
+---
+### Action Items
+- Prepare a slide deck for Friday's meeting with Frank (Harveer).
+- Finalize the high-level project roadmap and user stories for client review (Everyone).
+- Assign Sprint 1 tasks to team members during the January 28 TA meeting (Everyone).
+- Collaborate on shared tasks such as low-fidelity UI mockups (Everyone).
+---
+### Next Meeting Agenda
+- TA Meeting: Assigning Sprint 1 tasks and collaborating on low-fidelity UI mockups (January 28).
+---
+### January 28, 2026 – Meeting #5
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** Morning Lab Session  
+**Attendees**  
+- Braden, Gabriel, Harveer, Jason, Mehrdad, Vishal
+---
+### Key Discussions & Decisions
+- The team attended the regular lab session with the TA to discuss completing the remaining Sprint 1 requirements.
+- Explored solutions for image management.
+- Coordinated logistics for the Site Inspection on January 31.
+- Ranked user stories by necessity and implementation complexity.
+- Assigned story points.
+---
+### Action Items
+- Hold a team meeting later in the evening to finalize user story rankings and identify epics needing decomposition.
+- Complete the slide deck for Friday's meeting with Frank Potter.
+---
+### Next Meeting Agenda
+- Meeting to finalize user stories (January 28).
+---
+### January 28, 2026 – Meeting #6
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** Evening Session  
+**Attendees**  
+- Akib, Braden, Harveer, Jason, Raiyana, Vishal, Zoe
+---
+### Key Discussions & Decisions
+- Finalized user story rankings using the MoSCoW method.
+- Decomposed oversized stories.
+- Completed story point estimations.
+- Expanded acceptance tests.
+- Mapped stories to the original Site Inspection Form.
+- Documented Belbin roles.
+---
+### Action Items
+- Request review of user stories from Gabriel and Mehrdad for missing functionality or incorrect priorities.
+- Transfer finalized user stories into GitHub as issues.
+- Begin creating the project story map Kanban board and assign stories to sprints.
+---
+### Next Meeting Agenda
+- Discuss technology choices and how to communicate that to client (January 30).
+---
+### January 30, 2026 – Meeting #7
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** N/A  
+**Attendees**  
+- Akib, Braden, Harveer, Jason, Raiyana, Vishal, Zoe
+---
+### Key Discussions & Decisions
+- Discussed logistics for the upcoming site visit and image management technology options.
+- AWS S3 was preferred for scalability, cost-effectiveness, and features.
+- User stories were refined and cross-referenced with Site Inspection Form questions for clarity.
+- Reviewed logistics for site visit.
+- Compared image management options (AWS S3, Google Drive, Supabase).
+- Refined user stories and mapped to site inspection questions.
+---
+### Action Items
+- Frank Potter to review refined user stories.
+- Develop AWS S3 proof of concept.
+- Conduct the site visit as planned.
+- Continue refining user stories based on feedback.
+---
+### Next Meeting Agenda
+- Meet with client to discuss his choice of technology for image management (January 31).
+---
+### January 31, 2026 – Meeting #8
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** Afternoon  
+**Location:** Riverlot 56  
+**Attendees**  
+- Akib, Braden, Harveer, Jason, Raiyana, Vishal, Zoe, Frank Potter (client)
+---
+### Key Discussions & Decisions
+- Team conducted the site visit, observed steward workflows, validated existing user stories, and proposed cross-referencing user stories with site inspection questions.
+- Observed stewards using web and mobile apps in the field.
+- Validated existing user stories.
+- Aligned stories with site inspection questions.
+---
+### Action Items
+- Continue refining user stories and system functionalities based on client and field feedback.
+---
+### Next Meeting Agenda
+- Finish up what's left of Sprint 1 (February 1).
+---
+### February 1, 2026 – Meeting #9
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** N/A  
+**Attendees**  
+- Akib, Braden, Harveer, Jason, Raiyana, Vishal, Zoe
+---
+### Key Discussions & Decisions
+- Completed the remaining Sprint 1 requirements and assigned tasks for Sprint 2.
+- Reviewed completion of Sprint 1 requirements.
+- Assigned Sprint 2 tasks.
+---
+### Action Items
+- Start working on creating the web application.
+- Begin coding Sprint 2 user stories.
+---
+### Next Meeting Agenda
+- Get to planning for Sprint 2 (February 4).
 ---
 
-### January 25, 2026
-**Key Discussions & Decisions**  
-- Team reviewed the high-level project roadmap and classified requirements as core or “if-time-permits” features  
-- Reorganized requirements based on agreed-upon priorities  
-- Collaboratively drafted initial user stories and potential acceptance tests  
-
-**Action Items**  
-- Add story points to user stories as a team decision  
-- During the January 28 lab session, organize draft user stories into MoSCoW format  
-- Begin work on other Sprint 1 requirements  
+# Sprint 2
 
 ---
-
-### January 27, 2026
-**Key Discussions & Decisions**  
-- Met with previous project members Gabriel and Mehrdad to clarify how the Supabase database was structured  
-- Confirmed the priority of developing a web-based application to replace Google Forms for stewards and administrators  
-- Discussed unresolved image management issues from the previous project  
-- Explored potential solutions such as:
-  - A proof-of-concept using compressed images  
-  - Future monetary investment to support increased storage needs  
-- Decided to focus first on stable Sprint 1 requirements and delay more variable components (e.g., UI mockups) until user stories are approved by Frank  
-
-**Action Items**  
-- Prepare a slide deck for Friday’s meeting with Frank  
-- Finalize the high-level project roadmap and user stories for client review  
-- During the January 28 TA meeting:
-  - Assign Sprint 1 tasks to team members  
-  - Collaborate on shared tasks such as low-fidelity UI mockups  
-
+### February 4, 2026 – Meeting #1
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** N/A  
+**Location:** Lab Session  
+**Attendees**  
+- Akib, Braden, Harveer, Jason, Raiyana, Vishal, Zoe
 ---
-
-### Morning of January 28, 2026
-**Key Discussions & Decisions**  
-- All team members attended the regular lab session with the TA  
-- Discussed the plan for completing remaining Sprint 1 requirements  
-- Explored possible solutions to the image management problem  
-- Coordinated transportation logistics for the Site Inspection field trip on January 31  
-- Ranked user stories collectively based on necessity and implementation complexity  
-- Assigned story points to user stories  
-
-**Action Items**  
-- Hold a team meeting later in the evening to finalize user story rankings and identify epics that need to be split  
-- Complete the slide deck for the Friday meeting with Frank on January 30  
-
+### Key Discussions & Decisions
+- Discussed progress from the previous week, planned Sprint 2 tasks, considered Supabase refactoring, and reviewed Google Sheets code acting as a middleman for Site Inspection Form data.
+- Reviewed previous week's work.
+- Planned Sprint 2 tasks.
+- Discussed Supabase refactoring.
+- Reviewed current Google Sheets middleman code.
 ---
-
-### Evening of January 28, 2026
-**Key Discussions & Decisions**  
-- Finalized user story rankings using the MoSCoW prioritization method  
-- Decomposed oversized user stories into smaller, manageable stories  
-- Completed story point estimation for all user stories  
-- Expanded acceptance tests for several user stories  
-- Added section numbers to user stories to directly map them to the original Site Inspection Google Form  
-- Documented team member Belbin roles  
-
-**Action Items**  
-- Request a review of user stories from Gabriel and Mehrdad to identify missing core functionality or incorrect priorities  
-- Transfer finalized user stories into GitHub as issues  
-- Begin creating the project story map Kanban board, assigning user stories to specific sprints  
-
+### Action Items
+- Create a plan for Supabase refactoring and new tables.
+- Create diagrams of refactored Supabase for Frank's approval.
 ---
-
-
-### January 30, 2026
-**Key Discussions & Decisions**  
-- Discussed logistics for the upcoming site visit
-- Reviewed image management technology options 
-- Reviewed AWS S3, Google drive and Supabase based on cost, scalability and ease of integration
-- AWS S3 was preferred due to scalability, cost effectiveness and robust feature set
-- Decision pending validaton through a proof of concept
-- Reviewed and refined user stories to align closely with site inspection form questions
-- Proposed cross referencing user stories with specific site inspection questions to improve clarity
-
-**Action Items**  
-- Frank Potter needs to review and provide feedback on refined user stories and system functionalities  
-- Team needs to develop an AWS S3 proof of concept and prepare for implementation 
-- Conduct the site visit as planned
-- Complete the AWS S3 proof of concept
-- Continue refining user stories and system functionalities based on feedback
-
+### Next Meeting Agenda
+- Meet with client to discuss what we've built so far (February 6).
 ---
-
-### Afternoon of January 31, 2026
-**Key Discussions & Decisions**  
-- Visited Riverlot 56 with the client, Frank Potter, and discussed how stewards will use the web application and mobile app in the field  
-- Gained clearer understanding of steward workflows and validated several existing user stories based on on-site discussions   
-- Proposed cross referencing user stories with specific site inspection questions to improve clarity 
-
-
-**Action Items**  
-- Continue refining user stories and system functionalities based on client and field feedback  
-
+### February 6, 2026 – Meeting #2
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** Weekly Meeting  
+**Attendees**  
+- Akib, Braden, Harveer, Jason, Raiyana, Vishal, Zoe, Frank Potter
 ---
-
-
-
-
-###  February 1, 2026
-**Key Discussions & Decisions**  
-- Team finished up the rest of the sprint 1 requirements 
-- Assigned tasks to everyone for sprint 2  
-
-
-**Action Items**  
-- Start working on creating the web application  
-- Start coding the implementations for user stories in sprint 2
-
+### Key Discussions & Decisions
+- Reviewed draft diagrams for Supabase refactoring and discussed next steps.
+- No meeting next week due to scheduling conflicts.
+- Met with Frank to review plans.
+- Presented draft diagrams for Supabase refactoring.
 ---
-
-
-## Sprint 2
-
-### Feb 4, 2026
-**Key Discussions & Decisions**
-- Had usual TA meeting in lab session
-- Discussed what we did last week and started planning how to approach sprint 2
-- Discussed if we wanted to refactor the Supabase
-- Looked into current Google Sheets code that acts as a middleman between Google Forms and Supabase
-
-**Action Items**
-- Create a plan to refactor the Supabase by creating new tables to put all our Site Inspection Form data into
-- Create diagrams showing the new refactored Supabase to show Frank for approval
-
+### Action Items
+- Set up meeting with Frank to create AWS S3 and SAPAA email accounts.
+- Continue Supabase refactoring.
+- Begin frontend entry point development for Site Inspection Form webapp.
 ---
-
-### Feb 6, 2026
-**Key Discussions & Decisions**
-- Met with Frank for our weekly meeting to discuss our plans going forwards
-- Created a draft for the diagrams for Supabase refactoring
-- There will be no meeting next week due to conflicts with Frank's schedule
-
-**Action Items**
-- Set up a meeting with Frank to setup an AWS account for our s3 image management and possibly a separate Email account for SAPAA
-- Continue on with refactoring Supabase
-- Start on developing the frontend entry point for the Site Inspection Form webapp
-
+### Next Meeting Agenda
+- Meet with group to complete certain user stories and tasks (February 7).
 ---
-
-
-
-### Feb 7, 2026
-**Key Discussions & Decisions**
-- Members met to work in-person on the project
-- Finished refactoring the Supabase and creating diagrams to show the table relations
-- Finished the frontend entry point of the Site Inspection Form webapp
-
-**Action Items**
-- Continue working through the other user stories related to the Site Inspection Form questions
-- Have a meeting to explain to other team members about how the new Supabase schema works
-
+### February 7, 2026 – Meeting #3
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** In-person session  
+**Attendees**  
+- Akib, Braden, Harveer, Jason, Raiyana, Vishal, Zoe
 ---
-
-### Feb 9, 2026
-**Key Discussions & Decisions**
-- Raiyana Rahman presented the updates made to the database schema to the entire team.
-- Finished refactoring the Supabase and creating the ER diagram to show the table relations
-- Finished the frontend entry point of the Site Inspection Form webapp
-
-**Action Items**
-- The team plans to continue with the development and start integrating the new database schema.
-
+### Key Discussions & Decisions
+- Finished Supabase refactoring, created table diagrams, and completed the frontend entry point of the Site Inspection Form webapp.
+- Completed Supabase refactoring.
+- Created table relation diagrams.
+- Finished frontend entry point.
 ---
-
-### Feb 11, 2026
-**Key Discussions & Decisions**
-- Had usual TA meeting in lab session
-- Discussed what we did last week and continued implementations of Sprint 2
-- Members discussed their progress with their user stories
-
-**Action Items**
-- Add new user stories based on issues that came up while working on Sprint 2 user stories
-- Have an in-person meeting on Friday to work on Sprint 2 requirements and Git related things (E.g. merging pull requests, closing issues)
-
+### Action Items
+- Continue developing remaining user stories for the Site Inspection Form.
+- Educate team members on the new Supabase schema.
 ---
-
-### Feb 13, 2026
-**Key Discussions & Decisions**
-- Members met in-person to work together on Sprint 2
-- Resolved Git pull requests as a team to make sure we were following proper Git conventions
-
-**Action Items**
-- Finish up Sprint 2 user stories by adding tests to resolve user story acceptance tests
-- Work on other Sprint 2 requirements like the traceability matrix
-- Document all Sprint 2 requirements on the documentation website
-
+### Next Meeting Agenda
+- Meet with group to complete certain user stories and tasks (February 7).
 ---
-
-### Feb 15, 2026
-**Key Discussions & Decisions**
-- Members met online to finish merging the remaining pull requests, adding missing tests, and cleaning up the codebase
-- Finished up other Sprint 2 requirements
-- Moved all required documentation into the documentation website
-
-**Action Items**
-- Start planning over the reading week for Sprint 3
-
+### February 9, 2026 – Meeting #4
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** In-person session  
+**Attendees**  
+- Akib, Braden, Harveer, Jason, Raiyana, Vishal, Zoe
 ---
-
-
-## Sprint 3
-
-### Feb 20, 2026
-**Key Discussions & Decisions**
-- Attempted to set up AWS account for deployment, payment verification required before activation
-- Decided to wait for AWS verification before proceeding with hosting setup
-- Set up development email account for deployment and configuration purposes
-- Demoed the current version Site Inspection form to the client (running locally)
-- Discussed replacing emergency/terms text with a single checkbox stating agreement
+### Key Discussions & Decisions
+- Raiyana presented database schema updates to the team.
+- Refactoring of Supabase and frontend entry point completed.
+- Presented Supabase refactoring updates.
+- Reviewed frontend entry point completion.
+---
+### Action Items
+- Continue development and start integrating the new database schema.
+---
+### February 11, 2026 – Meeting #5
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** Lab Session  
+**Attendees**  
+- Akib, Braden, Harveer, Jason, Raiyana, Vishal, Zoe
+---
+### Key Discussions & Decisions
+- Discussed Sprint 2 progress in lab session, continued implementations, and shared updates on individual user stories.
+- Reviewed Sprint 2 progress.
+- Continued implementing Sprint 2 tasks.
+---
+### Action Items
+- Add new user stories based on emerging issues.
+- Hold in-person meeting to work on Sprint 2 requirements and Git practices.
+---
+### Next Meeting Agenda
+- Collaborate to work on Sprint 2 (February 13).
+---
+### February 13, 2026 – Meeting #6
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** In-person session  
+**Attendees**  
+- Akib, Braden, Harveer, Jason, Raiyana, Vishal, Zoe
+---
+### Key Discussions & Decisions
+- Team collaborated to resolve Git pull requests and worked together on Sprint 2 tasks.
+- Resolved Git pull requests.
+- Collaborated on Sprint 2 user stories.
+---
+### Action Items
+- Complete Sprint 2 user stories and acceptance tests.
+- Document Sprint 2 requirements on the project documentation website.
+---
+### Next Meeting Agenda
+- Collaborate to work on Sprint 2 (February 15).
+---
+### February 15, 2026 – Meeting #7
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** Online session  
+**Attendees**  
+- Akib, Braden, Harveer, Jason, Raiyana, Vishal, Zoe
+---
+### Key Discussions & Decisions
+- Finished merging pull requests, adding tests, cleaning codebase, and completing remaining Sprint 2 documentation.
+- Merged remaining pull requests.
+- Cleaned codebase.
+- Documented all Sprint 2 requirements.
+---
+### Action Items
+- Begin planning for Sprint 3 during reading week.
+---
+### Next Meeting Agenda
+- Setup AWS with Frank to prevent image management delay.
+---
+### February 20, 2026 – Meeting #8
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** 1:05 PM – 2:00 PM  
+**Attendees**  
+- Akib, Braden, Harveer, Jason, Raiyana, Vishal, Zoe, Frank, Mehrdad, Gabriel
+---
+### Key Discussions & Decisions
+- Attempted to set up AWS account for deployment, payment verification required before activation.
+- Decided to wait for AWS verification before proceeding with hosting setup.
+- Set up development email account for deployment and configuration purposes.
+- Demoed the current version of the Site Inspection form to the client (running locally).
+- Agreed to replace emergency/terms text with a single checkbox stating agreement.
 - Agreed to refactor section names to match the official SAPAA website structure.
-- Discussed question numbering format; decided to keep original Q-number format (e.g., Q21, Q37) to maintain consistency with 40+ years of historical data
-- Confirmed inspection numbers should be auto-generated based on calendar year
-- Discussed future migration of old inspection data into new database tables
-- Reviewed upcoming Sprint goals including question management and admin features
+- Discussed question numbering format; decided to keep original Q-number format (e.g., Q21, Q37) to maintain consistency with 40+ years of historical data.
+- Confirmed inspection numbers should be auto-generated based on calendar year.
+- Discussed future migration of old inspection data into new database tables.
+- Reviewed upcoming Sprint goals including question management and admin features.
+---
+### Action Items
+- Wait for AWS payment verification and complete hosting setup (Team).
+- Change development email password and finalize configuration (Team).
+- Refactor section names to match official SAPAA website (Team).
+- Revert and maintain original Q-number format for all questions (Vishal).
+- Implement yearly auto increment inspection number system (Team).
+- Plan and document deployment strategy for production release (Harveer).
+- Begin preparing data migration plan for legacy inspection records (Raiyana, Vishal).
+- Admin Form Editor (Jason, Braden).
+---
+### Next Meeting Agenda
+- Confirm AWS setup.
+- Demo current status on project.
+---
+### February 27, 2026 – Meeting #9
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** 1:05 PM – 2:00 PM  
+**Attendees**  
+- Akib, Braden, Harveer, Jason, Raiyana, Vishal, Zoe, Frank, Mehrdad, Gabriel
+---
+### Key Discussions & Decisions
+- Sprint 3 check-in point, confirming AWS setup and discussing image storage.
+- Brought up Cybera as a hosting option.
+- Got feedback from Frank on current progress.
+- Confirmed AWS setup.
+- Discussed Cybera with Frank.
+- Demoed current AWS setup.
+---
+### Action Items
+- Fix next and previous button anchoring (Akib).
+- Remove next section on last page of site inspection form (Vishal, Akib).
+- CSV file output (change delimiter from semicolon to something else) (Team).
+- Plan user testing after Sprint 3 (March 9th onwards) with different user scenarios to try and see whether the web-app is entirely intuitive (Team).
+- Continue work on user stories (Team).
+---
+### Next Meeting Agenda
+- Demo AWS image management.
+- Demo admin site inspection form editor.
+---
 
+# Sprint 3
 
-
-**Action Items**
-- Wait for AWS payment verification and complete hosting setup
-- Change development email password and finalize configuration
-- Refactor section names to match official SAPAA websit
-- Revert and maintain original Q-number format for all question
-- Implement yearly auto increment inspection number system
-- Plan and document deployment strategy for production release
-- Begin preparing data migration plan for legacy inspection record
-
+---
+### March 6, 2026 – Meeting #10
+**Company:** SAPAA  
+**Project:** SAPAA WebApp  
+**Time:** 1:05 PM – 2:00 PM  
+**Attendees**  
+- Akib, Braden, Jason, Raiyana, Vishal, Zoe, Frank, Mehrdad, Gabriel
+---
+### Key Discussions & Decisions
+- Demo Sprint 3 Capabilities, discuss Dragons Den and user testing session.
+- Demo AWS image management.
+- Demo admin site inspection form editor.
+---
+### Action Items
+- Images can be uploaded for a site; not restricted to just uploading by site inspection form (Raiyana).
+- Fix the **Other text box** (Akib).
+- Show images in **gallery view** (Raiyana, Akib).
+- **Future Enhancements** (Harveer, Raiyana).
+- CRUD sections.
+- Moving questions cross section.
+---
+### Next Meeting Agenda
+- Discuss Sprint 4.
+- Discuss user feedback from testing sessions.
 ---
