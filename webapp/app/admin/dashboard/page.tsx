@@ -89,7 +89,7 @@ export default function Dashboard() {
       const { data: topSites, error: topError } = await supabaseClient.rpc(
         "get_top_sites_distribution"
       );
-  
+ 
       console.log("Top sites data:", topSites);
       console.log("Top sites error:", topError);
   
@@ -240,30 +240,40 @@ export default function Dashboard() {
   return (
     <ProtectedRoute requireAdmin>
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-        {/* Navbar */}
-        <AdminNavBar />
+      
         
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-8 shadow-lg">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center gap-3 mb-2">
-              <Image 
-                src="/images/sapaa-icon-white.png" 
-                alt="SAPAA"
-                width={48}
-                height={48}
-                className="w-12 h-12 flex-shrink-0"
-              />
-              <h1 className="text-4xl font-bold">Admin Dashboard</h1>
-            </div>
-            <p className="text-[#E4EBE4] text-lg">Monitor and analyze site inspection data</p>
-          </div>
+      <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+  <div className="max-w-7xl mx-auto">
+    <div className="flex items-center justify-between mb-3">
+      {/* Left: icon + title + subtitle */}
+      <div className="flex items-center gap-4">
+        <Image
+          src="/images/sapaa-icon-white.png"
+          alt="SAPAA"
+          width={140}
+          height={140}
+          priority
+          className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+        />
+        <div>
+          <h1 className="text-3xl font-bold mt-3">Admin Dashboard</h1>
+          <p className="text-[#E4EBE4] text-base mt-0.5">
+            Monitor and analyze site inspection data
+          </p>
         </div>
-
+      </div>
+      {/* Right: navbar — rendered inline, bg overridden to transparent */}
+      <div className="[&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
+        <AdminNavBar />
+      </div>
+    </div>
+  </div>
+</div>
+        
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
           {/* Stats Cards */}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-3 gap-6">
             {/* Total Records Card */}
             <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm hover:shadow-md transition-all">
               <div className="flex items-center gap-4 mb-4">
