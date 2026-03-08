@@ -20,6 +20,7 @@ nav:
   - Project Documentation: 'index.md'
   - Project Management: 'project-management.md'
   - Software Design: 'software-design.md'
+  - Media Storage Architecture: 'aws-architecture.md'
   - Teamwork: 'teamwork.md'
   - Traceability Matrix: 'traceability-matrix.md'
   - Meeting Minutes: 'meeting-minutes.md'
