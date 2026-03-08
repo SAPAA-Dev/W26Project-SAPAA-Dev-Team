@@ -5,7 +5,7 @@ beforeEach(() => {
   cy.viewport(1280, 720);
 });
 
-function loginWithCurrentPattern() {
+function login() {
   cy.visit("http://localhost:3000/");
   cy.get("#email").click();
   cy.get("#email").type("jason.liang5129@gmail.com");
@@ -67,7 +67,7 @@ function captionInput() {
 
 describe("Image Caption Behavior - Q81.1", () => {
   it("supports viewing, adding, editing, clearing, and removing image caption before submit", () => {
-    loginWithCurrentPattern();
+    login();
     openNewReport();
     completeVerificationIfPresent();
     goToCloseSection();

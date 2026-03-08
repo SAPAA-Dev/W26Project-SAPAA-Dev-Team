@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
-const TEST_RESPONSE_ID = 123456789; 
-const NEW_VALUE = 'Edited by cypress ' + Date.now();
+const TEST_RESPONSE_ID = 3237; 
+const NEW_VALUE = 'Thank you Frank Potter for hosting this field trip!';
 
 describe("US 1.0.22 - Editing Site Inspection Form", () => {
 
@@ -70,7 +70,7 @@ describe("US 1.0.22 - Editing Site Inspection Form", () => {
     cy.contains('button', 'Close').click();
     cy.get('[data-testid="question-input-28"]').should('be.visible');
     cy.get('[data-testid="question-input-28"]').clear().type(NEW_VALUE);
-    cy.contains('Review & Submit').click();
+    cy.contains('Save Changes').click();
 
     cy.url().should('include', '/sites');
 
