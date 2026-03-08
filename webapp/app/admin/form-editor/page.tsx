@@ -8,8 +8,6 @@ import {
   Trash2,
   Save,
   X,
-  ChevronDown,
-  ChevronUp,
   Loader2,
   Eye,
   EyeOff,
@@ -23,6 +21,22 @@ import {
   AlertCircle,  
 } from "lucide-react";
 import Image from "next/image";
+import {
+  DndContext,
+  rectIntersection,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  useDroppable,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 import AdminNavBar from "../AdminNavBar";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -30,15 +44,14 @@ import {
   fetchFormSections,
   fetchFormQuestions,
   saveQuestion,
-  deleteQuestion,
   toggleQuestionActive,
   addQuestion,
-  swapQuestionOrder,
+  reorderQuestions,
   addFormSection,
   type FormSection,
   type FormQuestion,
   type QuestionOption,
-} from "@/utils/supabase/admin";
+} from "@/utils/form-actions";
 
 const QUESTION_TYPES = [
   { value: "option", label: "Radio", icon: List },
@@ -74,6 +87,8 @@ export default function FormEditorPage() {
   const [newSectionHeader, setNewSectionHeader] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const handleUpdatePreview = useCallback((draft: Partial<FormQuestion>) => {
+  setSelectedQuestion(draft as FormQuestion);}, []);
 
   // ─── Data Fetching ───────────────────────────────────────────────
   const loadSections = useCallback(async () => {
@@ -109,6 +124,7 @@ export default function FormEditorPage() {
   // ─── Derived State ───────────────────────────────────────────────
   const currentQuestions = questions
     .filter((q) => q.section_id === activeSection)
+    .sort((a, b) => (a.formorder ?? 0) - (b.formorder ?? 0));
 
   const currentSection = sections.find((s) => s.id === activeSection);
 
@@ -122,29 +138,15 @@ export default function FormEditorPage() {
     setSaving(true);
     setError(null);
     try {
+      if (question.subtext == '') {
+        question.subtext = null;
+      }
       await saveQuestion(question);
       await loadQuestions();
       setEditingQuestion(null);
       showSuccess("Question saved successfully");
     } catch (err: any) {
       setError("Failed to save question: " + err.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDeleteQuestion = async (questionId: number) => {
-    if (!confirm("Are you sure you want to delete this question?")) return;
-    setSaving(true);
-    setError(null);
-    try {
-      await deleteQuestion(questionId);
-      await loadQuestions();
-      if (selectedQuestion?.id === questionId) setSelectedQuestion(null);
-      if (editingQuestion?.id === questionId) setEditingQuestion(null);
-      showSuccess("Question deleted");
-    } catch (err: any) {
-      setError("Failed to delete question: " + err.message);
     } finally {
       setSaving(false);
     }
@@ -177,12 +179,7 @@ export default function FormEditorPage() {
     setSaving(true);
     setError(null);
     try {
-      const maxOrder = currentQuestions.reduce(
-        (max, q) => Math.max(max, q.formorder ?? 0),
-        0
-      );
-      console.log("helloworld");
-      await addQuestion(activeSection, maxOrder, newQuestion);
+      await addQuestion(activeSection, newQuestion);
       await loadQuestions();
       setShowAddQuestion(false);
       showSuccess("Question added successfully");
@@ -193,31 +190,58 @@ export default function FormEditorPage() {
     }
   };
 
-  const handleMoveQuestion = async (
-    questionId: number,
-    direction: "up" | "down"
-  ) => {
-    const idx = currentQuestions.findIndex((q) => q.id === questionId);
-    if (idx < 0) return;
-    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
-    if (swapIdx < 0 || swapIdx >= currentQuestions.length) return;
-    const thisQ = currentQuestions[idx];
-    const swapQ = currentQuestions[swapIdx];
-    if (!thisQ.question_key_id || !swapQ.question_key_id) return;
+  // ─── Drag-and-Drop ─────────────────────────────────────────────
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
 
-    setSaving(true);
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const overId = String(over.id);
+    if (overId.startsWith("section-")) return;
+
+    const oldIndex = currentQuestions.findIndex((q) => q.id === active.id);
+    const newIndex = currentQuestions.findIndex((q) => q.id === over.id);
+
+    if (oldIndex < 0 || newIndex < 0) return;
+
+    const reorderedSectionQuestions = arrayMove(currentQuestions, oldIndex, newIndex);
+
+    const reorderedSectionIds = reorderedSectionQuestions.map((q) => q.id);
+    const reorderedSectionMap = new Map(
+      reorderedSectionQuestions.map((q) => [q.id, q])
+    );
+
+    let sectionInsertIndex = 0;
+    const mergedQuestions = questions.map((q) => {
+      if (q.section_id !== activeSection) return q;
+
+      const replacement = reorderedSectionMap.get(reorderedSectionIds[sectionInsertIndex]);
+      sectionInsertIndex++;
+      return replacement ?? q;
+    });
+
+    const globallyOrderedQuestions = mergedQuestions.map((q, index) => ({
+      ...q,
+      formorder: index + 1,
+    }));
+
+    const prevQuestions = [...questions];
+    setQuestions(globallyOrderedQuestions);
+
     try {
-      await swapQuestionOrder(
-        thisQ.question_key_id,
-        thisQ.formorder,
-        swapQ.question_key_id,
-        swapQ.formorder
-      );
-      await loadQuestions();
+      const updates = globallyOrderedQuestions.map((q) => ({
+        questionId: q.id,
+        questionName: q.form_question,
+        newOrder: q.formorder as number,
+      }));
+
+      await reorderQuestions(updates);
     } catch (err: any) {
+      setQuestions(prevQuestions);
       setError("Failed to reorder: " + err.message);
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -305,6 +329,11 @@ export default function FormEditorPage() {
 
         {/* Main Layout */}
         <div className="max-w-7xl mx-auto px-6 py-6">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={rectIntersection}
+            onDragEnd={handleDragEnd}
+          >
           <div className="flex gap-8 min-h-[calc(100vh-260px)]">
             {/* ── Sidebar: Sections ── */}
             <div className="w-[220px] flex-shrink-0">
@@ -328,33 +357,19 @@ export default function FormEditorPage() {
                       (q) => q.section_id === section.id
                     ).length;
                     return (
-                      <button
+                      <DroppableSectionButton
                         key={section.id}
+                        data-testid={`section-button-${section.id}`}
+                        section={section}
+                        count={count}
+                        isActive={activeSection === section.id}
                         onClick={() => {
                           setActiveSection(section.id);
                           setSelectedQuestion(null);
                           setEditingQuestion(null);
                           setShowAddQuestion(false);
                         }}
-                        className={`w-full text-left px-3 py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-between ${
-                          activeSection === section.id
-                            ? "bg-[#EEF5EF] text-[#356B43] border-2 border-[#356B43]"
-                            : "text-[#7A8075] border-2 border-[#E4EBE4] hover:border-[#86A98A]"
-                        }`}
-                      >
-                        <span className="truncate">
-                          {section.header || section.title}
-                        </span>
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
-                            activeSection === section.id
-                              ? "bg-[#356B43] text-white"
-                              : "bg-[#E4EBE4] text-[#7A8075]"
-                          }`}
-                        >
-                          {count}
-                        </span>
-                      </button>
+                      />
                     );
                   })}
                 </div>
@@ -471,7 +486,12 @@ export default function FormEditorPage() {
                   sectionId={activeSection!}
                   saving={saving}
                   onSave={handleAddQuestion}
-                  onCancel={() => setShowAddQuestion(false)}
+                  onCancel={() => {
+                    setShowAddQuestion(false);
+                    setSelectedQuestion(null); // Clear preview on cancel
+                  }}
+                  // Update the preview panel as the user types
+                  onUpdate={handleUpdatePreview}
                 />
               )}
 
@@ -490,79 +510,134 @@ export default function FormEditorPage() {
                   </button>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {currentQuestions.map((question, idx) => (
-                    <QuestionCard
-                      key={question.id}
-                      question={question}
-                      index={idx}
-                      total={currentQuestions.length}
-                      isSelected={selectedQuestion?.id === question.id}
-                      isEditing={editingQuestion?.id === question.id}
-                      saving={saving}
-                      onSelect={() => setSelectedQuestion(question)}
-                      onEdit={() => {
-                        setSelectedQuestion(question);
-                        setEditingQuestion({ ...question });
-                        setShowAddQuestion(false);
-                      }}
-                      onToggleActive={() => handleToggleActive(question.id, question.is_active)}
-                      onDelete={() => handleDeleteQuestion(question.id)}
-                      onMoveUp={() => handleMoveQuestion(question.id, "up")}
-                      onMoveDown={() =>
-                        handleMoveQuestion(question.id, "down")
-                      }
-                      onSave={handleSaveQuestion}
-                      onCancelEdit={() => setEditingQuestion(null)}
-                      editingQuestion={
-                        editingQuestion?.id === question.id
-                          ? editingQuestion
-                          : null
-                      }
-                      onEditingChange={setEditingQuestion}
-                    />
-                  ))}
-                </div>
+                <SortableContext
+                  items={currentQuestions.map((q) => q.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-3">
+                    {currentQuestions.map((question) => (
+                      <SortableQuestionCard
+                        key={question.id}
+                        data-testid={`question-card-${question.id}`}
+                        question={question}
+                        isSelected={selectedQuestion?.id === question.id}
+                        isEditing={editingQuestion?.id === question.id}
+                        saving={saving}
+                        onSelect={() => setSelectedQuestion(question)}
+                        onEdit={() => {
+                          setSelectedQuestion(question);
+                          setEditingQuestion({ ...question });
+                          setShowAddQuestion(false);
+                        }}
+                        onToggleActive={() => handleToggleActive(question.id, question.is_active)}
+                        onSave={handleSaveQuestion}
+                        onCancelEdit={() => setEditingQuestion(null)}
+                        editingQuestion={
+                          editingQuestion?.id === question.id
+                            ? editingQuestion
+                            : null
+                        }
+                        onEditingChange={setEditingQuestion}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
               )}
             </div>
 
             {/* ── Right: Preview Panel ── */}
             <div className="w-[340px] flex-shrink-0 hidden lg:block">
               <div className="bg-[#F7F2EA] rounded-2xl border-2 border-[#E4EBE4] p-5 sticky top-6">
-                <h3 className="text-xs font-bold text-[#7A8075] uppercase tracking-wider mb-4">
-                  Preview
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xs font-bold text-[#7A8075] uppercase tracking-wider">
+                    Preview
+                  </h3>
+                  {/* Badge to show user they are looking at the 'Add Question' draft */}
+                  {selectedQuestion?.id === -1 && (
+                    <span className="text-[10px] bg-[#356B43] text-white px-2 py-0.5 rounded-full font-bold animate-pulse">
+                      LIVE DRAFT
+                    </span>
+                  )}
+                </div>
+
                 {selectedQuestion ? (
                   <PreviewPanel question={selectedQuestion} />
                 ) : (
                   <div className="text-center py-12">
                     <Eye className="w-10 h-10 text-[#E4EBE4] mx-auto mb-3" />
                     <p className="text-sm text-[#7A8075]">
-                      Select a question to preview how it will appear in the
-                      inspection form
+                      Select a question or start adding one to see a preview
                     </p>
                   </div>
                 )}
               </div>
             </div>
           </div>
+          </DndContext>
         </div>
       </div>
     </ProtectedRoute>
   );
 }
 
-// ─── QuestionCard Component ──────────────────────────────────────────
-function QuestionCard({
+// ─── DroppableSectionButton Component ────────────────────────────────
+function DroppableSectionButton({
+  section,
+  count,
+  isActive,
+  onClick,
+  "data-testid": dataTestId,
+}: {
+  section: FormSection;
+  count: number;
+  isActive: boolean;
+  onClick: () => void;
+  "data-testid"?: string;
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `section-${section.id}`,
+  });
+
+  return (
+    <button
+      ref={setNodeRef}
+      onClick={onClick}
+      data-testid={dataTestId}
+      className={`w-full text-left px-3 py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-between ${
+        isOver
+          ? "bg-[#DCFCE7] text-[#166534] border-2 border-[#22C55E] scale-[1.03] shadow-md"
+          : isActive
+            ? "bg-[#EEF5EF] text-[#356B43] border-2 border-[#356B43]"
+            : "text-[#7A8075] border-2 border-[#E4EBE4] hover:border-[#86A98A]"
+      }`}
+    >
+      <span className="truncate">
+        {section.header || section.title}
+      </span>
+      <span
+        className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
+          isOver
+            ? "bg-[#22C55E] text-white"
+            : isActive
+              ? "bg-[#356B43] text-white"
+              : "bg-[#E4EBE4] text-[#7A8075]"
+        }`}
+        data-testid={`section-count-${section.id}`}
+      >
+        {count}
+      </span>
+    </button>
+  );
+}
+
+// ─── SortableQuestionCard Component ──────────────────────────────────
+function SortableQuestionCard({
   question,
-  index,
-  total,
   isSelected,
   isEditing,
   saving,
   onSelect,
   onEdit,
-  onDelete,
   onToggleActive,
   onMoveUp,
   onMoveDown,
@@ -572,40 +647,59 @@ function QuestionCard({
   onEditingChange,
 }: {
   question: FormQuestion;
-  index: number;
-  total: number;
   isSelected: boolean;
   isEditing: boolean;
   saving: boolean;
   onSelect: () => void;
   onEdit: () => void;
-  onDelete: () => void;
   onToggleActive: (id: number, currentStatus: boolean) => Promise<void>;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
   onSave: (q: FormQuestion) => void;
   onCancelEdit: () => void;
   editingQuestion: FormQuestion | null;
   onEditingChange: (q: FormQuestion | null) => void;
 }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: question.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : undefined,
+  };
+
   const TypeIcon = getTypeIcon(question.question_type);
 
   if (isEditing && editingQuestion) {
     return (
-      <EditQuestionForm
-        question={editingQuestion}
-        saving={saving}
-        onChange={onEditingChange}
-        onSave={() => onSave(editingQuestion)}
-        onCancel={onCancelEdit}
-      />
+      <div ref={setNodeRef} style={style}>
+        <EditQuestionForm
+          question={editingQuestion}
+          saving={saving}
+          onChange={onEditingChange}
+          onSave={() => onSave(editingQuestion)}
+          onCancel={onCancelEdit}
+        />
+      </div>
     );
   }
 
   return (
     <div
+      ref={setNodeRef}
+      style={style}
       onClick={onSelect}
       className={`bg-white border-2 rounded-xl p-4 flex items-center justify-between cursor-pointer transition-all hover:shadow-sm ${
+        isDragging ? "shadow-lg scale-[1.02]" : ""
+      } ${
         isSelected
           ? "border-[#356B43] shadow-sm"
           : "border-[#E4EBE4] hover:border-[#86A98A]"
@@ -614,7 +708,14 @@ function QuestionCard({
       }`}
     >
       <div className="flex items-center gap-3 min-w-0">
-        <GripVertical className="w-4 h-4 text-[#7A8075] flex-shrink-0 cursor-grab" />
+        <button
+          {...attributes}
+          {...listeners}
+          className="touch-none flex-shrink-0 cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-[#E4EBE4] transition-colors"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GripVertical className="w-4 h-4 text-[#7A8075]" />
+        </button>
         <div
           className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
             !question.is_active 
@@ -652,32 +753,11 @@ function QuestionCard({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onMoveUp();
-          }}
-          disabled={index === 0 || saving}
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-[#7A8075] hover:bg-[#E4EBE4] disabled:opacity-30 transition-all"
-          title="Move up"
-        >
-          <ChevronUp className="w-4 h-4" />
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onMoveDown();
-          }}
-          disabled={index === total - 1 || saving}
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-[#7A8075] hover:bg-[#E4EBE4] disabled:opacity-30 transition-all"
-          title="Move down"
-        >
-          <ChevronDown className="w-4 h-4" />
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
             onEdit();
           }}
           className="w-7 h-7 rounded-lg flex items-center justify-center text-[#356B43] hover:bg-[#EEF5EF] transition-all"
           title="Edit"
+          data-testid="edit-question-button"
         >
           <Pencil className="w-3.5 h-3.5" />
         </button>
@@ -692,6 +772,7 @@ function QuestionCard({
               : "text-amber-600 bg-amber-50 hover:bg-amber-100"
           }`}
           title={question.is_active ? "Hide Question" : "Show Question"}
+          data-testid={question.is_active ? question.form_question + " Hide Button" : question.form_question + " Show Button"}
           >
           {question.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
         </button>
@@ -729,6 +810,7 @@ function EditQuestionForm({
           </label>
           <input
             type="text"
+            data-testid="edit-question-title"
             value={question.form_question || ""}
             onChange={(e) =>
               onChange({ ...question, form_question: e.target.value })
@@ -742,6 +824,7 @@ function EditQuestionForm({
             Description / Subtext
           </label>
           <textarea
+            data-testid="edit-question-subtext"
             value={question.subtext || ""}
             onChange={(e) =>
               onChange({ ...question, subtext: e.target.value })
@@ -756,19 +839,25 @@ function EditQuestionForm({
             <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
               Question Type
             </label>
-            <select
-              value={question.question_type.trim()}
-              onChange={(e) =>
-                onChange({ ...question, question_type: e.target.value })
-              }
-              className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] bg-white transition-colors"
-            >
-              {QUESTION_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
+            <div className="grid grid-cols-5 gap-2 opacity-60 cursor-not-allowed">
+              {QUESTION_TYPES.map((type) => {
+                const Icon = type.icon;
+                const isSelected = question.question_type === type.value;
+                return (
+                  <div
+                    key={type.value}
+                    className={`flex flex-col items-center gap-1 p-1 rounded-xl border-2 transition-all ${
+                      isSelected
+                        ? "border-[#356B43] bg-[#356B43]/5 text-[#356B43]"
+                        : "border-[#E4EBE4] text-[#7A8075]"
+                    }`}
+                  >
+                    <Icon size={15} />
+                    <span className="text-[10px] font-medium">{type.label}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
           <div className="flex items-end">
             <label className="flex items-center gap-2 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl cursor-pointer hover:border-[#86A98A] transition-colors">
@@ -844,6 +933,7 @@ function EditQuestionForm({
           onClick={onSave}
           disabled={saving}
           className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#356B43] to-[#254431] text-white text-sm font-semibold rounded-xl disabled:opacity-50 hover:shadow-lg transition-all"
+          data-testid="save-question-button"
         >
           {saving ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -855,6 +945,7 @@ function EditQuestionForm({
         <button
           onClick={onCancel}
           className="px-4 py-2.5 border-2 border-[#E4EBE4] text-[#7A8075] text-sm font-semibold rounded-xl hover:bg-[#E4EBE4] transition-all"
+          data-testid="cancel-button"
         >
           Cancel
         </button>
@@ -869,7 +960,8 @@ function AddQuestionForm({
   saving,
   onSave,
   onCancel,
-}: {
+  onUpdate,
+} : {
   sectionId: number;
   saving: boolean;
   onSave: (q: {
@@ -881,6 +973,7 @@ function AddQuestionForm({
     question_key: string;
   }) => void;
   onCancel: () => void;
+  onUpdate: (q: Partial<FormQuestion>) => void; // New prop
 }) {
   const [title, setTitle] = useState("");
   const [subtext, setSubtext] = useState("");
@@ -890,6 +983,23 @@ function AddQuestionForm({
   const [questionKey, setQuestionKey] = useState("");
 
   const needsOptions = ["option", "selectall"].includes(type);
+
+  // Sync with preview panel whenever local state changes
+  useEffect(() => {
+  onUpdate({
+    id: -1, // Temporary ID to mark as draft
+    form_question: title || "Untitled Question", // Fallback for preview
+    subtext,
+    question_type: type,
+    is_required: required,
+    options: options.map((opt, i) => ({ 
+      id: i, 
+      option_text: opt || `Option ${i + 1}`, // Shows "Option 1" in preview if empty
+      is_active: true 
+    })),
+    section_id: sectionId,
+  });
+}, [title, subtext, type, required, options, sectionId, onUpdate]);
 
   return (
     <div className="bg-white border-2 border-[#356B43] rounded-xl p-5 shadow-md mb-4">
@@ -905,9 +1015,11 @@ function AddQuestionForm({
           <input
             type="text"
             value={title}
+            title="add-question-title"
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Are there signs of erosion?"
+            placeholder="Must be in this format -> Question Test (Q70)"
             className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] transition-colors placeholder:text-[#7A8075]"
+            data-testid="add-question-title"
           />
         </div>
 
@@ -917,10 +1029,12 @@ function AddQuestionForm({
           </label>
           <textarea
             value={subtext}
+            title="add-question-subtext"
             onChange={(e) => setSubtext(e.target.value)}
             placeholder="Additional context for the question (optional)"
             rows={2}
             className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] resize-none transition-colors placeholder:text-[#7A8075]"
+            data-testid="add-question-subtext"
           />
         </div>
 
@@ -930,10 +1044,12 @@ function AddQuestionForm({
           </label>
           <input
             type="text"
+            title="add-question-key"
             value={questionKey}
             onChange={(e) => setQuestionKey(e.target.value)}
-            placeholder="e.g. Q111_erosion"
+            placeholder="Must be in this format -> Q70_QuestionTest"
             className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] transition-colors placeholder:text-[#7A8075]"
+            data-testid="add-question-key"
           />
         </div>
 
@@ -954,6 +1070,7 @@ function AddQuestionForm({
                         ? "border-[#356B43] bg-[#EEF5EF] text-[#356B43]"
                         : "border-[#E4EBE4] text-[#7A8075] hover:border-[#86A98A]"
                     }`}
+                    data-testid={`question-type-${t.label}`}
                   >
                     <Icon className="w-3.5 h-3.5" />
                     {t.label}
@@ -1034,6 +1151,7 @@ function AddQuestionForm({
           }
           disabled={saving || !title.trim()}
           className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#356B43] to-[#254431] text-white text-sm font-semibold rounded-xl disabled:opacity-50 hover:shadow-lg transition-all"
+          data-testid="save-new-question"
         >
           {saving ? (
             <Loader2 className="w-4 h-4 animate-spin" />

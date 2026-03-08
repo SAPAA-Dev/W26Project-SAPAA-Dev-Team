@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/client";
 import dynamic from "next/dynamic";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import Link from "next/link";
 import { 
   LayoutDashboard, 
   FileText, 
@@ -274,13 +275,33 @@ export default function Dashboard() {
                   <div className="text-4xl font-bold text-[#254431] mt-1">{stats.totalInspections.toLocaleString()}</div>
                 </div>
               </div>
-              <div className="pt-4 border-t-2 border-[#E4EBE4]">
+            <div className="pt-4 border-t-2 border-[#E4EBE4]">
                 <div className="flex items-center gap-2 text-sm text-[#7A8075]">
                   <TrendingUp className="w-4 h-4 text-[#1C7C4D]" />
                   <span>All inspection records in database</span>
                 </div>
               </div>
             </div>
+        <Link href="/admin/gallery" className="block">
+          <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm hover:shadow-md transition-all">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center shadow-md">
+                  <FileText className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Image Gallery</div>
+                  <div className="text-4xl font-bold text-[#254431] mt-1">{stats.totalInspections.toLocaleString()}</div>
+                </div>
+              </div>
+            <div className="pt-4 border-t-2 border-[#E4EBE4]">
+                <div className="flex items-center gap-2 text-sm text-[#7A8075]">
+                  <TrendingUp className="w-4 h-4 text-[#1C7C4D]" />
+                  <span>All inspection images from sites</span>
+                </div>
+              </div>
+            </div>
+        </Link>
+            
 
             {/* Last Record Card */}
             <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm hover:shadow-md transition-all">
@@ -309,6 +330,8 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
+          
 
           {/* Charts Section */}
           <div className="grid lg:grid-cols-2 gap-6">

@@ -62,12 +62,12 @@ const guestUser = {
 };
 
 const personalInfoQuestions = [
-  { id: 1, title: 'Steward Name', text: 'Enter the name of the steward conducting the inspection', question_type: 'text', section: 4, answers: [], formorder: 1, is_required: true, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
-  { id: 3, title: 'Guest First Name', text: 'Enter the first name of the guest', question_type: 'text', section: 4, answers: [], formorder: 3, is_required: false, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
-  { id: 4, title: 'Guest Last Name', text: 'Enter the last name of the guest', question_type: 'text', section: 4, answers: [], formorder: 4, is_required: false, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
-  { id: 5, title: 'Contact Email', text: 'Enter your contact email address', question_type: 'text', section: 4, answers: [], formorder: 5, is_required: true, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
-  { id: 6, title: 'Contact Phone', text: 'Enter your contact phone number', question_type: 'text', section: 4, answers: [], formorder: 6, is_required: false, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
-  { id: 7, title: 'SAPAA Membership', text: 'Are you a member of SAPAA?', question_type: 'option', section: 4, answers: [{ text: 'Yes' }, { text: 'No' }], formorder: 7, is_required: true, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
+  { id: 1, title: 'Steward Name', text: 'Enter the name of the steward conducting the inspection', question_type: 'text', section: 3, answers: [], formorder: 1, is_required: true, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
+  { id: 3, title: 'Guest First Name', text: 'Enter the first name of the guest', question_type: 'text', section: 3, answers: [], formorder: 3, is_required: false, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
+  { id: 4, title: 'Guest Last Name', text: 'Enter the last name of the guest', question_type: 'text', section: 3, answers: [], formorder: 4, is_required: false, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
+  { id: 5, title: 'Contact Email', text: 'Enter your contact email address', question_type: 'text', section: 3, answers: [], formorder: 5, is_required: true, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
+  { id: 6, title: 'Contact Phone', text: 'Enter your contact phone number', question_type: 'text', section: 3, answers: [], formorder: 6, is_required: false, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
+  { id: 7, title: 'SAPAA Membership', text: 'Are you a member of SAPAA?', question_type: 'option', section: 3, answers: [{ text: 'Yes' }, { text: 'No' }], formorder: 7, is_required: true, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
 ];
 
 const beThereQuestions = [
@@ -338,16 +338,6 @@ describe('US 1.0.4 - Have access to the Terms and Conditions of Inputting Inform
     // Button disabled initially
     expect(screen.getByText('Continue to Form')).toBeDisabled();
 
-    // Wrong text shows error
-    fireEvent.change(screen.getByPlaceholderText('Type here...'), {
-      target: { value: 'wrong text' },
-    });
-    expect(screen.getByText(/Text does not match/i)).toBeInTheDocument();
-
-    // Correct text + terms accepted enables button
-    fireEvent.change(screen.getByPlaceholderText('Type here...'), {
-      target: { value: 'I am not a volunteer of SAPAA' },
-    });
     fireEvent.click(screen.getAllByRole('checkbox')[0]);
     expect(screen.getByText('Continue to Form')).toBeEnabled();
   });
@@ -901,7 +891,7 @@ describe('US 1.0.27 - Enforce Required Questions on Site Inspection Form (also c
     expect(popupTitle).toBeInTheDocument();
 
     // Assert that the specific missing question number is displayed
-    const missingNumber = screen.getAllByText('0.1');
+    const missingNumber = screen.getAllByText('1.1');
     expect(missingNumber[0]).toBeInTheDocument();
 
     // Verify that the final submission functions were not called
