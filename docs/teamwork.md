@@ -26,7 +26,12 @@ The Product Owner defines and prioritizes the product backlog items based on cus
 
 **Person Assigned:**
 
-- **Product Owner:** Harveer Deol 
+
+- **Sprint 1:** Harveer Deol 
+- **Sprint 2:** Harveer Deol 
+- **Sprint 3:** Raiyana Rahman
+- **Sprint 4:** Harveer Deol   
+- **Sprint 5:** Harveer Deol 
 
 
 
