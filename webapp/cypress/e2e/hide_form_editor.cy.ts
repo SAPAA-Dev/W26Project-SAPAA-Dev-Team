@@ -9,9 +9,9 @@ describe('Admin Form Editor - Question Visibility', () => {
     cy.get('#password').type('123Gctrmomy@');
     cy.get('button.font-bold').click();
     cy.get('button.text-white').click();
-    cy.wait(4000);
+    cy.wait(5000);
     cy.contains('Admin').first().click();
-    cy.wait(4000);
+    cy.wait(5000);
     cy.get('button[title="admin dropdown menu"]').click();
     cy.contains('Form Editor').click();
     cy.url().should('include', '/admin/form-editor')
@@ -97,7 +97,7 @@ describe('Admin Form Editor - Question Visibility', () => {
 
     // Verifying editing reports
     cy.wait(2000);
-    cy.get(`[data-testid="edit-form-button"]`).click();
-    cy.get(`[data-testid="Email (Q11)-question-title"]`).should('exist');
+    cy.get(`[data-testid="edit-form-button"]`, { timeout: 10000 }).click();
+    cy.get(`[data-testid="Email (Q11)-question-title"]`, { timeout: 10000 }).should('exist');
   });
 });

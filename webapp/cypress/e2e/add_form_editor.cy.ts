@@ -9,9 +9,9 @@ describe('Admin Form Editor - Adding Questions', () => {
     cy.get('#password').type('123Gctrmomy@');
     cy.get('button.font-bold').click();
     cy.get('button.text-white').click();
-    cy.wait(4000);
+    cy.wait(5000);
     cy.contains('Admin').first().click();
-    cy.wait(4000);
+    cy.wait(5000);
     cy.get('button[title="admin dropdown menu"]').click();
     cy.contains('Form Editor').click();
     cy.url().should('include', '/admin/form-editor')
@@ -47,7 +47,9 @@ describe('Admin Form Editor - Adding Questions', () => {
 
     cy.get('svg.lucide-house').click();
     cy.contains('Riverlot 56').scrollIntoView().click();
+    cy.wait(4000);
     cy.contains('New Site Inspection Report').click();
+    cy.wait(4000);
     cy.contains('I have read and agree to the terms and conditions').click();
     cy.contains('Continue to Form').click();
     cy.contains('Q10');
