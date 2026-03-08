@@ -18,7 +18,7 @@ Object.assign(global, {
   },
 });
 
-const fetch = require("node-fetch");
+const fetch = require("cross-fetch");
 const { Request, Response, Headers } = fetch;
 Object.assign(global, { fetch, Request, Response, Headers });
 
