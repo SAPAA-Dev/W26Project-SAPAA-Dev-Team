@@ -9,7 +9,7 @@ on:
       - Sprint-5
   pull_request:
     branches:
-      - '**'
+      - '**'    # Run tests on PRs from any branch
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -29,7 +29,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: webapp
-        run: npm install
+        run: npm ci || npm install
 
       - name: Run Webapp tests
         working-directory: webapp
