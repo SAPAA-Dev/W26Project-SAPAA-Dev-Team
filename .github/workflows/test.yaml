@@ -37,7 +37,7 @@ jobs:
 
   deploy:
       needs: test-webapp
-      runs-on: [self-hosted, linux, raiyana-runner]
+      runs-on: self-hosted
       if: github.ref == 'refs/heads/Sprint-3' && github.event_name == 'push'
       steps:
         - name: Checkout repository
