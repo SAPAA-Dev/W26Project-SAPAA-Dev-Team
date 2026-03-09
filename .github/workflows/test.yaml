@@ -46,6 +46,5 @@ jobs:
         - name: Deploy with Docker Compose
           working-directory: /home/ubuntu/deploy
           run: |
-            git pull origin Sprint-3
             docker compose down
             docker compose up -d --build
