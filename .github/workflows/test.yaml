@@ -46,5 +46,5 @@ jobs:
       - name: Deploy with Docker Compose
         working-directory: /home/ubuntu/deploy
         run: |
-          docker compose down
-          docker compose up -d --build
+          docker-compose down
+          docker-compose up -d --build
