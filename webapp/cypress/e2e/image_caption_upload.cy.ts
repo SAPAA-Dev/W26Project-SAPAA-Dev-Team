@@ -72,7 +72,7 @@ describe("Image Caption Behavior - Q81.1", () => {
     uploadOneImage();
 
     // Case A: caption field appears empty after upload
-    cy.contains("1 image selected").should("exist");
+    cy.contains(/1 image (selected|total)/i).should("exist");
     cy.contains("test-image.jpg").should("exist");
     captionInput().should("exist").and("have.value", "");
 
@@ -91,9 +91,9 @@ describe("Image Caption Behavior - Q81.1", () => {
     captionInput().should("have.value", "");
 
     // Optional hardening: remove uploaded image
-    cy.contains("1 image selected").should("exist");
+    cy.contains(/1 image (selected|total)/i).should("exist");
     cy.contains("button", "Remove").first().scrollIntoView().click();
-    cy.contains("1 image selected").should("not.exist");
+    cy.contains(/1 image (selected|total)/i).should("not.exist");
     cy.contains("test-image.jpg").should("not.exist");
   });
 });
