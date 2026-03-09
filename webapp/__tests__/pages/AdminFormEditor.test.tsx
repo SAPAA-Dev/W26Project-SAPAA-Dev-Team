@@ -378,7 +378,7 @@ describe('FormEditorPage', () => {
   });
 
   describe('Modify questions - Toggle visibility (remove/show)', () => {
-    it('calls toggleQuestionActive when hide button is clicked', async () => {
+    it('admin can toggle a question to be hidden', async () => {
       render(<FormEditorPage />);
       await waitFor(() => {
         expect(screen.getByText('Site Name (Q1)')).toBeInTheDocument();
@@ -579,7 +579,7 @@ describe('FormEditorPage', () => {
         expect(screen.getByText(/Failed to add question/)).toBeInTheDocument();
       });
     });
-
+    
     it('shows alert when toggling question visibility fails', async () => {
       (formActions.toggleQuestionActive as jest.Mock).mockRejectedValue(new Error('Toggle failed'));
       const alertSpy = jest.spyOn(window, 'alert').mockImplementation();

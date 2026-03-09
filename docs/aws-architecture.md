@@ -5,7 +5,7 @@ The goal is to help future development teams understand how media files flow thr
 
 ---
 
-# Overview
+## Overview
 
 Images uploaded through the SAPAA application are stored in **AWS S3**, while their metadata is stored in the **Supabase PostgreSQL database**.
 
@@ -19,21 +19,21 @@ This approach improves:
 
 ---
 
-# High-Level Architecture
+## High-Level Architecture
 
-## Image Upload Architecture
+### Image Upload Architecture
 ![Image Upload Architecture](images/awsupload.png)
 
 ---
 
-## Image Download Architecture
+### Image Download Architecture
 ![Image Download Architecture](images/awsdownload.png)
 
 
 
 ---
 
-# Image Upload Flow
+## Image Upload Flow
 
 ### Step 1 – User selects an image
 
@@ -55,19 +55,18 @@ The user may enter metadata such as:
 
 The frontend sends a request to:
 
-
+```
 POST /api/s3/presign
-
+```
 
 The request contains:
 
-
-filename
-contentType
-fileSize
-siteId
-responseId
-questionId
+- filename
+- contentType
+- fileSize
+- siteId
+- responseId
+- questionId
 
 
 The API validates:
@@ -80,24 +79,15 @@ The API validates:
 
 ---
 
-# S3 Storage Structure
+## S3 Storage Structure
 
-**Images are stored in the S3 bucket:**
-
-
-sapaa-inspection-images
+**Images are stored in the S3 bucket:** sapaa-inspection-images
 
 
-**Objects are stored using the following structure:**
+**Objects are stored using the following structure:** ```inspections/{siteId}/{responseId}/{questionId}/{uuid}.jpg```
 
 
-inspections/{siteId}/{responseId}/{questionId}/{uuid}.jpg
-
-
-**Example:**
-
-
-inspections/207/3235/27/a1b2c3d4.jpg
+**Example:** ```inspections/207/3235/27/a1b2c3d4.jpg```
 
 
 ### Why a UUID is added
@@ -108,12 +98,9 @@ This ensures files are **never overwritten**.
 
 ---
 
-# Database Metadata Storage
+## Database Metadata Storage
 
-Image metadata is stored in the table:
-
-
-W26_attachments
+Image metadata is stored in the table: W26_attachments
 
 
 Important fields include:
@@ -134,7 +121,7 @@ Important fields include:
 
 ---
 
-# Gallery API Endpoints
+## Gallery API Endpoints
 
 This section documents the API endpoints used to retrieve uploaded images and their metadata.
 
@@ -143,17 +130,17 @@ These endpoints generate **temporary signed URLs** so that images can be securel
 
 ---
 
-# API Access Control
+## API Access Control
 
 Some API endpoints in the SAPAA system are restricted based on user roles.  
 In particular, the **gallery administration endpoint** is only accessible to users with the **admin role**.
 
 ---
 
-# Admin-only Endpoints
+## Admin-only Endpoints
 
 
-## GET /api/gallery
+### ``` GET /api/gallery ```
 
 
 This endpoint returns all uploaded images across all sites along with their associated metadata.
@@ -161,11 +148,11 @@ This endpoint returns all uploaded images across all sites along with their asso
 Because this endpoint exposes all media files and metadata in the system, it is protected with a **server-side authorization check**.
 
 
-## Access Level
+#### Access Level
 
 Only users whose role is set to `admin` in their authentication metadata are allowed to access this endpoint.
 
-### Authorization Logic
+#### Authorization Logic
 
 When a request is received, the server:
 
@@ -174,7 +161,7 @@ When a request is received, the server:
 3. Verifies that the role is `admin`.
 4. Returns a **403 Forbidden** response if the user is not an administrator.
 
-## Response
+#### Response
 
 Returns a JSON object containing a list of images and their metadata.
 
@@ -202,22 +189,22 @@ Example response:
 ```
 ---
 
-# Authentication based endpoint
+## Authentication based endpoint
 
-## GET /api/sites/{siteId}/gallery
+### ```GET /api/sites/{siteId}/gallery```
 
 Returns images associated with a specific site or inspection response.
 
 This endpoint allows authenticated users to retrieve media files linked to a site inspection or site record.
 
-## Access Level
+#### Access Level
 
 Authenticated users only.
 
 Unlike `/api/gallery`, which is restricted to administrators, this endpoint allows normal users to view images associated with sites they have access to.
 
 
-## Response
+#### Response
 
 Returns a JSON object containing a list of images and their metadata.
 
@@ -241,7 +228,7 @@ Example response:
 
 ---
 
-## GET `/api/site-images`
+### ```GET /api/site-images```
 
 Returns image attachments associated with a site or inspection response.
 
@@ -249,14 +236,14 @@ Images are stored in AWS S3 while metadata is stored in the Supabase database.
 This endpoint generates temporary **signed URLs** that allow images to be securely viewed.
 
 
-## Access Level
+#### Access Level
 
 Authenticated users only.
 
 The server verifies that the requester is logged in before returning any image metadata.
 
 
-## Query Parameters
+#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -266,28 +253,19 @@ The server verifies that the requester is logged in before returning any image m
 At least **one** parameter must be provided.
 
 
-## Example Requests
+#### Example Requests
 
-**Retrieve images for a site:**
-
-
-/api/site-images?siteid=207
+**Retrieve images for a site:** ```/api/site-images?siteid=207```
 
 
-**Retrieve images for an inspection response:**
+**Retrieve images for an inspection response:** ```/api/site-images?responseid=3235```
 
 
-/api/site-images?responseid=3235
-
-
-**Retrieve images filtered by both:**
-
-
-/api/site-images?siteid=207&responseid=3235
+**Retrieve images filtered by both:** ```/api/site-images?siteid=207&responseid=3235```
 
 
 
-## Response Format
+#### Response Format
 
 Returns a JSON object containing an array of images.
 
@@ -317,7 +295,7 @@ Example:
 
 ---
 
-# Security Model
+## Security Model
 
 The system protects images using several mechanisms:
 
@@ -352,7 +330,7 @@ Signed URLs expire after a short time.
 
 ---
 
-# Why Direct S3 Uploads Are Used
+## Why Direct S3 Uploads Are Used
 
 Uploading files directly to S3 provides several benefits:
 
@@ -370,7 +348,7 @@ The server validates requests before issuing upload permissions.
 
 ---
 
-# Admin Gallery
+## Admin Gallery
 
 Admins can view all uploaded images through the gallery interface.
 
@@ -385,7 +363,7 @@ Images are displayed using signed S3 URLs generated by the server.
 
 ---
 
-# Related API Endpoints
+## Related API Endpoints
 
 | Endpoint | Purpose |
 |-----|-----|
@@ -396,7 +374,7 @@ Images are displayed using signed S3 URLs generated by the server.
 
 ---
 
-# Summary
+## Summary
 
 The SAPAA SIR system stores images in AWS S3 while maintaining metadata in Supabase.
 

@@ -93,7 +93,7 @@ function uploadOneImage(container: HTMLElement, fileName: string) {
   fireEvent.change(fileInput, { target: { files: [file] } });
 }
 
-describe("US 1.0.18 - Image Upload Persistence Across Section Switching", () => {
+describe("US 2.0.2 - Image Metadata", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
