@@ -551,6 +551,7 @@ export default function MainContent({
         );
     }
   };
+  };
 
   if (loading) {
     return (

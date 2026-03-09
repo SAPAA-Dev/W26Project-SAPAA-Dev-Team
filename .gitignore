@@ -172,6 +172,3 @@ FNR/android
 #node_modules
 FNR/node_modules
 node_modules
-
-# cypress env file
-webapp/cypress.env.json
