@@ -62,12 +62,12 @@ const guestUser = {
 };
 
 const personalInfoQuestions = [
-  { id: 1, title: 'Steward Name', text: 'Enter the name of the steward conducting the inspection', question_type: 'text', section: 4, answers: [], formorder: 1, is_required: true, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
-  { id: 3, title: 'Guest First Name', text: 'Enter the first name of the guest', question_type: 'text', section: 4, answers: [], formorder: 3, is_required: false, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
-  { id: 4, title: 'Guest Last Name', text: 'Enter the last name of the guest', question_type: 'text', section: 4, answers: [], formorder: 4, is_required: false, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
-  { id: 5, title: 'Contact Email', text: 'Enter your contact email address', question_type: 'text', section: 4, answers: [], formorder: 5, is_required: true, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
-  { id: 6, title: 'Contact Phone', text: 'Enter your contact phone number', question_type: 'text', section: 4, answers: [], formorder: 6, is_required: false, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
-  { id: 7, title: 'SAPAA Membership', text: 'Are you a member of SAPAA?', question_type: 'option', section: 4, answers: [{ text: 'Yes' }, { text: 'No' }], formorder: 7, is_required: true, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
+  { id: 1, title: 'Steward Name', text: 'Enter the name of the steward conducting the inspection', question_type: 'text', section: 3, answers: [], formorder: 1, is_required: true, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
+  { id: 3, title: 'Guest First Name', text: 'Enter the first name of the guest', question_type: 'text', section: 3, answers: [], formorder: 3, is_required: false, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
+  { id: 4, title: 'Guest Last Name', text: 'Enter the last name of the guest', question_type: 'text', section: 3, answers: [], formorder: 4, is_required: false, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
+  { id: 5, title: 'Contact Email', text: 'Enter your contact email address', question_type: 'text', section: 3, answers: [], formorder: 5, is_required: true, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
+  { id: 6, title: 'Contact Phone', text: 'Enter your contact phone number', question_type: 'text', section: 3, answers: [], formorder: 6, is_required: false, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
+  { id: 7, title: 'SAPAA Membership', text: 'Are you a member of SAPAA?', question_type: 'option', section: 3, answers: [{ text: 'Yes' }, { text: 'No' }], formorder: 7, is_required: true, sectionTitle: 'Personal Information', sectionDescription: 'Enter your personal details', sectionHeader: 'Personal Info' },
 ];
 
 const beThereQuestions = [
@@ -286,30 +286,7 @@ describe('US 1.0.4 - Have access to the Terms and Conditions of Inputting Inform
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
-  });
-
-  it('steward users see their name and badge; non-stewards do not', async () => {
-      setupStewardMocks();
-      const { unmount } = render(<NewReportPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Jane Steward')).toBeInTheDocument();
-      });
-      expect(screen.getByText('Steward')).toBeInTheDocument();
-      expect(screen.queryByText(/The Fine Print Up Front/i)).not.toBeInTheDocument();
-
-      unmount();
-
-      // Non-steward: no badge, verification popup shown
-      setupGuestMocks();
-      render(<NewReportPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText(/The Fine Print Up Front/i)).toBeInTheDocument();
-      });
-      expect(screen.queryByText('Steward')).not.toBeInTheDocument();
-    });
-
+  });    
   it('missing required fields display an error message', async () => {
     mockGetQuestionsOnline.mockResolvedValue(personalInfoQuestions);
     render(<MainContent responses={{}} onResponsesChange={jest.fn()} />);
@@ -338,16 +315,6 @@ describe('US 1.0.4 - Have access to the Terms and Conditions of Inputting Inform
     // Button disabled initially
     expect(screen.getByText('Continue to Form')).toBeDisabled();
 
-    // Wrong text shows error
-    fireEvent.change(screen.getByPlaceholderText('Type here...'), {
-      target: { value: 'wrong text' },
-    });
-    expect(screen.getByText(/Text does not match/i)).toBeInTheDocument();
-
-    // Correct text + terms accepted enables button
-    fireEvent.change(screen.getByPlaceholderText('Type here...'), {
-      target: { value: 'I am not a volunteer of SAPAA' },
-    });
     fireEvent.click(screen.getAllByRole('checkbox')[0]);
     expect(screen.getByText('Continue to Form')).toBeEnabled();
   });
@@ -901,7 +868,7 @@ describe('US 1.0.27 - Enforce Required Questions on Site Inspection Form (also c
     expect(popupTitle).toBeInTheDocument();
 
     // Assert that the specific missing question number is displayed
-    const missingNumber = screen.getAllByText('0.1');
+    const missingNumber = screen.getAllByText('1.1');
     expect(missingNumber[0]).toBeInTheDocument();
 
     // Verify that the final submission functions were not called
@@ -1415,5 +1382,270 @@ describe('US 1.0.28 - Autofill Form Fields from User Account', () => {
 
     const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
     expect(latestResponses[32]).toBe('newemail@example.com');
+  });
+});
+
+// --- Test data for US 1.0.16 ---
+
+const photographyQuestions = [
+  {
+    id: 100,
+    title: 'Site Photography (Q80)',
+    text: 'Upload any photography captured during your visit',
+    question_type: 'image',
+    section: 10,
+    answers: [],
+    formorder: 800,
+    is_required: false,
+    sectionTitle: 'Digital File Management',
+    sectionDescription: 'SAPAA loves pictures. Upload digital files from your visit.',
+    sectionHeader: 'Close',
+  },
+  {
+    id: 101,
+    title: 'Final Remarks (Q81)',
+    text: 'Add any final remarks about your visit',
+    question_type: 'text',
+    section: 10,
+    answers: [],
+    formorder: 810,
+    is_required: false,
+    sectionTitle: 'Digital File Management',
+    sectionDescription: 'SAPAA loves pictures. Upload digital files from your visit.',
+    sectionHeader: 'Close',
+  },
+];
+
+function createMockFile(name: string, size: number = 1024, type: string = 'image/png'): File {
+  const content = new Array(size).fill('a').join('');
+  return new File([content], name, { type });
+}
+
+async function renderPhotographyMainContent(mockOnChange: jest.Mock) {
+  mockGetQuestionsOnline.mockResolvedValue(photographyQuestions);
+  function ControlledMainContent() {
+    const [responses, setResponses] = React.useState<Record<number, any>>({});
+
+    const handleChange = (nextResponses: Record<number, any>) => {
+      setResponses(nextResponses);
+      mockOnChange(nextResponses);
+    };
+
+    return <MainContent responses={responses} onResponsesChange={handleChange} />;
+  }
+
+  render(<ControlledMainContent />);
+  await waitFor(() => {
+    expect(screen.getByText('Close')).toBeInTheDocument();
+  });
+  fireEvent.click(screen.getByText('Close'));
+
+  await waitFor(() => {
+    expect(screen.getByText('Site Photography')).toBeInTheDocument();
+  });
+}
+
+describe('US 1.0.16 - Add Photography Captured During Visit', () => {
+  let uuidCounter: number;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+    uuidCounter = 0;
+    (global.URL.createObjectURL as any) = jest.fn(() => 'blob:fake-preview');
+    (global.URL.revokeObjectURL as any) = jest.fn();
+    jest.spyOn(global.crypto, 'randomUUID').mockImplementation(() => `uuid-${uuidCounter++}` as `${string}-${string}-${string}-${string}-${string}`);
+  });
+
+  it('user can upload images taken during their visit', async () => {
+    const mockOnChange = jest.fn();
+    await renderPhotographyMainContent(mockOnChange);
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(fileInput).toBeTruthy();
+    expect(fileInput.accept).toBe('image/*');
+    expect(fileInput.multiple).toBe(true);
+
+    const file1 = createMockFile('site-photo-1.png');
+    const file2 = createMockFile('site-photo-2.jpg', 2048, 'image/jpeg');
+
+    fireEvent.change(fileInput, { target: { files: [file1, file2] } });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[100]).toHaveLength(2);
+    expect(latestResponses[100][0].file.name).toBe('site-photo-1.png');
+    expect(latestResponses[100][1].file.name).toBe('site-photo-2.jpg');
+  });
+
+  it('user can add final remarks alongside photography', async () => {
+    const mockOnChange = jest.fn();
+    await renderPhotographyMainContent(mockOnChange);
+
+    // Upload an image
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = createMockFile('observation.png');
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    // Add final remarks in the text field
+    const remarksInput = await screen.findByTestId('question-input-101');
+    fireEvent.change(remarksInput, { target: { value: 'Trail erosion noted near the north entrance.' } });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[101]).toBe('Trail erosion noted near the north entrance.');
+  });
+
+  it('displays uploaded image file names and count', async () => {
+    const mockOnChange = jest.fn();
+    await renderPhotographyMainContent(mockOnChange);
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file1 = createMockFile('wildflower.png');
+    const file2 = createMockFile('trail-damage.jpg', 2048, 'image/jpeg');
+
+    fireEvent.change(fileInput, { target: { files: [file1, file2] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('2 images total')).toBeInTheDocument();
+      expect(screen.getByText('wildflower.png')).toBeInTheDocument();
+      expect(screen.getByText('trail-damage.jpg')).toBeInTheDocument();
+    });
+  });
+
+  it('user can remove uploaded media', async () => {
+    const mockOnChange = jest.fn();
+    await renderPhotographyMainContent(mockOnChange);
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file1 = createMockFile('keep-this.png');
+    const file2 = createMockFile('remove-this.jpg', 2048, 'image/jpeg');
+
+    fireEvent.change(fileInput, { target: { files: [file1, file2] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('2 images total')).toBeInTheDocument();
+    });
+
+    // Click Remove on the second file
+    const removeButtons = screen.getAllByText('Remove');
+    fireEvent.click(removeButtons[1]);
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[100]).toHaveLength(1);
+    expect(latestResponses[100][0].file.name).toBe('keep-this.png');
+  });
+
+  it('user can replace uploaded media by uploading new files', async () => {
+    const mockOnChange = jest.fn();
+    await renderPhotographyMainContent(mockOnChange);
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    // Upload initial file
+    const originalFile = createMockFile('original-photo.png');
+    fireEvent.change(fileInput, { target: { files: [originalFile] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('1 image total')).toBeInTheDocument();
+    });
+
+    // Remove the original
+    const removeButton = screen.getByText('Remove');
+    fireEvent.click(removeButton);
+
+    // Upload a replacement file
+    const replacementFile = createMockFile('replacement-photo.jpg', 2048, 'image/jpeg');
+    fireEvent.change(fileInput, { target: { files: [replacementFile] } });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[100]).toHaveLength(1);
+    expect(latestResponses[100][0].file.name).toBe('replacement-photo.jpg');
+  });
+
+  it('user can add additional images to existing uploads', async () => {
+    const mockOnChange = jest.fn();
+    await renderPhotographyMainContent(mockOnChange);
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    // Upload first batch
+    const file1 = createMockFile('batch1.png');
+    fireEvent.change(fileInput, { target: { files: [file1] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('1 image total')).toBeInTheDocument();
+    });
+
+    // Upload second batch (should append, not replace)
+    const file2 = createMockFile('batch2.jpg', 2048, 'image/jpeg');
+    fireEvent.change(fileInput, { target: { files: [file2] } });
+
+    const latestResponses = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+    expect(latestResponses[100]).toHaveLength(2);
+    expect(latestResponses[100][0].file.name).toBe('batch1.png');
+    expect(latestResponses[100][1].file.name).toBe('batch2.jpg');
+  });
+
+  it('submitting the form without uploading images does not result in any error', async () => {
+    // Setup as steward so no verification popup
+    mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
+    mockIsSteward.mockResolvedValue(true);
+    mockGetQuestionsOnline.mockResolvedValue(photographyQuestions);
+    mockGetCurrentUserUid.mockResolvedValue('user-1');
+    mockGetCurrentSiteId.mockResolvedValue('site-1');
+    mockAddSiteInspectionReport.mockResolvedValue({ id: 'report-456' });
+    mockGetQuestionResponseType.mockResolvedValue([
+      { question_id: 100, obs_value: 0, obs_comm: 1 },
+      { question_id: 101, obs_value: 0, obs_comm: 1 },
+    ]);
+
+    render(<NewReportPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Review & Submit')).toBeInTheDocument();
+    });
+
+    // Submit without uploading any images or entering remarks
+    const submitButton = screen.getByText('Review & Submit');
+    fireEvent.click(submitButton);
+
+    // Should NOT show the required questions popup
+    await waitFor(() => {
+      expect(screen.queryByText(/Required Questions Missing/i)).not.toBeInTheDocument();
+    });
+
+    // Should successfully call the upload function
+    await waitFor(() => {
+      expect(mockAddSiteInspectionReport).toHaveBeenCalledWith('site-1', 'user-1');
+    });
+  });
+
+  it('photography question is not marked as required', async () => {
+    const mockOnChange = jest.fn();
+    await renderPhotographyMainContent(mockOnChange);
+
+    // Neither the image nor remarks question should show a Required badge
+    expect(screen.queryByText('Required')).not.toBeInTheDocument();
+  });
+
+  it('removing all images clears the file count display', async () => {
+    const mockOnChange = jest.fn();
+    await renderPhotographyMainContent(mockOnChange);
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = createMockFile('temporary.png');
+
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('1 image total')).toBeInTheDocument();
+    });
+
+    // Remove the only file
+    const removeButton = screen.getByText('Remove');
+    fireEvent.click(removeButton);
+
+    await waitFor(() => {
+      expect(screen.queryByText(/image.* total/i)).not.toBeInTheDocument();
+    });
   });
 });

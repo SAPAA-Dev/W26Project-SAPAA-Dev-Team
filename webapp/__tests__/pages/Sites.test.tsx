@@ -32,10 +32,11 @@ jest.mock('@/utils/supabase/client', () => ({
   }),
 }));
 
-// Mock getSitesOnline query
+// Mock getSitesOnline and getTotalInspectionCount queries
 const mockGetSitesOnline = jest.fn();
 jest.mock('@/utils/supabase/queries', () => ({
   getSitesOnline: () => mockGetSitesOnline(),
+  getTotalInspectionCount: () => Promise.resolve(0),
 }));
 
 // Sample test data
@@ -141,14 +142,6 @@ describe('HomeClient', () => {
   });
 
   describe('Successful Data Loading', () => {
-    it('should display header with title', async () => {
-      render(<HomeClient />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Protected Areas')).toBeInTheDocument();
-      });
-    });
-
     it('should display the SAPAA logo', async () => {
       render(<HomeClient />);
 
@@ -186,19 +179,25 @@ describe('HomeClient', () => {
         expect(screen.getByText('Total Sites')).toBeInTheDocument();
       });
 
-      // Find the Total Sites card and check its value
       const totalSitesLabel = screen.getByText('Total Sites');
-      const totalSitesCard = totalSitesLabel.closest('div.bg-white\\/10') as HTMLElement | null;
+      const totalSitesCard = totalSitesLabel.closest('div.bg-white') as HTMLElement | null;
       expect(totalSitesCard).toBeInTheDocument();
       expect(within(totalSitesCard!).getByText('4')).toBeInTheDocument();
-
     });
 
-    it('should display total inspections count', async () => {
+    it('should display total inspected sites count', async () => {
       render(<HomeClient />);
 
       await waitFor(() => {
-        expect(screen.getByText('Total Inspections')).toBeInTheDocument();
+        expect(screen.getByText('Total Inspected Sites')).toBeInTheDocument();
+      });
+    });
+
+    it('should display total responses count', async () => {
+      render(<HomeClient />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Total Responses')).toBeInTheDocument();
       });
     });
 
@@ -206,7 +205,7 @@ describe('HomeClient', () => {
       render(<HomeClient />);
 
       await waitFor(() => {
-        expect(screen.getByText('Active This Year')).toBeInTheDocument();
+        expect(screen.getByText('Active over 365 Days')).toBeInTheDocument();
       });
     });
 
@@ -358,7 +357,7 @@ describe('HomeClient', () => {
       const siteButtons = screen.getAllByRole('button').filter(
         btn => btn.textContent?.includes('National Park') || btn.textContent?.includes('Waterton')
       );
-      
+
       expect(siteButtons.length).toBeGreaterThan(0);
     });
   });
@@ -380,27 +379,27 @@ describe('HomeClient', () => {
   });
 
   describe('Inspection Status Badges', () => {
-    it('should display "Recently Visited" for sites inspected within 180 days', async () => {
+    it('should display "Recent" for sites inspected within 180 days', async () => {
       render(<HomeClient />);
 
       await waitFor(() => {
-        expect(screen.getByText('Recently Visited')).toBeInTheDocument();
+        expect(screen.getByText('Recent')).toBeInTheDocument();
       });
     });
 
-    it('should display "Visited This Year" for sites inspected 180-365 days ago', async () => {
+    it('should display "Past Year" for sites inspected 180-365 days ago', async () => {
       render(<HomeClient />);
 
       await waitFor(() => {
-        expect(screen.getByText('Visited This Year')).toBeInTheDocument();
+        expect(screen.getByText('Past Year')).toBeInTheDocument();
       });
     });
 
-    it('should display "Visited Recently" for sites inspected 365-730 days ago', async () => {
+    it('should display "Over 1 Year" for sites inspected 365-730 days ago', async () => {
       render(<HomeClient />);
 
       await waitFor(() => {
-        expect(screen.getByText('Visited Recently')).toBeInTheDocument();
+        expect(screen.getByText('Over 1 Year')).toBeInTheDocument();
       });
     });
 
@@ -482,7 +481,6 @@ describe('HomeClient', () => {
       render(<HomeClient />);
 
       await waitFor(() => {
-        // Check that dates are displayed in a readable format
         const dateElements = screen.getAllByText(/\w{3} \d{1,2}, \d{4}/);
         expect(dateElements.length).toBeGreaterThan(0);
       });
@@ -501,7 +499,7 @@ describe('HomeClient', () => {
       render(<HomeClient />);
 
       await waitFor(() => {
-        expect(screen.getByText('No inspection date')).toBeInTheDocument();
+        expect(screen.getByText('Never inspected')).toBeInTheDocument();
       });
     });
   });
@@ -567,7 +565,6 @@ describe('HomeClient', () => {
         expect(screen.getByText('Elk Island National Park')).toBeInTheDocument();
       });
 
-      // Find the sites grid (the one with gap-4 and the responsive columns for sites)
       const sitesGrid = document.querySelector('.grid.gap-4.md\\:grid-cols-2.lg\\:grid-cols-3');
       expect(sitesGrid).toBeInTheDocument();
     });
@@ -579,7 +576,7 @@ describe('HomeClient', () => {
         expect(screen.getByText('Total Sites')).toBeInTheDocument();
       });
 
-      const statsGrid = document.querySelector('.grid-cols-2.md\\:grid-cols-4');
+      const statsGrid = document.querySelector('.grid-cols-2.md\\:grid-cols-5');
       expect(statsGrid).toBeInTheDocument();
     });
   });
@@ -618,29 +615,24 @@ describe('Integration Tests', () => {
     const user = userEvent.setup();
     render(<HomeClient />);
 
-    // Wait for loading to complete
     await waitFor(() => {
       expect(screen.getByText('Elk Island National Park')).toBeInTheDocument();
     });
 
-    // Search for a site
     const searchInput = screen.getByPlaceholderText('Search by site name or county...');
     await user.type(searchInput, 'Banff');
 
     expect(screen.getByText('Banff National Park')).toBeInTheDocument();
     expect(screen.queryByText('Elk Island National Park')).not.toBeInTheDocument();
 
-    // Clear search
     await user.clear(searchInput);
 
     expect(screen.getByText('Elk Island National Park')).toBeInTheDocument();
 
-    // Sort by name Z-A
     const sortButton = screen.getByRole('button', { name: /sort/i });
     await user.click(sortButton);
     await user.click(screen.getByText('Name (Z-A)'));
 
-    // Navigate to a site
     const siteCard = screen.getByText('Waterton Lakes').closest('button');
     await user.click(siteCard!);
 
@@ -655,18 +647,15 @@ describe('Integration Tests', () => {
       expect(screen.getByText('4 sites found')).toBeInTheDocument();
     });
 
-    // Search first
     const searchInput = screen.getByPlaceholderText('Search by site name or county...');
     await user.type(searchInput, 'National');
 
     expect(screen.getByText('3 sites found')).toBeInTheDocument();
 
-    // Then sort
     const sortButton = screen.getByRole('button', { name: /sort/i });
     await user.click(sortButton);
     await user.click(screen.getByText('Most Recent'));
 
-    // Search should still be applied
     expect(screen.getByText('3 sites found')).toBeInTheDocument();
     expect(searchInput).toHaveValue('National');
   });

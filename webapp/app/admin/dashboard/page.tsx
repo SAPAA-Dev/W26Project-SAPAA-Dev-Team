@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/client";
 import dynamic from "next/dynamic";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import Link from "next/link";
 import { 
   LayoutDashboard, 
   FileText, 
@@ -13,11 +14,12 @@ import {
   Search,
   MapPin,
   BarChart3,
+  ImageIcon,
   PieChart,
   Loader2
 } from "lucide-react";
 import Image from 'next/image';
-
+import { getTotalInspectionCount, getLastInspectionDate, getNaturalnessDistribution, getTopSitesDistribution } from '@/utils/supabase/queries';
 import AdminNavBar from "../AdminNavBar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -33,76 +35,52 @@ type HeatPoint = {
   namesite?: string;
 };
 
+type GalleryItem = {
+  id: string;
+  response_id: string;
+  question_id: string;
+  caption?: string | null;
+  description?: string | null;
+  storage_key: string;
+  content_type: string;
+  file_size_bytes?: number | null;
+  filename: string;
+  site_id: string | null; 
+  site_name?: string | null;
+  imageUrl: string;
+};
+
 export default function Dashboard() {
   const supabaseClient = createClient();
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState("");
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<{
+    totalInspections: number;
+    lastInspectionDate: string | null;
+  }>({
     totalInspections: 0,
     lastInspectionDate: null,
   });
-
+  const [items, setItems] = useState<GalleryItem[]>([]);
   const [naturalnessData, setNaturalnessData] = useState([]);
   const [siteData, setSiteData] = useState([]);
   const [points, setPoints] = useState<HeatPoint[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
 
   const fetchStats = async () => {
-    console.log("=== DASHBOARD STATS DEBUG ===");
-    console.log("ENV URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
-    console.log("ENV KEY:", process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
     setLoading(true);
-  
     try {
-      // Test 1: Count records
-      console.log("1️⃣ Fetching total count...");
-      const { count, error: countError } = await supabaseClient
-        .from("sites_report_fnr_test")
-        .select("namesite", { count: "exact", head: true });
-  
-      console.log("Count result:", count);
-      console.log("Count error:", countError);
-  
-      // Test 2: Last inspection date
-      console.log("2️⃣ Fetching last inspection...");
-      const { data: lastRows, error: lastError } = await supabaseClient
-        .from("sites_report_fnr_test")
-        .select("inspectdate")
-        .order("inspectdate", { ascending: false })
-        .limit(1);
-  
-      console.log("Last rows:", lastRows);
-      console.log("Last error:", lastError);
-  
-      // Test 3: Naturalness distribution
-      console.log("3️⃣ Calling get_naturalness_distribution...");
-      const { data: naturalness, error: natError } = await supabaseClient.rpc(
-        "get_naturalness_distribution"
-      );
-  
-      console.log("Naturalness data:", naturalness);
-      console.log("Naturalness error:", natError);
-  
-      // Test 4: Top sites
-      console.log("4️⃣ Calling get_top_sites_distribution...");
-      const { data: topSites, error: topError } = await supabaseClient.rpc(
-        "get_top_sites_distribution"
-      );
-  
-      console.log("Top sites data:", topSites);
-      console.log("Top sites error:", topError);
-  
-      setStats({
-        totalInspections: count || 0,
-        lastInspectionDate: lastRows?.[0]?.inspectdate || null,
-      });
-  
-      setNaturalnessData(naturalness || []);
-      setSiteData(topSites || []);
-  
-      console.log("✅ Stats loaded successfully");
+      const [total, lastDate, naturalness, topSites] = await Promise.all([
+        getTotalInspectionCount(),
+        getLastInspectionDate(),
+        getNaturalnessDistribution(),
+        getTopSitesDistribution(),
+      ]);
+      setStats({ totalInspections: total, lastInspectionDate: lastDate });
+      setNaturalnessData(naturalness as any);
+      setSiteData(topSites as any);
     } catch (error) {
-      console.error("❌ Error loading stats:", error);
+      console.error('Error loading stats:', error);
     } finally {
       setLoading(false);
     }
@@ -221,10 +199,34 @@ export default function Dashboard() {
     }
   };
 
-  // THIS IS THE MISSING useEffect - CRITICAL!
+
   useEffect(() => {
     console.log("⚡ useEffect running - about to call fetchStats");
     fetchStats();
+  }, []);
+
+  useEffect(() => {
+    const fetchGallery = async () => {
+      try {
+        console.log("Fetching gallery from /api/gallery...");
+        const res = await fetch("/api/gallery");
+        const data = await res.json();
+
+        console.log("Gallery response:", data);
+
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to load gallery");
+        }
+
+        setItems(data.items || []);
+      } catch (err) {
+        console.error("Gallery fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGallery();
   }, []);
 
   if (loading) {
@@ -239,76 +241,84 @@ export default function Dashboard() {
   return (
     <ProtectedRoute requireAdmin>
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-        {/* Navbar */}
-        <AdminNavBar />
-        
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-8 shadow-lg">
+        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center gap-3 mb-2">
-              <Image 
-                src="/images/sapaa-icon-white.png" 
-                alt="SAPAA"
-                width={48}
-                height={48}
-                className="w-12 h-12 flex-shrink-0"
-              />
-              <h1 className="text-4xl font-bold">Admin Dashboard</h1>
+            <div className="flex items-center justify-between mb-3">
+              {/* Left: icon + title + subtitle */}
+              <div className="flex items-center gap-4">
+                <Image
+                  src="/images/sapaa-icon-white.png"
+                  alt="SAPAA"
+                  width={140}
+                  height={140}
+                  priority
+                  className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+                />
+                <div>
+                  <h1 className="text-3xl font-bold mt-3">Admin Dashboard</h1>
+                  <p className="text-[#E4EBE4] text-base mt-0.5">
+                    Monitor and analyze site inspection data
+                  </p>
+                </div>
+              </div>
+              {/* Right: navbar — rendered inline, bg overridden to transparent */}
+              <div className="[&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
+                <AdminNavBar />
+              </div>
             </div>
-            <p className="text-[#E4EBE4] text-lg">Monitor and analyze site inspection data</p>
           </div>
         </div>
-
+        
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
-          {/* Stats Cards */}
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Total Records Card */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm hover:shadow-md transition-all">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center shadow-md">
-                  <FileText className="w-7 h-7 text-white" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            {/* Total Records */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Total Records</div>
-                  <div className="text-4xl font-bold text-[#254431] mt-1">{stats.totalInspections.toLocaleString()}</div>
-                </div>
-              </div>
-              <div className="pt-4 border-t-2 border-[#E4EBE4]">
-                <div className="flex items-center gap-2 text-sm text-[#7A8075]">
-                  <TrendingUp className="w-4 h-4 text-[#1C7C4D]" />
-                  <span>All inspection records in database</span>
+                  <div className="text-3xl font-bold text-[#254431]">{stats.totalInspections}</div>
                 </div>
               </div>
             </div>
 
-            {/* Last Record Card */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm hover:shadow-md transition-all">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center shadow-md">
-                  <Calendar className="w-7 h-7 text-white" />
+            {/* Image Gallery */}
+            <Link href="/admin/gallery" className="block">
+              <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm hover:border-[#86A98A] hover:shadow-lg transition-all h-full">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
+                    <ImageIcon className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Image Gallery</div>
+                    <div className="text-3xl font-bold text-[#254431]">{items.length} images</div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+
+            {/* Last Record */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Last Record</div>
-                  <div className="text-2xl font-bold text-[#254431] mt-1">
+                  <div className="text-3xl font-bold text-[#254431]">
                     {stats.lastInspectionDate
-                      ? new Date(stats.lastInspectionDate).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })
+                      ? new Date(stats.lastInspectionDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
                       : "N/A"}
                   </div>
                 </div>
               </div>
-              <div className="pt-4 border-t-2 border-[#E4EBE4]">
-                <div className="flex items-center gap-2 text-sm text-[#7A8075]">
-                  <Calendar className="w-4 h-4 text-[#356B43]" />
-                  <span>Most recent inspection date</span>
-                </div>
-              </div>
             </div>
           </div>
+
+          
 
           {/* Charts Section */}
           <div className="grid lg:grid-cols-2 gap-6">

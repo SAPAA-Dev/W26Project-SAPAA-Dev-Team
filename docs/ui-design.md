@@ -1,1028 +1,996 @@
-# UI Design Documentation
-
-## Overview
-
-This document explains how UI design principles, usability heuristics, and accessibility considerations were applied in both the SAPAA mobile application (React Native) and web application (Next.js). The goal is to provide an intuitive, accessible, and efficient experience for environmental stewards and administrators managing site assessment data.
-
----
-
-## Design Principles
-
-### Visual Consistency
-
-**Principle:** Maintain a consistent visual language to reduce cognitive load and build user confidence.
-
-**Implementation:**
-
-- **Unified navigation shell**
-    - **Mobile**: All screens use the same green top app bar with title + back button. A persistent bottom tab bar provides access to: **Analytics**, **Sites**, and **SAPAA Map**.
-    - **Web**: Consistent header with SAPAA logo, gradient green background, and navigation elements. Admin pages use a hamburger menu for navigation.
-
-- **Standardized colour palette**
-    - Primary green (`#2E7D32`, `#356B43`, `#254431`) for headers and primary actions.
-    - White (`#FFFFFF`) for content cards and main background.
-    - Light grey (`#F7F2EA`, `#E4EBE4`) for dividers and secondary surfaces.
-    - Red (`#B91C1C`, `#DC2626`) for destructive actions (e.g., *Delete   Account*).
-    - Gradient backgrounds (`from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]`) for visual depth.
-
-- **Typography hierarchy**
-    - Page titles: large, bold (24-32px).
-    - Section headers: medium, semi-bold (18-20px).
-    - Body text: regular weight (14-16px).
-    - Supporting text: smaller, regular (12-14px).
+# SAPAA
+## Protected Areas Inspection App
+### UI / UX Design Documentation - v1.0
+#### Design System Reference for Development Teams
+`Next.js` · `Tailwind CSS` · `Supabase` · `AWS`
 
 ---
 
-### Clear Visual Hierarchy
+## 1. Introduction
 
-**Principle:** Guide attention using size, weight, colour, and spacing.
+### 1.1 Purpose
 
-**Implementation:**
+This document defines the complete UI/UX design system for the SAPAA (Stewards of Alberta's Protected Areas Association) web application. It covers design principles, usability heuristics, accessibility considerations, and component-level implementation guidance for both the web (Next.js) and mobile (React Native) platforms.
 
-- **Card-based layout**
-    - Major information chunks are grouped into cards (e.g., *Site Details*, *Naturalness Details*, *Analytics charts*, *Account tiles*).
-    - Cards have consistent padding, rounded corners, and subtle shadows.
+Consistency is critical. Every page must follow the patterns described here so that users experience a coherent interface across all screens and workflows.
 
-- **Strategic emphasis**
-    - Primary actions use filled green buttons with high visual weight (e.g., **Preview PDF**, **Sync Now**, **Login**).
-    - Secondary actions use outlined buttons or lower-contrast styling.
-    - Critical information like site names and scores appears in larger, bolder text.
+### 1.2 Technology Stack
 
-- **Consistent spacing**
-    - Padding inside cards (16-24px) and consistent vertical spacing between sections (16-32px) creates rhythm and improves readability.
+| Area | Technology |
+|---|---|
+| Framework | Next.js (App Router, TypeScript) |
+| Styling | Tailwind CSS - utility-first, inline class names only |
+| Database | Supabase (PostgreSQL) - tables prefixed `W26_` |
+| Auth | Supabase Auth with `ProtectedRoute` wrapper |
+| Drag and Drop | `@dnd-kit/core` + `@dnd-kit/sortable` |
+| Maps | Leaflet (SSR-guarded with mounted state) |
+| Charts | Chart.js via `react-chartjs-2` |
+| Icons | `lucide-react` |
 
----
+### 1.3 Application Pages
 
-### Progressive Disclosure
-
-**Principle:** Show only what users need at each step, and reveal more detail on demand.
-
-**Implementation:**
-
-- **Inspection Reports**
-    - Tabs for **By Date** and **By Question** instead of putting all data into one long view.
-    - Expandable sections for detailed observations.
-
-- **PDF generation** (Mobile)
-    - Modal flow: choose fields → preview report → optionally share/download.
-
-- **Site Details**
-    - High-level information at the top (name, location, key metrics).
-    - Detailed observations, naturalness details, and other sections appear further down the page in separate cards.
-
-- **Admin Features**
-    - Admin-specific features are hidden from regular users.
-    - Admin navigation is accessible via menu or dedicated button.
+| Route | Component |
+|---|---|
+| `/sites` | HomeClient - public site listing |
+| `/detail/[namesite]` | SiteDetailScreen - single site view |
+| `/detail/[namesite]/new-report` | New inspection report form |
+| `/detail/[namesite]/edit-report/[responseId]` | Edit existing report |
+| `/login` `/signup` | Authentication pages |
+| `/admin/dashboard` | Admin analytics and stats |
+| `/admin/account-management` | User account administration |
+| `/admin/sites` | Site management |
+| `/admin/gallery` | Inspection photo gallery |
+| `/admin/form-editor` | Form section and question editor |
 
 ---
 
-### Action-Oriented Design
+## 2. Design Principles
 
-**Principle:** Make key tasks obvious and easy to complete.
+### 2.1 Visual Consistency
 
-**Implementation:**
+Maintain a consistent visual language to reduce cognitive load and build user confidence.
 
-- **Clear primary action per screen**
-    - **Preview PDF** on the report modal (Mobile).
-    - **Sync Now** on Analytics (Mobile).
-    - **Search** on Sites/Protected Areas pages.
-    - **Delete Account** on Admin tiles (clearly styled in red).
+**Unified navigation shell:**
+- **Mobile:** All screens use the same green top app bar with title and back button. A persistent bottom tab bar provides access to Analytics, Sites, and SAPAA Map.
+- **Web:** Consistent header with SAPAA logo, gradient green background, and navigation elements. Admin pages use a hamburger menu for navigation.
 
-- **Button hierarchy**
-    - Primary: solid green, often full width.
-    - Secondary: outlined or low-emphasis.
-    - Destructive: red, clearly labelled.
+**Standardised colour palette:** Primary green (`#254431`, `#356B43`) for headers and primary actions. White (`#FFFFFF`) for content cards. Light grey (`#F7F2EA`, `#E4EBE4`) for dividers and secondary surfaces. Red (`#B91C1C`) for destructive actions.
 
-- **Immediate feedback**
-    - PDF field counter updates as checkboxes are toggled (Mobile).
-    - Tabs highlight the active state.
-    - Lists and cards visually respond to taps/clicks.
-    - Loading states show progress indicators.
+**Typography hierarchy:** Page titles at large and bold (24–32px). Section headers at medium and semi-bold (18–20px). Body text at regular weight (14–16px). Supporting text at smaller regular (12–14px).
 
----
+### 2.2 Clear Visual Hierarchy
 
-## 2. Usability Heuristics (Nielsen's 10)
+Guide attention using size, weight, colour, and spacing.
 
-### 1. Visibility of System Status
+**Card-based layout:** Major information chunks are grouped into cards (e.g., Site Details, Naturalness Details, Analytics charts, Account tiles). Cards use consistent padding, rounded corners, and subtle shadows.
 
-**Heuristic:** The system should always keep users informed about what is going on.
+**Strategic emphasis:** Primary actions use filled green buttons with high visual weight (e.g., Preview PDF, Sync Now, Login). Secondary actions use outlined buttons or lower-contrast styling.
 
-**Application in SAPAA:**
+**Consistent spacing:** Padding inside cards (16–24px) and consistent vertical spacing between sections (16–32px) creates rhythm and improves readability.
 
-- **Mobile:**
-    - Field counter in the PDF modal (e.g., `14 of 14 fields selected`) updates live as users toggle checkboxes.
-    - The app bar title reflects the current screen (e.g., **Site Details**, **Report**).
-    - Bottom navigation highlights the active tab.
-    - Sync actions provide visual feedback while data is refreshing.
-    - Online/Offline badge shows connection status.
+### 2.3 Progressive Disclosure
 
-- **Web:**
-    - Loading spinners appear during data fetches.
-    - Page titles reflect current location.
-    - Active navigation items are highlighted.
-    - Search results show count (e.g., "X sites found").
+Show only what users need at each step, and reveal more detail on demand.
 
-**Why This Matters:** Users can see that their actions are working and where they are in the app, which reduces confusion and frustration.
+**Inspection Reports:** Tabs for By Date and By Question instead of one long view. Expandable sections for detailed observations.
+
+**Site Details:** High-level information at the top (name, location, key metrics). Detailed observations and naturalness details appear further down in separate cards.
+
+**Admin Features:** Admin-specific features are not visible to regular users. Admin navigation is accessible via menu or dedicated button.
+
+### 2.4 Action-Oriented Design
+
+Make key tasks obvious and easy to complete.
+
+**Clear primary action per screen:** Preview PDF on the report modal (mobile). Sync Now on Analytics (mobile). Search on the Sites/Protected Areas page. Add User on Account Management.
+
+**Button hierarchy:** Primary uses solid green, often full width. Secondary uses outlined or low-emphasis styling. Destructive uses red with a clear label.
+
+**Immediate feedback:** Counters and indicators update live as users interact. Loading states show progress indicators. Lists and cards visually respond to user interaction.
 
 ---
 
-### 2. Match Between System and the Real World
+## 3. Usability Heuristics (Nielsen's 10)
 
-**Heuristic:** Speak the users' language and use real-world concepts.
+### 3.1 Visibility of System Status
 
-**Application in SAPAA:**
+The system always keeps users informed about what is going on.
 
-- Uses real steward terminology: *Naturalness Score*, *Recreational Activities*, *Observations*.
-- **Mobile**: SAPAA Map uses Google Maps with familiar map interactions.
-- **Web**: Leaflet maps provide familiar zoom and pan interactions.
-- Icons:
-    - Tree (🌲) for **Sites**.
-    - Chart (📊) for **Analytics**.
-    - Map (🗺️) for **SAPAA Map**.
-    - Eye (👁️) for **Preview PDF**.
-    - Calendar (📅) for dates.
-    - Map Pin (📍) for locations.
-- Inspection questions are labelled with codes (Q52, Q62, etc.) that stewards already know.
+**Mobile:** A field counter in the PDF modal updates live as users toggle checkboxes. The app bar title reflects the current screen. Bottom navigation highlights the active tab. An Online/Offline badge shows connection status.
 
-**Why This Matters:** Familiar language and visuals reduce training time and make the app feel like a natural extension of existing workflows.
+**Web:** Loading spinners appear during data fetches. Page titles reflect the current location. Active navigation items are highlighted. Search results show a count of sites found.
 
----
+**Why this matters:** Users can see that their actions are working and understand where they are in the app, reducing confusion and frustration.
 
-### 3. User Control and Freedom
+### 3.2 Match Between System and the Real World
 
-**Heuristic:** Provide clearly marked exits and ways to undo actions.
+The application uses terminology that stewards already know: Naturalness Score, Recreational Activities, Observations. The SAPAA Map uses Google Maps (mobile) and Leaflet (web) with familiar map interactions. Inspection questions are labelled with codes (Q52, Q62, etc.) that match existing steward workflows.
 
-**Application in SAPAA:**
+**Why this matters:** Familiar language and visuals reduce training time and make the app feel like a natural extension of existing workflows.
 
-- **Mobile:**
-    - Back arrow on every top bar to return to the previous screen.
-    - Modals can be dismissed with an **X** or the system back gesture.
-    - Users can toggle PDF fields freely.
-    - Use **Select All** and **Clear All** before committing.
-    - Preview a report before sharing it.
+### 3.3 User Control and Freedom
 
-- **Web:**
-    - Back buttons on detail pages.
-    - Modal dialogs can be closed with X button or clicking outside.
-    - Cancel buttons on forms.
-    - Breadcrumb navigation where applicable.
+Provide clearly marked exits and ways to undo actions.
 
-**Why This Matters:** Users feel safe exploring features because they know they can easily back out or adjust their choices.
+**Mobile:** A back arrow appears on every top bar. Modals can be dismissed with an X or the system back gesture. Users can toggle PDF fields freely, use Select All and Clear All, and preview a report before sharing it.
 
----
+**Web:** Back buttons appear on all detail pages. Modal dialogs can be closed with the X button or by clicking outside. Cancel buttons appear on forms. Breadcrumb navigation is used where applicable.
 
-### 4. Consistency and Standards
+**Why this matters:** Users feel safe exploring features because they know they can easily back out or adjust their choices.
 
-**Heuristic:** Follow platform conventions and maintain internal consistency.
+### 3.4 Consistency and Standards
 
-**Application in SAPAA:**
+Follow platform conventions and maintain internal consistency.
 
-- **Mobile:**
-    - Consistent bottom navigation layout across screens.
-    - Primary actions are always solid green buttons; destructive actions are always red.
-    - List items follow the same pattern: icon left, label and detail text right.
-    - Card layouts and spacing follow a consistent grid.
+**Mobile:** Consistent bottom navigation layout across all screens. Primary actions are always solid green; destructive actions are always red. List items follow the same pattern: icon left, label and detail text right.
 
-- **Web:**
-    - Consistent header design across all pages.
-    - Button styles are standardized (primary, secondary, destructive).
-    - Form inputs follow the same styling.
-    - Card components are reused throughout.
+**Web:** Consistent header design across all pages. Button styles are standardised (primary, secondary, destructive). Form inputs follow the same styling. Card components are reused throughout.
 
-**Why This Matters:** Once users learn basic patterns, they can apply them everywhere in the app.
+**Why this matters:** Once users learn basic patterns, they can apply them everywhere in the app.
 
----
+### 3.5 Error Prevention
 
-### 5. Error Prevention
+Design to prevent errors before they happen.
 
-**Heuristic:** Design to prevent errors before they happen.
+**Mobile:** The PDF flow separates Preview PDF and Share PDF so users do not accidentally share a report before checking it. Destructive actions such as Delete Account are clearly styled in red. Many inputs are constrained to checkboxes and predefined fields rather than free text for critical data.
 
-**Application in SAPAA:**
+**Web:** Form validation prevents invalid submissions. Confirmation dialogs guard destructive actions. Disabled states prevent invalid interactions. Clear error messages guide users to a resolution.
 
-- **Mobile:**
-    - PDF flow separates **Preview PDF** and **Share PDF** so users don't accidentally share a report before checking it.
-    - Destructive actions such as *Delete Account* are clearly styled in red and can be guarded by confirmation dialogs.
-    - Many inputs are constrained to checkboxes and predefined fields instead of free text for critical data.
-    - Labels on buttons and fields are explicit (e.g., **Delete Account**, **Share PDF**).
+**Why this matters:** Preventing mistakes saves time and protects data integrity.
 
-- **Web:**
-    - Form validation prevents invalid submissions.
-    - Confirmation dialogs for destructive actions.
-    - Disabled states prevent invalid actions.
-    - Clear error messages guide users.
+### 3.6 Recognition Rather Than Recall
 
-**Why This Matters:** Preventing mistakes saves time and protects data integrity.
+All fields are clearly labelled: Region, Area (HA/AC), Naturalness Details, and so on. Bottom tabs (mobile) are always visible with both icons and text labels. PDF field selection mirrors the Site Details layout and naming. Status badges show inspection recency with colour coding so users do not need to calculate dates themselves.
 
----
+**Why this matters:** Users do not have to remember information across screens; they can recognise it instead.
 
-### 6. Recognition Rather Than Recall
+### 3.7 Flexibility and Efficiency of Use
 
-**Heuristic:** Minimize the user's memory load by making options visible.
+Provide accelerators for expert users while keeping the interface simple for novices.
 
-**Application in SAPAA:**
+**Bulk actions:** Select All / Clear All for PDF fields (mobile). Sync Now for on-demand data refresh (mobile). Bulk selection for offline downloads (mobile).
 
-- Clear labels for all fields: *Region*, *Area (HA/AC)*, *Naturalness Details*, etc.
-- **Mobile**: Bottom tabs always visible with both icons and text labels.
-- **Web**: Navigation menu items are clearly labeled.
-- PDF field selection list mirrors the Site Details layout and naming (Mobile).
-- Question lists show IDs and titles instead of expecting users to remember them.
-- Status badges show inspection recency with color coding.
+**Multiple access paths:** Inspection reports can be viewed By Date (chronological workflow) or By Question (comparison/analysis workflow).
 
-**Why This Matters:** Users don't have to remember information across screens; they can simply recognize it.
+**Smart defaults:** PDF generation starts with all fields selected, so users typically only need to deselect a few. Search is always available. Sort options are remembered.
+
+**Why this matters:** New users can follow straightforward flows, while experienced users can speed up their work with bulk actions and shortcuts.
+
+### 3.8 Aesthetic and Minimalist Design
+
+Interfaces should not contain irrelevant or rarely needed information.
+
+Each screen is focused on one main task: view analytics, inspect a site, manage accounts, or generate a PDF. A limited colour palette (green, white, grey, and red for warnings) keeps the interface clean. Cards group only related information with enough white space for breathing room. Icons are used only where they add meaning, not for decoration.
+
+**Why this matters:** A clean interface makes it easier to focus on what matters and reduces cognitive overload.
+
+### 3.9 Help Users Recognise, Diagnose, and Recover from Errors
+
+Error messages should be expressed in plain language, indicate the problem, and suggest a solution.
+
+**Mobile:** Error messages appear as snackbars or toasts with clear explanations. Network errors show retry options. Validation errors appear inline with form fields.
+
+**Web:** Error messages are displayed in red with clear visibility. Form validation shows specific field errors. Network errors provide retry buttons. 404 pages guide users back to main content.
+
+**Why this matters:** Users can quickly understand what went wrong and how to fix it rather than feeling frustrated.
+
+### 3.10 Help and Documentation
+
+Help should be easy to find, focused on the user's task, and list concrete steps.
+
+A user manual is available as a separate document. In-app tooltips and hints are provided where appropriate. Clear labels and placeholders guide users through forms. Status messages explain what actions do (e.g., "Syncing data..."). Page titles and descriptions provide contextual orientation throughout the web application.
+
+**Why this matters:** While the interface should be self-explanatory, having documentation available helps users learn advanced features.
 
 ---
 
-### 7. Flexibility and Efficiency of Use
+## 4. Accessibility
 
-**Heuristic:** Provide accelerators for expert users while keeping the interface simple for novices.
+### 4.1 Mobile Application
 
-**Application in SAPAA:**
+- **Touch targets:** All interactive elements meet the minimum 44x44pt touch target size.
+- **Colour contrast:** Text meets WCAG AA standards (4.5:1 for normal text, 3:1 for large text).
+- **Screen reader support:** React Native Paper components provide built-in accessibility labels.
+- **Keyboard navigation:** Support for external keyboards on tablets.
+- **Dynamic type:** Text scales with system font size settings.
+- **Dark mode:** Full support for system dark/light mode preferences.
 
-- **Bulk actions**
-    - **Select All** / **Clear All** for PDF fields (Mobile).
-    - **Sync Now** for on-demand data refresh (Mobile).
-    - Bulk selection for offline downloads (Mobile).
+### 4.2 Web Application
 
-- **Multiple access paths**
-    - Inspection reports can be viewed:
-        - **By Date** (chronological workflow).
-        - **By Question** (comparison/analysis workflow).
-
-- **Quick navigation**
-    - **Mobile**: Bottom tab bar offers one-tap switching between **Analytics**, **Sites**, and **SAPAA Map**.
-    - **Web**: Admin menu provides quick access to all admin features.
-
-- **Smart defaults**
-    - PDF generation starts with all fields selected, so users usually only need to deselect a few (Mobile).
-    - Search is always available.
-    - Sort options are remembered.
-
-- **Larger devices**
-    - On tablets and larger screens, standard OS gestures and shortcuts are respected.
-    - **Web**: Responsive design adapts to different screen sizes.
-
-**Why This Matters:** New users can follow straightforward flows, while experienced users can speed up their work with bulk actions and shortcuts.
+- **Keyboard navigation:** All interactive elements are keyboard accessible.
+- **Screen readers:** Semantic HTML and ARIA labels are used where needed.
+- **Colour contrast:** All text meets WCAG AA standards.
+- **Focus indicators:** Clear focus states are provided for keyboard navigation.
+- **Responsive design:** Works on various screen sizes from mobile to desktop.
+- **Alt text:** All images include descriptive alt text.
 
 ---
 
-### 8. Aesthetic and Minimalist Design
+## 5. Colour Palette
 
-**Heuristic:** Interfaces should not contain irrelevant or rarely needed information.
+All colours in the application are drawn from a forest-green and warm-cream palette. Custom hex values are used throughout. No Tailwind named colour shades (e.g., `green-700`) appear in the codebase.
 
-**Application in SAPAA:**
+### 5.1 Primary Brand Colours
 
-- Focused screens: each screen supports one main task (view analytics, inspect a site, manage accounts, generate PDF).
-- Limited colour palette: green, white, grey, and red for warnings.
-- Cards group only related information, with enough white space for breathing room.
-- Icons are only used where they add meaning (e.g., map pin, chart, tree), not for decoration.
-- **Web**: Clean, modern design with ample whitespace.
-- **Mobile**: Material Design principles with clear visual hierarchy.
+| Token | Hex | Usage |
+|---|---|---|
+| Forest Dark | `#254431` | Page titles, section headings, strong text, header gradient start |
+| Forest Mid | `#356B43` | Buttons, active states, icons, header gradient end, links |
+| Forest Light | `#86A98A` | Hover states, muted header text, secondary borders |
 
-**Why This Matters:** A clean interface makes it easier to focus on what matters and reduces cognitive overload.
+### 5.2 Background Colours
 
----
+| Token | Hex | Usage |
+|---|---|---|
+| Warm Cream | `#F7F2EA` | Page background gradient from/to, preview panels, alternating rows |
+| Cool Sage | `#E4EBE4` | Page background gradient via, borders, chips, hover fills |
 
-### 9. Help Users Recognize, Diagnose, and Recover from Errors
+### 5.3 Text Colours
 
-**Heuristic:** Error messages should be expressed in plain language, indicate the problem, and suggest a solution.
+| Token | Hex | Usage |
+|---|---|---|
+| Deep Charcoal | `#1E2520` | Primary body text, high-contrast content |
+| Forest Dark | `#254431` | Heading text, stat numbers, labels |
+| Muted Sage | `#7A8075` | Captions, metadata, labels, placeholder text |
 
-**Application in SAPAA:**
+### 5.4 Status and Semantic Colours
 
-- **Mobile:**
-    - Error messages appear as snackbars/toasts with clear explanations.
-    - Network errors show retry options.
-    - Validation errors appear inline with form fields.
-    - "No sites found" messages suggest checking search terms or connection.
+| Pair | Usage |
+|---|---|
+| `#B91C1C` / `#FEE2E2` | Error states, required badges, destructive actions |
+| `#7F1D1D` / `#FEE2E2` | Needs Review status badge (more than 730 days) |
+| `#065F46` / `#D1FAE5` | Success, Recent inspection badge (fewer than 180 days) |
+| `#92400E` / `#FEF3C7` | Past Year badge (181–365 days) |
+| `#9A3412` / `#FFEDD5` | Over 1 Year badge (366–730 days) |
+| `#475569` / `#F1F5F9` | Never Inspected badge |
 
-- **Web:**
-    - Error messages are displayed in red, clearly visible.
-    - Form validation shows specific field errors.
-    - Network errors provide retry buttons.
-    - 404 pages guide users back to main content.
+### 5.5 Gradients
 
-**Why This Matters:** Users can quickly understand what went wrong and how to fix it, rather than feeling frustrated.
-
----
-
-### 10. Help and Documentation
-
-**Heuristic:** Help should be easy to search, focused on the user's task, list concrete steps, and not be too large.
-
-**Application in SAPAA:**
-
-- User manual is available (separate document).
-- In-app tooltips and hints where appropriate.
-- Clear labels and placeholders guide users.
-- Status messages explain what actions do (e.g., "Syncing data...").
-- **Web**: Contextual help through clear page titles and descriptions.
-
-**Why This Matters:** While the interface should be self-explanatory, having documentation available helps users learn advanced features.
+```
+Header:     bg-gradient-to-r from-[#254431] to-[#356B43]
+Background: bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]
+Button:     bg-gradient-to-r from-[#356B43] to-[#254431]
+```
 
 ---
 
-## 3. Accessibility Considerations
+## 6. Typography
 
-### Mobile Application
+Typography is primarily handled through Tailwind utility classes, with global font setup in `app/globals.css`.
+The current web implementation loads Google Fonts `Inter` (body/UI) and `DM Sans` (headings), then applies them globally.
 
-- **Touch Targets**: All interactive elements meet minimum 44x44pt touch target size.
-- **Color Contrast**: Text meets WCAG AA standards (4.5:1 for normal text, 3:1 for large text).
-- **Screen Reader Support**: React Native Paper components provide built-in accessibility labels.
-- **Keyboard Navigation**: Support for external keyboards on tablets.
-- **Dynamic Type**: Text scales with system font size settings.
-- **Dark Mode**: Full support for system dark/light mode preferences.
+### 6.1 Type Scale
 
-### Web Application
+| Class | Usage |
+|---|---|
+| `text-3xl font-bold` | Page titles (always white inside headers) |
+| `text-2xl font-bold text-[#254431]` | Section headings within page body |
+| `text-xl font-bold text-[#254431]` | Sub-section headings, card titles |
+| `text-base` / `text-sm text-[#7A8075]` | Body text, subtitles in headers |
+| `text-sm font-semibold text-[#7A8075] uppercase tracking-wide` | Label / caption above inputs and stat cards |
+| `text-3xl font-bold text-[#254431]` | Stat numbers on cards |
+| `text-xs font-semibold` | Badges, chips, type indicators |
+| `text-[10px] font-bold uppercase tracking-tight` | Micro-labels (Hidden badge, Live Draft pill) |
 
-- **Keyboard Navigation**: All interactive elements are keyboard accessible.
-- **Screen Readers**: Semantic HTML and ARIA labels where needed.
-- **Color Contrast**: All text meets WCAG AA standards.
-- **Focus Indicators**: Clear focus states for keyboard navigation.
-- **Responsive Design**: Works on various screen sizes from mobile to desktop.
-- **Alt Text**: Images include descriptive alt text.
+### 6.2 Key Rules
 
----
-
-## 4. Mobile Application UI Design
-
-### Login Screen
-
-**Location:** `/login` – First page for unauthenticated users.
-
-**Layout:**
-
-- Full-screen gradient background (`from-[#E4EBE4] via-[#F7F2EA] to-[#E4EBE4]`)
-- Centered login card:
-  - SAPAA logo at the top
-  - "Welcome Back" heading
-  - "Sign in to your account" subtitle
-  - OAuth buttons (Google, Microsoft) – full width, primary actions
-  - Divider with “OR” text
-  - Email input field with icon
-  - Password input field with icon and show/hide toggle
-  - "Login" button (primary, green gradient)
-  - "Don't have an account? Create one" link
-  - Error message display
-
-
-**Key Features:**
-
-  - OAuth authentication (Google, Microsoft)
-  - Email/password authentication
-  - Error messages displayed below form
-  - Loading states on buttons during authentication
-  - Navigation to Signup screen
-
-**Design Elements:**
-
-  - Green primary buttons for OAuth
-  - Outlined button for email/password login
-  - Clean, centered layout
-  - Consistent spacing and padding
+- Never use `text-4xl` or larger inside the body area. Reserve large text for the header only.
+- All label text above inputs must be uppercase with `tracking-wide`.
+- Stat numbers always use `text-3xl font-bold text-[#254431]` regardless of which page they appear on.
+- Truncate long strings with the `truncate` class rather than wrapping.
 
 ---
 
-### Signup Screen
+## 7. Page Layout
 
-**Location:** Accessed from Login screen.
+### 7.1 Outer Page Shell
 
-**Layout:**
+Most pages wrap their return in an outer `div` with the warm background gradient. This is the dominant pattern and should be used for new pages unless the page has a specific layout requirement.
 
-  - SAPAA logo
-  - "Create Account" heading
-  - OAuth signup options (Google, Microsoft)
-  - Divider
-  - Email and password input fields
-  - "Sign Up" button
-  - "Already have an account? Login" link
+```tsx
+<ProtectedRoute requireAdmin>
+  <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
+    {/* Header */}
+    <div className="bg-gradient-to-r from-[#254431] to-[#356B43] ...">
+      ...
+    </div>   {/* header closes HERE */}
+    {/* Main Content */}
+    <div className="max-w-7xl mx-auto px-6 py-6">
+      ...
+    </div>
+  </div>
+</ProtectedRoute>
+```
 
-**Key Features:**
+### 7.2 Max Width Constraint
 
-  - OAuth signup (Google, Microsoft)
-  - Email/password signup
-  - Password validation
-  - Error handling
-  - Navigation back to Login
+`max-w-7xl mx-auto` is the standard container used across most pages (header interior, main content, alerts).  
+Known exceptions exist (for example Form Editor header uses `max-w-[100vw]`) and should be treated as intentional per-page overrides.
 
-**Design Elements:**
+### 7.3 Main Content Padding
 
-  - Similar layout to Login for consistency
-  - Clear call-to-action buttons
-  - Form validation feedback
+The main content `div` always uses `px-6 py-6` for outer padding. Inner sections add their own vertical spacing via `mb-6` or `space-y-6`.
 
----
+### 7.4 Three-Column Admin Layout (Form Editor)
 
-### Analytics Screen
+The Form Editor uses a special three-column layout inside the main content area:
 
-**Location:** First tab in bottom navigation (Analytics Tab).
+- Left sidebar: `w-[220px] flex-shrink-0` - section navigation
+- Centre column: `flex-1 min-w-0` - question list and editor
+- Right panel: `w-[340px] flex-shrink-0 hidden lg:block` - live preview (desktop only)
 
-**Layout:**
-
-  - Green app bar with "Analytics" title and menu icon (three dots)
-  - Scrollable content:
-      - KPI cards (Total Sites Inspected, Last Inspection)
-      - Naturalness Score Distribution (Pie Chart)
-      - Site Locator section:
-          - Search bar
-          - "Show Markers" toggle
-          - Map view
-  - "Sync Now" button
-
-**Key Features:**
-
-  - Real-time statistics display
-  - Interactive pie charts
-  - Site search and heatmap visualization
-  - Manual sync functionality
-  - Settings access via menu
-
-**Design Elements:**
-
-  - Card-based layout for KPIs
-  - Color-coded pie chart segments
-  - Map integration with markers/heatmap
-  - Prominent "Sync Now" button
+The three columns are wrapped in a `flex gap-8` container inside a `DndContext` provider.
 
 ---
 
-### Sites Screen (Home)
+## 8. Header Component
 
-**Location:** Second tab in bottom navigation (Sites Tab).
+The application uses a shared green-header style but not one identical markup structure on every page. Most pages use a full-width dark-green banner with logo/title/subtitle and optional right-side actions.
 
-**Layout:**
+### 8.1 Standard Header (Primary Site/Detail Pattern)
 
-  - Green app bar with "Sites" title and menu icon
-  - Online/Offline status badge
-  - Search bar
-  - Sort button (dropdown menu)
-  - Scrollable list of site cards:
-      - Site name (bold)
-      - Location/county
-      - Last inspection date
-      - Status badge (color-coded)
-      - Checkbox for offline download (when online)
+```tsx
+<div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+  <div className="max-w-7xl mx-auto">
+    {/* Optional back button */}
+    <button className="flex items-center gap-1.5 text-[#86A98A] hover:text-white
+                        transition-colors mb-4 group">
+      <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+      <span className="text-sm font-medium">Back to Sites</span>
+    </button>
+    <div className="flex items-start justify-between">
+      <div className="flex items-start gap-4">
+        <Image src="/images/sapaa-icon-white.png" alt="SAPAA"
+               width={140} height={140} priority
+               className="h-16 w-auto flex-shrink-0 opacity-80 mt-1" />
+        <div>
+          <h1 className="text-3xl font-bold">{title}</h1>
+          <div className="flex items-center gap-2 text-[#E4EBE4] mt-1">
+            <Icon className="w-5 h-5" />
+            <span className="text-base">{subtitle}</span>
+          </div>
+        </div>
+      </div>
+      {/* Right side: badge, status, or user pill */}
+    </div>
+  </div>
+</div>
+```
 
-**Key Features:**
+### 8.2 Admin Header (with AdminNavBar)
 
-  - Search by site name or location
-  - Sort options: Name (A-Z, Z-A), Newest First, Oldest First
-  - Offline download functionality
-  - Status badges: Recently Visited, Visited This Year, Visited Recently, Needs Review
-  - Tap site card to view details
+Admin pages include `AdminNavBar` near the top of the page. Some pages override nav background/shadow using the child selector approach:
 
-**Design Elements:**
+```tsx
+<div className="[&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none
+                [&>nav]:px-0 [&>nav]:py-0">
+  <AdminNavBar />
+</div>
+```
 
-  - Card-based list items
-  - Color-coded status badges
-  - Clear visual hierarchy
-  - Checkbox selection for bulk actions
+### 8.3 Header with Action Button (Account Management)
 
----
+When a page needs a primary action button in the header, it is grouped together with the `AdminNavBar` in a single right-side container:
 
-### Site Detail Screen
+```tsx
+<div className="flex items-center gap-3">
+  <button onClick={...}
+          className="bg-white text-[#356B43] px-6 py-3 rounded-xl font-semibold
+                      hover:shadow-lg transition-all flex items-center gap-2">
+    <UserPlus className="w-5 h-5" />
+    Add User
+  </button>
+  <div className="[&>nav]:bg-none [&>nav]:bg-transparent ...">
+    <AdminNavBar />
+  </div>
+</div>
+```
 
-**Location:** Accessed by tapping a site card.
+### 8.4 SAPAA Logo
 
-**Layout:**
+| Property | Current Usage |
+|---|---|
+| Source | `/images/sapaa-icon-white.png` |
+| Size/CSS | Varies by page (e.g., `140x140` with large header treatment, and compact `24x24` icon in report pages) |
+| Alt text | Varies by page (`"SAPAA"` on many headers, `"Logo"` on current new/edit report pages) |
+| Priority | Used where appropriate for above-the-fold logo rendering |
 
-  - Green app bar with site name and back button
-  - Scrollable content:
-      - Site overview card (name, type, region, area, activities)
-      - Naturalness Score display (large number with color-coded slider)
-      - Inspection Reports section:
-          - Tabs: "By Date" and "By Question"
-          - Expandable inspection cards
-          - Question comparison view
-      - "Generate Report" button (bottom)
+### 8.5 Back Button
 
-**Key Features:**
+Back navigation exists on detail/report pages but currently has two variants:
+- Text + icon (`"Back to Sites"`) on Site Detail.
+- Icon-only circular button (`ArrowLeft`) on New/Edit Report pages.
 
-  - Two view modes: By Date and By Question
-  - Expandable inspection details
-  - Naturalness score visualization
-  - PDF report generation
-  - Pull-to-refresh
-
-**Design Elements:**
-
-  - Large, prominent naturalness score
-  - Color gradient slider (red to green)
-  - Tab navigation for different views
-  - Expandable/collapsible sections
-  - Card-based information grouping
-
----
-
-### Map Screen
-
-**Location:** Third tab in bottom navigation (Map Tab).
-
-**Layout:**
-
-  - Green app bar with "SAPAA Map" title
-  - Full-screen map view
-  - Site markers/pins
-  - Tap marker shows site name
-  - "Open in Google Maps" button
-
-**Key Features:**
-
-  - Interactive map with all sites
-  - Marker clustering
-  - Tap to view site name
-  - Navigation to Google Maps
-  - GPS location support
-
-**Design Elements:**
-
-  - Full-screen map
-  - Custom markers
-  - Overlay buttons for actions
+| Property | Current Usage |
+|---|---|
+| Text | Site Detail uses `"Back to Sites"`; New/Edit Report currently use icon-only back buttons |
+| Icon | `ArrowLeft` used in all back-navigation variants |
+| Spacing/Placement | Page-specific (either above header row as text link, or inline in title row as icon button) |
 
 ---
 
-### Settings Screen
+## 9. Stats Cards
 
-**Location:** Accessed via menu (three dots) on Analytics or Sites screens.
+Two stats card styles exist in the application. The Large Icon style is the preferred convention for all admin pages.
 
-**Layout:**
+### 9.1 Large Icon Style (Preferred - Admin Pages)
 
-  - Green app bar with "Settings" title and back button
-  - Settings options:
-      - Auto-delete downloaded sites (days selector)
-      - Theme toggle (Light/Dark)
-      - Logout button
+Used on the Admin Dashboard, Account Management, and any new admin pages. Features a 48x48 gradient icon container beside the label and value:
 
-**Key Features:**
+```tsx
+<div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
+  <div className="flex items-center gap-4">
+    <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431]
+                    rounded-xl flex items-center justify-center">
+      <Icon className="w-6 h-6 text-white" />
+    </div>
+    <div>
+      <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">
+        Label
+      </div>
+      <div className="text-3xl font-bold text-[#254431]">{value}</div>
+    </div>
+  </div>
+</div>
+```
 
-  - Offline site management
-  - Theme preferences
-  - Account management
+### 9.2 Compact Style (Legacy - Site List Header)
 
-**Design Elements:**
+Used only in the HomeClient stats strip. Kept for backward compatibility but should not be used on new pages.
 
-  - List-based settings layout
-  - Toggle switches
-  - Number input for days
-  - Destructive action (Logout) styled in red
+```tsx
+<div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+  <div className="flex items-center gap-2 mb-2">
+    <Icon className="w-5 h-5 text-[#356B43]" />
+    <div className="text-sm text-[#7A8075] font-medium uppercase tracking-wide">Label</div>
+  </div>
+  <div className="text-3xl font-bold text-[#254431]">{value}</div>
+</div>
+```
 
----
+### 9.3 Stats Grid Layout
 
-### Admin Dashboard Screen
+| Property | Value |
+|---|---|
+| Grid | `grid grid-cols-1 md:grid-cols-3 gap-6` |
+| Card radius | `rounded-2xl` (large style) / `rounded-xl` (compact) |
+| Card padding | `p-6` (large) / `p-4` (compact) |
+| Border | `border-2 border-[#E4EBE4]` |
 
-**Location:** Accessed via menu → "Admin Dashboard" (admins only).
+### 9.4 Coloured Card Variants
 
-**Layout:**
+When a card needs semantic colour (e.g., role summaries, status counts), override the background and border:
 
-  - Green app bar with "Admin Dashboard" title
-  - Scrollable content:
-      - Summary statistics cards
-      - Naturalness Distribution pie chart
-      - Top 5 Sites pie chart
-      - Site Heatmap section:
-          - Search bar
-          - Map with heatmap visualization
-          - Toggle for markers
+| Variant | Classes |
+|---|---|
+| Green | `bg-[#D1FAE5] border-2 border-[#065F46]/20` |
+| Red | `bg-[#FEE2E2] border-2 border-[#B91C1C]/20` |
+| Amber | `bg-[#FEF3C7] border-2 border-[#92400E]/20` |
 
-**Key Features:**
+### 9.5 Clickable / Linked Card
 
-  - Program-wide statistics
-  - Data visualizations
-  - Geographic site analysis
-  - Keyword-based site search
+When a card is a navigation link (e.g., Image Gallery on the dashboard), wrap it in a Next.js `Link` with block display and hover elevation:
 
-**Design Elements:**
-
-  - Multiple chart types
-  - Interactive maps
-  - Card-based statistics
-  - Search functionality
-
----
-
-### Admin Sites Screen
-
-**Location:** Part of Admin Dashboard navigation (if using tab navigation).
-
-**Layout:**
-- Similar to regular Sites screen
-- Additional admin actions
-- Edit/delete capabilities
-
-**Key Features:**
-- Full site list with admin controls
-- Site management capabilities
-
----
-
-### Account Management Screen
-
-**Location:** Accessed from Admin Dashboard.
-
-**Layout:**
-- Green app bar with "Account Management" title
-- Summary cards (Total Users, Admins, Stewards)
-- Search bar
-- Filter/Sort button
-- Scrollable list of user cards:
-    - User email
-    - Role badge (Admin/Steward)
-    - Tap to edit
-
-**Key Features:**
-- User list with roles
-- Search functionality
-- Add user button
-- Edit user modal
-- Delete user capability
-
-**Design Elements:**
-- Card-based user list
-- Role badges
-- Modal dialogs for editing
-- Destructive actions in red
+```tsx
+<Link href="/admin/gallery" className="block">
+  <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm
+                  hover:border-[#86A98A] hover:shadow-lg transition-all h-full">
+    ...
+  </div>
+</Link>
+```
 
 ---
 
-### PDF Viewer Screen
+## 10. Status Badges
 
-**Location:** Accessed after generating a PDF report.
+Inspection status is communicated through inline coloured badges. Badge style follows the pattern: `rounded-full px-3 py-1 text-xs font-semibold`.
 
-**Layout:**
-- Green app bar with "Report" title and back button
-- PDF document viewer
-- Share/Download buttons
+### 10.1 Inspection Status Badges
 
-**Key Features:**
-- PDF preview
-- Share functionality
-- Download to device
+| Label | Text colour | Background | Condition |
+|---|---|---|---|
+| Never Inspected | `#475569` | `#F1F5F9` | No inspection on record |
+| Recently Inspected | `#065F46` | `#D1FAE5` | Within 180 days |
+| Inspected This Year | `#92400E` | `#FEF3C7` | 181–365 days |
+| Over 1 Year Ago | `#9A3412` | `#FFEDD5` | 366–730 days |
+| Needs Review | `#7F1D1D` | `#FEE2E2` | More than 730 days |
 
-**Design Elements:**
-- Full-screen PDF viewer
-- Action buttons at bottom
+### 10.2 Question Type Badges (Form Editor)
 
----
+| Badge | Condition |
+|---|---|
+| Required | Shown on question cards when `is_required = true` |
+| Hidden | Shown on question card when `is_active = false` - `bg-gray-200 text-gray-600` |
+| LIVE DRAFT | Shown on preview panel header when Add Question form is open - `animate-pulse` |
 
-## 5. Web Application UI Design
+### 10.3 General Badge Pattern
 
-### Login Page
+```tsx
+{/* Standard badge */}
+<span className="text-xs font-semibold px-3 py-1 rounded-full">
+  {label}
+</span>
 
-**Location:** `/login` - First page for unauthenticated users.
-
-**Layout:**
-- Full-screen gradient background (`from-[#E4EBE4] via-[#F7F2EA] to-[#E4EBE4]`)
-- Centered login card:
-    - SAPAA logo at top
-    - "Welcome Back" heading
-    - "Sign in to your account" subtitle
-    - OAuth buttons (Google, Microsoft) - full width, outlined
-    - Divider with "OR" text
-    - Email input field with icon
-    - Password input field with icon and show/hide toggle
-    - "Login" button (primary, green gradient)
-    - "Don't have an account? Create one" link
-    - Error message display
-
-**Key Features:**
-- OAuth authentication (Google, Microsoft)
-- Email/password authentication
-- Password visibility toggle
-- Form validation
-- Error handling with clear messages
-- Responsive design
-
-**Design Elements:**
-- Gradient background for visual appeal
-- White card with rounded corners and shadow
-- Icon-enhanced input fields
-- Primary green button with hover effects
-- Clean, modern typography
+{/* Micro badge (10px) for cards */}
+<span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tight">
+  {label}
+</span>
+```
 
 ---
 
-### Signup Page
+## 11. Buttons
 
-**Location:** `/signup` - User registration.
+### 11.1 Primary Button
 
-**Layout:**
-- Similar to Login page layout
-- "Create Account" heading
-- OAuth signup options
-- Email and password fields
-- Password confirmation field
-- "Sign Up" button
-- Link back to Login
+Used for the main action on a page or section. Always uses the forest gradient.
 
-**Key Features:**
-- OAuth signup
-- Email/password signup
-- Password strength validation
-- Email format validation
-- Error handling
+```tsx
+<button className="flex items-center gap-2 px-4 py-2.5
+                   bg-gradient-to-r from-[#356B43] to-[#254431]
+                   text-white text-sm font-semibold rounded-xl
+                   hover:shadow-lg transition-all disabled:opacity-50">
+  <Icon className="w-4 h-4" />
+  Label
+</button>
+```
 
-**Design Elements:**
-- Consistent with Login page
-- Additional password confirmation field
-- Validation feedback
+### 11.2 Secondary / Ghost Button
 
----
+Used alongside a primary button for cancel or alternate actions.
 
-### Protected Areas Page (Sites)
+```tsx
+<button className="px-4 py-2.5 border-2 border-[#E4EBE4] text-[#7A8075]
+                   text-sm font-semibold rounded-xl hover:bg-[#E4EBE4]
+                   transition-all">
+  Cancel
+</button>
+```
 
-**Location:** `/sites` - Main landing page after login.
+### 11.3 Header Primary Button (White on Green)
 
-**Layout:**
-- **Header Section:**
-    - Gradient green background (`from-[#254431] to-[#356B43]`)
-    - SAPAA logo and "Protected Areas" title
-    - Tagline: "Monitor and track site inspections across Alberta"
-    - Admin button (top right, admins only)
+Used when a primary action lives inside the green header. Background is white with green text to contrast against the dark header.
 
-- **Statistics Cards:**
-    - Four cards in a row:
-        - Total Sites
-        - Total Inspections
-        - Active This Year
-        - Needs Attention
-    - Each card shows number and label
+```tsx
+<button className="bg-white text-[#356B43] px-6 py-3 rounded-xl font-semibold
+                   hover:shadow-lg transition-all flex items-center gap-2">
+  <Icon className="w-5 h-5" />
+  Add User
+</button>
+```
 
-- **Search and Sort:**
-    - Search bar with search icon
-    - "Sort" button with dropdown menu
-    - Results count ("X sites found")
+### 11.4 Icon-Only Buttons
 
-- **Site List:**
-    - Grid/list of site cards:
-        - Site name (bold)
-        - County with location icon
-        - Inspection date or "No inspection date"
-        - Status badge (color-coded)
-        - Last visit age (e.g., "10d ago")
-    - Click card to view details
+Small icon buttons used inside cards and list rows:
 
-**Key Features:**
-- Quick statistics overview
-- Search by site name or county
-- Sort options: Name (A-Z, Z-A), Most Recent, Oldest First
-- Status badges with color coding
-- Responsive grid layout
-- Admin access button
+| Variant | Classes |
+|---|---|
+| Edit | `w-7 h-7 rounded-lg text-[#356B43] hover:bg-[#EEF5EF]` |
+| Toggle | `p-1.5 rounded-md` - active: `text-[#7A8075] hover:bg-[#F7F2EA]` / inactive: `text-amber-600 bg-amber-50 hover:bg-amber-100` |
+| Delete | `w-8 h-8 rounded-lg text-[#B91C1C] hover:bg-[#FEE2E2]` |
+| Close | `ml-auto` on alert banners |
 
-**Design Elements:**
-- Gradient header for visual hierarchy
-- Card-based statistics
-- Color-coded status badges
-- Hover effects on site cards
-- Clean, spacious layout
+### 11.5 Text Link Button
 
----
+Used for secondary in-body actions like "+ Add a question":
 
-### Site Detail Page
+```tsx
+<button className="text-sm text-[#356B43] font-semibold hover:underline
+                   flex items-center gap-1">
+  <Plus className="w-3.5 h-3.5" />
+  Add a question
+</button>
+```
 
-**Location:** `/detail/[namesite]` - Individual site information.
+### 11.6 Section Add Button (Sidebar)
 
-**Layout:**
-- **Header:**
-    - "Back to Sites" button
-    - Site name (large, bold)
-    - County with map pin icon
-    - Last inspection date
-    - Last visit badge
+Small square icon button in a sidebar header:
 
-- **Statistics Cards:**
-    - Three cards:
-        - Total Reports
-        - Avg. Score
-        - Condition
-
-- **Naturalness Score:**
-    - Large numeric display
-    - Color gradient bar (red → yellow → green)
-    - Scale labels (1.0 Poor to 4.0 Excellent)
-    - Indicator showing score position
-
-- **View Toggle:**
-    - Two buttons: "View by Date" and "Compare by Question"
-
-- **Inspection Reports Section:**
-    - **By Date View:**
-        - Collapsible inspection cards
-        - Date and score
-        - Expand to see: Steward name, Naturalness details, Observations
-    - **By Question View:**
-        - Question cards with IDs
-        - Expand to see all responses over time
-        - Sorted newest to oldest
-
-**Key Features:**
-- Two viewing modes for inspection data
-- Expandable sections
-- Naturalness score visualization
-- Historical data comparison
-- Responsive layout
-
-**Design Elements:**
-- Large, prominent score display
-- Color gradient for visual feedback
-- Tab-like button toggle
-- Collapsible cards
-- Clear information hierarchy
+```tsx
+<button className="w-7 h-7 bg-[#E4EBE4] hover:bg-[#356B43] hover:text-white
+                   text-[#356B43] rounded-lg flex items-center justify-center
+                   transition-all">
+  <Plus className="w-4 h-4" />
+</button>
+```
 
 ---
 
-### Admin Dashboard
+## 12. Form Inputs
 
-**Location:** `/admin/dashboard` - Admin-only statistics and analytics.
+### 12.1 Standard Text Input
 
-**Layout:**
-- **Navigation Bar:**
-    - Green gradient header
-    - Home button (left)
-    - Hamburger menu (right)
-    - Dropdown menu: Dashboard, Account Management, Sites
+```tsx
+<input type="text"
+  className="w-full px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm
+             focus:outline-none focus:border-[#356B43] transition-colors
+             placeholder:text-[#7A8075]" />
+```
 
-- **Content:**
-    - **Summary Statistics:**
-        - Two cards: Total Records, Last Record
-    - **Naturalness Distribution:**
-        - Pie chart showing distribution across categories
-        - Color-coded segments
-    - **Top 5 Sites:**
-        - Pie chart showing sites with most inspections
-    - **Site Heatmap:**
-        - Search bar with "Search" button
-        - Map with heatmap/markers
-        - Toggle for marker view
-        - Results count
+### 12.2 Textarea
 
-**Key Features:**
+```tsx
+<textarea rows={2}
+  className="w-full px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm
+             focus:outline-none focus:border-[#356B43] resize-none transition-colors
+             placeholder:text-[#7A8075]" />
+```
 
-  - Program-wide analytics
-  - Data visualizations
-  - Geographic site analysis
-  - Keyword search for sites
-  - Interactive charts
+### 12.3 Checkbox
 
-**Design Elements:**
+```tsx
+<input type="checkbox"
+  className="w-4 h-4 text-[#356B43] rounded focus:ring-[#356B43]" />
+```
 
-  - Chart.js pie charts
-  - Leaflet map integration
-  - Card-based layout
-  - Search functionality
-  - Responsive grid
+### 12.4 Label Pattern
 
----
+All input labels follow the same uppercase `tracking-wide` pattern and sit above the input with `mt-1` on the control:
 
-### Account Management Page
+```tsx
+<label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
+  Field Name
+</label>
+<input className="... mt-1" />
+```
 
-**Location:** `/admin/account-management` - User account administration.
+### 12.5 Input Container (Inline Form Card)
 
-**Layout:**
-- **Navigation Bar:** Same as Admin Dashboard
-- **Header:**
-    - "Account Management" title
-    - "Manage user accounts and permissions" subtitle
-    - "Add User" button (top right)
+When a mini-form appears inline (Add Section form, Edit Question form), it is wrapped in:
 
-- **Summary Cards:**
-    - Three cards: Total Users, Admins, Stewards
+```tsx
+<div className="bg-white border-2 border-[#356B43] rounded-xl p-5 shadow-md">
+  ...
+</div>
+```
 
-- **Search and Filter:**
-    - Search bar ("Search by email...")
-    - "Filter & Sort" button
+The green border signals that this area is in an active edit state. The form actions bar at the bottom is separated by a top border:
 
-- **User List:**
-    - Grid of user cards:
-        - Avatar (circle with first letter)
-        - Email address
-        - Role badge (Admin/Steward)
-        - Click to edit
-
-- **Account Details Modal:**
-    - Opens when clicking user card
-    - Fields: Email, Role (radio buttons), Password (optional)
-    - Save and Delete buttons
-
-**Key Features:**
-- User list with roles
-- Search by email
-- Filter and sort options
-- Add new users
-- Edit existing users
-- Delete users
-- Role management
-
-**Design Elements:**
-- Card-based user list
-- Avatar circles
-- Role badges
-- Modal dialogs
-- Form inputs with icons
-- Destructive actions in red
+```tsx
+<div className="flex gap-2 mt-5 pt-4 border-t-2 border-[#E4EBE4]">
+  {/* primary + secondary buttons */}
+</div>
+```
 
 ---
 
-### Admin Sites Page
+## 13. Cards and Panels
 
-**Location:** `/admin/sites` - Admin view of all sites.
+### 13.1 Standard White Card
 
-**Layout:**
-- Similar to regular Sites page
-- Additional admin controls
-- Edit capabilities
-- Site management features
+The default content container used throughout the application:
 
-**Key Features:**
-- Full site list
-- Admin-specific actions
-- Site editing capabilities
+```tsx
+<div className="bg-white rounded-2xl border-2 border-[#E4EBE4] shadow-sm p-6">
+  ...
+</div>
+```
 
----
+| Property | Value |
+|---|---|
+| Border radius | `rounded-2xl` (preferred) or `rounded-xl` (compact contexts) |
+| Border | `border-2 border-[#E4EBE4]` - always 2px, always sage green |
+| Shadow | `shadow-sm` at rest, `shadow-lg` on hover (for interactive cards) |
+| Padding | `p-6` (standard) / `p-4` (compact sidebar cards) / `p-5` (form cards) |
 
-## 6. Color Palette
+### 13.2 Sidebar Panel
 
-### Primary Colors
+```tsx
+<div className="bg-white rounded-2xl border-2 border-[#E4EBE4] p-4">
+  <div className="flex items-center justify-between mb-4">
+    <h3 className="text-sm font-bold text-[#254431] uppercase tracking-wide">
+      Sections
+    </h3>
+    {/* action button */}
+  </div>
+  {/* list */}
+</div>
+```
 
-- **Dark Green**: `#254431` - Headers, primary text
-- **Medium Green**: `#356B43` - Primary buttons, accents
-- **Light Green**: `#2E7D32` - Mobile app bars, highlights
-- **Pale Green**: `#E4EBE4` - Backgrounds, subtle accents
+### 13.3 Sticky Preview Panel
 
-### Secondary Colors
+The right-side preview panel in the Form Editor is sticky so it stays visible while scrolling:
 
-- **Cream/Beige**: `#F7F2EA` - Card backgrounds, light surfaces
-- **White**: `#FFFFFF` - Content backgrounds, text on dark
-- **Grey**: `#7A8075` - Secondary text, borders
-- **Light Grey**: `#86A98A` - Input borders, dividers
+```tsx
+<div className="bg-[#F7F2EA] rounded-2xl border-2 border-[#E4EBE4] p-5 sticky top-6">
+  ...
+</div>
+```
 
-### Status Colors
+### 13.4 Active / Selected Card State
 
-- **Success/Good**: `#1C7C4D`, `#E4EBE4` (background)
-- **Warning**: `#E0A63A`, `#FEF3C7` (background)
-- **Caution**: `#C76930`, `#FED7AA` (background)
-- **Error/Destructive**: `#B91C1C`, `#DC2626`, `#FEE2E2` (background)
-- **Neutral**: `#7A8075`, `#E4EBE4` (background)
+Cards that support selection toggle their border when selected:
 
-### Gradients
+```tsx
+{/* Default */}
+border-[#E4EBE4] hover:border-[#86A98A]
 
-- **Header Gradient**: `from-[#254431] to-[#356B43]`
-- **Background Gradient**: `from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]`
-- **Button Gradient**: `from-[#356B43] to-[#254431]`
+{/* Selected */}
+border-[#356B43] shadow-sm
+```
 
----
+### 13.5 Empty State Card
 
-## 7. Typography
-
-### Font Families
-
-- **Mobile**: System default (San Francisco on iOS, Roboto on Android)
-- **Web**: System font stack with fallbacks
-
-### Font Sizes
-
-- **Page Titles**: 24-32px (Mobile: 28-32px, Web: 24-28px)
-- **Section Headers**: 18-20px
-- **Body Text**: 14-16px
-- **Supporting Text**: 12-14px
-- **Small Text**: 10-12px
-
-### Font Weights
-
-- **Bold**: 700 - Page titles, important labels
-- **Semi-bold**: 600 - Section headers, button text
-- **Regular**: 400 - Body text, descriptions
-- **Light**: 300 - Secondary information
-
-### Line Heights
-
-- **Titles**: 1.2-1.3
-- **Body**: 1.5-1.6
-- **Dense Text**: 1.4
+```tsx
+<div className="text-center py-16 bg-white rounded-2xl
+                border-2 border-dashed border-[#E4EBE4]">
+  <Icon className="w-12 h-12 text-[#E4EBE4] mx-auto mb-3" />
+  <p className="text-[#7A8075] font-medium">No items yet.</p>
+  <button className="mt-4 text-sm text-[#356B43] font-semibold hover:underline">
+    + Add one
+  </button>
+</div>
+```
 
 ---
 
-## 8. Conclusion
+## 14. Alerts and Feedback
 
-The SAPAA applications (both mobile and web) follow established UI/UX principles to create an intuitive, accessible, and efficient experience for stewards and administrators. Key strengths include:
+### 14.1 Error Alert
 
-1. **Consistent Design Language**: Both platforms share color schemes, typography, and interaction patterns while respecting platform conventions.
+```tsx
+<div className="bg-[#FEE2E2] border-2 border-[#FECACA] text-[#B91C1C]
+               px-4 py-3 rounded-xl flex items-center gap-3">
+  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+  <span className="text-sm font-medium">{error}</span>
+  <button onClick={() => setError(null)} className="ml-auto">
+    <X className="w-4 h-4" />
+  </button>
+</div>
+```
 
-2. **Clear Information Architecture**: Hierarchical organization makes it easy to find and understand information.
+### 14.2 Success Alert
 
-3. **Progressive Disclosure**: Complex information is revealed gradually, preventing cognitive overload.
+```tsx
+<div className="bg-[#DCFCE7] border-2 border-[#BBF7D0] text-[#166534]
+               px-4 py-3 rounded-xl flex items-center gap-3">
+  <span className="text-sm font-medium">{successMessage}</span>
+</div>
+```
 
-4. **Accessibility**: Both applications meet WCAG standards and support assistive technologies.
+### 14.3 Alert Behaviour
 
-5. **Responsive Design**: Web application adapts to various screen sizes, while mobile app supports tablets and phones.
-
-6. **Error Prevention and Recovery**: Clear validation, error messages, and confirmation dialogs protect users from mistakes.
-
-7. **Efficiency Features**: Bulk actions, shortcuts, and smart defaults help experienced users work faster.
-
-The design prioritizes the needs of field stewards who may be working in challenging conditions (poor connectivity, mobile devices) while also supporting administrators who need comprehensive data views and management tools.
+- Alerts appear immediately below the header, inside the `max-w-7xl mx-auto px-6 pt-4` container.
+- Success messages auto-dismiss after 3 seconds using `setTimeout(() => setSuccessMessage(null), 3000)`.
+- Error alerts include a manual dismiss button (X icon, `ml-auto`).
+- Both use `border-2` (not `border-1`) for visual weight consistency with cards.
 
 ---
 
-**Document Version:** 2.0  
-**Last Updated:** November 2025  
+## 15. Loading States
+
+### 15.1 Full-Page Loader
+
+When a page is loading its initial data, render a centred spinner on the page background:
+
+```tsx
+<ProtectedRoute requireAdmin>
+  <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4]
+                  to-[#F7F2EA] flex flex-col items-center justify-center gap-4">
+    <Loader2 className="w-12 h-12 text-[#356B43] animate-spin" />
+    <p className="text-[#7A8075] font-medium">Loading...</p>
+  </div>
+</ProtectedRoute>
+```
+
+### 15.2 Button Loading State
+
+When a save/submit operation is in progress, replace the button icon with a spinning `Loader2`:
+
+```tsx
+<button disabled={saving} ...>
+  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+  {saving ? 'Saving...' : 'Save Changes'}
+</button>
+```
+
+### 15.3 Leaflet / Map SSR Guard
+
+The Leaflet map component cannot render server-side. Use a mounted state flag to prevent SSR errors:
+
+```tsx
+const [mounted, setMounted] = useState(false);
+useEffect(() => { setMounted(true); }, []);
+
+{mounted
+  ? <Map points={points} />
+  : <div className="h-full flex items-center justify-center bg-[#F7F2EA]">
+      <Loader2 className="w-8 h-8 text-[#356B43] animate-spin" />
+    </div>
+}
+```
+
+---
+
+## 16. Drag and Drop
+
+The Form Editor implements drag-and-drop question reordering using `@dnd-kit`. These conventions must be followed for correct behaviour.
+
+### 16.1 Setup
+
+```tsx
+const sensors = useSensors(
+  useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+);
+
+<DndContext
+  sensors={sensors}
+  collisionDetection={rectIntersection}
+  onDragEnd={handleDragEnd}
+>
+  <SortableContext
+    items={currentQuestions.map(q => q.id)}
+    strategy={verticalListSortingStrategy}
+  >
+    ...
+  </SortableContext>
+</DndContext>
+```
+
+### 16.2 Drag Handle
+
+Each sortable item exposes only a grip handle (not the whole card) as the drag trigger. The handle uses `touch-none` and stops click propagation to avoid triggering card selection:
+
+```tsx
+<button {...attributes} {...listeners}
+  className="touch-none flex-shrink-0 cursor-grab active:cursor-grabbing
+             p-0.5 rounded hover:bg-[#E4EBE4] transition-colors"
+  onClick={e => e.stopPropagation()}>
+  <GripVertical className="w-4 h-4 text-[#7A8075]" />
+</button>
+```
+
+### 16.3 Drag Visual Feedback
+
+| State | Classes |
+|---|---|
+| Dragging card | `opacity-50`, `shadow-lg`, `scale-[1.02]` |
+| Drop target section | `bg-[#DCFCE7] border-[#22C55E] scale-[1.03] shadow-md` |
+| Section count pill | `bg-[#22C55E] text-white` when over |
+
+---
+
+## 17. AdminNavBar
+
+The `AdminNavBar` component is shared across all admin pages. Its internal structure must not be modified since UI tests depend on specific elements being present.
+
+### 17.1 Test-Critical Elements
+
+- A home link to `/sites` (currently icon-only `Home`, no visible `"Home"` text label).
+- A button with `title="admin dropdown menu"` (hamburger/menu trigger).
+- Dropdown item labels (`Dashboard`, `Account Management`, `Sites`, `Form Editor`).
+
+### 17.2 Current Spacing
+
+Current `AdminNavBar` buttons use `p-2` and do not include `ml-2` on the hamburger button.
+
+### 17.3 Inline Rendering in Headers
+
+When rendered inside a page header, `AdminNavBar`'s background is overridden with the child selector approach described in Section 8.2.
+
+---
+
+## 18. Database and Data Layer
+
+### 18.1 Active Tables (W26_ prefix)
+
+| Table | Purpose |
+|---|---|
+| `W26_form_responses` | Inspection form submissions - primary data table |
+| `W26_answers` | Individual question answers (`obs_value`, `question_id`, `response_id`) |
+| `W26_questions` | Form question definitions (`form_question`, `question key`, `question_type`) |
+| `W26_question_options` | Answer options for radio/checkbox questions |
+| `W26_sites-pa` | Protected area site records (`namesite`, `is_active`, `id`) |
+| `W26_attachments` | Photos attached to form responses |
+| `W26_form_sections` | Form section metadata |
+| `W26_ab_counties` | County/region lookup |
+
+### 18.2 Legacy Tables (Migration In Progress)
+
+The following tables are from the previous data model. New features should avoid adding new dependencies on them, but the current codebase still has legacy reads in some admin/analytics paths:
+
+- `sites_report_fnr_test`
+- `sites_detail_fnr_test`
+- `sites_list_fnr`
+
+### 18.3 Postgres RPC Functions
+
+Aggregate queries are implemented as Supabase RPC functions to avoid complex client-side joins:
+
+| Function | Description |
+|---|---|
+| `get_naturalness_distribution()` | Returns normalised naturalness score buckets with counts from `W26_answers` |
+| `get_top_sites_distribution()` | Returns top 5 active sites by inspection count from `W26_form_responses` and `W26_sites-pa` |
+
+### 18.4 Naturalness Score Normalisation
+
+Raw `obs_value` data for naturalness is inconsistently stored (e.g., "4 - Great", "4 = Great", "Great"). The RPC uses `ILIKE` pattern matching with a `CASE` statement to normalise these into five canonical buckets: Great, Good, Passable, Terrible, and Cannot Answer.
+
+---
+
+## 19. Testing Conventions
+
+### 19.1 Test IDs
+
+Components commonly use `data-testid` attributes for reliable test selection. Prefer test IDs and stable semantic selectors.  
+Current test suites also include some CSS/text selectors where no stable test ID exists.
+
+| Test ID | Element |
+|---|---|
+| `section-button-{id}` | Section nav buttons in Form Editor sidebar |
+| `section-count-{id}` | Question count pill on section buttons |
+| `question-card-{id}` | Question row cards in Form Editor |
+| `edit-question-button` | Pencil icon button on question cards |
+| `edit-question-title` | Title input in Edit Question form |
+| `edit-question-subtext` | Subtext textarea in Edit Question form |
+| `save-question-button` | Save Changes button in Edit Question form |
+| `cancel-button` | Cancel button in Edit Question form |
+| `add-question-title` | Title input in Add Question form |
+| `add-question-subtext` | Subtext textarea in Add Question form |
+| `add-question-key` | Question key input in Add Question form |
+| `question-type-{label}` | Type selector buttons (e.g., `question-type-Radio`) |
+| `save-new-question` | Add Question submit button |
+| `{question} Hide Button` | Toggle button when question is active |
+| `{question} Show Button` | Toggle button when question is hidden |
+
+### 19.2 Test-Critical UI Text
+
+The following strings/attributes are currently asserted by parts of the UI test suite:
+
+- Site detail back button: `"Back to Sites"`
+- Admin menu trigger title: `"admin dropdown menu"`
+- Logo alt text varies by page (`"SAPAA"` and `"Logo"` both exist in current implementation)
+
+### 19.3 Mocking Strategy
+
+AdminDashboard tests require these mocks:
+
+- `@/utils/supabase/queries` - mock the query functions directly
+- `react-chartjs-2` - mock `Pie` as a simple `div` with `data-testid="pie-chart"`
+- `chart.js` - mock `Chart.register`, `ArcElement`, `Tooltip`, `Legend`
+- `@/utils/supabase/server` - mock to prevent `'use server'` import errors
+- `global.fetch` - default mock in `beforeEach` returning `{ ok: true, json: async () => ({ items: [] }) }`
+
+Re-apply all query mocks in `beforeEach` after `jest.clearAllMocks()`. Import the Dashboard component only after all mocks are registered.
+
+---
+
+## Appendix A - Quick Reference
+
+### A.1 Full Colour Tokens
+
+| Token | Value |
+|---|---|
+| `--forest-dark` | `#254431` |
+| `--forest-mid` | `#356B43` |
+| `--forest-light` | `#86A98A` |
+| `--bg-warm` | `#F7F2EA` |
+| `--bg-cool` | `#E4EBE4` |
+| `--text-primary` | `#1E2520` |
+| `--text-muted` | `#7A8075` |
+| `--status-red` | `#B91C1C` / `#FEE2E2` |
+| `--status-dark-red` | `#7F1D1D` / `#FEE2E2` |
+| `--status-green` | `#065F46` / `#D1FAE5` |
+| `--status-amber` | `#92400E` / `#FEF3C7` |
+| `--status-orange` | `#9A3412` / `#FFEDD5` |
+| `--status-slate` | `#475569` / `#F1F5F9` |
+
+### A.2 Checklist for New Pages
+
+- Wrap the return in a `min-h-screen` container (gradient pattern is preferred for most pages).
+- Build the header using a green-banner pattern with page-appropriate variant (standard site-detail header, admin header with `AdminNavBar`, or compact report header).
+- Close the header `div` before opening the main content `div`.
+- Use the large icon stats card style (Section 9.1) for all new admin stats.
+- Prefer `W26_` tables for new work; do not add new dependencies on legacy `sites_*` tables.
+- Add `data-testid` to all interactive elements.
+- Do not use `hidden md:flex` on text that tests must find.
+- Wrap Leaflet maps in a mounted guard (Section 15.3).
+
+---
+
+*End of Document*
+
+**Document Version:** 3.0  
+**Last Updated:** March 2026  
 **Prepared for:** Stewards of Alberta's Protected Areas Association

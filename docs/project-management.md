@@ -11,7 +11,7 @@ This page provides a general overview of the assigned tasks and roles for the du
 
 **Project Scrum Master:** Jason Liang
 
-**Project Product Owner:** Harveer Deol
+**Project Product Owner:** Harveer Deol, Raiyana Rahman
 
 ### Sprint 1
 **Due:** *February 1, 2026*
@@ -20,23 +20,20 @@ This page provides a general overview of the assigned tasks and roles for the du
 
 |Task|Related US|Assignee|Due|
 |:---:|:---:|:---:|:---:|
-|User Stories                                   |Documentation  |Everyone                       |Jan 30th|
-|Project Requirements Doc                       |Documentation  |Raiyana                        |Jan 30th|
-|Architecture Diagram                           |Documentation  |Vishal, Braden                 |Jan 30th|
-|UML Diagram                                    |Documentation  |Braden                         |Jan 30th|
-|Sequence Diagram                               |Documentation  |Vishal                         |Jan 31st|
-|User Interface Mockup                          |Documentation  |Jason, Akib, Braden            |Jan 31st|
-|Software Design Doc                            |Documentation  |Raiyana                        |Feb 1st |
-|Project Management Doc                         |Documentation  |Jason, Raiyana, Vishal         |Feb 1st |
-|Team Canvas                                    |Documentation  |Everyone                       |Jan 31st|
-|Teamwork Doc                                   |Documentation  |Jason                          |Jan 31st|
-|Research and evaluate image management options |TASK 2.0.5     |Harveer, Zoe, Akib, Raiyana    |Jan 29th|
-|Understand the previous project database       |TASK 1.0.21    |Harveer, Jason, Vishal, Braden |Jan 27th|
-
-
+|User Stories|Documentation|Everyone|Jan 30th|
+|Project Requirements Doc|Documentation|Raiyana|Jan 30th|
+|Architecture Diagram|Documentation|Vishal, Braden|Jan 30th|
+|UML Diagram|Documentation|Braden|Jan 30th|
+|Sequence Diagram|Documentation|Vishal|Jan 31st|
+|User Interface Mockup|Documentation|Jason, Akib, Braden|Jan 31st|
+|Software Design Doc|Documentation|Raiyana|Feb 1st|
+|Project Management Doc|Documentation|Jason, Raiyana, Vishal|Feb 1st|
+|Team Canvas|Documentation|Everyone|Jan 31st|
+|Teamwork Doc|Documentation|Jason|Jan 31st|
+|Research and evaluate image management options|TASK 2.0.5|Harveer, Zoe, Akib, Raiyana|Jan 29th|
+|Understand the previous project database|TASK 1.0.21|Harveer, Jason, Vishal, Braden|Jan 27th|
 
 ### Sprint 2
-
 **Due:** *February 15, 2026*
 
 #### User stories
@@ -47,7 +44,7 @@ This page provides a general overview of the assigned tasks and roles for the du
 |US 1.0.2 – Add Personal Information to Site Inspection Form [Q11-Q14 + Q16 + Q24 - Section : WhoRYou]|1|
 |US 1.0.3 - Liability Check [Q2 - Section : General]|1|
 |US 1.0.4 - Have access to the Terms and Conditions of Inputting Information [Q3 - Section: The Fine Print Up Front]|1|
-|US 1.0.5 - Add Details Regarding the Overview of my Visit [Q21, Q22, Q23, Q25 - Section : WhereRYou] |1|
+|US 1.0.5 - Add Details Regarding the Overview of my Visit [Q21, Q22, Q23, Q25 - Section : WhereRYou]|1|
 |US 1.0.6 - Rank the Health of the Site [Q31-33 Section : Impression]|1|
 |US 1.0.7 - Add Details Regarding How the Trip Went [Q41 - 43 - Section : How Visit]|1|
 |US 1.0.8 - Address What Amenities are in the Site [Q51 : Section - Be There]|1|
@@ -81,28 +78,23 @@ This page provides a general overview of the assigned tasks and roles for the du
 |Add the non‑public information fields|US 1.0.23|Harveer|Feb 11th|
 |Develop the site health and impression section|US 1.0.6|Zoe|Feb 11th|
 |Develop the trip details and visit reasoning section|US 1.0.7|Braden|Feb 11th|
-|Add the landscape change reporting fields |US 1.0.11|Braden|Feb 11th|
+|Add the landscape change reporting fields|US 1.0.11|Braden|Feb 11th|
 |Add the biological observations section|US 1.0.12|Jason|Feb 11th|
 |Add the human disturbances reporting section|US 1.0.13|Zoe|Feb 11th|
 |Create the amenities and ease‑of‑use section|US 1.0.8|Akib|Feb 11th|
-|Create the protected site designation section |US 1.0.9|Akib|Feb 11th|
+|Create the protected site designation section|US 1.0.9|Akib|Feb 11th|
 |Add the iNaturalist submission indicator|US 1.0.10|Akib|Feb 11th|
 |Add the additional comments and free‑text section|US 1.0.14|Vishal, Raiyana|Feb 11th|
 |Add the restoration actions and stewardship section|US 1.0.15|Zoe|Feb 12th|
 |Persist Site Inspection Form Draft|US 1.0.26|Jason, Raiyana|Feb 12th|
 |Enforce Required Questions on Site Inspection Form|US 1.0.27|Jason, Akib|Feb 12th|
-|Autofill Applicable Form Questions|US 1.0.15|Zoe|Feb 12th|
-|Assemble all sections into a unified form schema |All US|Everyone|Feb 14th|
-|Finalize the submission flow and validation logic |All US|Everyone|Feb 14th|
+|Autofill Applicable Form Questions|US 1.0.28|Zoe|Feb 12th|
+|Assemble all sections into a unified form schema|All US|Everyone|Feb 14th|
+|Finalize the submission flow and validation logic|All US|Everyone|Feb 14th|
 |Write acceptance tests|All US|Everyone|Feb 14th|
 |Update documentation|Documentation|Everyone|Feb 14th|
 
-
-**Sprint Velocity:** 33
-
-
 ### Sprint 3
-
 **Due:** *March 8, 2026*
 
 #### User stories
@@ -111,18 +103,17 @@ This page provides a general overview of the assigned tasks and roles for the du
 |:---:|:---:|
 |US 1.0.16 – Add Any Photography Captured During Visit|5|
 |US 1.0.17 – (Admin) Add Questions Site Inspections Form|3|
-|US 1.0.18 – Adding Image Caption|2|
+|US 1.0.18 – Adding Image Identifier|2|
 |US 1.0.19 - Admin Viewing Images and Metadata|2|
 |US 1.0.22 – (User) Edit My Site Inspections Form|5|
-|US 1.0.24 – Modify my Site Inspections Form Questions|3|
+|US 1.0.24 – Modify my Site Inspections Form Questions|8|
 |US 1.0.25 – Hide a Site Inspections Form Questions|3|
 |US 2.0.1 – Manage the uploading and storing of site inspection images|8|
 |US 2.0.2 – Image Metadata|2|
 |US 2.0.3 – Gallery View|3|
 |TASK 2.0.6 - Refactor Report Rendering to Use Updated Database Schema|N/A|
 
-**Sprint Velocity:** 36
-
+**Sprint Velocity:** 41
 
 #### Tasks
 
@@ -132,24 +123,22 @@ This page provides a general overview of the assigned tasks and roles for the du
 |Setup developer email for vercel with client|All US|Harveer|Feb 20th|
 |Add any photography captured during visit|US 1.0.16|Raiyana|Feb 25th|
 |Allow admin to add Questions Site Inspections Form|US 1.0.17|Braden|Feb 27th|
-|Adding Image Caption to the inspection form|US 1.0.18|Zoe|Feb 27th|
-|Add a dashboard for admin to view images and metadata|US 1.0.19|Zoe|Mar 3rd|
+|Adding Image Identifier to the inspection form|US 1.0.18|Raiyana, Zoe|Feb 27th|
+|Add a dashboard for admin to view images and metadata|US 1.0.19|Raiyana|Mar 3rd|
 |Add the ability to edit previous site inspections forms for users|US 1.0.22|Vishal|Mar 3rd|
-|Let admin modify the site inspections form questions|US 1.0.24|Jason|Mar 3rd|
+|Let admin modify the site inspections form questions|US 1.0.24|Braden, Jason|Mar 3rd|
 |Add ability to hide site inspection form questions|US 1.0.25|Braden, Jason|Mar 5th|
-|Manage the uploading and storing of site inspection images onto S3|US 2.0.1|Harveer|Mar 5th|
-|Image Metadata|US 2.0.2|Akib|Mar 5th|
-|Gallery View|US 1.0.12|Akib|Mar 5th|
-|Refactor Report Rendering to Use Updated Database Schema|TASK 2.0.6|Everyone|Mar 7th|
-|Finalize the submission flow and validation logic |All US|Everyone|Mar 7th|
+|Manage the uploading and storing of site inspection images onto S3|US 2.0.1|Raiyana, Harveer|Mar 5th|
+|Image Metadata|US 2.0.2|Raiyana, Akib|Mar 5th|
+|Gallery View|US 2.0.3|Raiyana, Akib|Mar 5th|
+|Refactor Report Rendering to Use Updated Database Schema|TASK 2.0.6|Vishal|Mar 7th|
+|Finalize the submission flow and validation logic|All US|Everyone|Mar 7th|
 |Write acceptance tests|All US|Everyone|Mar 7th|
 |Update documentation|Documentation|Everyone|Mar 8th|
 
-**Sprint Velocity:** 36
 
 
 ### Sprint 4
-
 **Due:** *March 22, 2026*
 
 #### User stories
@@ -157,19 +146,36 @@ This page provides a general overview of the assigned tasks and roles for the du
 |User Story|Story points|
 |:---:|:---:|
 |US 2.0.4 – Offline Image Viewing|5|
+|US 2.0.7 – Admin Management of Media Files|13|
+|US 2.0.8 – User Upload of Standalone Site Images|8|
 |US 3.0.1 – Access the mobile version of the Site Inspection Form|5|
 |US 3.0.2 – Offline Data Syncing|8|
 |US 4.0.1 – View Site Profile of a Particular Site|3|
 |US 4.0.2 – Add Site Profile of a Particular Site|2|
 |US 4.0.3 – Update Site Profile of a Particular Site|3|
-|US 4.0.4 – Disable Site Profile of a Particular Site |3|
+|US 4.0.4 – Disable Site Profile of a Particular Site|3|
 |US 4.0.5 – Amenities Information on Site Profile|2|
 
+**Sprint Velocity:** 52
 
-**Sprint Velocity:** 31
+#### Tasks
+
+|Task|Related US|Assignee|Due|
+|:---:|:---:|:---:|:---:|
+|Implement offline image viewing|US 2.0.4|Harveer, Zoe|Mar 15th|
+|Admin Management of Media Files|US 2.0.7|Raiyana|Mar 16th|
+|Enable user upload of standalone site images|US 2.0.8|Raiyana, Harveer|Mar 16th|
+|Develop mobile version entry point|US 3.0.1|Vishal, Jason|Mar 17th|
+|Implement offline data syncing|US 3.0.2|Zoe, Akib|Mar 18th|
+|Create view site profile page|US 4.0.1|Braden|Mar 19th|
+|Add new site profiles|US 4.0.2|Raiyana, Zoe|Mar 19th|
+|Update existing site profiles|US 4.0.3|Vishal|Mar 20th|
+|Disable site profiles as needed|US 4.0.4|Braden|Mar 20th|
+|Add amenities information on site profile|US 4.0.5|Akib|Mar 21st|
+|Finalize Sprint 4 acceptance tests|All US|Everyone|Mar 21st|
+|Update documentation|Documentation|Everyone|Mar 22nd|
 
 ### Sprint 5
-
 **Due:** *March 31, 2026*
 
 #### User stories
@@ -177,6 +183,7 @@ This page provides a general overview of the assigned tasks and roles for the du
 |User Story|Story points|
 |:---:|:---:|
 |US 1.0.20 – Admin Editing Image Metadata|3|
+|US 2.0.8 – User Upload of Standalone Site Images|8|
 |US 4.0.6 – Site-specific Recommended Gear Lists|2|
 |US 5.0.1 – Sign In Feature|2|
 |US 5.0.2 – Sign Out Feature|2|
@@ -184,6 +191,5 @@ This page provides a general overview of the assigned tasks and roles for the du
 |US 5.0.4 – Disable Account Feature|2|
 |US 6.0.1 – Toggle Dark mode for web and mobile applications|2|
 |US 6.0.2 – Change Text Size on Screen|3|
-
 
 **Sprint Velocity:** 18

@@ -51,6 +51,7 @@ jest.mock("@/utils/supabase/queries", () => ({
   getCurrentSiteId:            jest.fn().mockResolvedValue("site-456"),
   getQuestionResponseType:     jest.fn().mockResolvedValue([]),
   uploadSiteInspectionAnswers: jest.fn().mockResolvedValue({}),
+  insertInspectionAttachments: jest.fn().mockResolvedValue({}),
 }));
 
 jest.mock("@/utils/supabase/client", () => ({
@@ -90,7 +91,7 @@ beforeEach(() => {
     if (typeof fn?.mockClear === "function") fn.mockClear();
   });
 });
- 
+
 async function submitForm() {
   const {
     uploadSiteInspectionAnswers,
@@ -98,21 +99,23 @@ async function submitForm() {
     getQuestionResponseType,
   } = require("@/utils/supabase/queries");
 
-  (getQuestionsOnline as jest.Mock).mockResolvedValueOnce([
+  const questions = [
     {
       id: 1,
       title: "General observation",
       text: null,
       question_type: "text",
-      section: 4,         
+      section: 4,
       answers: [],
       formorder: 1,
       is_required: false,
     },
-  ]);
+  ];
 
+  // page.tsx and MainContent.tsx both call this
+  (getQuestionsOnline as jest.Mock).mockResolvedValue(questions);
 
-  (getQuestionResponseType as jest.Mock).mockResolvedValueOnce([
+  (getQuestionResponseType as jest.Mock).mockResolvedValue([
     { question_id: 1, obs_value: 1, obs_comm: 0 },
   ]);
 
@@ -125,6 +128,10 @@ async function submitForm() {
   await waitFor(() =>
     expect(screen.queryByText(/loading questions/i)).not.toBeInTheDocument()
   );
+
+  // Fill the text question so answersArray is not empty
+  const input = await screen.findByTestId("question-input-1");
+  await userEvent.type(input, "Test answer");
 
   const submitBtn = screen.getByRole("button", { name: /review & submit/i });
   expect(submitBtn).toBeEnabled();
@@ -139,7 +146,6 @@ async function submitForm() {
 
   return rows;
 }
-
 
 function allStringValues(rows: Record<string, unknown>[]): string[] {
   return rows.flatMap(row =>

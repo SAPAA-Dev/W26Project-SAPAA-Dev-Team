@@ -1,6 +1,6 @@
 "use client";
 
-import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers } from '@/utils/supabase/queries';
+import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers, insertInspectionAttachments} from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -46,12 +46,22 @@ interface Question {
   is_required?: boolean | null;
 }
 
+
 interface SupabaseAnswer {
   response_id: number; 
   question_id: number;
   obs_value: string | null;
   obs_comm: string | null;
 }
+
+
+interface ImageWithMeta {
+  id: string;
+  file: File;
+  caption: string;
+  description: string;
+}
+
 
 export default function NewReportPage() {
   const pathname = usePathname();
@@ -61,7 +71,6 @@ export default function NewReportPage() {
   
   const [hasAccepted, setHasAccepted] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
-  const [verificationText, setVerificationText] = useState("");
   const [responses, setResponses] = useState<Record<number, any>>({});
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name: string; avatar: string } | null>(null);
@@ -71,6 +80,7 @@ export default function NewReportPage() {
   const [missingRequiredQuestionNumbers, setMissingRequiredQuestionNumbers] = useState<string[]>([]);
   const [draftKey, setDraftKey] = useState<string | null>(null);
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 
   useEffect(() => {
@@ -161,9 +171,6 @@ export default function NewReportPage() {
 
 
 
-  const requiredPhrase = "I am not a volunteer of SAPAA";
-  const isVerificationValid = verificationText.trim() === requiredPhrase;
-  const canProceed = isVerificationValid && hasAccepted;
 
   const handleResponsesChange = (newResponses: Record<number, any>) => {
 
@@ -182,37 +189,89 @@ export default function NewReportPage() {
   };
 
   const buildQuestionNumberMap = (formQuestions: Question[]): Record<number, string> => {
-    const questionsBySection = formQuestions.reduce((acc, question) => {
-      const normalizedSection = question.section - 3;
-      if (!acc[normalizedSection]) {
-        acc[normalizedSection] = [];
-      }
-      acc[normalizedSection].push(question);
-      return acc;
-    }, {} as Record<number, Question[]>);
-
-    Object.keys(questionsBySection).forEach((sectionKey) => {
-      questionsBySection[Number(sectionKey)].sort((a, b) => {
-        const orderA = a.formorder ?? Infinity;
-        const orderB = b.formorder ?? Infinity;
-        return orderA - orderB;
-      });
-    });
-
     const questionNumberMap: Record<number, string> = {};
-    Object.keys(questionsBySection)
-      .map(Number)
-      .sort((a, b) => a - b)
-      .forEach((sectionNum) => {
-        questionsBySection[sectionNum].forEach((question, index) => {
-          questionNumberMap[question.id] = `${sectionNum}.${index + 1}`;
-        });
-      });
-
+    for (const question of formQuestions) {
+      const match = (question.title ?? '').match(/\(Q(\d+)\)/i);
+      questionNumberMap[question.id] = match ? `Q${match[1]}` : `Question ${question.id}`;
+    }
     return questionNumberMap;
   };
 
+
+  const PRESIGN_ROUTE = "/api/s3/presign";
+
+  async function getPresignedUrl(input: {
+    filename: string;
+    contentType: string;
+    fileSize: number;
+    siteId: number;
+    responseId: number;
+    questionId: number;
+  }) {
+    const res = await fetch(PRESIGN_ROUTE, {
+      method: "POST",
+      credentials: "include",
+      redirect: "error",  
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error || "Failed to get presigned URL");
+    }
+
+    return (await res.json()) as { uploadUrl: string; key: string };
+  }
+
+  async function uploadFileToS3(uploadUrl: string, file: File) {
+  // 1) Validate URL + detect mixed content
+  const u = new URL(uploadUrl);
+  console.log("S3 upload URL origin:", u.origin);
+  console.log("App origin:", window.location.origin);
+  console.log("S3 upload URL protocol:", u.protocol);
+
+  if (window.location.protocol === "https:" && u.protocol !== "https:") {
+    throw new Error("Blocked: uploadUrl is not https (mixed content).");
+  }
+
+  // 2) Actually upload
+  try {
+    const putRes = await fetch(uploadUrl, {
+      method: "PUT",
+      mode: "cors", // explicit
+      body: file,
+    });
+
+    // If we reach here, browser allowed the request.
+    if (!putRes.ok) {
+      const text = await putRes.text().catch(() => "");
+      console.error("S3 responded:", putRes.status, text);
+      throw new Error(`S3 upload failed (${putRes.status})`);
+    }
+  } catch (e) {
+    // If we're here, browser blocked the request (CORS/network/mixed content)
+    console.error("Upload blocked at fetch level:", e);
+    throw e;
+  }
+}
+
+
+  const isImageWithMetaArray = (value: any): value is ImageWithMeta[] => {
+    return (
+      Array.isArray(value) &&
+      value.length > 0 &&
+      value[0] &&
+      value[0].file instanceof File  //Now answer[0] is not a File anymore.
+                                     //It is an object that contains a file
+    );
+  };
+
+
   const handleSubmit = async () => {
+    // Prevent multiple submissions
+    if (isSubmitting) return;
+    
     const questionNumberMap = buildQuestionNumberMap(questions);
     const missingRequiredNumbers = questions
       .filter((question) => question.is_required === true && !isAnswered(responses[question.id]))
@@ -226,6 +285,7 @@ export default function NewReportPage() {
 
     setShowRequiredPopup(false);
     setMissingRequiredQuestionNumbers([]);
+    setIsSubmitting(true);
 
     try {
       const siteId = await getCurrentSiteId(namesite);
@@ -243,42 +303,111 @@ export default function NewReportPage() {
       );
 
       // Initialize an array to hold all the objects/dictionaries that represent each row in the W26_answers table
+      //what goes into W26_answers table: response_id, question_id, obs_value, obs_comm
       let answersArray: SupabaseAnswer[] = [];  
+
+
+      //what goes into W26_attachments table: response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, description
+      // We also need to prepare the data for the attachments table, which means we need to generate the S3 keys for each uploaded file and store those in an array of objects/dictionaries as well
+      const attachmentsRows: Array<{
+        response_id: number;
+        question_id: number;
+        site_id: number;
+        storage_key: string;
+        filename?: string | null;
+        content_type?: string | null;
+        file_size_bytes?: number | null;
+        caption?: string | null;
+        description?: string | null;
+      }> = [];
+
+
+
+      //image  
       for (const [questionId, answer] of Object.entries(responses)) {
+
+          if (isImageWithMetaArray(answer)) {
+              const imageList = answer;
+
+              for (const image of imageList) {
+                const file = image.file;
+                // 1) get presigned URL + generated key from your API
+                const { uploadUrl, key } = await getPresignedUrl({
+                  filename: file.name,
+                  contentType: file.type,
+                  fileSize: file.size,
+                  responseId: siteInspectionReportId,
+                  questionId: Number(questionId),
+                  siteId: Number(siteId),
+                }); 
+
+                // 2) upload the file to S3 using the presigned URL
+                await uploadFileToS3(uploadUrl, file);
+
+                attachmentsRows.push({
+                  response_id: siteInspectionReportId,
+                  question_id: Number(questionId),
+                  site_id: Number(siteId),
+                  storage_key: key, 
+                  filename: file.name,
+                  content_type: file.type,
+                  file_size_bytes: file.size,
+                  caption: image.caption.trim() || null,
+                  description: image.description.trim() || null,
+                });
+              }
+
+              // Do NOT put image data into W26_answers
+              continue;
+            }
+
+            if (String(questionId).includes('_comm')) continue;
+
             const questionConfig = observationTypeMap.get(questionId);
-            // Decide if this question's answer is supposed to go into the obs_value column or obs_comm column
             const isValueType = questionConfig?.obs_value == 1;
             const isCommType = questionConfig?.obs_comm == 1;
-
-            // If the answer has an array containing subAnswers, add each subAnswer as a new object/dictionary inside answersArray
+            
+            const commValue = (responses as Record<string, any>)[`${questionId}_comm`] ?? null;
+            
             if (Array.isArray(answer)) {
                 answer.forEach(subAnswer => {
+                    const isOther = subAnswer === 'Other';
                     answersArray.push({
                         response_id: siteInspectionReportId,
                         question_id: Number(questionId),
-                        // Put the subAnswer in either the obs_value column or obs_comm column and the other one is set to null
                         obs_value: isValueType ? String(subAnswer) : null,
-                        obs_comm: isCommType ? String(subAnswer) : null,
+                        obs_comm: isOther ? commValue : (isCommType ? String(subAnswer) : null),
                     });
                 });
-            } else { // Otherwise, the answer is just a single string so we can add it directly to answersArray
+            } else {
+                const isOther = answer === 'Other';
                 answersArray.push({
                     response_id: siteInspectionReportId,
                     question_id: Number(questionId),
                     obs_value: isValueType ? String(answer) : null,
-                    obs_comm: isCommType ? String(answer) : null,
+                    obs_comm: isOther ? commValue : (isCommType ? String(answer) : null),
                 });
             }
-      }
-      await uploadSiteInspectionAnswers(answersArray);
-      if (draftKey) {
-        localStorage.removeItem(draftKey);
-      }
-      console.log("Draft cleared after successful submission");
-      router.push('/sites?submitted=true');
-    } catch (error) {
-      console.error(error);
-    }
+          }
+            if (answersArray.length > 0) {
+            await uploadSiteInspectionAnswers(answersArray);
+          }
+
+          if (attachmentsRows.length > 0) {
+            await insertInspectionAttachments(attachmentsRows);
+          }
+
+
+
+            if (draftKey) {
+              localStorage.removeItem(draftKey);
+            }
+            console.log("Draft cleared after successful submission");
+            router.push('/sites?submitted=true');
+          } catch (error) {
+            console.error(error);
+            setIsSubmitting(false);
+          }
     /**
      * FORM DATA CAPTURED:
      * 
@@ -427,26 +556,7 @@ export default function NewReportPage() {
                   </section>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-[#254431]">
-                  Please type the following to confirm:
-                </label>
-                <p className="text-sm font-mono bg-[#E4EBE4] px-3 py-2 rounded-lg text-[#254431]">
-                  {requiredPhrase}
-                </p>
-                <input
-                  type="text"
-                  value={verificationText}
-                  onChange={(e) => setVerificationText(e.target.value)}
-                  placeholder="Type here..."
-                  className="w-full px-4 py-3 border-2 border-[#E4EBE4] rounded-xl focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] font-medium placeholder:text-[#7A8075]"
-                />
-                {verificationText.length > 0 && !isVerificationValid && (
-                  <p className="text-xs text-red-600">Text does not match. Please type exactly as shown above.</p>
-                )}
-              </div>
-
+              
               <label className="flex items-center gap-3 cursor-pointer">
                 <input 
                   type="checkbox" 
@@ -454,11 +564,19 @@ export default function NewReportPage() {
                   onChange={(e) => setHasAccepted(e.target.checked)}
                   className="w-5 h-5 rounded border-[#E4EBE4] text-[#356B43] focus:ring-[#356B43]"
                 />
-                <span className="text-sm font-semibold text-[#254431]">
-                  I have read and agree to the{" "}
-                  <Link href={{ pathname: "/terms", query: { from: pathname } }}>
-                    <span style={{ textDecoration: "underline" }}>terms and conditions</span>
-                  </Link>
+                <span className="text-sm text-[#4B5563] leading-relaxed">
+                  By agreeing to this, I understand that this form is being used solely for 
+                  filling out <strong>Site Inspections</strong> and <strong>not for EMERGENCIES</strong>. I also
+                  acknowledge that this Site Inspection is carried out on my own accord.
+                  
+                  <div className="mt-3">
+                    I have read and agree to the{" "}
+                    <Link href={{ pathname: "/terms", query: { from: pathname } }}>
+                      <span className="text-[#356B43] underline font-medium hover:text-[#254431] transition-colors">
+                        terms and conditions
+                      </span>
+                    </Link>
+                  </div>
                 </span>
               </label>
             </div>
@@ -472,7 +590,7 @@ export default function NewReportPage() {
                   Cancel
                 </button>
                 <button 
-                  disabled={!canProceed}
+                  disabled={!hasAccepted}
                   onClick={() => setShowVerification(false)}
                   className="flex-[2] py-3 bg-[#356B43] text-white font-bold rounded-xl shadow-lg hover:bg-[#254431] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
@@ -524,54 +642,40 @@ export default function NewReportPage() {
       )}
 
       {/* --- CONSOLIDATED HEADER --- */}
-      <header className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between py-3 border-b border-white/10">
-            <div className="flex items-center gap-2">
-              <div className="bg-white/20 p-1 rounded-lg">
-                <Image src="/images/sapaa-icon-white.png" alt="Logo" width={24} height={24} />
-              </div>
-              <span className="font-bold tracking-widest text-sm opacity-90">SAPAA</span>
-            </div>
-            <div className="hidden md:flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full border border-white/20">
-              <div className="w-6 h-6 rounded-full overflow-hidden bg-[#356B43] flex items-center justify-center">
-                {currentUser?.avatar ? (
-                  <Image
-                    src={currentUser.avatar}
-                    alt="User avatar"
-                    width={24}
-                    height={24}
-                    className="object-cover"
-                  />
-                ) : (
-                  <span className="text-xs font-bold text-white">
-                    {currentUser?.name?.[0] ?? "?"}
-                  </span>
-                )}
-              </div>
-              <span className="text-sm font-medium">{currentUser?.name}</span>
-              {isStewardUser && (
-                <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">Steward</span>
-              )}
-            </div>
-          </div>
+      <header className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+        <div className="max-w-7xl mx-auto">
 
-          <div className="flex items-center justify-between py-6">
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => router.back()}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors"
-              >
-                <ArrowLeft className="w-6 h-6" />
-              </button>
-              <div>
-                <h1 className="text-2xl font-bold">Site Inspection Form</h1>
-                <p className="text-[#E4EBE4] text-sm">{namesite}</p>
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-[#86A98A] hover:text-white transition-colors mb-4 group"
+          data-testid="back-button"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-sm font-medium">Back to Site</span>
+        </button>
+
+        <div className="flex items-start justify-between">
+
+          {/* Left: icon + form info */}
+          <div className="flex items-start gap-4">
+            <Image
+              src="/images/sapaa-icon-white.png"
+              alt="SAPAA"
+              width={140}
+              height={140}
+              priority
+              className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+            />
+            <div>
+              <h1 className="text-3xl font-bold mt-2.5">Site Inspection Form</h1>
+              <div className="text-[#E4EBE4]">
+                <span className="text-base">{namesite}</span>
               </div>
             </div>
           </div>
         </div>
-      </header>
+      </div>
+    </header>
 
       {/* --- MAIN LAYOUT --- */}
       <MainContent 
@@ -587,6 +691,7 @@ export default function NewReportPage() {
         questions={questions}
         responses={responses}
         onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
       />
     </div>
   );

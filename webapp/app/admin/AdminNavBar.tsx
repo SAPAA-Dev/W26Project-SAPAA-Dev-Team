@@ -13,10 +13,11 @@ export default function AdminNavBar() {
     { name: "Dashboard", href: "/admin/dashboard" },
     { name: "Account Management", href: "/admin/account-management" },
     { name: "Sites", href: "/admin/sites" },
+    { name: "Form Editor", href: "/admin/form-editor" },
   ];
 
   return (
-    <nav className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 flex items-center justify-between relative">
+    <nav className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 flex items-center justify-between gap-2 relative">
       {/* Left side - Home button */}
       <Link
         href="/sites"
@@ -28,6 +29,7 @@ export default function AdminNavBar() {
       {/* Hamburger Menu - always visible */}
       <button
         className="p-2 rounded-full transition-all hover:bg-white/20 hover:scale-110"
+        title = "admin dropdown menu"
         onClick={() => setMenuOpen(!menuOpen)}
       >
         {menuOpen ? <X className="w-6 h-6 text-white" /> : <Menu className="w-6 h-6 text-white" />}

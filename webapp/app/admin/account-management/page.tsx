@@ -92,40 +92,45 @@ export default function AccountManagementPage() {
 
   return (
     <ProtectedRoute requireAdmin={true}>
-      <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-        {/* Navbar */}
-        <AdminNavBar />
-
-        {/* Header without Back Button */}
-        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-8 shadow-lg">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            
-            {/* Left: Title + Description */}
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-3">
-              <Image 
-                src="/images/sapaa-icon-white.png" 
-                alt="SAPAA"
-                width={48}
-                height={48}
-                className="w-12 h-12 flex-shrink-0"
-              />
-              
-                <h1 className="text-4xl font-bold">Account Management</h1>
+    <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
+      <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between mb-3">
+              {/* Left: icon + title + subtitle */}
+              <div className="flex items-center gap-4">
+                <Image
+                  src="/images/sapaa-icon-white.png"
+                  alt="SAPAA"
+                  width={140}
+                  height={140}
+                  priority
+                  className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+                />
+              <div>
+                <h1 className="text-3xl font-bold mt-3">Account Management</h1>
+                <p className="text-[#E4EBE4] text-base mt-0.5">
+                  Manage user accounts and permissions
+                </p>
               </div>
-              <p className="text-[#E4EBE4] text-lg">Manage user accounts and permissions</p>
             </div>
 
-            {/* Right: Add User Button */}
-            <button
-              onClick={() => setAddModalVisible(true)}
-              className="bg-white text-[#356B43] px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center gap-2"
-            >
-              <UserPlus className="w-5 h-5" />
-              Add User
-            </button>
+            {/* Right: Add User button + NavBar grouped together */}
+            <div className="flex items-center gap-3 mt-2.5">
+              <button
+                onClick={() => setAddModalVisible(true)}
+                className="bg-white text-[#356B43] px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center gap-2"
+              >
+                <UserPlus className="w-5 h-5" />
+                Add User
+              </button>
+              <div className="[&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
+                <AdminNavBar />
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-6 py-8">

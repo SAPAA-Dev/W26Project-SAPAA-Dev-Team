@@ -1,5 +1,4 @@
-name: Webapp CI 
-
+name: Webapp CI
 on:
   push:
     branches:
@@ -10,33 +9,42 @@ on:
       - Sprint-5
   pull_request:
     branches:
-      - '**'   # Run tests on PRs from any branch
+      - '**'    # Run tests on PRs from any branch
 
-# Prevent old queued runs from blocking new runs on the same branch
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  
   test-webapp:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Use Node.js 18
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
-      - name: Install dependencies (Webapp)
+      - name: Install dependencies
         working-directory: webapp
-        run: |
-          npm ci || npm install
-
- 
+        run: npm ci || npm install
 
       - name: Run Webapp tests
         working-directory: webapp
-        run: npm test
+        run: npm test -- --forceExit
+
+  deploy:
+    needs: test-webapp
+    runs-on: self-hosted
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy with Docker Compose
+        working-directory: /home/ubuntu/deploy
+        run: |
+          docker compose down
+          docker compose up -d --build
