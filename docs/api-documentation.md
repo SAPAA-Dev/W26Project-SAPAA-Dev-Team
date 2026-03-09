@@ -4,7 +4,7 @@ Interactive API documentation is available through Swagger.
 
 You can view and test all API endpoints here:
 
-[Swagger API Documentation](http://localhost:3000/api-docs)
+[Swagger API Documentation](https://unbribed-veola-quaky.ngrok-free.dev/api-docs)
 
 **Swagger (Local)**: http://localhost:3000/api-docs
 
