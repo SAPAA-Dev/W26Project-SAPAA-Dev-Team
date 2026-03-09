@@ -194,35 +194,38 @@ export default function HomeClient() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
     <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
-  <div className="max-w-7xl mx-auto">
-    <div className="flex items-start justify-between mt-2.5 mb-3">
+      <Suspense fallback={null}>
+          <SubmissionToast />
+        </Suspense>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-start justify-between mt-2.5 mb-3">
 
-      {/* Left: icon + SAPAA info */}
-      <div className="flex items-start gap-4 mb-2">
-        <Image
-          src="/images/sapaa-full-white.png"
-          alt="SAPAA"
-          width={140}
-          height={140}
-          priority
-          className="h-16 w-auto flex-shrink-0 opacity-100"
-        />
+          {/* Left: icon + SAPAA info */}
+          <div className="flex items-start gap-4 mb-2">
+            <Image
+              src="/images/sapaa-full-white.png"
+              alt="SAPAA"
+              width={140}
+              height={140}
+              priority
+              className="h-16 w-auto flex-shrink-0 opacity-100"
+            />
+          </div>
+
+          {currentUser?.role === 'admin' && (
+                  <button
+                    onClick={() => router.push('/admin/dashboard')}
+                    className="bg-[#356B43] hover:bg-[#254431] mt-2 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-semibold transition-all"
+                  >
+                    <Award className="w-5 h-5" />
+                    Admin
+                  </button>
+                )}
+
+        </div>
       </div>
-
-      {currentUser?.role === 'admin' && (
-              <button
-                onClick={() => router.push('/admin/dashboard')}
-                className="bg-[#356B43] hover:bg-[#254431] mt-2 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-semibold transition-all"
-              >
-                <Award className="w-5 h-5" />
-                Admin
-              </button>
-            )}
-
     </div>
-  </div>
-</div>
-    
+        
     {/* Stats Cards */}
     <div className="max-w-7xl mx-auto px-6 py-6 mt-2">
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">

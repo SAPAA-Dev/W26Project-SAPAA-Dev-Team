@@ -12,6 +12,7 @@ function loginWithCurrentPattern() {
   cy.get("#password").type("123Gctrmomy@");
   cy.get("button.font-bold").click();
   cy.get("button.text-white").click();
+  cy.wait(4000);
   cy.url().should("include", "/sites");
 }
 

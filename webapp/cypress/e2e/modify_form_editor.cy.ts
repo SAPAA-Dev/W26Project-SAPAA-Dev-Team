@@ -9,8 +9,9 @@ describe('Admin Form Editor - Editing Questions', () => {
     cy.get('#password').type('123Gctrmomy@');
     cy.get('button.font-bold').click();
     cy.get('button.text-white').click();
+    cy.wait(5000);
     cy.contains('Admin').first().click();
-    cy.wait(1000);
+    cy.wait(5000);
     cy.get('button[title="admin dropdown menu"]').click();
     cy.contains('Form Editor').click();
     cy.url().should('include', '/admin/form-editor')
@@ -29,7 +30,6 @@ describe('Admin Form Editor - Editing Questions', () => {
       const testId = $el.attr('data-testid') ?? 'null-testid';
       const sectionId = testId.replace('section-button-', '');
       
-      cy.wait(1000);
       cy.get(`[data-testid="${testId}"]`, { timeout: 10000 }).click();
 
       // Find the badge using the ID and verify the count
