@@ -1,8 +1,8 @@
 # SAPAA
 ## Protected Areas Inspection App
-### UI / UX Design Documentation — v3.0
+### UI / UX Design Documentation - v1.0
 #### Design System Reference for Development Teams
-`Next.js` · `Tailwind CSS` · `Supabase`
+`Next.js` · `Tailwind CSS` · `Supabase` · `AWS``
 
 ---
 
@@ -19,8 +19,8 @@ Consistency is critical. Every page must follow the patterns described here so t
 | Area | Technology |
 |---|---|
 | Framework | Next.js (App Router, TypeScript) |
-| Styling | Tailwind CSS — utility-first, inline class names only |
-| Database | Supabase (PostgreSQL) — tables prefixed `W26_` |
+| Styling | Tailwind CSS - utility-first, inline class names only |
+| Database | Supabase (PostgreSQL) - tables prefixed `W26_` |
 | Auth | Supabase Auth with `ProtectedRoute` wrapper |
 | Drag and Drop | `@dnd-kit/core` + `@dnd-kit/sortable` |
 | Maps | Leaflet (SSR-guarded with mounted state) |
@@ -31,8 +31,8 @@ Consistency is critical. Every page must follow the patterns described here so t
 
 | Route | Component |
 |---|---|
-| `/sites` | HomeClient — public site listing |
-| `/detail/[namesite]` | SiteDetailScreen — single site view |
+| `/sites` | HomeClient - public site listing |
+| `/detail/[namesite]` | SiteDetailScreen - single site view |
 | `/detail/[namesite]/new-report` | New inspection report form |
 | `/detail/[namesite]/edit-report/[responseId]` | Edit existing report |
 | `/login` `/signup` | Authentication pages |
@@ -208,7 +208,7 @@ A user manual is available as a separate document. In-app tooltips and hints are
 
 ## 5. Colour Palette
 
-All colours in the application are drawn from a forest-green and warm-cream palette. Custom hex values are used throughout — no Tailwind named colour shades (e.g., `green-700`) appear in the codebase.
+All colours in the application are drawn from a forest-green and warm-cream palette. Custom hex values are used throughout. No Tailwind named colour shades (e.g., `green-700`) appear in the codebase.
 
 ### 5.1 Primary Brand Colours
 
@@ -274,7 +274,7 @@ The current web implementation loads Google Fonts `Inter` (body/UI) and `DM Sans
 
 ### 6.2 Key Rules
 
-- Never use `text-4xl` or larger inside the body area — reserve large text for the header only.
+- Never use `text-4xl` or larger inside the body area. Reserve large text for the header only.
 - All label text above inputs must be uppercase with `tracking-wide`.
 - Stat numbers always use `text-3xl font-bold text-[#254431]` regardless of which page they appear on.
 - Truncate long strings with the `truncate` class rather than wrapping.
@@ -315,9 +315,9 @@ The main content `div` always uses `px-6 py-6` for outer padding. Inner sections
 
 The Form Editor uses a special three-column layout inside the main content area:
 
-- Left sidebar: `w-[220px] flex-shrink-0` — section navigation
-- Centre column: `flex-1 min-w-0` — question list and editor
-- Right panel: `w-[340px] flex-shrink-0 hidden lg:block` — live preview (desktop only)
+- Left sidebar: `w-[220px] flex-shrink-0` - section navigation
+- Centre column: `flex-1 min-w-0` - question list and editor
+- Right panel: `w-[340px] flex-shrink-0 hidden lg:block` - live preview (desktop only)
 
 The three columns are wrapped in a `flex gap-8` container inside a `DndContext` provider.
 
@@ -413,7 +413,7 @@ Back navigation exists on detail/report pages but currently has two variants:
 
 Two stats card styles exist in the application. The Large Icon style is the preferred convention for all admin pages.
 
-### 9.1 Large Icon Style (Preferred — Admin Pages)
+### 9.1 Large Icon Style (Preferred - Admin Pages)
 
 Used on the Admin Dashboard, Account Management, and any new admin pages. Features a 48x48 gradient icon container beside the label and value:
 
@@ -434,7 +434,7 @@ Used on the Admin Dashboard, Account Management, and any new admin pages. Featur
 </div>
 ```
 
-### 9.2 Compact Style (Legacy — Site List Header)
+### 9.2 Compact Style (Legacy - Site List Header)
 
 Used only in the HomeClient stats strip. Kept for backward compatibility but should not be used on new pages.
 
@@ -501,8 +501,8 @@ Inspection status is communicated through inline coloured badges. Badge style fo
 | Badge | Condition |
 |---|---|
 | Required | Shown on question cards when `is_required = true` |
-| Hidden | Shown on question card when `is_active = false` — `bg-gray-200 text-gray-600` |
-| LIVE DRAFT | Shown on preview panel header when Add Question form is open — `animate-pulse` |
+| Hidden | Shown on question card when `is_active = false` - `bg-gray-200 text-gray-600` |
+| LIVE DRAFT | Shown on preview panel header when Add Question form is open - `animate-pulse` |
 
 ### 10.3 General Badge Pattern
 
@@ -567,7 +567,7 @@ Small icon buttons used inside cards and list rows:
 | Variant | Classes |
 |---|---|
 | Edit | `w-7 h-7 rounded-lg text-[#356B43] hover:bg-[#EEF5EF]` |
-| Toggle | `p-1.5 rounded-md` — active: `text-[#7A8075] hover:bg-[#F7F2EA]` / inactive: `text-amber-600 bg-amber-50 hover:bg-amber-100` |
+| Toggle | `p-1.5 rounded-md` - active: `text-[#7A8075] hover:bg-[#F7F2EA]` / inactive: `text-amber-600 bg-amber-50 hover:bg-amber-100` |
 | Delete | `w-8 h-8 rounded-lg text-[#B91C1C] hover:bg-[#FEE2E2]` |
 | Close | `ml-auto` on alert banners |
 
@@ -670,7 +670,7 @@ The default content container used throughout the application:
 | Property | Value |
 |---|---|
 | Border radius | `rounded-2xl` (preferred) or `rounded-xl` (compact contexts) |
-| Border | `border-2 border-[#E4EBE4]` — always 2px, always sage green |
+| Border | `border-2 border-[#E4EBE4]` - always 2px, always sage green |
 | Shadow | `shadow-sm` at rest, `shadow-lg` on hover (for interactive cards) |
 | Padding | `p-6` (standard) / `p-4` (compact sidebar cards) / `p-5` (form cards) |
 
@@ -830,7 +830,7 @@ const sensors = useSensors(
 
 ### 16.2 Drag Handle
 
-Each sortable item exposes only a grip handle — not the whole card — as the drag trigger. The handle uses `touch-none` and stops click propagation to avoid triggering card selection:
+Each sortable item exposes only a grip handle (not the whole card) as the drag trigger. The handle uses `touch-none` and stops click propagation to avoid triggering card selection:
 
 ```tsx
 <button {...attributes} {...listeners}
@@ -853,7 +853,7 @@ Each sortable item exposes only a grip handle — not the whole card — as the 
 
 ## 17. AdminNavBar
 
-The `AdminNavBar` component is shared across all admin pages. Its internal structure must not be modified — UI tests depend on specific elements being present.
+The `AdminNavBar` component is shared across all admin pages. Its internal structure must not be modified since UI tests depend on specific elements being present.
 
 ### 17.1 Test-Critical Elements
 
@@ -877,7 +877,7 @@ When rendered inside a page header, `AdminNavBar`'s background is overridden wit
 
 | Table | Purpose |
 |---|---|
-| `W26_form_responses` | Inspection form submissions — primary data table |
+| `W26_form_responses` | Inspection form submissions - primary data table |
 | `W26_answers` | Individual question answers (`obs_value`, `question_id`, `response_id`) |
 | `W26_questions` | Form question definitions (`form_question`, `question key`, `question_type`) |
 | `W26_question_options` | Answer options for radio/checkbox questions |
@@ -946,17 +946,17 @@ The following strings/attributes are currently asserted by parts of the UI test 
 
 AdminDashboard tests require these mocks:
 
-- `@/utils/supabase/queries` — mock the query functions directly
-- `react-chartjs-2` — mock `Pie` as a simple `div` with `data-testid="pie-chart"`
-- `chart.js` — mock `Chart.register`, `ArcElement`, `Tooltip`, `Legend`
-- `@/utils/supabase/server` — mock to prevent `'use server'` import errors
-- `global.fetch` — default mock in `beforeEach` returning `{ ok: true, json: async () => ({ items: [] }) }`
+- `@/utils/supabase/queries` - mock the query functions directly
+- `react-chartjs-2` - mock `Pie` as a simple `div` with `data-testid="pie-chart"`
+- `chart.js` - mock `Chart.register`, `ArcElement`, `Tooltip`, `Legend`
+- `@/utils/supabase/server` - mock to prevent `'use server'` import errors
+- `global.fetch` - default mock in `beforeEach` returning `{ ok: true, json: async () => ({ items: [] }) }`
 
 Re-apply all query mocks in `beforeEach` after `jest.clearAllMocks()`. Import the Dashboard component only after all mocks are registered.
 
 ---
 
-## Appendix A — Quick Reference
+## Appendix A - Quick Reference
 
 ### A.1 Full Colour Tokens
 
