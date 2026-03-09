@@ -13,6 +13,7 @@ export default function AdminNavBar() {
     { name: "Dashboard", href: "/admin/dashboard" },
     { name: "Account Management", href: "/admin/account-management" },
     { name: "Sites", href: "/admin/sites" },
+    { name: "Form Editor", href: "/admin/form-editor" },
   ];
 
   return (
