@@ -230,18 +230,10 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests**
 
-> 1. Renders page with header and navbar after loading
-> 2. Displays sections in the sidebar
-> 3. Displays questions for the initially selected section
-> 4. Switches sections when a section button is clicked 
-> 5. Shows add question form when Add Question button is clicked
-> 6. Adds a new question when form is filled and saved
-> 7. Shows success message after adding a question 
-> 8. Disables save button when question title is empty
-> 9. Can select different question types when adding
-> 10. Refetches questions after adding a new question
-> 11. Discards add question form when cancel is clicked
-> 12. Displays error when adding a question fails
+> 1. Admin fills in the form, clicks save, and the new question appears in the list. Empty titles are rejected
+> 2. Question title must end in (QXX) and match the question key format, otherwise saving is blocked
+> 3. After an admin adds a question, it immediately appears for all users filling out the form
+> 4. Non-admin users cannot access the question editor; the page requires requireAdmin=true
 
 #### US 1.0.18 – Adding Image Identifier | Story Points: 2 
 > **As** a User, **I want** to be able to add Identifier to the images that I upload, **so that** context can be given for the images.
@@ -309,27 +301,25 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests**
 
-> 1. Opens edit form when edit button is clicked 
-> 2. Populates edit form with existing question data
-> 3. Can modify question title and subtext
-> 4. Saves modified question when save is clicked
-> 5. Shows success message and closes edit form after saving 
-> 6. Can modify option text in an existing question with options 
-> 7. Refetches questions after saving an edit
-> 8. Displays updated question data after saving changes
-> 9. Discards edit changes when cancel is clicked
-> 10. Displays error when saving a question fails
+> 1. Admin sees the header, navbar, sidebar sections, and questions for the selected section. Clicking a section loads its questions
+> 2. Admin clicks edit, modifies the title, subtext, or options, clicks save, and the updated question appears. A success message is shown and the form closes
+> 3. Admin fills in the add question form with a valid title and type, clicks save, and the new question appears. Save is disabled when the title is empty
+> 4. Admin can hide or show a question; the button label updates between "Hide" and "Show" to reflect the current state
+> 5. After an edit or addition is saved, questions are refetched and the updated data is immediately reflected in the form
+> 6. Clicking cancel on either the edit or add form discards all changes without saving 
+> 7. Non-admins cannot access the editor. If saving, adding, or toggling visibility fails, an appropriate error or alert is displayed
 
 #### US 1.0.25 – Hide a Site Inspections Form Questions | Story Points: 3
 > **As** an admin, **I want** to be able to hide any of the questions on the Site Inspection Form, **so that** only the questions I want are visible.
 
 > **Acceptance Tests**
 
-> 1. Admin can toggle a question to be hidden
-> 2. Updates button from Hide to Show when toggled
-> 3. Non-admin users cannot change or edit questions
-> 4. Shows alert when toggling question visibility fails
-    
+> 1. After an admin hides a question, it no longer appears in the user-facing form or the edit report form
+> 2. Hiding a question does not affect past submissions; existing answers for that question remain retrievable
+> 3. After an admin shows a hidden question, it reappears in both the user-facing form and the edit report form
+> 4. Hidden questions display a "Hidden" badge and a "Show" button; visible questions display only a "Hide" button with no badge
+> 5. Toggling a question's visibility immediately updates the admin UI without waiting for the server response
+  
 #### US 1.0.26 – Persist Site Inspection Form Draft | Story Points: 5
 > **As** a user, **I want** my answers to be automatically saved as a draft, **so that** I do not lose my progress if I refresh, navigate away, or accidentally close my tab.
 
