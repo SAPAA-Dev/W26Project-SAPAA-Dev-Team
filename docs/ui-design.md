@@ -2,7 +2,7 @@
 ## Protected Areas Inspection App
 ### UI / UX Design Documentation - v1.0
 #### Design System Reference for Development Teams
-`Next.js` · `Tailwind CSS` · `Supabase` · `AWS``
+`Next.js` · `Tailwind CSS` · `Supabase` · `AWS`
 
 ---
 
