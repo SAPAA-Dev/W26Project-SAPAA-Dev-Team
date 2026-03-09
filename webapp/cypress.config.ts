@@ -1,7 +1,7 @@
 import { defineConfig } from "cypress";
 import { createServerSupabase } from './utils/supabase/server';
 import * as dotenv from "dotenv";
-import path from "path";
+import * as path from "path";
 
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
@@ -21,7 +21,7 @@ export default defineConfig({
             await supabase.from("W26_question_keys").delete().eq("id", question.question_key_id);
           }
           return null;
-        }
+        },
       });
     },
   },
