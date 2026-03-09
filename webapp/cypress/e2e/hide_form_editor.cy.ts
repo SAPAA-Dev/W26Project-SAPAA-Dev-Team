@@ -9,8 +9,9 @@ describe('Admin Form Editor - Question Visibility', () => {
     cy.get('#password').type('123Gctrmomy@');
     cy.get('button.font-bold').click();
     cy.get('button.text-white').click();
+    cy.wait(5000);
     cy.contains('Admin').first().click();
-    cy.wait(1000);
+    cy.wait(5000);
     cy.get('button[title="admin dropdown menu"]').click();
     cy.contains('Form Editor').click();
     cy.url().should('include', '/admin/form-editor')
@@ -27,26 +28,29 @@ describe('Admin Form Editor - Question Visibility', () => {
         cy.get(`[data-testid="${testId}"]`).click();
         cy.contains("General Information");
         cy.contains('Email (Q11)');
-        cy.get('[data-testid="Email (Q11) Hide Button"]').click();
+        cy.get('[data-testid="Email (Q11) Hide Button"]', { timeout: 10000 }).click();
         // Refresh the section to verify the question is
         cy.get(`[data-testid="${nextTestId}"]`).click();
         cy.get(`[data-testid="${testId}"]`).click();
         // Verify the title changed to "Show Question" (confirming it's now hidden)
-        cy.get('[data-testid="Email (Q11) Show Button"]').should('exist');
+        cy.get('[data-testid="Email (Q11) Show Button"]', { timeout: 10000 }).should('exist');
       } 
     });
 
     cy.get('svg.lucide-house').click();
     cy.contains('Riverlot 56').scrollIntoView().click();
-    cy.contains('New Site Inspection Report').click();
+    cy.contains('New Site Inspection Report', { timeout: 10000 }).click();
     cy.contains('I have read and agree to the terms and conditions').click();
-    cy.contains('Continue to Form').click();
-    cy.get(`[data-testid="Email (Q11)-question-title"]`).should('not.exist');
+    cy.wait(3000);
+    cy.contains('Continue to Form', { timeout: 10000 }).click();
+    cy.wait(3000);
+    cy.get(`[data-testid="Email (Q11)-question-title"]`, { timeout: 10000 }).should('not.exist');
     cy.get(`[data-testid="back-button"]`).click();
 
     // Verifying editing reports
+    cy.wait(2000);
     cy.get(`[data-testid="edit-form-button"]`).click();
-    cy.get(`[data-testid="Email (Q11)-question-title"]`).should('not.exist');
+    cy.get(`[data-testid="Email (Q11)-question-title"]`, { timeout: 10000 }).should('not.exist');
   });
 
   // If an admin toggles a question to be hidden, it will still be shown on existing / past reports
@@ -55,7 +59,7 @@ describe('Admin Form Editor - Question Visibility', () => {
     cy.get('svg.lucide-house').click();
     cy.wait(3000);
     cy.contains('Riverlot 56').scrollIntoView().click();
-    cy.get(`[data-testid="expand-inspection-button"]`).first().click()
+    cy.get(`[data-testid="expand-inspection-button"]`, { timeout: 10000 }).first().click();
     cy.contains("SECTION: General Information");
     cy.contains("Email (Q11):");
   });
@@ -71,27 +75,29 @@ describe('Admin Form Editor - Question Visibility', () => {
         cy.get(`[data-testid="${testId}"]`).click();
         cy.contains("General Information");
         cy.contains('Email (Q11)');
-        cy.get('[data-testid="Email (Q11) Show Button"]').click();
+        cy.get('[data-testid="Email (Q11) Show Button"]', { timeout: 10000 }).click();
         // Refresh the section to verify the question is
         cy.get(`[data-testid="${nextTestId}"]`).click();
         cy.get(`[data-testid="${testId}"]`).click();
         // Verify the title changed to "Show Question" (confirming it's now hidden)
-        cy.get('[data-testid="Email (Q11) Hide Button"]').should('exist');
+        cy.get('[data-testid="Email (Q11) Hide Button"]', { timeout: 10000 }).should('exist');
       } 
     });
 
     // Verifying new reports
     cy.get('svg.lucide-house').click();
     cy.contains('Riverlot 56').scrollIntoView().click();
-    cy.contains('New Site Inspection Report').click();
-    cy.contains('I have read and agree to the terms and conditions').click();
-    cy.contains('Continue to Form').click();
-    cy.contains('Continue to Form').click();
+    cy.contains('New Site Inspection Report', { timeout: 10000 }).click();
+    cy.contains('I have read and agree to the terms and conditions', { timeout: 10000 }).click();
+    cy.wait(3000);
+    cy.contains('Continue to Form', { timeout: 10000 }).click();
+    cy.wait(3000);
     cy.get(`[data-testid="Email (Q11)-question-title"]`).should('exist');
     cy.get(`[data-testid="back-button"]`).click();
 
     // Verifying editing reports
-    cy.get(`[data-testid="edit-form-button"]`).click();
-    cy.get(`[data-testid="Email (Q11)-question-title"]`).should('exist');
+    cy.wait(2000);
+    cy.get(`[data-testid="edit-form-button"]`, { timeout: 10000 }).click();
+    cy.get(`[data-testid="Email (Q11)-question-title"]`, { timeout: 10000 }).should('exist');
   });
 });

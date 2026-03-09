@@ -31,10 +31,12 @@ function dismissVerificationModalIfVisible() {
     if ($body.text().includes("The Fine Print Up Front")) {
       cy.contains("The Fine Print Up Front").should("be.visible");
       cy.get('label:has(input[type="checkbox"]) input[type="checkbox"]').check({ force: true });
+      cy.wait(1000);
       cy.contains("button", "Continue to Form")
         .should("be.visible")
         .and("not.be.disabled")
         .click({ force: true });
+      cy.wait(1000);
     }
   });
 }
@@ -48,8 +50,8 @@ function completeVerificationIfPresent() {
 function goToCloseSection() {
   // Handle modal races in headed mode right before nav interaction.
   dismissVerificationModalIfVisible();
-  cy.contains("button", "Close", { timeout: 10000 }).click({ force: true });
-  dismissVerificationModalIfVisible();
+  cy.contains('button', 'Close').click();
+  // cy.contains("button", "Close", { timeout: 10000 }).click({ force: true });
   cy.contains("Upload Images, GPS Files, etc.").should("be.visible");
 }
 

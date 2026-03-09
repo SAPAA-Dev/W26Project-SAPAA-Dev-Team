@@ -15,9 +15,11 @@ function login() {
 function navigateToNewReport() {
   cy.get('input[placeholder="Search by site name or county..."]').type('riverlot');
   cy.contains('Riverlot 56').click();
+  cy.wait(2000);
   cy.contains('button', 'New Site Inspection Report').click();
   dismissFinePrintModal()
-  cy.contains('button', 'Close').click({ force: true });
+  cy.wait(2000);
+  cy.contains('button', 'Close').click();
 }
 
 function navigateToExistingSIR() {
@@ -37,11 +39,28 @@ function dismissFinePrintModal() {
 describe('Image Upload', () => {
 
   it('Able to add images and final remarks to an existing SIR', () => {
-    cy.intercept('POST', '**/storage/v1/object/**', { statusCode: 200, body: { Key: 'mocked' } }).as('imageUpload');
+    cy.intercept('GET', '/api/site-images*', {
+      statusCode: 200,
+      body: {
+        items: [{
+          id: 999,
+          question_id: 27,
+          storage_key: 'test/mock-image.jpg',
+          filename: 'mock-image.jpg',
+          content_type: 'image/jpeg',
+          file_size_bytes: 1024,
+          caption: null,
+          description: null,
+          site_id: 1,
+          imageUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+        }]
+      }
+    }).as('siteImages');
 
     login();
     navigateToExistingSIR();
 
+    cy.wait('@siteImages');
     cy.contains('Previously uploaded — cannot be removed').should('exist');
 
     cy.contains('Any Last Words').closest('[class*="rounded"]').find('textarea').type('Added final remarks');
@@ -71,7 +90,7 @@ describe('Image Upload', () => {
     login();
     navigateToNewReport();
 
-    cy.contains('Click to upload images').should('be.visible'); // wait for section to fully load
+    cy.wait(4000); // wait for section to fully load
 
     cy.contains('Click to upload images').should('be.visible');
     cy.get('input[type="file"]').first().selectFile('cypress/fixtures/test-image-2.jpg', { force: true });

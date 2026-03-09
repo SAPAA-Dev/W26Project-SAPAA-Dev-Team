@@ -309,9 +309,10 @@ export default function SiteDetailScreen() {
           <p className="text-[#7A8075] mb-6">{error || "Site not found"}</p>
           <button
             onClick={() => router.push('/sites')}
-            className="bg-gradient-to-r from-[#356B43] to-[#254431] text-white font-semibold px-6 py-3 rounded-xl hover:shadow-lg transition-all"
+            className="flex items-center gap-2 text-[#E4EBE4] hover:text-white transition-colors mb-3 group"
           >
-            Back to Sites
+            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-base font-medium">Back to Sites</span>
           </button>
         </div>
       </div>
@@ -324,87 +325,77 @@ export default function SiteDetailScreen() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-
-      {/* Header */}
-      <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-6 shadow-lg">
+      <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
         <div className="max-w-7xl mx-auto">
-          <button
-            onClick={() => router.push('/sites')}
-            className="flex items-center gap-2 text-[#E4EBE4] hover:text-white transition-colors mb-4 group"
-          >
-            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-            <span className="font-medium">Back to Sites</span>
-          </button>
 
-          <div className="flex items-start justify-between">
-            <div className="flex-1 flex items-start gap-4">
-              <Image 
-                src="/images/sapaa-icon-white.png" 
-                alt="SAPAA"
-                width={48}
-                height={48}
-                className="w-12 h-12 flex-shrink-0"
-              />
-              <div>
-                <h1 className="text-3xl font-bold mb-3">{site.namesite}</h1>
-                {site.county && (
-                  <div className="flex items-center gap-2 text-[#E4EBE4] mb-2">
-                    <MapPin className="w-5 h-5" />
-                    <span className="text-lg">{site.county}</span>
-                  </div>
-                )}
-                {site.inspectdate && (
-                  <div className="flex items-center gap-2 text-[#E4EBE4]">
-                    <Calendar className="w-5 h-5" />
-                    <span>Last Inspection: {new Date(site.inspectdate).toLocaleDateString('en-US', {
-                      year: 'numeric', month: 'long', day: 'numeric'
-                    })}</span>
-                  </div>
-                )}
-              </div>
-            </div>
+    <button
+      onClick={() => router.push('/sites')}
+      className="flex items-center gap-1.5 text-[#86A98A] hover:text-white transition-colors mb-4 group"
+    >
+      <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+      <span className="text-sm font-medium">Back to Sites</span>
+    </button>
 
-            <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/30">
-              <div className="text-sm text-[#E4EBE4]">Last Visit</div>
-              <div className="text-xl font-bold">{ageText}</div>
+    <div className="flex items-start justify-between">
+
+      {/* Left: icon + site info */}
+      <div className="flex items-start gap-4">
+        <Image
+          src="/images/sapaa-icon-white.png"
+          alt="SAPAA"
+          width={140}
+          height={140}
+          priority
+          className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+        />
+        <div>
+          <h1 className="text-3xl font-bold mt-2.5">{site.namesite}</h1>
+          {site.county && (
+            <div className="flex items-center gap-2 text-[#E4EBE4]">
+              <MapPin className="w-5 h-5" />
+              <span className="text-base">{site.county}</span>
             </div>
-          </div>
+          )}
         </div>
       </div>
+
+      {/* Right: last visit badge */}
+      <div className="bg-white/10 px-6 py-2 rounded-full border border-white/20 text-center flex-shrink-0">
+        <div className="text-sm text-[#E4EBE4]">Last Visit</div>
+        <div className="text-lg font-bold">{ageText}</div>
+      </div>
+
+    </div>
+  </div>
+</div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
 
         {/* Stats Cards */}
         <div className="grid md:grid-cols-3 gap-4">
-          <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-[#E4EBE4] rounded-lg flex items-center justify-center">
-                <ClipboardList className="w-5 h-5 text-[#356B43]" />
-              </div>
-              <div className="text-sm font-medium text-[#7A8075] uppercase tracking-wide">Total Reports</div>
+          <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <ClipboardList className="w-5 h-5 text-[#356B43]" />
+              <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Reports</div>
             </div>
             <div className="text-3xl font-bold text-[#254431]">{inspections.length}</div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-[#E4EBE4] rounded-lg flex items-center justify-center">
-                <Award className="w-5 h-5 text-[#356B43]" />
-              </div>
-              <div className="text-sm font-medium text-[#7A8075] uppercase tracking-wide">Avg. Score</div>
+          <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <Award className="w-5 h-5 text-[#356B43]" />
+              <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Avg. Score</div>
             </div>
             <div className="text-3xl font-bold text-[#254431]">{average !== null ? average.toFixed(1) : 'N/A'}</div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-[#E4EBE4] rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-[#356B43]" />
-              </div>
-              <div className="text-sm font-medium text-[#7A8075] uppercase tracking-wide">Condition</div>
+          <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-5 h-5 text-[#356B43]" />
+              <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Condition</div>
             </div>
-            <div className="text-2xl font-bold text-[#254431]">{avgText}</div>
+            <div className="text-3xl font-bold text-[#254431]">{avgText}</div>
           </div>
         </div>
 
@@ -443,7 +434,7 @@ export default function SiteDetailScreen() {
         <div className="mt-4">
           <button
             onClick={() => router.push(`/detail/${params.namesite}/new-report`)}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#356B43] to-[#254431] text-white font-bold py-4 px-6 rounded-2xl shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all"
+            className="w-full flex items-center justify-center border-2 border-[#065F46] gap-2 bg-gradient-to-r from-[#356B43] to-[#254431] text-white font-bold py-4 px-6 rounded-2xl shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" />
@@ -455,13 +446,13 @@ export default function SiteDetailScreen() {
         </div>
 
         {/* View Toggle */}
-        <div className="flex gap-2 bg-white rounded-2xl p-2 border-2 border-[#E4EBE4] shadow-sm">
+        <div className="flex gap-1.5">
           <button
             onClick={() => setViewMode('by-date')}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 rounded-2xl font-semibold transition-all border-2 ${
               viewMode === 'by-date'
-                ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white shadow-md'
-                : 'text-[#7A8075] hover:bg-[#F7F2EA]'
+                ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white shadow-md border-[#254431]'
+                : 'bg-white text-[#7A8075] hover:bg-[#F7F2EA] border-[#E4EBE4]'
             }`}
           >
             <Calendar className="w-5 h-5" />
@@ -470,23 +461,22 @@ export default function SiteDetailScreen() {
 
           <button
             onClick={() => setViewMode('by-question')}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 rounded-2xl font-semibold transition-all border-2 ${
               viewMode === 'by-question'
-                ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white shadow-md'
-                : 'text-[#7A8075] hover:bg-[#F7F2EA]'
+                ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white shadow-md border-[#254431]'
+                : 'bg-white text-[#7A8075] hover:bg-[#F7F2EA] border-[#E4EBE4]'
             }`}
           >
             <FileText className="w-5 h-5" />
             Compare by Question
           </button>
-              
-          {/* Image Gallery */}    
+
           <button
             onClick={() => setViewMode('image-gallery')}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 rounded-2xl font-semibold transition-all border-2 ${
               viewMode === 'image-gallery'
-                ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white shadow-md'
-                : 'text-[#7A8075] hover:bg-[#F7F2EA]'
+                ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white shadow-md border-[#254431]'
+                : 'bg-white text-[#7A8075] hover:bg-[#F7F2EA] border-[#E4EBE4]'
             }`}
           >
             <ImageIcon className="w-5 h-5" />
