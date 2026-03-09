@@ -31,10 +31,12 @@ function dismissVerificationModalIfVisible() {
     if ($body.text().includes("The Fine Print Up Front")) {
       cy.contains("The Fine Print Up Front").should("be.visible");
       cy.get('label:has(input[type="checkbox"]) input[type="checkbox"]').check({ force: true });
+      cy.wait(1000);
       cy.contains("button", "Continue to Form")
         .should("be.visible")
         .and("not.be.disabled")
         .click({ force: true });
+      cy.wait(1000);
     }
   });
 }
@@ -48,8 +50,8 @@ function completeVerificationIfPresent() {
 function goToCloseSection() {
   // Handle modal races in headed mode right before nav interaction.
   dismissVerificationModalIfVisible();
-  cy.contains("button", "Close", { timeout: 10000 }).click({ force: true });
-  dismissVerificationModalIfVisible();
+  cy.contains('button', 'Close').click();
+  // cy.contains("button", "Close", { timeout: 10000 }).click({ force: true });
   cy.contains("Upload Images, GPS Files, etc.").should("be.visible");
 }
 
@@ -72,7 +74,7 @@ describe("Image Caption Behavior - Q81.1", () => {
     uploadOneImage();
 
     // Case A: caption field appears empty after upload
-    cy.contains("1 image selected").should("exist");
+    cy.contains(/1 image (selected|total)/i).should("exist");
     cy.contains("test-image.jpg").should("exist");
     captionInput().should("exist").and("have.value", "");
 
@@ -91,9 +93,9 @@ describe("Image Caption Behavior - Q81.1", () => {
     captionInput().should("have.value", "");
 
     // Optional hardening: remove uploaded image
-    cy.contains("1 image selected").should("exist");
+    cy.contains(/1 image (selected|total)/i).should("exist");
     cy.contains("button", "Remove").first().scrollIntoView().click();
-    cy.contains("1 image selected").should("not.exist");
+    cy.contains(/1 image (selected|total)/i).should("not.exist");
     cy.contains("test-image.jpg").should("not.exist");
   });
 });

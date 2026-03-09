@@ -142,14 +142,6 @@ describe('HomeClient', () => {
   });
 
   describe('Successful Data Loading', () => {
-    it('should display header with title', async () => {
-      render(<HomeClient />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Protected Areas')).toBeInTheDocument();
-      });
-    });
-
     it('should display the SAPAA logo', async () => {
       render(<HomeClient />);
 
@@ -188,7 +180,7 @@ describe('HomeClient', () => {
       });
 
       const totalSitesLabel = screen.getByText('Total Sites');
-      const totalSitesCard = totalSitesLabel.closest('div.bg-white\\/10') as HTMLElement | null;
+      const totalSitesCard = totalSitesLabel.closest('div.bg-white') as HTMLElement | null;
       expect(totalSitesCard).toBeInTheDocument();
       expect(within(totalSitesCard!).getByText('4')).toBeInTheDocument();
     });

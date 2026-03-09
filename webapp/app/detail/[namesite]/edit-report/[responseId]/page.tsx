@@ -500,9 +500,7 @@ export default function EditReportPage() {
                 <ArrowLeft className="w-6 h-6" />
               </button>
               <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold">Edit Inspection Report</h1>
-                </div>
+                <h1 className="text-2xl font-bold">Edit Inspection Report</h1>
                 <p className="text-[#E4EBE4] text-sm">{namesite}</p>
               </div>
             </div>

@@ -71,6 +71,39 @@ function getTypeLabel(type: string) {
   return found?.label ?? type;
 }
 
+// Format: "Question Test (Q70)" — title text ending with (Q<number>)
+const QUESTION_TITLE_REGEX = /\(Q(\d+)\)$/;
+function isValidQuestionTitle(title: string): boolean {
+  const t = title.trim();
+  return t.length > 0 && QUESTION_TITLE_REGEX.test(t);
+}
+
+/** Extract Q number from title, e.g. "Question Test (Q70)" -> "70", or null if invalid. */
+function getQNumberFromTitle(title: string): string | null {
+  const m = title.trim().match(QUESTION_TITLE_REGEX);
+  return m ? m[1]! : null;
+}
+
+// Format: "Q70_QuestionTest" — Q<number>_ then only letters and numbers (no spaces, no underscores after)
+const QUESTION_KEY_REGEX = /^Q(\d+)_[a-zA-Z0-9]+$/;
+function isValidQuestionKey(key: string): boolean {
+  const k = key.trim();
+  return k.length > 0 && QUESTION_KEY_REGEX.test(k);
+}
+
+/** Extract Q number from key, e.g. "Q70_QuestionTest" -> "70", or null if invalid. */
+function getQNumberFromKey(key: string): string | null {
+  const m = key.trim().match(QUESTION_KEY_REGEX);
+  return m ? m[1]! : null;
+}
+
+/** True if both title and key are valid and their Q numbers match. */
+function qNumbersMatch(title: string, key: string): boolean {
+  const t = getQNumberFromTitle(title);
+  const k = getQNumberFromKey(key);
+  return t !== null && k !== null && t === k;
+}
+
 // ─── Main Page Component ─────────────────────────────────────────────
 export default function FormEditorPage() {
   const [loading, setLoading] = useState(true);
@@ -285,27 +318,35 @@ export default function FormEditorPage() {
   // ─── Render ──────────────────────────────────────────────────────
   return (
     <ProtectedRoute requireAdmin>
-      <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-        <AdminNavBar />
-
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-8 shadow-lg">
-          <div className="max-w-[100vw] mx-auto">
-            <div className="flex items-center gap-3 mb-2">
-              <Image
-                src="/images/sapaa-icon-white.png"
-                alt="SAPAA"
-                width={48}
-                height={48}
-                className="w-12 h-12 flex-shrink-0"
-              />
-              <h1 className="text-4xl font-bold font-heading">Form Editor</h1>
+    <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
+      <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between mb-3">
+              {/* Left: icon + title + subtitle */}
+              <div className="flex items-center gap-4">
+                <Image
+                  src="/images/sapaa-icon-white.png"
+                  alt="SAPAA"
+                  width={140}
+                  height={140}
+                  priority
+                  className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+                />
+                <div>
+                  <h1 className="text-3xl font-bold mt-3">Form Editor</h1>
+                  <p className="text-[#E4EBE4] text-base mt-0.5">
+                    Manage inspection form sections and questions
+                  </p>
+                </div>
+              </div>
+              {/* Right: navbar — rendered inline, bg overridden to transparent */}
+              <div className="[&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
+                <AdminNavBar />
+              </div>
             </div>
-            <p className="text-[#E4EBE4] text-lg">
-              Manage inspection form sections and questions
-            </p>
           </div>
         </div>
+
 
         {/* Alerts */}
         {error && (
@@ -799,6 +840,8 @@ function EditQuestionForm({
     question.question_type.trim()
   );
 
+  const titleValid = isValidQuestionTitle(question.form_question || "");
+
   return (
     <div className="bg-white border-2 border-[#356B43] rounded-xl p-5 shadow-md">
       <h4 className="text-sm font-bold text-[#254431] mb-4">Edit Question</h4>
@@ -815,8 +858,18 @@ function EditQuestionForm({
             onChange={(e) =>
               onChange({ ...question, form_question: e.target.value })
             }
-            className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] transition-colors"
+            className={`w-full mt-1 px-3 py-2.5 border-2 rounded-xl text-sm focus:outline-none transition-colors ${
+              (question.form_question || "").trim() && !titleValid
+                ? "border-red-500 focus:border-red-500"
+                : "border-[#E4EBE4] focus:border-[#356B43]"
+            }`}
           />
+          {(question.form_question || "").trim() && !titleValid && (
+            <p className="mt-1 text-xs text-red-600 flex items-center gap-1" role="alert">
+              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+              Must be in this format: Question Test (Q70)
+            </p>
+          )}
         </div>
 
         <div>
@@ -930,8 +983,8 @@ function EditQuestionForm({
 
       <div className="flex gap-2 mt-5 pt-4 border-t-2 border-[#E4EBE4]">
         <button
-          onClick={onSave}
-          disabled={saving}
+          onClick={() => titleValid && onSave()}
+          disabled={saving || !titleValid}
           className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#356B43] to-[#254431] text-white text-sm font-semibold rounded-xl disabled:opacity-50 hover:shadow-lg transition-all"
           data-testid="save-question-button"
         >
@@ -984,6 +1037,11 @@ function AddQuestionForm({
 
   const needsOptions = ["option", "selectall"].includes(type);
 
+  const titleValid = isValidQuestionTitle(title);
+  const keyValid = isValidQuestionKey(questionKey);
+  const qMatch = qNumbersMatch(title, questionKey);
+  const canSubmit = titleValid && keyValid && qMatch;
+
   // Sync with preview panel whenever local state changes
   useEffect(() => {
   onUpdate({
@@ -1018,9 +1076,25 @@ function AddQuestionForm({
             title="add-question-title"
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Must be in this format -> Question Test (Q70)"
-            className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] transition-colors placeholder:text-[#7A8075]"
+            className={`w-full mt-1 px-3 py-2.5 border-2 rounded-xl text-sm focus:outline-none transition-colors placeholder:text-[#7A8075] ${
+              (title.trim() && !titleValid) || (titleValid && keyValid && !qMatch)
+                ? "border-red-500 focus:border-red-500"
+                : "border-[#E4EBE4] focus:border-[#356B43]"
+            }`}
             data-testid="add-question-title"
           />
+          {title.trim() && !titleValid && (
+            <p className="mt-1 text-xs text-red-600 flex items-center gap-1" role="alert">
+              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+              Must be in this format: Question Test (Q70)
+            </p>
+          )}
+          {titleValid && keyValid && !qMatch && (
+            <p className="mt-1 text-xs text-red-600 flex items-center gap-1" role="alert">
+              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+              Q number in title must match question key
+            </p>
+          )}
         </div>
 
         <div>
@@ -1047,10 +1121,26 @@ function AddQuestionForm({
             title="add-question-key"
             value={questionKey}
             onChange={(e) => setQuestionKey(e.target.value)}
-            placeholder="Must be in this format -> Q70_QuestionTest"
-            className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] transition-colors placeholder:text-[#7A8075]"
+            placeholder="Q70_QuestionTest (letters and numbers only after underscore)"
+            className={`w-full mt-1 px-3 py-2.5 border-2 rounded-xl text-sm focus:outline-none transition-colors placeholder:text-[#7A8075] ${
+              questionKey.trim() && (!keyValid || (titleValid && keyValid && !qMatch))
+                ? "border-red-500 focus:border-red-500"
+                : "border-[#E4EBE4] focus:border-[#356B43]"
+            }`}
             data-testid="add-question-key"
           />
+          {questionKey.trim() && !keyValid && (
+            <p className="mt-1 text-xs text-red-600 flex items-center gap-1" role="alert">
+              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+              Must be in format: Q70_QuestionTest (letters and numbers only after underscore, no spaces)
+            </p>
+          )}
+          {titleValid && keyValid && !qMatch && (
+            <p className="mt-1 text-xs text-red-600 flex items-center gap-1" role="alert">
+              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+              Q number in title must match question key (e.g. Q{getQNumberFromTitle(title) ?? "?"} in both)
+            </p>
+          )}
         </div>
 
         <div className="flex gap-4">
@@ -1140,8 +1230,9 @@ function AddQuestionForm({
       <div className="flex gap-2 mt-5 pt-4 border-t-2 border-[#E4EBE4]">
         <button
           onClick={() =>
+            canSubmit &&
             onSave({
-              form_question: title,
+              form_question: title.trim(),
               subtext,
               question_type: type,
               is_required: required,
@@ -1149,7 +1240,7 @@ function AddQuestionForm({
               question_key: questionKey.trim(),
             })
           }
-          disabled={saving || !title.trim()}
+          disabled={saving || !canSubmit}
           className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#356B43] to-[#254431] text-white text-sm font-semibold rounded-xl disabled:opacity-50 hover:shadow-lg transition-all"
           data-testid="save-new-question"
         >

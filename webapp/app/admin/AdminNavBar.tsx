@@ -17,7 +17,7 @@ export default function AdminNavBar() {
   ];
 
   return (
-    <nav className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 flex items-center justify-between relative">
+    <nav className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 flex items-center justify-between gap-2 relative">
       {/* Left side - Home button */}
       <Link
         href="/sites"
