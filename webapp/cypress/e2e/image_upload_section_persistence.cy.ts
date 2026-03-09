@@ -12,6 +12,7 @@ function loginWithCurrentPattern() {
   cy.get("#password").type("123Gctrmomy@");
   cy.get("button.font-bold").click();
   cy.get("button.text-white").click();
+  cy.wait(4000);
   cy.url().should("include", "/sites");
 }
 
@@ -29,10 +30,12 @@ function dismissVerificationModalIfVisible() {
   cy.get("body").then(($body) => {
     if ($body.text().includes("The Fine Print Up Front")) {
       cy.get('label:has(input[type="checkbox"]) input[type="checkbox"]').check({ force: true });
+      cy.wait(1000);
       cy.contains("button", "Continue to Form")
         .should("be.visible")
         .and("not.be.disabled")
         .click({ force: true });
+      cy.wait(1000);
       cy.contains("The Fine Print Up Front").should("not.exist");
     }
   });
