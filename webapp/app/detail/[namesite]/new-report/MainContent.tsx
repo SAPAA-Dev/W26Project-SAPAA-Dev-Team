@@ -78,6 +78,8 @@ export default function MainContent({
   const [loading, setLoading] = useState(true);
   const hasAutofilled = useRef(false);
 
+  const today = new Date().toISOString().split("T")[0];
+
   useEffect(() => {
     async function fetchQuestions() {
       try {
@@ -118,8 +120,9 @@ export default function MainContent({
       user_email: currentUser?.email,
       user_name: currentUser?.name,
       user_phone: currentUser?.phone,
-      visit_date: new Date().toISOString().split('T')[0],
+      visit_date: today,
       site_name: siteName,
+      
     };
 
     questions.forEach((question) => {
@@ -360,6 +363,7 @@ export default function MainContent({
             <input
               type="date"
               value={response || ''}
+              max={today}
               onChange={(e) => handleResponse(question.id, e.target.value)}
               className="w-full px-4 py-3 border-2 border-[#E4EBE4] rounded-xl focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] font-medium placeholder:text-[#7A8075]"
             />

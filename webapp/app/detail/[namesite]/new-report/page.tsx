@@ -472,8 +472,6 @@ export default function NewReportPage() {
      *   }
      * }
      */
-    
-    //TODO: Handle form submission
 
     // console.log('Form data to submit:', {
     //   user: currentUser,

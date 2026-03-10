@@ -8,6 +8,7 @@ import { createClient } from '@/utils/supabase/client';
 import Image from 'next/image';
 import { Suspense } from "react";
 import { SubmissionToast } from "./SubmissionToast";
+import UploadImages from "@/components/UploadImages";
 
 type UnifiedSite = SiteSummary;
 
@@ -412,6 +413,7 @@ export default function HomeClient() {
                 </button>
               );
             })}
+            <UploadImages />
           </div>
         )}
       </div>
