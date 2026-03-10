@@ -10,17 +10,23 @@ import { Loader2, MapPin, FileText, ImageIcon, X, Maximize2 } from "lucide-react
 
 type GalleryItem = {
   id: string;
-  response_id: string;
-  question_id: string;
+  site_id: string;
+  site_name?: string | null;
+  filename: string;
+  storage_key: string;
+  file_size_bytes?: number | null;
+  imageUrl: string;
   caption?: string | null;
   description?: string | null;
-  storage_key: string;
-  content_type: string;
-  file_size_bytes?: number | null;
-  filename: string;
-  site_id: string | null; 
-  site_name?: string | null;
-  imageUrl: string;
+  
+  // Inspection attachment fields
+  response_id?: string | null;
+  question_id?: string | null;
+  content_type?: string | null;
+
+  // Homepage upload fields
+  date?: string | null;
+  photographer?: string | null;
 };
 
 export default function GalleryPage() {
@@ -31,17 +37,32 @@ export default function GalleryPage() {
   useEffect(() => {
     const fetchGallery = async () => {
       try {
-        console.log("Fetching gallery from /api/gallery...");
         const res = await fetch("/api/gallery");
         const data = await res.json();
+        
+        const res1 = await fetch("/api/homepage-images");
+        const data1 = await res1.json();
 
-        console.log("Gallery response:", data);
-
-        if (!res.ok) {
+        if ((!res.ok)) {
           throw new Error(data.error || "Failed to load gallery");
         }
 
-        setItems(data.items || []);
+        if ((!res1.ok)) {
+          throw new Error(data1.error || "Failed to load homepage-images");
+        }
+
+        const allItems = [
+          ...(data.items || []).map((item: any) => ({
+            ...item,
+            _sortDate: item.created_at ?? item.date ?? "",
+          })),
+          ...(data1.items || []).map((item: any) => ({
+            ...item,
+            _sortDate: item.date ?? item.created_at ?? "",
+          })),
+        ].sort((a, b) => new Date(b._sortDate).getTime() - new Date(a._sortDate).getTime());
+        
+        setItems(allItems || []);
       } catch (err) {
         console.error("Gallery fetch error:", err);
       } finally {

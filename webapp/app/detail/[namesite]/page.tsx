@@ -160,8 +160,12 @@ export default function SiteDetailScreen() {
         const res1 = await fetch(`/api/homepage-images/${site.id}`);
         const data1 = await res1.json();
 
-        if ((!res.ok) || (!res1.ok)) {
+        if ((!res.ok)) {
           throw new Error(data.error || "Failed to load gallery");
+        }
+
+        if ((!res1.ok)) {
+          throw new Error(data1.error || "Failed to load homepage-images");
         }
 
         const allItems = [
