@@ -1,22 +1,21 @@
 import type { NextConfig } from "next";
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 require('dotenv').config()
 
 const nextConfig: NextConfig = {
-  /* config options here */
-   images: {
+  output: "standalone",
+  images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'lh3.googleusercontent.com', // Google
+        hostname: 'lh3.googleusercontent.com',
       },
       {
         protocol: 'https',
-        hostname: 'avatars.githubusercontent.com', // GitHub
+        hostname: 'avatars.githubusercontent.com',
       },
       {
         protocol: 'https',
-        hostname: 'your-project-id.supabase.co', // Supabase storage
+        hostname: 'your-project-id.supabase.co',
       },
     ],
   },

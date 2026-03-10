@@ -1,14 +1,15 @@
 "use client";
-
+import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 
-export default function TermsPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const from = searchParams.get("from");
+
+function TermsContent() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const from = searchParams.get("from");
 
 
   return (
@@ -269,4 +270,13 @@ export default function TermsPage() {
       </main>
     </div>
   );
+}
+
+export default function TermsPage() {
+     return (
+    <Suspense fallback={null}>
+      <TermsContent />
+    </Suspense>
+  );
+
 }
