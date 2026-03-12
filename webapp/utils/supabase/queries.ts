@@ -1,5 +1,6 @@
 'use server';
 
+import { UniqueIdentifier } from '@dnd-kit/core';
 import { createServerSupabase, createClient } from './server';
 
 export interface SiteSummary {
@@ -366,6 +367,32 @@ export async function insertInspectionAttachments(rows: Array<{
 
   if (error) {
     throw new Error(error.message || 'Failed to insert attachments');
+  }
+
+  return data;
+}
+
+export async function insertHomepageImageUpload(rows: Array<{
+  storage_key: string; 
+  filename?: string | null;
+  content_type?: string | null;
+  file_size_bytes?: number | null;
+  site_id: number;
+  user_id: string;
+  date: Date;
+  photographer: string | null;
+  identifier: string | null;
+  description: string | null;
+  created_at: string | null;
+}>) {
+  const supabase = createServerSupabase();  
+
+  const { data, error } = await supabase
+    .from('W26_homepage-image-uploads')
+    .insert(rows);
+
+  if (error) {
+    throw new Error(error.message || 'Failed to insert homepage attachments');
   }
 
   return data;

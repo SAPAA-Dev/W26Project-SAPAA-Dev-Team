@@ -8,6 +8,7 @@ import { createClient } from '@/utils/supabase/client';
 import Image from 'next/image';
 import { Suspense } from "react";
 import { SubmissionToast } from "./SubmissionToast";
+import UploadImages from "@/components/UploadImages";
 
 type UnifiedSite = SiteSummary;
 
@@ -215,7 +216,7 @@ export default function HomeClient() {
           {currentUser?.role === 'admin' && (
                   <button
                     onClick={() => router.push('/admin/dashboard')}
-                    className="bg-[#356B43] hover:bg-[#254431] mt-2 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-semibold transition-all"
+                    className="bg-[#E4EBE4] hover:bg-[#F7F2EA] mt-4 text-black px-4 py-2 rounded-xl flex items-center gap-2 font-semibold transition-all"
                   >
                     <Award className="w-5 h-5" />
                     Admin
@@ -412,6 +413,7 @@ export default function HomeClient() {
                 </button>
               );
             })}
+            <UploadImages />
           </div>
         )}
       </div>

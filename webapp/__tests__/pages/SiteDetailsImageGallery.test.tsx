@@ -102,9 +102,11 @@ const galleryItemsForSelectedSite = [
 ];
 
 function mockGalleryFetchSuccess(items = galleryItemsForSelectedSite) {
-  (global.fetch as jest.Mock).mockResolvedValue({
-    ok: true,
-    json: async () => ({ items }),
+  (global.fetch as jest.Mock).mockImplementation((url: string) => {
+    if (url.includes("/api/homepage-images/")) {
+      return Promise.resolve({ ok: true, json: async () => ({ items: [] }) });
+    }
+    return Promise.resolve({ ok: true, json: async () => ({ items }) });
   });
 }
 
