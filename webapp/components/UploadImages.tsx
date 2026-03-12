@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useRouter } from 'next/navigation';
 import { getSitesOnline, getCurrentUserUid, insertHomepageImageUpload } from "@/utils/supabase/queries";
 import { Upload, X, Search, Trash2, Image as ImageIcon, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
@@ -19,16 +20,17 @@ interface FileEntry {
   siteDropdownOpen: boolean;
   date: string;
   who: string;
-  shortDesc: string;
+  created_at: string;
+  identifier: string;
   description: string;
 }
 
-function generateFilename(site: Site | null, date: string, who: string, shortDesc: string): string {
+function generateFilename(site: Site | null, date: string, who: string, identifier: string): string {
   const parts = [
     site?.name?.replace(/[^a-zA-Z0-9]/g, "") ?? "Site",
     date ?? "",
     who.replace(/\s+/g, "") || "Unknown",
-    shortDesc.replace(/\s+/g, "") || "Image",
+    identifier.replace(/\s+/g, "") || "Image",
   ].filter(Boolean);
   return parts.join("-") + ".jpg";
 }
@@ -44,6 +46,7 @@ export default function UploadImages() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const today = new Date().toISOString().split("T")[0];
+  const router = useRouter();
 
   useEffect(() => {
     document.body.style.overflow = modalOpen ? "hidden" : "";
@@ -78,7 +81,8 @@ export default function UploadImages() {
     siteDropdownOpen: false,
     date: today,
     who: "",
-    shortDesc: "",
+    created_at: "",
+    identifier: "",
     description: "",
   });
 
@@ -164,21 +168,25 @@ export default function UploadImages() {
         user_id: string;
         date: Date;
         photographer: string;
-        caption: string;
+        identifier: string;
         description: string;
+        created_at: string;
       }> = [];
 
       for (const entry of files) {
-        const filename = generateFilename(entry.site, entry.date, entry.who, entry.shortDesc);
+        const generatedFilename = generateFilename(entry.site, entry.date, entry.who, entry.identifier);
         const file = entry.file;
+        const created_at = new Date().toISOString();
 
         // 1) Get presigned URL
         const { uploadUrl, key } = await getPresignedUrl({
-          filename,
+          filename: generatedFilename,
           contentType: file.type,
           fileSize: file.size,
           siteId: entry.site!.id,
         });
+
+        const filename = key.split("/").pop()!; 
 
         // 2) Upload to S3
         await uploadFileToS3(uploadUrl, file);
@@ -192,8 +200,9 @@ export default function UploadImages() {
           user_id: userUid,
           date: new Date(entry.date),
           photographer: entry.who,
-          caption: entry.shortDesc,
+          identifier: entry.identifier,
           description: entry.description,
+          created_at: created_at,
         });
       }
 
@@ -203,6 +212,7 @@ export default function UploadImages() {
       setModalOpen(false);
       setFiles([]);
       setCurrentIndex(0);
+      router.push(`/sites?image-upload=true`);
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Upload failed";
       setUploadError(msg);
@@ -224,7 +234,7 @@ export default function UploadImages() {
     f.site !== null &&
     f.date.trim() !== "" &&
     f.who.trim() !== "" &&
-    f.shortDesc.trim() !== "" &&
+    f.identifier.trim() !== "" &&
     f.description.trim() !== "";
 
   const canUpload = files.length > 0 && files.every(isComplete);
@@ -246,7 +256,7 @@ export default function UploadImages() {
           className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
           onClick={(e) => e.target === e.currentTarget && handleClose()}
         >
-          <div className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden">
+          <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden">
 
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
@@ -299,7 +309,7 @@ export default function UploadImages() {
                       >
                         <ChevronLeft size={14} />
                       </button>
-                      <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-gray-900">
                         Image {currentIndex + 1} of {files.length}
                       </span>
                       <button
@@ -313,14 +323,14 @@ export default function UploadImages() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="text-xs text-[#1e4d2b] font-semibold hover:underline"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-500 text-gray-900 hover:bg-green-50 hover:border-[#1e4d2b] hover:text-[#1e4d2b] transition-colors text-base font-medium"
                       >
-                        + Add more
+                        +
                       </button>
                       <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => addFiles(e.target.files)} />
                       <button
                         onClick={removeCurrentFile}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-300 text-gray-800 hover:text-red-500 hover:border-red-300 hover:bg-red-50 transition-colors"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-500 text-gray-900 hover:text-red-500 hover:border-red-300 hover:bg-red-50 transition-colors"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -331,19 +341,12 @@ export default function UploadImages() {
                   <div className="flex gap-5">
 
                     {/* Left: image preview */}
-                    <div className="w-56 flex-shrink-0 flex flex-col items-center gap-2">
+                    <div className="w-112 flex-shrink-0 flex flex-col items-center gap-2">
                       <img
                         src={current.preview}
                         alt={current.file.name}
-                        className="w-full h-48 object-cover rounded-xl border border-gray-100"
+                        className="w-full h-90 object-cover rounded-xl border border-gray-100"
                       />
-                      {/* Auto-generated filename */}
-                      <div className="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-0.5">File Name</p>
-                        <p className="text-xs text-gray-600 break-all leading-relaxed">
-                          {generateFilename(current.site, current.date, current.who, current.shortDesc)}
-                        </p>
-                      </div>
 
                     </div>
 
@@ -352,7 +355,7 @@ export default function UploadImages() {
 
                       {/* Site selector */}
                       <div>
-                        <label className="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">
+                        <label className="block text-xs font-semibold uppercase tracking-wide text-gray-900 mb-1">
                           Site <span className="text-red-400">*</span>
                         </label>
                         {current.site ? (
@@ -405,48 +408,67 @@ export default function UploadImages() {
                         )}
                       </div>
 
-                      {/* Date + Photographer row */}
-                      <div className="flex gap-3">
-                        <div className="flex-1">
-                          <label className="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Date <span className="text-red-400">*</span></label>
-                          <input
-                            type="date"
-                            value={current.date}
-                            max={today}
-                            onChange={(e) => updateField("date", e.target.value)}
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:border-[#1e4d2b] focus:bg-white transition-colors text-gray-700"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <label className="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Photographer <span className="text-red-400">*</span></label>
-                          <input
-                            type="text"
-                            placeholder="Your name"
-                            value={current.who}
-                            onChange={(e) => updateField("who", e.target.value)}
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:border-[#1e4d2b] focus:bg-white transition-colors placeholder:text-gray-300 text-gray-700"
-                          />
-                        </div>
+                      {/* Date */}
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wide text-gray-900 mb-1">Date of Visit <span className="text-red-400">*</span></label>
+                        <input
+                          type="date"
+                          value={current.date}
+                          max={today}
+                          onChange={(e) => updateField("date", e.target.value)}
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:border-[#1e4d2b] focus:bg-white transition-colors text-gray-700"
+                        />
                       </div>
 
-                      {/* Short description */}
+                      {/* Photographer */}
                       <div>
-                        <label className="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">
-                          Short Description <span className="text-red-400">*</span> <span className="normal-case font-normal text-gray-300">(max 20 chars)</span>
+                        <label className="block text-xs font-semibold uppercase tracking-wide text-gray-900 mb-1">
+                          Person Who Took This Photo <span className="text-red-400">*</span>{" "}
+                          <span className={`normal-case font-normal ${current.who.replace(/\s/g, "").length >= 25 ? "text-red-400" : "text-gray-500"}`}>
+                            ({current.who.replace(/\s/g, "").length}/25)
+                          </span>
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Owner of Digital File"
+                          value={current.who}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val.replace(/\s/g, "").length <= 25) updateField("who", val);
+                          }}
+                          className={`w-full px-3 py-2 text-sm border rounded-lg bg-gray-50 focus:outline-none focus:bg-white transition-colors placeholder:text-gray-300 text-gray-700 ${current.who.replace(/\s/g, "").length >= 25 ? "border-red-300 focus:border-red-400" : "border-gray-200 focus:border-[#1e4d2b]"}`}
+                        />
+                        {current.who.replace(/\s/g, "").length >= 25 && (
+                          <p className="text-xs text-red-400 mt-1">Character limit reached</p>
+                        )}
+                      </div>
+
+                      {/* Identifier */}
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wide text-gray-900 mb-1">
+                          Identifier <span className="text-red-400">*</span>{" "}
+                          <span className={`normal-case font-normal ${current.identifier.replace(/\s/g, "").length >= 20 ? "text-red-400" : "text-gray-500"}`}>
+                            ({current.identifier.replace(/\s/g, "").length}/20)
+                          </span>
                         </label>
                         <input
                           type="text"
                           placeholder="e.g. ATV Track"
-                          maxLength={20}
-                          value={current.shortDesc}
-                          onChange={(e) => updateField("shortDesc", e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:border-[#1e4d2b] focus:bg-white transition-colors placeholder:text-gray-300 text-gray-700"
+                          value={current.identifier}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val.replace(/\s/g, "").length <= 20) updateField("identifier", val);
+                          }}
+                          className={`w-full px-3 py-2 text-sm border rounded-lg bg-gray-50 focus:outline-none focus:bg-white transition-colors placeholder:text-gray-300 text-gray-700 ${current.identifier.replace(/\s/g, "").length >= 20 ? "border-red-300 focus:border-red-400" : "border-gray-200 focus:border-[#1e4d2b]"}`}
                         />
+                        {current.identifier.replace(/\s/g, "").length >= 20 && (
+                          <p className="text-xs text-red-400 mt-1">Character limit reached</p>
+                        )}
                       </div>
 
                       {/* Description */}
                       <div>
-                        <label className="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Description <span className="text-red-400">*</span></label>
+                        <label className="block text-xs font-semibold uppercase tracking-wide text-gray-900 mb-1">Description <span className="text-red-400">*</span></label>
                         <textarea
                           placeholder="What, when, where, who..."
                           rows={2}
@@ -466,7 +488,7 @@ export default function UploadImages() {
             <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50">
               <span className="text-xs text-gray-400">
                 {files.length > 0
-                  ? <><strong className="text-gray-600">{files.filter(isComplete).length}</strong> / {files.length} complete</>
+                  ? <><strong className="text-gray-600">{files.filter(isComplete).length} / {files.length} complete </strong></>
                   : "No files selected"}
               </span>
               <div className="flex flex-col items-end gap-2">

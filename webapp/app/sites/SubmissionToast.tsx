@@ -9,17 +9,30 @@ export function SubmissionToast() {
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
   const [text, setText] = useState("");
+  const [description, setDescription] = useState("");
 
   useEffect(() => {
     if (searchParams.get("submitted") === "true") {
-      setText("Submitted");
+      setText("Report Submitted!");
+      setDescription("Your site inspection has been recorded!");
       setVisible(true);
       router.replace(pathname, { scroll: false });
       const t = setTimeout(() => setVisible(false), 3000);
       return () => clearTimeout(t);
     }
+    
     if (searchParams.get("edited") === "true") {
-      setText("Edited");
+      setText("Report Edited!");
+      setDescription("Your site inspection has been edited!");
+      setVisible(true);
+      router.replace(pathname, { scroll: false });
+      const t = setTimeout(() => setVisible(false), 3000);
+      return () => clearTimeout(t);
+    }
+
+    if (searchParams.get("image-upload") === "true") {
+      setText("Image Uploaded!");
+      setDescription("Your image has been uploaded!");
       setVisible(true);
       router.replace(pathname, { scroll: false });
       const t = setTimeout(() => setVisible(false), 3000);
@@ -36,8 +49,8 @@ export function SubmissionToast() {
           <CheckCircle className="w-5 h-5" />
         </div>
         <div className="flex-1">
-          <p className="font-bold text-sm">Report {text}!</p>
-          <p className="text-xs text-[#E4EBE4]/80 mt-0.5">Your site inspection has been recorded.</p>
+          <p className="font-bold text-sm">{text}</p>
+          <p className="text-xs text-[#E4EBE4]/80 mt-0.5">{description}</p>
         </div>
         <button
           onClick={() => setVisible(false)}

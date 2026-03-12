@@ -43,7 +43,8 @@ export async function POST(request: Request) {
 
     const uuid = crypto.randomUUID();
     const extension = contentType === "image/jpeg" ? "jpg" : contentType === "image/png" ? "png" : "webp";
-    const key = `homepage-image-uploads/${siteId}/${user.id}/${uuid}.${extension}`;
+    const baseName = filename.replace(/\.[^.]+$/, "");
+    const key = `homepage-image-uploads/${siteId}/${user.id}/${baseName}-${uuid}.${extension}`;
 
     const command = new PutObjectCommand({ Bucket: BUCKET, Key: key });
     const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 180 });

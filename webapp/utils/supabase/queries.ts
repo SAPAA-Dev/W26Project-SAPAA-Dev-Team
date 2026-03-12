@@ -381,8 +381,9 @@ export async function insertHomepageImageUpload(rows: Array<{
   user_id: string;
   date: Date;
   photographer: string | null;
-  caption: string | null;
+  identifier: string | null;
   description: string | null;
+  created_at: string | null;
 }>) {
   const supabase = createServerSupabase();  
 
