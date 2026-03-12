@@ -357,6 +357,10 @@ export async function insertInspectionAttachments(rows: Array<{
   file_size_bytes?: number | null;
   caption?: string | null;
   description?: string | null;
+  photographer?: string | null;
+  identifier?: string | null;
+  date?: string | null;
+  
 }>) {
   const supabase = createServerSupabase();  
 

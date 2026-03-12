@@ -40,12 +40,21 @@ export async function POST(request: Request) {
     const questionId = body.questionId;
     const siteId = body.siteId;
 
+    const date = body.date;
+    const photographer = body.photographer;
+    const identifier = body.identifier;
+    const siteName = body.siteName;
+
     if (!filename || !contentType) {
       return NextResponse.json({ error: "Invalid file data" }, { status: 400 });
     }
 
     if (!siteId || !responseId || !questionId) {
-    return NextResponse.json({ error: "Missing ids" }, { status: 400 });
+      return NextResponse.json({ error: "Missing ids" }, { status: 400 });
+    }
+
+    if (!siteName || !date || !identifier) {
+      return NextResponse.json({ error: "Missing image metadata" }, { status: 400 });
     }
 
     // Validate file
@@ -64,16 +73,36 @@ export async function POST(request: Request) {
     }
 
     //  Create S3 key
-    const uuid = crypto.randomUUID();
-
     const extension =
-      contentType === "image/jpeg"
-        ? "jpg"
-        : contentType === "image/png"
-        ? "png"
-        : "webp";
+    contentType === "image/jpeg"
+      ? "jpg"
+      : contentType === "image/png"
+      ? "png"
+      : "webp";
 
-    const key = `inspections/${siteId}/${responseId}/${questionId}/${uuid}.${extension}`;
+    const clean = (v: string) =>
+      v.trim().replace(/\s+/g, "").replace(/[^a-zA-Z0-9-]/g, "");
+
+    const who = photographer?.trim()
+      ? photographer
+      : user.user_metadata?.full_name || "UnknownUser";
+
+    const safeSite = clean(siteName);
+    const safeWho = clean(who);
+    const safeIdentifier = clean(identifier);
+
+    const uuid = crypto.randomUUID().slice(0, 8);
+
+    const generatedFilename =
+      `${safeSite}-${date}-${safeWho}-${safeIdentifier}-${uuid}.${extension}`;
+
+    const key =
+      `inspections/${siteId}/${responseId}/${questionId}/${generatedFilename}`;
+
+
+
+
+
 
     //Generate presigned URL
     const command = new PutObjectCommand({
@@ -89,6 +118,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       "uploadUrl": uploadUrl,
       "key": key,
+      "generatedFilename": generatedFilename,
     });
 
   } catch (err) {

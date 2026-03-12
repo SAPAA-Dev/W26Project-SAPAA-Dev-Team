@@ -12,7 +12,9 @@ type GalleryItem = {
   response_id: string;
   question_id: string;
   caption?: string | null;
-  description?: string | null;
+  // description?: string | null;
+  identifier?: string | null;
+  date?: string | null;
   storage_key: string;
   content_type: string;
   file_size_bytes?: number | null;
@@ -64,7 +66,8 @@ export default function GalleryPage() {
       return (
         (item.site_name || "").toLowerCase().includes(lowerQuery) ||
         (item.caption || "").toLowerCase().includes(lowerQuery) ||
-        (item.description || "").toLowerCase().includes(lowerQuery) ||
+        (item.identifier || "").toLowerCase().includes(lowerQuery) ||
+        (item.date || "").toLowerCase().includes(lowerQuery) ||
         (item.filename || "").toLowerCase().includes(lowerQuery) ||
         (item.storage_key || "").toLowerCase().includes(lowerQuery)
       );
@@ -112,7 +115,7 @@ export default function GalleryPage() {
               </div>
               <input
                 type="text"
-                placeholder="Filter by site, caption, description..."
+                placeholder="Search by site, caption, identifier, image-name or date..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="block w-full pl-10 pr-10 py-2.5 border-2 border-[#E4EBE4] rounded-xl bg-white text-sm placeholder-[#7A8075] focus:outline-none focus:border-[#356B43] focus:ring-1 focus:ring-[#356B43] shadow-sm transition-all"
@@ -187,9 +190,16 @@ export default function GalleryPage() {
                     </div>
 
                     <div className="text-sm text-[#7A8075] flex items-start gap-2">
-                      <FileText className="w-4 h-4 mt-0.5" />
-                      <span className="line-clamp-2">{item.description || "No description"}</span>
-                    </div>
+                        <FileText className="w-4 h-4 mt-0.5" />
+                        <div>
+                          <p className="text-[#254431] font-medium">
+                            {item.identifier || "No identifier"}
+                          </p>
+                          <p className="text-xs text-[#7A8075] mt-0.5">
+                            {item.date || "No date"}
+                          </p>
+                        </div>
+                      </div>
                   </div>
                 </div>
               ))}
@@ -244,10 +254,19 @@ export default function GalleryPage() {
 
                   <div>
                     <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
-                      Description
+                      Identifier
                     </p>
                     <p className="text-sm text-[#4B5563] leading-6">
-                      {selectedImage.description || "No description"}
+                      {selectedImage.identifier || "No identifier"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
+                      Date
+                    </p>
+                    <p className="text-sm text-[#4B5563] leading-6">
+                      {selectedImage.date || "No date"}
                     </p>
                   </div>
 

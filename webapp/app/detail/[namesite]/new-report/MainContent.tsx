@@ -61,7 +61,10 @@ export interface LocalImage {
   id: string;           // crypto.randomUUID() — client-only
   file: File;
   caption: string;
-  description: string;
+  // description: string;
+  identifier: string;
+  photographer: string;
+  date: string;
   previewUrl: string;
 }
 
@@ -378,7 +381,10 @@ export default function MainContent({
             id: crypto.randomUUID(),
             file,
             caption: '',
-            description: '',
+            // description: '',
+            identifier: '',
+            photographer: '',
+            date: new Date().toISOString().split('T')[0],
             previewUrl: URL.createObjectURL(file),
           }));
           handleResponse(question.id, [...localImages, ...newImages]);
@@ -392,7 +398,7 @@ export default function MainContent({
 
         const updateLocalField = (
           imageId: string,
-          field: 'caption' | 'description',
+          field: 'caption' | 'identifier' | 'photographer' | 'date',
           value: string
         ) => {
           handleResponse(
@@ -495,45 +501,114 @@ export default function MainContent({
               {localImages.map((image) => (
                 <div
                   key={image.id}
-                  className="flex gap-3 p-3 bg-white border-2 border-[#E4EBE4] rounded-xl"
+                  className="p-4 bg-white border-2 border-[#E4EBE4] rounded-xl space-y-4"
                 >
-                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-[#F7F2EA] flex-shrink-0">
-                    <img
-                      src={image.previewUrl}
-                      alt={image.file.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                  <div className="flex gap-3">
+                    <div className="w-24 h-24 rounded-lg overflow-hidden bg-[#F7F2EA] flex-shrink-0">
+                      <img
+                        src={image.previewUrl}
+                        alt={image.file.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-[#254431] truncate text-sm mb-1">
-                      {image.file.name}
-                    </p>
-
-                    <input
-                      type="text"
-                      value={image.caption}
-                      onChange={(e) => updateLocalField(image.id, 'caption', e.target.value)}
-                      placeholder="Caption (optional)"
-                      className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
-                    />
-
-                    <textarea
-                      value={image.description}
-                      onChange={(e) => updateLocalField(image.id, 'description', e.target.value)}
-                      placeholder="Description (optional)"
-                      rows={2}
-                      className="w-full mt-1 px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm resize-none"
-                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-[#254431] truncate text-sm">
+                        {image.file.name}
+                      </p>
+                      <p className="text-xs text-[#7A8075] mt-1">
+                        Site: {siteName || "Unknown site"}
+                      </p>
+                    </div>
 
                     <button
                       type="button"
                       onClick={() => removeLocalImage(image.id)}
-                      className="mt-2 text-sm font-semibold text-[#B91C1C] hover:underline"
+                      className="text-sm font-semibold text-[#B91C1C] hover:underline self-start"
                     >
                       Remove
                     </button>
                   </div>
+
+                  <div className="grid md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-[#254431] mb-1">
+                        Caption <span className="text-[#B91C1C]">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={image.caption ?? ''}
+                        onChange={(e) => updateLocalField(image.id, 'caption', e.target.value)}
+                        placeholder="Longer Description"
+                        className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-[#254431] mb-1">
+                        Identifier <span className="text-[#B91C1C]">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={image.identifier ?? ''}
+                        maxLength={20}
+                        onChange={(e) => updateLocalField(image.id, 'identifier', e.target.value)}
+                        placeholder="Short Description"
+                        className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
+                      />
+                      <p className="mt-1 text-xs text-[#7A8075]">
+                        {(image.identifier ?? '').replace(/\s/g, '').length}/20 characters
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-[#254431] mb-1">
+                      Photographer <span className="text-[#B91C1C]">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={image.photographer ?? ""}
+                      maxLength={25}
+                      onChange={(e) => updateLocalField(image.id, 'photographer', e.target.value)}
+                      placeholder="Owner of digital file"
+                      className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
+                    />
+                    <p className="mt-1 text-xs text-[#7A8075]">
+                      {(image.photographer ?? "").replace(/\s/g, '').length}/25 characters
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-[#254431] mb-1">
+                      Date <span className="text-[#B91C1C]">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={image.date ?? ''}
+                      onChange={(e) => updateLocalField(image.id, 'date', e.target.value)}
+                      className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
+                    />
+                    <p className="text-xs text-[#7A8075] mt-1">
+                      Enter the date when this image was taken (Date of Visit)
+                    </p>
+                  </div>
+                  </div>
+
+                    {/* <div>
+                      <label className="block text-sm font-medium text-[#254431] mb-1">
+                        Description
+                      </label>
+                      <input
+                        type="text"
+                        value={image.description}
+                        onChange={(e) => updateLocalField(image.id, 'description', e.target.value)}
+                        placeholder="Optional description"
+                        className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
+                      />
+                    </div> */}
+                  
                 </div>
               ))}
             </div>
