@@ -3,8 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import crypto from "crypto";
-
+import { generateFilename } from "@/utils/media/generateFilename";
 // AWS configuration
 const REGION = process.env.AWS_REGION!;
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
@@ -80,27 +79,20 @@ export async function POST(request: Request) {
       ? "png"
       : "webp";
 
-    const clean = (v: string) =>
-      v.trim().replace(/\s+/g, "").replace(/[^a-zA-Z0-9-]/g, "");
+      const who = photographer?.trim()
+        ? photographer
+        : user.user_metadata?.full_name || "UnknownUser";
 
-    const who = photographer?.trim()
-      ? photographer
-      : user.user_metadata?.full_name || "UnknownUser";
+      const generatedFilename = generateFilename({
+        siteName,
+        date,
+        photographer: who,
+        identifier,
+        extension,
+      });
 
-    const safeSite = clean(siteName);
-    const safeWho = clean(who);
-    const safeIdentifier = clean(identifier);
-
-    const uuid = crypto.randomUUID().slice(0, 8);
-
-    const generatedFilename =
-      `${safeSite}-${date}-${safeWho}-${safeIdentifier}-${uuid}.${extension}`;
-
-    const key =
-      `inspections/${siteId}/${responseId}/${questionId}/${generatedFilename}`;
-
-
-
+      const key =
+        `inspections/${siteId}/${responseId}/${questionId}/${generatedFilename}`;
 
 
 
