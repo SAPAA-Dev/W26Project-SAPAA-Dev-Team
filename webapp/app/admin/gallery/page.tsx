@@ -173,7 +173,7 @@ export default function GalleryPage() {
               {/* 4. Map over filteredItems instead of items */}
               {filteredItems.map((item) => (
                 <div
-                  key={item.id}
+                  key={`${item.response_id ? 'insp' : 'home'}-${item.id}`}
                   className="bg-white rounded-2xl border-2 border-[#E4EBE4] shadow-sm overflow-hidden hover:shadow-lg transition-all"
                 >
                   <button
