@@ -423,7 +423,7 @@ export default function UploadImages() {
                       {/* Photographer */}
                       <div>
                         <label className="block text-xs font-semibold uppercase tracking-wide text-gray-900 mb-1">
-                          Person Who Took This Photo <span className="text-red-400">*</span>{" "}
+                          Photographer <span className="text-red-400">*</span>{" "}
                           <span className={`normal-case font-normal ${current.who.replace(/\s/g, "").length >= 25 ? "text-red-400" : "text-gray-500"}`}>
                             ({current.who.replace(/\s/g, "").length}/25)
                           </span>

@@ -26,7 +26,7 @@ export async function GET() {
 
     const { data: uploads, error } = await supabase
       .from("W26_homepage-image-uploads")
-      .select("id, site_id, user_id, date, photographer, caption, description, storage_key, filename, content_type, file_size_bytes")
+      .select("id, site_id, user_id, date, photographer, identifier, description, storage_key, filename, content_type, file_size_bytes")
       .order("date", { ascending: false });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -53,7 +53,7 @@ export async function GET() {
           site_name: siteMap.get(upload.site_id) ?? null,
           date: upload.date,
           photographer: upload.photographer,
-          caption: upload.caption,
+          caption: upload.identifier,
           description: upload.description,
           filename: upload.filename,
           file_size_bytes: upload.file_size_bytes,

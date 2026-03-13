@@ -693,7 +693,7 @@ export default function SiteDetailScreen() {
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {galleryItems.map((item) => (
                     <div
-                      key={item.id}
+                      key={`${item.response_id ? 'insp' : 'home'}-${item.id}`}
                       className="bg-white rounded-2xl border-2 border-[#E4EBE4] shadow-sm overflow-hidden hover:shadow-lg transition-all"
                     >
                       <button
