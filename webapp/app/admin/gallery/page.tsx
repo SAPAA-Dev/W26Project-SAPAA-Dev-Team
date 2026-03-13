@@ -26,6 +26,7 @@ type GalleryItem = {
   // Homepage upload fields
   date?: string | null;
   photographer?: string | null;
+  identifier?: string | null;
 };
 
 export default function GalleryPage() {
@@ -84,7 +85,7 @@ export default function GalleryPage() {
     return items.filter((item) => {
       return (
         (item.site_name || "").toLowerCase().includes(lowerQuery) ||
-        (item.caption || "").toLowerCase().includes(lowerQuery) ||
+        (item.identifier || item.caption || "").toLowerCase().includes(lowerQuery) ||
         (item.description || "").toLowerCase().includes(lowerQuery) ||
         (item.filename || "").toLowerCase().includes(lowerQuery) ||
         (item.storage_key || "").toLowerCase().includes(lowerQuery)
@@ -182,7 +183,7 @@ export default function GalleryPage() {
                   >
                     <img
                       src={item.imageUrl}
-                      alt={item.caption || item.filename || "Inspection image"}
+                      alt={item.identifier || item.caption ||item.filename || "Inspection image"}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
@@ -202,7 +203,7 @@ export default function GalleryPage() {
                       <ImageIcon className="w-4 h-4 mt-0.5" />
                       <div>
                         <p className="font-semibold text-[#254431]">
-                          {item.caption || "No caption"}
+                          {item.identifier || item.caption || "No caption"}
                         </p>
                       </div>
                     </div>
@@ -239,7 +240,7 @@ export default function GalleryPage() {
                 <div className="bg-black flex items-center justify-center min-h-[300px] max-h-[85vh] overflow-auto">
                   <img
                     src={selectedImage.imageUrl}
-                    alt={selectedImage.caption || selectedImage.filename || "Inspection image"}
+                    alt={selectedImage.identifier || selectedImage.caption || selectedImage.filename || "Inspection image"}
                     className="max-w-full max-h-[85vh] object-contain"
                   />
                 </div>
@@ -259,7 +260,7 @@ export default function GalleryPage() {
                       Caption
                     </p>
                     <p className="text-base font-medium text-[#254431]">
-                      {selectedImage.caption || "No caption"}
+                      {selectedImage.identifier || selectedImage.caption || "No caption"}
                     </p>
                   </div>
 
