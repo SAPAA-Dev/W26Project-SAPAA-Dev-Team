@@ -72,7 +72,8 @@ export async function GET(
         storage_key,
         file_size_bytes,
         filename,
-        site_id
+        site_id,
+        response_id
       `)
       .eq("site_id", numericSiteId)
       .in("content_type", ALLOWED_IMAGE_TYPES)
@@ -115,6 +116,7 @@ export async function GET(
           filename: attachment.filename,
           file_size_bytes: attachment.file_size_bytes,
           site_name: site?.namesite ?? null,
+          response_id: attachment.response_id,
           imageUrl,
         };
       })

@@ -750,7 +750,7 @@ export default function SiteDetailScreen() {
                   {/* 4. MAP OVER FILTERED ITEMS */}
                   {filteredGalleryItems.map((item) => (
                     <div
-                      key={item.id}
+                      key={`${item.response_id ? 'insp' : 'home'}-${item.id}`}
                       className="bg-white rounded-2xl border-2 border-[#E4EBE4] shadow-sm overflow-hidden hover:shadow-lg transition-all"
                     >
                       <button
