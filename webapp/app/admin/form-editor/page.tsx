@@ -18,8 +18,11 @@ import {
   Image as ImageIcon,
   Calendar,
   FileCheck,
-  AlertCircle,  
+  AlertCircle,
+  Link,
 } from "lucide-react";
+import RichTextEditor from "@/components/RichTextEditor";
+import MarkdownText from "@/components/MarkdownText";
 import Image from "next/image";
 import {
   DndContext,
@@ -435,14 +438,12 @@ export default function FormEditorPage() {
                       onChange={(e) => setNewSectionHeader(e.target.value)}
                       className="w-full px-3 py-2 text-sm border-2 border-[#E4EBE4] rounded-lg mb-2 focus:outline-none focus:border-[#356B43]"
                     />
-                    <textarea
-                      placeholder="Description (optional)"
+                    <RichTextEditor
                       value={newSectionDescription}
-                      onChange={(e) =>
-                        setNewSectionDescription(e.target.value)
-                      }
+                      onChange={setNewSectionDescription}
+                      placeholder="Description (optional)"
                       rows={2}
-                      className="w-full px-3 py-2 text-sm border-2 border-[#E4EBE4] rounded-lg mb-3 focus:outline-none focus:border-[#356B43] resize-none"
+                      className="mb-3"
                     />
                     <div className="flex gap-2">
                       <button
@@ -478,9 +479,7 @@ export default function FormEditorPage() {
                     {currentSection?.title ?? "Select a section"}
                   </h2>
                   {currentSection?.description && (
-                    <p className="text-sm text-[#7A8075] mt-1">
-                      {currentSection.description}
-                    </p>
+                    <MarkdownText content={currentSection.description} className="text-sm text-[#7A8075] mt-1" />
                   )}
                 </div>
                 <div className="flex gap-2">
@@ -578,7 +577,10 @@ export default function FormEditorPage() {
                             ? editingQuestion
                             : null
                         }
-                        onEditingChange={setEditingQuestion}
+                        onEditingChange={(q) => {
+                          setEditingQuestion(q);
+                          setSelectedQuestion(q);
+                        }}
                       />
                     ))}
                   </div>
@@ -876,14 +878,12 @@ function EditQuestionForm({
           <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
             Description / Subtext
           </label>
-          <textarea
-            data-testid="edit-question-subtext"
+          <RichTextEditor
+            testId="edit-question-subtext"
             value={question.subtext || ""}
-            onChange={(e) =>
-              onChange({ ...question, subtext: e.target.value })
-            }
+            onChange={(val) => onChange({ ...question, subtext: val })}
             rows={2}
-            className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] resize-none transition-colors"
+            className="mt-1"
           />
         </div>
 
@@ -1101,14 +1101,13 @@ function AddQuestionForm({
           <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
             Description / Subtext
           </label>
-          <textarea
+          <RichTextEditor
+            testId="add-question-subtext"
             value={subtext}
-            title="add-question-subtext"
-            onChange={(e) => setSubtext(e.target.value)}
+            onChange={setSubtext}
             placeholder="Additional context for the question (optional)"
             rows={2}
-            className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] resize-none transition-colors placeholder:text-[#7A8075]"
-            data-testid="add-question-subtext"
+            className="mt-1"
           />
         </div>
 
@@ -1278,7 +1277,7 @@ function PreviewPanel({ question }: { question: FormQuestion }) {
             {question.form_question || "Untitled Question"}
           </h4>
           {question.subtext && (
-            <p className="text-xs text-[#7A8075] mt-1">{question.subtext}</p>
+            <MarkdownText content={question.subtext} className="text-xs text-[#7A8075] mt-1" />
           )}
           <div className="flex items-center gap-2 mt-2">
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#F7F2EA] text-[#7A8075] font-medium">

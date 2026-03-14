@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ChevronRight, Upload, Image as ImageIcon, Loader2, Lock } from "lucide-react";
 import { getQuestionsOnline } from '@/utils/supabase/queries';
+import MarkdownText from "@/components/MarkdownText";
 
 interface Answer {
   id?: number;
@@ -650,9 +651,13 @@ export default function MainContent({
             <h2 className="text-2xl font-bold text-[#254431]">
               {sectionMetadata[activeSection ?? sections[0] ?? 1]?.title ?? `Section ${activeSection}`}
             </h2>
+            {sectionMetadata[activeSection ?? sections[0] ?? 1]?.description && (
+              <MarkdownText
+                content={sectionMetadata[activeSection ?? sections[0] ?? 1].description}
+                className="text-[#7A8075] mt-1"
+              />
+            )}
             <p className="text-[#7A8075]">
-              {sectionMetadata[activeSection ?? sections[0] ?? 1]?.description &&
-                `${sectionMetadata[activeSection ?? sections[0] ?? 1].description} `}
               There are {currentQuestions.length} question{currentQuestions.length !== 1 ? 's' : ''} in this section.
             </p>
           </div>
@@ -709,9 +714,10 @@ export default function MainContent({
                               data-testid={`${question.title}-question-title`}>
                             </span>
                             {formattedTitle}</h3>
-                          <h4 className="mt-1 text-sm text-[#254431]/70 leading-snug font-normal">
-                            {question.text || ''}
-                          </h4>
+                          <MarkdownText
+                            content={question.text}
+                            className="mt-1 text-sm text-[#254431]/70 leading-snug font-normal"
+                          />
                           <div className="flex items-center gap-2 mt-2">
                             <span className="text-xs px-2 py-1 rounded-full bg-[#F7F2EA] text-[#7A8075] font-medium">
                               {question.question_type.trim()}
