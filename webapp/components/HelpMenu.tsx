@@ -39,7 +39,7 @@ export default function HelpMenu({ onStartTutorial }: HelpMenuProps) {
         <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border-2 border-[#E4EBE4] overflow-hidden z-50">
           {/* Contact Us */}
           <a
-            href="mailto:support@sapaa.ca"
+            href="mailto:devteams@sapaastewards.com"
             className="flex items-center gap-3 px-4 py-3 text-[#1E2520] hover:bg-[#F7F2EA] transition-colors border-b border-[#E4EBE4]"
             onClick={() => setOpen(false)}
           >
