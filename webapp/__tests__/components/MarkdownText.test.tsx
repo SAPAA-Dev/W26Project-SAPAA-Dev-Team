@@ -45,11 +45,9 @@ describe('MarkdownText', () => {
       expect(screen.getByTestId('mock-react-markdown')).toHaveTextContent('*italic text*');
     });
 
-    it('passes link markdown to ReactMarkdown', () => {
+    it('renders the link label as visible text', () => {
       render(<MarkdownText content="[Visit site](https://example.com)" />);
-      expect(screen.getByTestId('mock-react-markdown')).toHaveTextContent(
-        '[Visit site](https://example.com)'
-      );
+      expect(screen.getByRole('link', { name: 'Visit site' })).toBeInTheDocument();
     });
 
     it('passes underline HTML to ReactMarkdown', () => {

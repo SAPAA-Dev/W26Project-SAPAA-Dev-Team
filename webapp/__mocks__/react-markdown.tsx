@@ -23,11 +23,10 @@ const ReactMarkdown = ({ children, components }: MockProps) => {
       parts.push(children.slice(lastIndex, match.index));
     }
     const [, text, href] = match;
-    parts.push(
-      components?.a
-        ? components.a({ href, children: text })
-        : <a key={match.index} href={href}>{text}</a>
-    );
+    const renderedLink = components?.a
+      ? React.cloneElement(components.a({ href, children: text }), { key: match.index })
+      : <a key={match.index} href={href}>{text}</a>;
+    parts.push(renderedLink);
     lastIndex = match.index + match[0].length;
   }
 
