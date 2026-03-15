@@ -19,16 +19,20 @@ export default function MarkdownText({ content, className }: MarkdownTextProps) 
         unwrapDisallowed
         components={{
           p: ({ children }) => <span>{children}</span>,
-          a: ({ href, children }) => (
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#356B43] underline hover:text-[#254431]"
-            >
-              {children}
-            </a>
-          ),
+          a: ({ href, children }) => {
+            const url =
+              href && !/^https?:\/\//i.test(href) ? `https://${href}` : href;
+            return (
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#356B43] underline hover:text-[#254431]"
+              >
+                {children}
+              </a>
+            );
+          },
         }}
       >
         {content}

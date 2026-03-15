@@ -58,6 +58,35 @@ describe('MarkdownText', () => {
     });
   });
 
+  // ─── Link URL normalisation ───────────────────────────────────────────
+
+  describe('link URL normalisation', () => {
+    it('leaves an https:// URL unchanged', () => {
+      render(<MarkdownText content="[Site](https://example.com)" />);
+      expect(screen.getByRole('link')).toHaveAttribute('href', 'https://example.com');
+    });
+
+    it('leaves an http:// URL unchanged', () => {
+      render(<MarkdownText content="[Site](http://example.com)" />);
+      expect(screen.getByRole('link')).toHaveAttribute('href', 'http://example.com');
+    });
+
+    it('prepends https:// when the URL has no protocol', () => {
+      render(<MarkdownText content="[Site](iNaturalist.ca)" />);
+      expect(screen.getByRole('link')).toHaveAttribute('href', 'https://iNaturalist.ca');
+    });
+
+    it('opens links in a new tab', () => {
+      render(<MarkdownText content="[Site](https://example.com)" />);
+      expect(screen.getByRole('link')).toHaveAttribute('target', '_blank');
+    });
+
+    it('sets rel="noopener noreferrer" on links', () => {
+      render(<MarkdownText content="[Site](https://example.com)" />);
+      expect(screen.getByRole('link')).toHaveAttribute('rel', 'noopener noreferrer');
+    });
+  });
+
   // ─── className passthrough ────────────────────────────────────────────
 
   describe('className passthrough', () => {
