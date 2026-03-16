@@ -1,6 +1,6 @@
 "use client";
 
-import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers, insertInspectionAttachments} from '@/utils/supabase/queries';
+import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers, insertInspectionAttachments, rollbackSiteInspectionSubmission} from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
@@ -340,10 +340,12 @@ export default function NewReportPage() {
     setMissingRequiredQuestionNumbers([]);
     setIsSubmitting(true);
 
+    let siteInspectionReportId: number | null = null;
+
     try {
       const siteId = await getCurrentSiteId(namesite);
       const userUid = await getCurrentUserUid();
-      const siteInspectionReportId = (await addSiteInspectionReport(siteId, userUid)).id
+      siteInspectionReportId = (await addSiteInspectionReport(siteId, userUid)).id;
 
       // We need to figure out whether the answer to each question should be placed in the obs_value or obs_comm column in Supabase
       // So we convert the question response types into a map that we can search for it
@@ -459,6 +461,13 @@ export default function NewReportPage() {
             router.push('/sites?submitted=true');
           } catch (error) {
             console.error(error);
+            if (siteInspectionReportId !== null) {
+              try {
+                await rollbackSiteInspectionSubmission(siteInspectionReportId);
+              } catch (rollbackError) {
+                console.error('Failed to roll back incomplete submission:', rollbackError);
+              }
+            }
             setIsSubmitting(false);
           }
     /**

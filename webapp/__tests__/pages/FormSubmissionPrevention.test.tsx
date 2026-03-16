@@ -24,6 +24,7 @@ const mockGetQuestionResponseType = jest.fn();
 const mockUploadSiteInspectionAnswers = jest.fn();
 const mockGetSitesOnline = jest.fn();
 const mockInsertInspectionAttachments = jest.fn();
+const mockRollbackSiteInspectionSubmission = jest.fn();
 
 jest.mock('@/utils/supabase/queries', () => ({
   getQuestionsOnline: (...args: any[]) => mockGetQuestionsOnline(...args),
@@ -35,6 +36,7 @@ jest.mock('@/utils/supabase/queries', () => ({
   uploadSiteInspectionAnswers: (...args: any[]) => mockUploadSiteInspectionAnswers(...args),
   getSitesOnline: (...args: any[]) => mockGetSitesOnline(...args),
   insertInspectionAttachments: (...args: any[]) => mockInsertInspectionAttachments(...args),
+  rollbackSiteInspectionSubmission: (...args: any[]) => mockRollbackSiteInspectionSubmission(...args),
 }));
 
 const mockGetUser = jest.fn();
@@ -288,6 +290,32 @@ describe('Prevent Multiple Form Submissions', () => {
     await waitFor(() => {
       expect(mockAddSiteInspectionReport).toHaveBeenCalledTimes(2);
     });
+  });
+
+  it('rolls back the created report if submission fails after the response row is created', async () => {
+    mockGetQuestionsOnline.mockResolvedValue(mockQuestion);
+    mockAddSiteInspectionReport.mockResolvedValue({ id: 500 });
+    mockGetQuestionResponseType.mockResolvedValue([{ question_id: 1, obs_value: 1, obs_comm: 0 }]);
+    mockUploadSiteInspectionAnswers.mockRejectedValue(new Error('Answers failed'));
+
+    render(<NewReportPage />);
+
+    const option = await screen.findByText('Yes');
+    fireEvent.click(option);
+
+    const submitButton = screen.getByRole('button', { name: /Review & Submit/i });
+    mockPush.mockClear();
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(mockRollbackSiteInspectionSubmission).toHaveBeenCalledWith(500);
+    });
+
+    await waitFor(() => {
+      expect(submitButton).toBeEnabled();
+    });
+
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it('does not submit when required popup is showing', async () => {
