@@ -199,10 +199,28 @@ export default function EditReportPage() {
   const buildQuestionNumberMap = (formQuestions: Question[]): Record<number, string> => {
     const map: Record<number, string> = {};
     for (const q of formQuestions) {
-      const match = (q.title ?? '').match(/\(Q(\d+)\)/i);
+      const match = (q.title ?? '').match(/\(Q(\d+(?:\.\d+)?)\)/i);
       map[q.id] = match ? `Q${match[1]}` : `Question ${q.id}`;
     }
     return map;
+  };
+
+  const sortQuestionNumbers = (questionNumbers: string[]): string[] => {
+    const getQuestionNumberValue = (questionNumber: string): number => {
+      const match = questionNumber.match(/(\d+(?:\.\d+)?)/);
+      return match ? Number(match[1]) : Number.POSITIVE_INFINITY;
+    };
+
+    return [...questionNumbers].sort((a, b) => {
+      const aValue = getQuestionNumberValue(a);
+      const bValue = getQuestionNumberValue(b);
+
+      if (aValue !== bValue) {
+        return aValue - bValue;
+      }
+
+      return a.localeCompare(b, undefined, { numeric: true });
+    });
   };
 
   // Returns the site_id for the current response (needed for S3 key + attachment insert)
@@ -275,7 +293,7 @@ export default function EditReportPage() {
       .map((q) => questionNumberMap[q.id] ?? `Question ${q.id}`);
 
     if (missingRequired.length > 0) {
-      setMissingRequiredQuestionNumbers(missingRequired);
+      setMissingRequiredQuestionNumbers(sortQuestionNumbers(missingRequired));
       setShowRequiredPopup(true);
       return;
     }

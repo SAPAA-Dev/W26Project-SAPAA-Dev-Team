@@ -192,10 +192,28 @@ export default function NewReportPage() {
   const buildQuestionNumberMap = (formQuestions: Question[]): Record<number, string> => {
     const questionNumberMap: Record<number, string> = {};
     for (const question of formQuestions) {
-      const match = (question.title ?? '').match(/\(Q(\d+)\)/i);
+      const match = (question.title ?? '').match(/\(Q(\d+(?:\.\d+)?)\)/i);
       questionNumberMap[question.id] = match ? `Q${match[1]}` : `Question ${question.id}`;
     }
     return questionNumberMap;
+  };
+
+  const sortQuestionNumbers = (questionNumbers: string[]): string[] => {
+    const getQuestionNumberValue = (questionNumber: string): number => {
+      const match = questionNumber.match(/(\d+(?:\.\d+)?)/);
+      return match ? Number(match[1]) : Number.POSITIVE_INFINITY;
+    };
+
+    return [...questionNumbers].sort((a, b) => {
+      const aValue = getQuestionNumberValue(a);
+      const bValue = getQuestionNumberValue(b);
+
+      if (aValue !== bValue) {
+        return aValue - bValue;
+      }
+
+      return a.localeCompare(b, undefined, { numeric: true });
+    });
   };
 
 
@@ -279,7 +297,7 @@ export default function NewReportPage() {
       .map((question) => questionNumberMap[question.id] ?? `Question ${question.id}`);
 
     if (missingRequiredNumbers.length > 0) {
-      setMissingRequiredQuestionNumbers(missingRequiredNumbers);
+      setMissingRequiredQuestionNumbers(sortQuestionNumbers(missingRequiredNumbers));
       setShowRequiredPopup(true);
       return;
     }

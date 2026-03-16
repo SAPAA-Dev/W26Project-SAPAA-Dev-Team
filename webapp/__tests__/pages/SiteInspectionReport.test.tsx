@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import NewReportPage from '../../app/detail/[namesite]/new-report/page';
 import MainContent from '../../app/detail/[namesite]/new-report/MainContent';
 import StickyFooter from '../../app/detail/[namesite]/new-report/Footer';
@@ -938,6 +938,67 @@ describe('US 1.0.27 - Enforce Required Questions on Site Inspection Form (also c
 
     // Verify that the final submission functions were not called
     expect(mockAddSiteInspectionReport).not.toHaveBeenCalled();
+  });
+
+  it('shows missing required question numbers in ascending order', async () => {
+    const mockQuestions = [
+      {
+        id: 1,
+        title: 'Question A (Q53)',
+        text: 'First required question',
+        question_type: 'text',
+        section: 4,
+        answers: [],
+        formorder: 1,
+        is_required: true,
+        sectionTitle: 'Test',
+        sectionDescription: 'Test',
+        sectionHeader: 'Test',
+      },
+      {
+        id: 2,
+        title: 'Question B (Q16)',
+        text: 'Second required question',
+        question_type: 'text',
+        section: 4,
+        answers: [],
+        formorder: 2,
+        is_required: true,
+        sectionTitle: 'Test',
+        sectionDescription: 'Test',
+        sectionHeader: 'Test',
+      },
+      {
+        id: 3,
+        title: 'Question C (Q31)',
+        text: 'Third required question',
+        question_type: 'text',
+        section: 4,
+        answers: [],
+        formorder: 3,
+        is_required: true,
+        sectionTitle: 'Test',
+        sectionDescription: 'Test',
+        sectionHeader: 'Test',
+      },
+    ];
+
+    mockGetQuestionsOnline.mockResolvedValue(mockQuestions);
+    render(<NewReportPage />);
+
+    const submitButton = await screen.findByRole('button', { name: /Review & Submit/i });
+    await waitFor(() => expect(submitButton).toBeEnabled());
+
+    fireEvent.click(submitButton);
+
+    await screen.findByText(/Required Questions Missing/i);
+
+    const missingQuestionList = screen.getByRole('list');
+    expect(within(missingQuestionList).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'Q16',
+      'Q31',
+      'Q53',
+    ]);
   });
 
   it('successfully calls uploadSiteInspectionAnswers when all required questions are answered', async () => {
