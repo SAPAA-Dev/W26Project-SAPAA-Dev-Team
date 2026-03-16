@@ -313,6 +313,9 @@ describe('Prevent Multiple Form Submissions', () => {
 
     // Don't answer the required question
     const submitButton = await screen.findByRole('button', { name: /Review & Submit/i });
+    await waitFor(() => {
+      expect(submitButton).toBeEnabled();
+    });
 
     // Try to submit without answering required question
     fireEvent.click(submitButton);
@@ -349,6 +352,9 @@ describe('Prevent Multiple Form Submissions', () => {
     render(<NewReportPage />);
 
     const submitButton = await screen.findByRole('button', { name: /Review & Submit/i });
+    await waitFor(() => {
+      expect(submitButton).toBeEnabled();
+    });
 
     // Try to submit without answering required question
     fireEvent.click(submitButton);

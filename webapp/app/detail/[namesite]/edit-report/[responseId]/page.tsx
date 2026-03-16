@@ -80,6 +80,7 @@ export default function EditReportPage() {
   const [showRequiredPopup, setShowRequiredPopup] = useState(false);
   const [missingRequiredQuestionNumbers, setMissingRequiredQuestionNumbers] = useState<string[]>([]);
   const [siteId, setSiteId] = useState<number | null>(null);
+  const [isOnLastSection, setIsOnLastSection] = useState(false);
   
   // ── Init ──────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -507,6 +508,7 @@ export default function EditReportPage() {
       <MainContent
         responses={responses}
         onResponsesChange={setResponses}
+        onSectionStateChange={({ isOnLastSection }) => setIsOnLastSection(isOnLastSection)}
         siteName={namesite}
         currentUser={currentUser}
         existingAttachments={existingAttachments}
@@ -518,6 +520,7 @@ export default function EditReportPage() {
         responses={responses}
         onSubmit={handleSubmit}
         submitLabel="Save Changes"
+        isSubmitEnabled={isOnLastSection}
       />
     </div>
   );

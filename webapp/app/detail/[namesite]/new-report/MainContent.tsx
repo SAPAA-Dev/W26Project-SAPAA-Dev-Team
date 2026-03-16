@@ -29,6 +29,11 @@ interface Question {
 interface MainContentProps {
   responses: Record<number, any>;
   onResponsesChange: (responses: Record<number, any>) => void;
+  onSectionStateChange?: (state: {
+    activeSection: number | null;
+    lastSection: number | null;
+    isOnLastSection: boolean;
+  }) => void;
   siteName?: string;
   currentUser?: {
     email?: string;
@@ -69,6 +74,7 @@ export interface LocalImage {
 export default function MainContent({
   responses,
   onResponsesChange,
+  onSectionStateChange,
   siteName,
   currentUser,
   existingAttachments = [],
@@ -168,12 +174,23 @@ export default function MainContent({
   });
 
   const sections = Object.keys(questionsBySection).map(Number).sort((a, b) => a - b);
+  const currentSection = activeSection ?? sections[0] ?? null;
+  const lastSection = sections.length > 0 ? sections[sections.length - 1] : null;
 
   useEffect(() => {
     if (sections.length > 0 && activeSection === null) setActiveSection(sections[0]);
   }, [sections.length]);
 
-  const currentQuestions = questionsBySection[activeSection ?? sections[0] ?? 1] || [];
+  useEffect(() => {
+    onSectionStateChange?.({
+      activeSection: currentSection,
+      lastSection,
+      isOnLastSection:
+        currentSection !== null && lastSection !== null && currentSection === lastSection,
+    });
+  }, [currentSection, lastSection, onSectionStateChange]);
+
+  const currentQuestions = questionsBySection[currentSection ?? 1] || [];
 
   const handleResponse = (questionId: number, value: any) => {
     onResponsesChange({ ...responses, [questionId]: value });

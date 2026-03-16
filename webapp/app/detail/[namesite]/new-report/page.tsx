@@ -81,6 +81,7 @@ export default function NewReportPage() {
   const [draftKey, setDraftKey] = useState<string | null>(null);
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOnLastSection, setIsOnLastSection] = useState(false);
 
 
   useEffect(() => {
@@ -679,6 +680,7 @@ export default function NewReportPage() {
       <MainContent 
         responses={responses}
         onResponsesChange={handleResponsesChange}
+        onSectionStateChange={({ isOnLastSection }) => setIsOnLastSection(isOnLastSection)}
         siteName={namesite}
         currentUser={currentUser}
       />
@@ -690,6 +692,7 @@ export default function NewReportPage() {
         responses={responses}
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
+        isSubmitEnabled={isOnLastSection}
       />
     </div>
   );

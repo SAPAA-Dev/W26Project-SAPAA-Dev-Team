@@ -407,6 +407,18 @@ describe('US 1.0.2 - Add Personal Information to Site Inspection Form', () => {
     render(<StickyFooter questions={personalInfoQuestions} responses={{ 1: 'Jane', 5: 'test@example.com', 3: '', 4: [] }} />);
     expect(screen.getByText('2 / 6 answered')).toBeInTheDocument();
   });
+
+  it('disables submit when the user is not on the last section', () => {
+    render(
+      <StickyFooter
+        questions={personalInfoQuestions}
+        responses={{}}
+        isSubmitEnabled={false}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: /Review & Submit/i })).toBeDisabled();
+  });
 });
 
 describe('US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
@@ -515,6 +527,64 @@ describe('US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
     expect(screen.getByText('2 / 3 answered')).toBeInTheDocument();
   });
 
+  it('reports that submit should stay disabled before the last section in a multi-section form', async () => {
+    const multiSectionQuestions = [
+      {
+        id: 101,
+        title: 'First Section Question',
+        text: 'Section one',
+        question_type: 'text',
+        section: 3,
+        answers: [],
+        formorder: 1,
+        is_required: false,
+        sectionTitle: 'Section One',
+        sectionDescription: 'First section description',
+        sectionHeader: 'One',
+      },
+      {
+        id: 102,
+        title: 'Last Section Question',
+        text: 'Section two',
+        question_type: 'text',
+        section: 4,
+        answers: [],
+        formorder: 2,
+        is_required: false,
+        sectionTitle: 'Section Two',
+        sectionDescription: 'Last section description',
+        sectionHeader: 'Two',
+      },
+    ];
+
+    mockGetQuestionsOnline.mockResolvedValue(multiSectionQuestions);
+
+    function ControlledForm() {
+      const [responses, setResponses] = React.useState<Record<number, any>>({});
+      const [isOnLastSection, setIsOnLastSection] = React.useState(false);
+
+      return (
+        <>
+          <MainContent
+            responses={responses}
+            onResponsesChange={setResponses}
+            onSectionStateChange={({ isOnLastSection }) => setIsOnLastSection(isOnLastSection)}
+          />
+          <StickyFooter
+            questions={multiSectionQuestions}
+            responses={responses}
+            isSubmitEnabled={isOnLastSection}
+          />
+        </>
+      );
+    }
+
+    render(<ControlledForm />);
+
+    const submitButton = await screen.findByRole('button', { name: /Review & Submit/i });
+    expect(submitButton).toBeDisabled();
+  });
+
   it('allows submission when all required fields are filled', async () => {
     setupWhereUGoMocks();
     mockAddSiteInspectionReport.mockResolvedValue({ id: 'report-123' });
@@ -540,7 +610,8 @@ describe('US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
     fireEvent.click(screen.getByText('Citizen Steward'));
 
     // Submit the form
-    const submitButton = screen.getByText('Review & Submit');
+    const submitButton = screen.getByRole('button', { name: /Review & Submit/i });
+    await waitFor(() => expect(submitButton).toBeEnabled());
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -555,7 +626,7 @@ describe('US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
     });
   });
 
-  it('displays error when submitting without required fields', async () => {
+  it('keeps submit enabled when the overview is the only section in the form', async () => {
     setupWhereUGoMocks();
     render(<NewReportPage />);
 
@@ -563,15 +634,8 @@ describe('US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
       expect(screen.getByText(/Date of Your Visit/i)).toBeInTheDocument();
     });
 
-    // Don't fill any fields, just submit
-    const submitButton = screen.getByText('Review & Submit');
-    fireEvent.click(submitButton);
-
-    // Should show error popup
-    await waitFor(() => {
-      expect(screen.getByText(/Required Questions Missing/i)).toBeInTheDocument();
-      expect(screen.getByText(/You must answer all required questions/i)).toBeInTheDocument();
-    });
+    const submitButton = screen.getByRole('button', { name: /Review & Submit/i });
+    await waitFor(() => expect(submitButton).toBeEnabled());
   });
 });
 
@@ -861,6 +925,7 @@ describe('US 1.0.27 - Enforce Required Questions on Site Inspection Form (also c
 
     // Use findByRole instead of getByRole to wait for the loading state to end
     const submitButton = await screen.findByRole('button', { name: /Review & Submit/i });
+    await waitFor(() => expect(submitButton).toBeEnabled());
     
     fireEvent.click(submitButton);
 
@@ -1606,6 +1671,7 @@ describe('US 1.0.16 - Add Photography Captured During Visit', () => {
 
     // Submit without uploading any images or entering remarks
     const submitButton = screen.getByText('Review & Submit');
+    await waitFor(() => expect(submitButton).toBeEnabled());
     fireEvent.click(submitButton);
 
     // Should NOT show the required questions popup
