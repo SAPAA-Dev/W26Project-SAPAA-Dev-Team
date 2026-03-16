@@ -2,7 +2,7 @@
 
 import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers, insertInspectionAttachments} from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter, usePathname } from "next/navigation";
 import { 
@@ -62,6 +62,14 @@ interface ImageWithMeta {
   description: string;
 }
 
+interface SectionNavigationState {
+  isOnLastSection: boolean;
+  canGoPrevious: boolean;
+  canGoNext: boolean;
+  goToPreviousSection?: () => void;
+  goToNextSection?: () => void;
+}
+
 
 export default function NewReportPage() {
   const pathname = usePathname();
@@ -81,7 +89,33 @@ export default function NewReportPage() {
   const [draftKey, setDraftKey] = useState<string | null>(null);
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isOnLastSection, setIsOnLastSection] = useState(false);
+  const [sectionNavigation, setSectionNavigation] = useState<SectionNavigationState>({
+    isOnLastSection: false,
+    canGoPrevious: false,
+    canGoNext: false,
+  });
+
+  const handleSectionStateChange = useCallback((state: {
+    isOnLastSection: boolean;
+    canGoPrevious: boolean;
+    canGoNext: boolean;
+    goToPreviousSection: () => void;
+    goToNextSection: () => void;
+  }) => {
+    setSectionNavigation((previousState) => {
+      if (
+        previousState.isOnLastSection === state.isOnLastSection &&
+        previousState.canGoPrevious === state.canGoPrevious &&
+        previousState.canGoNext === state.canGoNext &&
+        previousState.goToPreviousSection === state.goToPreviousSection &&
+        previousState.goToNextSection === state.goToNextSection
+      ) {
+        return previousState;
+      }
+
+      return state;
+    });
+  }, []);
 
 
   useEffect(() => {
@@ -698,7 +732,7 @@ export default function NewReportPage() {
       <MainContent 
         responses={responses}
         onResponsesChange={handleResponsesChange}
-        onSectionStateChange={({ isOnLastSection }) => setIsOnLastSection(isOnLastSection)}
+        onSectionStateChange={handleSectionStateChange}
         siteName={namesite}
         currentUser={currentUser}
       />
@@ -709,8 +743,12 @@ export default function NewReportPage() {
         questions={questions}
         responses={responses}
         onSubmit={handleSubmit}
+        onPreviousSection={sectionNavigation.goToPreviousSection}
+        onNextSection={sectionNavigation.goToNextSection}
         isSubmitting={isSubmitting}
-        isSubmitEnabled={isOnLastSection}
+        isSubmitEnabled={sectionNavigation.isOnLastSection}
+        canGoPrevious={sectionNavigation.canGoPrevious}
+        canGoNext={sectionNavigation.canGoNext}
       />
     </div>
   );

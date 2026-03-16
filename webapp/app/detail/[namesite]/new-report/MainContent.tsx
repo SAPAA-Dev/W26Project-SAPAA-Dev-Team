@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { ChevronRight, Upload, Image as ImageIcon, Loader2, Lock } from "lucide-react";
 import { getQuestionsOnline } from '@/utils/supabase/queries';
 import MarkdownText from "@/components/MarkdownText";
@@ -33,6 +33,10 @@ interface MainContentProps {
     activeSection: number | null;
     lastSection: number | null;
     isOnLastSection: boolean;
+    canGoPrevious: boolean;
+    canGoNext: boolean;
+    goToPreviousSection: () => void;
+    goToNextSection: () => void;
   }) => void;
   siteName?: string;
   currentUser?: {
@@ -84,6 +88,8 @@ export default function MainContent({
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const hasAutofilled = useRef(false);
+  const goToPreviousSectionRef = useRef<() => void>(() => {});
+  const goToNextSectionRef = useRef<() => void>(() => {});
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -176,10 +182,31 @@ export default function MainContent({
   const sections = Object.keys(questionsBySection).map(Number).sort((a, b) => a - b);
   const currentSection = activeSection ?? sections[0] ?? null;
   const lastSection = sections.length > 0 ? sections[sections.length - 1] : null;
+  const currentSectionIndex = currentSection === null ? -1 : sections.indexOf(currentSection);
+  const canGoPrevious = currentSectionIndex > 0;
+  const canGoNext = currentSectionIndex >= 0 && currentSectionIndex < sections.length - 1;
 
   useEffect(() => {
     if (sections.length > 0 && activeSection === null) setActiveSection(sections[0]);
   }, [sections.length]);
+
+  goToPreviousSectionRef.current = () => {
+    if (!canGoPrevious) return;
+    setActiveSection(sections[currentSectionIndex - 1]);
+  };
+
+  goToNextSectionRef.current = () => {
+    if (!canGoNext) return;
+    setActiveSection(sections[currentSectionIndex + 1]);
+  };
+
+  const goToPreviousSection = useCallback(() => {
+    goToPreviousSectionRef.current();
+  }, []);
+
+  const goToNextSection = useCallback(() => {
+    goToNextSectionRef.current();
+  }, []);
 
   useEffect(() => {
     onSectionStateChange?.({
@@ -187,8 +214,20 @@ export default function MainContent({
       lastSection,
       isOnLastSection:
         currentSection !== null && lastSection !== null && currentSection === lastSection,
+      canGoPrevious,
+      canGoNext,
+      goToPreviousSection,
+      goToNextSection,
     });
-  }, [currentSection, lastSection, onSectionStateChange]);
+  }, [
+    canGoNext,
+    canGoPrevious,
+    currentSection,
+    goToNextSection,
+    goToPreviousSection,
+    lastSection,
+    onSectionStateChange,
+  ]);
 
   const currentQuestions = questionsBySection[currentSection ?? 1] || [];
 
@@ -631,38 +670,6 @@ export default function MainContent({
       </aside>
 
       <div className="flex-1 flex flex-col">
-        {/* Top navigation */}
-        {sections.length > 1 && (
-          <div className="grid grid-cols-2 gap-3 px-4 md:px-8 pt-4 md:pt-8">
-            <div>
-              {sections.indexOf(activeSection ?? sections[0]) > 0 && (
-                <button
-                  onClick={() => {
-                    const currentIndex = sections.indexOf(activeSection ?? sections[0]);
-                    setActiveSection(sections[currentIndex - 1]);
-                  }}
-                  className="w-full px-4 py-2 border-2 border-[#E4EBE4] text-[#254431] font-bold rounded-xl hover:bg-[#E4EBE4] transition-all text-sm"
-                >
-                  ← Previous
-                </button>
-              )}
-            </div>
-            <div>
-              {sections.indexOf(activeSection ?? sections[0]) < sections.length - 1 && (
-                <button
-                  onClick={() => {
-                    const currentIndex = sections.indexOf(activeSection ?? sections[0]);
-                    setActiveSection(sections[currentIndex + 1]);
-                  }}
-                  className="w-full px-4 py-2 bg-[#356B43] text-white font-bold rounded-xl hover:bg-[#254431] transition-all text-sm"
-                >
-                  Next →
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
         <section className="flex-1 p-4 md:p-8">
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-[#254431]">
