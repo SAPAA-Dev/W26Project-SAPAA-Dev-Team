@@ -64,8 +64,9 @@ export default function GalleryPage() {
             _sortDate: item.date ?? item.created_at ?? "",
           })),
         ].sort((a, b) => new Date(b._sortDate).getTime() - new Date(a._sortDate).getTime());
-        
+       
         setItems(allItems || []);
+        console.log(allItems);
       } catch (err) {
         console.error("Gallery fetch error:", err);
       } finally {

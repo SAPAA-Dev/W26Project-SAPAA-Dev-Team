@@ -40,10 +40,26 @@ const mockGalleryItems = [
   },
 ];
 
+const homePageItemsForAdmin = [
+  {
+    id: "img-4",
+    site_id: "site-1",
+    site_name: "Riverlot 56 (NA)",
+    date: "2026-01-31",
+    photographer: "Vishal Sivakumar",
+    caption: "CMPUT401W26 Visit",
+    description: "Riverlot56 Visit with Frank Potter!",
+    storage_key: "homepage-image-uploads/site-1/user-1/RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg",
+    filename: "RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg",
+    file_size_bytes: 111111,
+    imageUrl: "https://example.com/RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg",
+  },
+]
+
 function mockFetchSuccess(items = mockGalleryItems) {
   (global.fetch as jest.Mock).mockImplementation((url: string) => {
     if (url.includes("/api/homepage-images")) {
-      return Promise.resolve({ ok: true, json: async () => ({ items: [] }) });
+      return Promise.resolve({ ok: true, json: async () => ({ items: homePageItemsForAdmin }) });
     }
     return Promise.resolve({ ok: true, json: async () => ({ items }) });
   });
@@ -64,26 +80,28 @@ describe("AdminGalleryPage", () => {
   it("renders all uploaded image cards after fetch", async () => {
     mockFetchSuccess();
     render(<GalleryPage />);
-
+  
     expect(screen.getByText("Loading gallery...")).toBeInTheDocument();
-
+  
     await waitFor(() => {
       expect(screen.queryByText("Loading gallery...")).not.toBeInTheDocument();
     });
-
+  
     expect(global.fetch).toHaveBeenCalledWith("/api/gallery");
+    expect(global.fetch).toHaveBeenCalledWith("/api/homepage-images");
     expect(screen.getByRole("heading", { level: 1, name: "Image Gallery" })).toBeInTheDocument();
     expect(screen.getByText("AdminNavBarMock")).toBeInTheDocument();
-
+  
+    // Inspection images
     expect(screen.getByText("Haging Broken Tree")).toBeInTheDocument();
     expect(screen.getByText("Cracked Tree")).toBeInTheDocument();
     expect(screen.getAllByText("Riverlot 56 (NA)").length).toBeGreaterThanOrEqual(2);
-    expect(
-      screen.getByText(
-        "A tree we saw that seems to be broken, but hanging above the ground by the branches of surrounding trees."
-      )
-    ).toBeInTheDocument();
+    expect(screen.getByText("A tree we saw that seems to be broken, but hanging above the ground by the branches of surrounding trees.")).toBeInTheDocument();
     expect(screen.getByText("Large crack running up the trunk of a tree.")).toBeInTheDocument();
+  
+    // Homepage image
+    expect(screen.getByText("CMPUT401W26 Visit")).toBeInTheDocument();
+    expect(screen.getByText("Riverlot56 Visit with Frank Potter!")).toBeInTheDocument();
   });
 
   it("admin can click an image card to open modal with metadata and associated site", async () => {
@@ -123,7 +141,9 @@ describe("AdminGalleryPage", () => {
   });
 
   it("shows empty state when API returns no images", async () => {
-    mockFetchSuccess([]);
+    (global.fetch as jest.Mock).mockImplementation(() =>
+      Promise.resolve({ ok: true, json: async () => ({ items: [] }) })
+    );
     render(<GalleryPage />);
 
     await waitFor(() => {
