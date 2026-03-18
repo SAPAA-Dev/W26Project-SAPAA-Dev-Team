@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSitesOnline, SiteSummary } from '@/utils/supabase/queries';
+import { getSitesOnline, getTotalInspectionCount, SiteSummary } from '@/utils/supabase/queries';
 import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit } from 'lucide-react';
 import Image from 'next/image';
 import AdminNavBar from '../AdminNavBar';
@@ -16,18 +16,31 @@ export function daysSince(date: string): number {
   return Math.floor((Date.now() - new Date(date).getTime()) / MSEC_PER_DAY);
 }
 
-export function formatAgeBadge(days: number): string {
-  if (!days || days < 0) return 'New';
+function formatAgeBadge(days: number, inspectDate: string | null): string | null {
+  if (!inspectDate || inspectDate === '1900-01-01') return null;
+  
+  if (days <= 0) return 'New';
   if (days < 30) return `${days}d ago`;
   if (days < 365) return `${Math.floor(days / 30)}mo ago`;
-  return `${Math.floor(days / 365)}yr ago`;
+  
+  const years = Math.floor(days / 365);
+  return `${years}yr${years > 1 ? 's' : ''} ago`;
 }
 
-export function getInspectionStatus(days: number): { label: string; color: string; bgColor: string } {
-  if (days < 180) return { label: 'Recently Visited', color: '#1C7C4D', bgColor: '#E4EBE4' };
-  if (days <= 365) return { label: 'Visited This Year', color: '#E0A63A', bgColor: '#FEF3C7' };
-  if (days <= 730) return { label: 'Visited Recently', color: '#C76930', bgColor: '#FED7AA' };
-  return { label: 'Needs Review', color: '#7A8075', bgColor: '#E4EBE4' };
+function getInspectionStatus(days: number, inspectDate: string | null): { label: string; color: string; bgColor: string } {
+  if (!inspectDate || inspectDate === '1900-01-01') {
+    return { label: 'Never Inspected', color: '#475569', bgColor: '#F1F5F9' };
+  }
+  if (days < 180) {
+    return { label: 'Recent', color: '#065F46', bgColor: '#D1FAE5' };
+  }
+  if (days <= 365) {
+    return { label: 'Past Year', color: '#92400E', bgColor: '#FEF3C7' };
+  }
+  if (days <= 730) {
+    return { label: 'Over 1 Year', color: '#9A3412', bgColor: '#FFEDD5' };
+  }
+  return { label: 'Needs Review', color: '#7F1D1D', bgColor: '#FEE2E2' };
 }
 
 export default function AdminSitesPage() {
@@ -41,6 +54,11 @@ export default function AdminSitesPage() {
     direction: 'asc',
   });
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [totalResponses, setTotalResponses] = useState<number>(0);
+
+  useEffect(() => {
+    getTotalInspectionCount().then(setTotalResponses).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const loadSites = async () => {
@@ -105,9 +123,13 @@ export default function AdminSitesPage() {
     const activeThisYear = sites.filter(s => daysSince(s.inspectdate ?? '1900-01-01') <= 365).length;
     
     // Needs attention (> 730 days / 2 years)
-    const needsAttention = sites.filter(s => daysSince(s.inspectdate ?? '1900-01-01') > 730).length;
+    const needsAttention = sites.filter(s => 
+      s.inspectdate && 
+      s.inspectdate !== '1900-01-01' && 
+      daysSince(s.inspectdate) > 730
+    ).length;
     
-    return { totalSites, totalInspections, activeThisYear, needsAttention };
+    return { totalSites, totalInspections, totalResponses, activeThisYear, needsAttention };
   }, [sites]);
 
   if (error) {
@@ -142,63 +164,79 @@ export default function AdminSitesPage() {
   return (
     <ProtectedRoute requireAdmin>
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-        {/* Navbar */}
-        <AdminNavBar />
-        
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-8 shadow-lg">
+        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center gap-3 mb-6">
-              <Image 
-                src="/images/sapaa-icon-white.png" 
-                alt="SAPAA"
-                width={48}
-                height={48}
-                className="w-12 h-12 flex-shrink-0"
-              />
-              <div>
-                <h1 className="text-3xl font-bold">Admin: Protected Areas</h1>
-                <p className="text-[#E4EBE4] text-sm">Manage and monitor site inspections across Alberta</p>
-              </div>
-            </div>
-
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <MapPin className="w-5 h-5 text-[#86A98A]" />
-                  <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Total Sites</div>
+            <div className="flex items-center justify-between mb-3">
+              {/* Left: icon + title + subtitle */}
+              <div className="flex items-center gap-4">
+                <Image
+                  src="/images/sapaa-icon-white.png"
+                  alt="SAPAA"
+                  width={140}
+                  height={140}
+                  priority
+                  className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+                />
+                <div>
+                  <h1 className="text-3xl font-bold mt-3">Admin: Protected Areas</h1>
+                  <p className="text-[#E4EBE4] text-base mt-0.5">
+                    Manage and monitor site inspections across Alberta
+                  </p>
                 </div>
-                <div className="text-3xl font-bold">{stats.totalSites}</div>
               </div>
-              
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <ClipboardList className="w-5 h-5 text-[#86A98A]" />
-                  <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Total Inspections</div>
-                </div>
-                <div className="text-3xl font-bold">{stats.totalInspections}</div>
-              </div>
-              
-              <div className="bg-[#1C7C4D]/20 backdrop-blur-sm rounded-xl p-4 border border-[#1C7C4D]/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-5 h-5 text-[#86A98A]" />
-                  <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Active This Year</div>
-                </div>
-                <div className="text-3xl font-bold">{stats.activeThisYear}</div>
-              </div>
-              
-              <div className="bg-[#C76930]/20 backdrop-blur-sm rounded-xl p-4 border border-[#C76930]/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="w-5 h-5 text-[#86A98A]" />
-                  <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Needs Attention</div>
-                </div>
-                <div className="text-3xl font-bold">{stats.needsAttention}</div>
+              {/* Right: navbar — rendered inline, bg overridden to transparent */}
+              <div className="[&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
+                <AdminNavBar />
               </div>
             </div>
           </div>
         </div>
 
+    {/* Stats Cards */}
+    <div className="max-w-7xl mx-auto px-6 py-6 mt-2">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <MapPin className="w-5 h-5 text-[#356B43]" />
+            <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Sites</div>
+          </div>
+          <div className="text-3xl font-bold text-[#254431]">{stats.totalSites}</div>
+        </div>
+
+        <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <ClipboardList className="w-5 h-5 text-[#356B43]" />
+            <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Inspected Sites</div>
+          </div>
+          <div className="text-3xl font-bold text-[#254431]">{stats.totalInspections}</div>
+        </div>
+
+        <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <ClipboardList className="w-5 h-5 text-[#356B43]" />
+            <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Responses</div>
+          </div>
+          <div className="text-3xl font-bold text-[#254431]">{stats.totalResponses}</div>
+        </div>
+
+        <div className="bg-[#D1FAE5] rounded-xl p-4 border-2 border-[#065F46]/20 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="w-5 h-5 text-[#065F46]" />
+            <div className="text-xs text-[#065F46] font-medium uppercase tracking-wide">Active over 365 Days</div>
+          </div>
+          <div className="text-3xl font-bold text-[#065F46]">{stats.activeThisYear}</div>
+        </div>
+
+        <div className="bg-[#FEE2E2] rounded-xl p-4 border-2 border-[#B91C1C]/20 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <Clock className="w-5 h-5 text-[#B91C1C]" />
+            <div className="text-xs text-[#B91C1C] font-medium uppercase tracking-wide">Needs Attention</div>
+          </div>
+          <div className="text-3xl font-bold text-[#7F1D1D]">{stats.needsAttention}</div>
+        </div>
+      </div>
+    </div>
+    
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Search and Sort */}
@@ -283,8 +321,8 @@ export default function AdminSitesPage() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredSites.map((item) => {
                 const age = daysSince(item.inspectdate ?? '1900-01-01');
-                const ageText = formatAgeBadge(age);
-                const status = getInspectionStatus(age);
+                const ageText = formatAgeBadge(age, item.inspectdate);
+                const status = getInspectionStatus(age, item.inspectdate);
 
                 return (
                   <div

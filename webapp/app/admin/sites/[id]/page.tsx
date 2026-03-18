@@ -3,8 +3,11 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
+  getFormResponsesBySite,
   getSiteByName,
   SiteSummary,
+  FormResponse,
+  FormAnswer,
 } from "@/utils/supabase/queries";
 import { daysSince } from "@/app/sites/page";
 import { createClient } from "@/utils/supabase/client";
@@ -450,7 +453,7 @@ export default function AdminSiteDetails() {
   const router = useRouter();
   const namesite = decodeURIComponent(params.id);
 
-  const [inspections, setInspections] = useState<InspectionDetail[]>([]);
+  const [inspections, setInspections] = useState<FormResponse[]>([]);
   const [site, setSite] = useState<SiteSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -477,11 +480,9 @@ export default function AdminSiteDetails() {
     const load = async () => {
       try {
         const siteData = await getSiteByName(namesite);
-        const details = await getInspectionDetailsOnline(siteData[0].namesite);
-        console.log('Loaded inspections:', details);
-        console.log('First inspection inspection_id:', details[0]?.inspection_id);
+        const details = await getFormResponsesBySite(siteData[0].namesite);
         setSite(siteData[0]);
-        setInspections(details);
+        setInspections(details); // change state type to FormResponse[]
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error loading inspections';
         setError(message);
@@ -524,7 +525,7 @@ export default function AdminSiteDetails() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [openMenuId]);
 
-  const computeAverageNaturalness = (items: InspectionDetail[]) => {
+  const computeAverageNaturalness = (items: FormResponse[]) => {
     const scores: number[] = [];
     const re = /^(\d+(\.\d+)?)/;
 
