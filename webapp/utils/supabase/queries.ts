@@ -9,6 +9,7 @@ export interface SiteSummary {
   county: string | null;
   ab_county: number | null;
   inspectdate: string | null;
+  is_active: boolean;
 }
 
 export interface County {
@@ -298,6 +299,7 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
       id,
       namesite,
       ab_county,
+      is_active,
       W26_ab_counties (
         county
       ),
@@ -322,6 +324,45 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
       county: site.W26_ab_counties?.county ?? null,
       ab_county: site.ab_county ?? null,
       inspectdate: latestDate,
+      is_active: site.is_active ?? true,
+    };
+  });
+}
+
+export async function getAllSites(): Promise<SiteSummary[]> {
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('W26_sites-pa')
+    .select(`
+      id,
+      namesite,
+      ab_county,
+      is_active,
+      W26_ab_counties (
+        county
+      ),
+      W26_form_responses (
+        created_at
+      )
+    `)
+    .order('namesite', { ascending: true });
+
+  if (error) throw new Error(error.message || 'Failed to fetch sites');
+
+  return (data ?? []).map((site: any) => {
+    const responses = site.W26_form_responses ?? [];
+    const latestDate = responses.length > 0
+      ? responses.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at
+      : null;
+
+    return {
+      id: site.id,
+      namesite: site.namesite,
+      county: site.W26_ab_counties?.county ?? null,
+      ab_county: site.ab_county ?? null,
+      inspectdate: latestDate,
+      is_active: site.is_active ?? true,
     };
   });
 }
@@ -353,6 +394,20 @@ export async function updateSite(
   if (error) throw new Error(error.message || 'Failed to update site');
 }
 
+export async function toggleSiteActive(
+  id: number,
+  is_active: boolean
+): Promise<void> {
+  const supabase = createServerSupabase();
+
+  const { error } = await supabase
+    .from('W26_sites-pa')
+    .update({ is_active })
+    .eq('id', id);
+
+  if (error) throw new Error(error.message || 'Failed to update site status');
+}
+
 export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
   const supabase = createServerSupabase();
 
@@ -362,6 +417,7 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
       id,
       namesite,
       ab_county,
+      is_active,
       W26_ab_counties (
         county
       ),
@@ -387,6 +443,7 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
       county: site.W26_ab_counties?.county ?? null,
       ab_county: site.ab_county ?? null,
       inspectdate: latestDate,
+      is_active: site.is_active ?? true,
     };
   });
 }

@@ -1,15 +1,15 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { X, MapPin, Save, Pencil, Search } from "lucide-react";
+import { X, MapPin, Save, Pencil, Search, Eye, EyeOff } from "lucide-react";
 import { County } from "@/utils/supabase/queries";
 
 interface EditSiteModalProps {
   visible: boolean;
-  site: { id: number; namesite: string; ab_county: number | null } | null;
+  site: { id: number; namesite: string; ab_county: number | null; is_active: boolean } | null;
   counties: County[];
   onClose: () => void;
-  onSave: (data: { id: number; namesite: string; ab_county: number | null }) => void;
+  onSave: (data: { id: number; namesite: string; ab_county: number | null; is_active: boolean }) => void;
   saving: boolean;
 }
 
@@ -25,6 +25,7 @@ export default function EditSiteModal({
   const [selectedCounty, setSelectedCounty] = useState<County | null>(null);
   const [countySearch, setCountySearch] = useState("");
   const [countyDropdownOpen, setCountyDropdownOpen] = useState(false);
+  const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
     if (site) {
@@ -33,6 +34,7 @@ export default function EditSiteModal({
       setSelectedCounty(match);
       setCountySearch("");
       setCountyDropdownOpen(false);
+      setIsActive(site.is_active);
     }
   }, [site, counties]);
 
@@ -47,7 +49,12 @@ export default function EditSiteModal({
       return;
     }
     if (!site) return;
-    onSave({ id: site.id, namesite: namesite.trim(), ab_county: selectedCounty?.id ?? null });
+    onSave({
+      id: site.id,
+      namesite: namesite.trim(),
+      ab_county: selectedCounty?.id ?? null,
+      is_active: isActive,
+    });
   };
 
   if (!visible || !site) return null;
@@ -150,6 +157,41 @@ export default function EditSiteModal({
                 )}
               </div>
             )}
+          </div>
+
+          {/* Site Visibility Toggle */}
+          <div>
+            <label className="block text-sm font-semibold text-[#254431] mb-2 flex items-center gap-2">
+              {isActive ? <Eye className="w-4 h-4 text-[#356B43]" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
+              Site Visibility
+            </label>
+            <div className="flex items-center justify-between px-4 py-3 bg-[#F7F2EA] border-2 border-[#86A98A] rounded-xl">
+              <div>
+                <p className={`text-sm font-medium ${isActive ? 'text-[#254431]' : 'text-gray-500'}`}>
+                  {isActive ? 'Active' : 'Inactive'}
+                </p>
+                <p className="text-xs text-[#7A8075]">
+                  {isActive ? 'Visible to all users' : 'Hidden from users'}
+                </p>
+              </div>
+              <button
+                data-testid="edit-site-active-toggle"
+                type="button"
+                role="switch"
+                aria-checked={isActive}
+                onClick={() => setIsActive(!isActive)}
+                disabled={saving}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:ring-offset-2 disabled:opacity-50 ${
+                  isActive ? 'bg-[#356B43]' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ease-in-out ${
+                    isActive ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
           </div>
         </div>
 
