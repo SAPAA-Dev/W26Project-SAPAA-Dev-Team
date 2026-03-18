@@ -21,12 +21,14 @@ describe("Supabase site functions", () => {
         {
           id: 1,
           namesite: "Alpha",
+          ab_county: 10,
           W26_ab_counties: { county: "County1" },
           W26_form_responses: [{ created_at: "2025-11-30" }],
         },
         {
           id: 2,
           namesite: "Beta",
+          ab_county: null,
           W26_ab_counties: null,
           W26_form_responses: [],
         },
@@ -41,8 +43,8 @@ describe("Supabase site functions", () => {
       const result = await queries.getSitesOnline();
 
       expect(result).toEqual([
-        { id: 1, namesite: "Alpha", county: "County1", inspectdate: "2025-11-30" },
-        { id: 2, namesite: "Beta", county: null, inspectdate: null },
+        { id: 1, namesite: "Alpha", county: "County1", ab_county: 10, inspectdate: "2025-11-30" },
+        { id: 2, namesite: "Beta", county: null, ab_county: null, inspectdate: null },
       ]);
     });
 
@@ -63,6 +65,7 @@ describe("Supabase site functions", () => {
         {
           id: 1,
           namesite: "Alpha",
+          ab_county: 10,
           W26_ab_counties: { county: "County1" },
           W26_form_responses: [{ created_at: "2025-11-30" }],
         },
@@ -75,7 +78,7 @@ describe("Supabase site functions", () => {
       });
 
       const result = await queries.getSiteByName("Alpha");
-      expect(result).toEqual([{ id: 1, namesite: "Alpha", county: "County1", inspectdate: "2025-11-30" }]);
+      expect(result).toEqual([{ id: 1, namesite: "Alpha", county: "County1", ab_county: 10, inspectdate: "2025-11-30" }]);
     });
 
     it("throws error if Supabase fails", async () => {
@@ -199,4 +202,5 @@ describe("Supabase site functions", () => {
       await expect(queries.getQuestionsOnline()).rejects.toThrow("Failed questions");
     });
   });
+
 });
