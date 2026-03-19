@@ -360,7 +360,20 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > Analyze the existing Supabase database schema, identify structural issues and inconsistencies, and refactor the design to better support the Site Inspection Form functionality. Update relationships, normalize tables where necessary, and produce a clear ER diagram that reflects the revised data model.
 
 
+#### US 1.0.30 - Rich Text Formatting for Form Description Fields
+> **As** an admin, **I want** to apply bold, underline, italic, and link formatting to question subtext and section descriptions in the form editor, **so that** I can write clearer, more expressive descriptions for inspectors filling out site inspection forms without needing to know HTML.
 
+> **Acceptance Tests**
+
+> 1. Toolbar available: When editing a question's subtext or a section's description, a formatting toolbar with B, U, I, and link buttons is displayed above the text input.
+> 2. Bold formatting: Selecting text and clicking B (or pressing Ctrl+B / Cmd+B) wraps the selection in .... Clicking again removes the markers.
+> 3. Underline formatting: Selecting text and clicking U (or pressing Ctrl+U / Cmd+U) wraps the selection in .... Clicking again removes the markers.
+> 4. Italic formatting: Selecting text and clicking I (or pressing Ctrl+I / Cmd+I) wraps the selection in .... Clicking again removes the markers.
+> 5. Link embedding: Selecting text and clicking the link button converts it to selected text with url pre-selected for immediate replacement. With no selection, link text is inserted with link text pre-selected.
+> 6. Live preview: The right-side preview panel in the form editor reflects all formatting changes in real time, for both the "Add Question" and "Edit Question" workflows.
+> 7. Consumer form rendering: Bold, underline, italic, and links in question subtext and section descriptions render correctly for inspectors on the New Report and Edit Report pages. Links open in a new tab.
+> 8. Backward compatibility: Existing plain-text descriptions and subtext display identically to before; no data migration is required.
+> 9. XSS safety: Raw HTML other than `<script>` is not rendered; only the allowed element set (strong, em, u, a) is processed.
 
 ---
 ### **P2 – Site Image Management System**
@@ -439,6 +452,17 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 5. The user may optionally enter a Photographer field if the image was taken by someone else.
 > 6. The image is saved with the associated metadata and linked to the selected site.
 > 7. The image appears in the site’s image gallery after upload.
+
+#### US 2.0.9 – Homescreen Gallery View  | Story Points: 5
+
+> **As** a User, **I want** to access a centralized Image Gallery, **so that** I can quickly browse through site photos without having to navigate into each individual site.
+
+> **Acceptance Tests**  
+
+> 1. Images are displayed in reverse chronological order by default.
+> 2. Each image in the gallery clearly displays the Site Name it belongs to.
+> 3. User can search the gallery with the provided search bar.
+> 4. If no images have been uploaded to any site, the gallery displays a "No images available" message.
 
 ---
 ### **P3 – Site Inspection Mobile Application (Android & iOS)**
