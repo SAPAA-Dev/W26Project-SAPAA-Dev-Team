@@ -38,6 +38,7 @@ import {
   Loader2
 } from "lucide-react";
 import { useRef } from "react";
+import PdfExportModal from "@/components/PdfExportModal";
 
 // Initialize Supabase client
 const supabase = createClient();
@@ -471,6 +472,7 @@ export default function AdminSiteDetails() {
   const [isSaving, setIsSaving] = useState(false);
   const [editedInspection, setEditedInspection] = useState<FormResponse | null>(null);
   
+  const [showPdfModal, setShowPdfModal] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: number; open: boolean } | null>(null);
   const menuRefs = useRef<{ [key: number]: HTMLButtonElement | null }>({});
@@ -959,10 +961,20 @@ export default function AdminSiteDetails() {
                     </button>
                     <button
                       onClick={() => handleExport('json')}
-                      className="w-full text-left px-4 py-3 hover:bg-[#F7F2EA] text-[#1E2520] transition-colors flex items-center gap-2"
+                      className="w-full text-left px-4 py-3 hover:bg-[#F7F2EA] text-[#1E2520] transition-colors border-b border-[#E4EBE4] flex items-center gap-2"
                     >
                       <FileText className="w-4 h-4" />
                       Export as JSON
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowExportMenu(false);
+                        setShowPdfModal(true);
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-[#F7F2EA] text-[#1E2520] transition-colors flex items-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      Export as PDF
                     </button>
                   </div>
                 )}
@@ -1546,6 +1558,15 @@ export default function AdminSiteDetails() {
           </div>
         </div>
       )}
+
+      {/* PDF Export Modal */}
+      <PdfExportModal
+        open={showPdfModal}
+        onClose={() => setShowPdfModal(false)}
+        mode="site"
+        siteName={namesite}
+        inspections={inspections}
+      />
     </div>
   );
 }
