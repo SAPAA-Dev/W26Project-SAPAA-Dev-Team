@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { getAllUsers, addUser, updateUser, deleteUser, User } from "../../../utils/admin-actions";
 import AccountDetailsModal from "./components/AccountDetailsModal";
-import { ArrowLeft, Search, UserPlus, Users, Filter, Mail, Shield, ChevronDown } from "lucide-react";
+import { ArrowLeft, Search, UserPlus, Users, Filter, Mail, Shield, ChevronDown, Clock, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import AdminNavBar from "../../admin/AdminNavBar";
 import ProtectedRoute from "../../../components/ProtectedRoute";
@@ -45,6 +45,10 @@ export default function AccountManagementPage() {
     displayedUsers = displayedUsers.filter((u) => u.role === "steward");
   } else if (sortOption === "adminOnly") {
     displayedUsers = displayedUsers.filter((u) => u.role === "admin");
+  } else if (sortOption === "pending") {
+    displayedUsers = displayedUsers.filter((u) => !u.authenticated);
+  } else if (sortOption === "approved") {
+    displayedUsers = displayedUsers.filter((u) => u.authenticated);
   }
 
   const handleAddUser = async (data: any) => {
@@ -62,6 +66,7 @@ export default function AccountManagementPage() {
       id: editUser.id,
       email: data.email,
       role: data.role,
+      authenticated: data.authenticated ?? editUser.authenticated,
       ...(data.password && { password: data.password }),
     };
 
@@ -86,6 +91,8 @@ export default function AccountManagementPage() {
       case "emailDesc": return "Email (Z-A)";
       case "stewardOnly": return "Stewards Only";
       case "adminOnly": return "Admins Only";
+      case "pending": return "Pending Approvals";
+      case "approved": return "Approved Users";
       default: return "All Users";
     }
   };
@@ -135,7 +142,7 @@ export default function AccountManagementPage() {
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Stats Bar */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
             <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
@@ -150,13 +157,27 @@ export default function AccountManagementPage() {
 
             <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#4caf50] to-[#2e7d32] rounded-xl flex items-center justify-center">
-                  <Shield className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 bg-gradient-to-br from-[#ff9800] to-[#f57c00] rounded-xl flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Admins</div>
+                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Pending</div>
                   <div className="text-3xl font-bold text-[#254431]">
-                    {users.filter(u => u.role === 'admin').length}
+                    {users.filter(u => !u.authenticated).length}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#4caf50] to-[#2e7d32] rounded-xl flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Approved</div>
+                  <div className="text-3xl font-bold text-[#254431]">
+                    {users.filter(u => u.authenticated).length}
                   </div>
                 </div>
               </div>
@@ -165,12 +186,12 @@ export default function AccountManagementPage() {
             <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-[#2196f3] to-[#1565c0] rounded-xl flex items-center justify-center">
-                  <Mail className="w-6 h-6 text-white" />
+                  <Shield className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Stewards</div>
+                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Admins</div>
                   <div className="text-3xl font-bold text-[#254431]">
-                    {users.filter(u => u.role === 'steward').length}
+                    {users.filter(u => u.role === 'admin').length}
                   </div>
                 </div>
               </div>
@@ -228,10 +249,10 @@ export default function AccountManagementPage() {
                       className="p-5 bg-[#F7F2EA] rounded-xl border-2 border-[#E4EBE4] cursor-pointer hover:border-[#356B43] hover:shadow-md transition-all group"
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4">
                           <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ${
-                            u.role === 'admin' 
-                              ? 'bg-gradient-to-br from-[#356B43] to-[#254431]' 
+                            u.role === 'admin'
+                              ? 'bg-gradient-to-br from-[#356B43] to-[#254431]'
                               : 'bg-gradient-to-br from-[#2196f3] to-[#1565c0]'
                           }`}>
                             {u.email.charAt(0).toUpperCase()}
@@ -245,6 +266,13 @@ export default function AccountManagementPage() {
                                   : 'bg-[#2196f3] text-white'
                               }`}>
                                 {u.role === 'admin' ? '👑 Admin' : '📝 Steward'}
+                              </span>
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                u.authenticated
+                                  ? 'bg-[#4caf50] text-white'
+                                  : 'bg-[#ff9800] text-white'
+                              }`}>
+                                {u.authenticated ? '✓ Approved' : '⏳ Pending'}
                               </span>
                             </div>
                           </div>
@@ -302,8 +330,8 @@ export default function AccountManagementPage() {
               <div className="p-4 space-y-2">
                 <button
                   className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${
-                    sortOption === null 
-                      ? 'bg-[#356B43] text-white' 
+                    sortOption === null
+                      ? 'bg-[#356B43] text-white'
                       : 'hover:bg-[#F7F2EA] text-[#254431]'
                   }`}
                   onClick={() => {
@@ -314,61 +342,98 @@ export default function AccountManagementPage() {
                   All Users
                 </button>
 
-                <button
-                  className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${
-                    sortOption === 'emailAsc' 
-                      ? 'bg-[#356B43] text-white' 
-                      : 'hover:bg-[#F7F2EA] text-[#254431]'
-                  }`}
-                  onClick={() => {
-                    setSortOption("emailAsc");
-                    setSortModalVisible(false);
-                  }}
-                >
-                  📧 Email (A-Z)
-                </button>
+                <div className="border-t border-[#E4EBE4] pt-2 mt-2">
+                  <p className="text-xs font-semibold text-[#7A8075] uppercase px-4 py-1">Approval Status</p>
+                  <button
+                    className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${
+                      sortOption === 'pending'
+                        ? 'bg-[#ff9800] text-white'
+                        : 'hover:bg-[#F7F2EA] text-[#254431]'
+                    }`}
+                    onClick={() => {
+                      setSortOption("pending");
+                      setSortModalVisible(false);
+                    }}
+                  >
+                    ⏳ Pending Approvals
+                  </button>
 
-                <button
-                  className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${
-                    sortOption === 'emailDesc' 
-                      ? 'bg-[#356B43] text-white' 
-                      : 'hover:bg-[#F7F2EA] text-[#254431]'
-                  }`}
-                  onClick={() => {
-                    setSortOption("emailDesc");
-                    setSortModalVisible(false);
-                  }}
-                >
-                  📧 Email (Z-A)
-                </button>
+                  <button
+                    className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${
+                      sortOption === 'approved'
+                        ? 'bg-[#4caf50] text-white'
+                        : 'hover:bg-[#F7F2EA] text-[#254431]'
+                    }`}
+                    onClick={() => {
+                      setSortOption("approved");
+                      setSortModalVisible(false);
+                    }}
+                  >
+                    ✓ Approved Users
+                  </button>
+                </div>
 
-                <button
-                  className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${
-                    sortOption === 'stewardOnly' 
-                      ? 'bg-[#356B43] text-white' 
-                      : 'hover:bg-[#F7F2EA] text-[#254431]'
-                  }`}
-                  onClick={() => {
-                    setSortOption("stewardOnly");
-                    setSortModalVisible(false);
-                  }}
-                >
-                  📝 Stewards Only
-                </button>
+                <div className="border-t border-[#E4EBE4] pt-2 mt-2">
+                  <p className="text-xs font-semibold text-[#7A8075] uppercase px-4 py-1">Sorting</p>
+                  <button
+                    className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${
+                      sortOption === 'emailAsc'
+                        ? 'bg-[#356B43] text-white'
+                        : 'hover:bg-[#F7F2EA] text-[#254431]'
+                    }`}
+                    onClick={() => {
+                      setSortOption("emailAsc");
+                      setSortModalVisible(false);
+                    }}
+                  >
+                    📧 Email (A-Z)
+                  </button>
 
-                <button
-                  className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${
-                    sortOption === 'adminOnly' 
-                      ? 'bg-[#356B43] text-white' 
-                      : 'hover:bg-[#F7F2EA] text-[#254431]'
-                  }`}
-                  onClick={() => {
-                    setSortOption("adminOnly");
-                    setSortModalVisible(false);
-                  }}
-                >
-                  👑 Admins Only
-                </button>
+                  <button
+                    className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${
+                      sortOption === 'emailDesc'
+                        ? 'bg-[#356B43] text-white'
+                        : 'hover:bg-[#F7F2EA] text-[#254431]'
+                    }`}
+                    onClick={() => {
+                      setSortOption("emailDesc");
+                      setSortModalVisible(false);
+                    }}
+                  >
+                    📧 Email (Z-A)
+                  </button>
+                </div>
+
+                <div className="border-t border-[#E4EBE4] pt-2 mt-2">
+                  <p className="text-xs font-semibold text-[#7A8075] uppercase px-4 py-1">Role</p>
+                  <button
+                    className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${
+                      sortOption === 'stewardOnly'
+                        ? 'bg-[#356B43] text-white'
+                        : 'hover:bg-[#F7F2EA] text-[#254431]'
+                    }`}
+                    onClick={() => {
+                      setSortOption("stewardOnly");
+                      setSortModalVisible(false);
+                    }}
+                  >
+                    📝 Stewards Only
+                  </button>
+
+                  <button
+                    className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${
+                      sortOption === 'adminOnly'
+                        ? 'bg-[#356B43] text-white'
+                        : 'hover:bg-[#F7F2EA] text-[#254431]'
+                    }`}
+                    onClick={() => {
+                      setSortOption("adminOnly");
+                      setSortModalVisible(false);
+                    }}
+                  >
+                    👑 Admins Only
+                  </button>
+                </div>
               </div>
 
               <div className="px-4 pb-4">

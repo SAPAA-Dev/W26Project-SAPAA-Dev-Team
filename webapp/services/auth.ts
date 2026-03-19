@@ -20,6 +20,7 @@ export async function resendConfirmation(email: string): Promise<void>{
   type: 'signup',
   email: email,
   options: {
+    
     emailRedirectTo: `${window.location.origin}/auth/confirm`
   }
 
@@ -115,6 +116,7 @@ export async function signup(email: string, password: string): Promise<{ success
       email: email.trim(),
       password: password,
       options: {
+        data: { role: 'steward', authenticated: false },
         emailRedirectTo: `${window.location.origin}/auth/confirm`,
       }
     });

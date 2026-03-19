@@ -6,6 +6,7 @@ export interface User {
   id: string;
   email: string;
   role: string;
+  authenticated: boolean;
 }
 
 export async function getAllUsers(): Promise<User[]> {
@@ -19,18 +20,19 @@ export async function getAllUsers(): Promise<User[]> {
   return data.users.map((u) => ({
     id: u.id,
     email: u.email ?? '',
-    role: u.user_metadata?.role ?? 'steward'
+    role: u.user_metadata?.role ?? 'steward',
+    authenticated: u.user_metadata?.authenticated ?? false
   }));
 }
 
-export async function addUser(newUser: { email: string; password: string; role?: string }) {
+export async function addUser(newUser: { email: string; password: string; role?: string; authenticated?:boolean}) {
   try {
-    const { email, password, role = 'steward' } = newUser;
+    const { email, password, role = 'steward', authenticated = false } = newUser;
 
     const { data, error } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      user_metadata: { role }
+      user_metadata: { role, authenticated }
     });
 
     if (error) return { success: false, error: error.message };
@@ -55,13 +57,13 @@ export async function deleteUser(userId: string) {
 }
 
 
-export async function updateUser(data: { id: string; email: string; password?: string; role: string }) {
+export async function updateUser(data: { id: string; email: string; password?: string; role: string; authenticated:boolean }) {
   try {
-    const { id, email, password, role } = data;
+    const { id, email, password, role, authenticated } = data;
 
     const attrs: any = {
       email,
-      user_metadata: { role }
+      user_metadata: { role, authenticated }
     };
     if (password) attrs.password = password;
 
