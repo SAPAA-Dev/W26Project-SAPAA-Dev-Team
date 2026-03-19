@@ -3,10 +3,11 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSitesOnline, getTotalInspectionCount, SiteSummary } from '@/utils/supabase/queries';
-import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit } from 'lucide-react';
+import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, Download } from 'lucide-react';
 import Image from 'next/image';
 import AdminNavBar from '../AdminNavBar';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import PdfExportModal from '@/components/PdfExportModal';
 
 type UnifiedSite = SiteSummary;
 
@@ -55,6 +56,7 @@ export default function AdminSitesPage() {
   });
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [totalResponses, setTotalResponses] = useState<number>(0);
+  const [showPdfModal, setShowPdfModal] = useState(false);
 
   useEffect(() => {
     getTotalInspectionCount().then(setTotalResponses).catch(() => {});
@@ -253,9 +255,20 @@ export default function AdminSitesPage() {
             </div>
 
             <div className="flex items-center justify-between">
-              <p className="text-[#7A8075] font-medium">
-                {filteredSites.length} {filteredSites.length === 1 ? 'site' : 'sites'} found
-              </p>
+              <div className="flex items-center gap-4">
+                <p className="text-[#7A8075] font-medium">
+                  {filteredSites.length} {filteredSites.length === 1 ? 'site' : 'sites'} found
+                </p>
+                {filteredSites.length > 0 && (
+                  <button
+                    onClick={() => setShowPdfModal(true)}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-[#356B43] bg-[#E4EBE4] hover:bg-[#356B43] hover:text-white transition-all"
+                  >
+                    <Download className="w-4 h-4" />
+                    Bulk PDF
+                  </button>
+                )}
+              </div>
               <div className="relative sort-menu-container">
                 <button
                   onClick={() => setShowSortMenu(!showSortMenu)}
@@ -406,6 +419,14 @@ export default function AdminSitesPage() {
           )}
         </div>
       </div>
+
+      {/* Bulk PDF Export Modal */}
+      <PdfExportModal
+        open={showPdfModal}
+        onClose={() => setShowPdfModal(false)}
+        mode="multi-site"
+        siteNames={filteredSites.map(s => s.namesite)}
+      />
     </ProtectedRoute>
   );
 }
