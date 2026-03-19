@@ -89,7 +89,7 @@ function CoverPage({ data, pageSize }: { data: PdfReportData; pageSize: 'LETTER'
             {data.sites.map((site, i) => (
               <Text key={i} style={styles.coverSiteListItem}>
                 {site.siteName}
-                {site.county ? ` — ${site.county}` : ''}
+                {site.county ? ` - ${site.county}` : ''}
                 {` (${site.responses.length} inspection${site.responses.length !== 1 ? 's' : ''})`}
               </Text>
             ))}
@@ -99,7 +99,7 @@ function CoverPage({ data, pageSize }: { data: PdfReportData; pageSize: 'LETTER'
 
       <View style={styles.coverFooter}>
         <Text style={styles.footerText}>
-          Saskatchewan and Alberta Protected Areas Association
+          Stewards of Alberta's Protected Areas Association (sapaastewards.com)
         </Text>
       </View>
     </Page>
@@ -155,7 +155,7 @@ function NaturalnessSummary({
       <View style={styles.summaryAvgRow}>
         <Text style={styles.summaryAvgLabel}>Average Score</Text>
         <Text style={styles.summaryAvgValue}>
-          {avgRound.toFixed(1)} — {avgLabel}
+          {avgRound.toFixed(1)} - {avgLabel}
         </Text>
       </View>
 
@@ -220,7 +220,7 @@ function InspectionHeader({
 
   return (
     <View style={styles.inspectionHeader}>
-      <Text style={styles.inspectionTitle}>Inspection — {displayDate}</Text>
+      <Text style={styles.inspectionTitle}>Inspection - {displayDate}</Text>
       <View style={styles.inspectionMeta}>
         {inspectionNo && (
           <Text style={styles.inspectionMetaItem}>No: {inspectionNo}</Text>
@@ -261,7 +261,7 @@ function SectionBlock({
           ? a.obs_comm
             ? `${a.obs_value} (Other: ${a.obs_comm})`
             : a.obs_value
-          : a.obs_comm ?? (includeEmpty ? '—' : '');
+          : a.obs_comm ?? (includeEmpty ? '-' : '');
 
         return (
           <View

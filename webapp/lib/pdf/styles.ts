@@ -19,7 +19,6 @@ export const styles = StyleSheet.create({
   },
   coverLogo: {
     width: 200,
-    height: 66,
     marginBottom: 40,
   },
   coverTitle: {
@@ -90,7 +89,7 @@ export const styles = StyleSheet.create({
 
   // ── Naturalness Summary ──
   summaryBlock: {
-    marginBottom: 16,
+    marginBottom: 8,
     padding: 12,
     backgroundColor: '#F7F2EA',
     borderRadius: 4,
@@ -101,6 +100,7 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Helvetica-Bold',
     color: '#254431',
+    marginTop: 8,
     marginBottom: 8,
   },
   summaryAvgRow: {
@@ -147,7 +147,8 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 8,
+    paddingTop: 12,
     paddingBottom: 12,
     borderBottomWidth: 2,
     borderBottomColor: '#254431',
@@ -156,6 +157,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   siteName: {
+    paddingTop: 10,
     fontSize: 20,
     fontFamily: 'Helvetica-Bold',
     color: '#254431',
@@ -167,7 +169,6 @@ export const styles = StyleSheet.create({
   },
   logo: {
     width: 120,
-    height: 40,
   },
 
   // ── Inspection Header ──
@@ -176,7 +177,7 @@ export const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 4,
     marginBottom: 10,
-    marginTop: 16,
+    marginTop: 4,
   },
   inspectionTitle: {
     fontSize: 13,
