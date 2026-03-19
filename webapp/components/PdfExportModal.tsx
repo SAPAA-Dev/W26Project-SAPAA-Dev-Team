@@ -102,7 +102,7 @@ export default function PdfExportModal({
     }
     if (options.dateTo) {
       const to = new Date(options.dateTo);
-      to.setHours(23, 59, 59, 999);
+      to.setUTCHours(23, 59, 59, 999);
       filtered = filtered.filter((r) => r.created_at && new Date(r.created_at) <= to);
     }
     return filtered.length;
@@ -118,7 +118,7 @@ export default function PdfExportModal({
     }
     if (options.dateTo) {
       const to = new Date(options.dateTo);
-      to.setHours(23, 59, 59, 999);
+      to.setUTCHours(23, 59, 59, 999);
       filtered = filtered.filter((r) => r.created_at && new Date(r.created_at) <= to);
     }
     return filtered.length;
@@ -460,6 +460,7 @@ export default function PdfExportModal({
           )}
 
           {/* Inspection Selection */}
+          
           {mode === 'site' && inspections.length > 0 && (
             <div className="bg-[#F7F2EA] rounded-2xl p-5 border-2 border-[#E4EBE4]">
               <div className="flex items-center justify-between mb-3">
@@ -485,57 +486,53 @@ export default function PdfExportModal({
               )}
 
               <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                {inspections.map((r) => {
-                  const withinDateRange = (() => {
+                {inspections
+                  .filter((r) => {
                     if (!options.dateFrom && !options.dateTo) return true;
                     const date = r.created_at ? new Date(r.created_at) : null;
                     if (!date) return false;
                     if (options.dateFrom && date < new Date(options.dateFrom)) return false;
                     if (options.dateTo) {
                       const to = new Date(options.dateTo);
-                      to.setHours(23, 59, 59, 999);
+                      to.setUTCHours(23, 59, 59, 999);
                       if (date > to) return false;
                     }
                     return true;
-                  })();
+                  })
+                  .map((r) => {
+                    const isSelected =
+                      options.selectedResponseIds.length === 0 || options.selectedResponseIds.includes(r.id);
 
-                  const isSelected =
-                    withinDateRange &&
-                    (options.selectedResponseIds.length === 0 || options.selectedResponseIds.includes(r.id));
+                    const dateStr = r.created_at
+                      ? new Date(r.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+                      : 'No date';
 
-                  const dateStr = r.created_at
-                    ? new Date(r.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-                    : 'No date';
-
-                  return (
-                    <button
-                      key={r.id}
-                      onClick={() => toggleResponseId(r.id)}
-                      disabled={!withinDateRange}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                        !withinDateRange
-                          ? 'opacity-40 cursor-not-allowed bg-white/30 border-2 border-transparent'
-                          : isSelected
+                    return (
+                      <button
+                        key={r.id}
+                        onClick={() => toggleResponseId(r.id)}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                          isSelected
                             ? 'bg-white border-2 border-[#356B43] shadow-sm'
                             : 'bg-white/50 border-2 border-transparent hover:border-[#E4EBE4]'
-                      }`}
-                    >
-                      {isSelected ? (
-                        <CheckSquare className="w-4 h-4 text-[#356B43] flex-shrink-0" />
-                      ) : (
-                        <Square className="w-4 h-4 text-[#7A8075] flex-shrink-0" />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[#254431]">{dateStr}</p>
-                        <p className="text-xs text-[#7A8075] truncate">
-                          {r.steward && `Steward: ${r.steward}`}
-                          {r.steward && r.naturalness_score && ' · '}
-                          {r.naturalness_score && `Score: ${r.naturalness_score}`}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
+                        }`}
+                      >
+                        {isSelected ? (
+                          <CheckSquare className="w-4 h-4 text-[#356B43] flex-shrink-0" />
+                        ) : (
+                          <Square className="w-4 h-4 text-[#7A8075] flex-shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-[#254431]">{dateStr}</p>
+                          <p className="text-xs text-[#7A8075] truncate">
+                            {r.steward && `Steward: ${r.steward}`}
+                            {r.steward && r.naturalness_score && ' · '}
+                            {r.naturalness_score && `Score: ${r.naturalness_score}`}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
               </div>
             </div>
           )}
@@ -674,7 +671,7 @@ export default function PdfExportModal({
               </button>
               <button
                 onClick={handleExport}
-                disabled={loading || (mode !== 'single' && previewCount === 0) || dateRangeInvalid || noSectionsSelected}
+                disabled={loading || (mode === 'site' && previewCount === 0) || dateRangeInvalid || noSectionsSelected}
                 className="px-6 py-2.5 bg-gradient-to-r from-[#356B43] to-[#254431] text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
