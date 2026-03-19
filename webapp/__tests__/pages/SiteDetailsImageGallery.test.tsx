@@ -101,10 +101,26 @@ const galleryItemsForSelectedSite = [
   },
 ];
 
+const homePageItemsForSelectedSite = [
+  {
+    id: "img-4",
+    site_id: "site-1",
+    site_name: "Riverlot 56 (NA)",
+    date: "2026-01-31",
+    photographer: "Vishal Sivakumar",
+    caption: "CMPUT401W26 Visit",
+    description: "Riverlot56 Visit with Frank Potter!",
+    storage_key: "homepage-image-uploads/site-1/user-1/RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg",
+    filename: "RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg",
+    file_size_bytes: 111111,
+    imageUrl: "https://example.com/RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg",
+  },
+]
+
 function mockGalleryFetchSuccess(items = galleryItemsForSelectedSite) {
   (global.fetch as jest.Mock).mockImplementation((url: string) => {
     if (url.includes("/api/homepage-images/")) {
-      return Promise.resolve({ ok: true, json: async () => ({ items: [] }) });
+      return Promise.resolve({ ok: true, json: async () => ({ items: homePageItemsForSelectedSite }) });
     }
     return Promise.resolve({ ok: true, json: async () => ({ items }) });
   });
@@ -120,7 +136,7 @@ async function renderSiteDetailsGallery() {
   fireEvent.click(screen.getByRole("button", { name: /Image Gallery/i }));
 
   await waitFor(() => {
-    expect(screen.getByText("Image Gallery (3 images)")).toBeInTheDocument();
+    expect(screen.getByText("Image Gallery (4 images)")).toBeInTheDocument();
   });
 }
 
@@ -145,31 +161,32 @@ describe("SiteDetailScreen Image Gallery", () => {
   it("renders multiple site images in gallery layout", async () => {
     mockGalleryFetchSuccess();
     await renderSiteDetailsGallery();
-
+  
     expect(screen.getByText("Cracked Tree")).toBeInTheDocument();
     expect(screen.getByText("Hanging Broken Tree")).toBeInTheDocument();
     expect(screen.getByText("cross-country ski trails")).toBeInTheDocument();
-
-    const firstCardButton = screen.getByAltText("Cracked Tree").closest("button");
-    const secondCardButton = screen.getByAltText("Hanging Broken Tree").closest("button");
-    const thirdCardButton = screen.getByAltText("cross-country ski trails").closest("button");
-
-    expect(firstCardButton).toBeInTheDocument();
-    expect(secondCardButton).toBeInTheDocument();
-    expect(thirdCardButton).toBeInTheDocument();
+    expect(screen.getByText("CMPUT401W26 Visit")).toBeInTheDocument();
+    expect(screen.getByText("Riverlot56 Visit with Frank Potter!")).toBeInTheDocument();
+  
+    expect(screen.getByAltText("Cracked Tree").closest("button")).toBeInTheDocument();
+    expect(screen.getByAltText("Hanging Broken Tree").closest("button")).toBeInTheDocument();
+    expect(screen.getByAltText("cross-country ski trails").closest("button")).toBeInTheDocument();
+    expect(screen.getByAltText("CMPUT401W26 Visit").closest("button")).toBeInTheDocument();
   });
-
+  
   it("uses site-scoped gallery endpoint for selected site", async () => {
     mockGalleryFetchSuccess();
     await renderSiteDetailsGallery();
-
+  
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith("/api/sites/1/gallery");
+      expect(global.fetch).toHaveBeenCalledWith("/api/homepage-images/1");
     });
-
+  
     expect(screen.getByText("Cracked Tree")).toBeInTheDocument();
     expect(screen.getByText("Hanging Broken Tree")).toBeInTheDocument();
     expect(screen.getByText("cross-country ski trails")).toBeInTheDocument();
+    expect(screen.getByText("CMPUT401W26 Visit")).toBeInTheDocument();
     expect(screen.queryByText("Trail entrance")).not.toBeInTheDocument();
   });
 

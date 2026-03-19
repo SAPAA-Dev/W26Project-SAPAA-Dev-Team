@@ -123,6 +123,37 @@ export async function addSiteInspectionReport(siteId: number, userId: any) {
   return data;
 }
 
+export async function rollbackSiteInspectionSubmission(responseId: number) {
+  const supabase = createServerSupabase();
+
+  const { error: attachmentsError } = await supabase
+    .from('W26_attachments')
+    .delete()
+    .eq('response_id', responseId);
+
+  if (attachmentsError) {
+    throw new Error(attachmentsError.message || 'Failed to remove inspection attachments');
+  }
+
+  const { error: answersError } = await supabase
+    .from('W26_answers')
+    .delete()
+    .eq('response_id', responseId);
+
+  if (answersError) {
+    throw new Error(answersError.message || 'Failed to remove inspection answers');
+  }
+
+  const { error: responseError } = await supabase
+    .from('W26_form_responses')
+    .delete()
+    .eq('id', responseId);
+
+  if (responseError) {
+    throw new Error(responseError.message || 'Failed to remove site inspection report');
+  }
+}
+
 export async function getCurrentUserUid() {
   const supabase = await createClient();
   const { data: { user }, error } = await supabase.auth.getUser();

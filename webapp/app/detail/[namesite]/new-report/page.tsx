@@ -1,8 +1,8 @@
 "use client";
 
-import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers, insertInspectionAttachments} from '@/utils/supabase/queries';
+import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers, insertInspectionAttachments, rollbackSiteInspectionSubmission} from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter, usePathname } from "next/navigation";
 import { 
@@ -66,6 +66,14 @@ interface ImageWithMeta {
   siteName: string;
 }
 
+interface SectionNavigationState {
+  isOnLastSection: boolean;
+  canGoPrevious: boolean;
+  canGoNext: boolean;
+  goToPreviousSection?: () => void;
+  goToNextSection?: () => void;
+}
+
 
 export default function NewReportPage() {
   const pathname = usePathname();
@@ -85,7 +93,34 @@ export default function NewReportPage() {
   const [draftKey, setDraftKey] = useState<string | null>(null);
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);  const [sectionNavigation, setSectionNavigation] = useState<SectionNavigationState>({
+    isOnLastSection: false,
+    canGoPrevious: false,
+    canGoNext: false,
+  });
+
+  const handleSectionStateChange = useCallback((state: {
+    isOnLastSection: boolean;
+    canGoPrevious: boolean;
+    canGoNext: boolean;
+    goToPreviousSection: () => void;
+    goToNextSection: () => void;
+  }) => {
+    setSectionNavigation((previousState) => {
+      if (
+        previousState.isOnLastSection === state.isOnLastSection &&
+        previousState.canGoPrevious === state.canGoPrevious &&
+        previousState.canGoNext === state.canGoNext &&
+        previousState.goToPreviousSection === state.goToPreviousSection &&
+        previousState.goToNextSection === state.goToNextSection
+      ) {
+        return previousState;
+      }
+
+      return state;
+    });
+  }, []);
+
 
   useEffect(() => {
     const fetchUserAndCheckSteward = async () => {
@@ -221,10 +256,28 @@ export default function NewReportPage() {
   const buildQuestionNumberMap = (formQuestions: Question[]): Record<number, string> => {
     const questionNumberMap: Record<number, string> = {};
     for (const question of formQuestions) {
-      const match = (question.title ?? '').match(/\(Q(\d+)\)/i);
+      const match = (question.title ?? '').match(/\(Q(\d+(?:\.\d+)?)\)/i);
       questionNumberMap[question.id] = match ? `Q${match[1]}` : `Question ${question.id}`;
     }
     return questionNumberMap;
+  };
+
+  const sortQuestionNumbers = (questionNumbers: string[]): string[] => {
+    const getQuestionNumberValue = (questionNumber: string): number => {
+      const match = questionNumber.match(/(\d+(?:\.\d+)?)/);
+      return match ? Number(match[1]) : Number.POSITIVE_INFINITY;
+    };
+
+    return [...questionNumbers].sort((a, b) => {
+      const aValue = getQuestionNumberValue(a);
+      const bValue = getQuestionNumberValue(b);
+
+      if (aValue !== bValue) {
+        return aValue - bValue;
+      }
+
+      return a.localeCompare(b, undefined, { numeric: true });
+    });
   };
 
 
@@ -326,7 +379,7 @@ export default function NewReportPage() {
       .map((question) => questionNumberMap[question.id] ?? `Question ${question.id}`);
 
     if (missingRequiredNumbers.length > 0) {
-      setMissingRequiredQuestionNumbers(missingRequiredNumbers);
+      setMissingRequiredQuestionNumbers(sortQuestionNumbers(missingRequiredNumbers));
       setShowRequiredPopup(true);
       showToast("Please complete all required questions before submitting.");
       return;
@@ -336,10 +389,12 @@ export default function NewReportPage() {
     setMissingRequiredQuestionNumbers([]);
     setIsSubmitting(true);
 
+    let siteInspectionReportId: number | null = null;
+
     try {
       const siteId = await getCurrentSiteId(namesite);
       const userUid = await getCurrentUserUid();
-      const siteInspectionReportId = (await addSiteInspectionReport(siteId, userUid)).id
+      siteInspectionReportId = (await addSiteInspectionReport(siteId, userUid)).id;
 
       // We need to figure out whether the answer to each question should be placed in the obs_value or obs_comm column in Supabase
       // So we convert the question response types into a map that we can search for it
@@ -486,13 +541,13 @@ export default function NewReportPage() {
             router.push('/sites?submitted=true');
           } catch (error) {
             console.error(error);
-
-            const message =
-              error instanceof Error
-                ? error.message
-                : "Something went wrong while submitting the report.";
-
-            showToast(message);
+            if (siteInspectionReportId !== null) {
+              try {
+                await rollbackSiteInspectionSubmission(siteInspectionReportId);
+              } catch (rollbackError) {
+                console.error('Failed to roll back incomplete submission:', rollbackError);
+              }
+            }
             setIsSubmitting(false);
           }
               /**
@@ -774,6 +829,7 @@ export default function NewReportPage() {
       <MainContent 
         responses={responses}
         onResponsesChange={handleResponsesChange}
+        onSectionStateChange={handleSectionStateChange}
         siteName={namesite}
         currentUser={currentUser}
       />
@@ -784,7 +840,12 @@ export default function NewReportPage() {
         questions={questions}
         responses={responses}
         onSubmit={handleSubmit}
+        onPreviousSection={sectionNavigation.goToPreviousSection}
+        onNextSection={sectionNavigation.goToNextSection}
         isSubmitting={isSubmitting}
+        isSubmitEnabled={sectionNavigation.isOnLastSection}
+        canGoPrevious={sectionNavigation.canGoPrevious}
+        canGoNext={sectionNavigation.canGoNext}
       />
     </div>
   );

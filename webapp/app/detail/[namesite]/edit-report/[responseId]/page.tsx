@@ -12,7 +12,7 @@ import {
   getSiteIdForResponse,
 } from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, AlertCircle, Pencil } from "lucide-react";
 import Image from "next/image";
@@ -52,6 +52,14 @@ interface SupabaseAnswerRow {
   obs_comm: string | null;
 }
 
+interface SectionNavigationState {
+  isOnLastSection: boolean;
+  canGoPrevious: boolean;
+  canGoNext: boolean;
+  goToPreviousSection?: () => void;
+  goToNextSection?: () => void;
+}
+
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function EditReportPage() {
@@ -80,6 +88,33 @@ export default function EditReportPage() {
   const [showRequiredPopup, setShowRequiredPopup] = useState(false);
   const [missingRequiredQuestionNumbers, setMissingRequiredQuestionNumbers] = useState<string[]>([]);
   const [siteId, setSiteId] = useState<number | null>(null);
+  const [sectionNavigation, setSectionNavigation] = useState<SectionNavigationState>({
+    isOnLastSection: false,
+    canGoPrevious: false,
+    canGoNext: false,
+  });
+
+  const handleSectionStateChange = useCallback((state: {
+    isOnLastSection: boolean;
+    canGoPrevious: boolean;
+    canGoNext: boolean;
+    goToPreviousSection: () => void;
+    goToNextSection: () => void;
+  }) => {
+    setSectionNavigation((previousState) => {
+      if (
+        previousState.isOnLastSection === state.isOnLastSection &&
+        previousState.canGoPrevious === state.canGoPrevious &&
+        previousState.canGoNext === state.canGoNext &&
+        previousState.goToPreviousSection === state.goToPreviousSection &&
+        previousState.goToNextSection === state.goToNextSection
+      ) {
+        return previousState;
+      }
+
+      return state;
+    });
+  }, []);
   
   // ── Init ──────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -198,10 +233,28 @@ export default function EditReportPage() {
   const buildQuestionNumberMap = (formQuestions: Question[]): Record<number, string> => {
     const map: Record<number, string> = {};
     for (const q of formQuestions) {
-      const match = (q.title ?? '').match(/\(Q(\d+)\)/i);
+      const match = (q.title ?? '').match(/\(Q(\d+(?:\.\d+)?)\)/i);
       map[q.id] = match ? `Q${match[1]}` : `Question ${q.id}`;
     }
     return map;
+  };
+
+  const sortQuestionNumbers = (questionNumbers: string[]): string[] => {
+    const getQuestionNumberValue = (questionNumber: string): number => {
+      const match = questionNumber.match(/(\d+(?:\.\d+)?)/);
+      return match ? Number(match[1]) : Number.POSITIVE_INFINITY;
+    };
+
+    return [...questionNumbers].sort((a, b) => {
+      const aValue = getQuestionNumberValue(a);
+      const bValue = getQuestionNumberValue(b);
+
+      if (aValue !== bValue) {
+        return aValue - bValue;
+      }
+
+      return a.localeCompare(b, undefined, { numeric: true });
+    });
   };
 
   // Returns the site_id for the current response (needed for S3 key + attachment insert)
@@ -274,7 +327,7 @@ export default function EditReportPage() {
       .map((q) => questionNumberMap[q.id] ?? `Question ${q.id}`);
 
     if (missingRequired.length > 0) {
-      setMissingRequiredQuestionNumbers(missingRequired);
+      setMissingRequiredQuestionNumbers(sortQuestionNumbers(missingRequired));
       setShowRequiredPopup(true);
       return;
     }
@@ -507,6 +560,7 @@ export default function EditReportPage() {
       <MainContent
         responses={responses}
         onResponsesChange={setResponses}
+        onSectionStateChange={handleSectionStateChange}
         siteName={namesite}
         currentUser={currentUser}
         existingAttachments={existingAttachments}
@@ -517,7 +571,13 @@ export default function EditReportPage() {
         questions={questions}
         responses={responses}
         onSubmit={handleSubmit}
+        onPreviousSection={sectionNavigation.goToPreviousSection}
+        onNextSection={sectionNavigation.goToNextSection}
         submitLabel="Save Changes"
+        isSubmitting={isSaving}
+        isSubmitEnabled={sectionNavigation.isOnLastSection}
+        canGoPrevious={sectionNavigation.canGoPrevious}
+        canGoNext={sectionNavigation.canGoNext}
       />
     </div>
   );

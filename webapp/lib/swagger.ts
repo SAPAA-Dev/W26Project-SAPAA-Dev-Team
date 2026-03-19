@@ -429,6 +429,146 @@ export const openApiSpec = {
         },
       },
     },
+    "/api/homepage-images": {
+      get: {
+        summary: "Get all homepage image uploads (admin only)",
+        tags: ["Homepage Images"],
+        description: "Returns all homepage image uploads with metadata and signed URLs. Requires admin role.",
+        responses: {
+          "200": {
+            description: "Homepage images returned successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    items: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          id: { type: "integer", example: 14 },
+                          site_id: { type: "integer", example: 207 },
+                          site_name: { type: "string", nullable: true, example: "Riverlot 56 (NA)" },
+                          date: { type: "string", example: "2026-03-17" },
+                          photographer: { type: "string", nullable: true, example: "Vishal Sivakumar" },
+                          caption: { type: "string", nullable: true, example: "CMPUT401W26 Visit" },
+                          description: { type: "string", nullable: true, example: "Riverlot56 Visit with Frank Potter!" },
+                          filename: { type: "string", example: "Riverlot56NA-2026-03-17-Vishal-CMPUTVisit-A1B2C3D4.jpg" },
+                          file_size_bytes: { type: "integer", nullable: true, example: 688724 },
+                          storage_key: { type: "string", example: "homepage-image-uploads/207/user-id/filename.jpg" },
+                          imageUrl: { type: "string", example: "https://sapaa-inspection-images.s3.ca-central-1.amazonaws.com/..." },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "401": { description: "Unauthorized" },
+          "403": { description: "Forbidden — admin role required" },
+          "500": { description: "Failed to load images" },
+        },
+      },
+    },
+    
+    "/api/homepage-images/{siteId}": {
+      get: {
+        summary: "Get homepage image uploads for a specific site",
+        tags: ["Homepage Images"],
+        parameters: [
+          {
+            name: "siteId",
+            in: "path",
+            required: true,
+            schema: { type: "integer" },
+            description: "Site ID",
+            example: 207,
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Homepage images for site returned successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    items: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          id: { type: "integer", example: 14 },
+                          site_id: { type: "integer", example: 207 },
+                          site_name: { type: "string", nullable: true, example: "Riverlot 56 (NA)" },
+                          date: { type: "string", example: "2026-03-17" },
+                          photographer: { type: "string", nullable: true, example: "Vishal Sivakumar" },
+                          caption: { type: "string", nullable: true, example: "CMPUT401W26 Visit" },
+                          description: { type: "string", nullable: true, example: "Riverlot56 Visit with Frank Potter!" },
+                          filename: { type: "string", example: "Riverlot56NA-2026-03-17-Vishal-CMPUTVisit-A1B2C3D4.jpg" },
+                          file_size_bytes: { type: "integer", nullable: true, example: 688724 },
+                          storage_key: { type: "string", example: "homepage-image-uploads/207/user-id/filename.jpg" },
+                          imageUrl: { type: "string", example: "https://sapaa-inspection-images.s3.ca-central-1.amazonaws.com/..." },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "400": { description: "Invalid site id" },
+          "401": { description: "Unauthorized" },
+          "500": { description: "Failed to load images" },
+        },
+      },
+    },
+    
+    "/api/s3/presign-homepage-images": {
+      post: {
+        summary: "Generate a presigned S3 upload URL for homepage images",
+        tags: ["Uploads"],
+        description: "Generates a short-lived presigned S3 URL for uploading a homepage image.",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["filename", "contentType", "fileSize", "siteId"],
+                properties: {
+                  filename: { type: "string", example: "Riverlot56NA-2026-03-17-Vishal-CMPUTVisit.jpg" },
+                  contentType: { type: "string", enum: ["image/jpeg", "image/png", "image/webp"], example: "image/jpeg" },
+                  fileSize: { type: "integer", example: 688724 },
+                  siteId: { type: "integer", example: 207 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "200": {
+            description: "Presigned upload URL generated successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    uploadUrl: { type: "string", example: "https://example-bucket.s3.amazonaws.com/..." },
+                    key: { type: "string", example: "homepage-image-uploads/207/user-id/filename-A1B2C3D4.jpg" },
+                  },
+                },
+              },
+            },
+          },
+          "400": { description: "Invalid input, missing siteId, unsupported type, or file too large" },
+          "401": { description: "Unauthorized" },
+          "500": { description: "Failed to generate upload URL" },
+        },
+      },
+    },
   },
   
 };

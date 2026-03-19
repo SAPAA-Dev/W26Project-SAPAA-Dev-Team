@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { ChevronRight, Upload, Image as ImageIcon, Loader2, Lock } from "lucide-react";
 import { getQuestionsOnline } from '@/utils/supabase/queries';
+import MarkdownText from "@/components/MarkdownText";
 
 interface Answer {
   id?: number;
@@ -28,6 +29,15 @@ interface Question {
 interface MainContentProps {
   responses: Record<number, any>;
   onResponsesChange: (responses: Record<number, any>) => void;
+  onSectionStateChange?: (state: {
+    activeSection: number | null;
+    lastSection: number | null;
+    isOnLastSection: boolean;
+    canGoPrevious: boolean;
+    canGoNext: boolean;
+    goToPreviousSection: () => void;
+    goToNextSection: () => void;
+  }) => void;
   siteName?: string;
   currentUser?: {
     email?: string;
@@ -71,6 +81,7 @@ export interface LocalImage {
 export default function MainContent({
   responses,
   onResponsesChange,
+  onSectionStateChange,
   siteName,
   currentUser,
   existingAttachments = [],
@@ -80,6 +91,8 @@ export default function MainContent({
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const hasAutofilled = useRef(false);
+  const goToPreviousSectionRef = useRef<() => void>(() => {});
+  const goToNextSectionRef = useRef<() => void>(() => {});
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -170,12 +183,56 @@ export default function MainContent({
   });
 
   const sections = Object.keys(questionsBySection).map(Number).sort((a, b) => a - b);
+  const currentSection = activeSection ?? sections[0] ?? null;
+  const lastSection = sections.length > 0 ? sections[sections.length - 1] : null;
+  const currentSectionIndex = currentSection === null ? -1 : sections.indexOf(currentSection);
+  const canGoPrevious = currentSectionIndex > 0;
+  const canGoNext = currentSectionIndex >= 0 && currentSectionIndex < sections.length - 1;
 
   useEffect(() => {
     if (sections.length > 0 && activeSection === null) setActiveSection(sections[0]);
   }, [sections.length]);
 
-  const currentQuestions = questionsBySection[activeSection ?? sections[0] ?? 1] || [];
+  goToPreviousSectionRef.current = () => {
+    if (!canGoPrevious) return;
+    setActiveSection(sections[currentSectionIndex - 1]);
+  };
+
+  goToNextSectionRef.current = () => {
+    if (!canGoNext) return;
+    setActiveSection(sections[currentSectionIndex + 1]);
+  };
+
+  const goToPreviousSection = useCallback(() => {
+    goToPreviousSectionRef.current();
+  }, []);
+
+  const goToNextSection = useCallback(() => {
+    goToNextSectionRef.current();
+  }, []);
+
+  useEffect(() => {
+    onSectionStateChange?.({
+      activeSection: currentSection,
+      lastSection,
+      isOnLastSection:
+        currentSection !== null && lastSection !== null && currentSection === lastSection,
+      canGoPrevious,
+      canGoNext,
+      goToPreviousSection,
+      goToNextSection,
+    });
+  }, [
+    canGoNext,
+    canGoPrevious,
+    currentSection,
+    goToNextSection,
+    goToPreviousSection,
+    lastSection,
+    onSectionStateChange,
+  ]);
+
+  const currentQuestions = questionsBySection[currentSection ?? 1] || [];
 
   const handleResponse = (questionId: number, value: any) => {
     onResponsesChange({ ...responses, [questionId]: value });
@@ -688,46 +745,18 @@ export default function MainContent({
       </aside>
 
       <div className="flex-1 flex flex-col">
-        {/* Top navigation */}
-        {sections.length > 1 && (
-          <div className="grid grid-cols-2 gap-3 px-4 md:px-8 pt-4 md:pt-8">
-            <div>
-              {sections.indexOf(activeSection ?? sections[0]) > 0 && (
-                <button
-                  onClick={() => {
-                    const currentIndex = sections.indexOf(activeSection ?? sections[0]);
-                    setActiveSection(sections[currentIndex - 1]);
-                  }}
-                  className="w-full px-4 py-2 border-2 border-[#E4EBE4] text-[#254431] font-bold rounded-xl hover:bg-[#E4EBE4] transition-all text-sm"
-                >
-                  ← Previous
-                </button>
-              )}
-            </div>
-            <div>
-              {sections.indexOf(activeSection ?? sections[0]) < sections.length - 1 && (
-                <button
-                  onClick={() => {
-                    const currentIndex = sections.indexOf(activeSection ?? sections[0]);
-                    setActiveSection(sections[currentIndex + 1]);
-                  }}
-                  className="w-full px-4 py-2 bg-[#356B43] text-white font-bold rounded-xl hover:bg-[#254431] transition-all text-sm"
-                >
-                  Next →
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
         <section className="flex-1 p-4 md:p-8">
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-[#254431]">
               {sectionMetadata[activeSection ?? sections[0] ?? 1]?.title ?? `Section ${activeSection}`}
             </h2>
+            {sectionMetadata[activeSection ?? sections[0] ?? 1]?.description && (
+              <MarkdownText
+                content={sectionMetadata[activeSection ?? sections[0] ?? 1].description}
+                className="text-[#7A8075] mt-1"
+              />
+            )}
             <p className="text-[#7A8075]">
-              {sectionMetadata[activeSection ?? sections[0] ?? 1]?.description &&
-                `${sectionMetadata[activeSection ?? sections[0] ?? 1].description} `}
               There are {currentQuestions.length} question{currentQuestions.length !== 1 ? 's' : ''} in this section.
             </p>
           </div>
@@ -784,9 +813,10 @@ export default function MainContent({
                               data-testid={`${question.title}-question-title`}>
                             </span>
                             {formattedTitle}</h3>
-                          <h4 className="mt-1 text-sm text-[#254431]/70 leading-snug font-normal">
-                            {question.text || ''}
-                          </h4>
+                          <MarkdownText
+                            content={question.text}
+                            className="mt-1 text-sm text-[#254431]/70 leading-snug font-normal"
+                          />
                           <div className="flex items-center gap-2 mt-2">
                             <span className="text-xs px-2 py-1 rounded-full bg-[#F7F2EA] text-[#7A8075] font-medium">
                               {question.question_type.trim()}
