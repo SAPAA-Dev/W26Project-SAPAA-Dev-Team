@@ -22,6 +22,22 @@ async function getCurrentUserRole(): Promise<string | null> {
   }
 }
 
+async function getCurrentUserAuthenicationStatus(): Promise<boolean | null> {
+  try {
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session?.user) {
+      return null;
+    }
+    
+    return session.user.user_metadata?.authenticated ?? false;
+  } catch (error) {
+    console.error('Error getting user authentication:', error);
+    return null;
+  }
+}
+
 export default function ProtectedRoute({ 
   children,
   requireAdmin = false 
