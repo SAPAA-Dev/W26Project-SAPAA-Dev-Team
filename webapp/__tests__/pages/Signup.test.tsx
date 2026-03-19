@@ -105,7 +105,7 @@ describe('SignupPage', () => {
     fireEvent.change(confirmInput, { target: { value: 'Abc123!' } });
     fireEvent.click(submitBtn);
 
-    expect(await screen.findByText(/Check Your Email/i)).toBeInTheDocument();
+    expect(await screen.findByText(/One more step to go/i)).toBeInTheDocument();
 
     const goToLoginBtn = screen.getByRole('button', { name: /Go to login/i });
     fireEvent.click(goToLoginBtn);

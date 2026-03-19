@@ -51,7 +51,7 @@ export default function ProtectedRoute({
   const pathname = usePathname();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [roleLoading, setRoleLoading] = useState(true);
-  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(false);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   // Fetch user role
   useEffect(() => {
