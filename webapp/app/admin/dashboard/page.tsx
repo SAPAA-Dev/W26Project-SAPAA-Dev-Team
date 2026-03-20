@@ -16,12 +16,14 @@ import {
   BarChart3,
   ImageIcon,
   PieChart,
-  Loader2
+  Loader2,
+  ArrowLeft
 } from "lucide-react";
 import Image from 'next/image';
 import { getTotalInspectionCount, getLastInspectionDate, getNaturalnessDistribution, getTopSitesDistribution } from '@/utils/supabase/queries';
 import AdminNavBar from "../AdminNavBar";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { useRouter } from 'next/navigation';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -52,6 +54,7 @@ type GalleryItem = {
 };
 
 export default function Dashboard() {
+  const router = useRouter();
   const supabaseClient = createClient();
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState("");
@@ -97,7 +100,7 @@ export default function Dashboard() {
     setPoints([]); // Clear map immediately
 
     try {
-      console.log(`🔍 Searching for: "${keyword}"`);
+      console.log(`Searching for: "${keyword}"`);
       
       const response = await fetch(`/api/heatmap?keyword=${encodeURIComponent(keyword)}`);
       
@@ -108,7 +111,7 @@ export default function Dashboard() {
       const data = await response.json();
       const raw = data.data || [];
       
-      console.log(`📊 Found ${raw.length} sites`);
+      console.log(`Found ${raw.length} sites`);
 
       if (raw.length === 0) {
         alert(`No sites found matching "${keyword}"`);
@@ -128,7 +131,7 @@ export default function Dashboard() {
           const geoResponse = await fetch(`/api/geocode?q=${encodeURIComponent(site.namesite)}`);
           
           if (!geoResponse.ok) {
-            console.warn(`⚠️ Geocoding failed for ${site.namesite}`);
+            console.warn(`Geocoding failed for ${site.namesite}`);
             continue;
           }
           
@@ -141,7 +144,7 @@ export default function Dashboard() {
               weight: site.count,
               namesite: site.namesite,
             });
-            console.log(`✅ Geocoded: ${site.namesite}`);
+            console.log(`Geocoded: ${site.namesite}`);
           }
           
           // Small delay to avoid rate limiting
@@ -150,11 +153,11 @@ export default function Dashboard() {
           }
           
         } catch (error) {
-          console.error(`❌ Error geocoding ${site.namesite}:`, error);
+          console.error(`Error geocoding ${site.namesite}:`, error);
         }
       }
 
-      console.log(`✅ Successfully geocoded ${coords.length}/${raw.length} sites`);
+      console.log(`Successfully geocoded ${coords.length}/${raw.length} sites`);
       
       if (coords.length === 0) {
         alert(`Found ${raw.length} sites, but couldn't determine their locations.`);
@@ -163,7 +166,7 @@ export default function Dashboard() {
       setPoints(coords);
       
     } catch (error: any) {
-      console.error("❌ Search error:", error);
+      console.error("Search error:", error);
       alert(`Search failed: ${error.message}`);
       setPoints([]); // Clear map on error
     } finally {
@@ -245,6 +248,20 @@ export default function Dashboard() {
     fetchGallery();
   }, []);
 
+  const handleBack = () => {
+    const stack: string[] = JSON.parse(sessionStorage.getItem('navStack') || '[]')
+
+    if (stack.length > 1) {
+      stack.pop() // remove current page
+      const previous = stack[stack.length - 1]
+      stack.pop() // remove previous since we're navigating there
+      sessionStorage.setItem('navStack', JSON.stringify(stack))
+      router.push(previous)
+    } else {
+      router.push('/sites')
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex flex-col items-center justify-center gap-4">
@@ -259,6 +276,15 @@ export default function Dashboard() {
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
         <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
           <div className="max-w-7xl mx-auto">
+            {/* Back button */}
+            <button
+              onClick = {handleBack}
+              className="flex items-center gap-1.5 text-[#86A98A] hover:text-white transition-colors mb-4 group"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <span className="text-sm font-medium">Back</span>
+            </button>
+            
             <div className="flex items-center justify-between mb-3">
               {/* Left: icon + title + subtitle */}
               <div className="flex items-center gap-4">
