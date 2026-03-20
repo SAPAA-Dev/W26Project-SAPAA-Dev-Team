@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
@@ -7,6 +7,7 @@ export interface User {
   id: string;
   email: string;
   role: string; // role stored in user_metadata
+  authenticated: boolean; // for the purpose of admin being able to approve users
 }
 
 export interface AuthState {
@@ -30,6 +31,7 @@ export async function getAuthState(): Promise<AuthState> {
         email: session.user.email || '',
         // Read role from user_metadata; default to 'steward'
         role: session.user.user_metadata?.role || 'steward',
+        authenticated: session.user.user_metadata?.authenticated || false,
       };
       return { isAuthenticated: true, user };
     }
@@ -50,12 +52,13 @@ export function subscribeToAuth(callback: (state: AuthState) => void): () => voi
   getAuthState().then(callback);
   
   // Listen to Supabase auth state changes
-  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event:any, session:any) => {
     if (session?.user) {
       const user: User = {
         id: session.user.id,
         email: session.user.email || '',
         role: session.user.user_metadata?.role || 'steward',
+        authenticated: session.user.user_metadata?.authenticated || false
       };
       callback({ isAuthenticated: true, user });
     } else {
@@ -86,6 +89,7 @@ export async function login(email: string, password: string): Promise<{ success:
         id: data.user.id,
         email: data.user.email || '',
         role: data.user.user_metadata?.role || 'steward',
+        authenticated: data.user.user_metadata?.authenticated || false
       };
       notifyListeners({ isAuthenticated: true, user });
       return { success: true };
@@ -174,6 +178,8 @@ export async function loginWithGoogle(): Promise<{ success: boolean; error?: str
         const user: User = {
           id: sessionData.session.user.id,
           email: sessionData.session.user.email || '',
+          role: sessionData.session.user.user_metadata?.role || 'steward',
+          authenticated: sessionData.session.user.user_metadata?.authenticated || false
         };
         notifyListeners({ isAuthenticated: true, user });
         return { success: true };
@@ -284,6 +290,8 @@ export async function loginWithMicrosoft(): Promise<{ success: boolean; error?: 
             const user: User = {
               id: session.user.id,
               email: session.user.email || '',
+              role: session.user.user_metadata?.role || 'steward',
+              authenticated: session.user.user_metadata?.authenticated || false
             };
             notifyListeners({ isAuthenticated: true, user });
             return { success: true };
@@ -339,6 +347,8 @@ export async function loginWithMicrosoft(): Promise<{ success: boolean; error?: 
         const user: User = {
           id: sessionData.session.user.id,
           email: sessionData.session.user.email || '',
+          role: sessionData.session.user.user_metadata?.role || 'steward',
+          authenticated: sessionData.session.user.user_metadata?.authenticated || false
         };
         notifyListeners({ isAuthenticated: true, user });
         return { success: true };
@@ -373,7 +383,7 @@ export async function signup(email: string, password: string): Promise<{ success
       email: email.trim(),
       password: password,
       options: {
-        data: { role: 'steward' }, // default role when signing up
+        data: { role: 'steward', authenticated: false }, // default role when signing up & the admin approval state
       },
     });
 
@@ -387,6 +397,7 @@ export async function signup(email: string, password: string): Promise<{ success
           id: data.user.id,
           email: data.user.email || '',
           role: data.user.user_metadata?.role || 'steward',
+          authenticated: data.user.user_metadata?.authenticated || false
         };
         notifyListeners({ isAuthenticated: true, user });
         return { success: true, needsConfirmation: false };
