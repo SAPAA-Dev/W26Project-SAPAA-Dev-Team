@@ -292,10 +292,7 @@ function AttachmentGallery({ attachments }: { attachments: PdfAttachment[] }) {
           <View key={idx} style={styles.attachmentItem} wrap={false}>
             <Image
               style={styles.attachmentImage}
-              src={{
-                data: att.imageBuffer!,
-                format: att.contentType.includes('png') ? 'png' : 'jpg',
-              }}
+              src={`data:${att.contentType};base64,${att.imageBuffer!.toString('base64')}`}
             />
             <Text style={styles.attachmentCaption}>
               {att.caption || att.filename}
@@ -341,9 +338,8 @@ export function InspectionReportDocument({
       {data.sites.map((site, siteIdx) => {
         const showSummary =
           opts.includeNaturalnessSummary && site.responses.length > 0;
-        const [firstResponse, ...restResponses] = site.responses;
 
-        function renderInspection(response: typeof firstResponse) {
+        function renderInspection(response: (typeof site.responses)[0]) {
           const sections = groupAnswersBySection(response.answers);
           const attachments = opts.includeImages
             ? site.attachmentsByResponse?.get(response.id) ?? []
@@ -385,18 +381,17 @@ export function InspectionReportDocument({
 
         return (
           <React.Fragment key={siteIdx}>
-            {/* First page: site header, optional summary, and first inspection */}
-            <Page size={opts.pageSize} style={styles.page}>
-              <SiteHeader site={site} />
-              {showSummary && (
+            {/* Summary page */}
+            {showSummary && (
+              <Page size={opts.pageSize} style={styles.page}>
+                <SiteHeader site={site} />
                 <NaturalnessSummary responses={site.responses} />
-              )}
-              {firstResponse && renderInspection(firstResponse)}
-              <PageFooter />
-            </Page>
+                <PageFooter />
+              </Page>
+            )}
 
-            {/* Subsequent inspections each get their own page */}
-            {restResponses.map((response) => (
+            {/* Each inspection on its own page */}
+            {site.responses.map((response) => (
               <Page key={response.id} size={opts.pageSize} style={styles.page}>
                 <SiteHeader site={site} />
                 {renderInspection(response)}

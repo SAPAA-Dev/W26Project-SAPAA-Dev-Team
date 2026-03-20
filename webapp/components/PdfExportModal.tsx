@@ -15,6 +15,8 @@ import {
   Square,
   AlertCircle,
   Sparkles,
+  MapPin,
+  Search,
 } from 'lucide-react';
 import { FormResponse } from '@/utils/supabase/queries';
 
@@ -55,6 +57,8 @@ export default function PdfExportModal({
   const [error, setError] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showQuickOptions, setShowQuickOptions] = useState(true);
+  const [selectedSiteNames, setSelectedSiteNames] = useState<string[]>([]);
+  const [siteSearch, setSiteSearch] = useState('');
 
   const [options, setOptions] = useState<PdfModalOptions>({
     dateFrom: '',
@@ -73,13 +77,31 @@ export default function PdfExportModal({
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';
+      setSelectedSiteNames(siteNames ?? []);
+      setSiteSearch('');
     } else {
       document.body.style.overflow = '';
     }
     return () => { document.body.style.overflow = ''; };
-  }, [open]);
+  }, [open, siteNames]);
 
   const today = new Date().toISOString().split('T')[0];
+
+  const filteredSiteList = useMemo(() => {
+    if (!siteNames) return [];
+    if (!siteSearch) return siteNames;
+    const lower = siteSearch.toLowerCase();
+    return siteNames.filter((name) => name.toLowerCase().includes(lower));
+  }, [siteNames, siteSearch]);
+
+  const toggleSiteName = (name: string) => {
+    setSelectedSiteNames((prev) =>
+      prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]
+    );
+  };
+
+  const selectAllSites = () => setSelectedSiteNames(siteNames ?? []);
+  const deselectAllSites = () => setSelectedSiteNames([]);
 
   const availableSections = useMemo(() => {
     const sections = new Set<string>();
@@ -205,8 +227,8 @@ export default function PdfExportModal({
 
       if (mode === 'single' && responseId) {
         body = { mode: 'single', responseId, options: apiOptions };
-      } else if (mode === 'multi-site' && siteNames) {
-        body = { mode: 'multi-site', siteNames, options: apiOptions };
+      } else if (mode === 'multi-site' && selectedSiteNames.length > 0) {
+        body = { mode: 'multi-site', siteNames: selectedSiteNames, options: apiOptions };
       } else if (mode === 'site' && siteName) {
         body = { mode: 'site', siteName, options: apiOptions };
       } else {
@@ -251,7 +273,7 @@ export default function PdfExportModal({
       ? 'Single Inspection'
       : mode === 'site'
         ? `${siteName}`
-        : `${siteNames?.length ?? 0} Sites`;
+        : `${selectedSiteNames.length} of ${siteNames?.length ?? 0} Sites`;
 
   return (
     <div
@@ -400,6 +422,83 @@ export default function PdfExportModal({
               </div>
             )}
           </div>
+
+          {/* Site Selection (multi-site mode) */}
+          {mode === 'multi-site' && siteNames && siteNames.length > 0 && (
+            <div className="bg-[#F7F2EA] rounded-2xl p-5 border-2 border-[#E4EBE4]">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-[#356B43]" />
+                  <h3 className="text-sm font-bold text-[#254431] uppercase tracking-wide">Select Sites</h3>
+                  <span className="text-xs text-[#7A8075] font-medium">
+                    ({selectedSiteNames.length} of {siteNames.length} selected)
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={selectAllSites}
+                    className="text-xs font-semibold text-[#356B43] hover:text-[#254431] transition-colors"
+                  >
+                    Select all
+                  </button>
+                  <span className="text-xs text-[#7A8075]">|</span>
+                  <button
+                    onClick={deselectAllSites}
+                    className="text-xs font-semibold text-[#356B43] hover:text-[#254431] transition-colors"
+                  >
+                    Deselect all
+                  </button>
+                </div>
+              </div>
+
+              {selectedSiteNames.length === 0 && (
+                <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-[#FEE2E2] rounded-xl">
+                  <AlertCircle className="w-4 h-4 text-[#B91C1C] flex-shrink-0" />
+                  <p className="text-xs text-[#B91C1C]">No sites selected. Please select at least one site.</p>
+                </div>
+              )}
+
+              {siteNames.length > 10 && (
+                <div className="relative mb-3">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8075]" />
+                  <input
+                    type="text"
+                    placeholder="Search sites..."
+                    value={siteSearch}
+                    onChange={(e) => setSiteSearch(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 border-2 border-[#E4EBE4] rounded-xl text-sm text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] bg-white"
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                {filteredSiteList.map((name) => {
+                  const isSelected = selectedSiteNames.includes(name);
+                  return (
+                    <button
+                      key={name}
+                      onClick={() => toggleSiteName(name)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                        isSelected
+                          ? 'bg-white border-2 border-[#356B43] shadow-sm'
+                          : 'bg-white/50 border-2 border-transparent hover:border-[#E4EBE4]'
+                      }`}
+                    >
+                      {isSelected ? (
+                        <CheckSquare className="w-4 h-4 text-[#356B43] flex-shrink-0" />
+                      ) : (
+                        <Square className="w-4 h-4 text-[#7A8075] flex-shrink-0" />
+                      )}
+                      <p className="text-sm font-medium text-[#254431]">{name}</p>
+                    </button>
+                  );
+                })}
+                {filteredSiteList.length === 0 && siteSearch && (
+                  <p className="text-sm text-[#7A8075] text-center py-3">No sites match &ldquo;{siteSearch}&rdquo;</p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Date Range */}
           {mode !== 'single' && (
@@ -658,7 +757,7 @@ export default function PdfExportModal({
               {mode === 'single'
                 ? '1 inspection'
                 : mode === 'multi-site'
-                  ? `${siteNames?.length ?? 0} sites`
+                  ? `${selectedSiteNames.length} site${selectedSiteNames.length !== 1 ? 's' : ''} selected`
                   : `${previewCount} inspection${previewCount !== 1 ? 's' : ''}`}
             </p>
             <div className="flex items-center gap-3">
@@ -671,7 +770,7 @@ export default function PdfExportModal({
               </button>
               <button
                 onClick={handleExport}
-                disabled={loading || (mode === 'site' && previewCount === 0) || dateRangeInvalid || noSectionsSelected}
+                disabled={loading || (mode === 'site' && previewCount === 0) || (mode === 'multi-site' && selectedSiteNames.length === 0) || dateRangeInvalid || noSectionsSelected}
                 className="px-6 py-2.5 bg-gradient-to-r from-[#356B43] to-[#254431] text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (

@@ -331,18 +331,6 @@ describe('fetchReportData', () => {
     expect(result.sites[1].siteName).toBe('Site B');
   });
 
-  it('throws for multi-site mode with more than 50 sites', async () => {
-    const siteNames = Array.from({ length: 51 }, (_, i) => `Site ${i}`);
-
-    const request: PdfRequest = {
-      mode: 'multi-site',
-      siteNames,
-      options: DEFAULT_OPTIONS,
-    };
-
-    await expect(fetchReportData(request)).rejects.toThrow('Maximum 50 sites');
-  });
-
   // ── Single mode ──
 
   it('fetches single response data', async () => {

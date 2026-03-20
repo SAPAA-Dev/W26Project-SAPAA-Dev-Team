@@ -10,7 +10,7 @@ jest.mock('lucide-react', () => {
   const icons = [
     'X', 'Download', 'Loader2', 'FileText', 'Calendar', 'Image',
     'Settings', 'ChevronDown', 'ChevronUp', 'CheckSquare', 'Square',
-    'AlertCircle', 'Sparkles',
+    'AlertCircle', 'Sparkles', 'MapPin', 'Search',
   ];
   const mocks: Record<string, React.FC<{ className?: string }>> = {};
   icons.forEach((name) => {
@@ -109,7 +109,7 @@ describe('PdfExportModal', () => {
         siteNames={['A', 'B', 'C']}
       />
     );
-    expect(screen.getByText('3 Sites')).toBeInTheDocument();
+    expect(screen.getByText('3 of 3 Sites')).toBeInTheDocument();
   });
 
   it('shows preview count for site mode', () => {
