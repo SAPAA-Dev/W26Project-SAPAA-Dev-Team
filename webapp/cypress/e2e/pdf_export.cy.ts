@@ -10,7 +10,9 @@ function loginAsAdmin() {
   cy.get('#password').type('123Gctrmomy@');
   cy.get('button.font-bold').click();
   cy.get('button.text-white').click();
+  cy.wait(2000);
   cy.contains('Admin').first().click();
+  cy.wait(2000);
   cy.url().should('include', '/admin/dashboard');
 }
 
@@ -24,6 +26,7 @@ function navigateToSiteDetails() {
 }
 
 function openSitePdfModal() {
+  cy.wait(2000);
   cy.contains('Export').click();
   cy.contains('Export as PDF').click();
   cy.contains('Export PDF Report').should('be.visible');
@@ -47,7 +50,7 @@ describe('PDF Export - Admin Access Only', () => {
   });
 });
 
-describe('PDF Export - Select Questions (Sections)', () => {
+describe('PDF Export - Select Sections', () => {
 
   beforeEach(() => {
     loginAsAdmin();
@@ -56,9 +59,9 @@ describe('PDF Export - Select Questions (Sections)', () => {
 
   it('Allows Admin to select sections in Advanced Options', () => {
     openSitePdfModal();
-    cy.contains('Advanced Options').click();
-    cy.contains('Sections').should('be.visible');
-    cy.contains('All selected').should('be.visible');
+    cy.contains('Advanced Options').scrollIntoView().click();
+    cy.contains('Sections').scrollIntoView().should('be.visible');
+    cy.contains('All selected').scrollIntoView().should('be.visible');
   });
 
   it('Allows Admin to deselect a section', () => {

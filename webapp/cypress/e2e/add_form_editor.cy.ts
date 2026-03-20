@@ -13,7 +13,7 @@ describe('Admin Form Editor - Adding Questions', () => {
     cy.contains('Admin').first().click();
     cy.wait(5000);
     cy.get('button[title="admin dropdown menu"]').click();
-    cy.contains('Form Editor').click();
+    cy.contains('Form Editor').scrollIntoView().click();
     cy.url().should('include', '/admin/form-editor')
   });
 
