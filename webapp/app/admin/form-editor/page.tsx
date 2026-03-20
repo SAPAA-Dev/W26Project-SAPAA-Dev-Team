@@ -320,6 +320,8 @@ export default function FormEditorPage() {
       sessionStorage.setItem('navStack', JSON.stringify(stack))
       router.push(previous)
     } else {
+      stack.pop() // clear current page before navigating to fallback
+      sessionStorage.setItem('navStack', JSON.stringify(stack))
       router.push('/sites')
     }
   }
