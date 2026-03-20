@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const cookieStore = await cookies();
-    
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
@@ -27,13 +28,33 @@ export async function GET(request: NextRequest) {
         },
       }
     );
-    
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    
-    if (!error) {
+
+    const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (!error && session?.user) {
+      // Check if user is new by looking at created_at
+      const userCreatedAt = new Date(session.user.created_at);
+      const isNewUser = new Date().getTime() - userCreatedAt.getTime() < 10000; // 10 seconds
+
+      // Set authenticated: false for new OAuth users
+      if (isNewUser && (!session.user.user_metadata?.authenticated === undefined)) {
+        const adminClient = createAdminClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SECRET!
+        );
+
+        await adminClient.auth.admin.updateUserById(session.user.id, {
+          user_metadata: {
+            ...session.user.user_metadata,
+            authenticated: false,
+            role: session.user.user_metadata?.role || 'steward'
+          }
+        });
+      }
+
       const forwardedHost = request.headers.get('x-forwarded-host');
       const isLocalEnv = process.env.NODE_ENV === 'development';
-      
+
       if (isLocalEnv) {
         return NextResponse.redirect(`${origin}${next}`);
       } else if (forwardedHost) {

@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signup, signInWithGoogle, signInWithMicrosoft } from '@/services/auth';
-import { Mail, Lock, Loader2, CheckCircle, Eye, EyeOff, Leaf, Shield, Users } from 'lucide-react';
+import { signup, resendConfirmation, signInWithGoogle, signInWithMicrosoft } from '@/services/auth';
+import { Mail, Lock, Loader2, CheckCircle, Eye, EyeOff, Leaf, Shield, ShieldCheck, Users } from 'lucide-react';
 import { Smartphone, History } from "lucide-react";
 import Image from 'next/image';
 
@@ -374,19 +374,58 @@ export default function SignupPage() {
       {showEmailDialog && (
         <div className="fixed inset-0 bg-[#254431]/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8">
-            <div className="flex items-center justify-center mb-6">
-              <div className="bg-[#E4EBE4] rounded-full p-4">
-                <CheckCircle className="h-12 w-12 text-[#1C7C4D]" strokeWidth={2.5} />
+
+            <div className="flex items-center justify-center mb-7">
+              <div className="flex items-center">
+                <div className="bg-[#E4EBE4] rounded-full p-4 z-10">
+                  <Mail className="h-8 w-8 text-[#1C7C4D]" strokeWidth={2} />
+                </div>
+                <div className="bg-[#FEF3E2] rounded-full p-4 -ml-4 shadow-[0_0_0_3px_white]">
+                  <ShieldCheck className="h-8 w-8 text-[#D98C30]" strokeWidth={2} />
+                </div>
               </div>
             </div>
-            <h2 className="text-3xl font-bold text-[#254431] text-center mb-3">
-              Check Your Email
+
+            <h2 className="text-3xl font-bold text-[#254431] text-center mb-2">
+              One more step to go
             </h2>
-            <p className="text-[#7A8075] text-center mb-8 leading-relaxed">
+            <p className="text-[#7A8075] text-center leading-relaxed mb-6">
               We've sent a confirmation link to{' '}
-              <span className="font-bold text-[#1E2520]">{email}</span>. 
-              Click the link to activate your account and start stewarding Alberta's protected areas.
+              <span className="font-semibold text-[#1E2520]">{email}</span>.{' '}
+              After verifying, your account will be reviewed for access.
             </p>
+            <div className="flex flex-col gap-3 mb-7">
+              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#F0F7F3] border border-[#C8DFD2]">
+                <div className="w-7 h-7 rounded-full bg-[#E4EBE4] flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="h-4 w-4 text-[#1C7C4D]" strokeWidth={2.5} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[#1E2520]">Account created</p>
+                  <p className="text-xs text-[#7A8075]">Your details have been saved.</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#FFFBF3] border border-[#FCE5B8]">
+                <div className="w-7 h-7 rounded-full bg-[#FCE5B8] flex items-center justify-center flex-shrink-0 text-xs font-semibold text-[#B8711F]">
+                  2
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[#1E2520]">Verify your email</p>
+                  <p className="text-xs text-[#7A8075]">Click the link we sent to your inbox.</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#FFFBF3] border border-[#FCE5B8]">
+                <div className="w-7 h-7 rounded-full bg-[#FCE5B8] flex items-center justify-center flex-shrink-0 text-xs font-semibold text-[#B8711F]">
+                  3
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[#1E2520]">Admin approval</p>
+                  <p className="text-xs text-[#7A8075]">An administrator will review and grant access.</p>
+                </div>
+              </div>
+            </div>
+
             <button
               onClick={() => {
                 setShowEmailDialog(false);
@@ -396,6 +435,22 @@ export default function SignupPage() {
             >
               Go to login
             </button>
+
+            <p className="text-center text-xs text-[#7A8075] mt-4">
+              Didn't receive an email?{' '}
+              
+              <button className="text-[#1C7C4D] font-medium hover:underline"
+                onClick={async () => {
+                  try{
+                    await  resendConfirmation(email);
+                  } catch (err){
+                    console.log(err)
+                  }
+              }}>
+                Resend confirmation
+              </button>
+            </p>
+
           </div>
         </div>
       )}
