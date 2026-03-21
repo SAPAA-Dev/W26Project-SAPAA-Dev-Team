@@ -53,7 +53,7 @@ Maintain a consistent visual language to reduce cognitive load and build user co
 **Unified navigation shell:**
 Consistent header with SAPAA logo, gradient green background, and navigation elements. Admin pages use a hamburger menu for navigation.
 
-<img width="1626" height="143" alt="image" src="https://github.com/user-attachments/assets/02fcab6e-06dc-451e-b749-ad734dd52ea4" />  
+![UI Header](images/ui_header.png) 
 
 **Standardised colour palette:** Primary green (`#254431`, `#356B43`) for headers and primary actions. White (`#FFFFFF`) for content cards. Light grey (`#F7F2EA`, `#E4EBE4`) for dividers and secondary surfaces. Red (`#B91C1C`) for destructive actions.
 
@@ -65,12 +65,12 @@ Guide attention using size, weight, colour, and spacing.
 
 **Card-based layout:** Major information chunks are grouped into cards (e.g., Site Details, Naturalness Details, Analytics charts, Account tiles). Cards use consistent padding, rounded corners, and subtle shadows.
 
-<img width="1557" height="615" alt="image" src="https://github.com/user-attachments/assets/07f7f63f-43c3-4928-ab21-38f15a9e45e7" />
+![UI Card Based Layout](images/ui_card_based_layout.png) 
 
 
 **Strategic emphasis:** Primary actions use filled green buttons with high visual weight (e.g., Preview PDF, Sync Now, Login). Secondary actions use outlined buttons or lower-contrast styling.
 
-<img width="1567" height="271" alt="image" src="https://github.com/user-attachments/assets/a6f6cd57-850e-4ff5-ad15-7e49236ffed5" />
+![UI Strategic Emphasis](images/ui_primary_secondary_buttons.png)
 
 
 **Consistent spacing:** Padding inside cards (16–24px) and consistent vertical spacing between sections (16–32px) creates rhythm and improves readability.
@@ -81,11 +81,11 @@ Show only what users need at each step, and reveal more detail on demand.
 
 **Inspection Reports:** Tabs for By Date and By Question instead of one long view. Expandable sections for detailed observations.
 
-<img width="1572" height="322" alt="image" src="https://github.com/user-attachments/assets/db339b0a-a9fe-4878-8d5e-9be66bf6408d" />
+![UI Tabs](images/ui_view_compare_date_question_tabs.png) 
 
 **Site Details:** High-level information at the top (name, location, key metrics). Detailed observations and naturalness details appear further down in separate cards.
 
-<img width="1493" height="526" alt="image" src="https://github.com/user-attachments/assets/595e10c0-bddb-48cf-90ab-8bac9b5835c6" />
+![UI Site Details](images/ui_site_details.png) 
 
 **Admin Features:** Admin-specific features are not visible to regular users. Admin navigation is accessible via menu or dedicated button.
 
@@ -97,14 +97,14 @@ Make key tasks obvious and easy to complete.
 
 **Button hierarchy:** Primary uses solid green, often full width. Secondary uses outlined or low-emphasis styling. Destructive uses red with a clear label.
 
-<img width="320" height="287" alt="image" src="https://github.com/user-attachments/assets/a3d871a5-5e60-45ae-9e93-aca4bd9d2ece" />
+![UI Button Hierarchy](images/ui_button_hierarchy.png) 
 
 
 **Immediate feedback:** Counters and indicators update live as users interact. Loading states show progress indicators. Lists and cards visually respond to user interaction.
 
-<img width="1622" height="157" alt="image" src="https://github.com/user-attachments/assets/64f6e449-e0b9-45b5-9caf-b0155e33ce54" />
+![UI Counters Feedback](images/ui_counters_feedback.png) 
 
-<img width="732" height="467" alt="image" src="https://github.com/user-attachments/assets/09d6b310-be92-4bd2-b963-05faf35665ea" />
+![UI Loading Feedback](images/ui_loading_wheel.png) 
 
 ---
 
@@ -118,11 +118,11 @@ The system always keeps users informed about what is going on.
 
 **Web:** Loading spinners appear during data fetches. Page titles reflect the current location. Active navigation items are highlighted. Search results show a count of sites found.
 
-<img width="683" height="232" alt="image" src="https://github.com/user-attachments/assets/28b928e1-e2a2-4b9f-a3eb-b6f43ddff99c" />
+![UI Site Title](images/ui_site_page_title.png) 
 
-<img width="1047" height="245" alt="image" src="https://github.com/user-attachments/assets/d1209529-e548-44b7-877b-5a3a1a733cf9" />
+![UI Highlighted Item](images/ui_highlighted_item.png) 
 
-<img width="328" height="192" alt="image" src="https://github.com/user-attachments/assets/ea8f7fd5-185d-4ceb-8192-aa5fa5d6a2d0" />
+![UI Search Result Count](images/ui_search_result_count.png) 
 
 
 **Why this matters:** Users can see that their actions are working and understand where they are in the app, reducing confusion and frustration.
@@ -131,7 +131,7 @@ The system always keeps users informed about what is going on.
 
 The application uses terminology that stewards already know: Naturalness Score, Recreational Activities, Observations. The SAPAA Map uses Google Maps (mobile) and Leaflet (web) with familiar map interactions. Inspection questions are labelled with codes (Q52, Q62, etc.) that match existing steward workflows.
 
-<img width="1176" height="717" alt="image" src="https://github.com/user-attachments/assets/1098c087-b715-42e5-8e16-fadb8303a319" />
+![UI Steward Terminology](images/ui_steward_terminology.png) 
 
 **Why this matters:** Familiar language and visuals reduce training time and make the app feel like a natural extension of existing workflows.
 
@@ -143,9 +143,9 @@ Provide clearly marked exits and ways to undo actions.
 
 **Web:** Back buttons appear on all detail pages. Modal dialogs can be closed with the X button or by clicking outside. Cancel buttons appear on forms. Breadcrumb navigation is used where applicable.
 
-<img width="547" height="157" alt="image" src="https://github.com/user-attachments/assets/71df7506-1b73-42ed-8675-b91bbe9410b3" />
+![UI Back Button](images/ui_back_button.png) 
 
-<img width="870" height="870" alt="image" src="https://github.com/user-attachments/assets/f35c7d40-a2d5-4d80-8ad2-7535e164617e" />
+![UI Cancel Button](images/ui_cancel_button.png) 
 
 
 **Why this matters:** Users feel safe exploring features because they know they can easily back out or adjust their choices.
@@ -168,9 +168,9 @@ Design to prevent errors before they happen.
 
 **Web:** Form validation prevents invalid submissions. Confirmation dialogues guard against destructive actions. Disabled states prevent invalid interactions. Clear error messages guide users to a resolution.
 
-<img width="497" height="162" alt="image" src="https://github.com/user-attachments/assets/431bb2ad-9855-4512-8cd0-edaf9782c194" />
+![UI Form Validation](images/ui_form_validation.png) 
 
-<img width="747" height="208" alt="image" src="https://github.com/user-attachments/assets/a5dec7d5-e00c-4caa-9e5d-89a1c3b95956" />
+![UI Error Message](images/ui_error_message.png) 
 
 **Why this matters:** Preventing mistakes saves time and protects data integrity.
 
@@ -178,7 +178,7 @@ Design to prevent errors before they happen.
 
 All fields are clearly labelled: Region, Area (HA/AC), Naturalness Details, and so on. Bottom tabs (mobile) are always visible with both icons and text labels. PDF field selection mirrors the Site Details layout and naming. Status badges show inspection recency with colour coding, so users do not need to calculate dates themselves.
 
-<img width="1612" height="285" alt="image" src="https://github.com/user-attachments/assets/995dd714-b817-4eb2-8b6c-771df2003dd1" />
+![UI Field Labels](images/ui_field_labels.png) 
 
 
 **Why this matters:** Users do not have to remember information across screens; they can recognise it instead.
@@ -191,11 +191,11 @@ Provide accelerators for expert users while keeping the interface simple for nov
 
 **Multiple access paths:** Inspection reports can be viewed By Date (chronological workflow) or By Question (comparison/analysis workflow).
 
-<img width="1586" height="516" alt="image" src="https://github.com/user-attachments/assets/347eff72-bec5-4685-8147-ab93c708766f" />
+![UI Efficient Workflow](images/ui_efficient_workflow.png) 
 
 **Smart defaults:** PDF generation starts with all fields selected, so users typically only need to deselect a few. Search is always available. Sort options are remembered.
 
-<img width="1223" height="332" alt="image" src="https://github.com/user-attachments/assets/884c3243-dc52-4a34-9437-72cfc16c27e5" />
+![UI Smart Defaults](images/ui_smart_defaults.png) 
 
 **Why this matters:** New users can follow straightforward flows, while experienced users can speed up their work with bulk actions and shortcuts.
 
@@ -203,9 +203,9 @@ Provide accelerators for expert users while keeping the interface simple for nov
 
 Interfaces should not contain irrelevant or rarely needed information.
 
-Each screen is focused on one main task: view analytics, inspect a site, manage accounts, or generate a PDF. A limited colour palette (green, white, grey, and red for warnings) keeps the interface clean. Cards group only related information with enough white space for breathing room. Icons are used only where they add meaning, not for decoration.
+Each screen is focused on one main task: view analytics, inspect a site, manage accounts, or generate a PDF. A limited colour palette (green, white, grey, and red for warnings) keeps the interface clean. Cards group only related information with enough white space for breathing room.
 
-<img width="1865" height="891" alt="image" src="https://github.com/user-attachments/assets/0eb85bdd-0a67-445c-9f99-4a12dca2438a" />
+![UI Aesthetics and Minimalist Design](images/ui_aesthetics_minimalist_design.png) 
 
 **Why this matters:** A clean interface makes it easier to focus on what matters and reduces cognitive overload.
 
@@ -217,7 +217,7 @@ Error messages should be expressed in plain language, indicate the problem, and 
 
 **Web:** Error messages are displayed in red with clear visibility. Form validation shows specific field errors. Network errors provide retry buttons. 404 pages guide users back to main content.
 
-<img width="758" height="560" alt="image" src="https://github.com/user-attachments/assets/90ef6376-833c-44de-9306-df14a0b524d0" />
+![UI Visible Errors](images/ui_visible_error_message.png) 
 
 **Why this matters:** Users can quickly understand what went wrong and how to fix it rather than feeling frustrated.
 
@@ -227,7 +227,7 @@ Help should be easy to find, focused on the user's task, and list concrete steps
 
 A user manual is available as an app tutorial. In-app tooltips and hints are provided where appropriate. Clear labels and placeholders guide users through forms. Status messages explain what actions do (e.g., "Syncing data..."). Page titles and descriptions provide contextual orientation throughout the web application.
 
-<img width="1222" height="371" alt="image" src="https://github.com/user-attachments/assets/63f679e5-d332-4db9-b2c1-46749def7d9f" />
+![UI In-app Tooltips](images/ui_help_tooltips.png) 
 
 
 **Why this matters:** While the interface should be self-explanatory, having documentation available helps users learn advanced features.
@@ -260,7 +260,7 @@ A user manual is available as an app tutorial. In-app tooltips and hints are pro
 
 All colours in the application are drawn from a forest-green and warm-cream palette. Custom hex values are used throughout. No Tailwind named colour shades (e.g., `green-700`) appear in the codebase.
 
-<img width="1638" height="420" alt="image" src="https://github.com/user-attachments/assets/e934cbe6-3ed0-447e-a520-da92c902b738" />
+![UI Colour Palette](images/ui_colour_palette.png) 
 
 ### 5.1 Primary Brand Colours
 
@@ -379,7 +379,7 @@ The three columns are wrapped in a `flex gap-8` container inside a `DndContext` 
 
 The application uses a shared green-header style but not one identical markup structure on every page. Most pages use a full-width dark-green banner with logo/title/subtitle and optional right-side actions.
 
-<img width="1650" height="156" alt="image" src="https://github.com/user-attachments/assets/ba493314-ab65-4390-b1c8-36408f6a1fef" />
+![UI Header Component](images/ui_full_header.png) 
 
 ### 8.1 Standard Header (Primary Site/Detail Pattern)
 
@@ -422,7 +422,7 @@ Admin pages include `AdminNavBar` near the top of the page. Some pages override 
 </div>
 ```
 
-<img width="1650" height="398" alt="image" src="https://github.com/user-attachments/assets/3b7257e9-2343-48b4-9f06-f79bff44785f" />
+![UI Admin Header & AdminNavBar](images/ui_admin_header_navbar.png) 
 
 
 ### 8.3 Header with Action Button (Account Management)
@@ -442,7 +442,7 @@ When a page needs a primary action button in the header, it is grouped together 
   </div>
 </div>
 ```
-<img width="1648" height="157" alt="image" src="https://github.com/user-attachments/assets/695a5db5-a502-4a24-b16c-9aad59814ab2" />
+![UI Header with Action Button](images/ui_header_action_button.png) 
 
 
 ### 8.4 SAPAA Logo
@@ -472,7 +472,7 @@ Back navigation exists on detail/report pages but currently has two variants:
 
 Two stats card styles exist in the application. The Large Icon style is the preferred convention for all admin pages.
 
-<img width="553" height="116" alt="image" src="https://github.com/user-attachments/assets/3fa11728-b226-4362-af69-84339f93a5bf" />
+![UI Stats Card](images/ui_stats_card.png) 
 
 ### 9.1 Large Icon Style (Preferred - Admin Pages)
 
@@ -547,7 +547,7 @@ When a card is a navigation link (e.g., Image Gallery on the dashboard), wrap it
 
 Inspection status is communicated through inline coloured badges. Badge style follows the pattern: `rounded-full px-3 py-1 text-xs font-semibold`.
 
-<img width="1575" height="697" alt="image" src="https://github.com/user-attachments/assets/d9cbe00d-e248-43b7-b27e-b586b14ca695" />
+![UI Status Badges](images/ui_status_badges.png) 
 
 ### 10.1 Inspection Status Badges
 
@@ -585,7 +585,7 @@ Inspection status is communicated through inline coloured badges. Badge style fo
 
 ## 11. Buttons
 
-<img width="663" height="621" alt="image" src="https://github.com/user-attachments/assets/05267a7d-037a-4ce9-b472-a1fc13b54b1b" />
+![UI Buttons](images/ui_buttons.png) 
 
 ### 11.1 Primary Button
 
@@ -664,9 +664,9 @@ Small square icon button in a sidebar header:
 
 ## 12. Form Inputs
 
-<img width="618" height="477" alt="image" src="https://github.com/user-attachments/assets/752edd00-32bc-4723-a1e6-2a91b374e250" />
+![UI Form Input 1](images/ui_form_input1.png) 
 
-<img width="1212" height="891" alt="image" src="https://github.com/user-attachments/assets/afdf33c4-a872-4eec-94f7-c4e1f5dcff9a" />
+![UI Form Input 2](images/ui_form_input2.png) 
 
 ### 12.1 Standard Text Input
 
@@ -726,7 +726,7 @@ The green border signals that this area is in an active edit state. The form act
 
 ## 13. Cards and Panels
 
-<img width="520" height="242" alt="image" src="https://github.com/user-attachments/assets/63940442-0546-4dfd-8f7b-877178f61a5c" />
+![UI Standard Card](images/ui_standard_card.png) 
 
 ### 13.1 Standard White Card
 
@@ -759,7 +759,7 @@ The default content container used throughout the application:
 </div>
 ```
 
-<img width="326" height="687" alt="image" src="https://github.com/user-attachments/assets/6671fadc-df0e-4a2f-ab42-80786bd573d4" />
+![UI Sidebar](images/ui_sidebar.png) 
 
 
 ### 13.3 Sticky Preview Panel
@@ -772,7 +772,7 @@ The right-side preview panel in the Form Editor is sticky so it stays visible wh
 </div>
 ```
 
-<img width="471" height="382" alt="image" src="https://github.com/user-attachments/assets/c0ca9027-1c92-49a1-bb1c-e717dbd16e17" />
+![UI Sticky Preview](images/ui_sticky_preview.png) 
 
 
 ### 13.4 Active / Selected Card State
@@ -799,7 +799,7 @@ border-[#356B43] shadow-sm
   </button>
 </div>
 ```
-<img width="438" height="362" alt="image" src="https://github.com/user-attachments/assets/3038c315-4dad-4a2f-9b6c-fb5d1a7dc9d6" />
+![UI Empty State](images/ui_empty_state.png) 
 
 ---
 
@@ -827,7 +827,7 @@ border-[#356B43] shadow-sm
 </div>
 ```
 
-<img width="1588" height="77" alt="image" src="https://github.com/user-attachments/assets/c82829d0-3cd6-45d5-aeda-facc1874b5d6" />
+![UI Success Alert](images/ui_success_alert.png) 
 
 
 ### 14.3 Alert Behaviour
@@ -855,7 +855,7 @@ When a page is loading its initial data, render a centred spinner on the page ba
 </ProtectedRoute>
 ```
 
-<img width="397" height="281" alt="image" src="https://github.com/user-attachments/assets/d74be3db-f50d-4f4d-a613-e0db03566ce2" />
+![UI Page Loading](images/ui_page_loading.png) 
 
 ### 15.2 Button Loading State
 
@@ -867,7 +867,7 @@ When a save/submit operation is in progress, replace the button icon with a spin
   {saving ? 'Saving...' : 'Save Changes'}
 </button>
 ```
-<img width="366" height="117" alt="image" src="https://github.com/user-attachments/assets/95e986fa-5955-458e-abb9-feef140b1c38" />
+![UI Button Loading](images/ui_button_loading.png) 
 
 ### 15.3 Leaflet / Map SSR Guard
 
@@ -924,7 +924,7 @@ Each sortable item exposes only a grip handle (not the whole card) as the drag t
   <GripVertical className="w-4 h-4 text-[#7A8075]" />
 </button>
 ```
-<img width="820" height="442" alt="image" src="https://github.com/user-attachments/assets/4c8dfa6d-d499-4f06-99f4-7031c1becee1" />
+![UI Drag Handle](images/ui_drag_drop.png) 
 
 
 ### 16.3 Drag Visual Feedback
@@ -937,13 +937,13 @@ Each sortable item exposes only a grip handle (not the whole card) as the drag t
 
 ---
 
-<img width="845" height="531" alt="image" src="https://github.com/user-attachments/assets/2026ae51-9be7-4d78-80f8-bdb5d74f248b" />
+![UI Drag Visual Feedback](images/ui_drag_drop_feedback.png) 
 
 ## 17. AdminNavBar
 
 The `AdminNavBar` component is shared across all admin pages. Its internal structure must not be modified since UI tests depend on specific elements being present.
 
-<img width="287" height="357" alt="image" src="https://github.com/user-attachments/assets/206aa957-4e88-419b-810a-ff86fbe31bd4" />
+![UI AdminNavbar](images/ui_admin_navbar.png) 
 
 ### 17.1 Test-Critical Elements
 
