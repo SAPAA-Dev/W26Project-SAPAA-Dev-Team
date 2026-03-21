@@ -189,7 +189,8 @@ This page provides a general overview of the assigned tasks and roles for the du
 |:---:|:---:|:---:|:---:|
 |Deployment Instruction|Documentation|Harveer, Raiyana|Mar 24th|
 |Sign out feature|US 5.0.2|Harveer|Mar 24th|
-|Toggle dark mode for web|US 6.0.1|Raiyana, Zoe|Mar 25th|
+|Home-screen Gallery View|US 2.0.9|Raiyana, Zoe|Mar 25th|
+|Toggle dark mode for web|US 6.0.1|Raiyana, Zoe|Mar 26th|
 |A Job Description|Docmentation|Everyone|Mar 26th|
 |Change text size on screen|US 6.0.2|Vishal, Braden, Jason|Mar 26th|
 |User manual|Documentation|Jason, Braden, Akib, Zoe, Vishal|Mar 27th|
