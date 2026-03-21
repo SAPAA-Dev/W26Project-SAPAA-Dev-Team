@@ -118,7 +118,7 @@ describe("US 1.0.18 - Image Caption Behavior in Upload Question", () => {
     ) as HTMLInputElement;
     fireEvent.change(input, { target: { files: [file] } });
 
-    const captionInput = await screen.findByPlaceholderText("Caption (optional)");
+    const captionInput = await screen.findByPlaceholderText("Longer Description");
     fireEvent.change(captionInput, { target: { value: "Hanging broken tree" } });
 
     const latestResponses = getLatestResponses(mockOnChange);
