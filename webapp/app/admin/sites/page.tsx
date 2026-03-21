@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSitesOnline, getCounties, updateSite, SiteSummary, County } from '@/utils/supabase/queries';
+import { getAllSites, getCounties, updateSite, toggleSiteActive, SiteSummary, County } from '@/utils/supabase/queries';
 import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, Pencil, ArrowLeft } from 'lucide-react';
 import EditSiteModal from './components/EditSiteModal';
 import Image from 'next/image';
@@ -50,11 +50,11 @@ export default function AdminSitesPage() {
     const loadSites = async () => {
       setLoading(true);
       try {
-        const [onlineSites, countyList] = await Promise.all([
-          getSitesOnline(),
+        const [allSites, countyList] = await Promise.all([
+          getAllSites(),
           getCounties(),
         ]);
-        setSites(onlineSites);
+        setSites(allSites);
         setCounties(countyList);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error loading sites';
@@ -118,15 +118,19 @@ export default function AdminSitesPage() {
     return { totalSites, totalInspections, activeThisYear, needsAttention };
   }, [sites]);
 
-  const handleSaveSite = async (data: { id: number; namesite: string; ab_county: number | null }) => {
+  const handleSaveSite = async (data: { id: number; namesite: string; ab_county: number | null; is_active: boolean }) => {
     setSaving(true);
     try {
+      const currentSite = sites.find((s) => s.id === data.id);
       await updateSite(data.id, data.namesite, data.ab_county);
+      if (currentSite && currentSite.is_active !== data.is_active) {
+        await toggleSiteActive(data.id, data.is_active);
+      }
       const countyObj = counties.find((c) => c.id === data.ab_county);
       setSites((prev) =>
         prev.map((s) =>
           s.id === data.id
-            ? { ...s, namesite: data.namesite, ab_county: data.ab_county, county: countyObj?.county ?? null }
+            ? { ...s, namesite: data.namesite, ab_county: data.ab_county, county: countyObj?.county ?? null, is_active: data.is_active }
             : s
         )
       );
@@ -368,15 +372,28 @@ export default function AdminSitesPage() {
                 return (
                   <div
                     key={item.id}
-                    className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] hover:border-[#86A98A] hover:shadow-lg transition-all group relative"
+                    className={`rounded-2xl p-6 border-2 transition-all group relative ${
+                      item.is_active
+                        ? 'bg-white border-[#E4EBE4] hover:border-[#86A98A] hover:shadow-lg'
+                        : 'bg-gray-100 border-gray-300 opacity-60'
+                    }`}
                   >
+                    {!item.is_active && (
+                      <span className="absolute top-3 right-3 text-xs font-semibold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">
+                        Inactive
+                      </span>
+                    )}
                     <button
                       onClick={() => router.push(`/admin/sites/${encodeURIComponent(item.namesite)}`)}
                       className="w-full text-left"
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <h3 className="text-lg font-bold text-[#254431] mb-1 group-hover:text-[#356B43] transition-colors">
+                          <h3 className={`text-lg font-bold mb-1 transition-colors ${
+                            item.is_active
+                              ? 'text-[#254431] group-hover:text-[#356B43]'
+                              : 'text-gray-500'
+                          }`}>
                             {item.namesite}
                           </h3>
                           {item.county && (

@@ -22,16 +22,33 @@ export default defineConfig({
           }
           return null;
         },
-        async getSiteInfo(siteName: string) {
+        async restoreSite({ namesite, originalName, originalCountyId, originalIsActive }: { namesite: string; originalName: string; originalCountyId: number | null; originalIsActive?: boolean }) {
+          const supabase = createServerSupabase();
+          const { data: site } = await supabase
+            .from("W26_sites-pa")
+            .select("id")
+            .eq("namesite", namesite)
+            .single();
+          if (site) {
+            const update: any = { namesite: originalName, ab_county: originalCountyId };
+            if (originalIsActive !== undefined) update.is_active = originalIsActive;
+            await supabase
+              .from("W26_sites-pa")
+              .update(update)
+              .eq("id", site.id);
+          }
+          return null;
+        },
+        async getSiteInfo(namesite: string) {
           const supabase = createServerSupabase();
           const { data } = await supabase
             .from("W26_sites-pa")
-            .select("id, namesite, ab_county")
-            .eq("namesite", siteName)
+            .select("id, namesite, ab_county, is_active")
+            .eq("namesite", namesite)
             .single();
-          return data ?? null;
+          return data;
         },
-        async restoreSite({ namesite, originalName, originalCountyId }: { namesite: string; originalName: string; originalCountyId: number | null }) {
+        async setSiteActive({ namesite, is_active }: { namesite: string; is_active: boolean }) {
           const supabase = createServerSupabase();
           const { data: site } = await supabase
             .from("W26_sites-pa")
@@ -41,7 +58,7 @@ export default defineConfig({
           if (site) {
             await supabase
               .from("W26_sites-pa")
-              .update({ namesite: originalName, ab_county: originalCountyId })
+              .update({ is_active })
               .eq("id", site.id);
           }
           return null;
