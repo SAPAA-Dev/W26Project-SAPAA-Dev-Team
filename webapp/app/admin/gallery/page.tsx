@@ -5,7 +5,8 @@ import { useEffect, useState, useMemo } from "react";
 import AdminNavBar from "../AdminNavBar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Image from "next/image";
-import { Loader2, MapPin, FileText, ImageIcon, X, Maximize2, Search } from "lucide-react";
+import { Loader2, MapPin, FileText, ImageIcon, X, Maximize2, Search, ArrowLeft } from "lucide-react";
+import { useRouter } from 'next/navigation';
 
 type GalleryItem = {
   id: string;
@@ -30,6 +31,7 @@ type GalleryItem = {
 };
 
 export default function GalleryPage() {
+  const router = useRouter();
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
@@ -94,11 +96,35 @@ export default function GalleryPage() {
     });
   }, [items, searchQuery]);
 
+  // Handle Back Button Navigation
+  const handleBack = () => {
+    const stack: string[] = JSON.parse(sessionStorage.getItem('navStack') || '[]')
+
+    if (stack.length > 1) {
+      stack.pop() // remove current page
+      const previous = stack[stack.length - 1]
+      stack.pop() // remove previous since we're navigating there
+      sessionStorage.setItem('navStack', JSON.stringify(stack))
+      router.push(previous)
+    } else {
+      router.push('/sites')
+    }
+  }
+
   return (
     <ProtectedRoute requireAdmin>
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
         <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
           <div className="max-w-7xl mx-auto">
+            {/* Back button */}
+            <button
+              onClick = {handleBack}
+              className="flex items-center gap-1.5 text-[#86A98A] hover:text-white transition-colors mb-4 group"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <span className="text-sm font-medium">Back</span>
+            </button>
+            
             <div className="flex items-center justify-between mb-3">
               {/* Left: icon + title + subtitle */}
               <div className="flex items-center gap-4">

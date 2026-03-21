@@ -127,7 +127,7 @@ describe('AdminSitesPage', () => {
     // Wait for the sort to complete and verify order
     await waitFor(() => {
       const buttons = screen.getAllByRole('button');
-      const siteButtons = buttons.filter(btn => 
+      const siteButtons = buttons.filter(btn =>
         btn.textContent?.includes('Alpha') || btn.textContent?.includes('Beta')
       );
       // Verify Alpha appears before or at same position as Beta after sorting
@@ -147,7 +147,7 @@ describe('AdminSitesPage', () => {
     await waitFor(() => screen.getByText('Alpha'));
 
     // Find and click Admin View button
-    const adminViewButtons = screen.getAllByRole('button').filter(btn => 
+    const adminViewButtons = screen.getAllByRole('button').filter(btn =>
       btn.textContent?.includes('Admin View')
     );
     if (adminViewButtons.length > 0) {
@@ -156,7 +156,7 @@ describe('AdminSitesPage', () => {
     }
 
     // Find and click User View button
-    const userViewButtons = screen.getAllByRole('button').filter(btn => 
+    const userViewButtons = screen.getAllByRole('button').filter(btn =>
       btn.textContent?.includes('User View')
     );
     if (userViewButtons.length > 0) {

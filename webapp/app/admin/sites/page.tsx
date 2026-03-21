@@ -142,6 +142,21 @@ export default function AdminSitesPage() {
     }
   };
 
+  // Handle Back Button Navigation
+  const handleBack = () => {
+    const stack: string[] = JSON.parse(sessionStorage.getItem('navStack') || '[]')
+
+    if (stack.length > 1) {
+      stack.pop() // remove current page
+      const previous = stack[stack.length - 1]
+      stack.pop() // remove previous since we're navigating there
+      sessionStorage.setItem('navStack', JSON.stringify(stack))
+      router.push(previous)
+    } else {
+      router.push('/sites')
+    }
+  }
+
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex items-center justify-center p-6">
@@ -174,65 +189,99 @@ export default function AdminSitesPage() {
   return (
     <ProtectedRoute requireAdmin>
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-        {/* Navbar */}
-        <AdminNavBar />
-        
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-8 shadow-lg">
+        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center gap-3 mb-6">
-              <Image 
-                src="/images/sapaa-icon-white.png" 
-                alt="SAPAA"
-                width={48}
-                height={48}
-                className="w-12 h-12 flex-shrink-0"
-              />
-              <div>
-                <h1 className="text-3xl font-bold">Admin: Protected Areas</h1>
-                <p className="text-[#E4EBE4] text-sm">Manage and monitor site inspections across Alberta</p>
-              </div>
-            </div>
+            {/* Back button */}
+            <button
+              onClick = {handleBack}
+              className="flex items-center gap-1.5 text-[#86A98A] hover:text-white transition-colors mb-4 group"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <span className="text-sm font-medium">Back</span>
+            </button>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <MapPin className="w-5 h-5 text-[#86A98A]" />
-                  <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Total Sites</div>
+            <div className="flex items-center justify-between mb-3">
+              {/* Left: icon + title + subtitle */}
+              <div className="flex items-cesitesnter gap-4">
+                <Image
+                  src="/images/sapaa-icon-white.png"
+                  alt="SAPAA"
+                  width={140}
+                  height={140}
+                  priority
+                  className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+                />
+                <div>
+                  <h1 className="text-3xl font-bold mt-3">Admin: Protected Areas</h1>
+                  <p className="text-[#E4EBE4] text-base mt-0.5">
+                    Manage and monitor site inspections across Alberta
+                  </p>
                 </div>
-                <div className="text-3xl font-bold">{stats.totalSites}</div>
               </div>
-              
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <ClipboardList className="w-5 h-5 text-[#86A98A]" />
-                  <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Total Inspections</div>
-                </div>
-                <div className="text-3xl font-bold">{stats.totalInspections}</div>
-              </div>
-              
-              <div className="bg-[#1C7C4D]/20 backdrop-blur-sm rounded-xl p-4 border border-[#1C7C4D]/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-5 h-5 text-[#86A98A]" />
-                  <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Active This Year</div>
-                </div>
-                <div className="text-3xl font-bold">{stats.activeThisYear}</div>
-              </div>
-              
-              <div className="bg-[#C76930]/20 backdrop-blur-sm rounded-xl p-4 border border-[#C76930]/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="w-5 h-5 text-[#86A98A]" />
-                  <div className="text-xs text-[#E4EBE4] font-medium uppercase tracking-wide">Needs Attention</div>
-                </div>
-                <div className="text-3xl font-bold">{stats.needsAttention}</div>
+              {/* Right: navbar — rendered inline, bg overridden to transparent */}
+              <div className="[&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
+                <AdminNavBar />
               </div>
             </div>
           </div>
-        </div>
+        </div> 
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            {/* Total sites */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
+                  <MapPin className = "w-6 w-6 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Total Sites</div>
+                  <div className="text-3xl font-bold text-[#254431]">{stats.totalSites}</div>
+                </div>
+              </div>  
+            </div>
+
+            {/* Total Inspections */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
+                  <ClipboardList className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Total Inspections</div>
+                  <div className="text-3xl font-bold text-[#254431]">{stats.totalInspections}</div>
+                </div>
+              </div>  
+            </div>
+
+            {/* Active This Year */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Active This Year</div>
+                  <div className="text-3xl font-bold text-[#254431]">{stats.activeThisYear}</div>
+                </div>
+              </div>  
+            </div>
+
+            {/* Needs Attention */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Needs Attention</div>
+                  <div className="text-3xl font-bold text-[#254431]">{stats.needsAttention}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Search and Sort */}
           <div className="mb-6 space-y-4">
             <div className="relative">
