@@ -18,9 +18,7 @@ import {
   CheckSquare,
   Image as ImageIcon,
   Calendar,
-  FileCheck,
   AlertCircle,
-  Link,
   ArrowLeft
 } from "lucide-react";
 import RichTextEditor from "@/components/RichTextEditor";
@@ -51,7 +49,6 @@ import {
   toggleQuestionActive,
   addQuestion,
   reorderQuestions,
-  addFormSection,
   type FormSection,
   type FormQuestion,
   type QuestionOption,
@@ -119,14 +116,11 @@ export default function FormEditorPage() {
   const [selectedQuestion, setSelectedQuestion] = useState<FormQuestion | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<FormQuestion | null>(null);
   const [showAddQuestion, setShowAddQuestion] = useState(false);
-  const [showAddSection, setShowAddSection] = useState(false);
-  const [newSectionTitle, setNewSectionTitle] = useState("");
-  const [newSectionDescription, setNewSectionDescription] = useState("");
-  const [newSectionHeader, setNewSectionHeader] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const handleUpdatePreview = useCallback((draft: Partial<FormQuestion>) => {
-  setSelectedQuestion(draft as FormQuestion);}, []);
+    setSelectedQuestion(draft as FormQuestion);
+  }, []);
 
   // ─── Data Fetching ───────────────────────────────────────────────
   const loadSections = useCallback(async () => {
@@ -283,31 +277,6 @@ export default function FormEditorPage() {
     }
   };
 
-  // ─── Section CRUD ────────────────────────────────────────────────
-  const handleAddSection = async () => {
-    if (!newSectionTitle.trim()) return;
-    setSaving(true);
-    setError(null);
-    try {
-      const newId = await addFormSection({
-        title: newSectionTitle.trim(),
-        description: newSectionDescription.trim() || null,
-        header: newSectionHeader.trim() || newSectionTitle.trim(),
-      });
-      await loadSections();
-      setActiveSection(newId);
-      setShowAddSection(false);
-      setNewSectionTitle("");
-      setNewSectionDescription("");
-      setNewSectionHeader("");
-      showSuccess("Section added successfully");
-    } catch (err: any) {
-      setError("Failed to add section: " + err.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
   // ─── Handle Back Button Navigation ────────────────────────────────────────────────
   const handleBack = () => {
     const stack: string[] = JSON.parse(sessionStorage.getItem('navStack') || '[]')
@@ -378,7 +347,6 @@ export default function FormEditorPage() {
           </div>
         </div>
 
-
         {/* Alerts */}
         {error && (
           <div className="max-w-7xl mx-auto px-6 pt-4">
@@ -414,13 +382,6 @@ export default function FormEditorPage() {
                   <h3 className="text-sm font-bold text-[#254431] uppercase tracking-wide">
                     Sections
                   </h3>
-                  <button
-                    onClick={() => setShowAddSection(true)}
-                    className="w-7 h-7 bg-[#E4EBE4] hover:bg-[#356B43] hover:text-white text-[#356B43] rounded-lg flex items-center justify-center transition-all"
-                    title="Add Section"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
                 </div>
 
                 <div className="space-y-2">
@@ -445,56 +406,6 @@ export default function FormEditorPage() {
                     );
                   })}
                 </div>
-
-                {/* Add Section Modal */}
-                {showAddSection && (
-                  <div className="mt-4 p-3 bg-[#F7F2EA] rounded-xl border-2 border-[#E4EBE4]">
-                    <h4 className="text-xs font-bold text-[#254431] uppercase mb-2">
-                      New Section
-                    </h4>
-                    <input
-                      type="text"
-                      placeholder="Section title"
-                      value={newSectionTitle}
-                      onChange={(e) => setNewSectionTitle(e.target.value)}
-                      className="w-full px-3 py-2 text-sm border-2 border-[#E4EBE4] rounded-lg mb-2 focus:outline-none focus:border-[#356B43]"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Sidebar label (optional)"
-                      value={newSectionHeader}
-                      onChange={(e) => setNewSectionHeader(e.target.value)}
-                      className="w-full px-3 py-2 text-sm border-2 border-[#E4EBE4] rounded-lg mb-2 focus:outline-none focus:border-[#356B43]"
-                    />
-                    <RichTextEditor
-                      value={newSectionDescription}
-                      onChange={setNewSectionDescription}
-                      placeholder="Description (optional)"
-                      rows={2}
-                      className="mb-3"
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleAddSection}
-                        disabled={saving || !newSectionTitle.trim()}
-                        className="flex-1 px-3 py-2 bg-gradient-to-r from-[#356B43] to-[#254431] text-white text-xs font-semibold rounded-lg disabled:opacity-50 transition-all"
-                      >
-                        {saving ? "Adding..." : "Add"}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowAddSection(false);
-                          setNewSectionTitle("");
-                          setNewSectionDescription("");
-                          setNewSectionHeader("");
-                        }}
-                        className="px-3 py-2 border-2 border-[#E4EBE4] text-[#7A8075] text-xs font-semibold rounded-lg hover:bg-[#E4EBE4] transition-all"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -701,8 +612,6 @@ function SortableQuestionCard({
   onSelect,
   onEdit,
   onToggleActive,
-  onMoveUp,
-  onMoveDown,
   onSave,
   onCancelEdit,
   editingQuestion,
@@ -715,8 +624,6 @@ function SortableQuestionCard({
   onSelect: () => void;
   onEdit: () => void;
   onToggleActive: (id: number, currentStatus: boolean) => Promise<void>;
-  onMoveUp?: () => void;
-  onMoveDown?: () => void;
   onSave: (q: FormQuestion) => void;
   onCancelEdit: () => void;
   editingQuestion: FormQuestion | null;
