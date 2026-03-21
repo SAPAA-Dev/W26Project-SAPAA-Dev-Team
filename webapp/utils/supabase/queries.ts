@@ -161,6 +161,19 @@ export async function rollbackSiteInspectionSubmission(responseId: number) {
   }
 }
 
+export async function deactivateFormResponse(responseId: number) {
+  const supabase = createServerSupabase();
+
+  const { error } = await supabase
+    .from('W26_form_responses')
+    .update({ is_active: false })
+    .eq('id', responseId);
+
+  if (error) {
+    throw new Error(error.message || 'Failed to deactivate form response');
+  }
+}
+
 export async function getCurrentUserUid() {
   const supabase = await createClient();
   const { data: { user }, error } = await supabase.auth.getUser();
@@ -572,6 +585,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
       )
     `)
     .eq('site_id', siteData.id)
+    .neq('is_active', false)
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message || 'Failed to fetch form responses');

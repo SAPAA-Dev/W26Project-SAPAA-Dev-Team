@@ -1,21 +1,24 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
+  getFormResponsesBySite,
   getSiteByName,
   SiteSummary,
+  FormResponse,
+  FormAnswer,
+  deactivateFormResponse,
 } from "@/utils/supabase/queries";
 import { daysSince } from "@/app/sites/page";
-import { createClient } from "@/utils/supabase/client";
-import Image from 'next/image'
-import { 
+import Image from 'next/image';
+import {
   MoreVertical,
-  ArrowLeft, 
-  MapPin, 
-  Calendar, 
-  FileText, 
-  ChevronDown, 
+  ArrowLeft,
+  MapPin,
+  Calendar,
+  FileText,
+  ChevronDown,
   ChevronUp,
   TrendingUp,
   ClipboardList,
@@ -30,456 +33,81 @@ import {
   BarChart3,
   Search,
   Download,
-  Save,
   Edit3,
-  Loader2
 } from "lucide-react";
-import { useRef } from "react";
-
-// Initialize Supabase client
-const supabase = createClient();
-
-// Extended InspectionDetail interface with all fields needed for editing
-interface InspectionDetail {
-  id: number;
-  namesite: string;
-  _type: string | null;
-  county: string | null;
-  _naregion: string | null;
-  inspectdate: string | null;
-  naturalness_score: string | null; 
-  naturalness_details: string | null;
-  notes: string | null;
-  iddetail: string | null;
-  _subtype: string | null;
-  area_ha: string | null;
-  area_acre: string | null;
-  _na_subregion_multi: string | null;
-  recactivities_multi: string | null;
-  sapaaweb: string | null;
-  inatmap: string | null;
-  inspectno: string | null;
-  steward: string | null;
-  steward_id?: number | null;
-  steward_guest: string | null;
-  steward_guest_id?: number | null;
-  category: number | null;
-  definition: string | null;
-  inspection_id?: number; 
-  detail_row_ids?: Map<string, number>; 
-  notes_row_mapping?: Array<{ observationCode: string; rowId: number; value: string; field: 'obs_value' | 'obs_comm' }>;
-}
-
-// Custom getInspectionDetailsOnline that fetches all necessary fields - matches app version
-async function getInspectionDetailsOnline(siteName: string): Promise<InspectionDetail[]> {
-  // First, get the inspection header IDs for this site (includes steward ID)
-  const { data: headers, error: headerError } = await supabase
-    .from('inspectheader')
-    .select('id, inspectdate, inspectno, steward, "steward-guest"')
-    .eq('q22-pasitename', siteName)
-    .order('inspectdate', { ascending: false });
-
-  if (headerError) throw headerError;
-
-  // For each header, get the aggregated view data
-  const inspections: InspectionDetail[] = [];
-  
-  for (const header of headers || []) {
-    const { data: viewData, error: viewError } = await supabase
-      .from('sites_report_fnr_test') // FOR TESTING
-      //.from('sites_report_fnr')
-      .select('*')
-      .eq('namesite', siteName)
-      .eq('inspectdate', header.inspectdate)
-      .single();
-
-    if (viewError) {
-      console.warn(`Error fetching view data for inspection ${header.id}:`, viewError);
-      continue;
-    }
-
-    // Fetch all inspectdetails rows with their IDs for this inspection
-    const { data: detailRows, error: detailError } = await supabase
-      .from('inspectdetails_fnr_test') // FOR TESTING
-      //.from('inspectdetails')
-      .select('id, observation, obs_value, obs_comm')
-      .eq('inspection', header.id)
-      .order('id', { ascending: true });
-
-    if (detailError) {
-      console.warn(`Error fetching detail rows for inspection ${header.id}:`, detailError);
-    }
-
-    // Get observation codes from inspectquestions
-    const { data: questions, error: questionsError } = await supabase
-      .from('inspectquestions')
-      .select('id, observation');
-
-    if (questionsError) {
-      console.warn('Error fetching questions:', questionsError);
-    }
-
-    // Create mapping from observation ID to code (e.g., 1 -> "Q31_Naturalness")
-    const obsIdToCode = new Map<number, string>();
-    if (questions) {
-      questions.forEach(q => {
-        obsIdToCode.set(q.id, q.observation);
-      });
-    }
-
-    // Build detailed mapping: track which row ID produced each observation
-    const notesRowMapping: Array<{ observationCode: string; rowId: number; value: string; field: 'obs_value' | 'obs_comm' }> = [];
-    if (detailRows && obsIdToCode.size > 0) {
-      detailRows.forEach(row => {
-        const code = obsIdToCode.get(row.observation);
-        if (code && code !== 'Q31_Naturalness' && code !== 'Q32_Natural_Comm') {
-          const value = row.obs_value || row.obs_comm;
-          const field = row.obs_value !== null ? 'obs_value' : 'obs_comm';
-          
-          if (value) {
-            notesRowMapping.push({
-              observationCode: code,
-              rowId: row.id,
-              value: value, 
-              field: field,
-            });
-          }
-        }
-      });
-    }
-
-    // Also keep the old detailRowIds map for naturalness fields
-    const detailRowIds = new Map<string, number>();
-    if (detailRows && obsIdToCode.size > 0) {
-      detailRows.forEach(row => {
-        const code = obsIdToCode.get(row.observation);
-        if (code === 'Q31_Naturalness' || code === 'Q32_Natural_Comm') {
-          detailRowIds.set(code, row.id);
-        }
-      });
-    }
-
-    inspections.push({
-      id: inspections.length + 1, // Temp ID for UI
-      inspection_id: header.id, // Real ID for updates - THIS IS THE KEY FIELD
-      namesite: viewData.namesite,
-      iddetail: viewData.iddetail,
-      _type: viewData._type,
-      _subtype: viewData._subtype,
-      area_ha: viewData['area-ha'],
-      area_acre: viewData['area-acre'],
-      _naregion: viewData._naregion,
-      _na_subregion_multi: viewData._na_subregion_multi,
-      recactivities_multi: viewData['recactivities-multi'],
-      sapaaweb: viewData.sapaaweb,
-      inatmap: viewData.inatmap,
-      inspectno: viewData.inspectno,
-      inspectdate: viewData.inspectdate,
-      steward: viewData.steward, // This is the displayname from the view
-      steward_id: header.steward, // This is the ID from inspectheader
-      steward_guest: header['steward-guest'], // This is a string
-      category: viewData.category,
-      definition: viewData.definition,
-      county: viewData.county,
-      naturalness_score: viewData.naturalness_score,
-      naturalness_details: viewData.naturalness_details,
-      notes: viewData.notes,
-      detail_row_ids: detailRowIds,
-      notes_row_mapping: notesRowMapping,
-    });
-  }
-
-  return inspections;
-}
-
-// Update inspection online - matches app's updateInspectionOnline
-async function updateInspectionOnline(editedInspection: InspectionDetail) {
-  const inspectionId = editedInspection.inspection_id;
-  if (!inspectionId) throw new Error('Missing inspection_id - cannot update');
-
-  try {
-    // Update steward name
-    if (editedInspection.steward_id && editedInspection.steward !== null) {
-      const { error: stewardError } = await supabase
-        .from('luperson_fnr_test') // FOR TESTING
-        //.from('luperson')
-        .update({
-          displayname: editedInspection.steward,
-        })
-        .eq('id', editedInspection.steward_id);
-
-      if (stewardError) {
-        console.error('Error updating steward:', stewardError);
-        throw stewardError;
-      }
-
-      console.log(`Updated steward displayname for ID ${editedInspection.steward_id} to "${editedInspection.steward}"`);
-    }
-
-    // Update steward guest 
-    if (editedInspection.steward_guest !== null) {
-      const { error: guestError } = await supabase
-        .from('inspectheader_fnr_test') // FOR TESTING
-        //.from('inspectheader')
-        .update({ 'steward-guest': editedInspection.steward_guest })
-        .eq('id', inspectionId);
-
-      if (guestError) {
-        console.error('Error updating steward guest:', guestError);
-        throw guestError;
-      }
-      console.log(`Updated steward guest for inspection ${inspectionId} to "${editedInspection.steward_guest}"`);
-    } 
-
-    // Update naturalness_score
-    if (editedInspection.naturalness_score !== null) {
-      const { error: scoreError } = await supabase
-        .from('inspectdetails_fnr_test') // FOR TESTING
-        //.from('inspectdetails')
-        .update({ obs_value: editedInspection.naturalness_score })
-        .eq('inspection', inspectionId)
-        .eq('observation', 1);  // ID 1 = Q1_Naturalness
-      if (scoreError) throw scoreError;
-      console.log(`Updated naturalness score for inspection ${inspectionId} to "${editedInspection.naturalness_score}"`);
-    }
-
-    // Update naturalness_details
-    if (editedInspection.naturalness_details !== null) {
-      const { error: detailsError } = await supabase
-        .from('inspectdetails_fnr_test') // FOR TESTING
-        //.from('inspectdetails')
-        .update({ obs_comm: editedInspection.naturalness_details })
-        .eq('inspection', inspectionId)
-        .eq('observation', 2);  // ID 2 = Q2_Natural_Comm
-      if (detailsError) throw detailsError;
-      console.log(`Updated naturalness details for inspection ${inspectionId}`);
-    }
-
-    // Update observations/notes 
-    if (editedInspection.notes !== null && editedInspection.notes !== undefined) {
-      const notesMapping = editedInspection.notes_row_mapping;
-      
-      if (!notesMapping || notesMapping.length === 0) {
-        console.warn('No notes_row_mapping available, cannot update observations');
-      } else {
-        // Split notes into individual observations
-        const observations = editedInspection.notes
-          .split('; ')
-          .map(obs => obs.trim())
-          .filter(obs => obs.length > 0);
-
-        // Track which mapping entries we've used
-        const usedMappingIndices = new Set<number>();
-
-        for (let i = 0; i < observations.length; i++) {
-          const obs = observations[i];
-          
-          // Only process "Qxx_" style entries
-          const match = obs.match(/^(Q\d+[^:]*?):\s*(.*)$/);
-          if (!match) continue;
-
-          const observationCode = match[1];
-          const newValue = match[2];
-
-          // Skip naturalness observations (already handled above)
-          if (observationCode === 'Q31_Naturalness' || observationCode === 'Q32_Natural_Comm') {
-            continue;
-          }
-
-          // Find the NEXT unused matching entry with this observation code
-          let mappingEntry = null;
-          for (let j = 0; j < notesMapping.length; j++) {
-            if (usedMappingIndices.has(j)) continue;
-            
-            if (notesMapping[j].observationCode === observationCode) {
-              mappingEntry = notesMapping[j];
-              usedMappingIndices.add(j);
-              break;
-            }
-          }
-
-          if (!mappingEntry) {
-            console.warn(`No available row mapping found for observation "${observationCode}" at position ${i}`);
-            continue;
-          }
-
-          const rowId = mappingEntry.rowId;
-          const updateField = mappingEntry.field;
-
-          // Update using the unique row ID and correct field
-          const { error: obsError } = await supabase
-            .from('inspectdetails_fnr_test') // FOR TESTING
-            //.from('inspectdetails')
-            .update({ [updateField]: newValue })
-            .eq('id', rowId);
-
-          if (obsError) {
-            console.error(`Error updating observation ${observationCode} (row ${rowId}):`, obsError);
-            throw obsError;
-          }
-
-          console.log(`Updated observation ${observationCode} (row ${rowId}) in ${updateField} = "${newValue}"`);
-        }
-      }
-    }
-
-    console.log(`Successfully updated inspection ${inspectionId}`);
-  } catch (error) {
-    console.error('Error updating inspection:', error);
-    throw error;
-  }
-}
-
-// Delete site report online - matches app's deleteSiteReportOnline
-async function deleteSiteReportOnline(inspectionId: number): Promise<void> {
-  // Delete from inspectdetails
-  const { error: detailError } = await supabase
-    .from('inspectdetails_fnr_test') // FOR TESTING 
-    //.from('inspectdetails')
-    .delete()
-    .eq('inspection', inspectionId);
-
-  if (detailError) {
-    console.error('Error deleting inspection details:', detailError);
-    throw detailError;
-  }
-
-  console.log(`Successfully deleted inspection details for inspection ${inspectionId}`);
-}
 
 type ViewMode = 'by-date' | 'by-question';
 
-interface ParsedQuestion {
-  questionId: string;
-  questionText: string;
-}
-
-interface ParsedObservation {
-  label: string;
-  content: string;
-  originalIndex: number;
-}
-
 interface QuestionComparison {
   questionId: string;
-  questionText: string; 
+  questionText: string;
+  section_id: number | null;
+  section_title: string | null;
   answers: Array<{
     inspectionId: number;
-    date: string;        
-    displayDate: string; 
+    date: string;
+    displayDate: string;
     answer: string;
   }>;
 }
 
-// Editable Field Component - matches app's EditableField
-interface EditableFieldProps {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-  multiline?: boolean;
+function groupAnswersBySection(answers: FormAnswer[]) {
+  const sections: Array<{
+    sectionId: number | null;
+    sectionTitle: string | null;
+    answers: FormAnswer[];
+  }> = [];
+  const seen = new Map<number | string, number>();
+
+  for (const answer of answers) {
+    const key = answer.section_id ?? 'null';
+    if (!seen.has(key)) {
+      seen.set(key, sections.length);
+      sections.push({ sectionId: answer.section_id, sectionTitle: answer.section_title, answers: [] });
+    }
+    sections[seen.get(key)!].answers.push(answer);
+  }
+
+  return sections;
 }
 
-const EditableField: React.FC<EditableFieldProps> = ({ 
-  label, 
-  value, 
-  onChange, 
-  placeholder, 
-  multiline = false 
-}) => {
+function SectionDivider({ title }: { title: string }) {
   return (
-    <div className="mb-4">
-      <label className="block text-sm font-semibold text-[#254431] mb-2">
-        {label}
-      </label>
-      {multiline ? (
-        <textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="w-full border-2 border-[#E4EBE4] rounded-lg p-3 text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] min-h-[100px] resize-y"
-        />
-      ) : (
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="w-full border-2 border-[#E4EBE4] rounded-lg p-3 text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43]"
-        />
-      )}
+    <div className="flex items-center gap-2 my-3">
+      <div className="h-px flex-1 bg-[#E4EBE4]" />
+      <span className="text-xs font-bold text-[#356B43] uppercase tracking-widest px-2">
+        {title}
+      </span>
+      <div className="h-px flex-1 bg-[#E4EBE4]" />
     </div>
   );
-};
-
-// Observation Field Component - matches app's ObservationField
-interface ObservationFieldProps {
-  label: string;
-  content: string;
-  index: number;
-  onChange: (index: number, label: string, text: string) => void;
 }
-
-const ObservationField: React.FC<ObservationFieldProps> = ({ 
-  label, 
-  content, 
-  index, 
-  onChange 
-}) => {
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    onChange(index, label, e.target.value);
-  }, [index, label, onChange]);
-
-  return (
-    <div className="mb-3 bg-[#F7F2EA] rounded-lg p-4">
-      <label className="block text-sm font-semibold text-[#356B43] mb-2">
-        {label}:
-      </label>
-      <textarea
-        value={content}
-        onChange={handleChange}
-        placeholder="Enter observation content"
-        className="w-full border-2 border-[#E4EBE4] rounded-lg p-3 text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] min-h-[80px] resize-y bg-white"
-      />
-    </div>
-  );
-};
 
 export default function AdminSiteDetails() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const namesite = decodeURIComponent(params.id);
 
-  const [inspections, setInspections] = useState<InspectionDetail[]>([]);
+  const [inspections, setInspections] = useState<FormResponse[]>([]);
   const [site, setSite] = useState<SiteSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedInspections, setExpandedInspections] = useState<Set<number>>(new Set());
-  const [selectedInspection, setSelectedInspection] = useState<InspectionDetail | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('by-date');
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set());
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [filterText, setFilterText] = useState('');
   const [showDataQuality, setShowDataQuality] = useState(false);
-  
-  // Edit modal state - matching app functionality
-  const [editingInspection, setEditingInspection] = useState<InspectionDetail | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [editedInspection, setEditedInspection] = useState<InspectionDetail | null>(null);
-  
+
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: number; open: boolean } | null>(null);
-  const menuRefs = useRef<{ [key: number]: HTMLButtonElement | null }>({});
-  const menuButtonRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
+  const menuRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
   useEffect(() => {
     const load = async () => {
       try {
         const siteData = await getSiteByName(namesite);
-        const details = await getInspectionDetailsOnline(siteData[0].namesite);
-        console.log('Loaded inspections:', details);
-        console.log('First inspection inspection_id:', details[0]?.inspection_id);
+        const details = await getFormResponsesBySite(siteData[0].namesite);
         setSite(siteData[0]);
         setInspections(details);
       } catch (err) {
@@ -509,7 +137,7 @@ export default function AdminSiteDetails() {
     }
   }, [showExportMenu]);
 
-  // Close inspection menu when clicking anywhere outside
+  // Close inspection menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (openMenuId !== null) {
@@ -524,7 +152,7 @@ export default function AdminSiteDetails() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [openMenuId]);
 
-  const computeAverageNaturalness = (items: InspectionDetail[]) => {
+  const computeAverageNaturalness = (items: FormResponse[]) => {
     const scores: number[] = [];
     const re = /^(\d+(\.\d+)?)/;
 
@@ -550,73 +178,6 @@ export default function AdminSiteDetails() {
 
   const { average, text: avgText } = computeAverageNaturalness(inspections);
 
-  const parseQuestions = (notes: string | null): ParsedQuestion[] => {
-    if (!notes) return [];
-    const observations = notes.split('; ').filter(obs => obs.trim() !== '');
-    return observations.map(obs => {
-      const match = obs.match(/^(Q\d+)[_:\s]+(.*)/);
-      if (match) {
-        return { questionId: match[1], questionText: match[2].trim() };
-      }
-      return { questionId: 'Q??', questionText: obs.trim() };
-    });
-  };
-
-  // Parse observations for editing - matches app logic
-  const parseObservations = (notes: string | null): ParsedObservation[] => {
-    if (!notes) return [];
-    const observations = notes
-      .split('; ')
-      .map(obs => obs.trim())
-      .filter(obs => obs.length > 0);
-
-    return observations.map((obs, index) => {
-      const match = obs.match(/^(Q\d+[^:]*?):\s*(.*)$/);
-      if (match) {
-        return {
-          label: match[1],
-          content: match[2],
-          originalIndex: index
-        };
-      }
-      return {
-        label: `Note ${index + 1}`,
-        content: obs,
-        originalIndex: index
-      };
-    });
-  };
-
-  // Convert inspection to markdown for display - matches app's inspectionToMarkdown
-  const inspectionToMarkdown = (inspection: InspectionDetail): string => {
-    let md = '';
-    
-    const fields = [
-      { label: 'Steward', value: (inspection as any).steward },
-      { label: 'Steward Guest', value: (inspection as any).steward_guest },
-      { label: 'Naturalness Score', value: inspection.naturalness_score },
-      { label: 'Naturalness Details', value: inspection.naturalness_details },
-    ];
-
-    fields.forEach(field => {
-      if (field.value) {
-        md += `**${field.label}:** ${field.value}\n\n`;
-      }
-    });
-
-    if (inspection.notes) {
-      md += '## Observations\n\n';
-      const observations = inspection.notes
-        .split('; ')
-        .filter(line => line.trim().length > 0)
-        .map(line => `- ${line}`)
-        .join('\n');
-      md += observations + '\n\n';
-    }
-
-    return md;
-  };
-
   const normalizeScore = (score: string | null): string => {
     if (!score || score.trim() === '') return 'N/A';
     const trimmed = score.trim();
@@ -625,55 +186,45 @@ export default function AdminSiteDetails() {
   };
 
   const questionComparisons = useMemo((): QuestionComparison[] => {
-    const questionMap = new Map<
-      string,
-      { label: string; answers: QuestionComparison["answers"] }
-    >();
-  
-    inspections.forEach((inspection) => {
-      const questions = parseQuestions(inspection.notes);
-  
-      questions.forEach((q) => {
-        const [rawLabel, ...rest] = q.questionText.split(":");
-        const label = rawLabel.trim();
-        const answerText = rest.join(":").trim();
-  
-        if (!questionMap.has(q.questionId)) {
-          questionMap.set(q.questionId, { label, answers: [] });
+    const questionMap = new Map<string, {
+      label: string;
+      section_id: number | null;
+      section_title: string | null;
+      answers: QuestionComparison["answers"];
+    }>();
+
+    inspections.forEach((response) => {
+      response.answers.forEach((a) => {
+        const key = String(a.question_id);
+        if (!questionMap.has(key)) {
+          questionMap.set(key, {
+            label: a.question_text,
+            section_id: a.section_id,
+            section_title: a.section_title,
+            answers: [],
+          });
         }
-  
-        const entry = questionMap.get(q.questionId)!;
-  
-        entry.answers.push({
-          inspectionId: inspection.id,
-          date: inspection.inspectdate ?? '',
-          displayDate: inspection.inspectdate ? new Date(inspection.inspectdate).toLocaleDateString() : 'N/A',
-          answer: answerText || q.questionText,
-        });
+        const value = a.obs_value ?? a.obs_comm ?? '';
+        if (value) {
+          questionMap.get(key)!.answers.push({
+            inspectionId: response.id,
+            date: response.created_at ?? '',
+            displayDate: response.created_at ? new Date(response.created_at).toLocaleDateString() : 'N/A',
+            answer: value,
+          });
+        }
       });
     });
-  
-    const result: QuestionComparison[] = Array.from(
-      questionMap.entries()
-    ).map(([questionId, { label, answers }]) => {
-      const sortedAnswers = answers.sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
 
-      return {
+    return Array.from(questionMap.entries())
+      .map(([questionId, { label, section_id, section_title, answers }]) => ({
         questionId,
-        questionText: label || questionId,
-        answers: sortedAnswers,
-      };
-    });
-  
-    return result.sort((a, b) => {
-      const numA = parseInt(a.questionId.replace("Q", ""));
-      const numB = parseInt(b.questionId.replace("Q", ""));
-      if (isNaN(numA)) return 1;
-      if (isNaN(numB)) return -1;
-      return numA - numB;
-    });
+        questionText: label,
+        section_id,
+        section_title,
+        answers: answers.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+      }))
+      .sort((a, b) => parseInt(a.questionId) - parseInt(b.questionId));
   }, [inspections]);
 
   const formatAgeBadge = (days: number): string => {
@@ -699,116 +250,32 @@ export default function AdminSiteDetails() {
     });
   };
 
-  // Handle opening the edit modal - goes straight to edit mode
-  const handleOpenEditModal = (inspection: InspectionDetail) => {
-    console.log('Opening edit modal for inspection:', inspection);
-    console.log('inspection_id:', inspection.inspection_id);
-    console.log('steward_id:', inspection.steward_id);
-    console.log('notes_row_mapping:', inspection.notes_row_mapping);
-    setSelectedInspection(inspection);
-    setEditedInspection({ ...inspection });
-    setIsEditing(true); // Go straight to edit mode
-  };
-
-  // Handle field updates - matches app's updateField pattern
-  const updateField = useCallback((field: string, value: string) => {
-    setEditedInspection(prev => {
-      if (!prev) return null;
-      return { ...prev, [field]: value };
-    });
-  }, []);
-
-  const handleStewardChange = useCallback((value: string) => updateField('steward', value), [updateField]);
-  const handleStewardGuestChange = useCallback((value: string) => updateField('steward_guest', value), [updateField]);
-  const handleNaturalnessScoreChange = useCallback((value: string) => updateField('naturalness_score', value), [updateField]);
-  const handleNaturalnessDetailsChange = useCallback((value: string) => updateField('naturalness_details', value), [updateField]);
-
-  // Handle observation changes - matches app's handleObservationChange
-  const handleObservationChange = useCallback((index: number, label: string, text: string) => {
-    setEditedInspection(prev => {
-      if (!prev) return null;
-      const currentObs = prev.notes?.split('; ').map(o => o.trim()).filter(o => o.length > 0) || [];
-      currentObs[index] = `${label}: ${text}`;
-      return { ...prev, notes: currentObs.join('; ') };
-    });
-  }, []);
-
-  // Handle save - uses real API call to Supabase
-  const handleSaveInspection = async () => {
-    if (!editedInspection) return;
-
-    setIsSaving(true);
-    try {
-      // Call the actual Supabase update function
-      await updateInspectionOnline(editedInspection);
-
-      // Update local state
-      setInspections(prev =>
-        prev.map(insp =>
-          insp.id === editedInspection.id ? editedInspection : insp
-        )
-      );
-
-      setSelectedInspection(null);
-      setIsEditing(false);
-      setEditedInspection(null);
-
-      // Could add a toast notification here
-      console.log('Successfully saved inspection');
-    } catch (err: any) {
-      console.error('Error saving inspection:', err);
-      alert(`Failed to save changes: ${err.message}`);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  // Handle modal dismiss - matches app's handleModalDismiss
-  const handleModalDismiss = useCallback(() => {
-    setSelectedInspection(null);
-    setIsEditing(false);
-    setEditedInspection(null);
-  }, []);
-
   // Handle delete - opens confirmation modal
-  const handleDeleteFromMenu = (inspectionId: number) => {
-    setDeleteConfirm({ id: inspectionId, open: true });
+  const handleDeleteFromMenu = (responseId: number) => {
+    setDeleteConfirm({ id: responseId, open: true });
   };
 
   const confirmDelete = async () => {
     if (!deleteConfirm) return;
-    
-    try {
-      // Find the inspection to get the inspection_id
-      const inspectionToDelete = inspections.find(ins => ins.id === deleteConfirm.id);
-      if (inspectionToDelete?.inspection_id) {
-        // Call the actual Supabase delete function
-        await deleteSiteReportOnline(inspectionToDelete.inspection_id);
-      }
 
+    try {
+      await deactivateFormResponse(deleteConfirm.id);
       setInspections(prev => prev.filter(ins => ins.id !== deleteConfirm.id));
       setDeleteConfirm(null);
-      setSelectedInspection(null);
-      setIsEditing(false);
-      setEditedInspection(null);
-      
-      console.log('Successfully deleted inspection');
     } catch (err: any) {
-      console.error('Error deleting inspection:', err);
-      alert(`Failed to delete inspection: ${err.message}`);
+      console.error('Error deactivating form response:', err);
+      alert(`Failed to deactivate form response: ${err.message}`);
     }
   };
 
   const handleExport = (format: 'csv' | 'json') => {
     if (format === 'csv') {
-      const headers = ['Date', 'Score', 'Steward', 'County', 'Naturalness Details', 'Notes'];
+      const headers = ['Date', 'Score', 'Steward', 'Naturalness Details'];
       const rows = inspections.map(insp => [
-        insp.inspectdate || '',
+        insp.created_at ? new Date(insp.created_at).toLocaleDateString() : '',
         insp.naturalness_score || '',
-        (insp as any).steward || '',
-        insp.county || '',
+        insp.steward || '',
         insp.naturalness_details || '',
-        insp.notes || ''
       ]);
       const csv = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
       const blob = new Blob([csv], { type: 'text/csv' });
@@ -829,29 +296,25 @@ export default function AdminSiteDetails() {
     setShowExportMenu(false);
   };
 
-  const getDataQualityScore = (inspection: InspectionDetail): { score: number; issues: string[] } => {
+  const getDataQualityScore = (response: FormResponse): { score: number; issues: string[] } => {
     const issues: string[] = [];
     let score = 100;
 
-    if (!inspection.inspectdate) {
-      issues.push('Missing inspection date');
+    if (!response.created_at) {
+      issues.push('Missing date');
       score -= 20;
     }
-    if (!inspection.naturalness_score || inspection.naturalness_score.trim() === '') {
+    if (!response.naturalness_score || response.naturalness_score.trim() === '') {
       issues.push('Missing naturalness score');
       score -= 25;
     }
-    if (!inspection.notes || inspection.notes.trim() === '') {
-      issues.push('Missing notes/observations');
+    if (response.answers.length === 0) {
+      issues.push('No answers recorded');
       score -= 15;
     }
-    if (!inspection.naturalness_details || inspection.naturalness_details.trim() === '') {
+    if (!response.naturalness_details || response.naturalness_details.trim() === '') {
       issues.push('Missing naturalness details');
       score -= 10;
-    }
-    if (!inspection.county) {
-      issues.push('Missing county');
-      score -= 5;
     }
 
     return { score: Math.max(0, score), issues };
@@ -862,31 +325,35 @@ export default function AdminSiteDetails() {
     const lower = filterText.toLowerCase();
     return inspections.filter(insp => {
       return (
-        (insp.inspectdate?.toLowerCase().includes(lower)) ||
+        (insp.created_at?.toLowerCase().includes(lower)) ||
         (insp.naturalness_score?.toLowerCase().includes(lower)) ||
-        (insp.notes?.toLowerCase().includes(lower)) ||
         (insp.naturalness_details?.toLowerCase().includes(lower)) ||
-        (insp.county?.toLowerCase().includes(lower))
+        (insp.steward?.toLowerCase().includes(lower)) ||
+        insp.answers.some(a =>
+          (a.obs_value?.toLowerCase().includes(lower)) ||
+          (a.obs_comm?.toLowerCase().includes(lower)) ||
+          (a.question_text?.toLowerCase().includes(lower))
+        )
       );
     });
   }, [inspections, filterText]);
 
   // Handle Back Button Navigation
   const handleBack = () => {
-    const stack: string[] = JSON.parse(sessionStorage.getItem('navStack') || '[]')
+    const stack: string[] = JSON.parse(sessionStorage.getItem('navStack') || '[]');
 
     if (stack.length > 1) {
-      stack.pop() // remove current page
-      const previous = stack[stack.length - 1]
-      stack.pop() // remove previous since we're navigating there
-      sessionStorage.setItem('navStack', JSON.stringify(stack))
-      router.push(previous)
+      stack.pop();
+      const previous = stack[stack.length - 1];
+      stack.pop();
+      sessionStorage.setItem('navStack', JSON.stringify(stack));
+      router.push(previous);
     } else {
-      stack.pop() // clear current page before navigating to fallback
-      sessionStorage.setItem('navStack', JSON.stringify(stack))
-      router.push('/admin/sites')
+      stack.pop();
+      sessionStorage.setItem('navStack', JSON.stringify(stack));
+      router.push('/admin/sites');
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -919,7 +386,7 @@ export default function AdminSiteDetails() {
 
   const age = daysSince(site.inspectdate ?? '1900-01-01');
   const ageText = formatAgeBadge(age);
-  
+
   const gradientPosition = average ? ((average - 1) / 3) * 100 : 0;
 
   return (
@@ -938,8 +405,8 @@ export default function AdminSiteDetails() {
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                 <Image 
-                src="/images/sapaa-icon-white.png" 
+                 <Image
+                src="/images/sapaa-icon-white.png"
                 alt="SAPAA"
                 width={48}
                 height={48}
@@ -951,7 +418,7 @@ export default function AdminSiteDetails() {
                   Admin View
                 </span>
               </div>
-              
+
               {site.county && (
                 <div className="flex items-center gap-2 text-[#E4EBE4] mb-2">
                   <MapPin className="w-5 h-5" />
@@ -976,7 +443,7 @@ export default function AdminSiteDetails() {
                 <div className="text-sm text-[#E4EBE4]">Last Visit</div>
                 <div className="text-xl font-bold">{ageText}</div>
               </div>
-              
+
               {/* Admin Actions */}
               <div className="relative export-menu-container">
                 <button
@@ -1025,8 +492,8 @@ export default function AdminSiteDetails() {
             <button
               onClick={() => setShowDataQuality(!showDataQuality)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                showDataQuality 
-                  ? 'bg-[#356B43] text-white' 
+                showDataQuality
+                  ? 'bg-[#356B43] text-white'
                   : 'bg-[#F7F2EA] hover:bg-[#E4EBE4] text-[#254431]'
               }`}
             >
@@ -1056,13 +523,13 @@ export default function AdminSiteDetails() {
               Data Quality Analysis
             </h3>
             <div className="grid md:grid-cols-3 gap-4">
-              {inspections.map((insp, idx) => {
-                const quality = getDataQualityScore(insp);
+              {inspections.map((response) => {
+                const quality = getDataQualityScore(response);
                 return (
-                  <div key={idx} className="border-2 border-[#E4EBE4] rounded-lg p-4">
+                  <div key={response.id} className="border-2 border-[#E4EBE4] rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-[#7A8075]">
-                        {insp.inspectdate ? new Date(insp.inspectdate).toLocaleDateString() : 'No Date'}
+                        {response.created_at ? new Date(response.created_at).toLocaleDateString() : 'No Date'}
                       </span>
                       <span className={`text-sm font-bold ${
                         quality.score >= 80 ? 'text-[#1C7C4D]' :
@@ -1141,8 +608,8 @@ export default function AdminSiteDetails() {
 
             <div className="relative mb-4">
               <div className="h-8 rounded-full overflow-hidden bg-gradient-to-r from-[#B91C1C] via-[#E0A63A] via-[#84CC16] to-[#1C7C4D] shadow-inner"></div>
-              
-              <div 
+
+              <div
                 className="absolute top-0 transition-all duration-500"
                 style={{ left: `${gradientPosition}%`, transform: 'translateX(-50%)' }}
               >
@@ -1197,23 +664,23 @@ export default function AdminSiteDetails() {
                 Inspection Reports ({filteredInspections.length}{filterText ? ` of ${inspections.length}` : ''})
               </h2>
             </div>
-            
+
             {filteredInspections.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-2xl border-2 border-[#E4EBE4]">
                 <Search className="w-12 h-12 text-[#7A8075] mx-auto mb-4" />
                 <p className="text-[#7A8075] font-medium">No inspections match your filter</p>
               </div>
             ) : (
-              filteredInspections.map((inspection) => {
-              const isExpanded = expandedInspections.has(inspection.id);
-              const questions = parseQuestions(inspection.notes);
-              const quality = getDataQualityScore(inspection);
-              
+              filteredInspections.map((response) => {
+              const isExpanded = expandedInspections.has(response.id);
+              const quality = getDataQualityScore(response);
+              const sections = groupAnswersBySection(response.answers);
+
               return (
-                <div key={inspection.id} className="bg-white rounded-2xl border-2 border-[#E4EBE4] shadow-sm hover:shadow-md transition-all relative">
+                <div key={response.id} className="bg-white rounded-2xl border-2 border-[#E4EBE4] shadow-sm hover:shadow-md transition-all relative">
                   <div className="flex items-center justify-between p-6">
                     <button
-                      onClick={() => toggleInspection(inspection.id)}
+                      onClick={() => toggleInspection(response.id)}
                       className="flex-1 flex items-center justify-between text-left hover:bg-[#F7F2EA] transition-colors -m-6 p-6"
                     >
                       <div className="flex items-center gap-4">
@@ -1223,7 +690,7 @@ export default function AdminSiteDetails() {
                         <div>
                           <div className="flex items-center gap-2">
                             <h3 className="text-lg font-bold text-[#254431]">
-                              {inspection.inspectdate ? new Date(inspection.inspectdate).toLocaleDateString('en-US', {
+                              {response.created_at ? new Date(response.created_at).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric'
@@ -1235,18 +702,17 @@ export default function AdminSiteDetails() {
                               </div>
                             )}
                           </div>
-                          <p className="text-sm text-[#7A8075]">Score: {normalizeScore(inspection.naturalness_score)}</p>
+                          <p className="text-sm text-[#7A8075]">Score: {normalizeScore(response.naturalness_score)}</p>
                         </div>
                       </div>
-                      
-                      
+
                       <div className="relative flex items-center gap-2">
                         {/* Chevron */}
                         <button
-                          onClick={(e) => { e.stopPropagation(); toggleInspection(inspection.id); }}
+                          onClick={(e) => { e.stopPropagation(); toggleInspection(response.id); }}
                           className="flex items-center justify-center w-8 h-8 rounded hover:bg-[#F7F2EA] transition-colors"
                         >
-                          {expandedInspections.has(inspection.id) ? (
+                          {isExpanded ? (
                             <ChevronUp className="w-6 h-6 text-[#7A8075]" />
                           ) : (
                             <ChevronDown className="w-6 h-6 text-[#7A8075]" />
@@ -1254,26 +720,26 @@ export default function AdminSiteDetails() {
                         </button>
 
                         {/* Menu button */}
-                        <div className="relative" ref={el => { menuRefs.current[inspection.id] = el as any; }}>
+                        <div className="relative" ref={el => { menuRefs.current[response.id] = el; }}>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setOpenMenuId(prev => prev === inspection.id ? null : inspection.id);
+                              setOpenMenuId(prev => prev === response.id ? null : response.id);
                             }}
                             className="flex items-center justify-center w-8 h-8 rounded hover:bg-[#F7F2EA] transition-colors z-10"
                           >
                             <MoreVertical className="w-5 h-5 text-[#7A8075]" />
                           </button>
 
-                          {openMenuId === inspection.id && (
+                          {openMenuId === response.id && (
                             <div
-                              className="absolute right-0 top-full mt-2 w-32 max-w-[90vw] bg-white rounded-xl shadow-lg border border-[#E4EBE4] z-50"
+                              className="absolute right-0 top-full mt-2 w-40 max-w-[90vw] bg-white rounded-xl shadow-lg border border-[#E4EBE4] z-50"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <button
                                 onClick={() => {
-                                  handleOpenEditModal(inspection);
                                   setOpenMenuId(null);
+                                  router.push(`/detail/${namesite}/edit-report/${response.id}`);
                                 }}
                                 className="w-full text-left px-4 py-2 hover:bg-[#F7F2EA] flex items-center gap-2 text-[#1E2520] rounded-t-xl"
                               >
@@ -1281,49 +747,56 @@ export default function AdminSiteDetails() {
                               </button>
                               <button
                                 onClick={() => {
-                                  handleDeleteFromMenu(inspection.id);
+                                  handleDeleteFromMenu(response.id);
                                   setOpenMenuId(null);
                                 }}
                                 className="w-full text-left px-4 py-2 hover:bg-[#FEE2E2] flex items-center gap-2 text-[#B91C1C] rounded-b-xl"
                               >
-                                <X className="w-4 h-4" /> Delete
+                                <X className="w-4 h-4" /> Deactivate
                               </button>
                             </div>
                           )}
-
                         </div>
-
                       </div>
-
-
                     </button>
                   </div>
 
                   {isExpanded && (
                     <div className="px-6 pb-6 space-y-4 border-t-2 border-[#E4EBE4] pt-4">
-                      {(inspection as any).steward && (
+                      {response.steward && (
                         <div>
                           <p className="text-sm font-semibold text-[#7A8075] mb-1">Steward</p>
-                          <p className="text-[#1E2520]">{(inspection as any).steward}</p>
-                        </div>
-                      )}
-                      
-                      {inspection.naturalness_details && (
-                        <div>
-                          <p className="text-sm font-semibold text-[#7A8075] mb-1">Naturalness Details</p>
-                          <p className="text-[#1E2520]">{inspection.naturalness_details}</p>
+                          <p className="text-[#1E2520]">{response.steward}</p>
                         </div>
                       )}
 
-                      {questions.length > 0 && (
+                      {response.naturalness_details && (
+                        <div>
+                          <p className="text-sm font-semibold text-[#7A8075] mb-1">Naturalness Details</p>
+                          <p className="text-[#1E2520]">{response.naturalness_details}</p>
+                        </div>
+                      )}
+
+                      {response.answers.length > 0 && (
                         <div>
                           <p className="text-sm font-semibold text-[#7A8075] mb-2">Observations</p>
                           <div className="space-y-2">
-                            {questions.map((q, idx) => (
-                              <div key={idx} className="bg-[#F7F2EA] rounded-lg p-3">
-                                <span className="font-semibold text-[#356B43]">{q.questionId}:</span>{' '}
-                                <span className="text-[#1E2520]">{q.questionText}</span>
-                              </div>
+                            {sections.map((section, sIdx) => (
+                              <React.Fragment key={sIdx}>
+                                {section.sectionTitle && (
+                                  <SectionDivider title={section.sectionTitle} />
+                                )}
+                                {section.answers.map((a, aIdx) => {
+                                  const value = a.obs_value ?? a.obs_comm ?? '';
+                                  if (!value) return null;
+                                  return (
+                                    <div key={aIdx} className="bg-[#F7F2EA] rounded-lg p-3">
+                                      <span className="font-semibold text-[#356B43]">{a.question_text}:</span>{' '}
+                                      <span className="text-[#1E2520]">{value}</span>
+                                    </div>
+                                  );
+                                })}
+                              </React.Fragment>
                             ))}
                           </div>
                         </div>
@@ -1361,7 +834,7 @@ export default function AdminSiteDetails() {
 
             {questionComparisons.map((qComp) => {
               const isExpanded = expandedQuestions.has(qComp.questionId);
-              
+
               return (
                 <div key={qComp.questionId} className="bg-white rounded-2xl border-2 border-[#E4EBE4] overflow-hidden shadow-sm hover:shadow-md transition-all">
                   <button
@@ -1370,7 +843,7 @@ export default function AdminSiteDetails() {
                   >
                     <div className="flex items-center gap-4 flex-1">
                       <div className="w-12 h-12 bg-[#E4EBE4] rounded-xl flex items-center justify-center flex-shrink-0">
-                        <span className="text-lg font-bold text-[#356B43]">{qComp.questionId}</span>
+                        <span className="text-lg font-bold text-[#356B43]">Q{qComp.questionId}</span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[#1E2520] font-medium">{qComp.questionText}</p>
@@ -1406,157 +879,16 @@ export default function AdminSiteDetails() {
         )}
       </div>
 
-      {/* Edit Inspection Modal - Goes straight to edit mode */}
-      {selectedInspection && editedInspection && (
-        <div className="fixed inset-0 bg-[#254431]/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b-2 border-[#E4EBE4] flex-shrink-0">
-              <h2 className="text-2xl font-bold text-[#254431]">
-                Edit Report: {editedInspection.inspectdate ? new Date(editedInspection.inspectdate).toLocaleDateString() : 'No Date'}
-              </h2>
-              {/* Close Button */}
-              <button
-                onClick={handleModalDismiss}
-                disabled={isSaving}
-                className="w-10 h-10 rounded-xl hover:bg-[#E4EBE4] flex items-center justify-center transition-colors disabled:opacity-50"
-              >
-                <X className="w-6 h-6 text-[#7A8075]" />
-              </button>
-            </div>
-
-            {/* Modal Content - Edit Form */}
-            <div className="p-6 overflow-y-auto flex-1 relative">
-              {/* Saving Overlay */}
-              {isSaving && (
-                <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center z-10 rounded-b-3xl">
-                  <Loader2 className="w-12 h-12 text-[#356B43] animate-spin mb-4" />
-                  <p className="text-[#356B43] font-medium text-lg">Saving changes...</p>
-                </div>
-              )}
-
-              {/* Edit Form Fields */}
-              <div className="space-y-6">
-                <h1 className="text-2xl font-bold text-[#254431] mb-6">
-                  Inspection {editedInspection.inspectno || editedInspection.id}
-                </h1>
-
-                <EditableField
-                  label="Steward"
-                  value={editedInspection.steward || ''}
-                  onChange={handleStewardChange}
-                  placeholder="Enter steward name"
-                />
-
-                <EditableField
-                  label="Steward Guest"
-                  value={editedInspection.steward_guest || ''}
-                  onChange={handleStewardGuestChange}
-                  placeholder="Enter steward guest"
-                />
-
-                <EditableField
-                  label="Naturalness Score"
-                  value={editedInspection.naturalness_score || ''}
-                  onChange={handleNaturalnessScoreChange}
-                  placeholder="Enter naturalness score (e.g., 3.5)"
-                />
-
-                <EditableField
-                  label="Naturalness Details"
-                  value={editedInspection.naturalness_details || ''}
-                  onChange={handleNaturalnessDetailsChange}
-                  placeholder="Enter naturalness details"
-                  multiline
-                />
-
-                {/* Observations Section */}
-                <div>
-                  <label className="block text-sm font-semibold text-[#254431] mb-3">
-                    Observations
-                  </label>
-                  <div className="space-y-2">
-                    {(() => {
-                      const observations = parseObservations(editedInspection.notes || null);
-                      
-                      if (observations.length === 0) {
-                        return (
-                          <div className="text-[#7A8075] text-sm italic bg-[#F7F2EA] rounded-lg p-4">
-                            No observations recorded
-                          </div>
-                        );
-                      }
-
-                      return observations.map((obs, index) => {
-                        // Check if it's a Q# type observation
-                        const isQuestion = obs.label.match(/^Q\d+/);
-                        
-                        if (isQuestion) {
-                          return (
-                            <ObservationField
-                              key={`obs-${obs.label}-${index}`}
-                              label={obs.label}
-                              content={obs.content}
-                              index={obs.originalIndex}
-                              onChange={handleObservationChange}
-                            />
-                          );
-                        } else {
-                          // Non-question observation (plain text)
-                          return (
-                            <div key={`text-${index}`} className="bg-[#F7F2EA] rounded-lg p-3">
-                              <span className="text-[#7A8075] text-sm">• {obs.content}</span>
-                            </div>
-                          );
-                        }
-                      });
-                    })()}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer with Save/Cancel buttons */}
-            <div className="p-4 border-t-2 border-[#E4EBE4] flex justify-end gap-3 flex-shrink-0">
-              <button
-                onClick={handleModalDismiss}
-                className="px-4 py-2 rounded-xl border-2 border-[#E4EBE4] text-[#7A8075] hover:bg-[#F7F2EA] font-medium transition-colors"
-                disabled={isSaving}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveInspection}
-                disabled={isSaving}
-                className="px-6 py-2 bg-[#356B43] text-white rounded-xl font-semibold hover:bg-[#254431] transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4" />
-                    Save Changes
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
+      {/* Deactivate Confirmation Modal */}
       {deleteConfirm?.open && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
           <div className="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full mx-4">
             <div className="w-12 h-12 bg-[#FEE2E2] rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="w-6 h-6 text-[#B91C1C]" />
             </div>
-            <h3 className="text-lg font-bold text-[#254431] text-center mb-2">Delete Inspection?</h3>
+            <h3 className="text-lg font-bold text-[#254431] text-center mb-2">Deactivate Inspection?</h3>
             <p className="text-[#7A8075] text-center mb-6">
-              Are you sure you want to delete this inspection? This action cannot be undone.
+              Are you sure you want to deactivate this inspection? It will no longer be visible but the data will be preserved.
             </p>
             <div className="flex justify-center gap-3">
               <button
@@ -1569,7 +901,7 @@ export default function AdminSiteDetails() {
                 className="px-5 py-2.5 bg-[#B91C1C] text-white rounded-xl font-semibold hover:bg-[#991B1B] transition-colors"
                 onClick={confirmDelete}
               >
-                Delete
+                Deactivate
               </button>
             </div>
           </div>
