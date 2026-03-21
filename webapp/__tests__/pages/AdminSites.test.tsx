@@ -17,6 +17,7 @@ jest.mock('@/utils/supabase/queries', () => ({
   getCounties: jest.fn().mockResolvedValue([]),
   updateSite: jest.fn().mockResolvedValue(undefined),
   toggleSiteActive: jest.fn().mockResolvedValue(undefined),
+  getTotalInspectionCount: jest.fn().mockResolvedValue(0),
 }));
 
 // Mock next/image
@@ -25,6 +26,7 @@ jest.mock('next/image', () => (props: any) => <img {...props} alt={props.alt} />
 // Mock components
 jest.mock('../../app/admin/AdminNavBar', () => () => <div>AdminNavBarMock</div>);
 jest.mock('@/components/ProtectedRoute', () => ({ children }: any) => <div>{children}</div>);
+jest.mock('@/components/PdfExportModal', () => () => null);
 
 describe('AdminSitesPage', () => {
   const mockPush = jest.fn();
@@ -32,26 +34,13 @@ describe('AdminSitesPage', () => {
   beforeEach(() => {
     (useRouter as jest.Mock).mockReturnValue({ push: mockPush });
     jest.clearAllMocks();
+    (supabaseQueries.getTotalInspectionCount as jest.Mock).mockResolvedValue(0);
   });
 
   // Utility functions
   it('calculates daysSince correctly', () => {
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     expect(daysSince(yesterday)).toBe(1);
-  });
-
-  it('formats age badge correctly', () => {
-    expect(formatAgeBadge(-1)).toBe('New');
-    expect(formatAgeBadge(5)).toBe('5d ago');
-    expect(formatAgeBadge(60)).toBe('2mo ago');
-    expect(formatAgeBadge(400)).toBe('1yr ago');
-  });
-
-  it('returns correct inspection status', () => {
-    expect(getInspectionStatus(100).label).toBe('Recently Visited');
-    expect(getInspectionStatus(300).label).toBe('Visited This Year');
-    expect(getInspectionStatus(500).label).toBe('Visited Recently');
-    expect(getInspectionStatus(800).label).toBe('Needs Review');
   });
 
   it('renders loading state initially', () => {
@@ -85,13 +74,7 @@ describe('AdminSitesPage', () => {
 
     // Now verify stats cards
     expect(screen.getByText('Total Sites')).toBeInTheDocument();
-    expect(screen.getByText('Total Inspections')).toBeInTheDocument();
-    expect(screen.getByText('Active This Year')).toBeInTheDocument();
-    expect(screen.getByText('Needs Attention')).toBeInTheDocument();
-
-    // Find stat values by looking for numbers near the stat labels
-    const statValues = screen.getAllByText(/^[0-9]$/);
-    expect(statValues.length).toBeGreaterThan(0);
+    expect(screen.getByText('Total Responses')).toBeInTheDocument();
   });
 
   it('filters sites based on search input', async () => {
