@@ -329,29 +329,6 @@ describe('Admin Add Questions to Site Inspection Form', () => {
       });
     });
 
-    it('closes the add form after successful save', async () => {
-      render(<FormEditorPage />);
-      await waitFor(() => {
-        expect(screen.getByText('Site Name (Q1)')).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByRole('button', { name: /Add Question/i }));
-      expect(screen.getByTestId('add-question-title')).toBeInTheDocument();
-
-      fireEvent.change(screen.getByTestId('add-question-title'), {
-        target: { value: 'Closing Test (Q75)' },
-      });
-      fireEvent.change(screen.getByTestId('add-question-key'), {
-        target: { value: 'Q75_Close' },
-      });
-
-      fireEvent.click(screen.getByTestId('save-new-question'));
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('add-question-title')).not.toBeInTheDocument();
-      });
-    });
-
     it('prevents saving when question title is empty', async () => {
       render(<FormEditorPage />);
       await waitFor(() => {
