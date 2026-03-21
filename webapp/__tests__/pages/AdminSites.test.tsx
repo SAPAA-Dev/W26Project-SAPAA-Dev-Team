@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import AdminSitesPage, { daysSince } from '../../app/admin/sites/page';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import AdminSitesPage, { daysSince, formatAgeBadge, getInspectionStatus } from '../../app/admin/sites/page';
 import * as supabaseQueries from '@/utils/supabase/queries';
 import { useRouter } from 'next/navigation';
 import AdminNavBar from '../../app/admin/AdminNavBar';
@@ -13,7 +13,10 @@ jest.mock('next/navigation', () => ({
 
 // Mock supabase queries
 jest.mock('@/utils/supabase/queries', () => ({
-  getSitesOnline: jest.fn(),
+  getAllSites: jest.fn(),
+  getCounties: jest.fn().mockResolvedValue([]),
+  updateSite: jest.fn().mockResolvedValue(undefined),
+  toggleSiteActive: jest.fn().mockResolvedValue(undefined),
   getTotalInspectionCount: jest.fn().mockResolvedValue(0),
 }));
 
@@ -46,7 +49,7 @@ describe('AdminSitesPage', () => {
   });
 
   it('renders error state if fetching sites fails', async () => {
-    (supabaseQueries.getSitesOnline as jest.Mock).mockRejectedValue(new Error('Network error'));
+    (supabaseQueries.getAllSites as jest.Mock).mockRejectedValue(new Error('Network error'));
 
     render(<AdminSitesPage />);
     await waitFor(() => screen.getByText(/Unable to Load Sites/i));
@@ -56,10 +59,10 @@ describe('AdminSitesPage', () => {
 
   it('renders stats cards and sites after successful fetch', async () => {
     const mockSites = [
-      { id: '1', namesite: 'Alpha', county: 'CountyA', inspectdate: new Date().toISOString() },
-      { id: '2', namesite: 'Beta', county: 'CountyB', inspectdate: '1900-01-01' },
+      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: new Date().toISOString() },
+      { id: 2, namesite: 'Beta', county: 'CountyB', ab_county: 20, is_active: true, inspectdate: '1900-01-01' },
     ];
-    (supabaseQueries.getSitesOnline as jest.Mock).mockResolvedValue(mockSites);
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue(mockSites);
 
     render(<AdminSitesPage />);
 
@@ -76,10 +79,10 @@ describe('AdminSitesPage', () => {
 
   it('filters sites based on search input', async () => {
     const mockSites = [
-      { id: '1', namesite: 'Alpha', county: 'CountyA', inspectdate: new Date().toISOString() },
-      { id: '2', namesite: 'Beta', county: 'CountyB', inspectdate: '1900-01-01' },
+      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: new Date().toISOString() },
+      { id: 2, namesite: 'Beta', county: 'CountyB', ab_county: 20, is_active: true, inspectdate: '1900-01-01' },
     ];
-    (supabaseQueries.getSitesOnline as jest.Mock).mockResolvedValue(mockSites);
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue(mockSites);
 
     render(<AdminSitesPage />);
     await waitFor(() => screen.getByText('Alpha'));
@@ -93,10 +96,10 @@ describe('AdminSitesPage', () => {
 
   it('sorts sites by name', async () => {
     const mockSites = [
-      { id: '1', namesite: 'Beta', county: 'CountyA', inspectdate: new Date().toISOString() },
-      { id: '2', namesite: 'Alpha', county: 'CountyB', inspectdate: '1900-01-01' },
+      { id: 1, namesite: 'Beta', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: new Date().toISOString() },
+      { id: 2, namesite: 'Alpha', county: 'CountyB', ab_county: 20, is_active: true, inspectdate: '1900-01-01' },
     ];
-    (supabaseQueries.getSitesOnline as jest.Mock).mockResolvedValue(mockSites);
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue(mockSites);
 
     render(<AdminSitesPage />);
     await waitFor(() => screen.getByText('Alpha'));
@@ -107,6 +110,10 @@ describe('AdminSitesPage', () => {
     // Wait for the sort to complete and verify order
     await waitFor(() => {
       const buttons = screen.getAllByRole('button');
+      const siteButtons = buttons.filter(btn =>
+        btn.textContent?.includes('Alpha') || btn.textContent?.includes('Beta')
+      );
+      // Verify Alpha appears before or at same position as Beta after sorting
       const alphaIndex = buttons.findIndex(btn => btn.textContent?.includes('Alpha'));
       const betaIndex = buttons.findIndex(btn => btn.textContent?.includes('Beta'));
       expect(alphaIndex).toBeLessThanOrEqual(betaIndex);
@@ -115,9 +122,9 @@ describe('AdminSitesPage', () => {
 
   it('navigates when site card buttons are clicked', async () => {
     const mockSites = [
-      { id: '1', namesite: 'Alpha', county: 'CountyA', inspectdate: new Date().toISOString() },
+      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: new Date().toISOString() },
     ];
-    (supabaseQueries.getSitesOnline as jest.Mock).mockResolvedValue(mockSites);
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue(mockSites);
 
     render(<AdminSitesPage />);
     await waitFor(() => screen.getByText('Alpha'));
@@ -142,9 +149,10 @@ describe('AdminSitesPage', () => {
   });
 
   it('renders AdminNavBar inside ProtectedRoute', async () => {
-    (supabaseQueries.getSitesOnline as jest.Mock).mockResolvedValue([]);
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue([]);
     render(<AdminSitesPage />);
     await waitFor(() => screen.getByText('AdminNavBarMock'));
     expect(screen.getByText('AdminNavBarMock')).toBeInTheDocument();
   });
+
 });

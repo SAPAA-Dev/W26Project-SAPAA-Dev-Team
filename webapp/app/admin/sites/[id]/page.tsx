@@ -852,6 +852,23 @@ export default function AdminSiteDetails() {
     );
   }, [inspections, filterText]);
 
+  // Handle Back Button Navigation
+  const handleBack = () => {
+    const stack: string[] = JSON.parse(sessionStorage.getItem('navStack') || '[]')
+
+    if (stack.length > 1) {
+      stack.pop() // remove current page
+      const previous = stack[stack.length - 1]
+      stack.pop() // remove previous since we're navigating there
+      sessionStorage.setItem('navStack', JSON.stringify(stack))
+      router.push(previous)
+    } else {
+      stack.pop() // clear current page before navigating to fallback
+      sessionStorage.setItem('navStack', JSON.stringify(stack))
+      router.push('/admin/sites')
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex flex-col items-center justify-center gap-4">
@@ -871,7 +888,7 @@ export default function AdminSiteDetails() {
           <h2 className="text-2xl font-bold text-[#254431] mb-2">Unable to Load Site</h2>
           <p className="text-[#7A8075] mb-6">{error || "Site not found"}</p>
           <button
-            onClick={() => router.push('/admin/sites')}
+            onClick={handleBack}
             className="bg-gradient-to-r from-[#356B43] to-[#254431] text-white font-semibold px-6 py-3 rounded-xl hover:shadow-lg transition-all"
           >
             Back to Admin Sites
@@ -892,7 +909,7 @@ export default function AdminSiteDetails() {
       <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-6 shadow-lg">
         <div className="max-w-7xl mx-auto">
           <button
-            onClick={() => router.push('/admin/sites')}
+            onClick={handleBack}
             className="flex items-center gap-2 text-[#E4EBE4] hover:text-white transition-colors mb-4 group"
           >
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />

@@ -1,4 +1,7 @@
 /// <reference types="cypress" />
+
+const TEST_RESPONSE_ID = 3237; 
+
 // US 1.0.25 – Hide a Site Inspections Form Questions
 describe('Admin Form Editor - Question Visibility', () => {
   beforeEach(() => {  
@@ -12,8 +15,9 @@ describe('Admin Form Editor - Question Visibility', () => {
     cy.wait(5000);
     cy.contains('Admin').first().click();
     cy.wait(5000);
-    cy.get('button[title="admin dropdown menu"]').click();
-    cy.contains('Form Editor').click();
+    cy.get('button[title="admin dropdown menu"]').scrollIntoView().click();
+    cy.contains('Form Editor').scrollIntoView().click();
+    cy.wait(5000);
     cy.url().should('include', '/admin/form-editor')
   });
 
@@ -49,7 +53,10 @@ describe('Admin Form Editor - Question Visibility', () => {
 
     // Verifying editing reports
     cy.wait(2000);
-    cy.get(`[data-testid="edit-form-button"]`).click();
+
+    cy.visit(`http://localhost:3000/detail/Riverlot%2056%20(NA)/edit-report/${TEST_RESPONSE_ID}`);
+    cy.contains('Edit Inspection Report', { timeout: 10000 }).should('be.visible');
+    
     cy.get(`[data-testid="Email (Q11)-question-title"]`, { timeout: 10000 }).should('not.exist');
   });
 
@@ -97,7 +104,8 @@ describe('Admin Form Editor - Question Visibility', () => {
 
     // Verifying editing reports
     cy.wait(2000);
-    cy.get(`[data-testid="edit-form-button"]`, { timeout: 10000 }).click();
+    cy.visit(`http://localhost:3000/detail/Riverlot%2056%20(NA)/edit-report/${TEST_RESPONSE_ID}`);
+    cy.contains('Edit Inspection Report', { timeout: 10000 }).should('be.visible');
     cy.get(`[data-testid="Email (Q11)-question-title"]`, { timeout: 10000 }).should('exist');
   });
 });

@@ -2,8 +2,9 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSitesOnline, getTotalInspectionCount, SiteSummary } from '@/utils/supabase/queries';
-import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, Download } from 'lucide-react';
+import { getAllSites, getCounties, updateSite, toggleSiteActive, getTotalInspectionCount, SiteSummary, County } from '@/utils/supabase/queries';
+import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, Pencil, ArrowLeft, Download } from 'lucide-react';
+import EditSiteModal from './components/EditSiteModal';
 import Image from 'next/image';
 import AdminNavBar from '../AdminNavBar';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -61,13 +62,20 @@ export default function AdminSitesPage() {
   useEffect(() => {
     getTotalInspectionCount().then(setTotalResponses).catch(() => {});
   }, []);
+  const [editSite, setEditSite] = useState<SiteSummary | null>(null);
+  const [counties, setCounties] = useState<County[]>([]);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const loadSites = async () => {
       setLoading(true);
       try {
-        const onlineSites = await getSitesOnline();
-        setSites(onlineSites);
+        const [allSites, countyList] = await Promise.all([
+          getAllSites(),
+          getCounties(),
+        ]);
+        setSites(allSites);
+        setCounties(countyList);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error loading sites';
         setError(message);
@@ -134,6 +142,47 @@ export default function AdminSitesPage() {
     return { totalSites, totalInspections, totalResponses, activeThisYear, needsAttention };
   }, [sites]);
 
+  const handleSaveSite = async (data: { id: number; namesite: string; ab_county: number | null; is_active: boolean }) => {
+    setSaving(true);
+    try {
+      const currentSite = sites.find((s) => s.id === data.id);
+      await updateSite(data.id, data.namesite, data.ab_county);
+      if (currentSite && currentSite.is_active !== data.is_active) {
+        await toggleSiteActive(data.id, data.is_active);
+      }
+      const countyObj = counties.find((c) => c.id === data.ab_county);
+      setSites((prev) =>
+        prev.map((s) =>
+          s.id === data.id
+            ? { ...s, namesite: data.namesite, ab_county: data.ab_county, county: countyObj?.county ?? null, is_active: data.is_active }
+            : s
+        )
+      );
+      setEditSite(null);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update site');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Handle Back Button Navigation
+  const handleBack = () => {
+    const stack: string[] = JSON.parse(sessionStorage.getItem('navStack') || '[]')
+
+    if (stack.length > 1) {
+      stack.pop() // remove current page
+      const previous = stack[stack.length - 1]
+      stack.pop() // remove previous since we're navigating there
+      sessionStorage.setItem('navStack', JSON.stringify(stack))
+      router.push(previous)
+    } else {
+      stack.pop() // clear current page before navigating to fallback
+      sessionStorage.setItem('navStack', JSON.stringify(stack))
+      router.push('/sites')
+    }
+  }
+
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex items-center justify-center p-6">
@@ -168,9 +217,18 @@ export default function AdminSitesPage() {
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
         <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
           <div className="max-w-7xl mx-auto">
+            {/* Back button */}
+            <button
+              onClick = {handleBack}
+              className="flex items-center gap-1.5 text-[#86A98A] hover:text-white transition-colors mb-4 group"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <span className="text-sm font-medium">Back</span>
+            </button>
+
             <div className="flex items-center justify-between mb-3">
               {/* Left: icon + title + subtitle */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-cesitesnter gap-4">
                 <Image
                   src="/images/sapaa-icon-white.png"
                   alt="SAPAA"
@@ -192,53 +250,52 @@ export default function AdminSitesPage() {
               </div>
             </div>
           </div>
-        </div>
-
-    {/* Stats Cards */}
-    <div className="max-w-7xl mx-auto px-6 py-6 mt-2">
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <MapPin className="w-5 h-5 text-[#356B43]" />
-            <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Sites</div>
           </div>
-          <div className="text-3xl font-bold text-[#254431]">{stats.totalSites}</div>
-        </div>
+        {/* Stats Cards */}
+        <div className="max-w-7xl mx-auto px-6 py-6 mt-2">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin className="w-5 h-5 text-[#356B43]" />
+                <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Sites</div>
+              </div>
+              <div className="text-3xl font-bold text-[#254431]">{stats.totalSites}</div>
+            </div>
 
-        <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <ClipboardList className="w-5 h-5 text-[#356B43]" />
-            <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Inspected Sites</div>
-          </div>
-          <div className="text-3xl font-bold text-[#254431]">{stats.totalInspections}</div>
-        </div>
+            <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <ClipboardList className="w-5 h-5 text-[#356B43]" />
+                <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Inspected Sites</div>
+              </div>
+              <div className="text-3xl font-bold text-[#254431]">{stats.totalInspections}</div>
+            </div>
 
-        <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <ClipboardList className="w-5 h-5 text-[#356B43]" />
-            <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Responses</div>
-          </div>
-          <div className="text-3xl font-bold text-[#254431]">{stats.totalResponses}</div>
-        </div>
+            <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <ClipboardList className="w-5 h-5 text-[#356B43]" />
+                <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Responses</div>
+              </div>
+              <div className="text-3xl font-bold text-[#254431]">{stats.totalResponses}</div>
+            </div>
 
-        <div className="bg-[#D1FAE5] rounded-xl p-4 border-2 border-[#065F46]/20 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-5 h-5 text-[#065F46]" />
-            <div className="text-xs text-[#065F46] font-medium uppercase tracking-wide">Active over 365 Days</div>
-          </div>
-          <div className="text-3xl font-bold text-[#065F46]">{stats.activeThisYear}</div>
-        </div>
+            <div className="bg-[#D1FAE5] rounded-xl p-4 border-2 border-[#065F46]/20 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="w-5 h-5 text-[#065F46]" />
+                <div className="text-xs text-[#065F46] font-medium uppercase tracking-wide">Active over 365 Days</div>
+              </div>
+              <div className="text-3xl font-bold text-[#065F46]">{stats.activeThisYear}</div>
+            </div>
 
-        <div className="bg-[#FEE2E2] rounded-xl p-4 border-2 border-[#B91C1C]/20 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <Clock className="w-5 h-5 text-[#B91C1C]" />
-            <div className="text-xs text-[#B91C1C] font-medium uppercase tracking-wide">Needs Attention</div>
+            <div className="bg-[#FEE2E2] rounded-xl p-4 border-2 border-[#B91C1C]/20 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="w-5 h-5 text-[#B91C1C]" />
+                <div className="text-xs text-[#B91C1C] font-medium uppercase tracking-wide">Needs Attention</div>
+              </div>
+              <div className="text-3xl font-bold text-[#7F1D1D]">{stats.needsAttention}</div>
+            </div>
           </div>
-          <div className="text-3xl font-bold text-[#7F1D1D]">{stats.needsAttention}</div>
-        </div>
-      </div>
-    </div>
-    
+        </div> 
+            
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Search and Sort */}
@@ -340,15 +397,28 @@ export default function AdminSitesPage() {
                 return (
                   <div
                     key={item.id}
-                    className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] hover:border-[#86A98A] hover:shadow-lg transition-all group relative"
+                    className={`rounded-2xl p-6 border-2 transition-all group relative ${
+                      item.is_active
+                        ? 'bg-white border-[#E4EBE4] hover:border-[#86A98A] hover:shadow-lg'
+                        : 'bg-gray-100 border-gray-300 opacity-60'
+                    }`}
                   >
+                    {!item.is_active && (
+                      <span className="absolute top-3 right-3 text-xs font-semibold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">
+                        Inactive
+                      </span>
+                    )}
                     <button
                       onClick={() => router.push(`/admin/sites/${encodeURIComponent(item.namesite)}`)}
                       className="w-full text-left"
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <h3 className="text-lg font-bold text-[#254431] mb-1 group-hover:text-[#356B43] transition-colors">
+                          <h3 className={`text-lg font-bold mb-1 transition-colors ${
+                            item.is_active
+                              ? 'text-[#254431] group-hover:text-[#356B43]'
+                              : 'text-gray-500'
+                          }`}>
                             {item.namesite}
                           </h3>
                           {item.county && (
@@ -392,6 +462,17 @@ export default function AdminSitesPage() {
                     {/* Admin Actions */}
                     <div className="mt-4 pt-4 border-t border-[#E4EBE4] flex items-center gap-2">
                       <button
+                        data-testid={`edit-site-button-${item.id}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditSite(item);
+                        }}
+                        className="flex items-center justify-center p-2 bg-[#F7F2EA] hover:bg-[#E4EBE4] text-[#254431] rounded-lg transition-colors"
+                        title="Edit site"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={(e) => {
                           e.stopPropagation();
                           router.push(`/admin/sites/${encodeURIComponent(item.namesite)}`);
@@ -426,6 +507,15 @@ export default function AdminSitesPage() {
         onClose={() => setShowPdfModal(false)}
         mode="multi-site"
         siteNames={filteredSites.map(s => s.namesite)}
+      />
+
+      <EditSiteModal
+        visible={!!editSite}
+        site={editSite}
+        counties={counties}
+        onClose={() => setEditSite(null)}
+        onSave={handleSaveSite}
+        saving={saving}
       />
     </ProtectedRoute>
   );

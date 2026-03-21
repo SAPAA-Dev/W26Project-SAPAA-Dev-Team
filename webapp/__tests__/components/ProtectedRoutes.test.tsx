@@ -28,10 +28,10 @@ describe('ProtectedRoute Component', () => {
     (useAuthHook.useAuth as jest.Mock).mockReturnValue({ isAuthenticated, loading });
   };
 
-  const mockSupabaseSession = (role: string | null = 'steward') => {
+  const mockSupabaseSession = (role: string | null = 'steward', authenticated: boolean | null = true) => {
     const mockAuth = {
       getSession: jest.fn().mockResolvedValue({
-        data: { session: role ? { user: { id: '1', email: 'a@b.com', user_metadata: { role } } } : null },
+        data: { session: role ? { user: { id: '1', email: 'a@b.com', user_metadata: { role, authenticated: authenticated ?? true } } } : null },
       }),
     };
     (supabaseClient.createClient as jest.Mock).mockReturnValue({ auth: mockAuth });
@@ -145,6 +145,56 @@ describe('ProtectedRoute Component', () => {
     await waitFor(() => {
       expect(screen.getByText('Children Content')).toBeInTheDocument();
       expect(pushMock).not.toHaveBeenCalled();
+    });
+  });
+
+  it('shows awaiting approval message if authenticated is false', async () => {
+    mockUseAuth(true, false);
+    mockSupabaseSession('steward', false);
+
+    render(
+      <ProtectedRoute>
+        <div>Children Content</div>
+      </ProtectedRoute>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Awaiting Admin Approval')).toBeInTheDocument();
+      expect(screen.getByText(/administrator needs to review and approve your access/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Sign Out/i })).toBeInTheDocument();
+    });
+  });
+
+  it('allows user to sign out from approval pending screen', async () => {
+    mockUseAuth(true, false);
+    mockSupabaseSession('steward', false);
+
+    render(
+      <ProtectedRoute>
+        <div>Children Content</div>
+      </ProtectedRoute>
+    );
+
+    await waitFor(() => {
+      const signOutBtn = screen.getByRole('button', { name: /Sign Out/i });
+      fireEvent.click(signOutBtn);
+      expect(pushMock).toHaveBeenCalledWith('/login');
+    });
+  });
+
+  it('renders children if authenticated is true', async () => {
+    mockUseAuth(true, false);
+    mockSupabaseSession('steward', true);
+
+    render(
+      <ProtectedRoute>
+        <div>Approved Content</div>
+      </ProtectedRoute>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Approved Content')).toBeInTheDocument();
+      expect(screen.queryByText('Awaiting Admin Approval')).not.toBeInTheDocument();
     });
   });
 });
