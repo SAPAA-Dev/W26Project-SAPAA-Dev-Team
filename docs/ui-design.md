@@ -260,6 +260,8 @@ A user manual is available as an app tutorial. In-app tooltips and hints are pro
 
 All colours in the application are drawn from a forest-green and warm-cream palette. Custom hex values are used throughout. No Tailwind named colour shades (e.g., `green-700`) appear in the codebase.
 
+<img width="1638" height="420" alt="image" src="https://github.com/user-attachments/assets/e934cbe6-3ed0-447e-a520-da92c902b738" />
+
 ### 5.1 Primary Brand Colours
 
 | Token | Hex | Usage |
@@ -377,6 +379,8 @@ The three columns are wrapped in a `flex gap-8` container inside a `DndContext` 
 
 The application uses a shared green-header style but not one identical markup structure on every page. Most pages use a full-width dark-green banner with logo/title/subtitle and optional right-side actions.
 
+<img width="1650" height="156" alt="image" src="https://github.com/user-attachments/assets/ba493314-ab65-4390-b1c8-36408f6a1fef" />
+
 ### 8.1 Standard Header (Primary Site/Detail Pattern)
 
 ```tsx
@@ -418,6 +422,9 @@ Admin pages include `AdminNavBar` near the top of the page. Some pages override 
 </div>
 ```
 
+<img width="1650" height="398" alt="image" src="https://github.com/user-attachments/assets/3b7257e9-2343-48b4-9f06-f79bff44785f" />
+
+
 ### 8.3 Header with Action Button (Account Management)
 
 When a page needs a primary action button in the header, it is grouped together with the `AdminNavBar` in a single right-side container:
@@ -435,6 +442,8 @@ When a page needs a primary action button in the header, it is grouped together 
   </div>
 </div>
 ```
+<img width="1648" height="157" alt="image" src="https://github.com/user-attachments/assets/695a5db5-a502-4a24-b16c-9aad59814ab2" />
+
 
 ### 8.4 SAPAA Logo
 
@@ -462,6 +471,8 @@ Back navigation exists on detail/report pages but currently has two variants:
 ## 9. Stats Cards
 
 Two stats card styles exist in the application. The Large Icon style is the preferred convention for all admin pages.
+
+<img width="553" height="116" alt="image" src="https://github.com/user-attachments/assets/3fa11728-b226-4362-af69-84339f93a5bf" />
 
 ### 9.1 Large Icon Style (Preferred - Admin Pages)
 
@@ -536,6 +547,8 @@ When a card is a navigation link (e.g., Image Gallery on the dashboard), wrap it
 
 Inspection status is communicated through inline coloured badges. Badge style follows the pattern: `rounded-full px-3 py-1 text-xs font-semibold`.
 
+<img width="1575" height="697" alt="image" src="https://github.com/user-attachments/assets/d9cbe00d-e248-43b7-b27e-b586b14ca695" />
+
 ### 10.1 Inspection Status Badges
 
 | Label | Text colour | Background | Condition |
@@ -571,6 +584,8 @@ Inspection status is communicated through inline coloured badges. Badge style fo
 ---
 
 ## 11. Buttons
+
+<img width="663" height="621" alt="image" src="https://github.com/user-attachments/assets/05267a7d-037a-4ce9-b472-a1fc13b54b1b" />
 
 ### 11.1 Primary Button
 
@@ -649,6 +664,10 @@ Small square icon button in a sidebar header:
 
 ## 12. Form Inputs
 
+<img width="618" height="477" alt="image" src="https://github.com/user-attachments/assets/752edd00-32bc-4723-a1e6-2a91b374e250" />
+
+<img width="1212" height="891" alt="image" src="https://github.com/user-attachments/assets/afdf33c4-a872-4eec-94f7-c4e1f5dcff9a" />
+
 ### 12.1 Standard Text Input
 
 ```tsx
@@ -707,6 +726,8 @@ The green border signals that this area is in an active edit state. The form act
 
 ## 13. Cards and Panels
 
+<img width="520" height="242" alt="image" src="https://github.com/user-attachments/assets/63940442-0546-4dfd-8f7b-877178f61a5c" />
+
 ### 13.1 Standard White Card
 
 The default content container used throughout the application:
@@ -738,6 +759,9 @@ The default content container used throughout the application:
 </div>
 ```
 
+<img width="326" height="687" alt="image" src="https://github.com/user-attachments/assets/6671fadc-df0e-4a2f-ab42-80786bd573d4" />
+
+
 ### 13.3 Sticky Preview Panel
 
 The right-side preview panel in the Form Editor is sticky so it stays visible while scrolling:
@@ -747,6 +771,9 @@ The right-side preview panel in the Form Editor is sticky so it stays visible wh
   ...
 </div>
 ```
+
+<img width="471" height="382" alt="image" src="https://github.com/user-attachments/assets/c0ca9027-1c92-49a1-bb1c-e717dbd16e17" />
+
 
 ### 13.4 Active / Selected Card State
 
@@ -772,6 +799,7 @@ border-[#356B43] shadow-sm
   </button>
 </div>
 ```
+<img width="438" height="362" alt="image" src="https://github.com/user-attachments/assets/3038c315-4dad-4a2f-9b6c-fb5d1a7dc9d6" />
 
 ---
 
@@ -799,6 +827,9 @@ border-[#356B43] shadow-sm
 </div>
 ```
 
+<img width="1588" height="77" alt="image" src="https://github.com/user-attachments/assets/c82829d0-3cd6-45d5-aeda-facc1874b5d6" />
+
+
 ### 14.3 Alert Behaviour
 
 - Alerts appear immediately below the header, inside the `max-w-7xl mx-auto px-6 pt-4` container.
@@ -824,6 +855,8 @@ When a page is loading its initial data, render a centred spinner on the page ba
 </ProtectedRoute>
 ```
 
+<img width="397" height="281" alt="image" src="https://github.com/user-attachments/assets/d74be3db-f50d-4f4d-a613-e0db03566ce2" />
+
 ### 15.2 Button Loading State
 
 When a save/submit operation is in progress, replace the button icon with a spinning `Loader2`:
@@ -834,6 +867,7 @@ When a save/submit operation is in progress, replace the button icon with a spin
   {saving ? 'Saving...' : 'Save Changes'}
 </button>
 ```
+<img width="366" height="117" alt="image" src="https://github.com/user-attachments/assets/95e986fa-5955-458e-abb9-feef140b1c38" />
 
 ### 15.3 Leaflet / Map SSR Guard
 
@@ -890,6 +924,8 @@ Each sortable item exposes only a grip handle (not the whole card) as the drag t
   <GripVertical className="w-4 h-4 text-[#7A8075]" />
 </button>
 ```
+<img width="820" height="442" alt="image" src="https://github.com/user-attachments/assets/4c8dfa6d-d499-4f06-99f4-7031c1becee1" />
+
 
 ### 16.3 Drag Visual Feedback
 
@@ -901,9 +937,13 @@ Each sortable item exposes only a grip handle (not the whole card) as the drag t
 
 ---
 
+<img width="845" height="531" alt="image" src="https://github.com/user-attachments/assets/2026ae51-9be7-4d78-80f8-bdb5d74f248b" />
+
 ## 17. AdminNavBar
 
 The `AdminNavBar` component is shared across all admin pages. Its internal structure must not be modified since UI tests depend on specific elements being present.
+
+<img width="287" height="357" alt="image" src="https://github.com/user-attachments/assets/206aa957-4e88-419b-810a-ff86fbe31bd4" />
 
 ### 17.1 Test-Critical Elements
 
