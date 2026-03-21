@@ -8,6 +8,11 @@ jest.mock("@/components/ProtectedRoute", () => ({
   default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+// Mock next/router
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(),
+}));
+
 const mockGalleryItems = [
   {
     id: "img-1",

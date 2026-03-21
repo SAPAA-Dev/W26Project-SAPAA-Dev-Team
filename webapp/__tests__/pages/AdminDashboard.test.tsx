@@ -22,6 +22,11 @@ jest.mock('@/utils/supabase/server', () => ({
   createClient: jest.fn(),
 }));
 
+// Mock next/router
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(),
+}));
+
 jest.mock("../../app/admin/dashboard/components/Map", () => () => <div>MapMock</div>);
 jest.mock("next/image", () => (props: any) => <img {...props} alt={props.alt} />);
 jest.mock("../../app/admin/AdminNavBar", () => () => <div>AdminNavBarMock</div>);

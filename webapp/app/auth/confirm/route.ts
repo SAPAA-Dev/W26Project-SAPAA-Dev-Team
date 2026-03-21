@@ -1,4 +1,5 @@
 import { type EmailOtpType } from '@supabase/supabase-js';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { type NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 
@@ -12,15 +13,29 @@ export async function GET(request: NextRequest) {
   if (token_hash && type) {
     const supabase = await createClient();
 
-    const { error } = await supabase.auth.verifyOtp({
+    const { error, data } = await supabase.auth.verifyOtp({
       type,
       token_hash,
     });
-    
-    if (!error) {
+
+    if (!error && data?.user) {
+      // Set authenticated: false for newly verified email users
+      const adminClient = createAdminClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SECRET!
+      );
+
+      await adminClient.auth.admin.updateUserById(data.user.id, {
+        user_metadata: {
+          ...data.user.user_metadata,
+          authenticated: false,
+          role: data.user.user_metadata?.role || 'steward'
+        }
+      });
+
       const forwardedHost = request.headers.get('x-forwarded-host');
       const isLocalEnv = process.env.NODE_ENV === 'development';
-      
+
       if (isLocalEnv) {
         return NextResponse.redirect(`${origin}${next}`);
       } else if (forwardedHost) {
