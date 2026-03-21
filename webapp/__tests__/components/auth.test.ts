@@ -73,9 +73,9 @@ describe("Supabase Auth Module", () => {
       });
     });
 
-    it("signs up successfully and needs confirmation", async () => {
+    it("signs up successfully with authenticated: false and needs confirmation", async () => {
       mockSignUp.mockResolvedValue({
-        data: { user: { id: "1", email: "a@b.com", confirmed_at: null } },
+        data: { user: { id: "1", email: "a@b.com", confirmed_at: null, user_metadata: { role: 'steward', authenticated: false } } },
         error: null,
       });
 
@@ -83,9 +83,9 @@ describe("Supabase Auth Module", () => {
       expect(result).toEqual({ success: true, needsConfirmation: true });
     });
 
-    it("signs up successfully and already confirmed", async () => {
+    it("signs up successfully with authenticated: false and already confirmed", async () => {
       mockSignUp.mockResolvedValue({
-        data: { user: { id: "1", email: "a@b.com", confirmed_at: "2025-11-30" } },
+        data: { user: { id: "1", email: "a@b.com", confirmed_at: "2025-11-30", user_metadata: { role: 'steward', authenticated: false } } },
         error: null,
       });
 

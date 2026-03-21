@@ -14,6 +14,20 @@ export interface AuthState {
 
 let listeners: Array<(state: AuthState) => void> = [];
 
+//Resend email confirmation to user
+export async function resendConfirmation(email: string): Promise<void>{
+  const { error } = await supabase.auth.resend({
+  type: 'signup',
+  email: email,
+  options: {
+    
+    emailRedirectTo: `${window.location.origin}/auth/confirm`
+  }
+
+})
+if (error) throw error
+}
+
 // Get current auth state from Supabase
 export async function getAuthState(): Promise<AuthState> {
   try {
@@ -102,6 +116,7 @@ export async function signup(email: string, password: string): Promise<{ success
       email: email.trim(),
       password: password,
       options: {
+        data: { role: 'steward', authenticated: false },
         emailRedirectTo: `${window.location.origin}/auth/confirm`,
       }
     });

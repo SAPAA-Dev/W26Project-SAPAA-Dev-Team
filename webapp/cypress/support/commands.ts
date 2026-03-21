@@ -24,12 +24,21 @@
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
-//
-// export {};
 
-// declare global {
-//   namespace Cypress {
-//     interface Chainable {
-//     }
-//   }
-// }
+// Select text in an input/textarea by setting selectionStart and selectionEnd
+Cypress.Commands.add('setSelection', { prevSubject: 'element' }, (subject, start: number, end: number) => {
+  const el = subject[0] as HTMLTextAreaElement;
+  el.focus();
+  el.setSelectionRange(start, end);
+  return cy.wrap(subject);
+});
+
+export {};
+
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      setSelection(start: number, end: number): Chainable<JQuery<HTMLElement>>;
+    }
+  }
+}

@@ -14,11 +14,12 @@ export default function AccountDetailsModal({
   visible: boolean;
   user: User | null;
   onClose: () => void;
-  onSave: (data: { email: string; password?: string; role: string }) => void;
+  onSave: (data: { email: string; password?: string; role: string; authenticated?: boolean }) => void;
   onDelete?: (id: string) => void;
 }) {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("steward");
+  const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -28,9 +29,11 @@ export default function AccountDetailsModal({
     if (user) {
       setEmail(user.email);
       setRole(user.role);
+      setAuthenticated(user.authenticated);
     } else {
       setEmail("");
       setRole("steward");
+      setAuthenticated(false);
     }
     setPassword("");
     setConfirmPassword("");
@@ -52,7 +55,7 @@ export default function AccountDetailsModal({
       return;
     }
 
-    const payload: any = { email, role };
+    const payload: any = { email, role, authenticated };
     if (password) payload.password = password;
 
     onSave(payload);
@@ -125,6 +128,38 @@ export default function AccountDetailsModal({
               </button>
             </div>
           </div>
+
+          {/* Approval Status */}
+          {user && (
+            <div>
+              <label className="block text-sm font-semibold text-[#254431] mb-3 flex items-center gap-2">
+                <Shield className="w-4 h-4 text-[#356B43]" />
+                Approval Status
+              </label>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setAuthenticated(true)}
+                  className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all border-2 ${
+                    authenticated
+                      ? 'bg-[#4caf50] text-white border-[#4caf50] shadow-md'
+                      : 'bg-[#F7F2EA] text-[#254431] border-[#86A98A] hover:border-[#4caf50]'
+                  }`}
+                >
+                  ✓ Approved
+                </button>
+                <button
+                  onClick={() => setAuthenticated(false)}
+                  className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all border-2 ${
+                    !authenticated
+                      ? 'bg-[#ff9800] text-white border-[#ff9800] shadow-md'
+                      : 'bg-[#F7F2EA] text-[#254431] border-[#86A98A] hover:border-[#ff9800]'
+                  }`}
+                >
+                  ⏳ Pending
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Password Field */}
           <div>
