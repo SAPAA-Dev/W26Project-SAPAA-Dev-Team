@@ -391,16 +391,16 @@ export default function NewReportPage() {
                   filename: file.name,
                   contentType: file.type,
                   fileSize: file.size,
-                  responseId: siteInspectionReportId,
+                  responseId: siteInspectionReportId!,
                   questionId: Number(questionId),
                   siteId: Number(siteId),
-                }); 
+                });
 
                 // 2) upload the file to S3 using the presigned URL
                 await uploadFileToS3(uploadUrl, file);
 
                 attachmentsRows.push({
-                  response_id: siteInspectionReportId,
+                  response_id: siteInspectionReportId!,
                   question_id: Number(questionId),
                   site_id: Number(siteId),
                   storage_key: key, 
@@ -428,7 +428,7 @@ export default function NewReportPage() {
                 answer.forEach(subAnswer => {
                     const isOther = subAnswer === 'Other';
                     answersArray.push({
-                        response_id: siteInspectionReportId,
+                        response_id: siteInspectionReportId!,
                         question_id: Number(questionId),
                         obs_value: isValueType ? String(subAnswer) : null,
                         obs_comm: isOther ? commValue : (isCommType ? String(subAnswer) : null),
@@ -437,7 +437,7 @@ export default function NewReportPage() {
             } else {
                 const isOther = answer === 'Other';
                 answersArray.push({
-                    response_id: siteInspectionReportId,
+                    response_id: siteInspectionReportId!,
                     question_id: Number(questionId),
                     obs_value: isValueType ? String(answer) : null,
                     obs_comm: isOther ? commValue : (isCommType ? String(answer) : null),
