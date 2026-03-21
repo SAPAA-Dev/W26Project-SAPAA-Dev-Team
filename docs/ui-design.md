@@ -1,6 +1,6 @@
 # SAPAA
 ## Protected Areas Inspection App
-### UI / UX Design Documentation - v1.0
+### UI / UX Design Documentation - v2.0
 #### Design System Reference for Development Teams
 `Next.js` · `Tailwind CSS` · `Supabase` · `AWS`
 
@@ -664,9 +664,9 @@ Small square icon button in a sidebar header:
 
 ## 12. Form Inputs
 
-![UI Form Input 1](images/ui_form_input1.png) 
+![UI Form Input 1](images/ui_form_inputs1.png) 
 
-![UI Form Input 2](images/ui_form_input2.png) 
+![UI Form Input 2](images/ui_form_inputs2.png) 
 
 ### 12.1 Standard Text Input
 
@@ -976,15 +976,7 @@ When rendered inside a page header, `AdminNavBar`'s background is overridden wit
 | `W26_form_sections` | Form section metadata |
 | `W26_ab_counties` | County/region lookup |
 
-### 18.2 Legacy Tables (Migration In Progress)
-
-The following tables are from the previous data model. New features should avoid adding new dependencies on them, but the current codebase still has legacy reads in some admin/analytics paths:
-
-- `sites_report_fnr_test`
-- `sites_detail_fnr_test`
-- `sites_list_fnr`
-
-### 18.3 Postgres RPC Functions
+### 18.2 Postgres RPC Functions
 
 Aggregate queries are implemented as Supabase RPC functions to avoid complex client-side joins:
 
@@ -993,7 +985,7 @@ Aggregate queries are implemented as Supabase RPC functions to avoid complex cli
 | `get_naturalness_distribution()` | Returns normalised naturalness score buckets with counts from `W26_answers` |
 | `get_top_sites_distribution()` | Returns top 5 active sites by inspection count from `W26_form_responses` and `W26_sites-pa` |
 
-### 18.4 Naturalness Score Normalisation
+### 18.3 Naturalness Score Normalisation
 
 Raw `obs_value` data for naturalness is inconsistently stored (e.g., "4 - Great", "4 = Great", "Great"). The RPC uses `ILIKE` pattern matching with a `CASE` statement to normalise these into five canonical buckets: Great, Good, Passable, Terrible, and Cannot Answer.
 
@@ -1081,6 +1073,6 @@ Re-apply all query mocks in `beforeEach` after `jest.clearAllMocks()`. Import th
 
 *End of Document*
 
-**Document Version:** 3.0  
+**Document Version:** 2.0  
 **Last Updated:** March 2026  
 **Prepared for:** Stewards of Alberta's Protected Areas Association
