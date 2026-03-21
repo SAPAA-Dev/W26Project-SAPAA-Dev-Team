@@ -22,6 +22,30 @@ export default defineConfig({
           }
           return null;
         },
+        async getSiteInfo(siteName: string) {
+          const supabase = createServerSupabase();
+          const { data } = await supabase
+            .from("W26_sites-pa")
+            .select("id, namesite, ab_county")
+            .eq("namesite", siteName)
+            .single();
+          return data ?? null;
+        },
+        async restoreSite({ namesite, originalName, originalCountyId }: { namesite: string; originalName: string; originalCountyId: number | null }) {
+          const supabase = createServerSupabase();
+          const { data: site } = await supabase
+            .from("W26_sites-pa")
+            .select("id")
+            .eq("namesite", namesite)
+            .single();
+          if (site) {
+            await supabase
+              .from("W26_sites-pa")
+              .update({ namesite: originalName, ab_county: originalCountyId })
+              .eq("id", site.id);
+          }
+          return null;
+        },
       });
     },
   },

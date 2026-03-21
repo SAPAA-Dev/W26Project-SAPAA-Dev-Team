@@ -101,6 +101,7 @@ export default function EditSiteModal({
               <div className="flex items-center justify-between w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-700">
                 <span>{selectedCounty.county}</span>
                 <button
+                  data-testid="edit-site-county-clear"
                   onClick={() => {
                     setSelectedCounty(null);
                     setCountySearch("");
