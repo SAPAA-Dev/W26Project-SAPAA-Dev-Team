@@ -494,39 +494,20 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 4. Offline data is temporarily stored locally
 
 
-
-
 ---
 ### **P4 – Site Management**
 ---
 
-#### US 4.0.1 – View Site Profile of a Particular Site | Story Points: 3
+#### US 4.0.1 – PDF Generation of SIRs| Story Points: 5
 
-> **As** a User, **I want** to be able to view a profile for each site, **so that** I can identify important information about the site I’m travelling to / inspecting
+> **As** an Admin, **I want** to generate a customizable PDF export of Site Inspection Reports, **so that** I can review historical site data and provide documentation for audits or stakeholders.
 
 > **Acceptance Tests** 
 
-> 1. Each site has a dedicated profile page.
-> 2. Site profiles display key information such as name, location, and inspection history.
-> 3. Users can navigate from the map or list view to a site profile.
-> 4. The site profile has some ‘link’ to all previous SIRs in that site
-> 5. Users can go back to the map/list view from the site profile  
-
-
-#### US 4.0.2 – Add Site Profile of a Particular Site | Story Points: 2
-
-> **As** an Admin, **I want** to be able to add a profile for a new site, **so that** I can keep my app up to date with the latest sites
-
-> **Acceptance Tests**
-
-> 1. A site has a specified county
-> 2. A site has a type
-> 3. A site has a name
-> 4. A site has a specified natural region
-> 5. Admins can access a button/option to add a site profile
-> 6. Non-admin users cannot add a site profile
-
-
+> 1. Export PDF button is accessible on Admin panel only
+> 2. Export PDF allows Admin to select questions wanted
+> 3. Export PDF allows Admin to select time period interested
+> 4. Export PDF correctly generates the PDF given the criteria
 
 #### US 4.0.3 – Update Site Profile of a Particular Site | Story Points: 3
 
@@ -554,32 +535,6 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 4. Users cannot interact with the site anymore
 > 5. Admins have access to the option to remove a site profile
 > 6. Non-admin users cannot access the option to remove a site profile
-
-
-#### US 4.0.5 – Amenities Information on Site Profile | Story Points: 2
-
-> **As** a User, **I want** to be able to view amenities information about individual sites, **so that** I can find and access any amenities I need (parking, washrooms, facilities)
-
-> **Acceptance Tests**  
-
-> 1. Site profiles display available amenities (e.g., parking, washrooms, facilities).
-> 2. Amenity information is clearly labelled and easy to locate.
-> 3. Users can view amenities without navigating away from the site profile.
-
-
-
-#### US 4.0.6 – Site-specific Recommended Gear Lists | Story Points: 2
-
-> **As** a User, **I want** to be able to see site-specific gear recommendations, **so that** I can be prepared for the specific site I’m inspecting
-
-> **Acceptance Tests**  
-
-> 1. Each site profile displays a recommended gear list.
-> 2. Gear recommendations are specific to the selected site.
-> 3. Users can view gear recommendations before starting an inspection.
-> 4. Gear recommendation lists can be edited by users based on their experience
-
-
 
 ---
 ### **P5 – User Accounts User Stories**
@@ -720,24 +675,21 @@ Each user story is categorized into one of the following priority levels:
 ### Should Have
 * US 2.0.2 – Image Metadata
 * US 2.0.3  - Gallery View
-* US 2.0.4 - Offline Image Viewing
 * TASK 2.0.6 - Refactor Report Rendering to Use Updated Database Schema
-* US 3.0.1 - Access the mobile version of the Site Inspection Form
-* US 4.0.1 - View Site Profile of a Particular Site
-* US 4.0.2  - Add Site Profile of a Particular Site
+* US 4.0.1 - PDF Generation
 * US 4.0.3  - Update Site Profile of a Particular Site
 * US 4.0.4 - Disable Site Profile of a Particular Site
-* US 4.0.5 - Amenities Information on Site Profile
 * US 1.0.24 – Modify my Site Inspections Form Questions
 * US 1.0.25 – Hide a Site Inspections Form Question
+* US 1.0.30 - Rich Text Editor for Site Inspection Form Description
 
 
 ### Could Have
 * US 1.0.17 - (Admin) Add Questions Site Inspections Form
 * US 1.0.18 - Adding image caption
 * US 1.0.19 - Admin Viewing Images and Metadata
+* US 2.0.4 - Offline Image Viewing
 * US 3.0.2 - Offline Data Syncing
-* US 4.0.6 - Site-specific recommended gear lists
 * US 5.0.1 - Sign in feature
 * US 5.0.2 - Sign out feature
 * US 5.0.3 - Edit account feature
@@ -746,6 +698,7 @@ Each user story is categorized into one of the following priority levels:
 
 ### Would Like But Won't Get
 * US 1.0.20 - Admin Editing Image Metadata
+* US 3.0.1 - Access the mobile version of the Site Inspection Form
 * US 6.0.1 - Toggle Dark mode for web and mobile applications
 
 
