@@ -148,13 +148,12 @@ This page provides a general overview of the assigned tasks and roles for the du
 |US 1.0.30 – Rich Text Formatting for Form Description Fields|3|
 |US 2.0.7 – Admin Management of Media Files|13|
 |US 2.0.8 – User Upload of Standalone Site Images|8|
-|US 2.0.9 – Homescreen Gallery View|5|
-|US 4.0.1 – PDF Genration of SIR's|5|
+|US 4.0.1 – PDF Genration of SIR's|8|
 |US 4.0.3 – Update Site Profile of a Particular Site|3|
 |US 4.0.4 – Disable Site Profile of a Particular Site|3|
 |US 5.0.1 - Admin Approval of Users|5|
 
-**Sprint Velocity:** 45
+**Sprint Velocity:** 43
 
 #### Tasks
 
@@ -163,7 +162,6 @@ This page provides a general overview of the assigned tasks and roles for the du
 |Rich Text Editor|US 1.0.30|Braden, Akib|Mar 11th|
 |Admin Management of Media Files|US 2.0.7|Raiyana, Jason, Zoe|Mar 12th|
 |Enable user upload of standalone site images|US 2.0.8|Raiyana, Harveer|Mar 13th|
-|Homescreen Gallery View|US 2.0.9|Harveer, Zoe, Akib|Mar 14th|
 |PDF generation|US 4.0.1|Braden, Vishal, Jason|Mar 15th|
 |Update existing site profiles|US 4.0.3|Vishal, Jason, Braden|Mar 17th|
 |Disable site profiles as needed|US 4.0.4|Braden, Jason|Mar 19th|
@@ -178,11 +176,12 @@ This page provides a general overview of the assigned tasks and roles for the du
 
 |User Story|Story points|
 |:---:|:---:|
+|US 2.0.9 – Homescreen Gallery View|5|
 |US 5.0.2 – Sign Out Feature|2|
 |US 6.0.1 – Toggle Dark mode for web|2|
 |US 6.0.2 – Change Text Size on Screen|3|
 
-**Sprint Velocity:** 7
+**Sprint Velocity:** 12
 
 #### Tasks
 
