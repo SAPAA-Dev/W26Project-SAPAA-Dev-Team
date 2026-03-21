@@ -2,8 +2,9 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSitesOnline, SiteSummary } from '@/utils/supabase/queries';
-import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, ArrowLeft } from 'lucide-react';
+import { getAllSites, getCounties, updateSite, toggleSiteActive, SiteSummary, County } from '@/utils/supabase/queries';
+import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, Pencil, ArrowLeft } from 'lucide-react';
+import EditSiteModal from './components/EditSiteModal';
 import Image from 'next/image';
 import AdminNavBar from '../AdminNavBar';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -41,13 +42,20 @@ export default function AdminSitesPage() {
     direction: 'asc',
   });
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [editSite, setEditSite] = useState<SiteSummary | null>(null);
+  const [counties, setCounties] = useState<County[]>([]);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const loadSites = async () => {
       setLoading(true);
       try {
-        const onlineSites = await getSitesOnline();
-        setSites(onlineSites);
+        const [allSites, countyList] = await Promise.all([
+          getAllSites(),
+          getCounties(),
+        ]);
+        setSites(allSites);
+        setCounties(countyList);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error loading sites';
         setError(message);
@@ -109,6 +117,30 @@ export default function AdminSitesPage() {
     
     return { totalSites, totalInspections, activeThisYear, needsAttention };
   }, [sites]);
+
+  const handleSaveSite = async (data: { id: number; namesite: string; ab_county: number | null; is_active: boolean }) => {
+    setSaving(true);
+    try {
+      const currentSite = sites.find((s) => s.id === data.id);
+      await updateSite(data.id, data.namesite, data.ab_county);
+      if (currentSite && currentSite.is_active !== data.is_active) {
+        await toggleSiteActive(data.id, data.is_active);
+      }
+      const countyObj = counties.find((c) => c.id === data.ab_county);
+      setSites((prev) =>
+        prev.map((s) =>
+          s.id === data.id
+            ? { ...s, namesite: data.namesite, ab_county: data.ab_county, county: countyObj?.county ?? null, is_active: data.is_active }
+            : s
+        )
+      );
+      setEditSite(null);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update site');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Handle Back Button Navigation
   const handleBack = () => {
@@ -340,15 +372,28 @@ export default function AdminSitesPage() {
                 return (
                   <div
                     key={item.id}
-                    className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] hover:border-[#86A98A] hover:shadow-lg transition-all group relative"
+                    className={`rounded-2xl p-6 border-2 transition-all group relative ${
+                      item.is_active
+                        ? 'bg-white border-[#E4EBE4] hover:border-[#86A98A] hover:shadow-lg'
+                        : 'bg-gray-100 border-gray-300 opacity-60'
+                    }`}
                   >
+                    {!item.is_active && (
+                      <span className="absolute top-3 right-3 text-xs font-semibold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">
+                        Inactive
+                      </span>
+                    )}
                     <button
                       onClick={() => router.push(`/admin/sites/${encodeURIComponent(item.namesite)}`)}
                       className="w-full text-left"
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <h3 className="text-lg font-bold text-[#254431] mb-1 group-hover:text-[#356B43] transition-colors">
+                          <h3 className={`text-lg font-bold mb-1 transition-colors ${
+                            item.is_active
+                              ? 'text-[#254431] group-hover:text-[#356B43]'
+                              : 'text-gray-500'
+                          }`}>
                             {item.namesite}
                           </h3>
                           {item.county && (
@@ -392,6 +437,17 @@ export default function AdminSitesPage() {
                     {/* Admin Actions */}
                     <div className="mt-4 pt-4 border-t border-[#E4EBE4] flex items-center gap-2">
                       <button
+                        data-testid={`edit-site-button-${item.id}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditSite(item);
+                        }}
+                        className="flex items-center justify-center p-2 bg-[#F7F2EA] hover:bg-[#E4EBE4] text-[#254431] rounded-lg transition-colors"
+                        title="Edit site"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={(e) => {
                           e.stopPropagation();
                           router.push(`/admin/sites/${encodeURIComponent(item.namesite)}`);
@@ -419,6 +475,15 @@ export default function AdminSitesPage() {
           )}
         </div>
       </div>
+
+      <EditSiteModal
+        visible={!!editSite}
+        site={editSite}
+        counties={counties}
+        onClose={() => setEditSite(null)}
+        onSave={handleSaveSite}
+        saving={saving}
+      />
     </ProtectedRoute>
   );
 }
