@@ -11,9 +11,10 @@ jest.mock('next/navigation', () => ({
 
 // Mock supabase queries
 jest.mock('@/utils/supabase/queries', () => ({
-  getSitesOnline: jest.fn(),
+  getAllSites: jest.fn(),
   getCounties: jest.fn().mockResolvedValue([]),
   updateSite: jest.fn().mockResolvedValue(undefined),
+  toggleSiteActive: jest.fn().mockResolvedValue(undefined),
 }));
 
 // Mock next/image
@@ -33,10 +34,10 @@ describe('AdminSitesPage – Edit Site', () => {
 
   it('renders edit (pencil) button on each site card', async () => {
     const mockSites = [
-      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString() },
-      { id: 2, namesite: 'Beta', county: 'CountyB', ab_county: 20, inspectdate: '1900-01-01' },
+      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString(), is_active: true },
+      { id: 2, namesite: 'Beta', county: 'CountyB', ab_county: 20, inspectdate: '1900-01-01', is_active: true },
     ];
-    (supabaseQueries.getSitesOnline as jest.Mock).mockResolvedValue(mockSites);
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue(mockSites);
 
     render(<AdminSitesPage />);
     await waitFor(() => screen.getByText('Alpha'));
@@ -47,9 +48,9 @@ describe('AdminSitesPage – Edit Site', () => {
 
   it('opens edit modal when pencil button is clicked', async () => {
     const mockSites = [
-      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString() },
+      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString(), is_active: true },
     ];
-    (supabaseQueries.getSitesOnline as jest.Mock).mockResolvedValue(mockSites);
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue(mockSites);
     (supabaseQueries.getCounties as jest.Mock).mockResolvedValue([
       { id: 10, county: 'CountyA' },
       { id: 20, county: 'CountyB' },
@@ -68,9 +69,9 @@ describe('AdminSitesPage – Edit Site', () => {
 
   it('closes edit modal when Cancel is clicked', async () => {
     const mockSites = [
-      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString() },
+      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString(), is_active: true },
     ];
-    (supabaseQueries.getSitesOnline as jest.Mock).mockResolvedValue(mockSites);
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue(mockSites);
     (supabaseQueries.getCounties as jest.Mock).mockResolvedValue([]);
 
     render(<AdminSitesPage />);
@@ -87,9 +88,9 @@ describe('AdminSitesPage – Edit Site', () => {
 
   it('updates site name via edit modal and reflects change on card', async () => {
     const mockSites = [
-      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString() },
+      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString(), is_active: true },
     ];
-    (supabaseQueries.getSitesOnline as jest.Mock).mockResolvedValue(mockSites);
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue(mockSites);
     (supabaseQueries.getCounties as jest.Mock).mockResolvedValue([
       { id: 10, county: 'CountyA' },
     ]);
@@ -118,9 +119,9 @@ describe('AdminSitesPage – Edit Site', () => {
 
   it('updates county via edit modal and reflects change on card', async () => {
     const mockSites = [
-      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString() },
+      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString(), is_active: true },
     ];
-    (supabaseQueries.getSitesOnline as jest.Mock).mockResolvedValue(mockSites);
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue(mockSites);
     (supabaseQueries.getCounties as jest.Mock).mockResolvedValue([
       { id: 10, county: 'CountyA' },
       { id: 20, county: 'CountyB' },
@@ -166,9 +167,9 @@ describe('AdminSitesPage – Edit Site', () => {
 
   it('shows alert when updateSite fails', async () => {
     const mockSites = [
-      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString() },
+      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString(), is_active: true },
     ];
-    (supabaseQueries.getSitesOnline as jest.Mock).mockResolvedValue(mockSites);
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue(mockSites);
     (supabaseQueries.getCounties as jest.Mock).mockResolvedValue([
       { id: 10, county: 'CountyA' },
     ]);
@@ -196,7 +197,7 @@ describe('AdminSitesPage – Edit Site', () => {
     // ProtectedRoute is mocked to render children, but in production
     // it would block non-admin users. Verify the page requires admin access.
     // The ProtectedRoute wrapper with requireAdmin is the access control.
-    (supabaseQueries.getSitesOnline as jest.Mock).mockResolvedValue([]);
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue([]);
     const { container } = render(<AdminSitesPage />);
 
     // The component is wrapped in ProtectedRoute with requireAdmin
