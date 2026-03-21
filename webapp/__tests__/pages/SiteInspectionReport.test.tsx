@@ -25,6 +25,7 @@ const mockAddSiteInspectionReport = jest.fn();
 const mockGetQuestionResponseType = jest.fn();
 const mockUploadSiteInspectionAnswers = jest.fn();
 const mockGetSitesOnline = jest.fn();
+const mockScrollTo = jest.fn();
 
 jest.mock('@/utils/supabase/queries', () => ({
   getQuestionsOnline: (...args: any[]) => mockGetQuestionsOnline(...args),
@@ -46,6 +47,18 @@ jest.mock('@/utils/supabase/client', () => ({
     },
   }),
 }));
+
+beforeAll(() => {
+  Object.defineProperty(window, 'scrollTo', {
+    configurable: true,
+    value: mockScrollTo,
+    writable: true,
+  });
+});
+
+beforeEach(() => {
+  mockScrollTo.mockClear();
+});
 
 // --- Test data ---
 
@@ -583,6 +596,88 @@ describe('US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
 
     const submitButton = await screen.findByRole('button', { name: /Review & Submit/i });
     expect(submitButton).toBeDisabled();
+  });
+
+  it('scrolls back to the top of the section when moving to the next section', async () => {
+    const multiSectionQuestions = [
+      {
+        id: 101,
+        title: 'First Section Question',
+        text: 'Section one',
+        question_type: 'text',
+        section: 3,
+        answers: [],
+        formorder: 1,
+        is_required: false,
+        sectionTitle: 'Section One',
+        sectionDescription: 'First section description',
+        sectionHeader: 'One',
+      },
+      {
+        id: 102,
+        title: 'Last Section Question',
+        text: 'Section two',
+        question_type: 'text',
+        section: 4,
+        answers: [],
+        formorder: 2,
+        is_required: false,
+        sectionTitle: 'Section Two',
+        sectionDescription: 'Last section description',
+        sectionHeader: 'Two',
+      },
+    ];
+
+    mockGetQuestionsOnline.mockResolvedValue(multiSectionQuestions);
+
+    function ControlledForm() {
+      const [responses, setResponses] = React.useState<Record<number, any>>({});
+      const [sectionState, setSectionState] = React.useState<{
+        canGoPrevious: boolean;
+        canGoNext: boolean;
+        goToPreviousSection?: () => void;
+        goToNextSection?: () => void;
+      }>({
+        canGoPrevious: false,
+        canGoNext: false,
+      });
+
+      return (
+        <>
+          <MainContent
+            responses={responses}
+            onResponsesChange={setResponses}
+            onSectionStateChange={setSectionState}
+          />
+          {sectionState.goToNextSection && <span data-testid="nav-ready" />}
+          <StickyFooter
+            questions={multiSectionQuestions}
+            responses={responses}
+            onPreviousSection={sectionState.goToPreviousSection}
+            onNextSection={sectionState.goToNextSection}
+            canGoPrevious={sectionState.canGoPrevious}
+            canGoNext={sectionState.canGoNext}
+          />
+        </>
+      );
+    }
+
+    render(<ControlledForm />);
+
+    expect(await screen.findByText('Section One')).toBeInTheDocument();
+    expect(await screen.findByTestId('nav-ready')).toBeInTheDocument();
+
+    const nextButton = screen.getByRole('button', { name: /Next/i });
+    fireEvent.click(nextButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Section Two')).toBeInTheDocument();
+    });
+
+    expect(mockScrollTo).toHaveBeenCalledWith({
+      top: 0,
+      behavior: 'smooth',
+    });
   });
 
   it('allows submission when all required fields are filled', async () => {
