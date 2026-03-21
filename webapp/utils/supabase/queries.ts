@@ -7,7 +7,13 @@ export interface SiteSummary {
   id: number;
   namesite: string;
   county: string | null;
+  ab_county: number | null;
   inspectdate: string | null;
+}
+
+export interface County {
+  id: number;
+  county: string;
 }
 
 export interface InspectionDetail {
@@ -291,6 +297,7 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
     .select(`
       id,
       namesite,
+      ab_county,
       W26_ab_counties (
         county
       ),
@@ -313,9 +320,37 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
       id: site.id,
       namesite: site.namesite,
       county: site.W26_ab_counties?.county ?? null,
+      ab_county: site.ab_county ?? null,
       inspectdate: latestDate,
     };
   });
+}
+
+export async function getCounties(): Promise<County[]> {
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('W26_ab_counties')
+    .select('id, county')
+    .order('county', { ascending: true });
+
+  if (error) throw new Error(error.message || 'Failed to fetch counties');
+  return data ?? [];
+}
+
+export async function updateSite(
+  id: number,
+  namesite: string,
+  ab_county: number | null
+): Promise<void> {
+  const supabase = createServerSupabase();
+
+  const { error } = await supabase
+    .from('W26_sites-pa')
+    .update({ namesite, ab_county })
+    .eq('id', id);
+
+  if (error) throw new Error(error.message || 'Failed to update site');
 }
 
 export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
@@ -326,6 +361,7 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
     .select(`
       id,
       namesite,
+      ab_county,
       W26_ab_counties (
         county
       ),
@@ -349,6 +385,7 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
       id: site.id,
       namesite: site.namesite,
       county: site.W26_ab_counties?.county ?? null,
+      ab_county: site.ab_county ?? null,
       inspectdate: latestDate,
     };
   });
