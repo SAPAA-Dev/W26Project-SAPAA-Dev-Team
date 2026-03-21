@@ -32,7 +32,6 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  useDroppable,
   type DragEndEvent,
 } from "@dnd-kit/core";
 import {
@@ -430,7 +429,7 @@ export default function FormEditorPage() {
                       (q) => q.section_id === section.id
                     ).length;
                     return (
-                      <DroppableSectionButton
+                      <SectionButton
                         key={section.id}
                         data-testid={`section-button-${section.id}`}
                         section={section}
@@ -652,8 +651,8 @@ export default function FormEditorPage() {
   );
 }
 
-// ─── DroppableSectionButton Component ────────────────────────────────
-function DroppableSectionButton({
+// ─── SectionButton Component ─────────────────────────────────────────
+function SectionButton({
   section,
   count,
   isActive,
@@ -666,21 +665,14 @@ function DroppableSectionButton({
   onClick: () => void;
   "data-testid"?: string;
 }) {
-  const { setNodeRef, isOver } = useDroppable({
-    id: `section-${section.id}`,
-  });
-
   return (
     <button
-      ref={setNodeRef}
       onClick={onClick}
       data-testid={dataTestId}
       className={`w-full text-left px-3 py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-between ${
-        isOver
-          ? "bg-[#DCFCE7] text-[#166534] border-2 border-[#22C55E] scale-[1.03] shadow-md"
-          : isActive
-            ? "bg-[#EEF5EF] text-[#356B43] border-2 border-[#356B43]"
-            : "text-[#7A8075] border-2 border-[#E4EBE4] hover:border-[#86A98A]"
+        isActive
+          ? "bg-[#EEF5EF] text-[#356B43] border-2 border-[#356B43]"
+          : "text-[#7A8075] border-2 border-[#E4EBE4] hover:border-[#86A98A]"
       }`}
     >
       <span className="truncate">
@@ -688,11 +680,9 @@ function DroppableSectionButton({
       </span>
       <span
         className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
-          isOver
-            ? "bg-[#22C55E] text-white"
-            : isActive
-              ? "bg-[#356B43] text-white"
-              : "bg-[#E4EBE4] text-[#7A8075]"
+          isActive
+            ? "bg-[#356B43] text-white"
+            : "bg-[#E4EBE4] text-[#7A8075]"
         }`}
         data-testid={`section-count-${section.id}`}
       >
