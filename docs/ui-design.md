@@ -51,8 +51,9 @@ Consistency is critical. Every page must follow the patterns described here so t
 Maintain a consistent visual language to reduce cognitive load and build user confidence.
 
 **Unified navigation shell:**
-- **Mobile:** All screens use the same green top app bar with title and back button. A persistent bottom tab bar provides access to Analytics, Sites, and SAPAA Map.
-- **Web:** Consistent header with SAPAA logo, gradient green background, and navigation elements. Admin pages use a hamburger menu for navigation.
+Consistent header with SAPAA logo, gradient green background, and navigation elements. Admin pages use a hamburger menu for navigation.
+
+<img width="1626" height="143" alt="image" src="https://github.com/user-attachments/assets/02fcab6e-06dc-451e-b749-ad734dd52ea4" />  
 
 **Standardised colour palette:** Primary green (`#254431`, `#356B43`) for headers and primary actions. White (`#FFFFFF`) for content cards. Light grey (`#F7F2EA`, `#E4EBE4`) for dividers and secondary surfaces. Red (`#B91C1C`) for destructive actions.
 
@@ -64,7 +65,13 @@ Guide attention using size, weight, colour, and spacing.
 
 **Card-based layout:** Major information chunks are grouped into cards (e.g., Site Details, Naturalness Details, Analytics charts, Account tiles). Cards use consistent padding, rounded corners, and subtle shadows.
 
+<img width="1557" height="615" alt="image" src="https://github.com/user-attachments/assets/07f7f63f-43c3-4928-ab21-38f15a9e45e7" />
+
+
 **Strategic emphasis:** Primary actions use filled green buttons with high visual weight (e.g., Preview PDF, Sync Now, Login). Secondary actions use outlined buttons or lower-contrast styling.
+
+<img width="1567" height="271" alt="image" src="https://github.com/user-attachments/assets/a6f6cd57-850e-4ff5-ad15-7e49236ffed5" />
+
 
 **Consistent spacing:** Padding inside cards (16–24px) and consistent vertical spacing between sections (16–32px) creates rhythm and improves readability.
 
@@ -74,7 +81,11 @@ Show only what users need at each step, and reveal more detail on demand.
 
 **Inspection Reports:** Tabs for By Date and By Question instead of one long view. Expandable sections for detailed observations.
 
+<img width="1572" height="322" alt="image" src="https://github.com/user-attachments/assets/db339b0a-a9fe-4878-8d5e-9be66bf6408d" />
+
 **Site Details:** High-level information at the top (name, location, key metrics). Detailed observations and naturalness details appear further down in separate cards.
+
+<img width="1493" height="526" alt="image" src="https://github.com/user-attachments/assets/595e10c0-bddb-48cf-90ab-8bac9b5835c6" />
 
 **Admin Features:** Admin-specific features are not visible to regular users. Admin navigation is accessible via menu or dedicated button.
 
@@ -86,7 +97,14 @@ Make key tasks obvious and easy to complete.
 
 **Button hierarchy:** Primary uses solid green, often full width. Secondary uses outlined or low-emphasis styling. Destructive uses red with a clear label.
 
+<img width="320" height="287" alt="image" src="https://github.com/user-attachments/assets/a3d871a5-5e60-45ae-9e93-aca4bd9d2ece" />
+
+
 **Immediate feedback:** Counters and indicators update live as users interact. Loading states show progress indicators. Lists and cards visually respond to user interaction.
+
+<img width="1622" height="157" alt="image" src="https://github.com/user-attachments/assets/64f6e449-e0b9-45b5-9caf-b0155e33ce54" />
+
+<img width="732" height="467" alt="image" src="https://github.com/user-attachments/assets/09d6b310-be92-4bd2-b963-05faf35665ea" />
 
 ---
 
@@ -100,11 +118,20 @@ The system always keeps users informed about what is going on.
 
 **Web:** Loading spinners appear during data fetches. Page titles reflect the current location. Active navigation items are highlighted. Search results show a count of sites found.
 
+<img width="683" height="232" alt="image" src="https://github.com/user-attachments/assets/28b928e1-e2a2-4b9f-a3eb-b6f43ddff99c" />
+
+<img width="1047" height="245" alt="image" src="https://github.com/user-attachments/assets/d1209529-e548-44b7-877b-5a3a1a733cf9" />
+
+<img width="328" height="192" alt="image" src="https://github.com/user-attachments/assets/ea8f7fd5-185d-4ceb-8192-aa5fa5d6a2d0" />
+
+
 **Why this matters:** Users can see that their actions are working and understand where they are in the app, reducing confusion and frustration.
 
 ### 3.2 Match Between System and the Real World
 
 The application uses terminology that stewards already know: Naturalness Score, Recreational Activities, Observations. The SAPAA Map uses Google Maps (mobile) and Leaflet (web) with familiar map interactions. Inspection questions are labelled with codes (Q52, Q62, etc.) that match existing steward workflows.
+
+<img width="1176" height="717" alt="image" src="https://github.com/user-attachments/assets/1098c087-b715-42e5-8e16-fadb8303a319" />
 
 **Why this matters:** Familiar language and visuals reduce training time and make the app feel like a natural extension of existing workflows.
 
@@ -116,6 +143,11 @@ Provide clearly marked exits and ways to undo actions.
 
 **Web:** Back buttons appear on all detail pages. Modal dialogs can be closed with the X button or by clicking outside. Cancel buttons appear on forms. Breadcrumb navigation is used where applicable.
 
+<img width="547" height="157" alt="image" src="https://github.com/user-attachments/assets/71df7506-1b73-42ed-8675-b91bbe9410b3" />
+
+<img width="870" height="870" alt="image" src="https://github.com/user-attachments/assets/f35c7d40-a2d5-4d80-8ad2-7535e164617e" />
+
+
 **Why this matters:** Users feel safe exploring features because they know they can easily back out or adjust their choices.
 
 ### 3.4 Consistency and Standards
@@ -124,7 +156,7 @@ Follow platform conventions and maintain internal consistency.
 
 **Mobile:** Consistent bottom navigation layout across all screens. Primary actions are always solid green; destructive actions are always red. List items follow the same pattern: icon left, label and detail text right.
 
-**Web:** Consistent header design across all pages. Button styles are standardised (primary, secondary, destructive). Form inputs follow the same styling. Card components are reused throughout.
+**Web:** Consistent header design across all pages. Button styles are standardized (primary, secondary, destructive). Form inputs follow the same styling. Card components are reused throughout.
 
 **Why this matters:** Once users learn basic patterns, they can apply them everywhere in the app.
 
@@ -132,15 +164,22 @@ Follow platform conventions and maintain internal consistency.
 
 Design to prevent errors before they happen.
 
-**Mobile:** The PDF flow separates Preview PDF and Share PDF so users do not accidentally share a report before checking it. Destructive actions such as Delete Account are clearly styled in red. Many inputs are constrained to checkboxes and predefined fields rather than free text for critical data.
+**Mobile:** The PDF flow separates Preview PDF and Share PDF so users do not accidentally share a report before checking it. Destructive actions, such as Delete Account, are clearly styled in red. Many inputs are constrained to checkboxes and predefined fields rather than free text for critical data.
 
-**Web:** Form validation prevents invalid submissions. Confirmation dialogs guard destructive actions. Disabled states prevent invalid interactions. Clear error messages guide users to a resolution.
+**Web:** Form validation prevents invalid submissions. Confirmation dialogues guard against destructive actions. Disabled states prevent invalid interactions. Clear error messages guide users to a resolution.
+
+<img width="497" height="162" alt="image" src="https://github.com/user-attachments/assets/431bb2ad-9855-4512-8cd0-edaf9782c194" />
+
+<img width="747" height="208" alt="image" src="https://github.com/user-attachments/assets/a5dec7d5-e00c-4caa-9e5d-89a1c3b95956" />
 
 **Why this matters:** Preventing mistakes saves time and protects data integrity.
 
 ### 3.6 Recognition Rather Than Recall
 
-All fields are clearly labelled: Region, Area (HA/AC), Naturalness Details, and so on. Bottom tabs (mobile) are always visible with both icons and text labels. PDF field selection mirrors the Site Details layout and naming. Status badges show inspection recency with colour coding so users do not need to calculate dates themselves.
+All fields are clearly labelled: Region, Area (HA/AC), Naturalness Details, and so on. Bottom tabs (mobile) are always visible with both icons and text labels. PDF field selection mirrors the Site Details layout and naming. Status badges show inspection recency with colour coding, so users do not need to calculate dates themselves.
+
+<img width="1612" height="285" alt="image" src="https://github.com/user-attachments/assets/995dd714-b817-4eb2-8b6c-771df2003dd1" />
+
 
 **Why this matters:** Users do not have to remember information across screens; they can recognise it instead.
 
@@ -152,7 +191,11 @@ Provide accelerators for expert users while keeping the interface simple for nov
 
 **Multiple access paths:** Inspection reports can be viewed By Date (chronological workflow) or By Question (comparison/analysis workflow).
 
+<img width="1586" height="516" alt="image" src="https://github.com/user-attachments/assets/347eff72-bec5-4685-8147-ab93c708766f" />
+
 **Smart defaults:** PDF generation starts with all fields selected, so users typically only need to deselect a few. Search is always available. Sort options are remembered.
+
+<img width="1223" height="332" alt="image" src="https://github.com/user-attachments/assets/884c3243-dc52-4a34-9437-72cfc16c27e5" />
 
 **Why this matters:** New users can follow straightforward flows, while experienced users can speed up their work with bulk actions and shortcuts.
 
@@ -161,6 +204,8 @@ Provide accelerators for expert users while keeping the interface simple for nov
 Interfaces should not contain irrelevant or rarely needed information.
 
 Each screen is focused on one main task: view analytics, inspect a site, manage accounts, or generate a PDF. A limited colour palette (green, white, grey, and red for warnings) keeps the interface clean. Cards group only related information with enough white space for breathing room. Icons are used only where they add meaning, not for decoration.
+
+<img width="1865" height="891" alt="image" src="https://github.com/user-attachments/assets/0eb85bdd-0a67-445c-9f99-4a12dca2438a" />
 
 **Why this matters:** A clean interface makes it easier to focus on what matters and reduces cognitive overload.
 
@@ -172,13 +217,18 @@ Error messages should be expressed in plain language, indicate the problem, and 
 
 **Web:** Error messages are displayed in red with clear visibility. Form validation shows specific field errors. Network errors provide retry buttons. 404 pages guide users back to main content.
 
+<img width="758" height="560" alt="image" src="https://github.com/user-attachments/assets/90ef6376-833c-44de-9306-df14a0b524d0" />
+
 **Why this matters:** Users can quickly understand what went wrong and how to fix it rather than feeling frustrated.
 
 ### 3.10 Help and Documentation
 
 Help should be easy to find, focused on the user's task, and list concrete steps.
 
-A user manual is available as a separate document. In-app tooltips and hints are provided where appropriate. Clear labels and placeholders guide users through forms. Status messages explain what actions do (e.g., "Syncing data..."). Page titles and descriptions provide contextual orientation throughout the web application.
+A user manual is available as an app tutorial. In-app tooltips and hints are provided where appropriate. Clear labels and placeholders guide users through forms. Status messages explain what actions do (e.g., "Syncing data..."). Page titles and descriptions provide contextual orientation throughout the web application.
+
+<img width="1222" height="371" alt="image" src="https://github.com/user-attachments/assets/63f679e5-d332-4db9-b2c1-46749def7d9f" />
+
 
 **Why this matters:** While the interface should be self-explanatory, having documentation available helps users learn advanced features.
 
