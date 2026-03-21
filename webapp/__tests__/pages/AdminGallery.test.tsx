@@ -14,8 +14,8 @@ const mockGalleryItems = [
     response_id: "resp-1",
     question_id: "q-1",
     caption: "Haging Broken Tree",
-    description:
-      "A tree we saw that seems to be broken, but hanging above the ground by the branches of surrounding trees.",
+    identifier: "Tree-01",
+    date: "2026-01-31",
     storage_key: "uploads/RiverLot56_01-31-2026_ZoeP_HangingTree.jpg",
     content_type: "image/jpeg",
     file_size_bytes: 123456,
@@ -29,7 +29,8 @@ const mockGalleryItems = [
     response_id: "resp-2",
     question_id: "q-2",
     caption: "Cracked Tree",
-    description: "Large crack running up the trunk of a tree.",
+    identifier: "Tree-02",
+    date: "2026-02-02",
     storage_key: "uploads/RiverLot56_01-31-2026_ZoeP_CrackedTree.jpg",
     content_type: "image/jpeg",
     file_size_bytes: 654321,
@@ -75,15 +76,11 @@ describe("AdminGalleryPage", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Image Gallery" })).toBeInTheDocument();
     expect(screen.getByText("AdminNavBarMock")).toBeInTheDocument();
 
-    expect(screen.getByText("Haging Broken Tree")).toBeInTheDocument();
-    expect(screen.getByText("Cracked Tree")).toBeInTheDocument();
     expect(screen.getAllByText("Riverlot 56 (NA)").length).toBeGreaterThanOrEqual(2);
-    expect(
-      screen.getByText(
-        "A tree we saw that seems to be broken, but hanging above the ground by the branches of surrounding trees."
-      )
-    ).toBeInTheDocument();
-    expect(screen.getByText("Large crack running up the trunk of a tree.")).toBeInTheDocument();
+    expect(screen.getAllByText("Tree-01").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Tree-02").length).toBeGreaterThan(0);
+    expect(screen.getByText("2026-01-31")).toBeInTheDocument();
+    expect(screen.getByText("2026-02-02")).toBeInTheDocument();
   });
 
   it("admin can click an image card to open modal with metadata and associated site", async () => {
@@ -94,7 +91,7 @@ describe("AdminGalleryPage", () => {
       expect(screen.queryByText("Loading gallery...")).not.toBeInTheDocument();
     });
 
-    const targetImage = screen.getByAltText("Haging Broken Tree");
+    const targetImage = screen.getByAltText("Tree-01");
     const openButton = targetImage.closest("button");
     expect(openButton).not.toBeNull();
 
@@ -102,16 +99,14 @@ describe("AdminGalleryPage", () => {
 
     expect(screen.getByText("Site")).toBeInTheDocument();
     expect(screen.getByText("Caption")).toBeInTheDocument();
-    expect(screen.getByText("Description")).toBeInTheDocument();
+    expect(screen.getByText("Identifier")).toBeInTheDocument();
+    expect(screen.getByText("Date")).toBeInTheDocument();
     expect(screen.getByText("Filename")).toBeInTheDocument();
 
     expect(screen.getAllByText("Riverlot 56 (NA)").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Haging Broken Tree").length).toBeGreaterThan(0);
-    expect(
-      screen.getAllByText(
-        "A tree we saw that seems to be broken, but hanging above the ground by the branches of surrounding trees."
-      ).length
-    ).toBeGreaterThan(0);
+    expect(screen.getAllByText("Tree-01").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("2026-01-31").length).toBeGreaterThan(0);
     expect(screen.getByText("RiverLot56_01-31-2026_ZoeP_HangingTree.jpg")).toBeInTheDocument();
 
     const fullImageLink = screen.getByRole("link", { name: "Open full image in new tab" });
