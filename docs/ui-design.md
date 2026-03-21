@@ -93,8 +93,6 @@ Show only what users need at each step, and reveal more detail on demand.
 
 Make key tasks obvious and easy to complete.
 
-**Clear primary action per screen:** Preview PDF on the report modal (mobile). Sync Now on Analytics (mobile). Search on the Sites/Protected Areas page. Add User on Account Management.
-
 **Button hierarchy:** Primary uses solid green, often full width. Secondary uses outlined or low-emphasis styling. Destructive uses red with a clear label.
 
 ![UI Button Hierarchy](images/ui_button_hierarchy.png) 
@@ -113,8 +111,6 @@ Make key tasks obvious and easy to complete.
 ### 3.1 Visibility of System Status
 
 The system always keeps users informed about what is going on.
-
-**Mobile:** A field counter in the PDF modal updates live as users toggle checkboxes. The app bar title reflects the current screen. Bottom navigation highlights the active tab. An Online/Offline badge shows connection status.
 
 **Web:** Loading spinners appear during data fetches. Page titles reflect the current location. Active navigation items are highlighted. Search results show a count of sites found.
 
@@ -139,8 +135,6 @@ The application uses terminology that stewards already know: Naturalness Score, 
 
 Provide clearly marked exits and ways to undo actions.
 
-**Mobile:** A back arrow appears on every top bar. Modals can be dismissed with an X or the system back gesture. Users can toggle PDF fields freely, use Select All and Clear All, and preview a report before sharing it.
-
 **Web:** Back buttons appear on all detail pages. Modal dialogs can be closed with the X button or by clicking outside. Cancel buttons appear on forms. Breadcrumb navigation is used where applicable.
 
 ![UI Back Button](images/ui_back_button.png) 
@@ -154,8 +148,6 @@ Provide clearly marked exits and ways to undo actions.
 
 Follow platform conventions and maintain internal consistency.
 
-**Mobile:** Consistent bottom navigation layout across all screens. Primary actions are always solid green; destructive actions are always red. List items follow the same pattern: icon left, label and detail text right.
-
 **Web:** Consistent header design across all pages. Button styles are standardized (primary, secondary, destructive). Form inputs follow the same styling. Card components are reused throughout.
 
 **Why this matters:** Once users learn basic patterns, they can apply them everywhere in the app.
@@ -163,8 +155,6 @@ Follow platform conventions and maintain internal consistency.
 ### 3.5 Error Prevention
 
 Design to prevent errors before they happen.
-
-**Mobile:** The PDF flow separates Preview PDF and Share PDF so users do not accidentally share a report before checking it. Destructive actions, such as Delete Account, are clearly styled in red. Many inputs are constrained to checkboxes and predefined fields rather than free text for critical data.
 
 **Web:** Form validation prevents invalid submissions. Confirmation dialogues guard against destructive actions. Disabled states prevent invalid interactions. Clear error messages guide users to a resolution.
 
@@ -176,7 +166,7 @@ Design to prevent errors before they happen.
 
 ### 3.6 Recognition Rather Than Recall
 
-All fields are clearly labelled: Region, Area (HA/AC), Naturalness Details, and so on. Bottom tabs (mobile) are always visible with both icons and text labels. PDF field selection mirrors the Site Details layout and naming. Status badges show inspection recency with colour coding, so users do not need to calculate dates themselves.
+All fields are clearly labelled: Region, Area (HA/AC), Naturalness Details, and so on. Status badges show inspection recency with colour coding, so users do not need to calculate dates themselves.
 
 ![UI Field Labels](images/ui_field_labels.png) 
 
@@ -186,8 +176,6 @@ All fields are clearly labelled: Region, Area (HA/AC), Naturalness Details, and 
 ### 3.7 Flexibility and Efficiency of Use
 
 Provide accelerators for expert users while keeping the interface simple for novices.
-
-**Bulk actions:** Select All / Clear All for PDF fields (mobile). Sync Now for on-demand data refresh (mobile). Bulk selection for offline downloads (mobile).
 
 **Multiple access paths:** Inspection reports can be viewed By Date (chronological workflow) or By Question (comparison/analysis workflow).
 
@@ -213,8 +201,6 @@ Each screen is focused on one main task: view analytics, inspect a site, manage 
 
 Error messages should be expressed in plain language, indicate the problem, and suggest a solution.
 
-**Mobile:** Error messages appear as snackbars or toasts with clear explanations. Network errors show retry options. Validation errors appear inline with form fields.
-
 **Web:** Error messages are displayed in red with clear visibility. Form validation shows specific field errors. Network errors provide retry buttons. 404 pages guide users back to main content.
 
 ![UI Visible Errors](images/ui_visible_error_message.png) 
@@ -236,16 +222,7 @@ A user manual is available as an app tutorial. In-app tooltips and hints are pro
 
 ## 4. Accessibility
 
-### 4.1 Mobile Application
-
-- **Touch targets:** All interactive elements meet the minimum 44x44pt touch target size.
-- **Colour contrast:** Text meets WCAG AA standards (4.5:1 for normal text, 3:1 for large text).
-- **Screen reader support:** React Native Paper components provide built-in accessibility labels.
-- **Keyboard navigation:** Support for external keyboards on tablets.
-- **Dynamic type:** Text scales with system font size settings.
-- **Dark mode:** Full support for system dark/light mode preferences.
-
-### 4.2 Web Application
+### 4.1 Web Application
 
 - **Keyboard navigation:** All interactive elements are keyboard accessible.
 - **Screen readers:** Semantic HTML and ARIA labels are used where needed.
