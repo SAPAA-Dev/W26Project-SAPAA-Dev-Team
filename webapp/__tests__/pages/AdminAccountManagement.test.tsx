@@ -34,9 +34,10 @@ jest.mock('../../app/admin/account-management/components/AccountDetailsModal', (
 
 describe('AccountManagementPage', () => {
   const mockUsers = [
-    { id: '1', email: 'admin@example.com', role: 'admin' },
-    { id: '2', email: 'steward@example.com', role: 'steward' },
-    { id: '3', email: 'another@example.com', role: 'steward' },
+    { id: '1', email: 'admin@example.com', role: 'admin', authenticated: true },
+    { id: '2', email: 'steward@example.com', role: 'steward', authenticated: true},
+    { id: '3', email: 'another@example.com', role: 'steward', authenticated: true },
+    { id: '4', email: 'pending@example.com', role: 'steward', authenticated: false },
   ];
 
   beforeEach(() => {
@@ -79,7 +80,24 @@ describe('AccountManagementPage', () => {
       render(<AccountManagementPage />);
       await waitFor(() => {
         expect(screen.getByText('Total Users')).toBeInTheDocument();
-        expect(screen.getByText('3')).toBeInTheDocument();
+        expect(screen.getAllByText('4').length).toBeGreaterThan(0);;
+      });
+    });
+
+    it('displays pending approval count', async () => {
+      render(<AccountManagementPage />);
+      await waitFor(() => {
+        expect(screen.getByText('Pending')).toBeInTheDocument();
+        const counts = screen.getAllByText('1');
+        expect(counts.length).toBeGreaterThan(0);
+      });
+    });
+
+    it('displays approved users count', async () => {
+      render(<AccountManagementPage />);
+      await waitFor(() => {
+        expect(screen.getByText('Approved')).toBeInTheDocument();
+        expect(screen.getAllByText('3').length).toBeGreaterThan(0);
       });
     });
 
@@ -88,15 +106,6 @@ describe('AccountManagementPage', () => {
       await waitFor(() => {
         expect(screen.getByText('Admins')).toBeInTheDocument();
         const counts = screen.getAllByText('1');
-        expect(counts.length).toBeGreaterThan(0);
-      });
-    });
-
-    it('displays steward count', async () => {
-      render(<AccountManagementPage />);
-      await waitFor(() => {
-        expect(screen.getByText('Stewards')).toBeInTheDocument();
-        const counts = screen.getAllByText('2');
         expect(counts.length).toBeGreaterThan(0);
       });
     });
@@ -222,6 +231,43 @@ describe('AccountManagementPage', () => {
       });
     });
 
+    it('filters pending approvals only', async () => {
+      render(<AccountManagementPage />);
+      await waitFor(() => {
+        expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+      });
+
+      const filterButton = screen.getByRole('button', { name: /All Users/i });
+      fireEvent.click(filterButton);
+
+      const pendingButton = screen.getByRole('button', { name: /Pending Approvals/i });
+      fireEvent.click(pendingButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('pending@example.com')).toBeInTheDocument();
+        expect(screen.queryByText('admin@example.com')).not.toBeInTheDocument();
+        expect(screen.queryByText('steward@example.com')).not.toBeInTheDocument();
+      });
+    });
+
+    it('filters approved users only', async () => {
+      render(<AccountManagementPage />);
+      await waitFor(() => {
+        expect(screen.getByText('admin@example.com')).toBeInTheDocument();
+      });
+
+      const filterButton = screen.getByRole('button', { name: /All Users/i });
+      fireEvent.click(filterButton);
+
+      const approvedButton = screen.getByRole('button', { name: /Approved Users/i });
+      fireEvent.click(approvedButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('admin@example.com')).toBeInTheDocument();
+        expect(screen.queryByText('pending@example.com')).not.toBeInTheDocument();
+      });
+    });
+
     it('closes filter modal when Close button is clicked', async () => {
       render(<AccountManagementPage />);
       await waitFor(() => {
@@ -327,6 +373,22 @@ describe('AccountManagementPage', () => {
         const sInitials = screen.getAllByText('S');
         expect(aInitials.length).toBeGreaterThan(0); // admin@example.com
         expect(sInitials.length).toBeGreaterThan(0); // steward@example.com
+      });
+    });
+
+    it('displays approved status badge for approved users', async () => {
+      render(<AccountManagementPage />);
+      await waitFor(() => {
+        const approvedBadges = screen.queryAllByText(/✓ Approved/);
+        expect(approvedBadges.length).toBeGreaterThan(0); // 3 approved users
+      });
+    });
+
+    it('displays pending status badge for pending users', async () => {
+      render(<AccountManagementPage />);
+      await waitFor(() => {
+        const pendingBadges = screen.queryAllByText(/⏳ Pending/);
+        expect(pendingBadges.length).toBeGreaterThan(0); // 1 pending user
       });
     });
   });

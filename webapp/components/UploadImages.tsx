@@ -244,7 +244,7 @@ export default function UploadImages() {
       {/* FAB */}
       <button
         onClick={handleOpen}
-        className="fixed bottom-8 right-8 z-50 flex items-center gap-2 px-5 py-3.5 bg-[#1e4d2b] hover:bg-[#163a20] text-white text-sm font-semibold rounded-full shadow-lg transition-all hover:-translate-y-0.5"
+        className="fixed bottom-8 right-8 z-50 flex items-center gap-2 px-5 py-3.5 bg-[#356B43] hover:bg-[#254431] text-white text-sm font-semibold rounded-full shadow-lg transition-all hover:-translate-y-0.5"
       >
         <Upload size={16} />
         Upload Images
@@ -279,16 +279,16 @@ export default function UploadImages() {
               {/* Drop zone */}
               {files.length === 0 && (
                 <div
-                  className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors ${dragging ? "border-[#1e4d2b] bg-green-50" : "border-gray-200 bg-gray-50 hover:border-[#1e4d2b] hover:bg-green-50"}`}
+                  className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors ${dragging ? "border-[#356B43] bg-green-50" : "border-gray-200 bg-gray-50 hover:border-[#356B43] hover:bg-green-50"}`}
                   onDrop={handleDrop}
                   onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
                   onDragLeave={() => setDragging(false)}
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <ImageIcon size={32} className={`mx-auto mb-3 ${dragging ? "text-[#1e4d2b]" : "text-gray-300"}`} />
+                  <ImageIcon size={32} className={`mx-auto mb-3 ${dragging ? "text-[#356B43]" : "text-gray-300"}`} />
                   <p className="text-sm text-gray-500">
                     Drop images here or{" "}
-                    <span className="text-[#1e4d2b] font-semibold underline underline-offset-2">browse files</span>
+                    <span className="text-[#356B43] font-semibold underline underline-offset-2">browse files</span>
                   </p>
                   <p className="text-xs text-gray-300 mt-1">JPEG, PNG, HEIC supported</p>
                   <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => addFiles(e.target.files)} />
@@ -323,7 +323,7 @@ export default function UploadImages() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-500 text-gray-900 hover:bg-green-50 hover:border-[#1e4d2b] hover:text-[#1e4d2b] transition-colors text-base font-medium"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-500 text-gray-900 hover:bg-green-50 hover:border-[#356B43] hover:text-[#356B43] transition-colors text-base font-medium"
                       >
                         +
                       </button>
@@ -372,7 +372,7 @@ export default function UploadImages() {
                           <div data-testid="upload-modal" className="relative">
                             <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                             <input
-                              className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:border-[#1e4d2b] focus:bg-white transition-colors placeholder:text-gray-300 text-gray-700"
+                              className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:border-[#356B43] focus:bg-white transition-colors placeholder:text-gray-300 text-gray-700"
                               placeholder="Search by site name or county..."
                               value={current.siteSearch}
                               onChange={(e) => {
@@ -416,7 +416,7 @@ export default function UploadImages() {
                           value={current.date}
                           max={today}
                           onChange={(e) => updateField("date", e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:border-[#1e4d2b] focus:bg-white transition-colors text-gray-700"
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:border-[#356B43] focus:bg-white transition-colors text-gray-700"
                         />
                       </div>
 
@@ -436,7 +436,7 @@ export default function UploadImages() {
                             const val = e.target.value;
                             if (val.replace(/\s/g, "").length <= 25) updateField("who", val);
                           }}
-                          className={`w-full px-3 py-2 text-sm border rounded-lg bg-gray-50 focus:outline-none focus:bg-white transition-colors placeholder:text-gray-300 text-gray-700 ${current.who.replace(/\s/g, "").length >= 25 ? "border-red-300 focus:border-red-400" : "border-gray-200 focus:border-[#1e4d2b]"}`}
+                          className={`w-full px-3 py-2 text-sm border rounded-lg bg-gray-50 focus:outline-none focus:bg-white transition-colors placeholder:text-gray-300 text-gray-700 ${current.who.replace(/\s/g, "").length >= 25 ? "border-red-300 focus:border-red-400" : "border-gray-200 focus:border-[#356B43]"}`}
                         />
                         {current.who.replace(/\s/g, "").length >= 25 && (
                           <p className="text-xs text-red-400 mt-1">Character limit reached</p>
@@ -459,7 +459,7 @@ export default function UploadImages() {
                             const val = e.target.value;
                             if (val.replace(/\s/g, "").length <= 20) updateField("identifier", val);
                           }}
-                          className={`w-full px-3 py-2 text-sm border rounded-lg bg-gray-50 focus:outline-none focus:bg-white transition-colors placeholder:text-gray-300 text-gray-700 ${current.identifier.replace(/\s/g, "").length >= 20 ? "border-red-300 focus:border-red-400" : "border-gray-200 focus:border-[#1e4d2b]"}`}
+                          className={`w-full px-3 py-2 text-sm border rounded-lg bg-gray-50 focus:outline-none focus:bg-white transition-colors placeholder:text-gray-300 text-gray-700 ${current.identifier.replace(/\s/g, "").length >= 20 ? "border-red-300 focus:border-red-400" : "border-gray-200 focus:border-[#356B43]"}`}
                         />
                         {current.identifier.replace(/\s/g, "").length >= 20 && (
                           <p className="text-xs text-red-400 mt-1">Character limit reached</p>
@@ -474,7 +474,7 @@ export default function UploadImages() {
                           rows={2}
                           value={current.description}
                           onChange={(e) => updateField("description", e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:border-[#1e4d2b] focus:bg-white transition-colors placeholder:text-gray-300 text-gray-700 resize-none"
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:border-[#356B43] focus:bg-white transition-colors placeholder:text-gray-300 text-gray-700 resize-none"
                         />
                       </div>
 
@@ -506,7 +506,7 @@ export default function UploadImages() {
                   data-testid="upload-submit-btn"
                   onClick={handleUpload}
                   disabled={!canUpload || isSubmitting}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#1e4d2b] hover:bg-[#163a20] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#356B43] hover:bg-[#254431] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
                 >
                   <Upload size={14} />
                   {isSubmitting ? "Uploading..." : "Upload"}

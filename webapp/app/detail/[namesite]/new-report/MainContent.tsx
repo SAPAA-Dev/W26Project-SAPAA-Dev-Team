@@ -91,6 +91,7 @@ export default function MainContent({
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const hasAutofilled = useRef(false);
+  const hasInitializedSection = useRef(false);
   const goToPreviousSectionRef = useRef<() => void>(() => {});
   const goToNextSectionRef = useRef<() => void>(() => {});
 
@@ -231,6 +232,24 @@ export default function MainContent({
     lastSection,
     onSectionStateChange,
   ]);
+
+  useEffect(() => {
+    if (currentSection === null) return;
+
+    if (!hasInitializedSection.current) {
+      hasInitializedSection.current = true;
+      return;
+    }
+
+    try {
+      window.scrollTo?.({
+        top: 0,
+        behavior: 'smooth',
+      });
+    } catch {
+      // Some test environments do not implement window.scrollTo.
+    }
+  }, [currentSection]);
 
   const currentQuestions = questionsBySection[currentSection ?? 1] || [];
 

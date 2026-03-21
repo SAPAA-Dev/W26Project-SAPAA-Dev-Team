@@ -606,7 +606,9 @@ export default function SiteDetailScreen() {
                                   <SectionDivider title={"SECTION: " + section.sectionTitle} />
                                 )}
                                 <div className="space-y-2">
-                                  {section.answers.map((a, idx) => (
+                                  {section.answers
+                                    .filter(a => a.obs_value || a.obs_comm)
+                                    .map((a, idx) => (
                                     <div key={idx} className="bg-[#F7F2EA] rounded-lg p-3">
                                       <span className="font-semibold text-[#356B43]">{a.question_text}:</span>{' '}
                                       {a.obs_value && (
