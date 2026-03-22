@@ -3,8 +3,11 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
+  getFormResponsesBySite,
   getSiteByName,
   SiteSummary,
+  FormResponse,
+  FormAnswer,
 } from "@/utils/supabase/queries";
 import { daysSince } from "@/app/sites/page";
 import { createClient } from "@/utils/supabase/client";
@@ -35,6 +38,7 @@ import {
   Loader2
 } from "lucide-react";
 import { useRef } from "react";
+import PdfExportModal from "@/components/PdfExportModal";
 
 // Initialize Supabase client
 const supabase = createClient();
@@ -450,24 +454,25 @@ export default function AdminSiteDetails() {
   const router = useRouter();
   const namesite = decodeURIComponent(params.id);
 
-  const [inspections, setInspections] = useState<InspectionDetail[]>([]);
+  const [inspections, setInspections] = useState<FormResponse[]>([]);
   const [site, setSite] = useState<SiteSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedInspections, setExpandedInspections] = useState<Set<number>>(new Set());
-  const [selectedInspection, setSelectedInspection] = useState<InspectionDetail | null>(null);
+  const [selectedInspection, setSelectedInspection] = useState<FormResponse | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('by-date');
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set());
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [filterText, setFilterText] = useState('');
   const [showDataQuality, setShowDataQuality] = useState(false);
-  
+
   // Edit modal state - matching app functionality
-  const [editingInspection, setEditingInspection] = useState<InspectionDetail | null>(null);
+  const [editingInspection, setEditingInspection] = useState<FormResponse | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [editedInspection, setEditedInspection] = useState<InspectionDetail | null>(null);
+  const [editedInspection, setEditedInspection] = useState<FormResponse | null>(null);
   
+  const [showPdfModal, setShowPdfModal] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: number; open: boolean } | null>(null);
   const menuRefs = useRef<{ [key: number]: HTMLButtonElement | null }>({});
@@ -477,11 +482,9 @@ export default function AdminSiteDetails() {
     const load = async () => {
       try {
         const siteData = await getSiteByName(namesite);
-        const details = await getInspectionDetailsOnline(siteData[0].namesite);
-        console.log('Loaded inspections:', details);
-        console.log('First inspection inspection_id:', details[0]?.inspection_id);
+        const details = await getFormResponsesBySite(siteData[0].namesite);
         setSite(siteData[0]);
-        setInspections(details);
+        setInspections(details); // change state type to FormResponse[]
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error loading inspections';
         setError(message);
@@ -524,7 +527,7 @@ export default function AdminSiteDetails() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [openMenuId]);
 
-  const computeAverageNaturalness = (items: InspectionDetail[]) => {
+  const computeAverageNaturalness = (items: FormResponse[]) => {
     const scores: number[] = [];
     const re = /^(\d+(\.\d+)?)/;
 
@@ -625,55 +628,35 @@ export default function AdminSiteDetails() {
   };
 
   const questionComparisons = useMemo((): QuestionComparison[] => {
-    const questionMap = new Map<
-      string,
-      { label: string; answers: QuestionComparison["answers"] }
-    >();
+    const questionMap = new Map<string, {
+      label: string;
+      answers: QuestionComparison["answers"];
+    }>();
   
-    inspections.forEach((inspection) => {
-      const questions = parseQuestions(inspection.notes);
-  
-      questions.forEach((q) => {
-        const [rawLabel, ...rest] = q.questionText.split(":");
-        const label = rawLabel.trim();
-        const answerText = rest.join(":").trim();
-  
-        if (!questionMap.has(q.questionId)) {
-          questionMap.set(q.questionId, { label, answers: [] });
+    inspections.forEach((response) => {
+      response.answers.forEach((a) => {
+        const key = String(a.question_id);
+        if (!questionMap.has(key)) {
+          questionMap.set(key, { label: a.question_text, answers: [] });
         }
-  
-        const entry = questionMap.get(q.questionId)!;
-  
-        entry.answers.push({
-          inspectionId: inspection.id,
-          date: inspection.inspectdate ?? '',
-          displayDate: inspection.inspectdate ? new Date(inspection.inspectdate).toLocaleDateString() : 'N/A',
-          answer: answerText || q.questionText,
+        // Admin shows all answers including null ones
+        const value = a.obs_value ?? a.obs_comm ?? '(no value recorded)';
+        questionMap.get(key)!.answers.push({
+          inspectionId: response.id,
+          date: response.created_at ?? '',
+          displayDate: response.created_at ? new Date(response.created_at).toLocaleDateString() : 'N/A',
+          answer: value,
         });
       });
     });
   
-    const result: QuestionComparison[] = Array.from(
-      questionMap.entries()
-    ).map(([questionId, { label, answers }]) => {
-      const sortedAnswers = answers.sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
-
-      return {
+    return Array.from(questionMap.entries())
+      .map(([questionId, { label, answers }]) => ({
         questionId,
-        questionText: label || questionId,
-        answers: sortedAnswers,
-      };
-    });
-  
-    return result.sort((a, b) => {
-      const numA = parseInt(a.questionId.replace("Q", ""));
-      const numB = parseInt(b.questionId.replace("Q", ""));
-      if (isNaN(numA)) return 1;
-      if (isNaN(numB)) return -1;
-      return numA - numB;
-    });
+        questionText: label,
+        answers: answers.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+      }))
+      .sort((a, b) => parseInt(a.questionId) - parseInt(b.questionId));
   }, [inspections]);
 
   const formatAgeBadge = (days: number): string => {
@@ -829,11 +812,11 @@ export default function AdminSiteDetails() {
     setShowExportMenu(false);
   };
 
-  const getDataQualityScore = (inspection: InspectionDetail): { score: number; issues: string[] } => {
+  const getDataQualityScore = (inspection: FormResponse): { score: number; issues: string[] } => {
     const issues: string[] = [];
     let score = 100;
-
-    if (!inspection.inspectdate) {
+  
+    if (!inspection.created_at) {
       issues.push('Missing inspection date');
       score -= 20;
     }
@@ -841,35 +824,50 @@ export default function AdminSiteDetails() {
       issues.push('Missing naturalness score');
       score -= 25;
     }
-    if (!inspection.notes || inspection.notes.trim() === '') {
-      issues.push('Missing notes/observations');
+    if (inspection.answers.length === 0) {
+      issues.push('Missing observations');
       score -= 15;
     }
     if (!inspection.naturalness_details || inspection.naturalness_details.trim() === '') {
       issues.push('Missing naturalness details');
       score -= 10;
     }
-    if (!inspection.county) {
-      issues.push('Missing county');
-      score -= 5;
-    }
-
+  
     return { score: Math.max(0, score), issues };
   };
 
   const filteredInspections = useMemo(() => {
     if (!filterText.trim()) return inspections;
     const lower = filterText.toLowerCase();
-    return inspections.filter(insp => {
-      return (
-        (insp.inspectdate?.toLowerCase().includes(lower)) ||
-        (insp.naturalness_score?.toLowerCase().includes(lower)) ||
-        (insp.notes?.toLowerCase().includes(lower)) ||
-        (insp.naturalness_details?.toLowerCase().includes(lower)) ||
-        (insp.county?.toLowerCase().includes(lower))
-      );
-    });
+    return inspections.filter(insp =>
+      (insp.created_at?.toLowerCase().includes(lower)) ||
+      (insp.naturalness_score?.toLowerCase().includes(lower)) ||
+      (insp.naturalness_details?.toLowerCase().includes(lower)) ||
+      (insp.steward?.toLowerCase().includes(lower)) ||
+      insp.answers.some(a =>
+        a.obs_value?.toLowerCase().includes(lower) ||
+        a.obs_comm?.toLowerCase().includes(lower) ||
+        a.question_text?.toLowerCase().includes(lower)
+      )
+    );
   }, [inspections, filterText]);
+
+  // Handle Back Button Navigation
+  const handleBack = () => {
+    const stack: string[] = JSON.parse(sessionStorage.getItem('navStack') || '[]')
+
+    if (stack.length > 1) {
+      stack.pop() // remove current page
+      const previous = stack[stack.length - 1]
+      stack.pop() // remove previous since we're navigating there
+      sessionStorage.setItem('navStack', JSON.stringify(stack))
+      router.push(previous)
+    } else {
+      stack.pop() // clear current page before navigating to fallback
+      sessionStorage.setItem('navStack', JSON.stringify(stack))
+      router.push('/admin/sites')
+    }
+  }
 
   if (loading) {
     return (
@@ -890,7 +888,7 @@ export default function AdminSiteDetails() {
           <h2 className="text-2xl font-bold text-[#254431] mb-2">Unable to Load Site</h2>
           <p className="text-[#7A8075] mb-6">{error || "Site not found"}</p>
           <button
-            onClick={() => router.push('/admin/sites')}
+            onClick={handleBack}
             className="bg-gradient-to-r from-[#356B43] to-[#254431] text-white font-semibold px-6 py-3 rounded-xl hover:shadow-lg transition-all"
           >
             Back to Admin Sites
@@ -911,7 +909,7 @@ export default function AdminSiteDetails() {
       <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-6 shadow-lg">
         <div className="max-w-7xl mx-auto">
           <button
-            onClick={() => router.push('/admin/sites')}
+            onClick={handleBack}
             className="flex items-center gap-2 text-[#E4EBE4] hover:text-white transition-colors mb-4 group"
           >
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
@@ -980,10 +978,20 @@ export default function AdminSiteDetails() {
                     </button>
                     <button
                       onClick={() => handleExport('json')}
-                      className="w-full text-left px-4 py-3 hover:bg-[#F7F2EA] text-[#1E2520] transition-colors flex items-center gap-2"
+                      className="w-full text-left px-4 py-3 hover:bg-[#F7F2EA] text-[#1E2520] transition-colors border-b border-[#E4EBE4] flex items-center gap-2"
                     >
                       <FileText className="w-4 h-4" />
                       Export as JSON
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowExportMenu(false);
+                        setShowPdfModal(true);
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-[#F7F2EA] text-[#1E2520] transition-colors flex items-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      Export as PDF
                     </button>
                   </div>
                 )}
@@ -1206,7 +1214,7 @@ export default function AdminSiteDetails() {
                         <div>
                           <div className="flex items-center gap-2">
                             <h3 className="text-lg font-bold text-[#254431]">
-                              {inspection.inspectdate ? new Date(inspection.inspectdate).toLocaleDateString('en-US', {
+                              {inspection.created_at ? new Date(inspection.created_at).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric'
@@ -1284,28 +1292,37 @@ export default function AdminSiteDetails() {
 
                   {isExpanded && (
                     <div className="px-6 pb-6 space-y-4 border-t-2 border-[#E4EBE4] pt-4">
-                      {(inspection as any).steward && (
+                      {inspection.steward && (
                         <div>
                           <p className="text-sm font-semibold text-[#7A8075] mb-1">Steward</p>
-                          <p className="text-[#1E2520]">{(inspection as any).steward}</p>
+                          <p className="text-[#1E2520]">{inspection.steward}</p>
                         </div>
                       )}
-                      
                       {inspection.naturalness_details && (
                         <div>
                           <p className="text-sm font-semibold text-[#7A8075] mb-1">Naturalness Details</p>
                           <p className="text-[#1E2520]">{inspection.naturalness_details}</p>
                         </div>
                       )}
-
-                      {questions.length > 0 && (
+                      {inspection.answers.length > 0 && (
                         <div>
                           <p className="text-sm font-semibold text-[#7A8075] mb-2">Observations</p>
                           <div className="space-y-2">
-                            {questions.map((q, idx) => (
-                              <div key={idx} className="bg-[#F7F2EA] rounded-lg p-3">
-                                <span className="font-semibold text-[#356B43]">{q.questionId}:</span>{' '}
-                                <span className="text-[#1E2520]">{q.questionText}</span>
+                            {inspection.answers.map((a) => (
+                              <div key={a.question_id} className="bg-[#F7F2EA] rounded-lg p-3">
+                                <span className="font-semibold text-[#356B43]">{a.question_text}:</span>{' '}
+                                {a.obs_value && (
+                                  <span className="text-[#1E2520]">{a.obs_value}</span>
+                                )}
+                                {a.obs_comm && (
+                                  <span className="text-[#1E2520]">
+                                    {a.obs_value ? ` (Other: ${a.obs_comm})` : a.obs_comm}
+                                  </span>
+                                )}
+                                {/* Admin only: show when both are null */}
+                                {!a.obs_value && !a.obs_comm && (
+                                  <span className="text-[#7A8075] italic text-xs">No value recorded</span>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -1558,6 +1575,15 @@ export default function AdminSiteDetails() {
           </div>
         </div>
       )}
+
+      {/* PDF Export Modal */}
+      <PdfExportModal
+        open={showPdfModal}
+        onClose={() => setShowPdfModal(false)}
+        mode="site"
+        siteName={namesite}
+        inspections={inspections}
+      />
     </div>
   );
 }
