@@ -12,6 +12,7 @@ import {
   updateSiteInspectionAnswers,
 } from "@/utils/supabase/queries";
 import { daysSince } from "@/app/sites/page";
+import PdfExportModal from '@/components/PdfExportModal';
 import Image from 'next/image';
 import {
   ArrowLeft,
@@ -130,6 +131,7 @@ export default function AdminSiteDetails() {
   const [viewMode, setViewMode] = useState<ViewMode>('by-date');
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set());
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [showPdfModal, setShowPdfModal] = useState(false);
   const [filterText, setFilterText] = useState('');
   const [showDataQuality, setShowDataQuality] = useState(false);
 
@@ -1158,6 +1160,13 @@ export default function AdminSiteDetails() {
           </div>
         </div>
       )}
+
+      <PdfExportModal
+        open={showPdfModal}
+        onClose={() => setShowPdfModal(false)}
+        mode="site"
+        siteName={namesite}
+      />
     </div>
   );
 }

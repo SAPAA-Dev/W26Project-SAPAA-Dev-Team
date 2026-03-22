@@ -569,6 +569,208 @@ export const openApiSpec = {
         },
       },
     },
+
+    "/api/pdf": {
+      post: {
+        summary: "Generate PDF reports for site inspections",
+        tags: ["PDF Export"],
+        description: "Generates PDF inspection reports in three modes: single inspection response, site summary (all inspections for a site), or multi-site bulk export. Admin-only endpoint. Supports customizable options including image inclusion, page size, sort order, and section selection.",
+        security: [
+          {
+            bearerAuth: []
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                oneOf: [
+                  {
+                    type: "object",
+                    description: "Single inspection response PDF export",
+                    required: ["mode", "responseId"],
+                    properties: {
+                      mode: { type: "string", enum: ["single"], example: "single" },
+                      responseId: { type: "integer", example: 3235, description: "ID of the inspection response to export" },
+                      options: {
+                        $ref: "#/components/schemas/PdfOptions"
+                      }
+                    }
+                  },
+                  {
+                    type: "object",
+                    description: "Site summary PDF export (all inspections for a site)",
+                    required: ["mode", "siteName"],
+                    properties: {
+                      mode: { type: "string", enum: ["site"], example: "site" },
+                      siteName: { type: "string", example: "Riverlot 56 (NA)", description: "Name of the site to export" },
+                      options: {
+                        $ref: "#/components/schemas/PdfOptions"
+                      }
+                    }
+                  },
+                  {
+                    type: "object",
+                    description: "Multi-site bulk PDF export",
+                    required: ["mode", "siteNames"],
+                    properties: {
+                      mode: { type: "string", enum: ["multi-site"], example: "multi-site" },
+                      siteNames: {
+                        type: "array",
+                        minItems: 1,
+                        items: { type: "string" },
+                        example: ["Riverlot 56 (NA)", "Clyde Fen (NA)"],
+                        description: "List of site names to export (minimum 1)"
+                      },
+                      options: {
+                        $ref: "#/components/schemas/PdfOptions"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        responses: {
+          "200": {
+            description: "PDF generated successfully and returned as binary file",
+            content: {
+              "application/pdf": {
+                schema: {
+                  type: "string",
+                  format: "binary",
+                  description: "PDF file content"
+                }
+              }
+            }
+          },
+          "400": {
+            description: "Invalid request parameters (missing mode, invalid responseId, missing siteName, empty siteNames array, etc.)",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    error: {
+                      type: "string",
+                      example: "Invalid mode, responseId, or siteNames provided"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            description: "Unauthorized — user not authenticated",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    error: { type: "string", example: "Unauthorized" }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            description: "Forbidden — admin role required",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    error: { type: "string", example: "Only admins can generate PDFs" }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            description: "Server error — failed to render PDF or fetch data",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    error: {
+                      type: "string",
+                      example: "Failed to render PDF or fetch report data"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  components: {
+    schemas: {
+      PdfOptions: {
+        type: "object",
+        description: "Optional configuration for PDF generation",
+        properties: {
+          includeImages: {
+            type: "boolean",
+            default: false,
+            description: "Whether to include inspection images in the PDF. Note: may significantly increase file size and generation time."
+          },
+          maxImagesPerInspection: {
+            type: "integer",
+            default: 5,
+            minimum: 0,
+            maximum: 20,
+            description: "Maximum number of images to include per inspection (clamped to 0-20 range). Only used if includeImages is true."
+          },
+          includeEmptyAnswers: {
+            type: "boolean",
+            default: false,
+            description: "Whether to include questions that were not answered"
+          },
+          includeCoverPage: {
+            type: "boolean",
+            default: true,
+            description: "Whether to include a cover page in the PDF"
+          },
+          includeNaturalnessSummary: {
+            type: "boolean",
+            default: true,
+            description: "Whether to include the naturalness summary section"
+          },
+          selectedSections: {
+            type: "string",
+            enum: ["all", "custom"],
+            default: "all",
+            description: "Which sections to include in the PDF. Currently only 'all' is fully supported."
+          },
+          sortOrder: {
+            type: "string",
+            enum: ["newest", "oldest"],
+            default: "newest",
+            description: "Sort order for inspections in the report"
+          },
+          pageSize: {
+            type: "string",
+            enum: ["LETTER", "A4"],
+            default: "LETTER",
+            description: "Physical page size for the PDF document"
+          }
+        }
+      }
+    },
+    securitySchemes: {
+      bearerAuth: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+        description: "Supabase JWT authentication token"
+      }
+    }
   },
   
 };
