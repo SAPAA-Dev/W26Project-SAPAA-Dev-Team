@@ -59,7 +59,6 @@ jest.mock('../../utils/form-actions', () => ({
   toggleQuestionActive: jest.fn(),
   addQuestion: jest.fn(),
   reorderQuestions: jest.fn(),
-  addFormSection: jest.fn(),
 }));
 
 // Mock user-facing query functions

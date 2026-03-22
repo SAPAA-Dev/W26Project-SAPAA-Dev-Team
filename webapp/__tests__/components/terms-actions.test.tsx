@@ -203,12 +203,12 @@ describe("NewReportPage – Liability / Verification Popup", () => {
   });
 
   describe("Cancel button", () => {
-    it("calls router.back() when Cancel is clicked", async () => {
+    it("navigates to site detail page when Cancel is clicked", async () => {
       render(<NewReportPage />);
       await waitForFormReady();
       const cancelBtn = screen.getByRole("button", { name: /cancel/i });
       await userEvent.click(cancelBtn);
-      expect(mockRouterBack).toHaveBeenCalledTimes(1);
+      expect(mockPush).toHaveBeenCalledWith("/detail/Elk%20Island");
     });
   });
 

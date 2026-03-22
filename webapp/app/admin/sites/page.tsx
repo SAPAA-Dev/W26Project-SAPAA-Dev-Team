@@ -18,7 +18,7 @@ export function daysSince(date: string): number {
   return Math.floor((Date.now() - new Date(date).getTime()) / MSEC_PER_DAY);
 }
 
-function formatAgeBadge(days: number, inspectDate: string | null): string | null {
+export function formatAgeBadge(days: number, inspectDate: string | null): string | null {
   if (!inspectDate || inspectDate === '1900-01-01') return null;
   
   if (days <= 0) return 'New';
@@ -29,7 +29,7 @@ function formatAgeBadge(days: number, inspectDate: string | null): string | null
   return `${years}yr${years > 1 ? 's' : ''} ago`;
 }
 
-function getInspectionStatus(days: number, inspectDate: string | null): { label: string; color: string; bgColor: string } {
+export function getInspectionStatus(days: number, inspectDate: string | null): { label: string; color: string; bgColor: string } {
   if (!inspectDate || inspectDate === '1900-01-01') {
     return { label: 'Never Inspected', color: '#475569', bgColor: '#F1F5F9' };
   }
