@@ -44,6 +44,9 @@ jest.mock('@/utils/supabase/queries', () => ({
   updateSiteInspectionAnswers: (id: number, batch: any[]) => mockUpdateSiteInspectionAnswers(id, batch),
 }));
 
+// Mock PdfExportModal
+jest.mock('@/components/PdfExportModal', () => () => null);
+
 // Now import the component after all mocks are set up
 import AdminSiteDetails from '../../app/admin/sites/[id]/page';
 
@@ -407,16 +410,19 @@ describe('AdminSiteDetails', () => {
       await user.click(screen.getByRole('button', { name: /Export/i }));
       expect(screen.getByText('Export as CSV')).toBeInTheDocument();
       expect(screen.getByText('Export as JSON')).toBeInTheDocument();
+      expect(screen.getByText('Export as PDF')).toBeInTheDocument();
     });
 
     it('should close export menu after selection', async () => {
       const user = userEvent.setup();
+
 
       // Mock URL.createObjectURL and createElement
       const mockCreateObjectURL = jest.fn(() => 'blob:test');
       const mockRevokeObjectURL = jest.fn();
       global.URL.createObjectURL = mockCreateObjectURL;
       global.URL.revokeObjectURL = mockRevokeObjectURL;
+
 
       const mockClick = jest.fn();
       const originalCreateElement = document.createElement.bind(document);
@@ -480,6 +486,7 @@ describe('AdminSiteDetails', () => {
 
       await user.click(screen.getByRole('button', { name: /Compare by Question/i }));
       await user.click(screen.getByRole('button', { name: /View by Date/i }));
+
 
       expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
     });
@@ -572,7 +579,7 @@ describe('AdminSiteDetails', () => {
   });
 
   describe('Edit Answers Modal', () => {
-    it('should open edit modal when Edit Answers is clicked from menu', async () => {
+    it('should open edit modal when Edit Answers is clicked', async () => {
       const user = userEvent.setup();
       render(<AdminSiteDetails />);
 
@@ -580,14 +587,7 @@ describe('AdminSiteDetails', () => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      // Find the menu button for the first response
-      await user.click(screen.getByTestId('menu-button-101'));
-
-      await waitFor(() => {
-        expect(screen.getByText('Edit Answers')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByText('Edit Answers'));
+      await user.click(screen.getByTestId('edit-button-101'));
 
       // Modal should open with the edit form
       await waitFor(() => {
@@ -603,13 +603,7 @@ describe('AdminSiteDetails', () => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      await user.click(screen.getByTestId('menu-button-101'));
-
-      await waitFor(() => {
-        expect(screen.getByText('Edit Answers')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByText('Edit Answers'));
+      await user.click(screen.getByTestId('edit-button-101'));
 
       await waitFor(() => {
         // Should show question labels in the modal
@@ -627,13 +621,7 @@ describe('AdminSiteDetails', () => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      await user.click(screen.getByTestId('menu-button-101'));
-
-      await waitFor(() => {
-        expect(screen.getByText('Edit Answers')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByText('Edit Answers'));
+      await user.click(screen.getByTestId('edit-button-101'));
 
       await waitFor(() => {
         expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
@@ -654,13 +642,7 @@ describe('AdminSiteDetails', () => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      await user.click(screen.getByTestId('menu-button-101'));
-
-      await waitFor(() => {
-        expect(screen.getByText('Edit Answers')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByText('Edit Answers'));
+      await user.click(screen.getByTestId('edit-button-101'));
 
       await waitFor(() => {
         expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
@@ -685,13 +667,7 @@ describe('AdminSiteDetails', () => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      await user.click(screen.getByTestId('menu-button-101'));
-
-      await waitFor(() => {
-        expect(screen.getByText('Edit Answers')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByText('Edit Answers'));
+      await user.click(screen.getByTestId('edit-button-101'));
 
       await waitFor(() => {
         expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
@@ -723,13 +699,7 @@ describe('AdminSiteDetails', () => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      await user.click(screen.getByTestId('menu-button-101'));
-
-      await waitFor(() => {
-        expect(screen.getByText('Edit Answers')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByText('Edit Answers'));
+      await user.click(screen.getByTestId('edit-button-101'));
 
       // Should NOT have navigated
       expect(mockPush).not.toHaveBeenCalled();
@@ -742,23 +712,17 @@ describe('AdminSiteDetails', () => {
   });
 
   describe('Toggle Active/Inactive', () => {
-    it('should show Deactivate option in menu for active responses', async () => {
-      const user = userEvent.setup();
+    it('should show Disable button for active responses', async () => {
       render(<AdminSiteDetails />);
 
       await waitFor(() => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      await user.click(screen.getByTestId('menu-button-101'));
-
-      await waitFor(() => {
-        expect(screen.getByText('Deactivate')).toBeInTheDocument();
-      });
+      expect(screen.getByTestId('toggle-active-button-101')).toHaveTextContent('Disable');
     });
 
-    it('should show Reactivate option in menu for inactive responses', async () => {
-      const user = userEvent.setup();
+    it('should show Enable button for inactive responses', async () => {
       mockGetFormResponsesBySiteAdmin.mockResolvedValue(mockFormResponsesWithInactive);
       render(<AdminSiteDetails />);
 
@@ -766,12 +730,7 @@ describe('AdminSiteDetails', () => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      // Click the menu on the second (inactive) response
-      await user.click(screen.getByTestId('menu-button-102'));
-
-      await waitFor(() => {
-        expect(screen.getByText('Reactivate')).toBeInTheDocument();
-      });
+      expect(screen.getByTestId('toggle-active-button-102')).toHaveTextContent('Enable');
     });
 
     it('should call setFormResponseActive with false when deactivating', async () => {
@@ -782,13 +741,7 @@ describe('AdminSiteDetails', () => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      await user.click(screen.getByTestId('menu-button-101'));
-
-      await waitFor(() => {
-        expect(screen.getByText('Deactivate')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByText('Deactivate'));
+      await user.click(screen.getByTestId('toggle-active-button-101'));
 
       await waitFor(() => {
         expect(mockSetFormResponseActive).toHaveBeenCalledWith(101, false);
@@ -804,14 +757,7 @@ describe('AdminSiteDetails', () => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      // Click the menu on the second (inactive) response
-      await user.click(screen.getByTestId('menu-button-102'));
-
-      await waitFor(() => {
-        expect(screen.getByText('Reactivate')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByText('Reactivate'));
+      await user.click(screen.getByTestId('toggle-active-button-102'));
 
       await waitFor(() => {
         expect(mockSetFormResponseActive).toHaveBeenCalledWith(102, true);
@@ -830,13 +776,7 @@ describe('AdminSiteDetails', () => {
       expect(screen.queryByText('Inactive')).not.toBeInTheDocument();
 
       // Deactivate first response
-      await user.click(screen.getByTestId('menu-button-101'));
-
-      await waitFor(() => {
-        expect(screen.getByText('Deactivate')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByText('Deactivate'));
+      await user.click(screen.getByTestId('toggle-active-button-101'));
 
       // Should now show Inactive badge
       await waitFor(() => {
@@ -1055,11 +995,13 @@ describe('Integration Tests', () => {
     // Switch to question view
     await user.click(screen.getByRole('button', { name: /Compare by Question/i }));
 
+
     // Data Quality should still be visible
     expect(screen.getByText('Data Quality Analysis')).toBeInTheDocument();
 
     // Switch back to date view
     await user.click(screen.getByRole('button', { name: /View by Date/i }));
+
 
     // Data Quality should still be visible
     expect(screen.getByText('Data Quality Analysis')).toBeInTheDocument();
@@ -1074,13 +1016,7 @@ describe('Integration Tests', () => {
     });
 
     // Deactivate
-    await user.click(screen.getByTestId('menu-button-101'));
-
-    await waitFor(() => {
-      expect(screen.getByText('Deactivate')).toBeInTheDocument();
-    });
-
-    await user.click(screen.getByText('Deactivate'));
+    await user.click(screen.getByTestId('toggle-active-button-101'));
 
     await waitFor(() => {
       expect(mockSetFormResponseActive).toHaveBeenCalledWith(101, false);
@@ -1091,14 +1027,8 @@ describe('Integration Tests', () => {
       expect(screen.getByText('Inactive')).toBeInTheDocument();
     });
 
-    // Now reactivate - open menu again on that same response
-    await user.click(screen.getByTestId('menu-button-101'));
-
-    await waitFor(() => {
-      expect(screen.getByText('Reactivate')).toBeInTheDocument();
-    });
-
-    await user.click(screen.getByText('Reactivate'));
+    // Now reactivate
+    await user.click(screen.getByTestId('toggle-active-button-101'));
 
     await waitFor(() => {
       expect(mockSetFormResponseActive).toHaveBeenCalledWith(101, true);

@@ -740,7 +740,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
       answers.find(a => a.question_id === naturalnessDetailsId)?.obs_value ??
       answers.find(a => a.question_id === naturalnessDetailsId)?.obs_comm ??
       null;
-    const steward = answers.find(a => a.question_id === stewardId)?.obs_value ?? null;
+    const steward = answers.find(a => a.question_id === stewardId)?.obs_comm ?? null;
 
     return {
       id: r.id,

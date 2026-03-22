@@ -15,6 +15,7 @@ jest.mock('@/utils/supabase/queries', () => ({
   getCounties: jest.fn().mockResolvedValue([]),
   updateSite: jest.fn().mockResolvedValue(undefined),
   toggleSiteActive: jest.fn().mockResolvedValue(undefined),
+  getTotalInspectionCount: jest.fn().mockResolvedValue(0),
 }));
 
 // Mock next/image

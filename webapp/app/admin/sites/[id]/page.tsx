@@ -14,7 +14,6 @@ import {
 import { daysSince } from "@/app/sites/page";
 import Image from 'next/image';
 import {
-  MoreVertical,
   ArrowLeft,
   MapPin,
   Calendar,
@@ -134,8 +133,6 @@ export default function AdminSiteDetails() {
   const [filterText, setFilterText] = useState('');
   const [showDataQuality, setShowDataQuality] = useState(false);
 
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
-  const menuRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
   // Edit modal state
   const [editingResponse, setEditingResponse] = useState<AdminFormResponse | null>(null);
@@ -156,7 +153,7 @@ export default function AdminSiteDetails() {
         const siteData = await getSiteByName(namesite);
         const details = await getFormResponsesBySiteAdmin(siteData[0].namesite);
         setSite(siteData[0]);
-        setInspections(details);
+        setInspections(details); // change state type to FormResponse[]
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error loading inspections';
         setError(message);
@@ -211,19 +208,6 @@ export default function AdminSiteDetails() {
     }
   }, [showExportMenu]);
 
-  // Close inspection menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (openMenuId !== null) {
-        const menuEl = menuRefs.current[openMenuId];
-        if (menuEl && !menuEl.contains(event.target as Node)) {
-          setOpenMenuId(null);
-        }
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [openMenuId]);
 
   // Only count active inspections for stats
   const activeInspections = useMemo(() => inspections.filter(i => i.is_active), [inspections]);
@@ -585,6 +569,16 @@ export default function AdminSiteDetails() {
                       <FileText className="w-4 h-4" />
                       Export as JSON
                     </button>
+                    <button
+                      onClick={() => {
+                        setShowExportMenu(false);
+                        setShowPdfModal(true);
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-[#F7F2EA] text-[#1E2520] transition-colors flex items-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      Export as PDF
+                    </button>
                   </div>
                 )}
               </div>
@@ -824,31 +818,26 @@ export default function AdminSiteDetails() {
                         )}
                       </button>
 
-                      {/* Admin menu button — right side, matches edit button placement from site details */}
-                      <div className="relative mx-4" ref={el => { menuRefs.current[response.id] = el; }}>
+                      {/* Admin action buttons — directly visible */}
+                      <div className="flex items-center gap-2 mx-4">
                         <button
-                          data-testid={`menu-button-${response.id}`}
-                          onClick={() => setOpenMenuId(prev => prev === response.id ? null : response.id)}
-                          className="flex items-center justify-center w-10 h-10 rounded-xl text-[#7A8075] bg-[#E4EBE4] hover:bg-[#356B43] hover:text-white transition-all"
-                          title="Admin actions"
+                          data-testid={`edit-button-${response.id}`}
+                          onClick={() => handleOpenEditModal(response)}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-[#1E2520] bg-[#E4EBE4] hover:bg-[#356B43] hover:text-white transition-all"
+                          title="Edit Answers"
                         >
-                          <MoreVertical className="w-5 h-5" />
+                          <Edit3 className="w-4 h-4" /> Edit Answers
                         </button>
-                        {openMenuId === response.id && (
-                          <div className="absolute right-0 top-full mt-2 w-44 max-w-[90vw] bg-white rounded-xl shadow-lg border-2 border-[#E4EBE4] z-50" onClick={(e) => e.stopPropagation()}>
-                            <button onClick={() => { setOpenMenuId(null); handleOpenEditModal(response); }} className="w-full text-left px-4 py-2.5 hover:bg-[#F7F2EA] flex items-center gap-2 text-[#1E2520] rounded-t-xl">
-                              <Edit3 className="w-4 h-4" /> Edit Answers
-                            </button>
-                            <button
-                              onClick={() => { setOpenMenuId(null); handleToggleActive(response); }}
-                              disabled={togglingId === response.id}
-                              className={`w-full text-left px-4 py-2.5 flex items-center gap-2 rounded-b-xl ${response.is_active ? 'hover:bg-[#FEE2E2] text-[#B91C1C]' : 'hover:bg-[#DCFCE7] text-[#166534]'}`}
-                            >
-                              <Power className="w-4 h-4" />
-                              {togglingId === response.id ? 'Updating...' : response.is_active ? 'Deactivate' : 'Reactivate'}
-                            </button>
-                          </div>
-                        )}
+                        <button
+                          data-testid={`toggle-active-button-${response.id}`}
+                          onClick={() => handleToggleActive(response)}
+                          disabled={togglingId === response.id}
+                          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${response.is_active ? 'bg-[#FEE2E2] text-[#B91C1C] hover:bg-[#FECACA]' : 'bg-[#DCFCE7] text-[#166534] hover:bg-[#BBF7D0]'}`}
+                          title={response.is_active ? 'Disable' : 'Enable'}
+                        >
+                          <Power className="w-4 h-4" />
+                          {togglingId === response.id ? 'Updating...' : response.is_active ? 'Disable' : 'Enable'}
+                        </button>
                       </div>
                     </div>
 
