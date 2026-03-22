@@ -1168,6 +1168,7 @@ export default function AdminSiteDetails() {
         onClose={() => setShowPdfModal(false)}
         mode="site"
         siteName={namesite}
+        inspections={activeInspections}
       />
     </div>
   );
