@@ -14,7 +14,7 @@ describe('Admin Disable Site Profile', () => {
   function loginAsAdmin() {
     cy.visit('http://localhost:3000/');
     cy.get('#email').type('jason.liang5129@gmail.com');
-    cy.get('#password').type('123Gctrmomy@');
+    cy.get('#password').type('123Abc@@');
     cy.get('button.font-bold').click();
     cy.get('button.text-white').click();
     cy.wait(5000);
@@ -91,7 +91,7 @@ describe('Admin Disable Site Profile', () => {
     // Try to visit the detail page directly
     cy.visit('http://localhost:3000/');
     cy.get('#email').type('jason.liang5129@gmail.com');
-    cy.get('#password').type('123Gctrmomy@');
+    cy.get('#password').type('123Abc@@');
     cy.get('button.font-bold').click();
     cy.get('button.text-white').click();
     cy.wait(5000);

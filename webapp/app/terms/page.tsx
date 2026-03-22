@@ -17,7 +17,7 @@ export default function TermsPage() {
       <header className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white">
         <div className="max-w-5xl mx-auto px-4 py-6 flex items-center gap-4">
           <button
-            onClick={() => router.back()}
+            onClick={() => from ? router.push(from) : router.push('/sites')}
             className="p-2 hover:bg-white/10 rounded-full transition-colors"
           >
             <ArrowLeft className="w-6 h-6" />
@@ -258,7 +258,7 @@ export default function TermsPage() {
               Last updated: January 2026
             </p>
             <button
-            onClick={() => router.back()}
+            onClick={() => from ? router.push(from) : router.push('/sites')}
             className="text-sm font-semibold text-[#356B43] underline hover:text-[#254431] transition-colors"
             >
             Return to application

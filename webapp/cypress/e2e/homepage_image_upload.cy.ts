@@ -10,7 +10,7 @@ beforeEach(() => {
 function login() {
     cy.visit("http://localhost:3000/");
     cy.get("#email").type("jason.liang5129@gmail.com");
-    cy.get("#password").type("123Gctrmomy@");
+    cy.get("#password").type("123Abc@@");
     cy.get("button.font-bold").click();
     cy.get("button.text-white").click();
     cy.url().should("include", "/sites");

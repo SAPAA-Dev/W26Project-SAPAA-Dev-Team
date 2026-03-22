@@ -326,19 +326,3 @@ export async function reorderQuestions(
     }
   }
 }
-
-export async function addFormSection(section: {
-  title: string;
-  description: string | null;
-  header: string;
-}): Promise<number> {
-  const supabase = createServerSupabase();
-  const { data, error } = await supabase
-    .from("W26_form_sections")
-    .insert(section)
-    .select("id")
-    .single();
-
-  if (error) throw error;
-  return data.id;
-}
