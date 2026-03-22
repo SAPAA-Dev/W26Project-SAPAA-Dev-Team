@@ -463,7 +463,7 @@ export default function NewReportPage() {
                   filename: file.name,
                   contentType: file.type,
                   fileSize: file.size,
-                  responseId: siteInspectionReportId,
+                  responseId: siteInspectionReportId!,
                   questionId: Number(questionId),
                   siteId: Number(siteId),
                   date: image.date,
@@ -506,7 +506,7 @@ export default function NewReportPage() {
                 answer.forEach(subAnswer => {
                     const isOther = subAnswer === 'Other';
                     answersArray.push({
-                        response_id: siteInspectionReportId,
+                        response_id: siteInspectionReportId!,
                         question_id: Number(questionId),
                         obs_value: isValueType ? String(subAnswer) : null,
                         obs_comm: isOther ? commValue : (isCommType ? String(subAnswer) : null),
@@ -515,7 +515,7 @@ export default function NewReportPage() {
             } else {
                 const isOther = answer === 'Other';
                 answersArray.push({
-                    response_id: siteInspectionReportId,
+                    response_id: siteInspectionReportId!,
                     question_id: Number(questionId),
                     obs_value: isValueType ? String(answer) : null,
                     obs_comm: isOther ? commValue : (isCommType ? String(answer) : null),
@@ -729,8 +729,8 @@ export default function NewReportPage() {
 
             <div className="p-6 border-t border-[#E4EBE4] bg-[#F7F2EA]/50 space-y-3">
               <div className="flex gap-3">
-                <button 
-                  onClick={() => router.back()}
+                <button
+                  onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
                   className="flex-1 py-3 text-[#7A8075] font-bold hover:bg-[#E4EBE4] rounded-xl transition-colors"
                 >
                   Cancel
@@ -792,7 +792,7 @@ export default function NewReportPage() {
         <div className="max-w-7xl mx-auto">
 
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
           className="flex items-center gap-1.5 text-[#86A98A] hover:text-white transition-colors mb-4 group"
           data-testid="back-button"
         >

@@ -61,7 +61,6 @@ jest.mock('../../utils/form-actions', () => ({
   toggleQuestionActive: jest.fn(),
   addQuestion: jest.fn(),
   reorderQuestions: jest.fn(),
-  addFormSection: jest.fn(),
 }));
 
 // Mock user-facing query functions
@@ -148,7 +147,6 @@ describe('Admin Add Questions to Site Inspection Form', () => {
     (formActions.addQuestion as jest.Mock).mockResolvedValue(undefined);
     (formActions.saveQuestion as jest.Mock).mockResolvedValue(undefined);
     (formActions.toggleQuestionActive as jest.Mock).mockResolvedValue(undefined);
-    (formActions.addFormSection as jest.Mock).mockResolvedValue(3);
     (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(toUserFacingQuestions(mockQuestions));
   });
 

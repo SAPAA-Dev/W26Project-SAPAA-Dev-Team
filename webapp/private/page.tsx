@@ -10,5 +10,11 @@ export default async function PrivatePage() {
     redirect('/login')
   }
 
+  // Check if user is authenticated (approved)
+  if (data.user.user_metadata?.authenticated !== true) {
+    // For now, redirect to login, but ideally show approval screen
+    redirect('/login')
+  }
+
   return <p>Hello {data.user.email}</p>
 }

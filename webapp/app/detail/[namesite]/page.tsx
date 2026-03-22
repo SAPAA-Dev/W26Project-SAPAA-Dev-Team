@@ -30,6 +30,7 @@ import {
     Search
 } from "lucide-react";
 import Image from 'next/image';
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 type ViewMode = 'by-date' | 'by-question'| 'image-gallery';
 
@@ -369,7 +370,8 @@ export default function SiteDetailScreen() {
   const gradientPosition = average ? ((average - 1) / 3) * 100 : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
       <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
         <div className="max-w-7xl mx-auto">
 
@@ -881,5 +883,6 @@ export default function SiteDetailScreen() {
         )}
 
     </div>
+    </ProtectedRoute>
   );
 }

@@ -169,7 +169,9 @@ export default function EditReportPage() {
           createClient().auth.getUser(),
         ]);
   
-        setIsAuthorized(ownerId != null && authUser?.id != null && ownerId === authUser.id);
+        const isOwner = ownerId != null && authUser?.id != null && ownerId === authUser.id;
+        const isAdmin = authUser?.user_metadata?.role === 'admin';
+        setIsAuthorized(isOwner || isAdmin);
       } catch (err) {
         console.error('Error initializing edit page:', err);
       } finally {
@@ -468,7 +470,7 @@ export default function EditReportPage() {
           <h2 className="text-2xl font-bold text-[#254431] mb-2">Access Denied</h2>
           <p className="text-[#7A8075] mb-6">You can only edit reports that you submitted.</p>
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
             className="bg-gradient-to-r from-[#356B43] to-[#254431] text-white font-semibold px-6 py-3 rounded-xl hover:shadow-lg transition-all"
           >
             Go Back
@@ -525,7 +527,7 @@ export default function EditReportPage() {
         <div className="max-w-7xl mx-auto">
 
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
           className="flex items-center gap-1.5 text-[#86A98A] hover:text-white transition-colors mb-4 group"
           data-testid="back-button"
         >

@@ -498,6 +498,7 @@ jest.mock("@aws-sdk/s3-request-presigner", () => ({
 describe("GET /api/sites/[siteId]/gallery", () => {
   const mockGetUser = jest.fn();
   const mockFrom = jest.fn();
+  const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -508,6 +509,10 @@ describe("GET /api/sites/[siteId]/gallery", () => {
       },
       from: mockFrom,
     });
+  });
+
+  afterEach(() => {
+    consoleSpy.mockRestore();
   });
 
   it("returns 400 for invalid site id", async () => {

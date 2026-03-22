@@ -29,6 +29,30 @@ jest.mock("@/utils/supabase/client", () => ({
 }));
 
 const mockSelectedSite = {
+jest.mock("next/image", () => ({
+  __esModule: true,
+  default: (props: any) => {
+    // eslint-disable-next-line jsx-a11y/alt-text
+    return <img {...props} />;
+  },
+}));
+jest.mock("../../components/ProtectedRoute", () => ({ children }: any) => <div>{children}</div>);
+jest.mock("@/app/sites/page", () => ({
+  daysSince: jest.fn((date: string) => {
+    const days = Math.floor((Date.now() - new Date(date).getTime()) / (24 * 60 * 60 * 1000));
+    return Number.isNaN(days) ? 0 : days;
+  }),
+}));
+
+const mockRouter = {
+  push: jest.fn(),
+};
+
+const mockParams = {
+  namesite: "Riverlot%2056%20(NA)",
+};
+
+const mockSite = {
   id: 1,
   namesite: "Riverlot 56 (NA)",
   county: "Test County",
