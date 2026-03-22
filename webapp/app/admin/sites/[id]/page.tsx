@@ -78,6 +78,7 @@ type GalleryItem = {
   file_size_bytes?: number | null;
   imageUrl: string;
   caption?: string | null;
+  identifier?: string | null;
   description?: string | null;
   response_id?: string | null;
   question_id?: string | null;
@@ -184,7 +185,8 @@ export default function AdminSiteDetails() {
           ...(data.items || []).map((item: any) => ({ ...item, _sortDate: item.created_at ?? item.date ?? "" })),
           ...(data1.items || []).map((item: any) => ({ ...item, _sortDate: item.date ?? item.created_at ?? "" })),
         ].sort((a, b) => new Date(b._sortDate).getTime() - new Date(a._sortDate).getTime());
-
+        console.log("GALLERY ITEMS:", allItems);
+        
         setGalleryItems(allItems || []);
       } catch (err) {
         console.error("Gallery fetch error:", err);
@@ -1000,7 +1002,7 @@ export default function AdminSiteDetails() {
                     >
                       <img
                         src={item.imageUrl}
-                        alt={item.caption || item.filename || "Inspection image"}
+                        alt={item.identifier || item.filename || "Inspection image"}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
@@ -1018,7 +1020,7 @@ export default function AdminSiteDetails() {
                       <div className="text-sm text-[#7A8075] flex items-start gap-2">
                         <ImageIcon className="w-4 h-4 mt-0.5" />
                         <div>
-                          <p className="font-semibold text-[#254431]">{item.caption || "No caption"}</p>
+                          <p className="font-semibold text-[#254431]">{item.identifier || "No identifier"}</p>
                         </div>
                       </div>
                       <div className="text-sm text-[#7A8075] flex items-start gap-2">
@@ -1056,7 +1058,7 @@ export default function AdminSiteDetails() {
               <div className="bg-black flex items-center justify-center min-h-[300px] max-h-[85vh] overflow-auto">
                 <img
                   src={selectedImage.imageUrl}
-                  alt={selectedImage.caption || selectedImage.filename || "Inspection image"}
+                  alt={selectedImage.identifier || selectedImage.filename || "Inspection image"}
                   className="max-w-full max-h-[85vh] object-contain"
                 />
               </div>
@@ -1067,8 +1069,8 @@ export default function AdminSiteDetails() {
                   <p className="text-lg font-semibold text-[#254431]">{selectedImage.site_name || site.namesite || "Unknown site"}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">Caption</p>
-                  <p className="text-base font-medium text-[#254431]">{selectedImage.caption || "No caption"}</p>
+                  <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">Identifier</p>
+                  <p className="text-base font-medium text-[#254431]">{selectedImage.identifier || "No identifier"}</p>
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">Description</p>
