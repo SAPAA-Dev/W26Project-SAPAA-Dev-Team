@@ -673,7 +673,7 @@ describe("GET /api/sites/[siteId]/gallery", () => {
       "image/webp",
     ]);
 
-    expect(siteEqMock).toHaveBeenCalledWith("id", 207);
+    expect(siteEqMock).toHaveBeenCalledWith("id", "207");
 
     expect(body).toEqual({
       items: [

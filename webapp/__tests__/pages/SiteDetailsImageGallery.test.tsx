@@ -11,6 +11,13 @@ jest.mock("next/navigation", () => ({
   }),
 }));
 
+jest.mock("next/image", () => ({
+  __esModule: true,
+  default: (props: any) => {
+    return <img {...props} />;
+  },
+}));
+
 jest.mock("@/utils/supabase/client", () => ({
   createClient: () => ({
     auth: {
@@ -28,14 +35,27 @@ jest.mock("@/utils/supabase/client", () => ({
   }),
 }));
 
-const mockSelectedSite = {
-jest.mock("next/image", () => ({
-  __esModule: true,
-  default: (props: any) => {
-    // eslint-disable-next-line jsx-a11y/alt-text
-    return <img {...props} />;
-  },
+jest.mock("@/utils/supabase/queries", () => ({
+  getSiteByName: jest.fn().mockResolvedValue([
+    {
+      id: 1,
+      namesite: "Riverlot 56 (NA)",
+      county: "Test County",
+      ab_county: null,
+      inspectdate: null,
+      is_active: true,
+    },
+  ]),
+  getFormResponsesBySite: jest.fn().mockResolvedValue([]),
+  getCurrentUserUid: jest.fn().mockResolvedValue("user-1"),
+  daysSince: jest.fn().mockReturnValue(10),
 }));
+
+jest.mock("@/utils/supabase/server", () => ({
+  createServerSupabase: jest.fn(),
+  createClient: jest.fn(),
+}));
+
 jest.mock("../../components/ProtectedRoute", () => ({ children }: any) => <div>{children}</div>);
 jest.mock("@/app/sites/page", () => ({
   daysSince: jest.fn((date: string) => {
@@ -69,6 +89,7 @@ const galleryItemsForSelectedSite = [
     identifier: "Large crack running up the trunk of a tree.",
     filename: "cracked-tree.jpg",
     content_type: "image/jpeg",
+    photographer: "John Doe", 
     file_size_bytes: 12345,
     storage_key: "inspections/1/resp-1/q-1/cracked-tree.jpg",
     site_id: 1,
@@ -82,6 +103,7 @@ const galleryItemsForSelectedSite = [
     identifier: "Several large branches blocking the path.",
     filename: "fallen-branches.jpg",
     content_type: "image/jpeg",
+    photographer: "John Doe", 
     file_size_bytes: 23456,
     storage_key: "inspections/1/resp-2/q-2/fallen-branches.jpg",
     site_id: 1,
@@ -131,7 +153,7 @@ describe("SiteDetailScreen image gallery", () => {
       if (url.includes("/api/sites?namesite=")) {
         return Promise.resolve({
           ok: true,
-          json: async () => ({ site: mockSelectedSite }),
+          json: async () => ({ site: mockSite }),
         });
       }
 
@@ -158,62 +180,88 @@ describe("SiteDetailScreen image gallery", () => {
 
   it("renders merged gallery images for the selected site", async () => {
     render(<SiteDetailScreen />);
-
+  
+    // Wait for page to load, then switch to gallery tab
     await waitFor(() => {
       expect(screen.getByText(/Image Gallery/i)).toBeInTheDocument();
     });
+  
+    fireEvent.click(screen.getByRole('button', { name: /Image Gallery/i }));
+  
+    // Now wait for the actual images to appear
+    await waitFor(() => {
+      expect(screen.getByAltText("Large crack running up the trunk of a tree.")).toBeInTheDocument();
+    });
 
-    expect(screen.getByAltText("Cracked Tree")).toBeInTheDocument();
-    expect(screen.getByAltText("Fallen Branches")).toBeInTheDocument();
-    expect(screen.getByAltText("Riverlot56 Visit with Frank Potter!")).toBeInTheDocument();
-    expect(screen.getByAltText("Cross country ski trails")).toBeInTheDocument();
+    expect(screen.getByAltText("Several large branches blocking the path.")).toBeInTheDocument();
+    expect(screen.getByAltText("CMPUT401W26 Visit")).toBeInTheDocument();
+    expect(screen.getByAltText("Ski Trails")).toBeInTheDocument();
   });
-
+  
   it("opens image modal and shows caption + identifier", async () => {
     render(<SiteDetailScreen />);
-
+  
     await waitFor(() => {
       expect(screen.getByText(/Image Gallery/i)).toBeInTheDocument();
     });
-
-    fireEvent.click(screen.getByAltText("Cracked Tree"));
-
+  
+    fireEvent.click(screen.getByRole('button', { name: /Image Gallery/i }));
+  
     await waitFor(() => {
-      expect(screen.getAllByText("Cracked Tree").length).toBeGreaterThan(0);
+      expect(screen.getByAltText("Large crack running up the trunk of a tree.")).toBeInTheDocument();
     });
-
-    expect(screen.getByText("Large crack running up the trunk of a tree.")).toBeInTheDocument();
+  
+    fireEvent.click(screen.getByAltText("Large crack running up the trunk of a tree.").closest('button')!);
+  
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /Open full image in new tab/i })).toBeInTheDocument();
+    });
+  
+    expect(screen.getByText("Cracked Tree")).toBeInTheDocument();
+    expect(screen.getAllByText("Large crack running up the trunk of a tree.").length).toBeGreaterThanOrEqual(2);
   });
-
+  
   it("shows homepage image metadata in modal", async () => {
     render(<SiteDetailScreen />);
-
+  
     await waitFor(() => {
       expect(screen.getByText(/Image Gallery/i)).toBeInTheDocument();
     });
-
-    fireEvent.click(screen.getByAltText("Riverlot56 Visit with Frank Potter!"));
-
+  
+    fireEvent.click(screen.getByRole('button', { name: /Image Gallery/i }));
+  
     await waitFor(() => {
-      expect(screen.getAllByText("Riverlot56 Visit with Frank Potter!").length).toBeGreaterThan(0);
+      expect(screen.getByAltText("CMPUT401W26 Visit")).toBeInTheDocument();
     });
-
-    expect(screen.getByText("CMPUT401W26 Visit")).toBeInTheDocument();
+  
+    fireEvent.click(screen.getByAltText("CMPUT401W26 Visit").closest('button')!);
+  
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /Open full image in new tab/i })).toBeInTheDocument();
+    });
+  
+    expect(screen.getAllByText("CMPUT401W26 Visit").length).toBeGreaterThanOrEqual(2);
   });
-
+  
   it("shows photographer when available for homepage images", async () => {
     render(<SiteDetailScreen />);
-
+  
     await waitFor(() => {
       expect(screen.getByText(/Image Gallery/i)).toBeInTheDocument();
     });
-
-    fireEvent.click(screen.getByAltText("Cross country ski trails"));
-
+  
+    fireEvent.click(screen.getByRole('button', { name: /Image Gallery/i }));
+  
     await waitFor(() => {
-      expect(screen.getAllByText("Cross country ski trails").length).toBeGreaterThan(0);
+      expect(screen.getByAltText("Ski Trails")).toBeInTheDocument();
     });
-
+  
+    fireEvent.click(screen.getByAltText("Ski Trails").closest('button')!);
+  
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /Open full image in new tab/i })).toBeInTheDocument();
+    });
+  
     expect(screen.getByText(/Raiyana Rahman/i)).toBeInTheDocument();
   });
 
@@ -224,7 +272,7 @@ describe("SiteDetailScreen image gallery", () => {
       if (url.includes("/api/sites?namesite=")) {
         return Promise.resolve({
           ok: true,
-          json: async () => ({ site: mockSelectedSite }),
+          json: async () => ({ site: mockSite }),
         });
       }
 
@@ -262,7 +310,7 @@ describe("SiteDetailScreen image gallery", () => {
       if (url.includes("/api/sites?namesite=")) {
         return Promise.resolve({
           ok: true,
-          json: async () => ({ site: mockSelectedSite }),
+          json: async () => ({ site: mockSite }),
         });
       }
 

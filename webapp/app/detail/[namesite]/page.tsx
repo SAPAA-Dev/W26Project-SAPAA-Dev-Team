@@ -60,20 +60,7 @@ type GalleryItem = {
   filename: string;
   site_id: string | null; 
   site_name?: string | null;
-  filename: string;
-  storage_key: string;
-  file_size_bytes?: number | null;
   imageUrl: string;
-  caption?: string | null;
-
-  
-  // Inspection attachment fields
-  response_id?: string | null;
-  question_id?: string | null;
-  content_type?: string | null;
-
-  // Homepage upload fields
-  date?: string | null;
   photographer?: string | null;
 };
 
@@ -856,6 +843,17 @@ export default function SiteDetailScreen() {
                       {selectedImage.identifier || "No identifier"}
                     </p>
                   </div>
+
+                  {selectedImage.photographer && (
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
+                        Photographer
+                      </p>
+                      <p className="text-sm text-[#4B5563]">
+                        {selectedImage.photographer}
+                      </p>
+                    </div>
+                  )}
 
                   <div>
                     <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
