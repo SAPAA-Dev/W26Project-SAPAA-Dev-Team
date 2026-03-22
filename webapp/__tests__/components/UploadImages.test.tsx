@@ -85,7 +85,7 @@ describe("US 2.0.8 - User Upload of Standalone Site Images", () => {
     fireEvent.change(screen.getByPlaceholderText("Owner of Digital File"), {
       target: { value: "abcdefghijklmnopqrstuvwxy" }, // 25 non-space chars
     });
-    fireEvent.change(screen.getByPlaceholderText("Shorter Description"), {
+    fireEvent.change(screen.getByPlaceholderText("Short Description"), {
       target: { value: "abcdefghijklmnopqrst" }, // 20 non-space chars
     });
 
@@ -121,7 +121,7 @@ describe("US 2.0.8 - User Upload of Standalone Site Images", () => {
     fireEvent.mouseDown(screen.getByText("Riverlot 56 (NA)"));
 
     fireEvent.change(screen.getByPlaceholderText("Owner of Digital File"), { target: { value: "Vishal" } });
-    fireEvent.change(screen.getByPlaceholderText("Shorter Description"), { target: { value: "ATV Track" } });
+    fireEvent.change(screen.getByPlaceholderText("Short Description"), { target: { value: "ATV Track" } });
     fireEvent.change(screen.getByPlaceholderText("Longer Description"), { target: { value: "Some description" } });
 
     await waitFor(() => expect(screen.getByTestId("upload-submit-btn")).not.toBeDisabled());

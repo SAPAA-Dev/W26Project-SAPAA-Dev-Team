@@ -101,7 +101,7 @@ describe("AdminGalleryPage", () => {
     expect(screen.getAllByText("Riverlot 56 (NA)").length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText("Tree-01").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Tree-02").length).toBeGreaterThan(0);
-    expect(screen.getByText("2026-01-31")).toBeInTheDocument();
+    expect(screen.getAllByText("2026-01-31")).toBeInTheDocument();
     expect(screen.getByText("2026-02-02")).toBeInTheDocument();
   });
 
