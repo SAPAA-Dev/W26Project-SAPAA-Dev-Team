@@ -6,7 +6,7 @@ describe('Admin Form Editor - Editing Questions', () => {
     cy.get('#email').click();
     cy.get('#email').type('jason.liang5129@gmail.com');
     cy.get('#password').click();
-    cy.get('#password').type('123Gctrmomy@');
+    cy.get('#password').type('123Abc@@');
     cy.get('button.font-bold').click();
     cy.get('button.text-white').click();
     cy.wait(5000);

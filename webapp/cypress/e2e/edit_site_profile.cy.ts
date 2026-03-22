@@ -43,7 +43,7 @@ describe('Admin Edit Site Profile', () => {
   function loginAsAdmin() {
     cy.visit('http://localhost:3000/');
     cy.get('#email').type('jason.liang5129@gmail.com', { force: true });
-    cy.get('#password').type('123Gctrmomy@', { force: true });
+    cy.get('#password').type('123Abc@@', { force: true });
     cy.get('button.font-bold').click({ force: true });
     cy.get('button.text-white').click({ force: true });
     cy.wait(5000);
