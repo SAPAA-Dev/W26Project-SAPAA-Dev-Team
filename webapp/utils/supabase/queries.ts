@@ -634,7 +634,7 @@ export async function insertHomepageImageUpload(rows: Array<{
   date: Date;
   photographer: string | null;
   identifier: string | null;
-  description: string | null;
+  caption: string | null;
   created_at: string | null;
 }>) {
   const supabase = createServerSupabase();  
@@ -806,6 +806,7 @@ export async function getFormResponseById(responseId: number): Promise<Record<st
 
   return map;
 }
+
 
 // Fetches all W26_attachments rows for a given response_id
 export async function getAttachmentsByResponseId(responseId: number): Promise<Array<{

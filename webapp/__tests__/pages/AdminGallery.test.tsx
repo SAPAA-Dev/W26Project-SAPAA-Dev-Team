@@ -22,7 +22,8 @@ const mockGalleryItems = [
     identifier: "Tree-01",
     date: "2026-01-31",
     storage_key: "uploads/RiverLot56_01-31-2026_ZoeP_HangingTree.jpg",
-    content_type: "image/jpeg",
+    content_type: "image/jpeg", 
+    photographer: "John Doe",
     file_size_bytes: 123456,
     filename: "RiverLot56_01-31-2026_ZoeP_HangingTree.jpg",
     site_id: "site-1",
@@ -38,6 +39,7 @@ const mockGalleryItems = [
     date: "2026-02-02",
     storage_key: "uploads/RiverLot56_01-31-2026_ZoeP_CrackedTree.jpg",
     content_type: "image/jpeg",
+    photographer: "John Doe",
     file_size_bytes: 654321,
     filename: "RiverLot56_01-31-2026_ZoeP_CrackedTree.jpg",
     site_id: "site-2",
@@ -101,8 +103,8 @@ describe("AdminGalleryPage", () => {
     expect(screen.getAllByText("Riverlot 56 (NA)").length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText("Tree-01").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Tree-02").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("2026-01-31")).toBeInTheDocument();
-    expect(screen.getByText("2026-02-02")).toBeInTheDocument();
+    expect(screen.getAllByText("2026-01-31").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText("2026-02-02").length).toBeGreaterThanOrEqual(1);
   });
 
   it("admin can click an image card to open modal with metadata and associated site", async () => {
