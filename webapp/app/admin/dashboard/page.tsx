@@ -43,7 +43,6 @@ type GalleryItem = {
   question_id: string;
   identifier?: string | null;
   caption?: string | null;
-  // description?: string | null;
   identifier?: string | null;
   date?: string | null;
   storage_key: string;

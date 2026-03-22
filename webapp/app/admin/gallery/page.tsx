@@ -13,14 +13,12 @@ type GalleryItem = {
   response_id: string;
   question_id: string;
   caption?: string | null;
-  // description?: string | null;
   identifier?: string | null;
   date?: string | null;
   storage_key: string;
   file_size_bytes?: number | null;
   imageUrl: string;
   caption?: string | null;
-  description?: string | null;
   
   // Inspection attachment fields
   response_id?: string | null;

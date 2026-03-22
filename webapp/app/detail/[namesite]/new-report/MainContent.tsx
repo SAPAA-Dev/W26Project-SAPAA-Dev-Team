@@ -61,7 +61,7 @@ export interface ExistingAttachment {
   content_type: string | null;
   file_size_bytes: number | null;
   caption: string | null;
-  description: string | null;
+  identifier: string | null;
   /** Presigned URL injected by the edit page before passing down */
   previewUrl: string;
 }
@@ -71,7 +71,6 @@ export interface LocalImage {
   id: string;           // crypto.randomUUID() — client-only
   file: File;
   caption: string;
-  // description: string;
   identifier: string;
   photographer: string;
   date: string;
@@ -263,7 +262,7 @@ export default function MainContent({
 
   const updateExistingField = (
     attachmentId: number,
-    field: 'caption' | 'description',
+    field: 'caption' | 'identifier',
     value: string
   ) => {
     if (!onExistingAttachmentsChange) return;
@@ -461,7 +460,6 @@ export default function MainContent({
             id: crypto.randomUUID(),
             file,
             caption: '',
-            // description: '',
             identifier: '',
             photographer: '',
             date: new Date().toISOString().split('T')[0],
@@ -563,9 +561,9 @@ export default function MainContent({
                     />
 
                     <textarea
-                      value={image.description ?? ''}
-                      onChange={(e) => updateExistingField(image.id, 'description', e.target.value)}
-                      placeholder="Description (optional)"
+                      value={image.identifier ?? ''}
+                      onChange={(e) => updateExistingField(image.id, 'identifier', e.target.value)}
+                      placeholder="Identifier (optional)"
                       rows={2}
                       className="w-full mt-1 px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm resize-none"
                     />
@@ -676,18 +674,6 @@ export default function MainContent({
                   </div>
                   </div>
 
-                    {/* <div>
-                      <label className="block text-sm font-medium text-[#254431] mb-1">
-                        Description
-                      </label>
-                      <input
-                        type="text"
-                        value={image.description}
-                        onChange={(e) => updateLocalField(image.id, 'description', e.target.value)}
-                        placeholder="Optional description"
-                        className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
-                      />
-                    </div> */}
                   
                 </div>
               ))}

@@ -9,7 +9,6 @@ interface Attachment {
   response_id: string;
   question_id: string;
   caption?: string | null;
-  // description?: string | null;
   identifier?: string | null;
   date?: string | null;
   storage_key: string;
