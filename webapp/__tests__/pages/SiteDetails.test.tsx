@@ -12,7 +12,12 @@ jest.mock('@/utils/supabase/queries');
 jest.mock('@/utils/supabase/client', () => ({
   createClient: () => ({
     auth: {
-      getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'user-123' } } }),
+      getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'user-123', user_metadata: { authenticated: true } } } }),
+      onAuthStateChange: jest.fn((callback) => {
+        // Immediately call with authenticated user
+        callback('SIGNED_IN', { user: { id: 'user-123', user_metadata: { authenticated: true } } });
+        return { data: { subscription: { unsubscribe: jest.fn() } } };
+      }),
     },
   }),
 }));
@@ -23,6 +28,7 @@ jest.mock('next/image', () => ({
     return <img {...props} />;
   },
 }));
+jest.mock('../../components/ProtectedRoute', () => ({ children }: any) => <div>{children}</div>);
 
 // Mock daysSince from sites page
 jest.mock('@/app/sites/page', () => ({
