@@ -2,11 +2,13 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSitesOnline, SiteSummary } from '@/utils/supabase/queries';
-import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, ArrowLeft } from 'lucide-react';
+import { getAllSites, getCounties, updateSite, toggleSiteActive, getTotalInspectionCount, SiteSummary, County } from '@/utils/supabase/queries';
+import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, Pencil, ArrowLeft, Download } from 'lucide-react';
+import EditSiteModal from './components/EditSiteModal';
 import Image from 'next/image';
 import AdminNavBar from '../AdminNavBar';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import PdfExportModal from '@/components/PdfExportModal';
 
 type UnifiedSite = SiteSummary;
 
@@ -16,18 +18,31 @@ export function daysSince(date: string): number {
   return Math.floor((Date.now() - new Date(date).getTime()) / MSEC_PER_DAY);
 }
 
-export function formatAgeBadge(days: number): string {
-  if (!days || days < 0) return 'New';
+function formatAgeBadge(days: number, inspectDate: string | null): string | null {
+  if (!inspectDate || inspectDate === '1900-01-01') return null;
+  
+  if (days <= 0) return 'New';
   if (days < 30) return `${days}d ago`;
   if (days < 365) return `${Math.floor(days / 30)}mo ago`;
-  return `${Math.floor(days / 365)}yr ago`;
+  
+  const years = Math.floor(days / 365);
+  return `${years}yr${years > 1 ? 's' : ''} ago`;
 }
 
-export function getInspectionStatus(days: number): { label: string; color: string; bgColor: string } {
-  if (days < 180) return { label: 'Recently Visited', color: '#1C7C4D', bgColor: '#E4EBE4' };
-  if (days <= 365) return { label: 'Visited This Year', color: '#E0A63A', bgColor: '#FEF3C7' };
-  if (days <= 730) return { label: 'Visited Recently', color: '#C76930', bgColor: '#FED7AA' };
-  return { label: 'Needs Review', color: '#7A8075', bgColor: '#E4EBE4' };
+function getInspectionStatus(days: number, inspectDate: string | null): { label: string; color: string; bgColor: string } {
+  if (!inspectDate || inspectDate === '1900-01-01') {
+    return { label: 'Never Inspected', color: '#475569', bgColor: '#F1F5F9' };
+  }
+  if (days < 180) {
+    return { label: 'Recent', color: '#065F46', bgColor: '#D1FAE5' };
+  }
+  if (days <= 365) {
+    return { label: 'Past Year', color: '#92400E', bgColor: '#FEF3C7' };
+  }
+  if (days <= 730) {
+    return { label: 'Over 1 Year', color: '#9A3412', bgColor: '#FFEDD5' };
+  }
+  return { label: 'Needs Review', color: '#7F1D1D', bgColor: '#FEE2E2' };
 }
 
 export default function AdminSitesPage() {
@@ -41,13 +56,26 @@ export default function AdminSitesPage() {
     direction: 'asc',
   });
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [totalResponses, setTotalResponses] = useState<number>(0);
+  const [showPdfModal, setShowPdfModal] = useState(false);
+
+  useEffect(() => {
+    getTotalInspectionCount().then(setTotalResponses).catch(() => {});
+  }, []);
+  const [editSite, setEditSite] = useState<SiteSummary | null>(null);
+  const [counties, setCounties] = useState<County[]>([]);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const loadSites = async () => {
       setLoading(true);
       try {
-        const onlineSites = await getSitesOnline();
-        setSites(onlineSites);
+        const [allSites, countyList] = await Promise.all([
+          getAllSites(),
+          getCounties(),
+        ]);
+        setSites(allSites);
+        setCounties(countyList);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error loading sites';
         setError(message);
@@ -105,10 +133,38 @@ export default function AdminSitesPage() {
     const activeThisYear = sites.filter(s => daysSince(s.inspectdate ?? '1900-01-01') <= 365).length;
     
     // Needs attention (> 730 days / 2 years)
-    const needsAttention = sites.filter(s => daysSince(s.inspectdate ?? '1900-01-01') > 730).length;
+    const needsAttention = sites.filter(s => 
+      s.inspectdate && 
+      s.inspectdate !== '1900-01-01' && 
+      daysSince(s.inspectdate) > 730
+    ).length;
     
-    return { totalSites, totalInspections, activeThisYear, needsAttention };
+    return { totalSites, totalInspections, totalResponses, activeThisYear, needsAttention };
   }, [sites]);
+
+  const handleSaveSite = async (data: { id: number; namesite: string; ab_county: number | null; is_active: boolean }) => {
+    setSaving(true);
+    try {
+      const currentSite = sites.find((s) => s.id === data.id);
+      await updateSite(data.id, data.namesite, data.ab_county);
+      if (currentSite && currentSite.is_active !== data.is_active) {
+        await toggleSiteActive(data.id, data.is_active);
+      }
+      const countyObj = counties.find((c) => c.id === data.ab_county);
+      setSites((prev) =>
+        prev.map((s) =>
+          s.id === data.id
+            ? { ...s, namesite: data.namesite, ab_county: data.ab_county, county: countyObj?.county ?? null, is_active: data.is_active }
+            : s
+        )
+      );
+      setEditSite(null);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update site');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Handle Back Button Navigation
   const handleBack = () => {
@@ -194,64 +250,54 @@ export default function AdminSitesPage() {
               </div>
             </div>
           </div>
-        </div> 
-
-        {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            {/* Total sites */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
-                  <MapPin className = "w-6 w-6 text-white" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Total Sites</div>
-                  <div className="text-3xl font-bold text-[#254431]">{stats.totalSites}</div>
-                </div>
-              </div>  
-            </div>
-
-            {/* Total Inspections */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
-                  <ClipboardList className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Total Inspections</div>
-                  <div className="text-3xl font-bold text-[#254431]">{stats.totalInspections}</div>
-                </div>
-              </div>  
-            </div>
-
-            {/* Active This Year */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Active This Year</div>
-                  <div className="text-3xl font-bold text-[#254431]">{stats.activeThisYear}</div>
-                </div>
-              </div>  
-            </div>
-
-            {/* Needs Attention */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Needs Attention</div>
-                  <div className="text-3xl font-bold text-[#254431]">{stats.needsAttention}</div>
-                </div>
+          </div>
+        {/* Stats Cards */}
+        <div className="max-w-7xl mx-auto px-6 py-6 mt-2">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin className="w-5 h-5 text-[#356B43]" />
+                <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Sites</div>
               </div>
+              <div className="text-3xl font-bold text-[#254431]">{stats.totalSites}</div>
+            </div>
+
+            <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <ClipboardList className="w-5 h-5 text-[#356B43]" />
+                <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Inspected Sites</div>
+              </div>
+              <div className="text-3xl font-bold text-[#254431]">{stats.totalInspections}</div>
+            </div>
+
+            <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <ClipboardList className="w-5 h-5 text-[#356B43]" />
+                <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Responses</div>
+              </div>
+              <div className="text-3xl font-bold text-[#254431]">{stats.totalResponses}</div>
+            </div>
+
+            <div className="bg-[#D1FAE5] rounded-xl p-4 border-2 border-[#065F46]/20 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="w-5 h-5 text-[#065F46]" />
+                <div className="text-xs text-[#065F46] font-medium uppercase tracking-wide">Active over 365 Days</div>
+              </div>
+              <div className="text-3xl font-bold text-[#065F46]">{stats.activeThisYear}</div>
+            </div>
+
+            <div className="bg-[#FEE2E2] rounded-xl p-4 border-2 border-[#B91C1C]/20 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="w-5 h-5 text-[#B91C1C]" />
+                <div className="text-xs text-[#B91C1C] font-medium uppercase tracking-wide">Needs Attention</div>
+              </div>
+              <div className="text-3xl font-bold text-[#7F1D1D]">{stats.needsAttention}</div>
             </div>
           </div>
-
+        </div> 
+            
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Search and Sort */}
           <div className="mb-6 space-y-4">
             <div className="relative">
@@ -266,9 +312,20 @@ export default function AdminSitesPage() {
             </div>
 
             <div className="flex items-center justify-between">
-              <p className="text-[#7A8075] font-medium">
-                {filteredSites.length} {filteredSites.length === 1 ? 'site' : 'sites'} found
-              </p>
+              <div className="flex items-center gap-4">
+                <p className="text-[#7A8075] font-medium">
+                  {filteredSites.length} {filteredSites.length === 1 ? 'site' : 'sites'} found
+                </p>
+                {filteredSites.length > 0 && (
+                  <button
+                    onClick={() => setShowPdfModal(true)}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-[#356B43] bg-[#E4EBE4] hover:bg-[#356B43] hover:text-white transition-all"
+                  >
+                    <Download className="w-4 h-4" />
+                    Bulk PDF
+                  </button>
+                )}
+              </div>
               <div className="relative sort-menu-container">
                 <button
                   onClick={() => setShowSortMenu(!showSortMenu)}
@@ -334,21 +391,34 @@ export default function AdminSitesPage() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredSites.map((item) => {
                 const age = daysSince(item.inspectdate ?? '1900-01-01');
-                const ageText = formatAgeBadge(age);
-                const status = getInspectionStatus(age);
+                const ageText = formatAgeBadge(age, item.inspectdate);
+                const status = getInspectionStatus(age, item.inspectdate);
 
                 return (
                   <div
                     key={item.id}
-                    className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] hover:border-[#86A98A] hover:shadow-lg transition-all group relative"
+                    className={`rounded-2xl p-6 border-2 transition-all group relative ${
+                      item.is_active
+                        ? 'bg-white border-[#E4EBE4] hover:border-[#86A98A] hover:shadow-lg'
+                        : 'bg-gray-100 border-gray-300 opacity-60'
+                    }`}
                   >
+                    {!item.is_active && (
+                      <span className="absolute top-3 right-3 text-xs font-semibold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">
+                        Inactive
+                      </span>
+                    )}
                     <button
                       onClick={() => router.push(`/admin/sites/${encodeURIComponent(item.namesite)}`)}
                       className="w-full text-left"
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <h3 className="text-lg font-bold text-[#254431] mb-1 group-hover:text-[#356B43] transition-colors">
+                          <h3 className={`text-lg font-bold mb-1 transition-colors ${
+                            item.is_active
+                              ? 'text-[#254431] group-hover:text-[#356B43]'
+                              : 'text-gray-500'
+                          }`}>
                             {item.namesite}
                           </h3>
                           {item.county && (
@@ -392,6 +462,17 @@ export default function AdminSitesPage() {
                     {/* Admin Actions */}
                     <div className="mt-4 pt-4 border-t border-[#E4EBE4] flex items-center gap-2">
                       <button
+                        data-testid={`edit-site-button-${item.id}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditSite(item);
+                        }}
+                        className="flex items-center justify-center p-2 bg-[#F7F2EA] hover:bg-[#E4EBE4] text-[#254431] rounded-lg transition-colors"
+                        title="Edit site"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={(e) => {
                           e.stopPropagation();
                           router.push(`/admin/sites/${encodeURIComponent(item.namesite)}`);
@@ -419,6 +500,23 @@ export default function AdminSitesPage() {
           )}
         </div>
       </div>
+
+      {/* Bulk PDF Export Modal */}
+      <PdfExportModal
+        open={showPdfModal}
+        onClose={() => setShowPdfModal(false)}
+        mode="multi-site"
+        siteNames={filteredSites.map(s => s.namesite)}
+      />
+
+      <EditSiteModal
+        visible={!!editSite}
+        site={editSite}
+        counties={counties}
+        onClose={() => setEditSite(null)}
+        onSave={handleSaveSite}
+        saving={saving}
+      />
     </ProtectedRoute>
   );
 }

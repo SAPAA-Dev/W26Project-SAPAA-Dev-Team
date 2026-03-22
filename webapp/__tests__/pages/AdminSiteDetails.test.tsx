@@ -47,10 +47,10 @@ jest.mock('@/utils/supabase/client', () => ({
         update: jest.fn().mockReturnThis(),
         delete: jest.fn().mockReturnThis(),
       };
-      
+
       // Store the table for later inspection if needed
       (mockChain as any)._table = table;
-      
+
       return mockChain;
     },
     auth: {
@@ -59,11 +59,16 @@ jest.mock('@/utils/supabase/client', () => ({
   }),
 }));
 
-// Mock getSiteByName query
+// Mock getSiteByName and getFormResponsesBySite queries
 const mockGetSiteByName = jest.fn();
+const mockGetFormResponsesBySite = jest.fn();
 jest.mock('@/utils/supabase/queries', () => ({
   getSiteByName: (name: string) => mockGetSiteByName(name),
+  getFormResponsesBySite: (name: string) => mockGetFormResponsesBySite(name),
 }));
+
+// Mock PdfExportModal
+jest.mock('@/components/PdfExportModal', () => () => null);
 
 // Now import the component after all mocks are set up
     import AdminSiteDetails from '../../app/admin/sites/[id]/page';
@@ -76,64 +81,60 @@ const mockSite = {
   inspectdate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
 };
 
-const mockInspectionHeaders = [
+const mockFormResponses = [
   {
     id: 101,
-    inspectdate: '2024-06-15',
-    inspectno: 'INS-001',
-    steward: 1,
-    'steward-guest': 'John Guest',
+    user_id: 'user-1',
+    created_at: '2024-06-15T10:00:00Z',
+    inspection_no: 'INS-001',
+    naturalness_score: '3.5',
+    naturalness_details: 'Well preserved natural habitat',
+    steward: 'Jane Steward',
+    answers: [
+      {
+        question_id: 1,
+        question_text: 'Vegetation condition',
+        obs_value: 'Healthy forest cover',
+        obs_comm: null,
+        section_id: 1,
+        section_title: 'Vegetation',
+      },
+      {
+        question_id: 2,
+        question_text: 'Wildlife presence',
+        obs_value: 'Abundant deer population',
+        obs_comm: null,
+        section_id: 2,
+        section_title: 'Wildlife',
+      },
+    ],
   },
   {
     id: 102,
-    inspectdate: '2023-12-10',
-    inspectno: 'INS-002',
-    steward: 2,
-    'steward-guest': null,
+    user_id: 'user-2',
+    created_at: '2023-12-10T10:00:00Z',
+    inspection_no: 'INS-002',
+    naturalness_score: '2.5',
+    naturalness_details: 'Some disturbance observed',
+    steward: null,
+    answers: [
+      {
+        question_id: 1,
+        question_text: 'Vegetation condition',
+        obs_value: 'Moderate degradation',
+        obs_comm: null,
+        section_id: 1,
+        section_title: 'Vegetation',
+      },
+    ],
   },
-];
-
-const mockViewData = {
-  namesite: 'Test National Park',
-  iddetail: 'DETAIL-001',
-  _type: 'National Park',
-  _subtype: 'Wilderness',
-  'area-ha': '5000',
-  'area-acre': '12355',
-  _naregion: 'Rocky Mountain',
-  _na_subregion_multi: 'Alpine',
-  'recactivities-multi': 'Hiking, Camping',
-  sapaaweb: 'https://example.com',
-  inatmap: 'https://inat.com/map',
-  inspectno: 'INS-001',
-  inspectdate: '2024-06-15',
-  steward: 'Jane Steward',
-  category: 1,
-  definition: 'Protected Area',
-  county: 'Test County',
-  naturalness_score: '3.5',
-  naturalness_details: 'Well preserved natural habitat',
-  notes: 'Q1_Vegetation: Healthy forest cover; Q2_Wildlife: Abundant deer population; Q3_Water: Clear streams',
-};
-
-const mockDetailRows = [
-  { id: 1001, observation: 1, obs_value: '3.5', obs_comm: null },
-  { id: 1002, observation: 2, obs_value: null, obs_comm: 'Well preserved natural habitat' },
-  { id: 1003, observation: 3, obs_value: 'Healthy forest cover', obs_comm: null },
-];
-
-const mockQuestions = [
-  { id: 1, observation: 'Q31_Naturalness' },
-  { id: 2, observation: 'Q32_Natural_Comm' },
-  { id: 3, observation: 'Q1_Vegetation' },
-  { id: 4, observation: 'Q2_Wildlife' },
-  { id: 5, observation: 'Q3_Water' },
 ];
 
 describe('AdminSiteDetails', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetSiteByName.mockResolvedValue([mockSite]);
+    mockGetFormResponsesBySite.mockResolvedValue(mockFormResponses);
   });
 
   describe('Loading State', () => {
@@ -354,17 +355,18 @@ describe('AdminSiteDetails', () => {
       await user.click(screen.getByRole('button', { name: /Export/i }));
       expect(screen.getByText('Export as CSV')).toBeInTheDocument();
       expect(screen.getByText('Export as JSON')).toBeInTheDocument();
+      expect(screen.getByText('Export as PDF')).toBeInTheDocument();
     });
 
     it('should close export menu after selection', async () => {
       const user = userEvent.setup();
-      
+
       // Mock URL.createObjectURL and createElement
       const mockCreateObjectURL = jest.fn(() => 'blob:test');
       const mockRevokeObjectURL = jest.fn();
       global.URL.createObjectURL = mockCreateObjectURL;
       global.URL.revokeObjectURL = mockRevokeObjectURL;
-      
+
       const mockClick = jest.fn();
       const originalCreateElement = document.createElement.bind(document);
       jest.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
@@ -427,7 +429,7 @@ describe('AdminSiteDetails', () => {
 
       await user.click(screen.getByRole('button', { name: /Compare by Question/i }));
       await user.click(screen.getByRole('button', { name: /View by Date/i }));
-      
+
       expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
     });
   });
@@ -438,6 +440,15 @@ describe('AdminSiteDetails', () => {
 
       await waitFor(() => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
+      });
+    });
+
+    it('should display inspection cards with dates', async () => {
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/June 15, 2024/)).toBeInTheDocument();
+        expect(screen.getByText(/December 10, 2023/)).toBeInTheDocument();
       });
     });
 
@@ -473,16 +484,16 @@ describe('AdminSiteDetails', () => {
       const menuButtons = screen.getAllByRole('button').filter(
         btn => btn.querySelector('.lucide-more-vertical')
       );
-      
+
       if (menuButtons.length > 0) {
         await user.click(menuButtons[0]);
-        
+
         await waitFor(() => {
           expect(screen.getByText('Edit')).toBeInTheDocument();
         });
-        
+
         await user.click(screen.getByText('Edit'));
-        
+
         await waitFor(() => {
           expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
         });
@@ -500,16 +511,16 @@ describe('AdminSiteDetails', () => {
       const menuButtons = screen.getAllByRole('button').filter(
         btn => btn.querySelector('.lucide-more-vertical')
       );
-      
+
       if (menuButtons.length > 0) {
         await user.click(menuButtons[0]);
-        
+
         await waitFor(() => {
           expect(screen.getByText('Edit')).toBeInTheDocument();
         });
-        
+
         await user.click(screen.getByText('Edit'));
-        
+
         await waitFor(() => {
           expect(screen.getByText('Steward')).toBeInTheDocument();
           expect(screen.getByText('Steward Guest')).toBeInTheDocument();
@@ -531,22 +542,22 @@ describe('AdminSiteDetails', () => {
       const menuButtons = screen.getAllByRole('button').filter(
         btn => btn.querySelector('.lucide-more-vertical')
       );
-      
+
       if (menuButtons.length > 0) {
         await user.click(menuButtons[0]);
-        
+
         await waitFor(() => {
           expect(screen.getByText('Edit')).toBeInTheDocument();
         });
-        
+
         await user.click(screen.getByText('Edit'));
-        
+
         await waitFor(() => {
           expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
         });
 
         await user.click(screen.getByRole('button', { name: /Cancel/i }));
-        
+
         await waitFor(() => {
           expect(screen.queryByText(/Edit Report:/)).not.toBeInTheDocument();
         });
@@ -564,16 +575,16 @@ describe('AdminSiteDetails', () => {
       const menuButtons = screen.getAllByRole('button').filter(
         btn => btn.querySelector('.lucide-more-vertical')
       );
-      
+
       if (menuButtons.length > 0) {
         await user.click(menuButtons[0]);
-        
+
         await waitFor(() => {
           expect(screen.getByText('Edit')).toBeInTheDocument();
         });
-        
+
         await user.click(screen.getByText('Edit'));
-        
+
         await waitFor(() => {
           expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
         });
@@ -582,10 +593,10 @@ describe('AdminSiteDetails', () => {
         const closeButtons = screen.getAllByRole('button').filter(
           btn => btn.querySelector('.lucide-x')
         );
-        
+
         if (closeButtons.length > 0) {
           await user.click(closeButtons[0]);
-          
+
           await waitFor(() => {
             expect(screen.queryByText(/Edit Report:/)).not.toBeInTheDocument();
           });
@@ -604,16 +615,16 @@ describe('AdminSiteDetails', () => {
       const menuButtons = screen.getAllByRole('button').filter(
         btn => btn.querySelector('.lucide-more-vertical')
       );
-      
+
       if (menuButtons.length > 0) {
         await user.click(menuButtons[0]);
-        
+
         await waitFor(() => {
           expect(screen.getByText('Edit')).toBeInTheDocument();
         });
-        
+
         await user.click(screen.getByText('Edit'));
-        
+
         await waitFor(() => {
           expect(screen.getByRole('button', { name: /Save Changes/i })).toBeInTheDocument();
         });
@@ -633,16 +644,16 @@ describe('AdminSiteDetails', () => {
       const menuButtons = screen.getAllByRole('button').filter(
         btn => btn.querySelector('.lucide-more-vertical')
       );
-      
+
       if (menuButtons.length > 0) {
         await user.click(menuButtons[0]);
-        
+
         await waitFor(() => {
           expect(screen.getByText('Delete')).toBeInTheDocument();
         });
-        
+
         await user.click(screen.getByText('Delete'));
-        
+
         await waitFor(() => {
           expect(screen.getByText('Delete Inspection?')).toBeInTheDocument();
         });
@@ -660,16 +671,16 @@ describe('AdminSiteDetails', () => {
       const menuButtons = screen.getAllByRole('button').filter(
         btn => btn.querySelector('.lucide-more-vertical')
       );
-      
+
       if (menuButtons.length > 0) {
         await user.click(menuButtons[0]);
-        
+
         await waitFor(() => {
           expect(screen.getByText('Delete')).toBeInTheDocument();
         });
-        
+
         await user.click(screen.getByText('Delete'));
-        
+
         await waitFor(() => {
           expect(screen.getByText(/This action cannot be undone/)).toBeInTheDocument();
         });
@@ -687,16 +698,16 @@ describe('AdminSiteDetails', () => {
       const menuButtons = screen.getAllByRole('button').filter(
         btn => btn.querySelector('.lucide-more-vertical')
       );
-      
+
       if (menuButtons.length > 0) {
         await user.click(menuButtons[0]);
-        
+
         await waitFor(() => {
           expect(screen.getByText('Delete')).toBeInTheDocument();
         });
-        
+
         await user.click(screen.getByText('Delete'));
-        
+
         await waitFor(() => {
           expect(screen.getByText('Delete Inspection?')).toBeInTheDocument();
         });
@@ -704,7 +715,7 @@ describe('AdminSiteDetails', () => {
         // Find Cancel button in the modal
         const cancelButton = screen.getByRole('button', { name: 'Cancel' });
         await user.click(cancelButton);
-        
+
         await waitFor(() => {
           expect(screen.queryByText('Delete Inspection?')).not.toBeInTheDocument();
         });
@@ -713,20 +724,33 @@ describe('AdminSiteDetails', () => {
   });
 
   describe('Naturalness Score Gradient', () => {
-    it('should not display Naturalness Score section when no inspections have scores', async () => {
+    it('should display Naturalness Score section when inspections have scores', async () => {
       render(<AdminSiteDetails />);
 
       await waitFor(() => {
         expect(screen.getByText('Test National Park')).toBeInTheDocument();
       });
 
-      // The Naturalness Score section only renders when average !== null
-      // With no inspection data, it should not be present
-      // We check that the gradient labels are NOT present
-      expect(screen.queryByText('1.0 Poor')).not.toBeInTheDocument();
+      // With mock data that has naturalness scores, the gradient should appear
+      await waitFor(() => {
+        expect(screen.getByText('Naturalness Score')).toBeInTheDocument();
+      });
+    });
+
+    it('should display average score when inspections exist', async () => {
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Test National Park')).toBeInTheDocument();
+      });
+
+      // Average of 3.5 and 2.5 = 3.0
+      const avgScoreCard = screen.getByText('Avg. Score').closest('div[class*="rounded-2xl"]');
+      expect(avgScoreCard).toHaveTextContent('3.0');
     });
 
     it('should display N/A for average score when no inspections', async () => {
+      mockGetFormResponsesBySite.mockResolvedValue([]);
       render(<AdminSiteDetails />);
 
       await waitFor(() => {
@@ -734,7 +758,6 @@ describe('AdminSiteDetails', () => {
       });
 
       // The Avg. Score card should show N/A when there are no inspections
-      // There may be multiple N/A elements (Avg. Score and Condition cards)
       const naElements = screen.getAllByText('N/A');
       expect(naElements.length).toBeGreaterThan(0);
     });
@@ -811,8 +834,7 @@ describe('AdminSiteDetails', () => {
         expect(screen.getByText('Data Quality Analysis')).toBeInTheDocument();
       });
 
-      // With no inspections, the Data Quality panel will be empty or show no percentage cards
-      // The panel should still be visible with the heading
+      // The panel should be visible with the heading
       const panel = screen.getByText('Data Quality Analysis');
       expect(panel).toBeInTheDocument();
     });
@@ -840,6 +862,17 @@ describe('AdminSiteDetails', () => {
 });
 
 describe('EditableField Component', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetSiteByName.mockResolvedValue([{
+      id: '1',
+      namesite: 'Test National Park',
+      county: 'Test County',
+      inspectdate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    }]);
+    mockGetFormResponsesBySite.mockResolvedValue(mockFormResponses);
+  });
+
   // These tests verify the EditableField component behavior indirectly through the modal
 
   it('should allow text input in editable fields', async () => {
@@ -853,16 +886,16 @@ describe('EditableField Component', () => {
     const menuButtons = screen.getAllByRole('button').filter(
       btn => btn.querySelector('.lucide-more-vertical')
     );
-    
+
     if (menuButtons.length > 0) {
       await user.click(menuButtons[0]);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Edit')).toBeInTheDocument();
       });
-      
+
       await user.click(screen.getByText('Edit'));
-      
+
       await waitFor(() => {
         expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
       });
@@ -871,7 +904,7 @@ describe('EditableField Component', () => {
       const stewardInput = screen.getByPlaceholderText('Enter steward name');
       await user.clear(stewardInput);
       await user.type(stewardInput, 'New Steward Name');
-      
+
       expect(stewardInput).toHaveValue('New Steward Name');
     }
   });
@@ -887,16 +920,16 @@ describe('EditableField Component', () => {
     const menuButtons = screen.getAllByRole('button').filter(
       btn => btn.querySelector('.lucide-more-vertical')
     );
-    
+
     if (menuButtons.length > 0) {
       await user.click(menuButtons[0]);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Edit')).toBeInTheDocument();
       });
-      
+
       await user.click(screen.getByText('Edit'));
-      
+
       await waitFor(() => {
         expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
       });
@@ -905,7 +938,7 @@ describe('EditableField Component', () => {
       const detailsInput = screen.getByPlaceholderText('Enter naturalness details');
       await user.clear(detailsInput);
       await user.type(detailsInput, 'Line 1\nLine 2');
-      
+
       expect(detailsInput).toHaveValue('Line 1\nLine 2');
     }
   });
@@ -914,7 +947,13 @@ describe('EditableField Component', () => {
 describe('Integration Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetSiteByName.mockResolvedValue([mockSite]);
+    mockGetSiteByName.mockResolvedValue([{
+      id: '1',
+      namesite: 'Test National Park',
+      county: 'Test County',
+      inspectdate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    }]);
+    mockGetFormResponsesBySite.mockResolvedValue(mockFormResponses);
   });
 
   it('should handle complete admin workflow: view, filter, edit', async () => {
@@ -956,13 +995,13 @@ describe('Integration Tests', () => {
 
     // Switch to question view
     await user.click(screen.getByRole('button', { name: /Compare by Question/i }));
-    
+
     // Data Quality should still be visible
     expect(screen.getByText('Data Quality Analysis')).toBeInTheDocument();
 
     // Switch back to date view
     await user.click(screen.getByRole('button', { name: /View by Date/i }));
-    
+
     // Data Quality should still be visible
     expect(screen.getByText('Data Quality Analysis')).toBeInTheDocument();
   });

@@ -8,6 +8,7 @@ import { createClient } from '@/utils/supabase/client';
 import Image from 'next/image';
 import { Suspense } from "react";
 import { SubmissionToast } from "./SubmissionToast";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import UploadImages from "@/components/UploadImages";
 
 type UnifiedSite = SiteSummary;
@@ -165,6 +166,7 @@ export default function HomeClient() {
 
   if (error) {
     return (
+      
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
           <div className="w-16 h-16 bg-[#FEE2E2] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -193,39 +195,45 @@ export default function HomeClient() {
   }
 
   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-    <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
-      <Suspense fallback={null}>
-          <SubmissionToast />
-        </Suspense>
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-start justify-between mt-2.5 mb-3">
-
-          {/* Left: icon + SAPAA info */}
-          <div className="flex items-start gap-4 mb-2">
-            <Image
-              src="/images/sapaa-full-white.png"
-              alt="SAPAA"
-              width={140}
-              height={140}
-              priority
-              className="h-16 w-auto flex-shrink-0 opacity-100"
-            />
+        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+          <Suspense fallback={null}>
+            <SubmissionToast />
+          </Suspense>
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between mb-3">
+              {/* Left: icon + title + subtitle */}
+              <div className="flex items-center gap-4">
+                <Image
+                  src="/images/sapaa-icon-white.png"
+                  alt="SAPAA"
+                  width={140}
+                  height={140}
+                  priority
+                  className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+                />
+                <div>
+                  <h1 className="text-3xl font-bold mt-3">Protected Areas</h1>
+                  <p className="text-[#E4EBE4] text-base mt-0.5">
+                    Monitor and track site inspections across Alberta
+                  </p>
+                </div>
+              </div>
+              {/* Right: navbar — rendered inline, bg overridden to transparent */}
+                {currentUser?.role === 'admin' && (
+                    <button
+                      onClick={() => router.push('/admin/dashboard')}
+                      className="bg-[#E4EBE4] hover:bg-[#F7F2EA] mt-4 text-black px-4 py-2 rounded-xl flex items-center gap-2 font-semibold transition-all"
+                    >
+                      <Award className="w-5 h-5" />
+                      Admin
+                    </button>
+                  )}
+            </div>
           </div>
-
-          {currentUser?.role === 'admin' && (
-                  <button
-                    onClick={() => router.push('/admin/dashboard')}
-                    className="bg-[#E4EBE4] hover:bg-[#F7F2EA] mt-4 text-black px-4 py-2 rounded-xl flex items-center gap-2 font-semibold transition-all"
-                  >
-                    <Award className="w-5 h-5" />
-                    Admin
-                  </button>
-                )}
-
         </div>
-      </div>
-    </div>
+
         
     {/* Stats Cards */}
     <div className="max-w-7xl mx-auto px-6 py-6 mt-2">
@@ -418,5 +426,6 @@ export default function HomeClient() {
         )}
       </div>
     </div>
+    </ProtectedRoute>
   );
 }
