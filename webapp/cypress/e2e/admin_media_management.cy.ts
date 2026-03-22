@@ -25,7 +25,13 @@ describe("Admin Image Gallery", () => {
     cy.wait(2000);
     cy.get('[data-testid="image-Tree Test image 2"]').should('not.exist');
     cy.get('[data-testid="image-Tree Test image 3"]').should('not.exist');
-    cy.get('[data-testid="image-Ski Trails"]').should('be.visible').click();
+    cy.get('[data-testid="image-Cross country ski trails"]').should('be.visible').click({force: true});
+    
+    cy.contains('Site').should('be.visible');
+    cy.contains('Caption').should('be.visible');
+    cy.contains('Identifier').should('be.visible');
+    cy.contains('Date').should('be.visible');
+    cy.contains('Filename').should('be.visible');
   });
 
 });
