@@ -73,7 +73,7 @@ function uploadOneImage() {
 describe("Image Upload Persistence Across Section Switching - Q81.1", () => {
   it("keeps image and metadata when switching sections and returning", () => {
     const captionText = "Broken branch near trail entrance";
-    const descriptionText = "Large crack running up trunk of tree.";
+    const descriptionText = "Large crack up trunk";
 
     loginWithCurrentPattern();
     openNewReport();
@@ -84,18 +84,18 @@ describe("Image Upload Persistence Across Section Switching - Q81.1", () => {
     cy.contains(/1 image (total|selected)/i).should("be.visible");
     cy.contains("test-image.jpg").should("be.visible");
 
-    cy.get('input[placeholder="Caption (optional)"]')
+    cy.get('input[placeholder="Longer Description"]')
       .first()
       .scrollIntoView()
       .clear()
       .type(captionText);
-    cy.get('textarea[placeholder="Description (optional)"]')
+    cy.get('input[placeholder="Short Description"]')
       .first()
       .clear()
       .type(descriptionText);
 
-    cy.get('input[placeholder="Caption (optional)"]').first().should("have.value", captionText);
-    cy.get('textarea[placeholder="Description (optional)"]')
+    cy.get('input[placeholder="Longer Description"]').first().should("have.value", captionText);
+    cy.get('input[placeholder="Short Description"]')
       .first()
       .should("have.value", descriptionText);
 
@@ -104,8 +104,8 @@ describe("Image Upload Persistence Across Section Switching - Q81.1", () => {
 
     cy.contains("test-image.jpg").should("be.visible");
     cy.contains(/1 image (total|selected)/i).should("be.visible");
-    cy.get('input[placeholder="Caption (optional)"]').first().should("have.value", captionText);
-    cy.get('textarea[placeholder="Description (optional)"]')
+    cy.get('input[placeholder="Longer Description"]').first().should("have.value", captionText);
+    cy.get('input[placeholder="Short Description"]')
       .first()
       .should("have.value", descriptionText);
   });

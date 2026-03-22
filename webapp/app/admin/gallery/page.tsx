@@ -216,7 +216,7 @@ export default function GalleryPage() {
                     <img
                       src={item.imageUrl}
                       alt={item.identifier || item.caption ||item.filename || "Inspection image"}
-                      data-testid={`image-${item.caption}`}
+                      data-testid={`image-${item.identifier}`}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
