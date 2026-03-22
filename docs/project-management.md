@@ -148,7 +148,7 @@ This page provides a general overview of the assigned tasks and roles for the du
 |US 1.0.30 – Rich Text Formatting for Form Description Fields|3|
 |US 2.0.7 – Admin Management of Media Files|13|
 |US 2.0.8 – User Upload of Standalone Site Images|8|
-|US 4.0.1 – PDF Genration of SIR's|8|
+|US 4.0.1 – PDF Generation of SIR's|8|
 |US 4.0.3 – Update Site Profile of a Particular Site|3|
 |US 4.0.4 – Disable Site Profile of a Particular Site|3|
 |US 5.0.1 - Admin Approval of Users|5|
@@ -159,11 +159,11 @@ This page provides a general overview of the assigned tasks and roles for the du
 
 |Task|Related US|Assignee|Due|
 |:---:|:---:|:---:|:---:|
-|Rich Text Editor|US 1.0.30|Braden, Akib|Mar 11th|
-|Admin Management of Media Files|US 2.0.7|Raiyana, Jason, Zoe|Mar 12th|
-|Enable user upload of standalone site images|US 2.0.8|Raiyana, Harveer|Mar 13th|
+|Rich Text Editor|US 1.0.30|Akib, Braden|Mar 11th|
+|Admin Management of Media Files|US 2.0.7|Jason, Raiyana, Zoe|Mar 12th|
+|Enable user upload of standalone site images|US 2.0.8|Raiyana, Vishal|Mar 13th|
 |PDF generation|US 4.0.1|Braden, Vishal, Jason|Mar 15th|
-|Update existing site profiles|US 4.0.3|Vishal, Jason, Braden|Mar 17th|
+|Update existing site profiles|US 4.0.3|Braden, Jason|Mar 17th|
 |Disable site profiles as needed|US 4.0.4|Braden, Jason|Mar 19th|
 |Admin Approval of Users|US 5.0.1|Harveer|Mar 19th|
 |Finalize Sprint 4 acceptance tests|All US|Everyone|Mar 21st|
@@ -176,24 +176,26 @@ This page provides a general overview of the assigned tasks and roles for the du
 
 |User Story|Story points|
 |:---:|:---:|
+|US 1.0.20 - Admin Editing Image Metadata|3|
+|US 2.0.4 - Offline Image Viewing|5|
 |US 2.0.9 – Homescreen Gallery View|5|
+|US 3.0.1 - Access the mobile version of the Site Inspection Form|5|
+|US 3.0.2 - Offline Data Syncing|8|
 |US 5.0.2 – Sign Out Feature|2|
-|US 6.0.1 – Toggle Dark mode for web|2|
 |US 6.0.2 – Change Text Size on Screen|3|
 
-**Sprint Velocity:** 12
+**Sprint Velocity:** 31
 
 #### Tasks
 
 |Task|Related US|Assignee|Due|
 |:---:|:---:|:---:|:---:|
-|Deployment Instruction|Documentation|Harveer, Raiyana|Mar 24th|
 |Sign out feature|US 5.0.2|Harveer|Mar 24th|
-|Home-screen Gallery View|US 2.0.9|Raiyana, Zoe|Mar 25th|
-|Toggle dark mode for web|US 6.0.1|Raiyana, Zoe|Mar 26th|
-|A Job Description|Docmentation|Everyone|Mar 26th|
+|Homescreen Gallery View|US 2.0.9|Raiyana, Zoe|Mar 25th|
 |Change text size on screen|US 6.0.2|Vishal, Braden, Jason|Mar 26th|
-|User manual|Documentation|Jason, Braden, Akib, Zoe, Vishal|Mar 27th|
 |Data Migration|All US|Everyone|Mar 30th|
+|Deployment Instructions|Documentation|Harveer, Raiyana|Mar 24th|
+|A Job Description|Docmentation|Everyone|Mar 26th|
+|User manual|Documentation|Akib, Braden, Jason, Vishal, Zoe|Mar 27th|
 |Finalize Sprint 5 acceptance tests|All US|Everyone|Mar 30th|
-|Update documentation|Documentation|Everyone|Mar 31st|
+|Finalize documentation|Documentation|Everyone|Mar 31st|

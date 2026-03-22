@@ -269,7 +269,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 4. Other users can see the updated image’s metadata
 
 #### TASK 1.0.21 - View and understand the Supabase and decide if it is suitable 
-> Get acquainted with the existing super-base and decide if it is necessary to modify or rebuild it, or migrate to a different database management system
+> Get acquainted with the existing supabase and decide if it is necessary to modify or rebuild it, or migrate to a different database management system
 
 
 #### US 1.0.22 – (User) Edit My Site Inspections Form | Story Points: 5
@@ -354,13 +354,10 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 6. Information is only auto-filled when it exists for the given user (not all user's have all of this information saved on their account)
 > 7. Auto-filled information can be manually edited afterwards
 
-
-
 #### TASK 1.0.29 - Refactor the Database Schema and Produce an Updated ER Diagram 
 > Analyze the existing Supabase database schema, identify structural issues and inconsistencies, and refactor the design to better support the Site Inspection Form functionality. Update relationships, normalize tables where necessary, and produce a clear ER diagram that reflects the revised data model.
 
-
-#### US 1.0.30 - Rich Text Formatting for Form Description Fields
+#### US 1.0.30 - Rich Text Formatting for Form Description Fields | Story Points: 3
 > **As** an admin, **I want** to apply bold, underline, italic, and link formatting to question subtext and section descriptions in the form editor, **so that** I can write clearer, more expressive descriptions for inspectors filling out site inspection forms without needing to know HTML.
 
 > **Acceptance Tests**
@@ -378,7 +375,6 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 ---
 ### **P2 – Site Image Management System**
 ---
-
 
 #### US 2.0.1 – Manage the uploading and storing of site inspection images | Story Points: 8
 > **As** an Admin, **I want** images uploaded from the Site Inspection Form web application to be stored in an AWS S3 bucket and referenced in the database, **so that** they can be accessed and managed for future reports.
@@ -541,16 +537,16 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 ---
 
 
-#### US 5.0.1 – Sign In Feature | Story Points: 2
+#### US 5.0.1 – Admin Approval of Users | Story Points: 5
 
-> **As** a User, **I want** to be able to sign in to the app **so that** I can use my previous account.
+> **As** an Admin, **I want** to be able to review and approve new user registrations, **so that** only authorized individuals can access the webapp.
 
 > **Acceptance Tests** 
 
-> 1. Correct email and password allow access
-> 2. Incorrect credentials display an error
-> 3. User should be forced to input all fields
-
+> 1. New sign-ups appear in a "Pending" state and do not have access to the app until approved
+> 2. Admin can see specific fields (Email, Full Name, Request Date) to make an informed decision
+> 3. Admin can approve the pending user
+> 4. Admin can decline the pending user
 
 #### US 5.0.2 – Sign Out Feature | Story Points: 2
 
@@ -565,51 +561,9 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 5. Back navigation does not return to protected screens
 > 6. If sign out fails, an error message is displayed and the user can try again
 
-
-#### US 5.0.3 – Edit Account Feature | Story Points: 2
-
-> **As** a User, **I want** to be able to edit my account information **so that** I can keep my information up to date.
-
-> **Acceptance Tests**  
-
-> 1. Updating login-related info requires re-login
-> 2. Next login works only with updated credentials
-> 3. User must be logged in to update information
-> 4. Non-login info updates do not require re-login
-> 5. Users can only edit their own account and not that of others
-
-
-
-#### US 5.0.4 – Disable Account Feature | Story Points: 2
-
-> **As** a User, **I want** to be able to disable my account **so that** my login information is no longer stored or accessible.
-
-> **Acceptance Tests**  
-
-> 1. Disabled accounts cannot log in again
-> 2. If User disabled their account they should be taken back to the home screen
-> 3. Users can only disable their own account
-> 4. A user trying to disable their account should be prompted by a confirmation message first (‘Are you sure you want to disable your account?’)
-> 5. A user should be able to accept the confirmation and their account should then be disabled
-> 6. A user should be able to deny the confirmation and their account should not be disabled
-
-
 ---
 ### **P6 – Miscellaneous User Stories**
 ---
-
-
-#### US 6.0.1 – Toggle Dark mode for web and mobile applications | Story Points: 2
-
-> **As** a User, **I want** to enable dark mode for the web and mobile applications **so that** I can reduce eye strain.
-
-> **Acceptance Tests**  
-
-> 1. Users can enable and disable dark mode in web and mobile apps
-> 2. Preference persists across sessions
-> 3. UI remains readable in both modes
-> 4. Selecting the current mode causes no change
-
 
 #### US 6.0.2 – Change Text Size on Screen | Story Points: 3
 
@@ -652,14 +606,12 @@ Each user story is categorized into one of the following priority levels:
 * US 1.0.9 – Designation as a Protected Site (Q55)
 * US 1.0.10 - Indicate submissions to iNaturalist (Q53, Q68)
 * US 1.0.11 - Address details of Landscape changes (Q54)
-
 * US 1.0.12 - Address any Biological Observations that are in the Site (Q52, Q68)
 * US 1.0.13 - Address Any Human Disturbances  (Q61 - Q66)
 * US 1.0.14 - Add Other Comments (Q56, Q67, Q74, Q82)
 * US 1.0.15 – Inform SAPAA of Any Restorative Work that Needs to be Done / Was Done (Q71, Q72)
 * US 1.0.16 - Add Any Photography Captured During Visit (Q81)
 * TASK 1.0.21 - View and understand the Supabase and decide if it is suitable
-
 * US 1.0.22 - (User) Edit My Site Inspections Form 
 * US 1.0.23 - Non-Public Information (Q73, Q83)
 * US 1.0.26 – Persist Site Inspection Form Draft
@@ -671,35 +623,31 @@ Each user story is categorized into one of the following priority levels:
 * US 2.0.7 - Admin Management of Media Files
 * US 2.0.8 - User Upload of Standalone Site Images
 
-
 ### Should Have
-* US 2.0.2 – Image Metadata
-* US 2.0.3  - Gallery View
-* TASK 2.0.6 - Refactor Report Rendering to Use Updated Database Schema
-* US 4.0.1 - PDF Generation
-* US 4.0.3  - Update Site Profile of a Particular Site
-* US 4.0.4 - Disable Site Profile of a Particular Site
 * US 1.0.24 – Modify my Site Inspections Form Questions
 * US 1.0.25 – Hide a Site Inspections Form Question
 * US 1.0.30 - Rich Text Editor for Site Inspection Form Description
-
+* US 2.0.2 – Image Metadata
+* US 2.0.3 - Gallery View
+* TASK 2.0.6 - Refactor Report Rendering to Use Updated Database Schema
+* US 2.0.9 – Homescreen Gallery View
+* US 4.0.1 - PDF Generation
+* US 4.0.3 - Update Site Profile of a Particular Site
+* US 4.0.4 - Disable Site Profile of a Particular Site
+* US 5.0.1 - Admin Approval of Users
 
 ### Could Have
 * US 1.0.17 - (Admin) Add Questions Site Inspections Form
 * US 1.0.18 - Adding image caption
 * US 1.0.19 - Admin Viewing Images and Metadata
-* US 2.0.4 - Offline Image Viewing
-* US 3.0.2 - Offline Data Syncing
-* US 5.0.1 - Sign in feature
 * US 5.0.2 - Sign out feature
-* US 5.0.3 - Edit account feature
-* US 5.0.4 - Disable account feature
 * US 6.0.2 - Change Size of Text on Screen
 
 ### Would Like But Won't Get
 * US 1.0.20 - Admin Editing Image Metadata
+* US 2.0.4 - Offline Image Viewing
 * US 3.0.1 - Access the mobile version of the Site Inspection Form
-* US 6.0.1 - Toggle Dark mode for web and mobile applications
+* US 3.0.2 - Offline Data Syncing
 
 
 ## Similar Products
