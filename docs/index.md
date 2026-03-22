@@ -441,13 +441,11 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests**  
 
-> 1. A user can upload an image without creating or submitting an SIR.
-> 2. The user must select one site from the site dropdown before uploading the image.
-> 3. The user must enter metadata for the image, including identifier and date.
-> 4. The system automatically records the uploader’s name from the authenticated user.
-> 5. The user may optionally enter a Photographer field if the image was taken by someone else.
-> 6. The image is saved with the associated metadata and linked to the selected site.
-> 7. The image appears in the site’s image gallery after upload.
+> 1. Opens upload modal and displays dropzone when Upload Images is clicked
+> 2. Shows image editor and keeps submit disabled until required fields are complete
+> 3. Shows character-limit warnings when photographer/identifier max lengths are reached
+> 4. Closes modal and returns to base state when cancel is clicked
+> 5. Submits completed upload and redirects user to sites page with upload flag
 
 #### US 2.0.9 – Homescreen Gallery View  | Story Points: 5
 
@@ -494,16 +492,19 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 ### **P4 – Site Management**
 ---
 
-#### US 4.0.1 – PDF Generation of SIRs| Story Points: 5
+#### US 4.0.1 – PDF Generation of SIRs | Story Points: 5
 
 > **As** an Admin, **I want** to generate a customizable PDF export of Site Inspection Reports, **so that** I can review historical site data and provide documentation for audits or stakeholders.
 
 > **Acceptance Tests** 
 
-> 1. Export PDF button is accessible on Admin panel only
-> 2. Export PDF allows Admin to select questions wanted
-> 3. Export PDF allows Admin to select time period interested
-> 4. Export PDF correctly generates the PDF given the criteria
+> 1. The Export Modal must display the correct context based on the user's selection and provide clear exit paths
+> 2. Users must be able to customize the report content via quick toggles and advanced filters
+> 3. The modal must adapt its data selection controls based on whether a single inspection or an entire site is selected
+> 4. The system must provide clear feedback during the PDF generation process and handle errors gracefully
+> 5. The system must accurately fetch and map inspection data based on the selected mode (Single, Site, or Multi-site)
+> 6. The data engine must strictly honor all user-defined filters to ensure the report only contains requested information
+> 7. The system must optimize image processing to prevent report bloat and ensure file compatibility
 
 #### US 4.0.3 – Update Site Profile of a Particular Site | Story Points: 3
 
@@ -511,14 +512,10 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests**  
 
-> 1. County of site can be updated
-> 2. Site type should be able to be updated
-> 3. Natural region should be updated
-> 4. Name of site should be able to be updated
-> 5. Admins can access option to edit site profile
-> 6. Non-admin users cannot access option to edit site profile
-> 7. Updates made to a site profile are visible to users
-
+> 1. The system must provide a reliable list of available counties to ensure accurate site categorization
+> 2. Users must be able to modify and save site details, including name and location settings
+> 3. The site management features must be restricted to authorized users and provide clear entry points for editing
+> 4. The editing modal must provide a seamless flow for modifying and persisting site changes
 
 #### US 4.0.4 – Disable Site Profile of a Particular Site | Story Points: 3
 
@@ -526,16 +523,14 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests**  
 
-> 1. Site is removed from the app
-> 2. Any associated inspection forms are pushed to admin’s drive then disable
-> 4. Users cannot interact with the site anymore
-> 5. Admins have access to the option to remove a site profile
-> 6. Non-admin users cannot access the option to remove a site profile
+> 1. The system must provide a comprehensive view of all sites, regardless of their current operational status
+> 2. Administrators must be able to toggle the operational status of any site to control its availability in the system
+> 3. The admin interface must provide clear visual indicators for the operational status of every site
+> 4. Administrators must be able to change a site's visibility through the edit flow, with the system ensuring only intentional changes are processed
 
 ---
 ### **P5 – User Accounts User Stories**
 ---
-
 
 #### US 5.0.1 – Admin Approval of Users | Story Points: 5
 
@@ -543,10 +538,14 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests** 
 
-> 1. New sign-ups appear in a "Pending" state and do not have access to the app until approved
-> 2. Admin can see specific fields (Email, Full Name, Request Date) to make an informed decision
-> 3. Admin can approve the pending user
-> 4. Admin can decline the pending user
+> 1. New user signup creates account with authenticated: false status
+> 2. Admin can filter to show only pending approval users
+> 3. Pending user displays pending approval badge in admin list
+> 4. Admin can approve pending user; authenticated flag set to true
+> 5. Admin can reject pending user; authenticated flag remains false
+> 6. Admin account management page displays user approval statistics
+> 7. Approved user displays approved badge in admin list
+> 8. Admin can revoke approval from previously approved user; authenticated set to false
 
 #### US 5.0.2 – Sign Out Feature | Story Points: 2
 
