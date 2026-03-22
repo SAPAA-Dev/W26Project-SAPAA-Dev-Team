@@ -629,7 +629,6 @@ Each user story is categorized into one of the following priority levels:
 * US 2.0.2 – Image Metadata
 * US 2.0.3 - Gallery View
 * TASK 2.0.6 - Refactor Report Rendering to Use Updated Database Schema
-* US 2.0.9 – Homescreen Gallery View
 * US 4.0.1 - PDF Generation
 * US 4.0.3 - Update Site Profile of a Particular Site
 * US 4.0.4 - Disable Site Profile of a Particular Site
@@ -639,6 +638,7 @@ Each user story is categorized into one of the following priority levels:
 * US 1.0.17 - (Admin) Add Questions Site Inspections Form
 * US 1.0.18 - Adding image caption
 * US 1.0.19 - Admin Viewing Images and Metadata
+* US 2.0.9 – Homescreen Gallery View
 * US 5.0.2 - Sign out feature
 * US 6.0.2 - Change Size of Text on Screen
 
