@@ -82,7 +82,7 @@ export default function EditReportPage() {
   const [existingAttachments, setExistingAttachments] = useState<ExistingAttachment[]>([]);
   // Track which existing attachments had their metadata changed so we only update those
   const [originalAttachmentMeta, setOriginalAttachmentMeta] = useState<
-    Record<number, { caption: string | null; description: string | null }>
+      Record<number, { caption: string | null; identifier: string | null }>
   >({});
 
   const [showRequiredPopup, setShowRequiredPopup] = useState(false);
@@ -146,16 +146,16 @@ export default function EditReportPage() {
           content_type:    a.content_type,
           file_size_bytes: a.file_size_bytes,
           caption:         a.caption,
-          description:     a.description,
+          identifier:      a.identifier,
           site_id:         a.site_id,
           previewUrl:      a.imageUrl,   // ← presigned GET URL from the route
         }));
   
         setExistingAttachments(hydrated);
   
-        const metaSnapshot: Record<number, { caption: string | null; description: string | null }> = {};
+        const metaSnapshot: Record<number, { caption: string | null; identifier: string | null }> = {};
         hydrated.forEach((a) => {
-          metaSnapshot[a.id] = { caption: a.caption, description: a.description };
+          metaSnapshot[a.id] = { caption: a.caption, identifier: a.identifier };
         });
         setOriginalAttachmentMeta(metaSnapshot);
   
@@ -385,12 +385,12 @@ export default function EditReportPage() {
       for (const attachment of existingAttachments) {
         const original = originalAttachmentMeta[attachment.id];
         const captionChanged = original?.caption !== attachment.caption;
-        const descriptionChanged = original?.description !== attachment.description;
-        if (captionChanged || descriptionChanged) {
+        const identifierChanged = original?.identifier !== attachment.identifier;
+        if (captionChanged || identifierChanged) {
           metadataUpdates.push(
             updateAttachmentMetadata(attachment.id, {
               caption: attachment.caption,
-              description: attachment.description,
+              identifier: attachment.identifier,
             })
           );
         }
@@ -431,7 +431,7 @@ export default function EditReportPage() {
               content_type: image.file.type,
               file_size_bytes: image.file.size,
               caption: image.caption?.trim() || null,
-              description: image.description?.trim() || null,
+              identifier: image.identifier?.trim() || null,
             });
           }
 

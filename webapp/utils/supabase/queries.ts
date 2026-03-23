@@ -268,7 +268,7 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
       answers.find(a => a.question_id === naturalnessDetailsId)?.obs_value ??
       answers.find(a => a.question_id === naturalnessDetailsId)?.obs_comm ??
       null;
-    const stewardVal = answers.find(a => a.question_id === stewardId)?.obs_value ?? null;
+    const stewardVal = answers.find(a => a.question_id === stewardId)?.obs_comm ?? null;
 
     return {
       id: r.id,
@@ -606,6 +606,10 @@ export async function insertInspectionAttachments(rows: Array<{
   file_size_bytes?: number | null;
   caption?: string | null;
   description?: string | null;
+  photographer?: string | null;
+  identifier?: string | null;
+  date?: string | null;
+  
 }>) {
   const supabase = createServerSupabase();  
 
@@ -630,7 +634,7 @@ export async function insertHomepageImageUpload(rows: Array<{
   date: Date;
   photographer: string | null;
   identifier: string | null;
-  description: string | null;
+  caption: string | null;
   created_at: string | null;
 }>) {
   const supabase = createServerSupabase();  
@@ -802,6 +806,7 @@ export async function getFormResponseById(responseId: number): Promise<Record<st
 
   return map;
 }
+
 
 // Fetches all W26_attachments rows for a given response_id
 export async function getAttachmentsByResponseId(responseId: number): Promise<Array<{

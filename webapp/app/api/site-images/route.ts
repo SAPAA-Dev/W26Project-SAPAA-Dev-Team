@@ -38,7 +38,7 @@ export async function GET(request: Request) {
     let query = supabase
       .from("W26_attachments")
       .select(
-        "id, response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, description, site_id"
+        "id, response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier, site_id"
       );
 
     if (siteId)     query = query.eq("site_id", Number(siteId));
@@ -72,7 +72,7 @@ export async function GET(request: Request) {
           content_type:    row.content_type,
           file_size_bytes: row.file_size_bytes,
           caption:         row.caption,
-          description:     row.description,
+          identifier:      row.identifier,
           site_id:         row.site_id,
           imageUrl,
         };

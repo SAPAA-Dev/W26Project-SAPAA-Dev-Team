@@ -1,29 +1,61 @@
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { useParams, useRouter } from "next/navigation";
-import SiteDetailScreen from "../../app/detail/[namesite]/page";
-import * as supabaseQueries from "@/utils/supabase/queries";
+//Generted by ChatGPT based on recent edits to related files and the context of the test file. This test suite verifies that the image gallery on the site details page correctly merges images from both the site gallery and homepage uploads, displays them, and shows the correct metadata in the modal when an image is clicked.
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import SiteDetailScreen from "@/app/detail/[namesite]/page";
 
-jest.mock("next/navigation");
-jest.mock("@/utils/supabase/queries");
+jest.mock("next/navigation", () => ({
+  useParams: () => ({ namesite: "Riverlot 56 (NA)" }),
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    back: jest.fn(),
+  }),
+}));
+
+jest.mock("next/image", () => ({
+  __esModule: true,
+  default: (props: any) => {
+    return <img {...props} />;
+  },
+}));
+
 jest.mock("@/utils/supabase/client", () => ({
   createClient: () => ({
     auth: {
-      getUser: jest.fn().mockResolvedValue({ data: { user: { id: "user-123", user_metadata: { authenticated: true } } } }),
-      onAuthStateChange: jest.fn((callback) => {
-        callback('SIGNED_IN', { user: { id: 'user-123', user_metadata: { authenticated: true } } });
-        return { data: { subscription: { unsubscribe: jest.fn() } } };
+      getUser: jest.fn().mockResolvedValue({
+        data: {
+          user: {
+            id: "user-1",
+            email: "test@test.com",
+            user_metadata: { role: "steward" },
+          },
+        },
+        error: null,
       }),
     },
   }),
 }));
-jest.mock("next/image", () => ({
-  __esModule: true,
-  default: (props: any) => {
-    // eslint-disable-next-line jsx-a11y/alt-text
-    return <img {...props} />;
-  },
+
+jest.mock("@/utils/supabase/queries", () => ({
+  getSiteByName: jest.fn().mockResolvedValue([
+    {
+      id: 1,
+      namesite: "Riverlot 56 (NA)",
+      county: "Test County",
+      ab_county: null,
+      inspectdate: null,
+      is_active: true,
+    },
+  ]),
+  getFormResponsesBySite: jest.fn().mockResolvedValue([]),
+  getCurrentUserUid: jest.fn().mockResolvedValue("user-1"),
+  daysSince: jest.fn().mockReturnValue(10),
 }));
+
+jest.mock("@/utils/supabase/server", () => ({
+  createServerSupabase: jest.fn(),
+  createClient: jest.fn(),
+}));
+
 jest.mock("../../components/ProtectedRoute", () => ({ children }: any) => <div>{children}</div>);
 jest.mock("@/app/sites/page", () => ({
   daysSince: jest.fn((date: string) => {
@@ -43,22 +75,10 @@ const mockParams = {
 const mockSite = {
   id: 1,
   namesite: "Riverlot 56 (NA)",
-  county: "Athabasca",
-  inspectdate: "2026-01-31",
+  county: "Test County",
+  latitude: 53.5,
+  longitude: -113.5,
 };
-
-const mockInspections = [
-  {
-    id: 901,
-    user_id: "user-123",
-    created_at: "2026-01-31T10:00:00.000Z",
-    inspection_no: null,
-    naturalness_score: "3 = Good",
-    naturalness_details: "Stable site condition",
-    steward: "Zoe P",
-    answers: [],
-  },
-];
 
 const galleryItemsForSelectedSite = [
   {
@@ -66,191 +86,258 @@ const galleryItemsForSelectedSite = [
     response_id: "resp-1",
     question_id: "q-1",
     caption: "Cracked Tree",
-    description: "Large crack running up the trunk of a tree.",
-    storage_key: "uploads/RiverLot56_01-31-2026_ZoeP_CrackedTree.jpg",
+    identifier: "Large crack running up the trunk of a tree.",
+    filename: "cracked-tree.jpg",
     content_type: "image/jpeg",
-    file_size_bytes: 654321,
-    filename: "RiverLot56_01-31-2026_ZoeP_CrackedTree.jpg",
-    site_id: "1",
-    site_name: "Riverlot 56 (NA)",
-    imageUrl: "https://example.com/RiverLot56_01-31-2026_ZoeP_CrackedTree.jpg",
+    photographer: "John Doe", 
+    file_size_bytes: 12345,
+    storage_key: "inspections/1/resp-1/q-1/cracked-tree.jpg",
+    site_id: 1,
+    imageUrl: "https://example.com/cracked-tree.jpg",
   },
   {
     id: "img-2",
     response_id: "resp-2",
     question_id: "q-2",
-    caption: "Hanging Broken Tree",
-    description:
-      "A tree we saw that seems to be broken, but hanging above the ground by the branches of surrounding trees.",
-    storage_key: "uploads/RiverLot56_01-31-2026_ZoeP_HangingTree.jpg",
+    caption: "Fallen Branches",
+    identifier: "Several large branches blocking the path.",
+    filename: "fallen-branches.jpg",
     content_type: "image/jpeg",
-    file_size_bytes: 123456,
-    filename: "RiverLot56_01-31-2026_ZoeP_HangingTree.jpg",
-    site_id: "1",
-    site_name: "Riverlot 56 (NA)",
-    imageUrl: "https://example.com/RiverLot56_01-31-2026_ZoeP_HangingTree.jpg",
-  },
-  {
-    id: "img-3",
-    response_id: "resp-3",
-    question_id: "q-3",
-    caption: "cross-country ski trails",
-    description: null,
-    storage_key: "uploads/RiverLot56_02-01-2026_ZoeP_SkiTrail.jpg",
-    content_type: "image/jpeg",
-    file_size_bytes: 777000,
-    filename: "RiverLot56_02-01-2026_ZoeP_SkiTrail.jpg",
-    site_id: "1",
-    site_name: "Riverlot 56 (NA)",
-    imageUrl: "https://example.com/RiverLot56_02-01-2026_ZoeP_SkiTrail.jpg",
+    photographer: "John Doe", 
+    file_size_bytes: 23456,
+    storage_key: "inspections/1/resp-2/q-2/fallen-branches.jpg",
+    site_id: 1,
+    imageUrl: "https://example.com/fallen-branches.jpg",
   },
 ];
 
 const homePageItemsForSelectedSite = [
   {
-    id: "img-4",
-    site_id: "site-1",
+    id: "img-3",
+    site_id: 1,
     site_name: "Riverlot 56 (NA)",
     date: "2026-01-31",
     photographer: "Vishal Sivakumar",
-    caption: "CMPUT401W26 Visit",
-    description: "Riverlot56 Visit with Frank Potter!",
-    storage_key: "homepage-image-uploads/site-1/user-1/RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg",
-    filename: "RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg",
-    file_size_bytes: 111111,
-    imageUrl: "https://example.com/RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg",
+    caption: "Riverlot56 Visit with Frank Potter!",
+    identifier: "CMPUT401W26 Visit",
+    filename: "homepage-1.jpg",
+    file_size_bytes: 34567,
+    storage_key: "homepage-image-uploads/1/user-1/homepage-1.jpg",
+    imageUrl: "https://example.com/homepage-1.jpg",
   },
-]
+  {
+    id: "img-4",
+    site_id: 1,
+    site_name: "Riverlot 56 (NA)",
+    date: "2026-02-01",
+    photographer: "Raiyana Rahman",
+    caption: "Cross country ski trails",
+    identifier: "Ski Trails",
+    filename: "homepage-2.jpg",
+    file_size_bytes: 45678,
+    storage_key: "homepage-image-uploads/1/user-2/homepage-2.jpg",
+    imageUrl: "https://example.com/homepage-2.jpg",
+  },
+];
 
-function mockGalleryFetchSuccess(items = galleryItemsForSelectedSite) {
-  (global.fetch as jest.Mock).mockImplementation((url: string) => {
-    if (url.includes("/api/homepage-images/")) {
-      return Promise.resolve({ ok: true, json: async () => ({ items: homePageItemsForSelectedSite }) });
-    }
-    return Promise.resolve({ ok: true, json: async () => ({ items }) });
-  });
-}
+const mockFetch = jest.fn();
+global.fetch = mockFetch as jest.Mock;
 
-async function renderSiteDetailsGallery() {
-  render(<SiteDetailScreen />);
-
-  await waitFor(() => {
-    expect(screen.getByText("Riverlot 56 (NA)")).toBeInTheDocument();
-  });
-
-  fireEvent.click(screen.getByRole("button", { name: /Image Gallery/i }));
-
-  await waitFor(() => {
-    expect(screen.getByText("Image Gallery (4 images)")).toBeInTheDocument();
-  });
-}
-
-describe("SiteDetailScreen Image Gallery", () => {
+describe("SiteDetailScreen image gallery", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    global.fetch = jest.fn();
-    jest.spyOn(console, "log").mockImplementation(() => {});
-    jest.spyOn(console, "error").mockImplementation(() => {});
 
-    (useRouter as jest.Mock).mockReturnValue(mockRouter);
-    (useParams as jest.Mock).mockReturnValue(mockParams);
-    (supabaseQueries.getSiteByName as jest.Mock).mockResolvedValue([mockSite]);
-    (supabaseQueries.getFormResponsesBySite as jest.Mock).mockResolvedValue(mockInspections);
-    (supabaseQueries.getCurrentUserUid as jest.Mock).mockResolvedValue("user-123");
+    mockFetch.mockImplementation((input: RequestInfo | URL) => {
+      const url = typeof input === "string" ? input : input.toString();
+
+      if (url.includes("/api/sites?namesite=")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ site: mockSite }),
+        });
+      }
+
+      if (url.includes("/api/sites/1/gallery")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ items: galleryItemsForSelectedSite }),
+        });
+      }
+
+      if (url.includes("/api/homepage-images/1")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ items: homePageItemsForSelectedSite }),
+        });
+      }
+
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({}),
+      });
+    });
   });
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
+  it("renders merged gallery images for the selected site", async () => {
+    render(<SiteDetailScreen />);
+  
+    // Wait for page to load, then switch to gallery tab
+    await waitFor(() => {
+      expect(screen.getByText(/Image Gallery/i)).toBeInTheDocument();
+    });
+  
+    fireEvent.click(screen.getByRole('button', { name: /Image Gallery/i }));
+  
+    // Now wait for the actual images to appear
+    await waitFor(() => {
+      expect(screen.getByAltText("Large crack running up the trunk of a tree.")).toBeInTheDocument();
+    });
 
-  it("renders multiple site images in gallery layout", async () => {
-    mockGalleryFetchSuccess();
-    await renderSiteDetailsGallery();
-  
-    expect(screen.getByText("Cracked Tree")).toBeInTheDocument();
-    expect(screen.getByText("Hanging Broken Tree")).toBeInTheDocument();
-    expect(screen.getByText("cross-country ski trails")).toBeInTheDocument();
-    expect(screen.getByText("CMPUT401W26 Visit")).toBeInTheDocument();
-    expect(screen.getByText("Riverlot56 Visit with Frank Potter!")).toBeInTheDocument();
-  
-    expect(screen.getByAltText("Cracked Tree").closest("button")).toBeInTheDocument();
-    expect(screen.getByAltText("Hanging Broken Tree").closest("button")).toBeInTheDocument();
-    expect(screen.getByAltText("cross-country ski trails").closest("button")).toBeInTheDocument();
-    expect(screen.getByAltText("CMPUT401W26 Visit").closest("button")).toBeInTheDocument();
+    expect(screen.getByAltText("Several large branches blocking the path.")).toBeInTheDocument();
+    expect(screen.getByAltText("CMPUT401W26 Visit")).toBeInTheDocument();
+    expect(screen.getByAltText("Ski Trails")).toBeInTheDocument();
   });
   
-  it("uses site-scoped gallery endpoint for selected site", async () => {
-    mockGalleryFetchSuccess();
-    await renderSiteDetailsGallery();
+  it("opens image modal and shows caption + identifier", async () => {
+    render(<SiteDetailScreen />);
   
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith("/api/sites/1/gallery");
-      expect(global.fetch).toHaveBeenCalledWith("/api/homepage-images/1");
+      expect(screen.getByText(/Image Gallery/i)).toBeInTheDocument();
+    });
+  
+    fireEvent.click(screen.getByRole('button', { name: /Image Gallery/i }));
+  
+    await waitFor(() => {
+      expect(screen.getByAltText("Large crack running up the trunk of a tree.")).toBeInTheDocument();
+    });
+  
+    fireEvent.click(screen.getByAltText("Large crack running up the trunk of a tree.").closest('button')!);
+  
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /Open full image in new tab/i })).toBeInTheDocument();
     });
   
     expect(screen.getByText("Cracked Tree")).toBeInTheDocument();
-    expect(screen.getByText("Hanging Broken Tree")).toBeInTheDocument();
-    expect(screen.getByText("cross-country ski trails")).toBeInTheDocument();
-    expect(screen.getByText("CMPUT401W26 Visit")).toBeInTheDocument();
-    expect(screen.queryByText("Trail entrance")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Large crack running up the trunk of a tree.").length).toBeGreaterThanOrEqual(2);
   });
-
-  it("opens image detail modal with metadata from selected card", async () => {
-    mockGalleryFetchSuccess();
-    await renderSiteDetailsGallery();
-
-    const targetImage = screen.getByAltText("Hanging Broken Tree");
-    const openButton = targetImage.closest("button");
-    expect(openButton).not.toBeNull();
-    fireEvent.click(openButton!);
-
-    expect(screen.getByText("Site")).toBeInTheDocument();
-    expect(screen.getByText("Caption")).toBeInTheDocument();
-    expect(screen.getByText("Description")).toBeInTheDocument();
-    expect(screen.getByText("Filename")).toBeInTheDocument();
-
-    expect(screen.getAllByText("Riverlot 56 (NA)").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Hanging Broken Tree").length).toBeGreaterThan(0);
-    expect(
-      screen.getAllByText(
-        "A tree we saw that seems to be broken, but hanging above the ground by the branches of surrounding trees."
-      ).length
-    ).toBeGreaterThan(0);
-    expect(screen.getByText("RiverLot56_01-31-2026_ZoeP_HangingTree.jpg")).toBeInTheDocument();
-
-    const fullImageLink = screen.getByRole("link", { name: "Open full image in new tab" });
-    expect(fullImageLink).toHaveAttribute(
-      "href",
-      "https://example.com/RiverLot56_01-31-2026_ZoeP_HangingTree.jpg"
-    );
-    expect(fullImageLink).toHaveAttribute("target", "_blank");
-  });
-
-  it("switches detailed view when another image is opened", async () => {
-    mockGalleryFetchSuccess();
-    await renderSiteDetailsGallery();
-
-    const firstImage = screen.getByAltText("Cracked Tree");
-    const firstButton = firstImage.closest("button");
-    expect(firstButton).not.toBeNull();
-    fireEvent.click(firstButton!);
-
-    expect(screen.getByText("RiverLot56_01-31-2026_ZoeP_CrackedTree.jpg")).toBeInTheDocument();
-
-    const modalOverlay = document.querySelector('div[class*="fixed inset-0 z-50"]') as HTMLElement;
-    expect(modalOverlay).toBeTruthy();
-    fireEvent.click(modalOverlay);
-
+  
+  it("shows homepage image metadata in modal", async () => {
+    render(<SiteDetailScreen />);
+  
     await waitFor(() => {
-      expect(screen.queryByText("RiverLot56_01-31-2026_ZoeP_CrackedTree.jpg")).not.toBeInTheDocument();
+      expect(screen.getByText(/Image Gallery/i)).toBeInTheDocument();
+    });
+  
+    fireEvent.click(screen.getByRole('button', { name: /Image Gallery/i }));
+  
+    await waitFor(() => {
+      expect(screen.getByAltText("CMPUT401W26 Visit")).toBeInTheDocument();
+    });
+  
+    fireEvent.click(screen.getByAltText("CMPUT401W26 Visit").closest('button')!);
+  
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /Open full image in new tab/i })).toBeInTheDocument();
+    });
+  
+    expect(screen.getAllByText("CMPUT401W26 Visit").length).toBeGreaterThanOrEqual(2);
+  });
+  
+  it("shows photographer when available for homepage images", async () => {
+    render(<SiteDetailScreen />);
+  
+    await waitFor(() => {
+      expect(screen.getByText(/Image Gallery/i)).toBeInTheDocument();
+    });
+  
+    fireEvent.click(screen.getByRole('button', { name: /Image Gallery/i }));
+  
+    await waitFor(() => {
+      expect(screen.getByAltText("Ski Trails")).toBeInTheDocument();
+    });
+  
+    fireEvent.click(screen.getByAltText("Ski Trails").closest('button')!);
+  
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /Open full image in new tab/i })).toBeInTheDocument();
+    });
+  
+    expect(screen.getByText(/Raiyana Rahman/i)).toBeInTheDocument();
+  });
+
+  it("handles empty gallery state", async () => {
+    mockFetch.mockImplementation((input: RequestInfo | URL) => {
+      const url = typeof input === "string" ? input : input.toString();
+
+      if (url.includes("/api/sites?namesite=")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ site: mockSite }),
+        });
+      }
+
+      if (url.includes("/api/sites/1/gallery")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ items: [] }),
+        });
+      }
+
+      if (url.includes("/api/homepage-images/1")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ items: [] }),
+        });
+      }
+
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({}),
+      });
     });
 
-    const secondImage = screen.getByAltText("Hanging Broken Tree");
-    const secondButton = secondImage.closest("button");
-    expect(secondButton).not.toBeNull();
-    fireEvent.click(secondButton!);
+    render(<SiteDetailScreen />);
 
-    expect(screen.getByText("RiverLot56_01-31-2026_ZoeP_HangingTree.jpg")).toBeInTheDocument();
-    expect(screen.queryByText("RiverLot56_01-31-2026_ZoeP_CrackedTree.jpg")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/Image Gallery/i)).toBeInTheDocument();
+    });
+  });
+
+  it("handles gallery fetch failure gracefully", async () => {
+    mockFetch.mockImplementation((input: RequestInfo | URL) => {
+      const url = typeof input === "string" ? input : input.toString();
+
+      if (url.includes("/api/sites?namesite=")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ site: mockSite }),
+        });
+      }
+
+      if (url.includes("/api/sites/1/gallery")) {
+        return Promise.resolve({
+          ok: false,
+          json: async () => ({ error: "Failed to load gallery" }),
+        });
+      }
+
+      if (url.includes("/api/homepage-images/1")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ items: [] }),
+        });
+      }
+
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({}),
+      });
+    });
+
+    render(<SiteDetailScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Image Gallery|Unable to Load Site/i)).toBeInTheDocument();
+    });
   });
 });

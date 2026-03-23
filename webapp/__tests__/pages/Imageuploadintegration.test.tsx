@@ -70,11 +70,17 @@ const mockSites = [
 ];
 
 function makePresignRequest(body: object) {
+  const defaults = {
+    siteName: "Riverlot 56 (NA)",
+    date: "2026-01-31",
+    identifier: "Test-01",
+    photographer: "John Doe",
+  };
   return {
     method: "POST",
     headers: new Headers({ "Content-Type": "application/json" }),
-    json: async () => body,
-    text: async () => JSON.stringify(body),
+    json: async () => ({ ...defaults, ...body }),
+    text: async () => JSON.stringify({ ...defaults, ...body }),
   } as unknown as Request;
 }
 

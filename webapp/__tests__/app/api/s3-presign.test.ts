@@ -9,14 +9,10 @@ jest.mock("next/server", () => ({
   },
 }));
 
-jest.mock("crypto", () => ({
-  randomUUID: jest.fn(() => "mock-uuid-123"),
-}));
-
 import { POST } from "@/app/api/s3/presign/route";
 import { createClient } from "@/utils/supabase/server";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import crypto from "crypto";
+import { generateFilename } from "@/utils/media/generateFilename";
 
 jest.mock("@/utils/supabase/server", () => ({
   createClient: jest.fn(),
@@ -31,8 +27,25 @@ jest.mock("@aws-sdk/s3-request-presigner", () => ({
   getSignedUrl: jest.fn(),
 }));
 
+jest.mock("@/utils/media/generateFilename", () => ({
+  generateFilename: jest.fn(),
+}));
+
 describe("POST /api/s3/presign", () => {
   const mockGetUser = jest.fn();
+
+  const validBody = {
+    filename: "tree.jpg",
+    contentType: "image/jpeg",
+    fileSize: 1000,
+    responseId: 3226,
+    questionId: 27,
+    siteId: 207,
+    date: "2026-03-21",
+    photographer: "Raiyana Rahman",
+    identifier: "Broken Tree",
+    siteName: "Riverlot 56",
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -43,7 +56,9 @@ describe("POST /api/s3/presign", () => {
       },
     });
 
-    (crypto.randomUUID as jest.Mock).mockReturnValue("mock-uuid-123");
+    (generateFilename as jest.Mock).mockReturnValue(
+      "Riverlot56-2026-03-21-RaiyanaRahman-BrokenTree-generated.jpg"
+    );
   });
 
   it("returns 401 when user is unauthorized", async () => {
@@ -55,14 +70,7 @@ describe("POST /api/s3/presign", () => {
     const request = new Request("http://localhost:3000/api/s3/presign", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        filename: "tree.jpg",
-        contentType: "image/jpeg",
-        fileSize: 1000,
-        responseId: 3226,
-        questionId: 27,
-        siteId: 207,
-      }),
+      body: JSON.stringify(validBody),
     });
 
     const response = await POST(request);
@@ -81,14 +89,7 @@ describe("POST /api/s3/presign", () => {
     const request = new Request("http://localhost:3000/api/s3/presign", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        filename: "tree.jpg",
-        contentType: "image/jpeg",
-        fileSize: 1000,
-        responseId: 3226,
-        questionId: 27,
-        siteId: 207,
-      }),
+      body: JSON.stringify(validBody),
     });
 
     const response = await POST(request);
@@ -100,7 +101,7 @@ describe("POST /api/s3/presign", () => {
 
   it("returns 400 when filename is missing", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: { user: { id: "user-1", user_metadata: {} } },
       error: null,
     });
 
@@ -108,12 +109,8 @@ describe("POST /api/s3/presign", () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        ...validBody,
         filename: "",
-        contentType: "image/jpeg",
-        fileSize: 1000,
-        responseId: 3226,
-        questionId: 27,
-        siteId: 207,
       }),
     });
 
@@ -126,7 +123,7 @@ describe("POST /api/s3/presign", () => {
 
   it("returns 400 when contentType is missing", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: { user: { id: "user-1", user_metadata: {} } },
       error: null,
     });
 
@@ -134,12 +131,8 @@ describe("POST /api/s3/presign", () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        filename: "tree.jpg",
+        ...validBody,
         contentType: "",
-        fileSize: 1000,
-        responseId: 3226,
-        questionId: 27,
-        siteId: 207,
       }),
     });
 
@@ -152,7 +145,7 @@ describe("POST /api/s3/presign", () => {
 
   it("returns 400 when ids are missing", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: { user: { id: "user-1", user_metadata: {} } },
       error: null,
     });
 
@@ -160,12 +153,8 @@ describe("POST /api/s3/presign", () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        filename: "tree.jpg",
-        contentType: "image/jpeg",
-        fileSize: 1000,
+        ...validBody,
         responseId: null,
-        questionId: 27,
-        siteId: 207,
       }),
     });
 
@@ -176,9 +165,9 @@ describe("POST /api/s3/presign", () => {
     expect(body).toEqual({ error: "Missing ids" });
   });
 
-  it("returns 400 for unsupported file type", async () => {
+  it("returns 400 when image metadata is missing", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: { user: { id: "user-1", user_metadata: {} } },
       error: null,
     });
 
@@ -186,12 +175,31 @@ describe("POST /api/s3/presign", () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        ...validBody,
+        identifier: "",
+      }),
+    });
+
+    const response = await POST(request);
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "Missing image metadata" });
+  });
+
+  it("returns 400 for unsupported file type", async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: "user-1", user_metadata: {} } },
+      error: null,
+    });
+
+    const request = new Request("http://localhost:3000/api/s3/presign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...validBody,
         filename: "tree.gif",
         contentType: "image/gif",
-        fileSize: 1000,
-        responseId: 3226,
-        questionId: 27,
-        siteId: 207,
       }),
     });
 
@@ -204,7 +212,7 @@ describe("POST /api/s3/presign", () => {
 
   it("returns 400 when file is too large", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: { user: { id: "user-1", user_metadata: {} } },
       error: null,
     });
 
@@ -212,12 +220,8 @@ describe("POST /api/s3/presign", () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        filename: "tree.jpg",
-        contentType: "image/jpeg",
+        ...validBody,
         fileSize: 11 * 1024 * 1024,
-        responseId: 3226,
-        questionId: 27,
-        siteId: 207,
       }),
     });
 
@@ -228,11 +232,20 @@ describe("POST /api/s3/presign", () => {
     expect(body).toEqual({ error: "File too large" });
   });
 
-  it("returns upload url and key for jpeg", async () => {
+  it("returns upload url, key, and generatedFilename for jpeg", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: {
+        user: {
+          id: "user-1",
+          user_metadata: { full_name: "Raiyana Rahman" },
+        },
+      },
       error: null,
     });
+
+    (generateFilename as jest.Mock).mockReturnValueOnce(
+      "Riverlot56-2026-03-21-RaiyanaRahman-BrokenTree-generated.jpg"
+    );
 
     (getSignedUrl as jest.Mock).mockResolvedValueOnce(
       "https://signed-upload.example.com/jpeg"
@@ -242,33 +255,46 @@ describe("POST /api/s3/presign", () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        filename: "tree.jpg",
+        ...validBody,
         contentType: "image/jpeg",
-        fileSize: 1000,
-        responseId: 3226,
-        questionId: 27,
-        siteId: 207,
       }),
     });
 
     const response = await POST(request);
     const body = await response.json();
 
-    expect(crypto.randomUUID).toHaveBeenCalled();
+    expect(generateFilename).toHaveBeenCalledWith({
+      siteName: "Riverlot 56",
+      date: "2026-03-21",
+      photographer: "Raiyana Rahman",
+      identifier: "Broken Tree",
+      extension: "jpg",
+    });
+
     expect(getSignedUrl).toHaveBeenCalled();
 
     expect(response.status).toBe(200);
     expect(body).toEqual({
       uploadUrl: "https://signed-upload.example.com/jpeg",
-      key: "inspections/207/3226/27/mock-uuid-123.jpg",
+      key: "inspections/207/3226/27/Riverlot56-2026-03-21-RaiyanaRahman-BrokenTree-generated.jpg",
+      generatedFilename: "Riverlot56-2026-03-21-RaiyanaRahman-BrokenTree-generated.jpg",
     });
   });
 
-  it("returns upload url and key for png", async () => {
+  it("returns upload url, key, and generatedFilename for png", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: {
+        user: {
+          id: "user-1",
+          user_metadata: { full_name: "Raiyana Rahman" },
+        },
+      },
       error: null,
     });
+
+    (generateFilename as jest.Mock).mockReturnValueOnce(
+      "Riverlot56-2026-03-21-RaiyanaRahman-BrokenTree-generated.png"
+    );
 
     (getSignedUrl as jest.Mock).mockResolvedValueOnce(
       "https://signed-upload.example.com/png"
@@ -278,30 +304,45 @@ describe("POST /api/s3/presign", () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        ...validBody,
         filename: "tree.png",
         contentType: "image/png",
-        fileSize: 1000,
-        responseId: 4001,
-        questionId: 30,
-        siteId: 208,
       }),
     });
 
     const response = await POST(request);
     const body = await response.json();
 
+    expect(generateFilename).toHaveBeenCalledWith({
+      siteName: "Riverlot 56",
+      date: "2026-03-21",
+      photographer: "Raiyana Rahman",
+      identifier: "Broken Tree",
+      extension: "png",
+    });
+
     expect(response.status).toBe(200);
     expect(body).toEqual({
       uploadUrl: "https://signed-upload.example.com/png",
-      key: "inspections/208/4001/30/mock-uuid-123.png",
+      key: "inspections/207/3226/27/Riverlot56-2026-03-21-RaiyanaRahman-BrokenTree-generated.png",
+      generatedFilename: "Riverlot56-2026-03-21-RaiyanaRahman-BrokenTree-generated.png",
     });
   });
 
-  it("returns upload url and key for webp", async () => {
+  it("returns upload url, key, and generatedFilename for webp", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: {
+        user: {
+          id: "user-1",
+          user_metadata: { full_name: "Raiyana Rahman" },
+        },
+      },
       error: null,
     });
+
+    (generateFilename as jest.Mock).mockReturnValueOnce(
+      "Riverlot56-2026-03-21-RaiyanaRahman-BrokenTree-generated.webp"
+    );
 
     (getSignedUrl as jest.Mock).mockResolvedValueOnce(
       "https://signed-upload.example.com/webp"
@@ -311,28 +352,133 @@ describe("POST /api/s3/presign", () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        ...validBody,
         filename: "tree.webp",
         contentType: "image/webp",
-        fileSize: 1000,
-        responseId: 5001,
-        questionId: 31,
-        siteId: 209,
       }),
     });
 
     const response = await POST(request);
     const body = await response.json();
 
+    expect(generateFilename).toHaveBeenCalledWith({
+      siteName: "Riverlot 56",
+      date: "2026-03-21",
+      photographer: "Raiyana Rahman",
+      identifier: "Broken Tree",
+      extension: "webp",
+    });
+
     expect(response.status).toBe(200);
     expect(body).toEqual({
       uploadUrl: "https://signed-upload.example.com/webp",
-      key: "inspections/209/5001/31/mock-uuid-123.webp",
+      key: "inspections/207/3226/27/Riverlot56-2026-03-21-RaiyanaRahman-BrokenTree-generated.webp",
+      generatedFilename: "Riverlot56-2026-03-21-RaiyanaRahman-BrokenTree-generated.webp",
+    });
+  });
+
+  it("falls back to user full_name when photographer is blank", async () => {
+    mockGetUser.mockResolvedValue({
+      data: {
+        user: {
+          id: "user-1",
+          user_metadata: { full_name: "Fallback User" },
+        },
+      },
+      error: null,
+    });
+
+    (generateFilename as jest.Mock).mockReturnValueOnce(
+      "Riverlot56-2026-03-21-FallbackUser-BrokenTree-generated.jpg"
+    );
+
+    (getSignedUrl as jest.Mock).mockResolvedValueOnce(
+      "https://signed-upload.example.com/jpeg"
+    );
+
+    const request = new Request("http://localhost:3000/api/s3/presign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...validBody,
+        photographer: "   ",
+      }),
+    });
+
+    const response = await POST(request);
+    const body = await response.json();
+
+    expect(generateFilename).toHaveBeenCalledWith({
+      siteName: "Riverlot 56",
+      date: "2026-03-21",
+      photographer: "Fallback User",
+      identifier: "Broken Tree",
+      extension: "jpg",
+    });
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      uploadUrl: "https://signed-upload.example.com/jpeg",
+      key: "inspections/207/3226/27/Riverlot56-2026-03-21-FallbackUser-BrokenTree-generated.jpg",
+      generatedFilename: "Riverlot56-2026-03-21-FallbackUser-BrokenTree-generated.jpg",
+    });
+  });
+
+  it('falls back to "UnknownUser" when photographer is blank and user full_name is missing', async () => {
+    mockGetUser.mockResolvedValue({
+      data: {
+        user: {
+          id: "user-1",
+          user_metadata: {},
+        },
+      },
+      error: null,
+    });
+
+    (generateFilename as jest.Mock).mockReturnValueOnce(
+      "Riverlot56-2026-03-21-UnknownUser-BrokenTree-generated.jpg"
+    );
+
+    (getSignedUrl as jest.Mock).mockResolvedValueOnce(
+      "https://signed-upload.example.com/jpeg"
+    );
+
+    const request = new Request("http://localhost:3000/api/s3/presign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...validBody,
+        photographer: "",
+      }),
+    });
+
+    const response = await POST(request);
+    const body = await response.json();
+
+    expect(generateFilename).toHaveBeenCalledWith({
+      siteName: "Riverlot 56",
+      date: "2026-03-21",
+      photographer: "UnknownUser",
+      identifier: "Broken Tree",
+      extension: "jpg",
+    });
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      uploadUrl: "https://signed-upload.example.com/jpeg",
+      key: "inspections/207/3226/27/Riverlot56-2026-03-21-UnknownUser-BrokenTree-generated.jpg",
+      generatedFilename: "Riverlot56-2026-03-21-UnknownUser-BrokenTree-generated.jpg",
     });
   });
 
   it("returns 500 when request.json throws", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: {
+        user: {
+          id: "user-1",
+          user_metadata: {},
+        },
+      },
       error: null,
     });
 
@@ -349,7 +495,12 @@ describe("POST /api/s3/presign", () => {
 
   it("returns 500 when signed url generation fails", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: {
+        user: {
+          id: "user-1",
+          user_metadata: { full_name: "Raiyana Rahman" },
+        },
+      },
       error: null,
     });
 
@@ -358,14 +509,7 @@ describe("POST /api/s3/presign", () => {
     const request = new Request("http://localhost:3000/api/s3/presign", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        filename: "tree.jpg",
-        contentType: "image/jpeg",
-        fileSize: 1000,
-        responseId: 3226,
-        questionId: 27,
-        siteId: 207,
-      }),
+      body: JSON.stringify(validBody),
     });
 
     const response = await POST(request);
@@ -381,14 +525,7 @@ describe("POST /api/s3/presign", () => {
     const request = new Request("http://localhost:3000/api/s3/presign", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        filename: "tree.jpg",
-        contentType: "image/jpeg",
-        fileSize: 1000,
-        responseId: 3226,
-        questionId: 27,
-        siteId: 207,
-      }),
+      body: JSON.stringify(validBody),
     });
 
     const response = await POST(request);

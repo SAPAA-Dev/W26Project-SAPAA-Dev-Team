@@ -9,7 +9,8 @@ interface Attachment {
   response_id: string;
   question_id: string;
   caption?: string | null;
-  description?: string | null;
+  identifier?: string | null;
+  date?: string | null;
   storage_key: string;
   content_type: string;
   file_size_bytes?: number | null;
@@ -68,7 +69,8 @@ export async function GET() {
       response_id,
       question_id,
       caption,
-      description,
+      identifier,
+      date,
       storage_key,
       content_type,
       file_size_bytes,
@@ -151,7 +153,8 @@ export async function GET() {
             response_id: attachment.response_id,
             question_id: attachment.question_id,
             caption: attachment.caption,
-            description: attachment.description,
+            identifier: attachment.identifier,
+            date: attachment.date,
             storage_key: attachment.storage_key,
             content_type: attachment.content_type,
             file_size_bytes: attachment.file_size_bytes,
