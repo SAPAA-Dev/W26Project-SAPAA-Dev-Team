@@ -1,6 +1,6 @@
 # SAPAA
 ## Protected Areas Inspection App
-### UI / UX Design Documentation - v1.0
+### UI / UX Design Documentation - v2.0
 #### Design System Reference for Development Teams
 `Next.js` · `Tailwind CSS` · `Supabase` · `AWS`
 
@@ -51,8 +51,9 @@ Consistency is critical. Every page must follow the patterns described here so t
 Maintain a consistent visual language to reduce cognitive load and build user confidence.
 
 **Unified navigation shell:**
-- **Mobile:** All screens use the same green top app bar with title and back button. A persistent bottom tab bar provides access to Analytics, Sites, and SAPAA Map.
-- **Web:** Consistent header with SAPAA logo, gradient green background, and navigation elements. Admin pages use a hamburger menu for navigation.
+Consistent header with SAPAA logo, gradient green background, and navigation elements. Admin pages use a hamburger menu for navigation.
+
+![UI Header](images/ui_header.png) 
 
 **Standardised colour palette:** Primary green (`#254431`, `#356B43`) for headers and primary actions. White (`#FFFFFF`) for content cards. Light grey (`#F7F2EA`, `#E4EBE4`) for dividers and secondary surfaces. Red (`#B91C1C`) for destructive actions.
 
@@ -64,7 +65,13 @@ Guide attention using size, weight, colour, and spacing.
 
 **Card-based layout:** Major information chunks are grouped into cards (e.g., Site Details, Naturalness Details, Analytics charts, Account tiles). Cards use consistent padding, rounded corners, and subtle shadows.
 
+![UI Card Based Layout](images/ui_card_based_layout.png) 
+
+
 **Strategic emphasis:** Primary actions use filled green buttons with high visual weight (e.g., Preview PDF, Sync Now, Login). Secondary actions use outlined buttons or lower-contrast styling.
+
+![UI Strategic Emphasis](images/ui_primary_secondary_buttons.png)
+
 
 **Consistent spacing:** Padding inside cards (16–24px) and consistent vertical spacing between sections (16–32px) creates rhythm and improves readability.
 
@@ -74,7 +81,11 @@ Show only what users need at each step, and reveal more detail on demand.
 
 **Inspection Reports:** Tabs for By Date and By Question instead of one long view. Expandable sections for detailed observations.
 
+![UI Tabs](images/ui_view_compare_date_question_tabs.png) 
+
 **Site Details:** High-level information at the top (name, location, key metrics). Detailed observations and naturalness details appear further down in separate cards.
+
+![UI Site Details](images/ui_site_details.png) 
 
 **Admin Features:** Admin-specific features are not visible to regular users. Admin navigation is accessible via menu or dedicated button.
 
@@ -82,11 +93,16 @@ Show only what users need at each step, and reveal more detail on demand.
 
 Make key tasks obvious and easy to complete.
 
-**Clear primary action per screen:** Preview PDF on the report modal (mobile). Sync Now on Analytics (mobile). Search on the Sites/Protected Areas page. Add User on Account Management.
-
 **Button hierarchy:** Primary uses solid green, often full width. Secondary uses outlined or low-emphasis styling. Destructive uses red with a clear label.
 
+![UI Button Hierarchy](images/ui_button_hierarchy.png) 
+
+
 **Immediate feedback:** Counters and indicators update live as users interact. Loading states show progress indicators. Lists and cards visually respond to user interaction.
+
+![UI Counters Feedback](images/ui_counters_feedback.png) 
+
+![UI Loading Feedback](images/ui_loading_wheel.png) 
 
 ---
 
@@ -96,9 +112,14 @@ Make key tasks obvious and easy to complete.
 
 The system always keeps users informed about what is going on.
 
-**Mobile:** A field counter in the PDF modal updates live as users toggle checkboxes. The app bar title reflects the current screen. Bottom navigation highlights the active tab. An Online/Offline badge shows connection status.
-
 **Web:** Loading spinners appear during data fetches. Page titles reflect the current location. Active navigation items are highlighted. Search results show a count of sites found.
+
+![UI Site Title](images/ui_site_page_title.png) 
+
+![UI Highlighted Item](images/ui_highlighted_item.png) 
+
+![UI Search Result Count](images/ui_search_result_count.png) 
+
 
 **Why this matters:** Users can see that their actions are working and understand where they are in the app, reducing confusion and frustration.
 
@@ -106,15 +127,20 @@ The system always keeps users informed about what is going on.
 
 The application uses terminology that stewards already know: Naturalness Score, Recreational Activities, Observations. The SAPAA Map uses Google Maps (mobile) and Leaflet (web) with familiar map interactions. Inspection questions are labelled with codes (Q52, Q62, etc.) that match existing steward workflows.
 
+![UI Steward Terminology](images/ui_steward_terminology.png) 
+
 **Why this matters:** Familiar language and visuals reduce training time and make the app feel like a natural extension of existing workflows.
 
 ### 3.3 User Control and Freedom
 
 Provide clearly marked exits and ways to undo actions.
 
-**Mobile:** A back arrow appears on every top bar. Modals can be dismissed with an X or the system back gesture. Users can toggle PDF fields freely, use Select All and Clear All, and preview a report before sharing it.
-
 **Web:** Back buttons appear on all detail pages. Modal dialogs can be closed with the X button or by clicking outside. Cancel buttons appear on forms. Breadcrumb navigation is used where applicable.
+
+![UI Back Button](images/ui_back_button.png) 
+
+![UI Cancel Button](images/ui_cancel_button.png) 
+
 
 **Why this matters:** Users feel safe exploring features because they know they can easily back out or adjust their choices.
 
@@ -122,9 +148,7 @@ Provide clearly marked exits and ways to undo actions.
 
 Follow platform conventions and maintain internal consistency.
 
-**Mobile:** Consistent bottom navigation layout across all screens. Primary actions are always solid green; destructive actions are always red. List items follow the same pattern: icon left, label and detail text right.
-
-**Web:** Consistent header design across all pages. Button styles are standardised (primary, secondary, destructive). Form inputs follow the same styling. Card components are reused throughout.
+**Web:** Consistent header design across all pages. Button styles are standardized (primary, secondary, destructive). Form inputs follow the same styling. Card components are reused throughout.
 
 **Why this matters:** Once users learn basic patterns, they can apply them everywhere in the app.
 
@@ -132,15 +156,20 @@ Follow platform conventions and maintain internal consistency.
 
 Design to prevent errors before they happen.
 
-**Mobile:** The PDF flow separates Preview PDF and Share PDF so users do not accidentally share a report before checking it. Destructive actions such as Delete Account are clearly styled in red. Many inputs are constrained to checkboxes and predefined fields rather than free text for critical data.
+**Web:** Form validation prevents invalid submissions. Confirmation dialogues guard against destructive actions. Disabled states prevent invalid interactions. Clear error messages guide users to a resolution.
 
-**Web:** Form validation prevents invalid submissions. Confirmation dialogs guard destructive actions. Disabled states prevent invalid interactions. Clear error messages guide users to a resolution.
+![UI Form Validation](images/ui_form_validation.png) 
+
+![UI Error Message](images/ui_error_message.png) 
 
 **Why this matters:** Preventing mistakes saves time and protects data integrity.
 
 ### 3.6 Recognition Rather Than Recall
 
-All fields are clearly labelled: Region, Area (HA/AC), Naturalness Details, and so on. Bottom tabs (mobile) are always visible with both icons and text labels. PDF field selection mirrors the Site Details layout and naming. Status badges show inspection recency with colour coding so users do not need to calculate dates themselves.
+All fields are clearly labelled: Region, Area (HA/AC), Naturalness Details, and so on. Status badges show inspection recency with colour coding, so users do not need to calculate dates themselves.
+
+![UI Field Labels](images/ui_field_labels.png) 
+
 
 **Why this matters:** Users do not have to remember information across screens; they can recognise it instead.
 
@@ -148,11 +177,13 @@ All fields are clearly labelled: Region, Area (HA/AC), Naturalness Details, and 
 
 Provide accelerators for expert users while keeping the interface simple for novices.
 
-**Bulk actions:** Select All / Clear All for PDF fields (mobile). Sync Now for on-demand data refresh (mobile). Bulk selection for offline downloads (mobile).
-
 **Multiple access paths:** Inspection reports can be viewed By Date (chronological workflow) or By Question (comparison/analysis workflow).
 
+![UI Efficient Workflow](images/ui_efficient_workflow.png) 
+
 **Smart defaults:** PDF generation starts with all fields selected, so users typically only need to deselect a few. Search is always available. Sort options are remembered.
+
+![UI Smart Defaults](images/ui_smart_defaults.png) 
 
 **Why this matters:** New users can follow straightforward flows, while experienced users can speed up their work with bulk actions and shortcuts.
 
@@ -160,7 +191,9 @@ Provide accelerators for expert users while keeping the interface simple for nov
 
 Interfaces should not contain irrelevant or rarely needed information.
 
-Each screen is focused on one main task: view analytics, inspect a site, manage accounts, or generate a PDF. A limited colour palette (green, white, grey, and red for warnings) keeps the interface clean. Cards group only related information with enough white space for breathing room. Icons are used only where they add meaning, not for decoration.
+Each screen is focused on one main task: view analytics, inspect a site, manage accounts, or generate a PDF. A limited colour palette (green, white, grey, and red for warnings) keeps the interface clean. Cards group only related information with enough white space for breathing room.
+
+![UI Aesthetics and Minimalist Design](images/ui_aesthetics_minimalist_design.png) 
 
 **Why this matters:** A clean interface makes it easier to focus on what matters and reduces cognitive overload.
 
@@ -168,9 +201,9 @@ Each screen is focused on one main task: view analytics, inspect a site, manage 
 
 Error messages should be expressed in plain language, indicate the problem, and suggest a solution.
 
-**Mobile:** Error messages appear as snackbars or toasts with clear explanations. Network errors show retry options. Validation errors appear inline with form fields.
-
 **Web:** Error messages are displayed in red with clear visibility. Form validation shows specific field errors. Network errors provide retry buttons. 404 pages guide users back to main content.
+
+![UI Visible Errors](images/ui_visible_error_message.png) 
 
 **Why this matters:** Users can quickly understand what went wrong and how to fix it rather than feeling frustrated.
 
@@ -178,7 +211,10 @@ Error messages should be expressed in plain language, indicate the problem, and 
 
 Help should be easy to find, focused on the user's task, and list concrete steps.
 
-A user manual is available as a separate document. In-app tooltips and hints are provided where appropriate. Clear labels and placeholders guide users through forms. Status messages explain what actions do (e.g., "Syncing data..."). Page titles and descriptions provide contextual orientation throughout the web application.
+A user manual is available as an app tutorial. In-app tooltips and hints are provided where appropriate. Clear labels and placeholders guide users through forms. Status messages explain what actions do (e.g., "Syncing data..."). Page titles and descriptions provide contextual orientation throughout the web application.
+
+![UI In-app Tooltips](images/ui_help_tooltips.png) 
+
 
 **Why this matters:** While the interface should be self-explanatory, having documentation available helps users learn advanced features.
 
@@ -186,16 +222,7 @@ A user manual is available as a separate document. In-app tooltips and hints are
 
 ## 4. Accessibility
 
-### 4.1 Mobile Application
-
-- **Touch targets:** All interactive elements meet the minimum 44x44pt touch target size.
-- **Colour contrast:** Text meets WCAG AA standards (4.5:1 for normal text, 3:1 for large text).
-- **Screen reader support:** React Native Paper components provide built-in accessibility labels.
-- **Keyboard navigation:** Support for external keyboards on tablets.
-- **Dynamic type:** Text scales with system font size settings.
-- **Dark mode:** Full support for system dark/light mode preferences.
-
-### 4.2 Web Application
+### 4.1 Web Application
 
 - **Keyboard navigation:** All interactive elements are keyboard accessible.
 - **Screen readers:** Semantic HTML and ARIA labels are used where needed.
@@ -209,6 +236,8 @@ A user manual is available as a separate document. In-app tooltips and hints are
 ## 5. Colour Palette
 
 All colours in the application are drawn from a forest-green and warm-cream palette. Custom hex values are used throughout. No Tailwind named colour shades (e.g., `green-700`) appear in the codebase.
+
+![UI Colour Palette](images/ui_colour_palette.png) 
 
 ### 5.1 Primary Brand Colours
 
@@ -327,6 +356,8 @@ The three columns are wrapped in a `flex gap-8` container inside a `DndContext` 
 
 The application uses a shared green-header style but not one identical markup structure on every page. Most pages use a full-width dark-green banner with logo/title/subtitle and optional right-side actions.
 
+![UI Header Component](images/ui_full_header.png) 
+
 ### 8.1 Standard Header (Primary Site/Detail Pattern)
 
 ```tsx
@@ -368,6 +399,9 @@ Admin pages include `AdminNavBar` near the top of the page. Some pages override 
 </div>
 ```
 
+![UI Admin Header & AdminNavBar](images/ui_admin_header_navbar.png) 
+
+
 ### 8.3 Header with Action Button (Account Management)
 
 When a page needs a primary action button in the header, it is grouped together with the `AdminNavBar` in a single right-side container:
@@ -385,6 +419,8 @@ When a page needs a primary action button in the header, it is grouped together 
   </div>
 </div>
 ```
+![UI Header with Action Button](images/ui_header_action_button.png) 
+
 
 ### 8.4 SAPAA Logo
 
@@ -412,6 +448,8 @@ Back navigation exists on detail/report pages but currently has two variants:
 ## 9. Stats Cards
 
 Two stats card styles exist in the application. The Large Icon style is the preferred convention for all admin pages.
+
+![UI Stats Card](images/ui_stats_card.png) 
 
 ### 9.1 Large Icon Style (Preferred - Admin Pages)
 
@@ -486,6 +524,8 @@ When a card is a navigation link (e.g., Image Gallery on the dashboard), wrap it
 
 Inspection status is communicated through inline coloured badges. Badge style follows the pattern: `rounded-full px-3 py-1 text-xs font-semibold`.
 
+![UI Status Badges](images/ui_status_badges.png) 
+
 ### 10.1 Inspection Status Badges
 
 | Label | Text colour | Background | Condition |
@@ -521,6 +561,8 @@ Inspection status is communicated through inline coloured badges. Badge style fo
 ---
 
 ## 11. Buttons
+
+![UI Buttons](images/ui_buttons.png) 
 
 ### 11.1 Primary Button
 
@@ -599,6 +641,10 @@ Small square icon button in a sidebar header:
 
 ## 12. Form Inputs
 
+![UI Form Input 1](images/ui_form_inputs1.png) 
+
+![UI Form Input 2](images/ui_form_inputs2.png) 
+
 ### 12.1 Standard Text Input
 
 ```tsx
@@ -657,6 +703,8 @@ The green border signals that this area is in an active edit state. The form act
 
 ## 13. Cards and Panels
 
+![UI Standard Card](images/ui_standard_card.png) 
+
 ### 13.1 Standard White Card
 
 The default content container used throughout the application:
@@ -688,6 +736,9 @@ The default content container used throughout the application:
 </div>
 ```
 
+![UI Sidebar](images/ui_sidebar.png) 
+
+
 ### 13.3 Sticky Preview Panel
 
 The right-side preview panel in the Form Editor is sticky so it stays visible while scrolling:
@@ -697,6 +748,9 @@ The right-side preview panel in the Form Editor is sticky so it stays visible wh
   ...
 </div>
 ```
+
+![UI Sticky Preview](images/ui_sticky_preview.png) 
+
 
 ### 13.4 Active / Selected Card State
 
@@ -722,6 +776,7 @@ border-[#356B43] shadow-sm
   </button>
 </div>
 ```
+![UI Empty State](images/ui_empty_state.png) 
 
 ---
 
@@ -749,6 +804,9 @@ border-[#356B43] shadow-sm
 </div>
 ```
 
+![UI Success Alert](images/ui_success_alert.png) 
+
+
 ### 14.3 Alert Behaviour
 
 - Alerts appear immediately below the header, inside the `max-w-7xl mx-auto px-6 pt-4` container.
@@ -774,6 +832,8 @@ When a page is loading its initial data, render a centred spinner on the page ba
 </ProtectedRoute>
 ```
 
+![UI Page Loading](images/ui_page_loading.png) 
+
 ### 15.2 Button Loading State
 
 When a save/submit operation is in progress, replace the button icon with a spinning `Loader2`:
@@ -784,6 +844,7 @@ When a save/submit operation is in progress, replace the button icon with a spin
   {saving ? 'Saving...' : 'Save Changes'}
 </button>
 ```
+![UI Button Loading](images/ui_button_loading.png) 
 
 ### 15.3 Leaflet / Map SSR Guard
 
@@ -840,6 +901,8 @@ Each sortable item exposes only a grip handle (not the whole card) as the drag t
   <GripVertical className="w-4 h-4 text-[#7A8075]" />
 </button>
 ```
+![UI Drag Handle](images/ui_drag_drop.png) 
+
 
 ### 16.3 Drag Visual Feedback
 
@@ -851,9 +914,13 @@ Each sortable item exposes only a grip handle (not the whole card) as the drag t
 
 ---
 
+![UI Drag Visual Feedback](images/ui_drag_drop_feedback.png) 
+
 ## 17. AdminNavBar
 
 The `AdminNavBar` component is shared across all admin pages. Its internal structure must not be modified since UI tests depend on specific elements being present.
+
+![UI AdminNavbar](images/ui_admin_navbar.png) 
 
 ### 17.1 Test-Critical Elements
 
@@ -886,15 +953,7 @@ When rendered inside a page header, `AdminNavBar`'s background is overridden wit
 | `W26_form_sections` | Form section metadata |
 | `W26_ab_counties` | County/region lookup |
 
-### 18.2 Legacy Tables (Migration In Progress)
-
-The following tables are from the previous data model. New features should avoid adding new dependencies on them, but the current codebase still has legacy reads in some admin/analytics paths:
-
-- `sites_report_fnr_test`
-- `sites_detail_fnr_test`
-- `sites_list_fnr`
-
-### 18.3 Postgres RPC Functions
+### 18.2 Postgres RPC Functions
 
 Aggregate queries are implemented as Supabase RPC functions to avoid complex client-side joins:
 
@@ -903,7 +962,7 @@ Aggregate queries are implemented as Supabase RPC functions to avoid complex cli
 | `get_naturalness_distribution()` | Returns normalised naturalness score buckets with counts from `W26_answers` |
 | `get_top_sites_distribution()` | Returns top 5 active sites by inspection count from `W26_form_responses` and `W26_sites-pa` |
 
-### 18.4 Naturalness Score Normalisation
+### 18.3 Naturalness Score Normalisation
 
 Raw `obs_value` data for naturalness is inconsistently stored (e.g., "4 - Great", "4 = Great", "Great"). The RPC uses `ILIKE` pattern matching with a `CASE` statement to normalise these into five canonical buckets: Great, Good, Passable, Terrible, and Cannot Answer.
 
@@ -991,6 +1050,6 @@ Re-apply all query mocks in `beforeEach` after `jest.clearAllMocks()`. Import th
 
 *End of Document*
 
-**Document Version:** 3.0  
+**Document Version:** 2.0  
 **Last Updated:** March 2026  
 **Prepared for:** Stewards of Alberta's Protected Areas Association

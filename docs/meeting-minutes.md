@@ -178,6 +178,7 @@ The team attended the regular lab session with the TA to discuss the remaining S
 | **Company** | SAPAA |
 | **Project** | SAPAA WebApp |
 | **Time** | 7:00PM - 9:00PM |
+| **Mode** | Online |
 | **Attendees** | Akib, Braden, Harveer, Jason, Raiyana, Vishal, Zoe |
 
 #### Summary
@@ -645,6 +646,7 @@ A Sprint 3 check-in with Frank, Gabriel, and Mehrdad to confirm AWS setup, show 
 | **Company** | SAPAA |
 | **Project** | SAPAA WebApp |
 | **Time** | 1:05 PM – 2:00 PM |
+| **Mode** | Online |
 | **Attendees** | Akib, Braden, Frank, Gabriel, Harveer, Jason, Mehrdad, Raiyana, Vishal, Zoe |
 
 #### Summary
@@ -672,3 +674,284 @@ The team met with Frank, Gabriel, and Mehrdad to demo Sprint 3 capabilities, inc
 - Review and discuss user feedback from upcoming testing sessions.
 
 ---
+
+## Sprint 4
+
+---
+
+### March 10, 2026 – Meeting #1
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA WebApp User Testing Session #1 |
+| **Time** | 9:00 AM – 10:30 AM |
+| **Mode** | Online |
+| **Attendees** | Frank, Gabriel, Harveer, Jason, Mehrdad, Raiyana, Vishal |
+
+#### Summary
+
+The team met with members and friends of SAPAA to get early feedback on the development on the SAPAA webapp. Members of the team were paired with participants to walk them through webapp. Based on user-scenarios by Harveer, the participants were timed on whether they are able to fill out a SIR, and access information related to a site. During and after each scenario, participants had provided their feedback on the webapp.
+
+#### Key Discussions & Decisions
+
+- Members were placed into break-out rooms of a 1:1 ratio of CMPUT401 team to participant.
+- Each CMPUT401 team member presented the scenarios to the participant.
+- Observations were noted by the team while the participants attempted the scenario.
+- Participants had given valuable feedback on our webapp which we can use for future development.
+
+#### Action Items
+
+- Fix bugs that arose during testing session, such as Image upload on deployed Vercel link. (Raiyana)
+- Based on user feedback, anchoring of buttons on the form; the Next/Previous buttons. (Akib)
+- Based on user feedback, fixing the back button navigation across all pages. (Zoe)
+- Based on user feedback, Minor UI tweaks based on accessibility of form. (everyone)
+
+#### Next Meeting Agenda
+
+- Continue to collect data from users with updated webapp based on previous feedback.
+
+---
+
+### March 11, 2026 – Meeting #2
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA WebApp |
+| **Time** | 10:00 AM – 11:00 AM |
+| **Mode** | In-Person at KHRA |
+| **Attendees** | Akib, Braden, Harveer, Jason, Raiyana, Shahriar, Vishal, Zoe |
+
+#### Summary
+
+Sprint-4 check-in with our TA to demo the Sprint-3 state of our Image Management System, Admin Form Editor, and User Editing Site Inspection Forms, and gather feedback on recent progress. Gathered early feedback about UI testing and Sprint-4 details regarding GitHub actions and switching to auto-runners on Cybera.
+
+#### Key Discussions & Decisions
+
+- Received feedback from the TA on the current state of the project.
+- Discussed testing and switching to auto-runners on Cybera.
+
+#### Action Items
+
+- Finish US 2.0.7 and US 2.0.8 to demo to Frank on Friday. (Raiyana, Vishal)
+- Continue work on active user stories. (Team)
+
+#### Next Meeting Agenda
+
+- Session #2 for user feedback on webapp. (Harveer, Raiyana)
+- Show progress on UI to Frank.
+
+
+---
+
+
+### March 12, 2026 – Meeting #3
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA WebApp User Testing Session #2 |
+| **Time** | 12:00 PM – 1:30 PM |
+| **Mode** | Online |
+| **Attendees** | Frank, Gabriel, Harveer, Mehrdad, Raiyana |
+
+#### Summary
+
+This was Session 2 for collecting user feedback on the SAPAA webapp. Similar to Session 1 on March 10th, members of the team were paired with participants to walk them through webapp. Based on user-scenarios by Harveer, the participants were timed on whether they are able to fill out a SIR, and access information related to a site. During and after each scenario, participants had provided their feedback on the webapp.
+
+#### Key Discussions & Decisions
+
+- Members were placed into break-out rooms of a 1:1 ratio of CMPUT401 team to participant.
+- Each CMPUT401 team member presented the scenarios to the participant.
+- Observations were noted by the team while the participants attempted the scenario.
+- Participants had given valuable feedback on our webapp which we can use for future development.
+
+#### Action Items
+
+- Based on user feedback, anchoring of buttons on the form; the Next/Previous buttons. (Akib)
+- Based on user feedback, fixing the back button navigation across all pages. (Zoe)
+- Based on user feedback, other Minor UI tweaks based on accessibility of form. (everyone)
+
+#### Next Meeting Agenda
+
+- Debrief testing session with Frank, Mehrdad and Gabriel on Friday.
+
+---
+
+### March 13, 2026 – Meeting #4
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA WebApp |
+| **Time** | 1:05 PM – 2:00 PM |
+| **Mode** | Online |
+| **Attendees** | Akib, Braden, Frank, Gabriel, Harveer, Jason, Mehrdad, Raiyana, Vishal, Zoe |
+
+#### Summary
+
+The team met with Frank, Gabriel, and Mehrdad to demo image metadata upload capabilities, improved metadata storage for images. The session also covered upcoming priorities such as the Dragons' Den presentation and Go-Live plan. The team also dicussed changeing the course of sprint 4 to focus on the webapp instead of starting the mobile application. Additionally debriefed user testing session.
+
+#### Key Discussions & Decisions
+
+- Demoed submitting an image using the site inspection report to show metadata being saved using new format and new file naming convention.
+- Demoed standalone image upload functionality.
+- Discussed change of sprint 4 plans to focus on polishing up the webapp for the Go-Live and Dragon's Den.
+- Discussed the possibility of change the UX of the app to tailor to the users.
+
+#### Action Items
+
+- Notification Approval of Users. (Harveer)
+- Editing site info. (Jason, Braden)
+- PDF Generation. (Vishal, Jason, Braden)
+- Data Migration Plan. (Team)
+- Tailor UX to member feedback. (Team)
+
+#### Next Meeting Agenda
+
+- Demo Sprint 4 work
+- Discuss what's next in terms of the go-live plan
+
+---
+
+### March 17, 2026 – Meeting #5
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA WebApp |
+| **Time** | 7:00 PM – 9:30 PM |
+| **Mode** | Online |
+| **Attendees** | Braden, Jason, Raiyana, Vishal |
+
+#### Summary
+
+The team worked together (work session) to resolve outstanding Git pull requests and make continued progress on Sprint 4 tasks. The session was focused on clearing integration blockers and collaborating directly on shared user stories. Additionally, this session led to 3 new/updated user stories (US 2.0.9, US 4.0.1, US 5.0.1) based on client feedback, and a bit of Sprint 5 planning based on TA feedback on minor codebase changes for our March 31st deadline.
+
+#### Key Discussions & Decisions
+
+- Jason and Braden worked on finishing US 4.0.3 and US 4.0.4.
+- Raiyana worked on finishing US 2.0.7.
+- Vishal worked on finishing US 2.0.8, and beginning US 4.0.1.
+- Everyone discussed the removal and addition of user stories based on time capacity and client's immediate requirements.
+
+#### Action Items
+
+- Finish UI tests for US 4.0.3 and US 4.0.4. (Braden, Jason)
+- Work on PDF Generation over the next few days. (Braden, Jason, Vishal)
+- Finish US 2.0.7 with UI, API, and Integration testing. (Akib, Raiyana)
+- Work on US 5.0.1 for admin approval prior to Friday's meeting with Frank. (Harveer)
+- Fixing the back button navigation across all pages. (Zoe)
+
+#### Next Meeting Agenda
+
+- Discuss addition and removal of user stories with TA Shahriar.
+
+---
+
+### March 18, 2026 – Meeting #6
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA WebApp |
+| **Time** | 10:00AM - 10:50AM |
+| **Mode** | In-Person at KHRA |
+| **Attendees** | Akib, Braden, Harveer, Jason, Shahriar, Vishal |
+
+#### Summary
+
+The team used the lab session to review overall Sprint 4 progress, continue ongoing implementations, and share updates on individual user stories. The team discussed with the TA about adding the new user stories discussed on prior meetings, as well as general check-up for Sprint-3 feedback.
+
+#### Key Discussions & Decisions
+
+- Discussed Sprint-3 feedback: Uploading images for our UI Documentation.
+- Discussed the new user stories requested by client, and our new plan for Sprint 5.
+
+#### Action Items
+
+- Continue to work on PDF Generation. (Braden, Jason, Vishal)
+- Fix US 2.0.7 with UI, API, and Integration testing. (Akib, Raiyana)
+- Anchoring next/previous buttons to the bottom and re-navigating to the top. (Akib)
+- Continue working on US 5.0.1 for Admin approval of users. (Harveer)
+- Fixing the back button navigation across all pages. (Zoe)
+
+#### Next Meeting Agenda
+
+- Dragon's Den Meeting on March 19th (to collect more professional feedback on webapp).
+- Features to be implemented by Friday for demoing to Frank.
+
+---
+
+### March 19, 2026 – Meeting #7 (Dragon's Den)
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA WebApp |
+| **Time** | 11:30 AM – 1:30 PM |
+| **Mode** | Online |
+| **Attendees** | Frank, Gabriel, Harveer, Mehrdad, Raiyana, Vishal |
+
+#### Summary
+
+The team was present to gather features required for future versions of the webapp. Clients Gabriel and Mehrdad presented the web application to industry professionals and SAPAA members (dragons) to gather feedback about current and future implementations. Post-meeting, Frank discussed more on plans of data migration for v1.0.
+
+#### Key Discussions & Decisions
+
+- Demoed the current v1.0 of the SAPAA webapp, including the solution for image management and filling out a Site Inspection Report.
+- Feedback on features regarding webapp, such as summarizing all site inspection reports and viewing SIRs alongside filling out the report.
+- Dragons raised questions about design choices, and gave valuable feedback and features they would like to see implemented.
+
+#### Action Items
+
+- Data Migration Plan: Discuss with other CMPUT401 team members about what can be done.
+
+#### Next Meeting Agenda
+
+- Friday Meeting with Frank to demo new features.
+
+---
+
+### March 20, 2026 – Meeting #8
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA WebApp |
+| **Time** | 1:05 PM – 2:00 PM |
+| **Mode** | Online |
+| **Attendees** | Braden, Frank, Gabriel, Harveer, Mehrdad, Jason, Vishal |
+
+#### Summary
+
+The team met with Frank and Gabriel to demo new functionality/design such as site profile editing, new authentication flow, rich text editing in site inspection form, pdf generation with add customizability, and new user experience of the form editor. We also discussed the data migration plan, continual support and future enhancements of the SAPAA webapp. This is the last meeting that Frank will be present for, so the team also gathered feedback on the teams performance this semester.
+
+#### Key Discussions & Decisions
+
+- Demoed changes to site profile admin functionality
+- Demoed admin authorizating users functionality
+- Demoed Rich text editor functionality
+- Demoed PDF generation
+- Demoed new form editor view
+- Discussed data migration plan 
+- Discussed continual support of users and next CMPUT 401 group
+- Discussed tasks and information that need to be added into the end of project report
+- Collected general feedback about the teams performance and the clients overall satifaction of the project
+
+#### Action Items
+
+- Data Migration Plan (Team) (We need to be out of the database by April 5th)
+- Adding tasks for the next team to work on into the end of project report
+    - Ability to edit/add site data
+    - Rework the manual implementation of admin approving users
+
+#### Next Meeting Agenda
+
+- Check-in on data migration
+- Finish up all testing for Sprint-4 
+- Delegate tasks for Sprint-5
+
+---
+
