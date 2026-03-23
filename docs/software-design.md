@@ -57,12 +57,8 @@ This diagram is a description of logical entities of the domain through a UML di
 ### Gallery View
 ![Sequence Diagram](images/Winter 401 SAPAA Sequence Diagram - Gallery View.svg)
 
-
 ### Site Profiles
 ![Sequence Diagram](images/Winter 401 SAPAA Sequence Diagram - Site Profiles.svg)
-
-### Account Management
-![Sequence Diagram](images/Winter 401 SAPAA Sequence Diagram - Account Management.svg)
 
 
 ---
