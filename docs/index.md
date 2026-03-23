@@ -420,8 +420,8 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > **Acceptance Tests**  
 
 > 1. All uploaded media files are linked to one existing site
-> 2. The system stores metadata for each media file, including site, date, photographer, caption and identifier.
-> 3. Media files are saved using the SAPAA naming format derived from the metadata. e.g. ClydeFen-2098-01-23-BobSuruncle-ATVTract-a1b2c3d4.jpg.
+> 2. The system stores metadata for each media file, including site, date, uploader name, and identifier.
+> 3. Media files are saved using the SAPAA naming format derived from the metadata. e.g. ClydeFen-2025-01-23-BobSuruncle-ATVTrack.jpg.
 > 4. Admins can view all media files in the image gallery with their associated metadata.
 > 5. Admins can search or filter media files using stored metadata fields.
 
