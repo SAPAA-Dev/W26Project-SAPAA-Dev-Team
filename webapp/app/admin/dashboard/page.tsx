@@ -39,18 +39,19 @@ type HeatPoint = {
 
 type GalleryItem = {
   id: string;
-  response_id: string;
-  question_id: string;
-  identifier?: string | null;
+  response_id?: string | null;
+  question_id?: string | null;
   caption?: string | null;
-  description?: string | null;
+  identifier?: string | null;
+  date?: string | null;
   storage_key: string;
-  content_type: string;
   file_size_bytes?: number | null;
-  filename: string;
-  site_id: string | null; 
-  site_name?: string | null;
   imageUrl: string;
+  content_type?: string | null;
+  photographer?: string | null;
+  filename?: string | null;
+  site_name?: string | null;
+  site_id?: string | null;
 };
 
 export default function Dashboard() {

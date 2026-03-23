@@ -22,7 +22,7 @@ interface FileEntry {
   who: string;
   created_at: string;
   identifier: string;
-  description: string;
+  caption: string;
 }
 
 function generateFilename(site: Site | null, date: string, who: string, identifier: string): string {
@@ -83,7 +83,7 @@ export default function UploadImages() {
     who: "",
     created_at: "",
     identifier: "",
-    description: "",
+    caption: "",
   });
 
   const addFiles = (newFiles: FileList | null) => {
@@ -120,10 +120,14 @@ export default function UploadImages() {
   const PRESIGN_ROUTE = "/api/s3/presign-homepage-images";
 
   async function getPresignedUrl(input: {
-    filename: string;
     contentType: string;
     fileSize: number;
     siteId: number;
+    siteName: string;
+    date: string;
+    photographer: string;
+    identifier: string;
+    caption: string;
   }) {
     const res = await fetch(PRESIGN_ROUTE, {
       method: "POST",
@@ -161,7 +165,6 @@ export default function UploadImages() {
 
       const rows: Array<{
         storage_key: string;
-        filename: string;
         content_type: string;
         file_size_bytes: number;
         site_id: number;
@@ -169,31 +172,32 @@ export default function UploadImages() {
         date: Date;
         photographer: string;
         identifier: string;
-        description: string;
+        caption: string;
         created_at: string;
       }> = [];
 
       for (const entry of files) {
-        const generatedFilename = generateFilename(entry.site, entry.date, entry.who, entry.identifier);
         const file = entry.file;
         const created_at = new Date().toISOString();
 
         // 1) Get presigned URL
         const { uploadUrl, key } = await getPresignedUrl({
-          filename: generatedFilename,
+          // filename: generatedFilename,
           contentType: file.type,
           fileSize: file.size,
           siteId: entry.site!.id,
+          caption: entry.caption,
+          siteName: entry.site!.name,
+          date: entry.date,
+          photographer: entry.who,
+          identifier: entry.identifier,
         });
-
-        const filename = key.split("/").pop()!; 
 
         // 2) Upload to S3
         await uploadFileToS3(uploadUrl, file);
 
         rows.push({
           storage_key: key,
-          filename,
           content_type: file.type,
           file_size_bytes: file.size,
           site_id: entry.site!.id,
@@ -201,7 +205,7 @@ export default function UploadImages() {
           date: new Date(entry.date),
           photographer: entry.who,
           identifier: entry.identifier,
-          description: entry.description,
+          caption: entry.caption,
           created_at: created_at,
         });
       }
@@ -235,7 +239,7 @@ export default function UploadImages() {
     f.date.trim() !== "" &&
     f.who.trim() !== "" &&
     f.identifier.trim() !== "" &&
-    f.description.trim() !== "";
+    f.caption.trim() !== "";
 
   const canUpload = files.length > 0 && files.every(isComplete);
 
@@ -453,7 +457,7 @@ export default function UploadImages() {
                         </label>
                         <input
                           type="text"
-                          placeholder="Shorter Description"
+                          placeholder="Short Description"
                           value={current.identifier}
                           onChange={(e) => {
                             const val = e.target.value;
@@ -470,10 +474,10 @@ export default function UploadImages() {
                       <div>
                         <label className="block text-xs font-semibold uppercase tracking-wide text-gray-900 mb-1">Caption <span className="text-red-400">*</span></label>
                         <textarea
-                          placeholder="Longer Description"
+                          placeholder="Longer Description. What is it, why is it important?"
                           rows={2}
-                          value={current.description}
-                          onChange={(e) => updateField("description", e.target.value)}
+                          value={current.caption}
+                          onChange={(e) => updateField("caption", e.target.value)}
                           className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:border-[#356B43] focus:bg-white transition-colors placeholder:text-gray-300 text-gray-700 resize-none"
                         />
                       </div>
