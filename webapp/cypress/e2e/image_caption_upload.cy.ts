@@ -10,7 +10,7 @@ function login() {
   cy.get("#email").click();
   cy.get("#email").type("jason.liang5129@gmail.com");
   cy.get("#password").click();
-  cy.get("#password").type("123Gctrmomy@");
+  cy.get("#password").type("123Abc@@");
   cy.get("button.font-bold").click();
   cy.get("button.text-white").click();
   cy.url().should("include", "/sites");
@@ -31,12 +31,12 @@ function dismissVerificationModalIfVisible() {
     if ($body.text().includes("The Fine Print Up Front")) {
       cy.contains("The Fine Print Up Front").should("be.visible");
       cy.get('label:has(input[type="checkbox"]) input[type="checkbox"]').check({ force: true });
-      cy.wait(1000);
+      cy.wait(2000);
       cy.contains("button", "Continue to Form")
         .should("be.visible")
         .and("not.be.disabled")
         .click({ force: true });
-      cy.wait(1000);
+      cy.wait(2000);
     }
   });
 }
@@ -62,13 +62,15 @@ function uploadOneImage() {
 }
 
 function captionInput() {
-  return cy.get('input[placeholder="Caption (optional)"]').first().scrollIntoView();
+  return cy.get('input[placeholder="Longer Description"]').first().scrollIntoView();
 }
 
 describe("Image Caption Behavior - Q81.1", () => {
   it("supports viewing, adding, editing, clearing, and removing image caption before submit", () => {
     login();
+    cy.wait(1000);
     openNewReport();
+    cy.wait(1000);
     completeVerificationIfPresent();
     goToCloseSection();
     uploadOneImage();

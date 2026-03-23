@@ -59,7 +59,6 @@ jest.mock('../../utils/form-actions', () => ({
   toggleQuestionActive: jest.fn(),
   addQuestion: jest.fn(),
   reorderQuestions: jest.fn(),
-  addFormSection: jest.fn(),
 }));
 
 // ─── Test Data ────────────────────────────────────────────────────────
@@ -125,7 +124,6 @@ describe('FormEditorPage', () => {
     (formActions.saveQuestion as jest.Mock).mockResolvedValue(undefined);
     (formActions.toggleQuestionActive as jest.Mock).mockResolvedValue(undefined);
     (formActions.addQuestion as jest.Mock).mockResolvedValue(undefined);
-    (formActions.addFormSection as jest.Mock).mockResolvedValue(3);
   });
 
   // ─── Loading & Initial Render ───────────────────────────────────────

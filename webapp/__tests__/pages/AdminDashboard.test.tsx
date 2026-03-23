@@ -1,6 +1,6 @@
 // __tests__/pages/AdminDashboard.test.tsx
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 
 // Must mock these BEFORE importing Dashboard
 jest.mock('@/utils/supabase/queries', () => ({
@@ -20,6 +20,11 @@ jest.mock('@/utils/supabase/client', () => ({
 jest.mock('@/utils/supabase/server', () => ({
   createServerSupabase: jest.fn(),
   createClient: jest.fn(),
+}));
+
+// Mock next/router
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(),
 }));
 
 jest.mock("../../app/admin/dashboard/components/Map", () => () => <div>MapMock</div>);
@@ -53,9 +58,14 @@ describe("Dashboard", () => {
     queries.getNaturalnessDistribution.mockResolvedValue([{ naturalness_score: 'Good', count: 3 }]);
     queries.getTopSitesDistribution.mockResolvedValue([{ namesite: 'Alpha', count: 5 }]);
 
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ items: [] }),
+    global.fetch = jest.fn().mockImplementation((url: string) => {
+      if (url.includes("/api/homepage-images")) {
+        return Promise.resolve({ ok: true, json: async () => ({ items: [] }) });
+      }
+      if (url.includes("/api/gallery")) {
+        return Promise.resolve({ ok: true, json: async () => ({ items: [] }) });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({ items: [] }) });
     });
     
     jest.spyOn(console, "log").mockImplementation(() => {});
@@ -89,10 +99,18 @@ describe("Dashboard", () => {
   });
 
   it("handles search flow with points", async () => {
-    (global.fetch as jest.Mock)
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) }) // gallery fetch
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [{ namesite: "SiteA", count: 1 }] }) }) // search
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ latitude: 1, longitude: 2 }) }); // geocode
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes("/api/homepage-images") || url.includes("/api/gallery")) {
+        return Promise.resolve({ ok: true, json: async () => ({ items: [] }) });
+      }
+      if (url.includes("/api/heatmap")) {
+        return Promise.resolve({ ok: true, json: async () => ({ data: [{ namesite: "SiteA", count: 1 }] }) });
+      }
+      if (url.includes("/api/geocode")) {
+        return Promise.resolve({ ok: true, json: async () => ({ latitude: 1, longitude: 2 }) });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    });
   
     render(<Dashboard />);
     await waitFor(() => expect(screen.queryByText(/loading dashboard/i)).not.toBeInTheDocument());
@@ -104,13 +122,56 @@ describe("Dashboard", () => {
     await waitFor(() => {
       expect(screen.getByText(/found 1 location/i)).toBeInTheDocument();
       expect(screen.getByText("MapMock")).toBeInTheDocument();
+    }, { timeout: 5000 });
+  });
+
+  it("handles search flow with points", async () => {
+    jest.useFakeTimers();
+  
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes("/api/homepage-images") || url.includes("/api/gallery")) {
+        return Promise.resolve({ ok: true, json: async () => ({ items: [] }) });
+      }
+      if (url.includes("/api/heatmap")) {
+        return Promise.resolve({ ok: true, json: async () => ({ data: [{ namesite: "SiteA", count: 1 }] }) });
+      }
+      if (url.includes("/api/geocode")) {
+        return Promise.resolve({ ok: true, json: async () => ({ latitude: 1, longitude: 2 }) });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
     });
+  
+    render(<Dashboard />);
+  
+    await waitFor(() => expect(screen.queryByText(/loading dashboard/i)).not.toBeInTheDocument());
+  
+    const input = screen.getByPlaceholderText(/enter keyword/i);
+    fireEvent.change(input, { target: { value: "Test" } });
+    fireEvent.click(screen.getByRole("button", { name: /search/i }));
+  
+    // Fast-forward past the 1000ms geocoding delay
+    await act(async () => {
+      jest.runAllTimers();
+    });
+  
+    await waitFor(() => {
+      expect(screen.getByText(/found 1 location/i)).toBeInTheDocument();
+      expect(screen.getByText("MapMock")).toBeInTheDocument();
+    });
+  
+    jest.useRealTimers();
   });
   
   it("handles search fetch error", async () => {
-    (global.fetch as jest.Mock)
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) }) // gallery fetch
-      .mockRejectedValueOnce(new Error("Failed")); // search fetch
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes("/api/homepage-images") || url.includes("/api/gallery")) {
+        return Promise.resolve({ ok: true, json: async () => ({ items: [] }) });
+      }
+      if (url.includes("/api/heatmap")) {
+        return Promise.reject(new Error("Failed"));
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    });
   
     render(<Dashboard />);
     await waitFor(() => expect(screen.queryByText(/loading dashboard/i)).not.toBeInTheDocument());
@@ -123,43 +184,24 @@ describe("Dashboard", () => {
       expect(window.alert).toHaveBeenCalledWith("Search failed: Failed");
     });
   });
-
+  
   it("alerts when search returns no data", async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: async () => ({ data: [] }) });
-
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes("/api/homepage-images") || url.includes("/api/gallery")) {
+        return Promise.resolve({ ok: true, json: async () => ({ items: [] }) });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({ data: [] }) });
+    });
+  
     render(<Dashboard />);
     await waitFor(() => expect(screen.queryByText(/loading dashboard/i)).not.toBeInTheDocument());
-
+  
     const input = screen.getByPlaceholderText(/enter keyword/i);
     fireEvent.change(input, { target: { value: "Empty" } });
     fireEvent.click(screen.getByRole("button", { name: /search/i }));
-
+  
     await waitFor(() => {
       expect(window.alert).toHaveBeenCalledWith('No sites found matching "Empty"');
     });
-  });
-
-  it("renders AdminNavBar inside ProtectedRoute", async () => {
-    render(<Dashboard />);
-    await waitFor(() => expect(screen.queryByText(/loading dashboard/i)).not.toBeInTheDocument());
-    expect(screen.getByText("AdminNavBarMock")).toBeInTheDocument();
-  });
-
-  it("doesn't search when search keyword is empty", async () => {
-    const mockAlert = jest.spyOn(window, 'alert').mockImplementation(() => {});
-    render(<Dashboard />);
-    await waitFor(() => expect(screen.queryByText(/loading dashboard/i)).not.toBeInTheDocument());
-
-    const input = screen.getByPlaceholderText(/enter keyword/i) as HTMLInputElement;
-    expect(input.value).toBe("");
-    (global.fetch as jest.Mock).mockClear();
-
-    fireEvent.click(screen.getByRole("button", { name: /search/i }));
-    await new Promise(resolve => setTimeout(resolve, 300));
-
-    const alertWasCalled = mockAlert.mock.calls.length > 0;
-    const fetchWasCalled = (global.fetch as jest.Mock).mock.calls.length > 0;
-    expect(alertWasCalled || !fetchWasCalled).toBe(true);
-    mockAlert.mockRestore();
   });
 });

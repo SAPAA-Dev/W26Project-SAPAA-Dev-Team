@@ -12,7 +12,7 @@ import {
   getSiteIdForResponse,
 } from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, AlertCircle, Pencil } from "lucide-react";
 import Image from "next/image";
@@ -52,6 +52,14 @@ interface SupabaseAnswerRow {
   obs_comm: string | null;
 }
 
+interface SectionNavigationState {
+  isOnLastSection: boolean;
+  canGoPrevious: boolean;
+  canGoNext: boolean;
+  goToPreviousSection?: () => void;
+  goToNextSection?: () => void;
+}
+
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function EditReportPage() {
@@ -74,12 +82,39 @@ export default function EditReportPage() {
   const [existingAttachments, setExistingAttachments] = useState<ExistingAttachment[]>([]);
   // Track which existing attachments had their metadata changed so we only update those
   const [originalAttachmentMeta, setOriginalAttachmentMeta] = useState<
-    Record<number, { caption: string | null; description: string | null }>
+      Record<number, { caption: string | null; identifier: string | null }>
   >({});
 
   const [showRequiredPopup, setShowRequiredPopup] = useState(false);
   const [missingRequiredQuestionNumbers, setMissingRequiredQuestionNumbers] = useState<string[]>([]);
   const [siteId, setSiteId] = useState<number | null>(null);
+  const [sectionNavigation, setSectionNavigation] = useState<SectionNavigationState>({
+    isOnLastSection: false,
+    canGoPrevious: false,
+    canGoNext: false,
+  });
+
+  const handleSectionStateChange = useCallback((state: {
+    isOnLastSection: boolean;
+    canGoPrevious: boolean;
+    canGoNext: boolean;
+    goToPreviousSection: () => void;
+    goToNextSection: () => void;
+  }) => {
+    setSectionNavigation((previousState) => {
+      if (
+        previousState.isOnLastSection === state.isOnLastSection &&
+        previousState.canGoPrevious === state.canGoPrevious &&
+        previousState.canGoNext === state.canGoNext &&
+        previousState.goToPreviousSection === state.goToPreviousSection &&
+        previousState.goToNextSection === state.goToNextSection
+      ) {
+        return previousState;
+      }
+
+      return state;
+    });
+  }, []);
   
   // ── Init ──────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -111,16 +146,16 @@ export default function EditReportPage() {
           content_type:    a.content_type,
           file_size_bytes: a.file_size_bytes,
           caption:         a.caption,
-          description:     a.description,
+          identifier:      a.identifier,
           site_id:         a.site_id,
           previewUrl:      a.imageUrl,   // ← presigned GET URL from the route
         }));
   
         setExistingAttachments(hydrated);
   
-        const metaSnapshot: Record<number, { caption: string | null; description: string | null }> = {};
+        const metaSnapshot: Record<number, { caption: string | null; identifier: string | null }> = {};
         hydrated.forEach((a) => {
-          metaSnapshot[a.id] = { caption: a.caption, description: a.description };
+          metaSnapshot[a.id] = { caption: a.caption, identifier: a.identifier };
         });
         setOriginalAttachmentMeta(metaSnapshot);
   
@@ -134,7 +169,9 @@ export default function EditReportPage() {
           createClient().auth.getUser(),
         ]);
   
-        setIsAuthorized(ownerId != null && authUser?.id != null && ownerId === authUser.id);
+        const isOwner = ownerId != null && authUser?.id != null && ownerId === authUser.id;
+        const isAdmin = authUser?.user_metadata?.role === 'admin';
+        setIsAuthorized(isOwner || isAdmin);
       } catch (err) {
         console.error('Error initializing edit page:', err);
       } finally {
@@ -198,10 +235,28 @@ export default function EditReportPage() {
   const buildQuestionNumberMap = (formQuestions: Question[]): Record<number, string> => {
     const map: Record<number, string> = {};
     for (const q of formQuestions) {
-      const match = (q.title ?? '').match(/\(Q(\d+)\)/i);
+      const match = (q.title ?? '').match(/\(Q(\d+(?:\.\d+)?)\)/i);
       map[q.id] = match ? `Q${match[1]}` : `Question ${q.id}`;
     }
     return map;
+  };
+
+  const sortQuestionNumbers = (questionNumbers: string[]): string[] => {
+    const getQuestionNumberValue = (questionNumber: string): number => {
+      const match = questionNumber.match(/(\d+(?:\.\d+)?)/);
+      return match ? Number(match[1]) : Number.POSITIVE_INFINITY;
+    };
+
+    return [...questionNumbers].sort((a, b) => {
+      const aValue = getQuestionNumberValue(a);
+      const bValue = getQuestionNumberValue(b);
+
+      if (aValue !== bValue) {
+        return aValue - bValue;
+      }
+
+      return a.localeCompare(b, undefined, { numeric: true });
+    });
   };
 
   // Returns the site_id for the current response (needed for S3 key + attachment insert)
@@ -274,7 +329,7 @@ export default function EditReportPage() {
       .map((q) => questionNumberMap[q.id] ?? `Question ${q.id}`);
 
     if (missingRequired.length > 0) {
-      setMissingRequiredQuestionNumbers(missingRequired);
+      setMissingRequiredQuestionNumbers(sortQuestionNumbers(missingRequired));
       setShowRequiredPopup(true);
       return;
     }
@@ -330,12 +385,12 @@ export default function EditReportPage() {
       for (const attachment of existingAttachments) {
         const original = originalAttachmentMeta[attachment.id];
         const captionChanged = original?.caption !== attachment.caption;
-        const descriptionChanged = original?.description !== attachment.description;
-        if (captionChanged || descriptionChanged) {
+        const identifierChanged = original?.identifier !== attachment.identifier;
+        if (captionChanged || identifierChanged) {
           metadataUpdates.push(
             updateAttachmentMetadata(attachment.id, {
               caption: attachment.caption,
-              description: attachment.description,
+              identifier: attachment.identifier,
             })
           );
         }
@@ -376,7 +431,7 @@ export default function EditReportPage() {
               content_type: image.file.type,
               file_size_bytes: image.file.size,
               caption: image.caption?.trim() || null,
-              description: image.description?.trim() || null,
+              identifier: image.identifier?.trim() || null,
             });
           }
 
@@ -415,7 +470,7 @@ export default function EditReportPage() {
           <h2 className="text-2xl font-bold text-[#254431] mb-2">Access Denied</h2>
           <p className="text-[#7A8075] mb-6">You can only edit reports that you submitted.</p>
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
             className="bg-gradient-to-r from-[#356B43] to-[#254431] text-white font-semibold px-6 py-3 rounded-xl hover:shadow-lg transition-all"
           >
             Go Back
@@ -467,51 +522,47 @@ export default function EditReportPage() {
       )}
 
       {/* Header */}
-      <header className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between py-3 border-b border-white/10">
-            <div className="flex items-center gap-2">
-              <div className="bg-white/20 p-1 rounded-lg">
-                <Image src="/images/sapaa-icon-white.png" alt="Logo" width={24} height={24} />
-              </div>
-              <span className="font-bold tracking-widest text-sm opacity-90">SAPAA</span>
-            </div>
-            <div className="hidden md:flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full border border-white/20">
-              <div className="w-6 h-6 rounded-full overflow-hidden bg-[#356B43] flex items-center justify-center">
-                {currentUser?.avatar ? (
-                  <Image src={currentUser.avatar} alt="User avatar" width={24} height={24} className="object-cover" />
-                ) : (
-                  <span className="text-xs font-bold text-white">{currentUser?.name?.[0] ?? '?'}</span>
-                )}
-              </div>
-              <span className="text-sm font-medium">{currentUser?.name}</span>
-              {isStewardUser && (
-                <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">Steward</span>
-              )}
-            </div>
-          </div>
+            {/* --- CONSOLIDATED HEADER --- */}
+            <header className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+        <div className="max-w-7xl mx-auto">
 
-          <div className="flex items-center justify-between py-6">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.back()}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors"
-              >
-                <ArrowLeft className="w-6 h-6" />
-              </button>
-              <div>
-                <h1 className="text-2xl font-bold">Edit Inspection Report</h1>
-                <p className="text-[#E4EBE4] text-sm">{namesite}</p>
+        <button
+          onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
+          className="flex items-center gap-1.5 text-[#86A98A] hover:text-white transition-colors mb-4 group"
+          data-testid="back-button"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-sm font-medium">Back to Site</span>
+        </button>
+
+        <div className="flex items-start justify-between">
+
+          {/* Left: icon + form info */}
+          <div className="flex items-start gap-4">
+            <Image
+              src="/images/sapaa-icon-white.png"
+              alt="SAPAA"
+              width={140}
+              height={140}
+              priority
+              className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+            />
+            <div>
+              <h1 className="text-3xl font-bold mt-2.5">Edit Inspection Report</h1>
+              <div className="text-[#E4EBE4]">
+                <span className="text-base">{namesite}</span>
               </div>
             </div>
           </div>
         </div>
-      </header>
+      </div>
+    </header>
 
       {/* Form — same MainContent as new-report, extended with existing-attachment props */}
       <MainContent
         responses={responses}
         onResponsesChange={setResponses}
+        onSectionStateChange={handleSectionStateChange}
         siteName={namesite}
         currentUser={currentUser}
         existingAttachments={existingAttachments}
@@ -522,7 +573,13 @@ export default function EditReportPage() {
         questions={questions}
         responses={responses}
         onSubmit={handleSubmit}
+        onPreviousSection={sectionNavigation.goToPreviousSection}
+        onNextSection={sectionNavigation.goToNextSection}
         submitLabel="Save Changes"
+        isSubmitting={isSaving}
+        isSubmitEnabled={sectionNavigation.isOnLastSection}
+        canGoPrevious={sectionNavigation.canGoPrevious}
+        canGoNext={sectionNavigation.canGoNext}
       />
     </div>
   );

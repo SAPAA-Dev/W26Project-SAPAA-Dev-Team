@@ -3,8 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import crypto from "crypto";
-
+import { generateFilename } from "@/utils/media/generateFilename";
 // AWS configuration
 const REGION = process.env.AWS_REGION!;
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
@@ -40,12 +39,21 @@ export async function POST(request: Request) {
     const questionId = body.questionId;
     const siteId = body.siteId;
 
+    const date = body.date;
+    const photographer = body.photographer;
+    const identifier = body.identifier;
+    const siteName = body.siteName;
+
     if (!filename || !contentType) {
       return NextResponse.json({ error: "Invalid file data" }, { status: 400 });
     }
 
     if (!siteId || !responseId || !questionId) {
-    return NextResponse.json({ error: "Missing ids" }, { status: 400 });
+      return NextResponse.json({ error: "Missing ids" }, { status: 400 });
+    }
+
+    if (!siteName || !date || !identifier) {
+      return NextResponse.json({ error: "Missing image metadata" }, { status: 400 });
     }
 
     // Validate file
@@ -64,16 +72,29 @@ export async function POST(request: Request) {
     }
 
     //  Create S3 key
-    const uuid = crypto.randomUUID();
-
     const extension =
-      contentType === "image/jpeg"
-        ? "jpg"
-        : contentType === "image/png"
-        ? "png"
-        : "webp";
+    contentType === "image/jpeg"
+      ? "jpg"
+      : contentType === "image/png"
+      ? "png"
+      : "webp";
 
-    const key = `inspections/${siteId}/${responseId}/${questionId}/${uuid}.${extension}`;
+      const who = photographer?.trim()
+        ? photographer
+        : user.user_metadata?.full_name || "UnknownUser";
+
+      const generatedFilename = generateFilename({
+        siteName,
+        date,
+        photographer: who,
+        identifier,
+        extension,
+      });
+
+      const key =
+        `inspections/${siteId}/${responseId}/${questionId}/${generatedFilename}`;
+
+
 
     //Generate presigned URL
     const command = new PutObjectCommand({
@@ -89,6 +110,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       "uploadUrl": uploadUrl,
       "key": key,
+      "generatedFilename": generatedFilename,
     });
 
   } catch (err) {

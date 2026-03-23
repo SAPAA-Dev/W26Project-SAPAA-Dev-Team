@@ -8,7 +8,7 @@ describe("US 1.0.22 - Editing Site Inspection Form", () => {
   beforeEach(() => {
     cy.visit("http://localhost:3000/");
     cy.get("#email").type("jason.liang5129@gmail.com");
-    cy.get("#password").type("123Gctrmomy@");
+    cy.get("#password").type("123Abc@@");
     cy.get("button.font-bold").click();
     cy.get("button.text-white").click();
     cy.wait(4000);
@@ -19,14 +19,12 @@ describe("US 1.0.22 - Editing Site Inspection Form", () => {
   
   it("user can navigate to an edit report they own", () => {
     cy.visit(`http://localhost:3000/detail/Riverlot%2056%20(NA)/edit-report/${TEST_RESPONSE_ID}`);
-    cy.wait(3000);
-    cy.contains('Edit Inspection Report').should('be.visible');
+    cy.contains('Edit Inspection Report', { timeout: 10000 }).should('be.visible');
   });
   
   it("user can navigate through all sections and verify inputs exist", () => {
     cy.visit(`http://localhost:3000/detail/Riverlot%2056%20(NA)/edit-report/${TEST_RESPONSE_ID}`);
-    cy.wait(3000);
-    cy.contains('Edit Inspection Report').should('be.visible');
+    cy.contains('Edit Inspection Report', { timeout: 10000 }).should('be.visible');
   
     // ── WhoRYou (default) ────────────────────────────────────────────────────
     cy.get('[data-testid="question-input-32"]', { timeout: 10000 }).should('be.visible');
@@ -69,8 +67,7 @@ describe("US 1.0.22 - Editing Site Inspection Form", () => {
 
   it("edited value persists after submission", () => {
     cy.visit(`http://localhost:3000/detail/Riverlot%2056%20(NA)/edit-report/${TEST_RESPONSE_ID}`);
-    cy.wait(3000);
-    cy.contains('Edit Inspection Report').should('be.visible');
+    cy.contains('Edit Inspection Report', { timeout: 10000 }).should('be.visible');
 
     cy.contains('button', 'Close').click();
     cy.get('[data-testid="question-input-28"]', { timeout: 10000 }).should('be.visible');
@@ -81,7 +78,7 @@ describe("US 1.0.22 - Editing Site Inspection Form", () => {
 
     // verify persistence
     cy.visit(`http://localhost:3000/detail/Riverlot%2056%20(NA)/edit-report/${TEST_RESPONSE_ID}`);
-    cy.wait(3000);
+    cy.wait(5000);
     cy.contains('button', 'Close').click();
     cy.get('[data-testid="question-input-28"]', { timeout: 10000 }).should('be.visible');
     cy.get('[data-testid="question-input-28"]', { timeout: 10000 }).should('have.value', NEW_VALUE);

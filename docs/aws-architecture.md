@@ -39,27 +39,27 @@ This approach improves:
 
 A user uploads an image through:
 
-- through a **Site Inspection Report (SIR)** or
-- through the **Standalone Image Upload** feature (to be implemented in Sprint-4)
+- a **Site Inspection Report (SIR)** image upload flow, or
+- the **Standalone Homepage Image Upload** flow
 
 The user may enter metadata such as:
 
 - caption
-- description
-- identifier    (Sprint-4)
-- photographer  (Sprint-4)
+- identifier
+- photographer
+- date
+- site name 
 
 ---
 
 ### Step 2 – Client requests a presigned upload URL
 
-The frontend sends a request to:
+The frontend uses different endpoints depending on the upload source:
 
-```
-POST /api/s3/presign
-```
+#### For SIR image uploads
+`POST /api/s3/presign`
 
-The request contains:
+Request data includes:
 
 - filename
 - contentType
@@ -67,9 +67,25 @@ The request contains:
 - siteId
 - responseId
 - questionId
+- siteName
+- date
+- identifier
+- photographer
 
+#### For standalone homepage image uploads
+`POST /api/s3/presign-homepage-images`
 
-The API validates:
+Request data includes:
+
+- contentType
+- fileSize
+- siteId
+- siteName
+- date
+- photographer
+- identifier
+
+Both APIs validate:
 
 - user authentication
 - file size
@@ -83,27 +99,32 @@ The API validates:
 
 **Images are stored in the S3 bucket:** sapaa-inspection-images
 
+S3 object keys differ by upload source.
 
-**Objects are stored using the following structure:** ```inspections/{siteId}/{responseId}/{questionId}/{uuid}.jpg```
+### SIR upload path
+`inspections/{siteId}/{responseId}/{questionId}/{generatedFilename}`
 
+Example:
+`inspections/207/3235/27/Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg`
 
-**Example:** ```inspections/207/3235/27/a1b2c3d4.jpg```
+### Standalone homepage upload path
+`homepage-image-uploads/{siteId}/{userId}/{generatedFilename}`
 
+Example:
+`homepage-image-uploads/207/6966742d-b9e7-46c1-842f-030d4a97ba39/Riverlot56NA-2026-01-31-ZoePrefontaine-BrokenTreeTrunk-f6f399ce-3521-4fa4-987a-43cf356c693b.jpg`
 
-### Why a UUID is added
+### Why a generated unique suffix is added
 
-Even if two images have identical metadata, the UUID  prevents file collisions.
+The generated filename includes a unique suffix so that even if two images share the same metadata, file collisions are avoided.
 
-This ensures files are **never overwritten**.
+This ensures files are **not overwritten** while still preserving human-readable metadata in the filename.
 
 ---
 
 ## Database Metadata Storage
 
-Image metadata is stored in the table: W26_attachments
-
-
-Important fields include:
+### SIR image metadata table
+Image metadata for SIR uploads is stored in `W26_attachments`.
 
 | Field | Description |
 |-----|-----|
@@ -114,10 +135,26 @@ Important fields include:
 | filename | SAPAA formatted filename |
 | storage_key | S3 object key |
 | caption | Image caption |
-| description | Optional description |
+| identifier | Image identifier |
 | file_size_bytes | File size |
 | content_type | MIME type |
 
+### Standalone homepage image metadata table
+Image metadata for standalone homepage uploads is stored in `W26_homepage-image-uploads`.
+
+| Field | Description |
+|-----|-----|
+| id | Homepage image record ID |
+| site_id | Associated site |
+| user_id | Uploading user |
+| date | Image date |
+| photographer | Photographer name |
+| identifier | Image identifier |
+| caption | Image caption |
+| filename | SAPAA formatted filename |
+| storage_key | S3 object key |
+| file_size_bytes | File size |
+| content_type | MIME type |
 
 ---
 
@@ -142,8 +179,7 @@ In particular, the **gallery administration endpoint** is only accessible to use
 
 ### ``` GET /api/gallery ```
 
-
-This endpoint returns all uploaded images across all sites along with their associated metadata.
+This endpoint returns all uploaded SIR image attachments across all sites along with their associated metadata and signed image URLs.
 
 Because this endpoint exposes all media files and metadata in the system, it is protected with a **server-side authorization check**.
 
@@ -174,14 +210,102 @@ Example response:
       "id": 14,
       "response_id": 3235,
       "question_id": 27,
-      "caption": "Cracked Tree",
-      "filename": "ClydeFen-2025-01-23-BobSuruncle-ATVTrack.jpg",
+      "caption": "Cross Country skil trails",
+      "identifier": "Ski Trails",
+      "date": "2026-01-31",
+      "filename": "Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg",
       "content_type": "image/jpeg",
-      "file_size_bytes": 2433304,
-      "description": "Large crack running up the trunk of a tree.",
-      "storage_key": "inspections/207/3226/27/4c88c01f-8afb-4085-9140-c3bc41e3e00d.jpg",
+      "file_size_bytes": 506701,
+      "storage_key": "inspections/207/3235/27/Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg",
       "site_id": 207,
       "site_name": "Riverlot 56 (NA)",
+      "imageUrl": "https://sapaa-inspection-images.s3.ca-central-1.amazonaws.com/..."
+    }
+  ]
+}
+```
+---
+
+
+### Homepage Image Endpoints
+
+### `GET /api/homepage-images`
+
+Returns all standalone homepage image uploads with metadata and signed image URLs.
+
+#### Access Level
+
+Admin users only.
+
+#### Response Format
+
+```json
+{
+  "items": [
+    {
+      "id": 16,
+      "site_id": 207,
+      "site_name": "Riverlot 56 (NA)",
+      "date": "2026-01-31",
+      "photographer": "Raiyana Rahman",
+      "caption": "Cross Country skil trails",
+      "identifier": "Ski Trails",
+      "filename": "Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-0642088a-b29f-400a-9ce7-e1003fa1e928.jpg",
+      "file_size_bytes": 506701,
+      "storage_key": "homepage-image-uploads/207/user-id/Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-0642088a-b29f-400a-9ce7-e1003fa1e928.jpg",
+      "imageUrl": "https://sapaa-inspection-images.s3.ca-central-1.amazonaws.com/..."
+    }
+  ]
+}
+```
+
+---
+
+### GET `/api/homepage-images/{siteId}`
+
+Returns standalone homepage image uploads for a specific site.
+
+### Access Level
+
+Admin users only.
+
+### Path Parameters
+
+| Parameter | Type    | Required | Description |
+|-----------|---------|----------|-------------|
+| `siteId`  | integer | Yes      | Site ID |
+
+### Response
+
+#### 200 OK
+
+```json
+{
+  "items": [
+    {
+      "id": 16,
+      "site_id": 207,
+      "site_name": "Riverlot 56 (NA)",
+      "date": "2026-01-31",
+      "photographer": "Raiyana Rahman",
+      "caption": "Cross Country skil trails",
+      "identifier": "Ski Trails",
+      "filename": "Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-0642088a-b29f-400a-9ce7-e1003fa1e928.jpg",
+      "file_size_bytes": 506701,
+      "storage_key": "homepage-image-uploads/207/user-id/Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-0642088a-b29f-400a-9ce7-e1003fa1e928.jpg",
+      "imageUrl": "https://sapaa-inspection-images.s3.ca-central-1.amazonaws.com/..."
+    },
+    {
+      "id": 21,
+      "site_id": 207,
+      "site_name": "Riverlot 56 (NA)",
+      "date": "2026-01-31",
+      "photographer": "Zoe Prefontaine",
+      "caption": "A partially broken tree trunk hanging among surrounding tree likely damaged by weather or decay. CMPUT 401 team",
+      "identifier": "Broken Tree Trunk",
+      "filename": "Riverlot56NA-2026-01-31-ZoePrefontaine-BrokenTreeTrunk-f6f399ce-3521-4fa4-987a-43cf356c693b.jpg",
+      "file_size_bytes": 1852012,
+      "storage_key": "homepage-image-uploads/207/user-id/Riverlot56NA-2026-01-31-ZoePrefontaine-BrokenTreeTrunk-f6f399ce-3521-4fa4-987a-43cf356c693b.jpg",
       "imageUrl": "https://sapaa-inspection-images.s3.ca-central-1.amazonaws.com/..."
     }
   ]
@@ -193,7 +317,7 @@ Example response:
 
 ### ```GET /api/sites/{siteId}/gallery```
 
-Returns images associated with a specific site or inspection response.
+Returns SIR image attachments associated with a specific site.
 
 This endpoint allows authenticated users to retrieve media files linked to a site inspection or site record.
 
@@ -215,11 +339,12 @@ Example response:
   "items": [
     {
       "id": 14,
-      "caption": "Cracked Tree",
-      "filename": "ClydeFen-2025-01-23-BobSuruncle-ATVTrack.jpg",
-      "file_size_bytes": 2433304,
-      "description": "Large crack running up the trunk of a tree.",
+      "caption": "Cross Country skil trails",
+      "identifier": "Ski Trails",
+      "filename": "Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg",
+      "file_size_bytes": 506701,
       "site_name": "Riverlot 56 (NA)",
+      "response_id": 3235,
       "imageUrl": "https://sapaa-inspection-images.s3.ca-central-1.amazonaws.com/..."
     }
   ]
@@ -278,12 +403,12 @@ Example:
       "id": 14,
       "response_id": 3235,
       "question_id": 27,
-      "filename": "ClydeFen-2025-01-23-BobSuruncle-ATVTrack.jpg",
-      "storage_key": "inspections/207/3235/27/ClydeFen-2025-01-23-BobSuruncle-ATVTrack-a1b2c3d4.jpg",
+      "filename": "Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg",
+      "storage_key": "inspections/207/3235/27/Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg",
       "content_type": "image/jpeg",
-      "file_size_bytes": 2433304,
-      "caption": "Cracked Tree",
-      "description": "Large crack running up the trunk of a tree.",
+      "file_size_bytes": 506701,
+      "caption": "Cross Country skil trails",
+      "identifier": "Ski Trails",
       "site_id": 207,
       "imageUrl": "https://sapaa-inspection-images.s3.ca-central-1.amazonaws.com/..."
     }
@@ -294,6 +419,11 @@ Example:
 
 
 ---
+
+
+
+
+
 
 ## Security Model
 
@@ -354,10 +484,10 @@ Admins can view all uploaded images through the gallery interface.
 
 Features include:
 
-- viewing images
+- viewing SIR and standalone homepage-uploaded images
 - viewing metadata
 - viewing storage path
-- inspecting captions and descriptions
+- inspecting captions, identifiers, filenames, dates, and photographer name (in file name)
 
 Images are displayed using signed S3 URLs generated by the server.
 
@@ -367,10 +497,13 @@ Images are displayed using signed S3 URLs generated by the server.
 
 | Endpoint | Purpose |
 |-----|-----|
-| `/api/s3/presign` | Generate S3 upload URL |
-| `/api/gallery` | Retrieve all images |
-| `/api/sites/site-images` | Retrieve images for an inspection response |
-| `/api/sites/{siteId}/gallery` | Retrieve images for a specific site |
+| `/api/s3/presign` | Generate S3 upload URL for SIR image uploads |
+| `/api/s3/presign-homepage-images` | Generate S3 upload URL for standalone homepage image uploads |
+| `/api/gallery` | Retrieve all SIR uploaded images |
+| `/api/site-images` | Retrieve SIR images for a site and/or inspection response |
+| `/api/sites/{siteId}/gallery` | Retrieve SIR images for a specific site |
+| `/api/homepage-images` | Retrieve all standalone homepage images |
+| `/api/homepage-images/{siteId}` | Retrieve standalone homepage images for a specific site |
 
 ---
 

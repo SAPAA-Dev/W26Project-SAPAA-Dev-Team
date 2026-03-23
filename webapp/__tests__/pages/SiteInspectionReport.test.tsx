@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import NewReportPage from '../../app/detail/[namesite]/new-report/page';
 import MainContent from '../../app/detail/[namesite]/new-report/MainContent';
 import StickyFooter from '../../app/detail/[namesite]/new-report/Footer';
@@ -25,6 +25,7 @@ const mockAddSiteInspectionReport = jest.fn();
 const mockGetQuestionResponseType = jest.fn();
 const mockUploadSiteInspectionAnswers = jest.fn();
 const mockGetSitesOnline = jest.fn();
+const mockScrollTo = jest.fn();
 
 jest.mock('@/utils/supabase/queries', () => ({
   getQuestionsOnline: (...args: any[]) => mockGetQuestionsOnline(...args),
@@ -46,6 +47,18 @@ jest.mock('@/utils/supabase/client', () => ({
     },
   }),
 }));
+
+beforeAll(() => {
+  Object.defineProperty(window, 'scrollTo', {
+    configurable: true,
+    value: mockScrollTo,
+    writable: true,
+  });
+});
+
+beforeEach(() => {
+  mockScrollTo.mockClear();
+});
 
 // --- Test data ---
 
@@ -407,6 +420,18 @@ describe('US 1.0.2 - Add Personal Information to Site Inspection Form', () => {
     render(<StickyFooter questions={personalInfoQuestions} responses={{ 1: 'Jane', 5: 'test@example.com', 3: '', 4: [] }} />);
     expect(screen.getByText('2 / 6 answered')).toBeInTheDocument();
   });
+
+  it('disables submit when the user is not on the last section', () => {
+    render(
+      <StickyFooter
+        questions={personalInfoQuestions}
+        responses={{}}
+        isSubmitEnabled={false}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: /Review & Submit/i })).toBeDisabled();
+  });
 });
 
 describe('US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
@@ -515,6 +540,146 @@ describe('US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
     expect(screen.getByText('2 / 3 answered')).toBeInTheDocument();
   });
 
+  it('reports that submit should stay disabled before the last section in a multi-section form', async () => {
+    const multiSectionQuestions = [
+      {
+        id: 101,
+        title: 'First Section Question',
+        text: 'Section one',
+        question_type: 'text',
+        section: 3,
+        answers: [],
+        formorder: 1,
+        is_required: false,
+        sectionTitle: 'Section One',
+        sectionDescription: 'First section description',
+        sectionHeader: 'One',
+      },
+      {
+        id: 102,
+        title: 'Last Section Question',
+        text: 'Section two',
+        question_type: 'text',
+        section: 4,
+        answers: [],
+        formorder: 2,
+        is_required: false,
+        sectionTitle: 'Section Two',
+        sectionDescription: 'Last section description',
+        sectionHeader: 'Two',
+      },
+    ];
+
+    mockGetQuestionsOnline.mockResolvedValue(multiSectionQuestions);
+
+    function ControlledForm() {
+      const [responses, setResponses] = React.useState<Record<number, any>>({});
+      const [isOnLastSection, setIsOnLastSection] = React.useState(false);
+
+      return (
+        <>
+          <MainContent
+            responses={responses}
+            onResponsesChange={setResponses}
+            onSectionStateChange={({ isOnLastSection }) => setIsOnLastSection(isOnLastSection)}
+          />
+          <StickyFooter
+            questions={multiSectionQuestions}
+            responses={responses}
+            isSubmitEnabled={isOnLastSection}
+          />
+        </>
+      );
+    }
+
+    render(<ControlledForm />);
+
+    const submitButton = await screen.findByRole('button', { name: /Review & Submit/i });
+    expect(submitButton).toBeDisabled();
+  });
+
+  it('scrolls back to the top of the section when moving to the next section', async () => {
+    const multiSectionQuestions = [
+      {
+        id: 101,
+        title: 'First Section Question',
+        text: 'Section one',
+        question_type: 'text',
+        section: 3,
+        answers: [],
+        formorder: 1,
+        is_required: false,
+        sectionTitle: 'Section One',
+        sectionDescription: 'First section description',
+        sectionHeader: 'One',
+      },
+      {
+        id: 102,
+        title: 'Last Section Question',
+        text: 'Section two',
+        question_type: 'text',
+        section: 4,
+        answers: [],
+        formorder: 2,
+        is_required: false,
+        sectionTitle: 'Section Two',
+        sectionDescription: 'Last section description',
+        sectionHeader: 'Two',
+      },
+    ];
+
+    mockGetQuestionsOnline.mockResolvedValue(multiSectionQuestions);
+
+    function ControlledForm() {
+      const [responses, setResponses] = React.useState<Record<number, any>>({});
+      const [sectionState, setSectionState] = React.useState<{
+        canGoPrevious: boolean;
+        canGoNext: boolean;
+        goToPreviousSection?: () => void;
+        goToNextSection?: () => void;
+      }>({
+        canGoPrevious: false,
+        canGoNext: false,
+      });
+
+      return (
+        <>
+          <MainContent
+            responses={responses}
+            onResponsesChange={setResponses}
+            onSectionStateChange={setSectionState}
+          />
+          {sectionState.goToNextSection && <span data-testid="nav-ready" />}
+          <StickyFooter
+            questions={multiSectionQuestions}
+            responses={responses}
+            onPreviousSection={sectionState.goToPreviousSection}
+            onNextSection={sectionState.goToNextSection}
+            canGoPrevious={sectionState.canGoPrevious}
+            canGoNext={sectionState.canGoNext}
+          />
+        </>
+      );
+    }
+
+    render(<ControlledForm />);
+
+    expect(await screen.findByText('Section One')).toBeInTheDocument();
+    expect(await screen.findByTestId('nav-ready')).toBeInTheDocument();
+
+    const nextButton = screen.getByRole('button', { name: /Next/i });
+    fireEvent.click(nextButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Section Two')).toBeInTheDocument();
+    });
+
+    expect(mockScrollTo).toHaveBeenCalledWith({
+      top: 0,
+      behavior: 'smooth',
+    });
+  });
+
   it('allows submission when all required fields are filled', async () => {
     setupWhereUGoMocks();
     mockAddSiteInspectionReport.mockResolvedValue({ id: 'report-123' });
@@ -540,7 +705,8 @@ describe('US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
     fireEvent.click(screen.getByText('Citizen Steward'));
 
     // Submit the form
-    const submitButton = screen.getByText('Review & Submit');
+    const submitButton = screen.getByRole('button', { name: /Review & Submit/i });
+    await waitFor(() => expect(submitButton).toBeEnabled());
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -555,7 +721,7 @@ describe('US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
     });
   });
 
-  it('displays error when submitting without required fields', async () => {
+  it('keeps submit enabled when the overview is the only section in the form', async () => {
     setupWhereUGoMocks();
     render(<NewReportPage />);
 
@@ -563,15 +729,8 @@ describe('US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
       expect(screen.getByText(/Date of Your Visit/i)).toBeInTheDocument();
     });
 
-    // Don't fill any fields, just submit
-    const submitButton = screen.getByText('Review & Submit');
-    fireEvent.click(submitButton);
-
-    // Should show error popup
-    await waitFor(() => {
-      expect(screen.getByText(/Required Questions Missing/i)).toBeInTheDocument();
-      expect(screen.getByText(/You must answer all required questions/i)).toBeInTheDocument();
-    });
+    const submitButton = screen.getByRole('button', { name: /Review & Submit/i });
+    await waitFor(() => expect(submitButton).toBeEnabled());
   });
 });
 
@@ -861,6 +1020,7 @@ describe('US 1.0.27 - Enforce Required Questions on Site Inspection Form (also c
 
     // Use findByRole instead of getByRole to wait for the loading state to end
     const submitButton = await screen.findByRole('button', { name: /Review & Submit/i });
+    await waitFor(() => expect(submitButton).toBeEnabled());
     
     fireEvent.click(submitButton);
 
@@ -873,6 +1033,67 @@ describe('US 1.0.27 - Enforce Required Questions on Site Inspection Form (also c
 
     // Verify that the final submission functions were not called
     expect(mockAddSiteInspectionReport).not.toHaveBeenCalled();
+  });
+
+  it('shows missing required question numbers in ascending order', async () => {
+    const mockQuestions = [
+      {
+        id: 1,
+        title: 'Question A (Q53)',
+        text: 'First required question',
+        question_type: 'text',
+        section: 4,
+        answers: [],
+        formorder: 1,
+        is_required: true,
+        sectionTitle: 'Test',
+        sectionDescription: 'Test',
+        sectionHeader: 'Test',
+      },
+      {
+        id: 2,
+        title: 'Question B (Q16)',
+        text: 'Second required question',
+        question_type: 'text',
+        section: 4,
+        answers: [],
+        formorder: 2,
+        is_required: true,
+        sectionTitle: 'Test',
+        sectionDescription: 'Test',
+        sectionHeader: 'Test',
+      },
+      {
+        id: 3,
+        title: 'Question C (Q31)',
+        text: 'Third required question',
+        question_type: 'text',
+        section: 4,
+        answers: [],
+        formorder: 3,
+        is_required: true,
+        sectionTitle: 'Test',
+        sectionDescription: 'Test',
+        sectionHeader: 'Test',
+      },
+    ];
+
+    mockGetQuestionsOnline.mockResolvedValue(mockQuestions);
+    render(<NewReportPage />);
+
+    const submitButton = await screen.findByRole('button', { name: /Review & Submit/i });
+    await waitFor(() => expect(submitButton).toBeEnabled());
+
+    fireEvent.click(submitButton);
+
+    await screen.findByText(/Required Questions Missing/i);
+
+    const missingQuestionList = screen.getByRole('list');
+    expect(within(missingQuestionList).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'Q16',
+      'Q31',
+      'Q53',
+    ]);
   });
 
   it('successfully calls uploadSiteInspectionAnswers when all required questions are answered', async () => {
@@ -1606,6 +1827,7 @@ describe('US 1.0.16 - Add Photography Captured During Visit', () => {
 
     // Submit without uploading any images or entering remarks
     const submitButton = screen.getByText('Review & Submit');
+    await waitFor(() => expect(submitButton).toBeEnabled());
     fireEvent.click(submitButton);
 
     // Should NOT show the required questions popup

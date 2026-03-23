@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { ChevronRight, Upload, Image as ImageIcon, Loader2, Lock } from "lucide-react";
 import { getQuestionsOnline } from '@/utils/supabase/queries';
+import MarkdownText from "@/components/MarkdownText";
 
 interface Answer {
   id?: number;
@@ -28,6 +29,15 @@ interface Question {
 interface MainContentProps {
   responses: Record<number, any>;
   onResponsesChange: (responses: Record<number, any>) => void;
+  onSectionStateChange?: (state: {
+    activeSection: number | null;
+    lastSection: number | null;
+    isOnLastSection: boolean;
+    canGoPrevious: boolean;
+    canGoNext: boolean;
+    goToPreviousSection: () => void;
+    goToNextSection: () => void;
+  }) => void;
   siteName?: string;
   currentUser?: {
     email?: string;
@@ -51,7 +61,7 @@ export interface ExistingAttachment {
   content_type: string | null;
   file_size_bytes: number | null;
   caption: string | null;
-  description: string | null;
+  identifier: string | null;
   /** Presigned URL injected by the edit page before passing down */
   previewUrl: string;
 }
@@ -61,13 +71,16 @@ export interface LocalImage {
   id: string;           // crypto.randomUUID() — client-only
   file: File;
   caption: string;
-  description: string;
+  identifier: string;
+  photographer: string;
+  date: string;
   previewUrl: string;
 }
 
 export default function MainContent({
   responses,
   onResponsesChange,
+  onSectionStateChange,
   siteName,
   currentUser,
   existingAttachments = [],
@@ -77,6 +90,11 @@ export default function MainContent({
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const hasAutofilled = useRef(false);
+  const hasInitializedSection = useRef(false);
+  const goToPreviousSectionRef = useRef<() => void>(() => {});
+  const goToNextSectionRef = useRef<() => void>(() => {});
+
+  const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -118,8 +136,9 @@ export default function MainContent({
       user_email: currentUser?.email,
       user_name: currentUser?.name,
       user_phone: currentUser?.phone,
-      visit_date: new Date().toISOString().split('T')[0],
+      visit_date: today,
       site_name: siteName,
+      
     };
 
     questions.forEach((question) => {
@@ -164,12 +183,74 @@ export default function MainContent({
   });
 
   const sections = Object.keys(questionsBySection).map(Number).sort((a, b) => a - b);
+  const currentSection = activeSection ?? sections[0] ?? null;
+  const lastSection = sections.length > 0 ? sections[sections.length - 1] : null;
+  const currentSectionIndex = currentSection === null ? -1 : sections.indexOf(currentSection);
+  const canGoPrevious = currentSectionIndex > 0;
+  const canGoNext = currentSectionIndex >= 0 && currentSectionIndex < sections.length - 1;
 
   useEffect(() => {
     if (sections.length > 0 && activeSection === null) setActiveSection(sections[0]);
   }, [sections.length]);
 
-  const currentQuestions = questionsBySection[activeSection ?? sections[0] ?? 1] || [];
+  goToPreviousSectionRef.current = () => {
+    if (!canGoPrevious) return;
+    setActiveSection(sections[currentSectionIndex - 1]);
+  };
+
+  goToNextSectionRef.current = () => {
+    if (!canGoNext) return;
+    setActiveSection(sections[currentSectionIndex + 1]);
+  };
+
+  const goToPreviousSection = useCallback(() => {
+    goToPreviousSectionRef.current();
+  }, []);
+
+  const goToNextSection = useCallback(() => {
+    goToNextSectionRef.current();
+  }, []);
+
+  useEffect(() => {
+    onSectionStateChange?.({
+      activeSection: currentSection,
+      lastSection,
+      isOnLastSection:
+        currentSection !== null && lastSection !== null && currentSection === lastSection,
+      canGoPrevious,
+      canGoNext,
+      goToPreviousSection,
+      goToNextSection,
+    });
+  }, [
+    canGoNext,
+    canGoPrevious,
+    currentSection,
+    goToNextSection,
+    goToPreviousSection,
+    lastSection,
+    onSectionStateChange,
+  ]);
+
+  useEffect(() => {
+    if (currentSection === null) return;
+
+    if (!hasInitializedSection.current) {
+      hasInitializedSection.current = true;
+      return;
+    }
+
+    try {
+      window.scrollTo?.({
+        top: 0,
+        behavior: 'smooth',
+      });
+    } catch {
+      // Some test environments do not implement window.scrollTo.
+    }
+  }, [currentSection]);
+
+  const currentQuestions = questionsBySection[currentSection ?? 1] || [];
 
   const handleResponse = (questionId: number, value: any) => {
     onResponsesChange({ ...responses, [questionId]: value });
@@ -181,7 +262,7 @@ export default function MainContent({
 
   const updateExistingField = (
     attachmentId: number,
-    field: 'caption' | 'description',
+    field: 'caption' | 'identifier',
     value: string
   ) => {
     if (!onExistingAttachmentsChange) return;
@@ -360,6 +441,7 @@ export default function MainContent({
             <input
               type="date"
               value={response || ''}
+              max={today}
               onChange={(e) => handleResponse(question.id, e.target.value)}
               className="w-full px-4 py-3 border-2 border-[#E4EBE4] rounded-xl focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] font-medium placeholder:text-[#7A8075]"
             />
@@ -378,7 +460,9 @@ export default function MainContent({
             id: crypto.randomUUID(),
             file,
             caption: '',
-            description: '',
+            identifier: '',
+            photographer: '',
+            date: new Date().toISOString().split('T')[0],
             previewUrl: URL.createObjectURL(file),
           }));
           handleResponse(question.id, [...localImages, ...newImages]);
@@ -392,7 +476,7 @@ export default function MainContent({
 
         const updateLocalField = (
           imageId: string,
-          field: 'caption' | 'description',
+          field: 'caption' | 'identifier' | 'photographer' | 'date',
           value: string
         ) => {
           handleResponse(
@@ -477,9 +561,9 @@ export default function MainContent({
                     />
 
                     <textarea
-                      value={image.description ?? ''}
-                      onChange={(e) => updateExistingField(image.id, 'description', e.target.value)}
-                      placeholder="Description (optional)"
+                      value={image.identifier ?? ''}
+                      onChange={(e) => updateExistingField(image.id, 'identifier', e.target.value)}
+                      placeholder="Identifier (optional)"
                       rows={2}
                       className="w-full mt-1 px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm resize-none"
                     />
@@ -495,45 +579,102 @@ export default function MainContent({
               {localImages.map((image) => (
                 <div
                   key={image.id}
-                  className="flex gap-3 p-3 bg-white border-2 border-[#E4EBE4] rounded-xl"
+                  className="p-4 bg-white border-2 border-[#E4EBE4] rounded-xl space-y-4"
                 >
-                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-[#F7F2EA] flex-shrink-0">
-                    <img
-                      src={image.previewUrl}
-                      alt={image.file.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                  <div className="flex gap-3">
+                    <div className="w-24 h-24 rounded-lg overflow-hidden bg-[#F7F2EA] flex-shrink-0">
+                      <img
+                        src={image.previewUrl}
+                        alt={image.file.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-[#254431] truncate text-sm mb-1">
-                      {image.file.name}
-                    </p>
-
-                    <input
-                      type="text"
-                      value={image.caption}
-                      onChange={(e) => updateLocalField(image.id, 'caption', e.target.value)}
-                      placeholder="Caption (optional)"
-                      className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
-                    />
-
-                    <textarea
-                      value={image.description}
-                      onChange={(e) => updateLocalField(image.id, 'description', e.target.value)}
-                      placeholder="Description (optional)"
-                      rows={2}
-                      className="w-full mt-1 px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm resize-none"
-                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-[#254431] truncate text-sm">
+                        {image.file.name}
+                      </p>
+                      <p className="text-xs text-[#7A8075] mt-1">
+                        Site: {siteName || "Unknown site"}
+                      </p>
+                    </div>
 
                     <button
                       type="button"
                       onClick={() => removeLocalImage(image.id)}
-                      className="mt-2 text-sm font-semibold text-[#B91C1C] hover:underline"
+                      className="text-sm font-semibold text-[#B91C1C] hover:underline self-start"
                     >
                       Remove
                     </button>
                   </div>
+
+                  <div className="grid md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-[#254431] mb-1">
+                        Caption <span className="text-[#B91C1C]">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={image.caption ?? ''}
+                        onChange={(e) => updateLocalField(image.id, 'caption', e.target.value)}
+                        placeholder="Longer Description"
+                        className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-[#254431] mb-1">
+                        Identifier <span className="text-[#B91C1C]">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={image.identifier ?? ''}
+                        maxLength={20}
+                        onChange={(e) => updateLocalField(image.id, 'identifier', e.target.value)}
+                        placeholder="Short Description"
+                        className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
+                      />
+                      <p className="mt-1 text-xs text-[#7A8075]">
+                        {(image.identifier ?? '').replace(/\s/g, '').length}/20 characters
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-[#254431] mb-1">
+                      Photographer <span className="text-[#B91C1C]">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={image.photographer ?? ""}
+                      maxLength={25}
+                      onChange={(e) => updateLocalField(image.id, 'photographer', e.target.value)}
+                      placeholder="Owner of digital file"
+                      className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
+                    />
+                    <p className="mt-1 text-xs text-[#7A8075]">
+                      {(image.photographer ?? "").replace(/\s/g, '').length}/25 characters
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-[#254431] mb-1">
+                      Date <span className="text-[#B91C1C]">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={image.date ?? ''}
+                      onChange={(e) => updateLocalField(image.id, 'date', e.target.value)}
+                      className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
+                    />
+                    <p className="text-xs text-[#7A8075] mt-1">
+                      Enter the date when this image was taken (Date of Visit)
+                    </p>
+                  </div>
+                  </div>
+
+                  
                 </div>
               ))}
             </div>
@@ -609,46 +750,18 @@ export default function MainContent({
       </aside>
 
       <div className="flex-1 flex flex-col">
-        {/* Top navigation */}
-        {sections.length > 1 && (
-          <div className="grid grid-cols-2 gap-3 px-4 md:px-8 pt-4 md:pt-8">
-            <div>
-              {sections.indexOf(activeSection ?? sections[0]) > 0 && (
-                <button
-                  onClick={() => {
-                    const currentIndex = sections.indexOf(activeSection ?? sections[0]);
-                    setActiveSection(sections[currentIndex - 1]);
-                  }}
-                  className="w-full px-4 py-2 border-2 border-[#E4EBE4] text-[#254431] font-bold rounded-xl hover:bg-[#E4EBE4] transition-all text-sm"
-                >
-                  ← Previous
-                </button>
-              )}
-            </div>
-            <div>
-              {sections.indexOf(activeSection ?? sections[0]) < sections.length - 1 && (
-                <button
-                  onClick={() => {
-                    const currentIndex = sections.indexOf(activeSection ?? sections[0]);
-                    setActiveSection(sections[currentIndex + 1]);
-                  }}
-                  className="w-full px-4 py-2 bg-[#356B43] text-white font-bold rounded-xl hover:bg-[#254431] transition-all text-sm"
-                >
-                  Next →
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
         <section className="flex-1 p-4 md:p-8">
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-[#254431]">
               {sectionMetadata[activeSection ?? sections[0] ?? 1]?.title ?? `Section ${activeSection}`}
             </h2>
+            {sectionMetadata[activeSection ?? sections[0] ?? 1]?.description && (
+              <MarkdownText
+                content={sectionMetadata[activeSection ?? sections[0] ?? 1].description}
+                className="text-[#7A8075] mt-1"
+              />
+            )}
             <p className="text-[#7A8075]">
-              {sectionMetadata[activeSection ?? sections[0] ?? 1]?.description &&
-                `${sectionMetadata[activeSection ?? sections[0] ?? 1].description} `}
               There are {currentQuestions.length} question{currentQuestions.length !== 1 ? 's' : ''} in this section.
             </p>
           </div>
@@ -705,9 +818,10 @@ export default function MainContent({
                               data-testid={`${question.title}-question-title`}>
                             </span>
                             {formattedTitle}</h3>
-                          <h4 className="mt-1 text-sm text-[#254431]/70 leading-snug font-normal">
-                            {question.text || ''}
-                          </h4>
+                          <MarkdownText
+                            content={question.text}
+                            className="mt-1 text-sm text-[#254431]/70 leading-snug font-normal"
+                          />
                           <div className="flex items-center gap-2 mt-2">
                             <span className="text-xs px-2 py-1 rounded-full bg-[#F7F2EA] text-[#7A8075] font-medium">
                               {question.question_type.trim()}

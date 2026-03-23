@@ -145,33 +145,27 @@ This page provides a general overview of the assigned tasks and roles for the du
 
 |User Story|Story points|
 |:---:|:---:|
-|US 2.0.4 – Offline Image Viewing|5|
+|US 1.0.30 – Rich Text Formatting for Form Description Fields|3|
 |US 2.0.7 – Admin Management of Media Files|13|
 |US 2.0.8 – User Upload of Standalone Site Images|8|
-|US 3.0.1 – Access the mobile version of the Site Inspection Form|5|
-|US 3.0.2 – Offline Data Syncing|8|
-|US 4.0.1 – View Site Profile of a Particular Site|3|
-|US 4.0.2 – Add Site Profile of a Particular Site|2|
+|US 4.0.1 – PDF Generation of SIR's|8|
 |US 4.0.3 – Update Site Profile of a Particular Site|3|
 |US 4.0.4 – Disable Site Profile of a Particular Site|3|
-|US 4.0.5 – Amenities Information on Site Profile|2|
+|US 5.0.1 - Admin Approval of Users|5|
 
-**Sprint Velocity:** 52
+**Sprint Velocity:** 43
 
 #### Tasks
 
 |Task|Related US|Assignee|Due|
 |:---:|:---:|:---:|:---:|
-|Implement offline image viewing|US 2.0.4|Harveer, Zoe|Mar 15th|
-|Admin Management of Media Files|US 2.0.7|Raiyana|Mar 16th|
-|Enable user upload of standalone site images|US 2.0.8|Raiyana, Harveer|Mar 16th|
-|Develop mobile version entry point|US 3.0.1|Vishal, Jason|Mar 17th|
-|Implement offline data syncing|US 3.0.2|Zoe, Akib|Mar 18th|
-|Create view site profile page|US 4.0.1|Braden|Mar 19th|
-|Add new site profiles|US 4.0.2|Raiyana, Zoe|Mar 19th|
-|Update existing site profiles|US 4.0.3|Vishal|Mar 20th|
-|Disable site profiles as needed|US 4.0.4|Braden|Mar 20th|
-|Add amenities information on site profile|US 4.0.5|Akib|Mar 21st|
+|Rich Text Editor|US 1.0.30|Akib, Braden|Mar 11th|
+|Admin Management of Media Files|US 2.0.7|Jason, Raiyana, Zoe|Mar 12th|
+|Enable user upload of standalone site images|US 2.0.8|Raiyana, Vishal|Mar 13th|
+|PDF generation|US 4.0.1|Braden, Vishal, Jason|Mar 15th|
+|Update existing site profiles|US 4.0.3|Braden, Jason|Mar 17th|
+|Disable site profiles as needed|US 4.0.4|Braden, Jason|Mar 19th|
+|Admin Approval of Users|US 5.0.1|Harveer|Mar 19th|
 |Finalize Sprint 4 acceptance tests|All US|Everyone|Mar 21st|
 |Update documentation|Documentation|Everyone|Mar 22nd|
 
@@ -182,14 +176,26 @@ This page provides a general overview of the assigned tasks and roles for the du
 
 |User Story|Story points|
 |:---:|:---:|
-|US 1.0.20 – Admin Editing Image Metadata|3|
-|US 2.0.8 – User Upload of Standalone Site Images|8|
-|US 4.0.6 – Site-specific Recommended Gear Lists|2|
-|US 5.0.1 – Sign In Feature|2|
+|US 1.0.20 - Admin Editing Image Metadata|3|
+|US 2.0.4 - Offline Image Viewing|5|
+|US 2.0.9 – Homescreen Gallery View|5|
+|US 3.0.1 - Access the mobile version of the Site Inspection Form|5|
+|US 3.0.2 - Offline Data Syncing|8|
 |US 5.0.2 – Sign Out Feature|2|
-|US 5.0.3 – Edit Account Feature|2|
-|US 5.0.4 – Disable Account Feature|2|
-|US 6.0.1 – Toggle Dark mode for web and mobile applications|2|
 |US 6.0.2 – Change Text Size on Screen|3|
 
-**Sprint Velocity:** 18
+**Sprint Velocity:** 31
+
+#### Tasks
+
+|Task|Related US|Assignee|Due|
+|:---:|:---:|:---:|:---:|
+|Sign out feature|US 5.0.2|Harveer|Mar 24th|
+|Homescreen Gallery View|US 2.0.9|Raiyana, Zoe|Mar 25th|
+|Change text size on screen|US 6.0.2|Vishal, Braden, Jason|Mar 26th|
+|Data Migration|All US|Everyone|Mar 30th|
+|Deployment Instructions|Documentation|Harveer, Raiyana|Mar 24th|
+|A Job Description|Docmentation|Everyone|Mar 26th|
+|User manual|Documentation|Akib, Braden, Jason, Vishal, Zoe|Mar 27th|
+|Finalize Sprint 5 acceptance tests|All US|Everyone|Mar 30th|
+|Finalize documentation|Documentation|Everyone|Mar 31st|

@@ -1,12 +1,20 @@
 'use server';
 
+import { UniqueIdentifier } from '@dnd-kit/core';
 import { createServerSupabase, createClient } from './server';
 
 export interface SiteSummary {
   id: number;
   namesite: string;
   county: string | null;
+  ab_county: number | null;
   inspectdate: string | null;
+  is_active: boolean;
+}
+
+export interface County {
+  id: number;
+  county: string;
 }
 
 export interface InspectionDetail {
@@ -120,6 +128,160 @@ export async function addSiteInspectionReport(siteId: number, userId: any) {
     throw new Error(error.message || 'Failed to add site inspection report');
   }
   return data;
+}
+
+export async function rollbackSiteInspectionSubmission(responseId: number) {
+  const supabase = createServerSupabase();
+
+  const { error: attachmentsError } = await supabase
+    .from('W26_attachments')
+    .delete()
+    .eq('response_id', responseId);
+
+  if (attachmentsError) {
+    throw new Error(attachmentsError.message || 'Failed to remove inspection attachments');
+  }
+
+  const { error: answersError } = await supabase
+    .from('W26_answers')
+    .delete()
+    .eq('response_id', responseId);
+
+  if (answersError) {
+    throw new Error(answersError.message || 'Failed to remove inspection answers');
+  }
+
+  const { error: responseError } = await supabase
+    .from('W26_form_responses')
+    .delete()
+    .eq('id', responseId);
+
+  if (responseError) {
+    throw new Error(responseError.message || 'Failed to remove site inspection report');
+  }
+}
+
+export async function setFormResponseActive(responseId: number, isActive: boolean) {
+  const supabase = createServerSupabase();
+
+  const { error } = await supabase
+    .from('W26_form_responses')
+    .update({ is_active: isActive })
+    .eq('id', responseId);
+
+  if (error) {
+    throw new Error(error.message || 'Failed to update form response status');
+  }
+}
+
+export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(FormResponse & { is_active: boolean })[]> {
+  const supabase = createServerSupabase();
+
+  const { data: siteData, error: siteError } = await supabase
+    .from('W26_sites-pa')
+    .select('id')
+    .eq('namesite', siteName)
+    .single();
+
+  if (siteError || !siteData) throw new Error('Site not found');
+
+  const { data: keyData, error: keyError } = await supabase
+    .from('W26_questions')
+    .select('id, "question key"')
+    .in('"question key"', ['Q31_Naturalness', 'Q32_Natural_Comm', 'Q13_FirstandLastNameForGuests']);
+
+  if (keyError) throw new Error(keyError.message);
+
+  const keyMap = Object.fromEntries(
+    (keyData ?? []).map((q: any) => [q['question key'], q.id])
+  );
+
+  const naturalnessId = Number(keyMap['Q31_Naturalness']);
+  const naturalnessDetailsId = Number(keyMap['Q32_Natural_Comm']);
+  const stewardId = Number(keyMap['Q13_FirstandLastNameForGuests']);
+
+  const { data, error } = await supabase
+    .from('W26_form_responses')
+    .select(`
+      id,
+      user_id,
+      created_at,
+      inspection_no,
+      is_active,
+      W26_answers (
+        question_id,
+        obs_value,
+        obs_comm,
+        W26_questions (
+          id,
+          form_question,
+          section_id,
+          W26_form_sections!W26_questions_section_id_fkey (
+            id,
+            title
+          )
+        )
+      )
+    `)
+    .eq('site_id', siteData.id)
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message || 'Failed to fetch form responses');
+
+  return (data ?? []).map((r: any) => {
+    const answers: FormAnswer[] = Object.values(
+      (r.W26_answers ?? []).reduce((acc: any, a: any) => {
+        const qid = a.question_id;
+        if (!acc[qid]) {
+          acc[qid] = {
+            question_id: qid,
+            question_text: a.W26_questions?.form_question ?? `Question ${qid}`,
+            obs_value: [],
+            obs_comm: null,
+            section_id: a.W26_questions?.section_id ?? null,
+            section_title: a.W26_questions?.W26_form_sections?.title ?? null,
+          };
+        }
+        if (a.obs_value === 'Other' && a.obs_comm) {
+          acc[qid].obs_value.push('Other');
+          acc[qid].obs_comm = a.obs_comm;
+        } else if (a.obs_value) {
+          acc[qid].obs_value.push(a.obs_value);
+        } else if (a.obs_comm) {
+          acc[qid].obs_comm = a.obs_comm;
+        }
+        return acc;
+      }, {})
+    ).map((a: any) => ({
+      ...a,
+      obs_value: a.obs_value.length > 0 ? a.obs_value.join('; ') : null,
+    }))
+    .sort((a: any, b: any) => {
+      if (a.section_id !== b.section_id) {
+        return (a.section_id ?? 0) - (b.section_id ?? 0);
+      }
+      return a.question_id - b.question_id;
+    });
+
+    const naturalness = answers.find(a => a.question_id === naturalnessId)?.obs_value ?? null;
+    const naturalnessDetailsValue =
+      answers.find(a => a.question_id === naturalnessDetailsId)?.obs_value ??
+      answers.find(a => a.question_id === naturalnessDetailsId)?.obs_comm ??
+      null;
+    const stewardVal = answers.find(a => a.question_id === stewardId)?.obs_comm ?? null;
+
+    return {
+      id: r.id,
+      user_id: r.user_id ?? null,
+      created_at: r.created_at,
+      inspection_no: r.inspection_no,
+      naturalness_score: naturalness,
+      naturalness_details: naturalnessDetailsValue,
+      steward: stewardVal,
+      is_active: r.is_active ?? true,
+      answers: answers.filter(a => a.question_id !== naturalnessId && a.question_id !== stewardId),
+    };
+  });
 }
 
 export async function getCurrentUserUid() {
@@ -259,6 +421,8 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
     .select(`
       id,
       namesite,
+      ab_county,
+      is_active,
       W26_ab_counties (
         county
       ),
@@ -281,9 +445,90 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
       id: site.id,
       namesite: site.namesite,
       county: site.W26_ab_counties?.county ?? null,
+      ab_county: site.ab_county ?? null,
       inspectdate: latestDate,
+      is_active: site.is_active ?? true,
     };
   });
+}
+
+export async function getAllSites(): Promise<SiteSummary[]> {
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('W26_sites-pa')
+    .select(`
+      id,
+      namesite,
+      ab_county,
+      is_active,
+      W26_ab_counties (
+        county
+      ),
+      W26_form_responses (
+        created_at
+      )
+    `)
+    .order('namesite', { ascending: true });
+
+  if (error) throw new Error(error.message || 'Failed to fetch sites');
+
+  return (data ?? []).map((site: any) => {
+    const responses = site.W26_form_responses ?? [];
+    const latestDate = responses.length > 0
+      ? responses.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at
+      : null;
+
+    return {
+      id: site.id,
+      namesite: site.namesite,
+      county: site.W26_ab_counties?.county ?? null,
+      ab_county: site.ab_county ?? null,
+      inspectdate: latestDate,
+      is_active: site.is_active ?? true,
+    };
+  });
+}
+
+export async function getCounties(): Promise<County[]> {
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('W26_ab_counties')
+    .select('id, county')
+    .order('county', { ascending: true });
+
+  if (error) throw new Error(error.message || 'Failed to fetch counties');
+  return data ?? [];
+}
+
+export async function updateSite(
+  id: number,
+  namesite: string,
+  ab_county: number | null
+): Promise<void> {
+  const supabase = createServerSupabase();
+
+  const { error } = await supabase
+    .from('W26_sites-pa')
+    .update({ namesite, ab_county })
+    .eq('id', id);
+
+  if (error) throw new Error(error.message || 'Failed to update site');
+}
+
+export async function toggleSiteActive(
+  id: number,
+  is_active: boolean
+): Promise<void> {
+  const supabase = createServerSupabase();
+
+  const { error } = await supabase
+    .from('W26_sites-pa')
+    .update({ is_active })
+    .eq('id', id);
+
+  if (error) throw new Error(error.message || 'Failed to update site status');
 }
 
 export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
@@ -294,6 +539,8 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
     .select(`
       id,
       namesite,
+      ab_county,
+      is_active,
       W26_ab_counties (
         county
       ),
@@ -317,7 +564,9 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
       id: site.id,
       namesite: site.namesite,
       county: site.W26_ab_counties?.county ?? null,
+      ab_county: site.ab_county ?? null,
       inspectdate: latestDate,
+      is_active: site.is_active ?? true,
     };
   });
 }
@@ -357,6 +606,10 @@ export async function insertInspectionAttachments(rows: Array<{
   file_size_bytes?: number | null;
   caption?: string | null;
   description?: string | null;
+  photographer?: string | null;
+  identifier?: string | null;
+  date?: string | null;
+  
 }>) {
   const supabase = createServerSupabase();  
 
@@ -366,6 +619,32 @@ export async function insertInspectionAttachments(rows: Array<{
 
   if (error) {
     throw new Error(error.message || 'Failed to insert attachments');
+  }
+
+  return data;
+}
+
+export async function insertHomepageImageUpload(rows: Array<{
+  storage_key: string; 
+  filename?: string | null;
+  content_type?: string | null;
+  file_size_bytes?: number | null;
+  site_id: number;
+  user_id: string;
+  date: Date;
+  photographer: string | null;
+  identifier: string | null;
+  caption: string | null;
+  created_at: string | null;
+}>) {
+  const supabase = createServerSupabase();  
+
+  const { data, error } = await supabase
+    .from('W26_homepage-image-uploads')
+    .insert(rows);
+
+  if (error) {
+    throw new Error(error.message || 'Failed to insert homepage attachments');
   }
 
   return data;
@@ -420,6 +699,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
       )
     `)
     .eq('site_id', siteData.id)
+    .neq('is_active', false)
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message || 'Failed to fetch form responses');
@@ -464,7 +744,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
       answers.find(a => a.question_id === naturalnessDetailsId)?.obs_value ??
       answers.find(a => a.question_id === naturalnessDetailsId)?.obs_comm ??
       null;
-    const steward = answers.find(a => a.question_id === stewardId)?.obs_value ?? null;
+    const steward = answers.find(a => a.question_id === stewardId)?.obs_comm ?? null;
 
     return {
       id: r.id,
@@ -526,6 +806,7 @@ export async function getFormResponseById(responseId: number): Promise<Record<st
 
   return map;
 }
+
 
 // Fetches all W26_attachments rows for a given response_id
 export async function getAttachmentsByResponseId(responseId: number): Promise<Array<{

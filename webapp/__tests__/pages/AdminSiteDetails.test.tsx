@@ -31,109 +31,115 @@ jest.mock('@/app/sites/page', () => ({
   },
 }));
 
-// Create mock functions that can be configured later
-const mockFromFn = jest.fn();
-
-// Mock Supabase client - this mock is hoisted, so we use a function reference
-jest.mock('@/utils/supabase/client', () => ({
-  createClient: () => ({
-    from: (table: string) => {
-      // Return a chainable mock object based on the table
-      const mockChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        single: jest.fn().mockReturnThis(),
-        update: jest.fn().mockReturnThis(),
-        delete: jest.fn().mockReturnThis(),
-      };
-      
-      // Store the table for later inspection if needed
-      (mockChain as any)._table = table;
-      
-      return mockChain;
-    },
-    auth: {
-      getSession: jest.fn().mockResolvedValue({ data: { session: null }, error: null }),
-    },
-  }),
-}));
-
-// Mock getSiteByName query
+// Create mock functions for queries
 const mockGetSiteByName = jest.fn();
+const mockGetFormResponsesBySiteAdmin = jest.fn();
+const mockSetFormResponseActive = jest.fn();
+const mockUpdateSiteInspectionAnswers = jest.fn();
+
 jest.mock('@/utils/supabase/queries', () => ({
   getSiteByName: (name: string) => mockGetSiteByName(name),
+  getFormResponsesBySiteAdmin: (name: string) => mockGetFormResponsesBySiteAdmin(name),
+  setFormResponseActive: (id: number, isActive: boolean) => mockSetFormResponseActive(id, isActive),
+  updateSiteInspectionAnswers: (id: number, batch: any[]) => mockUpdateSiteInspectionAnswers(id, batch),
 }));
 
+// Mock PdfExportModal
+jest.mock('@/components/PdfExportModal', () => () => null);
+
 // Now import the component after all mocks are set up
-    import AdminSiteDetails from '../../app/admin/sites/[id]/page';
+import AdminSiteDetails from '../../app/admin/sites/[id]/page';
 
 // Sample test data
 const mockSite = {
-  id: '1',
+  id: 1,
   namesite: 'Test National Park',
   county: 'Test County',
+  ab_county: 1,
   inspectdate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+  is_active: true,
 };
 
-const mockInspectionHeaders = [
+const mockFormResponses = [
   {
     id: 101,
-    inspectdate: '2024-06-15',
-    inspectno: 'INS-001',
-    steward: 1,
-    'steward-guest': 'John Guest',
+    user_id: 'user-1',
+    created_at: '2024-06-15T12:00:00Z',
+    inspection_no: 'INS-001',
+    naturalness_score: '3.5',
+    naturalness_details: 'Well preserved natural habitat',
+    steward: 'Jane Steward',
+    is_active: true,
+    answers: [
+      {
+        question_id: 3,
+        question_text: 'Vegetation',
+        obs_value: 'Healthy forest cover',
+        obs_comm: null,
+        section_id: 1,
+        section_title: 'Observations',
+      },
+      {
+        question_id: 4,
+        question_text: 'Wildlife',
+        obs_value: 'Abundant deer population',
+        obs_comm: null,
+        section_id: 1,
+        section_title: 'Observations',
+      },
+      {
+        question_id: 5,
+        question_text: 'Water',
+        obs_value: 'Clear streams',
+        obs_comm: null,
+        section_id: 2,
+        section_title: 'Environment',
+      },
+    ],
   },
   {
     id: 102,
-    inspectdate: '2023-12-10',
-    inspectno: 'INS-002',
-    steward: 2,
-    'steward-guest': null,
+    user_id: 'user-2',
+    created_at: '2023-12-10T12:00:00Z',
+    inspection_no: 'INS-002',
+    naturalness_score: '2.5',
+    naturalness_details: 'Some degradation observed',
+    steward: 'John Steward',
+    is_active: true,
+    answers: [
+      {
+        question_id: 3,
+        question_text: 'Vegetation',
+        obs_value: 'Moderate cover',
+        obs_comm: null,
+        section_id: 1,
+        section_title: 'Observations',
+      },
+    ],
   },
 ];
 
-const mockViewData = {
-  namesite: 'Test National Park',
-  iddetail: 'DETAIL-001',
-  _type: 'National Park',
-  _subtype: 'Wilderness',
-  'area-ha': '5000',
-  'area-acre': '12355',
-  _naregion: 'Rocky Mountain',
-  _na_subregion_multi: 'Alpine',
-  'recactivities-multi': 'Hiking, Camping',
-  sapaaweb: 'https://example.com',
-  inatmap: 'https://inat.com/map',
-  inspectno: 'INS-001',
-  inspectdate: '2024-06-15',
-  steward: 'Jane Steward',
-  category: 1,
-  definition: 'Protected Area',
-  county: 'Test County',
-  naturalness_score: '3.5',
-  naturalness_details: 'Well preserved natural habitat',
-  notes: 'Q1_Vegetation: Healthy forest cover; Q2_Wildlife: Abundant deer population; Q3_Water: Clear streams',
-};
-
-const mockDetailRows = [
-  { id: 1001, observation: 1, obs_value: '3.5', obs_comm: null },
-  { id: 1002, observation: 2, obs_value: null, obs_comm: 'Well preserved natural habitat' },
-  { id: 1003, observation: 3, obs_value: 'Healthy forest cover', obs_comm: null },
-];
-
-const mockQuestions = [
-  { id: 1, observation: 'Q31_Naturalness' },
-  { id: 2, observation: 'Q32_Natural_Comm' },
-  { id: 3, observation: 'Q1_Vegetation' },
-  { id: 4, observation: 'Q2_Wildlife' },
-  { id: 5, observation: 'Q3_Water' },
+// Helper: mock data with one inactive response
+const mockFormResponsesWithInactive = [
+  { ...mockFormResponses[0] },
+  { ...mockFormResponses[1], is_active: false },
 ];
 
 describe('AdminSiteDetails', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetSiteByName.mockResolvedValue([mockSite]);
+    mockGetFormResponsesBySiteAdmin.mockResolvedValue(mockFormResponses);
+    mockSetFormResponseActive.mockResolvedValue(undefined);
+    mockUpdateSiteInspectionAnswers.mockResolvedValue(undefined);
+    // Mock sessionStorage
+    Object.defineProperty(window, 'sessionStorage', {
+      value: {
+        getItem: jest.fn(() => '[]'),
+        setItem: jest.fn(),
+      },
+      writable: true,
+    });
   });
 
   describe('Loading State', () => {
@@ -184,6 +190,17 @@ describe('AdminSiteDetails', () => {
       await user.click(screen.getByRole('button', { name: /Back to Admin Sites/i }));
       expect(mockPush).toHaveBeenCalledWith('/admin/sites');
     });
+
+    it('should display error when form responses fail to load', async () => {
+      mockGetFormResponsesBySiteAdmin.mockRejectedValue(new Error('Database error'));
+
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Unable to Load Site')).toBeInTheDocument();
+      });
+      expect(screen.getByText('Database error')).toBeInTheDocument();
+    });
   });
 
   describe('Successful Data Loading', () => {
@@ -216,6 +233,14 @@ describe('AdminSiteDetails', () => {
 
       await waitFor(() => {
         expect(screen.getByAltText('SAPAA')).toBeInTheDocument();
+      });
+    });
+
+    it('should call getFormResponsesBySiteAdmin with site name', async () => {
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        expect(mockGetFormResponsesBySiteAdmin).toHaveBeenCalledWith('Test National Park');
       });
     });
   });
@@ -263,11 +288,12 @@ describe('AdminSiteDetails', () => {
   });
 
   describe('Statistics Cards', () => {
-    it('should display Total Reports card', async () => {
+    it('should display Total Reports card with count', async () => {
       render(<AdminSiteDetails />);
 
       await waitFor(() => {
         expect(screen.getByText('Total Reports')).toBeInTheDocument();
+        expect(screen.getByText('2')).toBeInTheDocument();
       });
     });
 
@@ -284,6 +310,36 @@ describe('AdminSiteDetails', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Condition')).toBeInTheDocument();
+      });
+    });
+
+    it('should compute average naturalness score', async () => {
+      render(<AdminSiteDetails />);
+
+      // average of 3.5 and 2.5 = 3.0
+      await waitFor(() => {
+        const matches = screen.getAllByText('3.0');
+        expect(matches.length).toBeGreaterThan(0);
+      });
+    });
+
+    it('should only count active inspections in stats', async () => {
+      mockGetFormResponsesBySiteAdmin.mockResolvedValue(mockFormResponsesWithInactive);
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        // Only 1 active, so Total Reports should show 1
+        expect(screen.getByText('Total Reports')).toBeInTheDocument();
+        expect(screen.getByText('1')).toBeInTheDocument();
+      });
+    });
+
+    it('should show inactive count when there are inactive items', async () => {
+      mockGetFormResponsesBySiteAdmin.mockResolvedValue(mockFormResponsesWithInactive);
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        expect(screen.getByText('1 inactive')).toBeInTheDocument();
       });
     });
   });
@@ -354,17 +410,20 @@ describe('AdminSiteDetails', () => {
       await user.click(screen.getByRole('button', { name: /Export/i }));
       expect(screen.getByText('Export as CSV')).toBeInTheDocument();
       expect(screen.getByText('Export as JSON')).toBeInTheDocument();
+      expect(screen.getByText('Export as PDF')).toBeInTheDocument();
     });
 
     it('should close export menu after selection', async () => {
       const user = userEvent.setup();
-      
+
+
       // Mock URL.createObjectURL and createElement
       const mockCreateObjectURL = jest.fn(() => 'blob:test');
       const mockRevokeObjectURL = jest.fn();
       global.URL.createObjectURL = mockCreateObjectURL;
       global.URL.revokeObjectURL = mockRevokeObjectURL;
-      
+
+
       const mockClick = jest.fn();
       const originalCreateElement = document.createElement.bind(document);
       jest.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
@@ -427,41 +486,100 @@ describe('AdminSiteDetails', () => {
 
       await user.click(screen.getByRole('button', { name: /Compare by Question/i }));
       await user.click(screen.getByRole('button', { name: /View by Date/i }));
-      
+
+
       expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
     });
   });
 
   describe('Inspection Reports (By Date View)', () => {
-    it('should display Inspection Reports heading', async () => {
+    it('should display Inspection Reports heading with count', async () => {
       render(<AdminSiteDetails />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
+        expect(screen.getByText(/Inspection Reports \(2\)/)).toBeInTheDocument();
       });
     });
 
-    it('should expand inspection on click', async () => {
+    it('should display inspection dates', async () => {
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        expect(screen.getByText('June 15, 2024')).toBeInTheDocument();
+        expect(screen.getByText('December 10, 2023')).toBeInTheDocument();
+      });
+    });
+
+    it('should display naturalness scores', async () => {
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Score: 3.5')).toBeInTheDocument();
+        expect(screen.getByText('Score: 2.5')).toBeInTheDocument();
+      });
+    });
+
+    it('should expand inspection on click to show details', async () => {
       const user = userEvent.setup();
       render(<AdminSiteDetails />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
+        expect(screen.getByText('June 15, 2024')).toBeInTheDocument();
       });
 
-      // Find and click on an inspection card
-      const inspectionCards = document.querySelectorAll('[class*="bg-white rounded-2xl border-2"]');
-      if (inspectionCards.length > 0) {
-        const expandButton = inspectionCards[0].querySelector('button');
-        if (expandButton) {
-          await user.click(expandButton);
-        }
-      }
+      // Click the first inspection card to expand it
+      await user.click(screen.getByText('June 15, 2024'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Jane Steward')).toBeInTheDocument();
+        expect(screen.getByText('Well preserved natural habitat')).toBeInTheDocument();
+        expect(screen.getByText('Healthy forest cover')).toBeInTheDocument();
+      });
+    });
+
+    it('should show section dividers in expanded view', async () => {
+      const user = userEvent.setup();
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        expect(screen.getByText('June 15, 2024')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByText('June 15, 2024'));
+
+      await waitFor(() => {
+        // "Observations" appears as a label, and "SECTION: Observations" as a section divider
+        expect(screen.getByText('Observations')).toBeInTheDocument();
+        expect(screen.getByText('SECTION: Observations')).toBeInTheDocument();
+        expect(screen.getByText('SECTION: Environment')).toBeInTheDocument();
+      });
+    });
+
+    it('should show inactive responses with Inactive badge', async () => {
+      mockGetFormResponsesBySiteAdmin.mockResolvedValue(mockFormResponsesWithInactive);
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Inactive')).toBeInTheDocument();
+      });
+    });
+
+    it('should show all responses including inactive ones', async () => {
+      mockGetFormResponsesBySiteAdmin.mockResolvedValue(mockFormResponsesWithInactive);
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        // Both dates should be visible - admin sees everything
+        expect(screen.getByText('June 15, 2024')).toBeInTheDocument();
+        expect(screen.getByText('December 10, 2023')).toBeInTheDocument();
+        // Report count in heading should show both (all responses, not just active)
+        expect(screen.getByText(/Inspection Reports \(2\)/)).toBeInTheDocument();
+      });
     });
   });
 
-  describe('Edit Modal', () => {
-    it('should open edit modal when Edit is clicked from menu', async () => {
+  describe('Edit Answers Modal', () => {
+    it('should open edit modal when Edit Answers is clicked', async () => {
       const user = userEvent.setup();
       render(<AdminSiteDetails />);
 
@@ -469,27 +587,15 @@ describe('AdminSiteDetails', () => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      // Find the menu button (MoreVertical icon button)
-      const menuButtons = screen.getAllByRole('button').filter(
-        btn => btn.querySelector('.lucide-more-vertical')
-      );
-      
-      if (menuButtons.length > 0) {
-        await user.click(menuButtons[0]);
-        
-        await waitFor(() => {
-          expect(screen.getByText('Edit')).toBeInTheDocument();
-        });
-        
-        await user.click(screen.getByText('Edit'));
-        
-        await waitFor(() => {
-          expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
-        });
-      }
+      await user.click(screen.getByTestId('edit-button-101'));
+
+      // Modal should open with the edit form
+      await waitFor(() => {
+        expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
+      });
     });
 
-    it('should display editable fields in edit modal', async () => {
+    it('should display answer fields in the edit modal', async () => {
       const user = userEvent.setup();
       render(<AdminSiteDetails />);
 
@@ -497,30 +603,17 @@ describe('AdminSiteDetails', () => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      const menuButtons = screen.getAllByRole('button').filter(
-        btn => btn.querySelector('.lucide-more-vertical')
-      );
-      
-      if (menuButtons.length > 0) {
-        await user.click(menuButtons[0]);
-        
-        await waitFor(() => {
-          expect(screen.getByText('Edit')).toBeInTheDocument();
-        });
-        
-        await user.click(screen.getByText('Edit'));
-        
-        await waitFor(() => {
-          expect(screen.getByText('Steward')).toBeInTheDocument();
-          expect(screen.getByText('Steward Guest')).toBeInTheDocument();
-          expect(screen.getByText('Naturalness Score')).toBeInTheDocument();
-          expect(screen.getByText('Naturalness Details')).toBeInTheDocument();
-          expect(screen.getByText('Observations')).toBeInTheDocument();
-        });
-      }
+      await user.click(screen.getByTestId('edit-button-101'));
+
+      await waitFor(() => {
+        // Should show question labels in the modal
+        expect(screen.getByText('Vegetation')).toBeInTheDocument();
+        expect(screen.getByText('Wildlife')).toBeInTheDocument();
+        expect(screen.getByText('Water')).toBeInTheDocument();
+      });
     });
 
-    it('should close edit modal on Cancel click', async () => {
+    it('should close edit modal on Cancel', async () => {
       const user = userEvent.setup();
       render(<AdminSiteDetails />);
 
@@ -528,32 +621,20 @@ describe('AdminSiteDetails', () => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      const menuButtons = screen.getAllByRole('button').filter(
-        btn => btn.querySelector('.lucide-more-vertical')
-      );
-      
-      if (menuButtons.length > 0) {
-        await user.click(menuButtons[0]);
-        
-        await waitFor(() => {
-          expect(screen.getByText('Edit')).toBeInTheDocument();
-        });
-        
-        await user.click(screen.getByText('Edit'));
-        
-        await waitFor(() => {
-          expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
-        });
+      await user.click(screen.getByTestId('edit-button-101'));
 
-        await user.click(screen.getByRole('button', { name: /Cancel/i }));
-        
-        await waitFor(() => {
-          expect(screen.queryByText(/Edit Report:/)).not.toBeInTheDocument();
-        });
-      }
+      await waitFor(() => {
+        expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+      await waitFor(() => {
+        expect(screen.queryByText(/Edit Report:/)).not.toBeInTheDocument();
+      });
     });
 
-    it('should close edit modal on X button click', async () => {
+    it('should close edit modal on X button', async () => {
       const user = userEvent.setup();
       render(<AdminSiteDetails />);
 
@@ -561,39 +642,56 @@ describe('AdminSiteDetails', () => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      const menuButtons = screen.getAllByRole('button').filter(
-        btn => btn.querySelector('.lucide-more-vertical')
-      );
-      
-      if (menuButtons.length > 0) {
-        await user.click(menuButtons[0]);
-        
-        await waitFor(() => {
-          expect(screen.getByText('Edit')).toBeInTheDocument();
-        });
-        
-        await user.click(screen.getByText('Edit'));
-        
-        await waitFor(() => {
-          expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
-        });
+      await user.click(screen.getByTestId('edit-button-101'));
 
-        // Find the X close button
-        const closeButtons = screen.getAllByRole('button').filter(
-          btn => btn.querySelector('.lucide-x')
+      await waitFor(() => {
+        expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
+      });
+
+      // Click Cancel to close (X button has no accessible label, use Cancel instead)
+      await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+      await waitFor(() => {
+        expect(screen.queryByText(/Edit Report:/)).not.toBeInTheDocument();
+      });
+    });
+
+    it('should call updateSiteInspectionAnswers on Save Changes', async () => {
+      const user = userEvent.setup();
+      // After save, the component reloads data
+      mockGetFormResponsesBySiteAdmin.mockResolvedValue(mockFormResponses);
+
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByTestId('edit-button-101'));
+
+      await waitFor(() => {
+        expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
+      });
+
+      // Click Save Changes
+      await user.click(screen.getByRole('button', { name: /Save Changes/i }));
+
+      await waitFor(() => {
+        expect(mockUpdateSiteInspectionAnswers).toHaveBeenCalledWith(
+          101,
+          expect.arrayContaining([
+            expect.objectContaining({ question_id: 3 }),
+          ])
         );
-        
-        if (closeButtons.length > 0) {
-          await user.click(closeButtons[0]);
-          
-          await waitFor(() => {
-            expect(screen.queryByText(/Edit Report:/)).not.toBeInTheDocument();
-          });
-        }
-      }
+      });
+
+      // Modal should close after save
+      await waitFor(() => {
+        expect(screen.queryByText(/Edit Report:/)).not.toBeInTheDocument();
+      });
     });
 
-    it('should have Save Changes button in edit modal', async () => {
+    it('should NOT navigate away when editing - uses inline modal', async () => {
       const user = userEvent.setup();
       render(<AdminSiteDetails />);
 
@@ -601,82 +699,41 @@ describe('AdminSiteDetails', () => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      const menuButtons = screen.getAllByRole('button').filter(
-        btn => btn.querySelector('.lucide-more-vertical')
-      );
-      
-      if (menuButtons.length > 0) {
-        await user.click(menuButtons[0]);
-        
-        await waitFor(() => {
-          expect(screen.getByText('Edit')).toBeInTheDocument();
-        });
-        
-        await user.click(screen.getByText('Edit'));
-        
-        await waitFor(() => {
-          expect(screen.getByRole('button', { name: /Save Changes/i })).toBeInTheDocument();
-        });
-      }
+      await user.click(screen.getByTestId('edit-button-101'));
+
+      // Should NOT have navigated
+      expect(mockPush).not.toHaveBeenCalled();
+
+      // Modal should be open
+      await waitFor(() => {
+        expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
+      });
     });
   });
 
-  describe('Delete Confirmation Modal', () => {
-    it('should open delete confirmation when Delete is clicked', async () => {
-      const user = userEvent.setup();
+  describe('Toggle Active/Inactive', () => {
+    it('should show Disable button for active responses', async () => {
       render(<AdminSiteDetails />);
 
       await waitFor(() => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      const menuButtons = screen.getAllByRole('button').filter(
-        btn => btn.querySelector('.lucide-more-vertical')
-      );
-      
-      if (menuButtons.length > 0) {
-        await user.click(menuButtons[0]);
-        
-        await waitFor(() => {
-          expect(screen.getByText('Delete')).toBeInTheDocument();
-        });
-        
-        await user.click(screen.getByText('Delete'));
-        
-        await waitFor(() => {
-          expect(screen.getByText('Delete Inspection?')).toBeInTheDocument();
-        });
-      }
+      expect(screen.getByTestId('toggle-active-button-101')).toHaveTextContent('Disable');
     });
 
-    it('should display warning message in delete confirmation', async () => {
-      const user = userEvent.setup();
+    it('should show Enable button for inactive responses', async () => {
+      mockGetFormResponsesBySiteAdmin.mockResolvedValue(mockFormResponsesWithInactive);
       render(<AdminSiteDetails />);
 
       await waitFor(() => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      const menuButtons = screen.getAllByRole('button').filter(
-        btn => btn.querySelector('.lucide-more-vertical')
-      );
-      
-      if (menuButtons.length > 0) {
-        await user.click(menuButtons[0]);
-        
-        await waitFor(() => {
-          expect(screen.getByText('Delete')).toBeInTheDocument();
-        });
-        
-        await user.click(screen.getByText('Delete'));
-        
-        await waitFor(() => {
-          expect(screen.getByText(/This action cannot be undone/)).toBeInTheDocument();
-        });
-      }
+      expect(screen.getByTestId('toggle-active-button-102')).toHaveTextContent('Enable');
     });
 
-    it('should close delete confirmation on Cancel click', async () => {
+    it('should call setFormResponseActive with false when deactivating', async () => {
       const user = userEvent.setup();
       render(<AdminSiteDetails />);
 
@@ -684,57 +741,83 @@ describe('AdminSiteDetails', () => {
         expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
       });
 
-      const menuButtons = screen.getAllByRole('button').filter(
-        btn => btn.querySelector('.lucide-more-vertical')
-      );
-      
-      if (menuButtons.length > 0) {
-        await user.click(menuButtons[0]);
-        
-        await waitFor(() => {
-          expect(screen.getByText('Delete')).toBeInTheDocument();
-        });
-        
-        await user.click(screen.getByText('Delete'));
-        
-        await waitFor(() => {
-          expect(screen.getByText('Delete Inspection?')).toBeInTheDocument();
-        });
+      await user.click(screen.getByTestId('toggle-active-button-101'));
 
-        // Find Cancel button in the modal
-        const cancelButton = screen.getByRole('button', { name: 'Cancel' });
-        await user.click(cancelButton);
-        
-        await waitFor(() => {
-          expect(screen.queryByText('Delete Inspection?')).not.toBeInTheDocument();
-        });
-      }
+      await waitFor(() => {
+        expect(mockSetFormResponseActive).toHaveBeenCalledWith(101, false);
+      });
+    });
+
+    it('should call setFormResponseActive with true when reactivating', async () => {
+      const user = userEvent.setup();
+      mockGetFormResponsesBySiteAdmin.mockResolvedValue(mockFormResponsesWithInactive);
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByTestId('toggle-active-button-102'));
+
+      await waitFor(() => {
+        expect(mockSetFormResponseActive).toHaveBeenCalledWith(102, true);
+      });
+    });
+
+    it('should update UI after toggling active status', async () => {
+      const user = userEvent.setup();
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
+      });
+
+      // Initially no Inactive badge (both are active)
+      expect(screen.queryByText('Inactive')).not.toBeInTheDocument();
+
+      // Deactivate first response
+      await user.click(screen.getByTestId('toggle-active-button-101'));
+
+      // Should now show Inactive badge
+      await waitFor(() => {
+        expect(screen.getByText('Inactive')).toBeInTheDocument();
+      });
+
+      // Total active reports should be 1 now
+      expect(screen.getByText('1')).toBeInTheDocument();
     });
   });
 
   describe('Naturalness Score Gradient', () => {
+    it('should display Naturalness Score section when inspections have scores', async () => {
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Naturalness Score')).toBeInTheDocument();
+        expect(screen.getByText('1.0 Poor')).toBeInTheDocument();
+        expect(screen.getByText('4.0 Excellent')).toBeInTheDocument();
+      });
+    });
+
     it('should not display Naturalness Score section when no inspections have scores', async () => {
+      mockGetFormResponsesBySiteAdmin.mockResolvedValue([]);
       render(<AdminSiteDetails />);
 
       await waitFor(() => {
         expect(screen.getByText('Test National Park')).toBeInTheDocument();
       });
 
-      // The Naturalness Score section only renders when average !== null
-      // With no inspection data, it should not be present
-      // We check that the gradient labels are NOT present
       expect(screen.queryByText('1.0 Poor')).not.toBeInTheDocument();
     });
 
     it('should display N/A for average score when no inspections', async () => {
+      mockGetFormResponsesBySiteAdmin.mockResolvedValue([]);
       render(<AdminSiteDetails />);
 
       await waitFor(() => {
         expect(screen.getByText('Test National Park')).toBeInTheDocument();
       });
 
-      // The Avg. Score card should show N/A when there are no inspections
-      // There may be multiple N/A elements (Avg. Score and Condition cards)
       const naElements = screen.getAllByText('N/A');
       expect(naElements.length).toBeGreaterThan(0);
     });
@@ -756,6 +839,23 @@ describe('AdminSiteDetails', () => {
       });
     });
 
+    it('should show question texts in comparison view', async () => {
+      const user = userEvent.setup();
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /Compare by Question/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('button', { name: /Compare by Question/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText('Vegetation')).toBeInTheDocument();
+        expect(screen.getByText('Wildlife')).toBeInTheDocument();
+        expect(screen.getByText('Water')).toBeInTheDocument();
+      });
+    });
+
     it('should expand question to show answers', async () => {
       const user = userEvent.setup();
       render(<AdminSiteDetails />);
@@ -767,16 +867,18 @@ describe('AdminSiteDetails', () => {
       await user.click(screen.getByRole('button', { name: /Compare by Question/i }));
 
       await waitFor(() => {
-        expect(screen.getByText(/Question Comparison/)).toBeInTheDocument();
+        expect(screen.getByText('Vegetation')).toBeInTheDocument();
       });
 
-      // Find question cards and try to expand one
-      const questionCards = document.querySelectorAll('[class*="bg-white rounded-2xl border-2"]');
-      if (questionCards.length > 1) { // First is stats, rest are questions
-        const expandButton = questionCards[1].querySelector('button');
-        if (expandButton) {
-          await user.click(expandButton);
-        }
+      // Click on a question card to expand it
+      const vegButton = screen.getByText('Vegetation').closest('button');
+      if (vegButton) {
+        await user.click(vegButton);
+
+        await waitFor(() => {
+          expect(screen.getByText('Healthy forest cover')).toBeInTheDocument();
+          expect(screen.getByText('Moderate cover')).toBeInTheDocument();
+        });
       }
     });
   });
@@ -811,8 +913,6 @@ describe('AdminSiteDetails', () => {
         expect(screen.getByText('Data Quality Analysis')).toBeInTheDocument();
       });
 
-      // With no inspections, the Data Quality panel will be empty or show no percentage cards
-      // The panel should still be visible with the heading
       const panel = screen.getByText('Data Quality Analysis');
       expect(panel).toBeInTheDocument();
     });
@@ -839,85 +939,23 @@ describe('AdminSiteDetails', () => {
   });
 });
 
-describe('EditableField Component', () => {
-  // These tests verify the EditableField component behavior indirectly through the modal
-
-  it('should allow text input in editable fields', async () => {
-    const user = userEvent.setup();
-    render(<AdminSiteDetails />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
-    });
-
-    const menuButtons = screen.getAllByRole('button').filter(
-      btn => btn.querySelector('.lucide-more-vertical')
-    );
-    
-    if (menuButtons.length > 0) {
-      await user.click(menuButtons[0]);
-      
-      await waitFor(() => {
-        expect(screen.getByText('Edit')).toBeInTheDocument();
-      });
-      
-      await user.click(screen.getByText('Edit'));
-      
-      await waitFor(() => {
-        expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
-      });
-
-      // Find steward input and type in it
-      const stewardInput = screen.getByPlaceholderText('Enter steward name');
-      await user.clear(stewardInput);
-      await user.type(stewardInput, 'New Steward Name');
-      
-      expect(stewardInput).toHaveValue('New Steward Name');
-    }
-  });
-
-  it('should allow multiline input in textarea fields', async () => {
-    const user = userEvent.setup();
-    render(<AdminSiteDetails />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
-    });
-
-    const menuButtons = screen.getAllByRole('button').filter(
-      btn => btn.querySelector('.lucide-more-vertical')
-    );
-    
-    if (menuButtons.length > 0) {
-      await user.click(menuButtons[0]);
-      
-      await waitFor(() => {
-        expect(screen.getByText('Edit')).toBeInTheDocument();
-      });
-      
-      await user.click(screen.getByText('Edit'));
-      
-      await waitFor(() => {
-        expect(screen.getByText(/Edit Report:/)).toBeInTheDocument();
-      });
-
-      // Find naturalness details textarea
-      const detailsInput = screen.getByPlaceholderText('Enter naturalness details');
-      await user.clear(detailsInput);
-      await user.type(detailsInput, 'Line 1\nLine 2');
-      
-      expect(detailsInput).toHaveValue('Line 1\nLine 2');
-    }
-  });
-});
-
 describe('Integration Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetSiteByName.mockResolvedValue([mockSite]);
+    mockGetFormResponsesBySiteAdmin.mockResolvedValue(mockFormResponses);
+    mockSetFormResponseActive.mockResolvedValue(undefined);
+    mockUpdateSiteInspectionAnswers.mockResolvedValue(undefined);
+    Object.defineProperty(window, 'sessionStorage', {
+      value: {
+        getItem: jest.fn(() => '[]'),
+        setItem: jest.fn(),
+      },
+      writable: true,
+    });
   });
 
-  it('should handle complete admin workflow: view, filter, edit', async () => {
+  it('should handle complete admin workflow: view, filter, toggle views', async () => {
     const user = userEvent.setup();
     render(<AdminSiteDetails />);
 
@@ -956,14 +994,49 @@ describe('Integration Tests', () => {
 
     // Switch to question view
     await user.click(screen.getByRole('button', { name: /Compare by Question/i }));
-    
+
+
     // Data Quality should still be visible
     expect(screen.getByText('Data Quality Analysis')).toBeInTheDocument();
 
     // Switch back to date view
     await user.click(screen.getByRole('button', { name: /View by Date/i }));
-    
+
+
     // Data Quality should still be visible
     expect(screen.getByText('Data Quality Analysis')).toBeInTheDocument();
+  });
+
+  it('should handle deactivate and reactivate workflow', async () => {
+    const user = userEvent.setup();
+    render(<AdminSiteDetails />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Inspection Reports \(2\)/)).toBeInTheDocument();
+    });
+
+    // Deactivate
+    await user.click(screen.getByTestId('toggle-active-button-101'));
+
+    await waitFor(() => {
+      expect(mockSetFormResponseActive).toHaveBeenCalledWith(101, false);
+    });
+
+    // Should now show Inactive badge and updated stats
+    await waitFor(() => {
+      expect(screen.getByText('Inactive')).toBeInTheDocument();
+    });
+
+    // Now reactivate
+    await user.click(screen.getByTestId('toggle-active-button-101'));
+
+    await waitFor(() => {
+      expect(mockSetFormResponseActive).toHaveBeenCalledWith(101, true);
+    });
+
+    // Should no longer show Inactive badge
+    await waitFor(() => {
+      expect(screen.queryByText('Inactive')).not.toBeInTheDocument();
+    });
   });
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
+import { useRouter } from 'next/navigation';
 import {
   Plus,
   GripVertical,
@@ -17,9 +18,11 @@ import {
   CheckSquare,
   Image as ImageIcon,
   Calendar,
-  FileCheck,
-  AlertCircle,  
+  AlertCircle,
+  ArrowLeft
 } from "lucide-react";
+import RichTextEditor from "@/components/RichTextEditor";
+import MarkdownText from "@/components/MarkdownText";
 import Image from "next/image";
 import {
   DndContext,
@@ -27,7 +30,6 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  useDroppable,
   type DragEndEvent,
 } from "@dnd-kit/core";
 import {
@@ -47,7 +49,6 @@ import {
   toggleQuestionActive,
   addQuestion,
   reorderQuestions,
-  addFormSection,
   type FormSection,
   type FormQuestion,
   type QuestionOption,
@@ -106,6 +107,7 @@ function qNumbersMatch(title: string, key: string): boolean {
 
 // ─── Main Page Component ─────────────────────────────────────────────
 export default function FormEditorPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sections, setSections] = useState<FormSection[]>([]);
@@ -114,14 +116,11 @@ export default function FormEditorPage() {
   const [selectedQuestion, setSelectedQuestion] = useState<FormQuestion | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<FormQuestion | null>(null);
   const [showAddQuestion, setShowAddQuestion] = useState(false);
-  const [showAddSection, setShowAddSection] = useState(false);
-  const [newSectionTitle, setNewSectionTitle] = useState("");
-  const [newSectionDescription, setNewSectionDescription] = useState("");
-  const [newSectionHeader, setNewSectionHeader] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const handleUpdatePreview = useCallback((draft: Partial<FormQuestion>) => {
-  setSelectedQuestion(draft as FormQuestion);}, []);
+    setSelectedQuestion(draft as FormQuestion);
+  }, []);
 
   // ─── Data Fetching ───────────────────────────────────────────────
   const loadSections = useCallback(async () => {
@@ -278,30 +277,22 @@ export default function FormEditorPage() {
     }
   };
 
-  // ─── Section CRUD ────────────────────────────────────────────────
-  const handleAddSection = async () => {
-    if (!newSectionTitle.trim()) return;
-    setSaving(true);
-    setError(null);
-    try {
-      const newId = await addFormSection({
-        title: newSectionTitle.trim(),
-        description: newSectionDescription.trim() || null,
-        header: newSectionHeader.trim() || newSectionTitle.trim(),
-      });
-      await loadSections();
-      setActiveSection(newId);
-      setShowAddSection(false);
-      setNewSectionTitle("");
-      setNewSectionDescription("");
-      setNewSectionHeader("");
-      showSuccess("Section added successfully");
-    } catch (err: any) {
-      setError("Failed to add section: " + err.message);
-    } finally {
-      setSaving(false);
+  // ─── Handle Back Button Navigation ────────────────────────────────────────────────
+  const handleBack = () => {
+    const stack: string[] = JSON.parse(sessionStorage.getItem('navStack') || '[]')
+
+    if (stack.length > 1) {
+      stack.pop() // remove current page
+      const previous = stack[stack.length - 1]
+      stack.pop() // remove previous since we're navigating there
+      sessionStorage.setItem('navStack', JSON.stringify(stack))
+      router.push(previous)
+    } else {
+      stack.pop() // clear current page before navigating to fallback
+      sessionStorage.setItem('navStack', JSON.stringify(stack))
+      router.push('/sites')
     }
-  };
+  }
 
   // ─── Loading State ───────────────────────────────────────────────
   if (loading) {
@@ -321,6 +312,15 @@ export default function FormEditorPage() {
     <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
       <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
           <div className="max-w-7xl mx-auto">
+            {/* Back button */}
+            <button
+              onClick = {handleBack}
+              className="flex items-center gap-1.5 text-[#86A98A] hover:text-white transition-colors mb-4 group"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <span className="text-sm font-medium">Back</span>
+            </button>
+            
             <div className="flex items-center justify-between mb-3">
               {/* Left: icon + title + subtitle */}
               <div className="flex items-center gap-4">
@@ -346,7 +346,6 @@ export default function FormEditorPage() {
             </div>
           </div>
         </div>
-
 
         {/* Alerts */}
         {error && (
@@ -383,13 +382,6 @@ export default function FormEditorPage() {
                   <h3 className="text-sm font-bold text-[#254431] uppercase tracking-wide">
                     Sections
                   </h3>
-                  <button
-                    onClick={() => setShowAddSection(true)}
-                    className="w-7 h-7 bg-[#E4EBE4] hover:bg-[#356B43] hover:text-white text-[#356B43] rounded-lg flex items-center justify-center transition-all"
-                    title="Add Section"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
                 </div>
 
                 <div className="space-y-2">
@@ -398,7 +390,7 @@ export default function FormEditorPage() {
                       (q) => q.section_id === section.id
                     ).length;
                     return (
-                      <DroppableSectionButton
+                      <SectionButton
                         key={section.id}
                         data-testid={`section-button-${section.id}`}
                         section={section}
@@ -414,58 +406,6 @@ export default function FormEditorPage() {
                     );
                   })}
                 </div>
-
-                {/* Add Section Modal */}
-                {showAddSection && (
-                  <div className="mt-4 p-3 bg-[#F7F2EA] rounded-xl border-2 border-[#E4EBE4]">
-                    <h4 className="text-xs font-bold text-[#254431] uppercase mb-2">
-                      New Section
-                    </h4>
-                    <input
-                      type="text"
-                      placeholder="Section title"
-                      value={newSectionTitle}
-                      onChange={(e) => setNewSectionTitle(e.target.value)}
-                      className="w-full px-3 py-2 text-sm border-2 border-[#E4EBE4] rounded-lg mb-2 focus:outline-none focus:border-[#356B43]"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Sidebar label (optional)"
-                      value={newSectionHeader}
-                      onChange={(e) => setNewSectionHeader(e.target.value)}
-                      className="w-full px-3 py-2 text-sm border-2 border-[#E4EBE4] rounded-lg mb-2 focus:outline-none focus:border-[#356B43]"
-                    />
-                    <textarea
-                      placeholder="Description (optional)"
-                      value={newSectionDescription}
-                      onChange={(e) =>
-                        setNewSectionDescription(e.target.value)
-                      }
-                      rows={2}
-                      className="w-full px-3 py-2 text-sm border-2 border-[#E4EBE4] rounded-lg mb-3 focus:outline-none focus:border-[#356B43] resize-none"
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleAddSection}
-                        disabled={saving || !newSectionTitle.trim()}
-                        className="flex-1 px-3 py-2 bg-gradient-to-r from-[#356B43] to-[#254431] text-white text-xs font-semibold rounded-lg disabled:opacity-50 transition-all"
-                      >
-                        {saving ? "Adding..." : "Add"}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowAddSection(false);
-                          setNewSectionTitle("");
-                          setNewSectionDescription("");
-                          setNewSectionHeader("");
-                        }}
-                        className="px-3 py-2 border-2 border-[#E4EBE4] text-[#7A8075] text-xs font-semibold rounded-lg hover:bg-[#E4EBE4] transition-all"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -478,9 +418,7 @@ export default function FormEditorPage() {
                     {currentSection?.title ?? "Select a section"}
                   </h2>
                   {currentSection?.description && (
-                    <p className="text-sm text-[#7A8075] mt-1">
-                      {currentSection.description}
-                    </p>
+                    <MarkdownText content={currentSection.description} className="text-sm text-[#7A8075] mt-1" />
                   )}
                 </div>
                 <div className="flex gap-2">
@@ -578,7 +516,10 @@ export default function FormEditorPage() {
                             ? editingQuestion
                             : null
                         }
-                        onEditingChange={setEditingQuestion}
+                        onEditingChange={(q) => {
+                          setEditingQuestion(q);
+                          setSelectedQuestion(q);
+                        }}
                       />
                     ))}
                   </div>
@@ -621,8 +562,8 @@ export default function FormEditorPage() {
   );
 }
 
-// ─── DroppableSectionButton Component ────────────────────────────────
-function DroppableSectionButton({
+// ─── SectionButton Component ─────────────────────────────────────────
+function SectionButton({
   section,
   count,
   isActive,
@@ -635,21 +576,14 @@ function DroppableSectionButton({
   onClick: () => void;
   "data-testid"?: string;
 }) {
-  const { setNodeRef, isOver } = useDroppable({
-    id: `section-${section.id}`,
-  });
-
   return (
     <button
-      ref={setNodeRef}
       onClick={onClick}
       data-testid={dataTestId}
       className={`w-full text-left px-3 py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-between ${
-        isOver
-          ? "bg-[#DCFCE7] text-[#166534] border-2 border-[#22C55E] scale-[1.03] shadow-md"
-          : isActive
-            ? "bg-[#EEF5EF] text-[#356B43] border-2 border-[#356B43]"
-            : "text-[#7A8075] border-2 border-[#E4EBE4] hover:border-[#86A98A]"
+        isActive
+          ? "bg-[#EEF5EF] text-[#356B43] border-2 border-[#356B43]"
+          : "text-[#7A8075] border-2 border-[#E4EBE4] hover:border-[#86A98A]"
       }`}
     >
       <span className="truncate">
@@ -657,11 +591,9 @@ function DroppableSectionButton({
       </span>
       <span
         className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
-          isOver
-            ? "bg-[#22C55E] text-white"
-            : isActive
-              ? "bg-[#356B43] text-white"
-              : "bg-[#E4EBE4] text-[#7A8075]"
+          isActive
+            ? "bg-[#356B43] text-white"
+            : "bg-[#E4EBE4] text-[#7A8075]"
         }`}
         data-testid={`section-count-${section.id}`}
       >
@@ -680,8 +612,6 @@ function SortableQuestionCard({
   onSelect,
   onEdit,
   onToggleActive,
-  onMoveUp,
-  onMoveDown,
   onSave,
   onCancelEdit,
   editingQuestion,
@@ -694,8 +624,6 @@ function SortableQuestionCard({
   onSelect: () => void;
   onEdit: () => void;
   onToggleActive: (id: number, currentStatus: boolean) => Promise<void>;
-  onMoveUp?: () => void;
-  onMoveDown?: () => void;
   onSave: (q: FormQuestion) => void;
   onCancelEdit: () => void;
   editingQuestion: FormQuestion | null;
@@ -876,14 +804,12 @@ function EditQuestionForm({
           <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
             Description / Subtext
           </label>
-          <textarea
-            data-testid="edit-question-subtext"
+          <RichTextEditor
+            testId="edit-question-subtext"
             value={question.subtext || ""}
-            onChange={(e) =>
-              onChange({ ...question, subtext: e.target.value })
-            }
+            onChange={(val) => onChange({ ...question, subtext: val })}
             rows={2}
-            className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] resize-none transition-colors"
+            className="mt-1"
           />
         </div>
 
@@ -1101,14 +1027,13 @@ function AddQuestionForm({
           <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
             Description / Subtext
           </label>
-          <textarea
+          <RichTextEditor
+            testId="add-question-subtext"
             value={subtext}
-            title="add-question-subtext"
-            onChange={(e) => setSubtext(e.target.value)}
+            onChange={setSubtext}
             placeholder="Additional context for the question (optional)"
             rows={2}
-            className="w-full mt-1 px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm focus:outline-none focus:border-[#356B43] resize-none transition-colors placeholder:text-[#7A8075]"
-            data-testid="add-question-subtext"
+            className="mt-1"
           />
         </div>
 
@@ -1278,7 +1203,7 @@ function PreviewPanel({ question }: { question: FormQuestion }) {
             {question.form_question || "Untitled Question"}
           </h4>
           {question.subtext && (
-            <p className="text-xs text-[#7A8075] mt-1">{question.subtext}</p>
+            <MarkdownText content={question.subtext} className="text-xs text-[#7A8075] mt-1" />
           )}
           <div className="flex items-center gap-2 mt-2">
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#F7F2EA] text-[#7A8075] font-medium">

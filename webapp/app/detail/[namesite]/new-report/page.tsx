@@ -1,8 +1,8 @@
 "use client";
 
-import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers, insertInspectionAttachments} from '@/utils/supabase/queries';
+import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers, insertInspectionAttachments, rollbackSiteInspectionSubmission} from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter, usePathname } from "next/navigation";
 import { 
@@ -59,7 +59,18 @@ interface ImageWithMeta {
   id: string;
   file: File;
   caption: string;
-  description: string;
+  identifier: string;
+  photographer: string;
+  date: string;
+  siteName: string;
+}
+
+interface SectionNavigationState {
+  isOnLastSection: boolean;
+  canGoPrevious: boolean;
+  canGoNext: boolean;
+  goToPreviousSection?: () => void;
+  goToNextSection?: () => void;
 }
 
 
@@ -81,6 +92,33 @@ export default function NewReportPage() {
   const [draftKey, setDraftKey] = useState<string | null>(null);
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);  const [sectionNavigation, setSectionNavigation] = useState<SectionNavigationState>({
+    isOnLastSection: false,
+    canGoPrevious: false,
+    canGoNext: false,
+  });
+
+  const handleSectionStateChange = useCallback((state: {
+    isOnLastSection: boolean;
+    canGoPrevious: boolean;
+    canGoNext: boolean;
+    goToPreviousSection: () => void;
+    goToNextSection: () => void;
+  }) => {
+    setSectionNavigation((previousState) => {
+      if (
+        previousState.isOnLastSection === state.isOnLastSection &&
+        previousState.canGoPrevious === state.canGoPrevious &&
+        previousState.canGoNext === state.canGoNext &&
+        previousState.goToPreviousSection === state.goToPreviousSection &&
+        previousState.goToNextSection === state.goToNextSection
+      ) {
+        return previousState;
+      }
+
+      return state;
+    });
+  }, []);
 
 
   useEffect(() => {
@@ -149,7 +187,32 @@ export default function NewReportPage() {
     const savedDraft = localStorage.getItem(draftKey);
 
     if (savedDraft) {
-      setResponses(JSON.parse(savedDraft));
+          const parsed = JSON.parse(savedDraft);
+
+          const normalizedResponses = Object.fromEntries(
+            Object.entries(parsed).map(([key, value]) => {
+              if (Array.isArray(value)) {
+                return [
+                  key,
+                  value.map((item) => {
+                    if (item && typeof item === 'object' && 'previewUrl' in item) {
+                      return {
+                        caption: '',
+                        identifier: '',
+                        photographer: '',
+                        date: '',
+                        ...item,
+                      };
+                    }
+                    return item;
+                  }),
+                ];
+              }
+              return [key, value];
+            })
+          );
+
+          setResponses(normalizedResponses);
       console.log("Draft restored");
     }
 
@@ -191,10 +254,28 @@ export default function NewReportPage() {
   const buildQuestionNumberMap = (formQuestions: Question[]): Record<number, string> => {
     const questionNumberMap: Record<number, string> = {};
     for (const question of formQuestions) {
-      const match = (question.title ?? '').match(/\(Q(\d+)\)/i);
+      const match = (question.title ?? '').match(/\(Q(\d+(?:\.\d+)?)\)/i);
       questionNumberMap[question.id] = match ? `Q${match[1]}` : `Question ${question.id}`;
     }
     return questionNumberMap;
+  };
+
+  const sortQuestionNumbers = (questionNumbers: string[]): string[] => {
+    const getQuestionNumberValue = (questionNumber: string): number => {
+      const match = questionNumber.match(/(\d+(?:\.\d+)?)/);
+      return match ? Number(match[1]) : Number.POSITIVE_INFINITY;
+    };
+
+    return [...questionNumbers].sort((a, b) => {
+      const aValue = getQuestionNumberValue(a);
+      const bValue = getQuestionNumberValue(b);
+
+      if (aValue !== bValue) {
+        return aValue - bValue;
+      }
+
+      return a.localeCompare(b, undefined, { numeric: true });
+    });
   };
 
 
@@ -207,6 +288,10 @@ export default function NewReportPage() {
     siteId: number;
     responseId: number;
     questionId: number;
+    date: string;
+    photographer: string;
+    identifier: string;
+    siteName: string;
   }) {
     const res = await fetch(PRESIGN_ROUTE, {
       method: "POST",
@@ -218,10 +303,17 @@ export default function NewReportPage() {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err?.error || "Failed to get presigned URL");
+      console.error("Presign route failed:", err);
+      throw new Error(
+        err?.error || err?.message || `Failed to get presigned URL (${res.status})`
+      );
     }
 
-    return (await res.json()) as { uploadUrl: string; key: string };
+    return (await res.json()) as {
+            uploadUrl: string;
+            key: string;
+            generatedFilename: string;
+          };
   }
 
   async function uploadFileToS3(uploadUrl: string, file: File) {
@@ -267,6 +359,13 @@ export default function NewReportPage() {
     );
   };
 
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3500);
+  };
+
 
   const handleSubmit = async () => {
     // Prevent multiple submissions
@@ -278,8 +377,9 @@ export default function NewReportPage() {
       .map((question) => questionNumberMap[question.id] ?? `Question ${question.id}`);
 
     if (missingRequiredNumbers.length > 0) {
-      setMissingRequiredQuestionNumbers(missingRequiredNumbers);
+      setMissingRequiredQuestionNumbers(sortQuestionNumbers(missingRequiredNumbers));
       setShowRequiredPopup(true);
+      showToast("Please complete all required questions before submitting.");
       return;
     }
 
@@ -287,10 +387,12 @@ export default function NewReportPage() {
     setMissingRequiredQuestionNumbers([]);
     setIsSubmitting(true);
 
+    let siteInspectionReportId: number | null = null;
+
     try {
       const siteId = await getCurrentSiteId(namesite);
       const userUid = await getCurrentUserUid();
-      const siteInspectionReportId = (await addSiteInspectionReport(siteId, userUid)).id
+      siteInspectionReportId = (await addSiteInspectionReport(siteId, userUid)).id;
 
       // We need to figure out whether the answer to each question should be placed in the obs_value or obs_comm column in Supabase
       // So we convert the question response types into a map that we can search for it
@@ -307,7 +409,7 @@ export default function NewReportPage() {
       let answersArray: SupabaseAnswer[] = [];  
 
 
-      //what goes into W26_attachments table: response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, description
+      //what goes into W26_attachments table: response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier
       // We also need to prepare the data for the attachments table, which means we need to generate the S3 keys for each uploaded file and store those in an array of objects/dictionaries as well
       const attachmentsRows: Array<{
         response_id: number;
@@ -318,43 +420,74 @@ export default function NewReportPage() {
         content_type?: string | null;
         file_size_bytes?: number | null;
         caption?: string | null;
-        description?: string | null;
+        photographer?: string | null;
+        identifier?: string | null;
+        date?: string | null;
       }> = [];
 
 
 
       //image  
       for (const [questionId, answer] of Object.entries(responses)) {
-
-          if (isImageWithMetaArray(answer)) {
+        if (isImageWithMetaArray(answer)) {
               const imageList = answer;
 
               for (const image of imageList) {
                 const file = image.file;
                 // 1) get presigned URL + generated key from your API
-                const { uploadUrl, key } = await getPresignedUrl({
+
+                if (!image.caption.trim()) {
+                  throw new Error("Each uploaded image must have a caption.");
+                }
+                if (!image.date?.trim()) {
+                  throw new Error("Each uploaded image must have a date.");
+                }    
+                if (!image.identifier.trim()) {
+                  throw new Error("Each uploaded image must have an identifier.");
+                }
+                
+                if (image.identifier.replace(/\s/g, '').length > 20) {
+                  throw new Error("Identifier must be 20 characters or fewer (excluding spaces).");
+                }
+
+                if (!image.photographer.trim()) {
+                  throw new Error("Each uploaded image must include the photographer name.");
+                }
+
+                if (image.photographer.replace(/\s/g, '').length > 25) {
+                  throw new Error("Photographer name must be 25 characters or fewer.");
+                }    
+                                
+                const { uploadUrl, key, generatedFilename } = await getPresignedUrl({
+                  
                   filename: file.name,
                   contentType: file.type,
                   fileSize: file.size,
-                  responseId: siteInspectionReportId,
+                  responseId: siteInspectionReportId!,
                   questionId: Number(questionId),
                   siteId: Number(siteId),
+                  date: image.date,
+                  photographer: image.photographer,
+                  identifier: image.identifier,
+                  siteName: namesite,
                 }); 
 
                 // 2) upload the file to S3 using the presigned URL
                 await uploadFileToS3(uploadUrl, file);
 
                 attachmentsRows.push({
-                  response_id: siteInspectionReportId,
-                  question_id: Number(questionId),
-                  site_id: Number(siteId),
-                  storage_key: key, 
-                  filename: file.name,
-                  content_type: file.type,
-                  file_size_bytes: file.size,
-                  caption: image.caption.trim() || null,
-                  description: image.description.trim() || null,
-                });
+                    response_id: siteInspectionReportId,
+                    question_id: Number(questionId),
+                    site_id: Number(siteId),
+                    storage_key: key,
+                    filename: generatedFilename,
+                    content_type: file.type,
+                    file_size_bytes: file.size,
+                    caption: image.caption.trim() || null,
+                    photographer: image.photographer.trim() || null,
+                    identifier: image.identifier.trim() || null,
+                    date: image.date.trim() || null,
+                  });
               }
 
               // Do NOT put image data into W26_answers
@@ -373,7 +506,7 @@ export default function NewReportPage() {
                 answer.forEach(subAnswer => {
                     const isOther = subAnswer === 'Other';
                     answersArray.push({
-                        response_id: siteInspectionReportId,
+                        response_id: siteInspectionReportId!,
                         question_id: Number(questionId),
                         obs_value: isValueType ? String(subAnswer) : null,
                         obs_comm: isOther ? commValue : (isCommType ? String(subAnswer) : null),
@@ -382,7 +515,7 @@ export default function NewReportPage() {
             } else {
                 const isOther = answer === 'Other';
                 answersArray.push({
-                    response_id: siteInspectionReportId,
+                    response_id: siteInspectionReportId!,
                     question_id: Number(questionId),
                     obs_value: isValueType ? String(answer) : null,
                     obs_comm: isOther ? commValue : (isCommType ? String(answer) : null),
@@ -406,9 +539,16 @@ export default function NewReportPage() {
             router.push('/sites?submitted=true');
           } catch (error) {
             console.error(error);
+            if (siteInspectionReportId !== null) {
+              try {
+                await rollbackSiteInspectionSubmission(siteInspectionReportId);
+              } catch (rollbackError) {
+                console.error('Failed to roll back incomplete submission:', rollbackError);
+              }
+            }
             setIsSubmitting(false);
           }
-    /**
+              /**
      * FORM DATA CAPTURED:
      * 
      * 1. USER INFORMATION:
@@ -472,8 +612,6 @@ export default function NewReportPage() {
      *   }
      * }
      */
-    
-    //TODO: Handle form submission
 
     // console.log('Form data to submit:', {
     //   user: currentUser,
@@ -495,7 +633,15 @@ export default function NewReportPage() {
 
   return (
     <div className={`min-h-screen bg-[#F7F2EA] flex flex-col ${showVerification ? 'overflow-hidden max-h-screen' : ''}`}>
-      
+
+      {toastMessage && (
+        <div className="fixed top-5 right-5 z-[200] max-w-md animate-in slide-in-from-top-2 fade-in duration-300">
+          <div className="bg-[#B91C1C] text-white px-4 py-3 rounded-xl shadow-xl border border-red-300">
+            <p className="text-sm font-medium">{toastMessage}</p>
+          </div>
+        </div>
+      )}
+            
       {/* --- VERIFICATION POPUP (Only for non-stewards) --- */}
       {showVerification && !isStewardUser && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
@@ -583,8 +729,8 @@ export default function NewReportPage() {
 
             <div className="p-6 border-t border-[#E4EBE4] bg-[#F7F2EA]/50 space-y-3">
               <div className="flex gap-3">
-                <button 
-                  onClick={() => router.back()}
+                <button
+                  onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
                   className="flex-1 py-3 text-[#7A8075] font-bold hover:bg-[#E4EBE4] rounded-xl transition-colors"
                 >
                   Cancel
@@ -646,7 +792,7 @@ export default function NewReportPage() {
         <div className="max-w-7xl mx-auto">
 
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
           className="flex items-center gap-1.5 text-[#86A98A] hover:text-white transition-colors mb-4 group"
           data-testid="back-button"
         >
@@ -681,6 +827,7 @@ export default function NewReportPage() {
       <MainContent 
         responses={responses}
         onResponsesChange={handleResponsesChange}
+        onSectionStateChange={handleSectionStateChange}
         siteName={namesite}
         currentUser={currentUser}
       />
@@ -691,7 +838,12 @@ export default function NewReportPage() {
         questions={questions}
         responses={responses}
         onSubmit={handleSubmit}
+        onPreviousSection={sectionNavigation.goToPreviousSection}
+        onNextSection={sectionNavigation.goToNextSection}
         isSubmitting={isSubmitting}
+        isSubmitEnabled={sectionNavigation.isOnLastSection}
+        canGoPrevious={sectionNavigation.canGoPrevious}
+        canGoNext={sectionNavigation.canGoNext}
       />
     </div>
   );

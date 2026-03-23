@@ -127,37 +127,33 @@ describe("US 2.0.2 - Image Metadata", () => {
     expect(screen.getByText("1 image total")).toBeInTheDocument();
   });
 
-  it("keeps caption and description values after switching sections and returning", async () => {
+  it("keeps caption and identifier values after switching sections and returning", async () => {
     const { container } = await renderImagePersistenceForm();
 
     await goToCloseSection();
     uploadOneImage(container, "metadata-persistence.jpg");
 
     const captionInput = (await screen.findByPlaceholderText(
-      "Caption (optional)"
+      "Longer Description"
     )) as HTMLInputElement;
-    const descriptionInput = (await screen.findByPlaceholderText(
-      "Description (optional)"
-    )) as HTMLTextAreaElement;
+    const identifierInput = (await screen.findByPlaceholderText(
+      "Short Description"
+    )) as HTMLInputElement;
 
     fireEvent.change(captionInput, { target: { value: "Broken tree near river path" } });
-    fireEvent.change(descriptionInput, {
-      target: { value: "Large crack running up trunk, hanging by surrounding branches." },
-    });
+    fireEvent.change(identifierInput, { target: { value: "Tree-01" } });
 
     expect(captionInput.value).toBe("Broken tree near river path");
-    expect(descriptionInput.value).toBe(
-      "Large crack running up trunk, hanging by surrounding branches."
-    );
+    expect(identifierInput.value).toBe("Tree-01");
 
     await goToStartSection();
     await goToCloseSection();
 
-    expect((screen.getByPlaceholderText("Caption (optional)") as HTMLInputElement).value).toBe(
+    expect((screen.getByPlaceholderText("Longer Description") as HTMLInputElement).value).toBe(
       "Broken tree near river path"
     );
-    expect(
-      (screen.getByPlaceholderText("Description (optional)") as HTMLTextAreaElement).value
-    ).toBe("Large crack running up trunk, hanging by surrounding branches.");
+    expect((screen.getByPlaceholderText("Short Description") as HTMLInputElement).value).toBe(
+      "Tree-01"
+    );
   });
 });

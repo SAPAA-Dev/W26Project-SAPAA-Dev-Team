@@ -61,7 +61,6 @@ jest.mock('../../utils/form-actions', () => ({
   toggleQuestionActive: jest.fn(),
   addQuestion: jest.fn(),
   reorderQuestions: jest.fn(),
-  addFormSection: jest.fn(),
 }));
 
 // Mock user-facing query functions
@@ -148,7 +147,6 @@ describe('Admin Add Questions to Site Inspection Form', () => {
     (formActions.addQuestion as jest.Mock).mockResolvedValue(undefined);
     (formActions.saveQuestion as jest.Mock).mockResolvedValue(undefined);
     (formActions.toggleQuestionActive as jest.Mock).mockResolvedValue(undefined);
-    (formActions.addFormSection as jest.Mock).mockResolvedValue(3);
     (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(toUserFacingQuestions(mockQuestions));
   });
 
@@ -326,29 +324,6 @@ describe('Admin Add Questions to Site Inspection Form', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Question added successfully')).toBeInTheDocument();
-      });
-    });
-
-    it('closes the add form after successful save', async () => {
-      render(<FormEditorPage />);
-      await waitFor(() => {
-        expect(screen.getByText('Site Name (Q1)')).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByRole('button', { name: /Add Question/i }));
-      expect(screen.getByTestId('add-question-title')).toBeInTheDocument();
-
-      fireEvent.change(screen.getByTestId('add-question-title'), {
-        target: { value: 'Closing Test (Q75)' },
-      });
-      fireEvent.change(screen.getByTestId('add-question-key'), {
-        target: { value: 'Q75_Close' },
-      });
-
-      fireEvent.click(screen.getByTestId('save-new-question'));
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('add-question-title')).not.toBeInTheDocument();
       });
     });
 

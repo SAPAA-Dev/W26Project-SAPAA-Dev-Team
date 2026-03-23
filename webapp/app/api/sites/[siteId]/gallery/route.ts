@@ -11,7 +11,7 @@ interface Attachment {
   response_id: string;
   question_id: string;
   caption?: string | null;
-  description?: string | null;
+  identifier?: string | null;
   storage_key: string;
   content_type: string;
   file_size_bytes?: number | null;
@@ -67,12 +67,13 @@ export async function GET(
       .select(`
         id,
         caption,
-        description,
+        identifier,
         content_type,
         storage_key,
         file_size_bytes,
         filename,
-        site_id
+        site_id,
+        response_id
       `)
       .eq("site_id", numericSiteId)
       .in("content_type", ALLOWED_IMAGE_TYPES)
@@ -111,10 +112,11 @@ export async function GET(
         return {
           id: attachment.id,
           caption: attachment.caption,
-          description: attachment.description,
+          identifier: attachment.identifier,
           filename: attachment.filename,
           file_size_bytes: attachment.file_size_bytes,
           site_name: site?.namesite ?? null,
+          response_id: attachment.response_id,
           imageUrl,
         };
       })
