@@ -10,25 +10,18 @@ import { useRouter } from 'next/navigation';
 
 type GalleryItem = {
   id: string;
-  response_id: string;
-  question_id: string;
+  response_id?: string | null;
+  question_id?: string | null;
   caption?: string | null;
   identifier?: string | null;
   date?: string | null;
   storage_key: string;
   file_size_bytes?: number | null;
   imageUrl: string;
-  caption?: string | null;
-  
-  // Inspection attachment fields
-  response_id?: string | null;
-  question_id?: string | null;
   content_type?: string | null;
-
-  // Homepage upload fields
-  date?: string | null;
   photographer?: string | null;
-  identifier?: string | null;
+  site_name?: string | null;
+  filename?: string | null;  
 };
 
 export default function GalleryPage() {

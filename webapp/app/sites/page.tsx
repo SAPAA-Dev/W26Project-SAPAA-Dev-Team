@@ -1,15 +1,22 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSitesOnline, getTotalInspectionCount, SiteSummary } from '@/utils/supabase/queries';
-import { Award, Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock } from 'lucide-react';
+import { Award, Search, MapPin, Calendar, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import Image from 'next/image';
 import { Suspense } from "react";
 import { SubmissionToast } from "./SubmissionToast";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import UploadImages from "@/components/UploadImages";
+
+//tutorial
+import dynamic from 'next/dynamic';
+import HelpMenu from '@/components/HelpMenu';
+import { sitesDashboardSteps } from '@/components/TutorialOverlay';
+
+const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
 type UnifiedSite = SiteSummary;
 
@@ -89,6 +96,19 @@ export default function HomeClient() {
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name:string; avatar:string } | null>(null);
   const [userLoading, setUserLoading] = useState(true);
   const [totalResponses, setTotalResponses] = useState<number>(0);
+
+  //Tutorial
+  const [forceTutorial, setForceTutorial] = useState(false);
+
+  const handleStartTutorial = useCallback(() => {
+    setForceTutorial(false);
+    // Defer so state resets before Joyride re-mounts
+    setTimeout(() => setForceTutorial(true), 50);
+  }, []);
+
+  const handleTutorialFinish = useCallback(() => {
+    setForceTutorial(false);
+  }, []);
 
   useEffect(() => {
     getTotalInspectionCount().then(setTotalResponses).catch(() => {});
@@ -197,7 +217,19 @@ export default function HomeClient() {
   return (
     <ProtectedRoute>
     <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+        {/* Tutorial Overlay — auto-starts on first visit, re-runs on forceRun */}
+            {!loading && !userLoading && (
+              <TutorialOverlay
+                key={forceTutorial ? 'force' : 'auto'}
+                steps={sitesDashboardSteps}
+                tutorialKey="sites"
+                userId={currentUser?.email ?? null}
+                forceRun={forceTutorial}
+                onFinish={handleTutorialFinish}
+              />
+            )}
+
+          <div id="tutorial-header" className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
           <Suspense fallback={null}>
             <SubmissionToast />
           </Suspense>
@@ -220,23 +252,26 @@ export default function HomeClient() {
                   </p>
                 </div>
               </div>
-              {/* Right: navbar — rendered inline, bg overridden to transparent */}
-                {currentUser?.role === 'admin' && (
+              {/* Right: Admin + Help buttons */}
+                <div className="flex items-center gap-2">
+                  {currentUser?.role === 'admin' && (
                     <button
                       onClick={() => router.push('/admin/dashboard')}
-                      className="bg-[#E4EBE4] hover:bg-[#F7F2EA] mt-4 text-black px-4 py-2 rounded-xl flex items-center gap-2 font-semibold transition-all"
+                      className="bg-[#356B43] hover:bg-[#254431] mt-2 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-semibold transition-all"
                     >
                       <Award className="w-5 h-5" />
                       Admin
                     </button>
                   )}
+                  <HelpMenu onStartTutorial={handleStartTutorial} />
+                </div>
             </div>
           </div>
         </div>
 
         
     {/* Stats Cards */}
-    <div className="max-w-7xl mx-auto px-6 py-6 mt-2">
+    <div id="tutorial-stats" className="max-w-7xl mx-auto px-6 py-6 mt-2">
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
           <div className="flex items-center gap-2 mb-2">
@@ -284,7 +319,7 @@ export default function HomeClient() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Search and Sort */}
         <div className="mb-6 space-y-4">
-          <div className="relative">
+          <div id="tutorial-search" className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A8075]" />
             <input
               type="text"
@@ -299,7 +334,7 @@ export default function HomeClient() {
             <p className="text-[#7A8075] font-medium">
               {filteredSites.length} {filteredSites.length === 1 ? 'site' : 'sites'} found
             </p>
-            <div className="relative">
+            <div id="tutorial-sort" className="relative">
               <button
                 onClick={() => setShowSortMenu(!showSortMenu)}
                 className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm"
@@ -352,6 +387,7 @@ export default function HomeClient() {
         </div>
 
         {/* Sites Grid */}
+        <div id="tutorial-site-list">
         {filteredSites.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-20 h-20 bg-[#E4EBE4] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -424,6 +460,7 @@ export default function HomeClient() {
             <UploadImages />
           </div>
         )}
+        </div>
       </div>
     </div>
     </ProtectedRoute>

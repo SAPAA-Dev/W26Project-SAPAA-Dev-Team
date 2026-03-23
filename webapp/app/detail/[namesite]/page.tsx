@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   getFormResponsesBySite,
@@ -31,6 +31,12 @@ import {
 } from "lucide-react";
 import Image from 'next/image';
 import ProtectedRoute from "@/components/ProtectedRoute";
+//Tutorial
+import dynamic from 'next/dynamic';
+import HelpMenu from '@/components/HelpMenu';
+import { siteDetailSteps } from '@/components/TutorialOverlay';
+
+const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
 type ViewMode = 'by-date' | 'by-question'| 'image-gallery';
 
@@ -114,6 +120,18 @@ export default function SiteDetailScreen() {
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  //Tutorial
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+  const [forceTutorial, setForceTutorial] = useState(false);
+
+  const handleStartTutorial = useCallback(() => {
+    setForceTutorial(false);
+    setTimeout(() => setForceTutorial(true), 50);
+  }, []);
+
+  const handleTutorialFinish = useCallback(() => {
+    setForceTutorial(false);
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -129,6 +147,13 @@ export default function SiteDetailScreen() {
         setSite(siteData[0]);
         setInspections(details);
         setCurrentUserId(uid ?? null);
+        try {
+          const { createClient } = await import('@/utils/supabase/client');
+          const supabase = createClient();
+          const { data: { session } } = await supabase.auth.getSession();
+          setCurrentUserEmail(session?.user?.email ?? null);
+        } catch { /* ignore */ }
+        
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error loading inspections';
         setError(message);
@@ -359,7 +384,19 @@ export default function SiteDetailScreen() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-      <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+      {/* Tutorial Overlay for site detail page */}
+      {!loading && (
+        <TutorialOverlay
+          key={forceTutorial ? 'force' : 'auto'}
+          steps={siteDetailSteps}
+          tutorialKey="detail"
+          userId={currentUserEmail}
+          forceRun={forceTutorial}
+          onFinish={handleTutorialFinish}
+        />
+      )}
+
+      <div id="tutorial-detail-header" className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
         <div className="max-w-7xl mx-auto">
 
     <button
@@ -392,10 +429,13 @@ export default function SiteDetailScreen() {
         </div>
       </div>
 
-      {/* Right: last visit badge */}
-      <div className="bg-white/10 px-6 py-2 rounded-full border border-white/20 text-center flex-shrink-0">
-        <div className="text-sm text-[#E4EBE4]">Last Visit</div>
-        <div className="text-lg font-bold">{ageText}</div>
+      {/* Right: last visit badge + Help button */}
+      <div className="flex items-center gap-3">
+        <div className="bg-white/10 px-6 py-2 rounded-full border border-white/20 text-center flex-shrink-0">
+          <div className="text-sm text-[#E4EBE4]">Last Visit</div>
+          <div className="text-lg font-bold">{ageText}</div>
+        </div>
+        <HelpMenu onStartTutorial={handleStartTutorial} />
       </div>
     </div>
   </div>
@@ -405,7 +445,7 @@ export default function SiteDetailScreen() {
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
 
         {/* Stats Cards */}
-        <div className="grid md:grid-cols-3 gap-4">
+        <div id="tutorial-detail-stats" className="grid md:grid-cols-3 gap-4">
           <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <ClipboardList className="w-5 h-5 text-[#356B43]" />
@@ -463,7 +503,7 @@ export default function SiteDetailScreen() {
         )}
 
         {/* New Report Button */}
-        <div className="mt-4">
+        <div id="tutorial-new-report" className="mt-4">
           <button
             onClick={() => router.push(`/detail/${params.namesite}/new-report`)}
             className="w-full flex items-center justify-center border-2 border-[#065F46] gap-2 bg-gradient-to-r from-[#356B43] to-[#254431] text-white font-bold py-4 px-6 rounded-2xl shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all"
@@ -478,7 +518,7 @@ export default function SiteDetailScreen() {
         </div>
 
         {/* View Toggle */}
-        <div className="flex gap-1.5">
+        <div id="tutorial-view-toggle" className="flex gap-1.5">
           <button
             onClick={() => setViewMode('by-date')}
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 rounded-2xl font-semibold transition-all border-2 ${
