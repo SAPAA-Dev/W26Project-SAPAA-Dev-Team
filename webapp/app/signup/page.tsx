@@ -390,9 +390,9 @@ export default function SignupPage() {
               One more step to go
             </h2>
             <p className="text-[#7A8075] text-center leading-relaxed mb-6">
-              We've sent a confirmation link to{' '}
+              We've notified an admin of a new user {' '} 
               <span className="font-semibold text-[#1E2520]">{email}</span>.{' '}
-              After verifying, your account will be reviewed for access.
+              After authorization, your account will be granted for access.
             </p>
             <div className="flex flex-col gap-3 mb-7">
               <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#F0F7F3] border border-[#C8DFD2]">
@@ -425,22 +425,6 @@ export default function SignupPage() {
             >
               Go to login
             </button>
-
-            <p className="text-center text-xs text-[#7A8075] mt-4">
-              Didn't receive an email?{' '}
-              
-              <button className="text-[#1C7C4D] font-medium hover:underline"
-                onClick={async () => {
-                  try{
-                    await  resendConfirmation(email);
-                  } catch (err){
-                    console.log(err)
-                  }
-              }}>
-                Resend confirmation
-              </button>
-            </p>
-
           </div>
         </div>
       )}
