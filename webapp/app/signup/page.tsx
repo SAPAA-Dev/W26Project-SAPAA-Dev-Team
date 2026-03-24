@@ -407,16 +407,6 @@ export default function SignupPage() {
 
               <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#FFFBF3] border border-[#FCE5B8]">
                 <div className="w-7 h-7 rounded-full bg-[#FCE5B8] flex items-center justify-center flex-shrink-0 text-xs font-semibold text-[#B8711F]">
-                  2
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[#1E2520]">Verify your email</p>
-                  <p className="text-xs text-[#7A8075]">Click the link we sent to your inbox.</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#FFFBF3] border border-[#FCE5B8]">
-                <div className="w-7 h-7 rounded-full bg-[#FCE5B8] flex items-center justify-center flex-shrink-0 text-xs font-semibold text-[#B8711F]">
                   3
                 </div>
                 <div>
