@@ -150,6 +150,25 @@ export default function AdminSiteDetails() {
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
 
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredGalleryItems = useMemo(() => {
+    if (!searchQuery.trim()) return galleryItems;
+    
+    const lowerQuery = searchQuery.toLowerCase();
+    
+    return galleryItems.filter((item) => {
+      return (
+        (item.site_name || site?.namesite || "").toLowerCase().includes(lowerQuery) ||
+        (item.caption || "").toLowerCase().includes(lowerQuery) ||
+        (item.photographer || "").toLowerCase().includes(lowerQuery) ||
+        (item.identifier || "").toLowerCase().includes(lowerQuery) ||
+        (item.filename || "").toLowerCase().includes(lowerQuery) ||
+        (item.storage_key || "").toLowerCase().includes(lowerQuery)
+      );
+    });
+  }, [galleryItems, searchQuery]);
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -971,76 +990,115 @@ export default function AdminSiteDetails() {
           </div>
         )}
 
-        {/* ── IMAGE GALLERY ── */}
         {viewMode === 'image-gallery' && (
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold text-[#254431] flex items-center gap-2">
-              <ImageIcon className="w-6 h-6 text-[#356B43]" />
-              Image Gallery ({galleryItems.length} images)
-            </h2>
+          /* ── IMAGE GALLERY ── */
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold text-[#254431] flex items-center gap-2">
+                <ImageIcon className="w-6 h-6 text-[#356B43]" />
+                Image Gallery ({galleryItems.length} images)
+              </h2>
 
-            {galleryLoading ? (
-              <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="w-10 h-10 animate-spin text-[#356B43]" />
-                <p className="text-[#7A8075]">Loading gallery...</p>
-              </div>
-            ) : galleryItems.length === 0 ? (
-              <div className="bg-white rounded-2xl border-2 border-[#E4EBE4] p-8 text-center text-[#7A8075]">
-                No images found for this site.
-              </div>
-            ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {galleryItems.map((item) => (
-                  <div
-                    key={`${item.response_id ? 'insp' : 'home'}-${item.id}`}
-                    className="bg-white rounded-2xl border-2 border-[#E4EBE4] shadow-sm overflow-hidden hover:shadow-lg transition-all"
-                  >
+              {/* SEARCH BAR UI */}
+              <div className="mb-6">
+                <div className="relative w-full">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-5 w-5 text-[#7A8075]" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Filter by site, caption, photographer, identifier..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="block w-full pl-10 pr-10 py-2.5 border-2 border-[#E4EBE4] rounded-xl bg-white text-sm placeholder-[#7A8075] focus:outline-none focus:border-[#356B43] focus:ring-1 focus:ring-[#356B43] shadow-sm transition-all"
+                  />
+                  {searchQuery && (
                     <button
                       type="button"
-                      onClick={() => setSelectedImage(item)}
-                      className="group relative block w-full h-64 bg-[#F7F2EA] overflow-hidden"
+                      onClick={() => setSearchQuery("")}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     >
-                      <img
-                        src={item.imageUrl}
-                        alt={item.identifier || item.filename || "Inspection image"}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 rounded-full p-3 shadow-md">
-                          <Maximize2 className="w-5 h-5 text-[#254431]" />
-                        </div>
-                      </div>
+                      <X className="h-4 w-4 text-[#7A8075] hover:text-red-500 transition-colors" />
                     </button>
+                  )}
+                </div>
+              </div>
 
-                    <div className="p-4 space-y-3">
-                      <div className="text-sm text-[#7A8075] flex items-center gap-2">
-                        <MapPin className="w-4 h-4" />
-                        <span>{item.site_name || site.namesite || "Unknown site"}</span>
-                      </div>
-                      <div className="text-sm text-[#7A8075] flex items-start gap-2">
-                        <ImageIcon className="w-4 h-4 mt-0.5" />
-                        <div>
-                          <p className="font-semibold text-[#254431]">
-                            {item.identifier || "No identifier"}
-                          </p>
+              {galleryLoading ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                  <Loader2 className="w-10 h-10 animate-spin text-[#356B43]" />
+                  <p className="text-[#7A8075]">Loading gallery...</p>
+                </div>
+              ) : galleryItems.length === 0 ? (
+                <div className="bg-white rounded-2xl border-2 border-[#E4EBE4] p-8 text-center text-[#7A8075]">
+                  No images found for this site.
+                </div>
+              ) : filteredGalleryItems.length === 0 ? (
+                <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-[#E4EBE4]">
+                  <div className="bg-[#F7F2EA] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Search className="text-[#7A8075]" size={32} />
+                  </div>
+                  <p className="text-[#254431] font-semibold text-lg">
+                    No matching images found.
+                  </p>
+                  <p className="text-[#7A8075] mt-1">Try adjusting your search query.</p>
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {/* 4. MAP OVER FILTERED ITEMS */}
+                  {filteredGalleryItems.map((item) => (
+                    <div
+                      key={`${item.response_id ? 'insp' : 'home'}-${item.id}`}
+                      className="bg-white rounded-2xl border-2 border-[#E4EBE4] shadow-sm overflow-hidden hover:shadow-lg transition-all"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setSelectedImage(item)}
+                        className="group relative block w-full h-64 bg-[#F7F2EA] overflow-hidden"
+                      >
+                        <img
+                          src={item.imageUrl}
+                          alt={item.identifier|| item.filename || "Inspection image"}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 rounded-full p-3 shadow-md">
+                            <Maximize2 className="w-5 h-5 text-[#254431]" />
+                          </div>
+                        </div>
+                      </button>
+
+                      <div className="p-4 space-y-3">
+                        <div className="text-sm text-[#7A8075] flex items-center gap-2">
+                          <MapPin className="w-4 h-4" />
+                          <span>{item.site_name || site.namesite || "Unknown site"}</span>
+                        </div>
+
+                        <div className="text-sm text-[#7A8075] flex items-start gap-2">
+                          <ImageIcon className="w-4 h-4 mt-0.5" />
+                          <div>
+                            <p className="font-semibold text-[#254431]">
+                              {item.identifier || "No identifier"}
+                            </p>
+                            
+                          </div>
+                        </div>
+
+                        <div className="text-sm text-[#7A8075] flex items-start gap-2">
+                          <Calendar className="w-4 h-4 mt-0.5" />
+                          <div>
+                            <p className="text-xs text-[#7A8075] mt-0.5">
+                              {item.date || "No date"}
+                            </p>
                         </div>
                       </div>
-
-                     <div className="text-sm text-[#7A8075] flex items-start gap-2">
-                      <Calendar className="w-4 h-4 mt-0.5" />
-                      <div>
-                        <p className="text-xs text-[#7A8075] mt-0.5">
-                          {item.date || "No date"}
-                        </p>
                       </div>
                     </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
       </div>
 
       {/* Image Lightbox Modal */}
