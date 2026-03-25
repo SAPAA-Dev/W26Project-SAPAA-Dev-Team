@@ -741,6 +741,77 @@ export const openApiSpec = {
         },
       },
     },
+    "/api/user-gallery/homepage-upload": {
+      get: {
+        summary: "Get all homepage image uploads",
+        tags: ["User Gallery"],
+        description:
+          "Returns all homepage image uploads with metadata and signed S3 URLs, ordered by date descending. Requires authentication.",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          "200": {
+            description: "Homepage images returned successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    items: {
+                      type: "array",
+                      items: { $ref: "#/components/schemas/HomepageImageItem" },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "401": {
+            description: "Unauthorized",
+            content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } },
+          },
+          "500": {
+            description: "Failed to load images",
+            content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } },
+          },
+        },
+      },
+    },
+    
+    "/api/user-gallery/sir-upload": {
+      get: {
+        summary: "Get all inspection image attachments",
+        tags: ["User Gallery"],
+        description:
+          "Returns all inspection image attachments (JPEG, PNG, WebP) across all sites, with resolved site names and signed S3 URLs. Ordered by id descending. Requires authentication.",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          "200": {
+            description: "Gallery items returned successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    items: {
+                      type: "array",
+                      items: { $ref: "#/components/schemas/GalleryItem" },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "401": {
+            description: "Unauthorized",
+            content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } },
+          },
+          "500": {
+            description: "Failed to load gallery",
+            content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } },
+          },
+        },
+      },
+    },
 
     "/api/pdf": {
       post: {
