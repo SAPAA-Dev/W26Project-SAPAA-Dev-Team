@@ -268,7 +268,7 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
       answers.find(a => a.question_id === naturalnessDetailsId)?.obs_value ??
       answers.find(a => a.question_id === naturalnessDetailsId)?.obs_comm ??
       null;
-    const stewardVal = answers.find(a => a.question_id === stewardId)?.obs_value ?? null;
+    const stewardVal = answers.find(a => a.question_id === stewardId)?.obs_comm ?? null;
 
     return {
       id: r.id,

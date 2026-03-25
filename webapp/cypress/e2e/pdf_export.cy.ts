@@ -59,7 +59,7 @@ describe('PDF Export - Select Sections', () => {
 
   it('Allows Admin to select sections in Advanced Options', () => {
     openSitePdfModal();
-    cy.contains('Advanced Options').scrollIntoView().click();
+    cy.contains('Advanced Options').click();
     cy.contains('Sections').scrollIntoView().should('be.visible');
     cy.contains('All selected').scrollIntoView().should('be.visible');
   });

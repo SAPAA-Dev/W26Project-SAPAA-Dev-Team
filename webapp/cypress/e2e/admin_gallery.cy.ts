@@ -79,7 +79,6 @@ describe("Admin Image Gallery", () => {
     cy.contains("Haging Broken Tree").should("be.visible");
     cy.contains("Cracked Tree").should("be.visible");
     cy.contains("CMPUT401W26 Visit").should("be.visible");
-    cy.contains("Riverlot56 Visit with Frank Potter!").should("be.visible");
     cy.contains("Riverlot 56 (NA)").should("be.visible");
   });
 
@@ -87,11 +86,9 @@ describe("Admin Image Gallery", () => {
     cy.get('img[alt="Haging Broken Tree"]').first().closest("button").click();
     cy.contains("Site").should("be.visible");
     cy.contains("Caption").should("be.visible");
-    cy.contains("Description").should("be.visible");
     cy.contains("Filename").should("be.visible");
     cy.contains("Riverlot 56 (NA)").should("be.visible");
     cy.contains("Haging Broken Tree").should("be.visible");
-    cy.contains("A tree we saw that seems to be broken, but hanging above the ground by the branches of surrounding trees.").should("be.visible");
     cy.contains("RiverLot56_01-31-2026_ZoeP_HangingTree.jpg").should("be.visible");
     cy.contains("Open full image in new tab")
       .should("have.attr", "href", "https://example.com/RiverLot56_01-31-2026_ZoeP_HangingTree.jpg")
@@ -102,7 +99,6 @@ describe("Admin Image Gallery", () => {
     cy.get('img[alt="CMPUT401W26 Visit"]').first().closest("button").click();
     cy.contains("Riverlot 56 (NA)").should("be.visible");
     cy.contains("CMPUT401W26 Visit").should("be.visible");
-    cy.contains("Riverlot56 Visit with Frank Potter!").should("be.visible");
     cy.contains("RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg").should("be.visible");
     cy.contains("Open full image in new tab")
       .should("have.attr", "href", "https://example.com/RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg")
@@ -110,7 +106,7 @@ describe("Admin Image Gallery", () => {
   });
 
   it("filters images by search query", () => {
-    cy.get('input[placeholder="Filter by site, caption, description..."]').type("Cracked");
+    cy.get('input[data-testid="admin-gallery-search-bar"]').type("Cracked");
     cy.contains("Cracked Tree").should("be.visible");
     cy.contains("Haging Broken Tree").should("not.exist");
     cy.contains("CMPUT401W26 Visit").should("not.exist");

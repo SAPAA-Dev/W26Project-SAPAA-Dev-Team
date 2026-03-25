@@ -269,7 +269,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 4. Other users can see the updated image’s metadata
 
 #### TASK 1.0.21 - View and understand the Supabase and decide if it is suitable 
-> Get acquainted with the existing super-base and decide if it is necessary to modify or rebuild it, or migrate to a different database management system
+> Get acquainted with the existing supabase and decide if it is necessary to modify or rebuild it, or migrate to a different database management system
 
 
 #### US 1.0.22 – (User) Edit My Site Inspections Form | Story Points: 5
@@ -354,18 +354,27 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 6. Information is only auto-filled when it exists for the given user (not all user's have all of this information saved on their account)
 > 7. Auto-filled information can be manually edited afterwards
 
-
-
 #### TASK 1.0.29 - Refactor the Database Schema and Produce an Updated ER Diagram 
 > Analyze the existing Supabase database schema, identify structural issues and inconsistencies, and refactor the design to better support the Site Inspection Form functionality. Update relationships, normalize tables where necessary, and produce a clear ER diagram that reflects the revised data model.
 
+#### US 1.0.30 - Rich Text Formatting for Form Description Fields | Story Points: 3
+> **As** an admin, **I want** to apply bold, underline, italic, and link formatting to question subtext and section descriptions in the form editor, **so that** I can write clearer, more expressive descriptions for inspectors filling out site inspection forms without needing to know HTML.
 
+> **Acceptance Tests**
 
+> 1. Toolbar available: When editing a question's subtext or a section's description, a formatting toolbar with B, U, I, and link buttons is displayed above the text input.
+> 2. Bold formatting: Selecting text and clicking B (or pressing Ctrl+B / Cmd+B) wraps the selection in .... Clicking again removes the markers.
+> 3. Underline formatting: Selecting text and clicking U (or pressing Ctrl+U / Cmd+U) wraps the selection in .... Clicking again removes the markers.
+> 4. Italic formatting: Selecting text and clicking I (or pressing Ctrl+I / Cmd+I) wraps the selection in .... Clicking again removes the markers.
+> 5. Link embedding: Selecting text and clicking the link button converts it to selected text with url pre-selected for immediate replacement. With no selection, link text is inserted with link text pre-selected.
+> 6. Live preview: The right-side preview panel in the form editor reflects all formatting changes in real time, for both the "Add Question" and "Edit Question" workflows.
+> 7. Consumer form rendering: Bold, underline, italic, and links in question subtext and section descriptions render correctly for inspectors on the New Report and Edit Report pages. Links open in a new tab.
+> 8. Backward compatibility: Existing plain-text descriptions and subtext display identically to before; no data migration is required.
+> 9. XSS safety: Raw HTML other than `<script>` is not rendered; only the allowed element set (strong, em, u, a) is processed.
 
 ---
 ### **P2 – Site Image Management System**
 ---
-
 
 #### US 2.0.1 – Manage the uploading and storing of site inspection images | Story Points: 8
 > **As** an Admin, **I want** images uploaded from the Site Inspection Form web application to be stored in an AWS S3 bucket and referenced in the database, **so that** they can be accessed and managed for future reports.
@@ -432,13 +441,22 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests**  
 
-> 1. A user can upload an image without creating or submitting an SIR.
-> 2. The user must select one site from the site dropdown before uploading the image.
-> 3. The user must enter metadata for the image, including identifier and date.
-> 4. The system automatically records the uploader’s name from the authenticated user.
-> 5. The user may optionally enter a Photographer field if the image was taken by someone else.
-> 6. The image is saved with the associated metadata and linked to the selected site.
-> 7. The image appears in the site’s image gallery after upload.
+> 1. Opens upload modal and displays dropzone when Upload Images is clicked
+> 2. Shows image editor and keeps submit disabled until required fields are complete
+> 3. Shows character-limit warnings when photographer/identifier max lengths are reached
+> 4. Closes modal and returns to base state when cancel is clicked
+> 5. Submits completed upload and redirects user to sites page with upload flag
+
+#### US 2.0.9 – Homescreen Gallery View  | Story Points: 5
+
+> **As** a User, **I want** to access a centralized Image Gallery, **so that** I can quickly browse through site photos without having to navigate into each individual site.
+
+> **Acceptance Tests**  
+
+> 1. Images are displayed in reverse chronological order by default.
+> 2. Each image in the gallery clearly displays the Site Name it belongs to.
+> 3. User can search the gallery with the provided search bar.
+> 4. If no images have been uploaded to any site, the gallery displays a "No images available" message.
 
 ---
 ### **P3 – Site Inspection Mobile Application (Android & iOS)**
@@ -470,39 +488,23 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 4. Offline data is temporarily stored locally
 
 
-
-
 ---
 ### **P4 – Site Management**
 ---
 
-#### US 4.0.1 – View Site Profile of a Particular Site | Story Points: 3
+#### US 4.0.1 – PDF Generation of SIRs | Story Points: 5
 
-> **As** a User, **I want** to be able to view a profile for each site, **so that** I can identify important information about the site I’m travelling to / inspecting
+> **As** an Admin, **I want** to generate a customizable PDF export of Site Inspection Reports, **so that** I can review historical site data and provide documentation for audits or stakeholders.
 
 > **Acceptance Tests** 
 
-> 1. Each site has a dedicated profile page.
-> 2. Site profiles display key information such as name, location, and inspection history.
-> 3. Users can navigate from the map or list view to a site profile.
-> 4. The site profile has some ‘link’ to all previous SIRs in that site
-> 5. Users can go back to the map/list view from the site profile  
-
-
-#### US 4.0.2 – Add Site Profile of a Particular Site | Story Points: 2
-
-> **As** an Admin, **I want** to be able to add a profile for a new site, **so that** I can keep my app up to date with the latest sites
-
-> **Acceptance Tests**
-
-> 1. A site has a specified county
-> 2. A site has a type
-> 3. A site has a name
-> 4. A site has a specified natural region
-> 5. Admins can access a button/option to add a site profile
-> 6. Non-admin users cannot add a site profile
-
-
+> 1. The Export Modal must display the correct context based on the user's selection and provide clear exit paths
+> 2. Users must be able to customize the report content via quick toggles and advanced filters
+> 3. The modal must adapt its data selection controls based on whether a single inspection or an entire site is selected
+> 4. The system must provide clear feedback during the PDF generation process and handle errors gracefully
+> 5. The system must accurately fetch and map inspection data based on the selected mode (Single, Site, or Multi-site)
+> 6. The data engine must strictly honor all user-defined filters to ensure the report only contains requested information
+> 7. The system must optimize image processing to prevent report bloat and ensure file compatibility
 
 #### US 4.0.3 – Update Site Profile of a Particular Site | Story Points: 3
 
@@ -510,14 +512,10 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests**  
 
-> 1. County of site can be updated
-> 2. Site type should be able to be updated
-> 3. Natural region should be updated
-> 4. Name of site should be able to be updated
-> 5. Admins can access option to edit site profile
-> 6. Non-admin users cannot access option to edit site profile
-> 7. Updates made to a site profile are visible to users
-
+> 1. The system must provide a reliable list of available counties to ensure accurate site categorization
+> 2. Users must be able to modify and save site details, including name and location settings
+> 3. The site management features must be restricted to authorized users and provide clear entry points for editing
+> 4. The editing modal must provide a seamless flow for modifying and persisting site changes
 
 #### US 4.0.4 – Disable Site Profile of a Particular Site | Story Points: 3
 
@@ -525,53 +523,29 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests**  
 
-> 1. Site is removed from the app
-> 2. Any associated inspection forms are pushed to admin’s drive then disable
-> 4. Users cannot interact with the site anymore
-> 5. Admins have access to the option to remove a site profile
-> 6. Non-admin users cannot access the option to remove a site profile
-
-
-#### US 4.0.5 – Amenities Information on Site Profile | Story Points: 2
-
-> **As** a User, **I want** to be able to view amenities information about individual sites, **so that** I can find and access any amenities I need (parking, washrooms, facilities)
-
-> **Acceptance Tests**  
-
-> 1. Site profiles display available amenities (e.g., parking, washrooms, facilities).
-> 2. Amenity information is clearly labelled and easy to locate.
-> 3. Users can view amenities without navigating away from the site profile.
-
-
-
-#### US 4.0.6 – Site-specific Recommended Gear Lists | Story Points: 2
-
-> **As** a User, **I want** to be able to see site-specific gear recommendations, **so that** I can be prepared for the specific site I’m inspecting
-
-> **Acceptance Tests**  
-
-> 1. Each site profile displays a recommended gear list.
-> 2. Gear recommendations are specific to the selected site.
-> 3. Users can view gear recommendations before starting an inspection.
-> 4. Gear recommendation lists can be edited by users based on their experience
-
-
+> 1. The system must provide a comprehensive view of all sites, regardless of their current operational status
+> 2. Administrators must be able to toggle the operational status of any site to control its availability in the system
+> 3. The admin interface must provide clear visual indicators for the operational status of every site
+> 4. Administrators must be able to change a site's visibility through the edit flow, with the system ensuring only intentional changes are processed
 
 ---
 ### **P5 – User Accounts User Stories**
 ---
 
+#### US 5.0.1 – Admin Approval of Users | Story Points: 5
 
-#### US 5.0.1 – Sign In Feature | Story Points: 2
-
-> **As** a User, **I want** to be able to sign in to the app **so that** I can use my previous account.
+> **As** an Admin, **I want** to be able to review and approve new user registrations, **so that** only authorized individuals can access the webapp.
 
 > **Acceptance Tests** 
 
-> 1. Correct email and password allow access
-> 2. Incorrect credentials display an error
-> 3. User should be forced to input all fields
-
+> 1. New user signup creates account with authenticated: false status
+> 2. Admin can filter to show only pending approval users
+> 3. Pending user displays pending approval badge in admin list
+> 4. Admin can approve pending user; authenticated flag set to true
+> 5. Admin can reject pending user; authenticated flag remains false
+> 6. Admin account management page displays user approval statistics
+> 7. Approved user displays approved badge in admin list
+> 8. Admin can revoke approval from previously approved user; authenticated set to false
 
 #### US 5.0.2 – Sign Out Feature | Story Points: 2
 
@@ -586,51 +560,9 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 5. Back navigation does not return to protected screens
 > 6. If sign out fails, an error message is displayed and the user can try again
 
-
-#### US 5.0.3 – Edit Account Feature | Story Points: 2
-
-> **As** a User, **I want** to be able to edit my account information **so that** I can keep my information up to date.
-
-> **Acceptance Tests**  
-
-> 1. Updating login-related info requires re-login
-> 2. Next login works only with updated credentials
-> 3. User must be logged in to update information
-> 4. Non-login info updates do not require re-login
-> 5. Users can only edit their own account and not that of others
-
-
-
-#### US 5.0.4 – Disable Account Feature | Story Points: 2
-
-> **As** a User, **I want** to be able to disable my account **so that** my login information is no longer stored or accessible.
-
-> **Acceptance Tests**  
-
-> 1. Disabled accounts cannot log in again
-> 2. If User disabled their account they should be taken back to the home screen
-> 3. Users can only disable their own account
-> 4. A user trying to disable their account should be prompted by a confirmation message first (‘Are you sure you want to disable your account?’)
-> 5. A user should be able to accept the confirmation and their account should then be disabled
-> 6. A user should be able to deny the confirmation and their account should not be disabled
-
-
 ---
 ### **P6 – Miscellaneous User Stories**
 ---
-
-
-#### US 6.0.1 – Toggle Dark mode for web and mobile applications | Story Points: 2
-
-> **As** a User, **I want** to enable dark mode for the web and mobile applications **so that** I can reduce eye strain.
-
-> **Acceptance Tests**  
-
-> 1. Users can enable and disable dark mode in web and mobile apps
-> 2. Preference persists across sessions
-> 3. UI remains readable in both modes
-> 4. Selecting the current mode causes no change
-
 
 #### US 6.0.2 – Change Text Size on Screen | Story Points: 3
 
@@ -673,14 +605,12 @@ Each user story is categorized into one of the following priority levels:
 * US 1.0.9 – Designation as a Protected Site (Q55)
 * US 1.0.10 - Indicate submissions to iNaturalist (Q53, Q68)
 * US 1.0.11 - Address details of Landscape changes (Q54)
-
 * US 1.0.12 - Address any Biological Observations that are in the Site (Q52, Q68)
 * US 1.0.13 - Address Any Human Disturbances  (Q61 - Q66)
 * US 1.0.14 - Add Other Comments (Q56, Q67, Q74, Q82)
 * US 1.0.15 – Inform SAPAA of Any Restorative Work that Needs to be Done / Was Done (Q71, Q72)
 * US 1.0.16 - Add Any Photography Captured During Visit (Q81)
 * TASK 1.0.21 - View and understand the Supabase and decide if it is suitable
-
 * US 1.0.22 - (User) Edit My Site Inspections Form 
 * US 1.0.23 - Non-Public Information (Q73, Q83)
 * US 1.0.26 – Persist Site Inspection Form Draft
@@ -692,37 +622,31 @@ Each user story is categorized into one of the following priority levels:
 * US 2.0.7 - Admin Management of Media Files
 * US 2.0.8 - User Upload of Standalone Site Images
 
-
 ### Should Have
-* US 2.0.2 – Image Metadata
-* US 2.0.3  - Gallery View
-* US 2.0.4 - Offline Image Viewing
-* TASK 2.0.6 - Refactor Report Rendering to Use Updated Database Schema
-* US 3.0.1 - Access the mobile version of the Site Inspection Form
-* US 4.0.1 - View Site Profile of a Particular Site
-* US 4.0.2  - Add Site Profile of a Particular Site
-* US 4.0.3  - Update Site Profile of a Particular Site
-* US 4.0.4 - Disable Site Profile of a Particular Site
-* US 4.0.5 - Amenities Information on Site Profile
 * US 1.0.24 – Modify my Site Inspections Form Questions
 * US 1.0.25 – Hide a Site Inspections Form Question
-
+* US 1.0.30 - Rich Text Editor for Site Inspection Form Description
+* US 2.0.2 – Image Metadata
+* US 2.0.3 - Gallery View
+* TASK 2.0.6 - Refactor Report Rendering to Use Updated Database Schema
+* US 4.0.1 - PDF Generation
+* US 4.0.3 - Update Site Profile of a Particular Site
+* US 4.0.4 - Disable Site Profile of a Particular Site
+* US 5.0.1 - Admin Approval of Users
 
 ### Could Have
 * US 1.0.17 - (Admin) Add Questions Site Inspections Form
 * US 1.0.18 - Adding image caption
 * US 1.0.19 - Admin Viewing Images and Metadata
-* US 3.0.2 - Offline Data Syncing
-* US 4.0.6 - Site-specific recommended gear lists
-* US 5.0.1 - Sign in feature
+* US 2.0.9 – Homescreen Gallery View
 * US 5.0.2 - Sign out feature
-* US 5.0.3 - Edit account feature
-* US 5.0.4 - Disable account feature
 * US 6.0.2 - Change Size of Text on Screen
 
 ### Would Like But Won't Get
 * US 1.0.20 - Admin Editing Image Metadata
-* US 6.0.1 - Toggle Dark mode for web and mobile applications
+* US 2.0.4 - Offline Image Viewing
+* US 3.0.1 - Access the mobile version of the Site Inspection Form
+* US 3.0.2 - Offline Data Syncing
 
 
 ## Similar Products
