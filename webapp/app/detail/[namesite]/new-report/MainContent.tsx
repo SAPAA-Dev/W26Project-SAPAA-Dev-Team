@@ -89,6 +89,7 @@ export default function MainContent({
   const [activeSection, setActiveSection] = useState<number | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
+  const [draggingImageQuestionId, setDraggingImageQuestionId] = useState<number | null>(null);
   const hasAutofilled = useRef(false);
   const hasInitializedSection = useRef(false);
   const goToPreviousSectionRef = useRef<() => void>(() => {});
@@ -468,6 +469,20 @@ export default function MainContent({
           handleResponse(question.id, [...localImages, ...newImages]);
         };
 
+        const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setDraggingImageQuestionId(null);
+
+          const droppedFiles = Array.from(e.dataTransfer.files || []).filter((file) =>
+            file.type.startsWith("image/")
+          );
+
+          if (droppedFiles.length > 0) {
+            addFiles(droppedFiles);
+          }
+        };
+
         const removeLocalImage = (imageId: string) => {
           const img = localImages.find((i) => i.id === imageId);
           if (img) URL.revokeObjectURL(img.previewUrl);
@@ -490,7 +505,30 @@ export default function MainContent({
         return (
           <div className="space-y-3">
             {/* Upload zone */}
-            <div className="border-2 border-dashed border-[#E4EBE4] rounded-xl p-8 text-center hover:border-[#356B43] transition-colors bg-[#F7F2EA]/30">
+            {/* Drop zone */}
+            <div
+              className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors bg-[#F7F2EA]/30 ${
+                draggingImageQuestionId === question.id
+                  ? "border-[#356B43] bg-green-50"
+                  : "border-[#E4EBE4] hover:border-[#356B43]"
+              }`}
+              onDragEnter={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setDraggingImageQuestionId(question.id);
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setDraggingImageQuestionId(question.id);
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setDraggingImageQuestionId(null);
+              }}
+              onDrop={handleDrop}>
+
               <input
                 type="file"
                 accept="image/*"
@@ -511,8 +549,14 @@ export default function MainContent({
                   <ImageIcon className="w-8 h-8 text-[#356B43]" />
                 </div>
                 <div>
-                  <p className="text-[#254431] font-bold text-lg">Click to upload images</p>
-                  <p className="text-sm text-[#7A8075] mt-1">PNG, JPG, WEBP up to 10MB each</p>
+                  <p className="text-[#254431] font-bold text-lg">
+                    {draggingImageQuestionId === question.id
+                      ? "Drop images here"
+                      : "Click to upload images"}
+                  </p>
+                  <p className="text-sm text-[#7A8075] mt-1">
+                    PNG, JPG, WEBP up to 10MB each
+                  </p>
                 </div>
               </label>
             </div>
