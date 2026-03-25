@@ -1,6 +1,0 @@
-projectKey=SAPAA-SIR-Web-App
-serverUrl=http://localhost:9000
-serverVersion=26.3.0.120487
-dashboardUrl=http://localhost:9000/dashboard?id=SAPAA-SIR-Web-App
-ceTaskId=601820bf-8bd5-4f8e-af5d-cc174178cee9
-ceTaskUrl=http://localhost:9000/api/ce/task?id=601820bf-8bd5-4f8e-af5d-cc174178cee9
