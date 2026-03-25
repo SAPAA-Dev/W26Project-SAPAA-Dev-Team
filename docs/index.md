@@ -453,10 +453,10 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 > **Acceptance Tests**  
 
-> 1. Images are displayed in reverse chronological order by default.
-> 2. Each image in the gallery clearly displays the Site Name it belongs to.
-> 3. User can search the gallery with the provided search bar.
-> 4. If no images have been uploaded to any site, the gallery displays a "No images available" message.
+> 1. Renders all uploaded image cards after fetch
+> 2. User can click an image card to open modal with metadata and associated site
+> 3. Shows empty state when API returns no images 
+> 4. Handles API error response without crashing
 
 ---
 ### **P3 – Site Inspection Mobile Application (Android & iOS)**
