@@ -81,6 +81,7 @@ export default function Dashboard() {
         getNaturalnessDistribution(),
         getTopSitesDistribution(),
       ]);
+      
       setStats({ totalInspections: total, lastInspectionDate: lastDate });
       setNaturalnessData(naturalness as any);
       setSiteData(topSites as any);
@@ -366,81 +367,104 @@ export default function Dashboard() {
           
 
           {/* Charts Section */}
-          <div className="grid lg:grid-cols-2 gap-6">
-            {/* Naturalness Distribution */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-[#E4EBE4] rounded-lg flex items-center justify-center">
-                  <PieChart className="w-5 h-5 text-[#356B43]" />
-                </div>
-                <h2 className="text-xl font-bold text-[#254431]">Naturalness Distribution</h2>
-              </div>
-              <div className="h-[300px] flex items-center justify-center">
-                {naturalnessData.length > 0 ? (
-                  <Pie
-                    data={{
-                      labels: naturalnessData.map((i: any) => i.naturalness_score || 'Unknown'),
-                      datasets: [
-                        {
-                          data: naturalnessData.map((i: any) => i.count),
-                          backgroundColor: naturalnessData.map((i: any) => {
-                            const score = (i.naturalness_score || '').toLowerCase();
-                            if (score.includes('great') || score.includes('excellent')) return '#1C7C4D';
-                            if (score.includes('good')) return '#4caf50';
-                            if (score.includes('passable') || score.includes('fair')) return '#FFA726';
-                            if (score.includes('cannot answer') || score.includes('n/a')) return '#78909C';
-                            if (score.includes('terrible') || score.includes('poor')) return '#E53935';
-                            return '#999999';
-                          }),
-                          borderWidth: 2,
-                          borderColor: '#ffffff'
-                        },
-                      ],
-                    }}
-                    options={chartOptions}
-                  />
-                ) : (
-                  <p className="text-[#7A8075]">No data available</p>
-                )}
-              </div>
-            </div>
+<div className="grid lg:grid-cols-2 gap-6">
+  {/* Naturalness Distribution */}
+  <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
+    <div className="flex items-center gap-3 mb-6">
+      <div className="w-10 h-10 bg-[#E4EBE4] rounded-lg flex items-center justify-center">
+        <PieChart className="w-5 h-5 text-[#356B43]" />
+      </div>
+      <h2 className="text-xl font-bold text-[#254431]">Naturalness Distribution</h2>
+    </div>
+    {naturalnessData.length > 0 ? (
+      <div className="flex items-center justify-center gap-6">
+        <div className="w-[200px] h-[200px] flex-shrink-0">
+          <Pie
+            data={{
+              labels: naturalnessData.map((i: any) => i.naturalness_score || 'Unknown'),
+              datasets: [{
+                data: naturalnessData.map((i: any) => i.count),
+                backgroundColor: naturalnessData.map((i: any) => {
+                  const score = (i.naturalness_score || '').toLowerCase();
+                  if (score.includes('great') || score.includes('excellent')) return '#1C7C4D';
+                  if (score.includes('good')) return '#4caf50';
+                  if (score.includes('passable') || score.includes('fair')) return '#FFA726';
+                  if (score.includes('cannot answer') || score.includes('n/a')) return '#78909C';
+                  if (score.includes('terrible') || score.includes('poor')) return '#E53935';
+                  return '#999999';
+                }),
+                borderWidth: 2,
+                borderColor: '#ffffff'
+              }],
+            }}
+            options={{ ...chartOptions, plugins: { ...chartOptions.plugins, legend: { display: false } } }}
+          />
+        </div>
+        <ul className="flex flex-col gap-2">
+          {naturalnessData.map((i: any) => {
+            const score = (i.naturalness_score || '').toLowerCase();
+            const color =
+              score.includes('great') || score.includes('excellent') ? '#1C7C4D' :
+              score.includes('good') ? '#4caf50' :
+              score.includes('passable') || score.includes('fair') ? '#FFA726' :
+              score.includes('cannot answer') || score.includes('n/a') ? '#78909C' :
+              score.includes('terrible') || score.includes('poor') ? '#E53935' :
+              '#999999';
+            return (
+              <li key={i.naturalness_score} className="flex items-center gap-2 text-sm text-[#254431]">
+                <span className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: color }} />
+                {i.naturalness_score || 'Unknown'}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    ) : (
+      <p className="text-[#7A8075]">No data available</p>
+    )}
+  </div>
 
-            {/* Top 5 Sites */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-[#E4EBE4] rounded-lg flex items-center justify-center">
-                  <BarChart3 className="w-5 h-5 text-[#356B43]" />
-                </div>
-                <h2 className="text-xl font-bold text-[#254431]">Top 5 Sites</h2>
-              </div>
-              <div className="h-[300px] flex items-center justify-center">
-                {siteData.length > 0 ? (
-                  <Pie
-                    data={{
-                      labels: siteData.map((i: any) => i.namesite || 'Unknown'),
-                      datasets: [
-                        {
-                          data: siteData.map((i: any) => i.count),
-                          backgroundColor: [
-                            '#ffb74d',
-                            '#4caf50',
-                            '#2196f3',
-                            '#9c27b0',
-                            '#f44336'
-                          ],
-                          borderWidth: 2,
-                          borderColor: '#ffffff'
-                        },
-                      ],
-                    }}
-                    options={chartOptions}
-                  />
-                ) : (
-                  <p className="text-[#7A8075]">No data available</p>
-                )}
-              </div>
-            </div>
-          </div>
+  {/* Top 5 Sites */}
+  <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
+    <div className="flex items-center gap-3 mb-6">
+      <div className="w-10 h-10 bg-[#E4EBE4] rounded-lg flex items-center justify-center">
+        <BarChart3 className="w-5 h-5 text-[#356B43]" />
+      </div>
+      <h2 className="text-xl font-bold text-[#254431]">Top 5 Sites</h2>
+    </div>
+    {siteData.length > 0 ? (
+      <div className="flex items-center justify-center gap-6">
+        <div className="w-[200px] h-[200px] flex-shrink-0">
+          <Pie
+            data={{
+              labels: siteData.map((i: any) => i.namesite || 'Unknown'),
+              datasets: [{
+                data: siteData.map((i: any) => i.count),
+                backgroundColor: ['#ffb74d', '#4caf50', '#2196f3', '#9c27b0', '#f44336'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+              }],
+            }}
+            options={{ ...chartOptions, plugins: { ...chartOptions.plugins, legend: { display: false } } }}
+          />
+        </div>
+        <ul className="flex flex-col gap-2">
+          {siteData.map((i: any, index: number) => (
+            <li key={i.namesite} className="flex items-center gap-2 text-sm text-[#254431]">
+              <span
+                className="w-3 h-3 rounded-sm flex-shrink-0"
+                style={{ backgroundColor: ['#ffb74d', '#4caf50', '#2196f3', '#9c27b0', '#f44336'][index] }}
+              />
+              {i.namesite || 'Unknown'}
+            </li>
+          ))}
+        </ul>
+      </div>
+    ) : (
+      <p className="text-[#7A8075]">No data available</p>
+    )}
+  </div>
+</div>
 
           {/* Heatmap Section */}
           <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">

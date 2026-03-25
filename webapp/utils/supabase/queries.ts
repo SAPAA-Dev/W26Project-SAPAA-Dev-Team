@@ -598,7 +598,7 @@ export async function getInspectionDetailsOnline(namesite: string): Promise<Insp
 
 
 export async function insertInspectionAttachments(rows: Array<{
-  response_id: number;
+  response_id: number | null;
   question_id: number;
   storage_key: string; // placeholder for now
   filename?: string | null;
@@ -915,6 +915,7 @@ export async function getLastInspectionDate(): Promise<string | null> {
   if (error || !data) return null;
   return data.created_at;
 }
+
 export async function getNaturalnessDistribution(): Promise<{ naturalness_score: string; count: number }[]> {
   const supabase = createServerSupabase();
   const { data, error } = await supabase.rpc('get_naturalness_distribution');

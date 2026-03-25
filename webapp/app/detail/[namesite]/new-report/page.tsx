@@ -412,7 +412,7 @@ export default function NewReportPage() {
       //what goes into W26_attachments table: response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier
       // We also need to prepare the data for the attachments table, which means we need to generate the S3 keys for each uploaded file and store those in an array of objects/dictionaries as well
       const attachmentsRows: Array<{
-        response_id: number;
+        response_id: number | null;
         question_id: number;
         site_id: number;
         storage_key: string;
