@@ -120,6 +120,7 @@ export default function UploadImages() {
   const PRESIGN_ROUTE = "/api/s3/presign-homepage-images";
 
   async function getPresignedUrl(input: {
+    filename: string;
     contentType: string;
     fileSize: number;
     siteId: number;
@@ -165,6 +166,7 @@ export default function UploadImages() {
 
       const rows: Array<{
         storage_key: string;
+        filename: string;
         content_type: string;
         file_size_bytes: number;
         site_id: number;
@@ -177,12 +179,13 @@ export default function UploadImages() {
       }> = [];
 
       for (const entry of files) {
+        const generatedFilename = generateFilename(entry.site, entry.date, entry.who, entry.identifier);
         const file = entry.file;
         const created_at = new Date().toISOString();
 
         // 1) Get presigned URL
         const { uploadUrl, key } = await getPresignedUrl({
-          // filename: generatedFilename,
+          filename: generatedFilename,
           contentType: file.type,
           fileSize: file.size,
           siteId: entry.site!.id,
@@ -193,11 +196,14 @@ export default function UploadImages() {
           identifier: entry.identifier,
         });
 
+        const filename = key.split("/").pop()!; 
+
         // 2) Upload to S3
         await uploadFileToS3(uploadUrl, file);
 
         rows.push({
           storage_key: key,
+          filename,
           content_type: file.type,
           file_size_bytes: file.size,
           site_id: entry.site!.id,

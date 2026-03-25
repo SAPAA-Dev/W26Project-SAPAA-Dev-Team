@@ -491,14 +491,6 @@ export const openApiSpec = {
               },
             },
           },
-          "403": {
-            description: "Forbidden — admin access required",
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/ErrorResponse" },
-              },
-            },
-          },
           "500": {
             description: "Failed to load images",
             content: {
