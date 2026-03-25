@@ -773,13 +773,18 @@ export default function SiteDetailScreen() {
                             <p className="font-semibold text-[#254431]">
                               {item.identifier || "No identifier"}
                             </p>
+                            
                           </div>
                         </div>
 
                         <div className="text-sm text-[#7A8075] flex items-start gap-2">
-                          <FileText className="w-4 h-4 mt-0.5" />
-                          <span>{item.identifier || "No identifier"}</span>
+                          <Calendar className="w-4 h-4 mt-0.5" />
+                          <div>
+                            <p className="text-xs text-[#7A8075] mt-0.5">
+                              {item.date || "No date"}
+                            </p>
                         </div>
+                      </div>
                       </div>
                     </div>
                   ))}
@@ -790,6 +795,7 @@ export default function SiteDetailScreen() {
 
       </div>
 
+      {/* Image Lightbox Modal */}
       {selectedImage && (
           <div
             className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 md:p-8"
@@ -841,6 +847,15 @@ export default function SiteDetailScreen() {
                     </p>
                     <p className="text-sm text-[#4B5563] leading-6">
                       {selectedImage.identifier || "No identifier"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
+                      Date
+                    </p>
+                    <p className="text-sm text-[#4B5563] leading-6">
+                      {selectedImage.date || "No date"}
                     </p>
                   </div>
 

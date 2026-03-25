@@ -79,7 +79,7 @@ type GalleryItem = {
   imageUrl: string;
   caption?: string | null;
   identifier?: string | null;
-  description?: string | null;
+  // description?: string | null;
   response_id?: string | null;
   question_id?: string | null;
   content_type?: string | null;
@@ -761,7 +761,7 @@ export default function AdminSiteDetails() {
             }`}
           >
             <ImageIcon className="w-5 h-5" />
-            Site Gallery
+            Image Gallery
           </button>
         </div>
 
@@ -971,12 +971,12 @@ export default function AdminSiteDetails() {
           </div>
         )}
 
-        {/* ── SITE GALLERY ── */}
+        {/* ── IMAGE GALLERY ── */}
         {viewMode === 'image-gallery' && (
           <div className="space-y-4">
             <h2 className="text-xl font-bold text-[#254431] flex items-center gap-2">
               <ImageIcon className="w-6 h-6 text-[#356B43]" />
-              Site Gallery ({galleryItems.length} images)
+              Image Gallery ({galleryItems.length} images)
             </h2>
 
             {galleryLoading ? (
@@ -1020,13 +1020,20 @@ export default function AdminSiteDetails() {
                       <div className="text-sm text-[#7A8075] flex items-start gap-2">
                         <ImageIcon className="w-4 h-4 mt-0.5" />
                         <div>
-                          <p className="font-semibold text-[#254431]">{item.identifier || "No identifier"}</p>
+                          <p className="font-semibold text-[#254431]">
+                            {item.identifier || "No identifier"}
+                          </p>
                         </div>
                       </div>
-                      <div className="text-sm text-[#7A8075] flex items-start gap-2">
-                        <FileText className="w-4 h-4 mt-0.5" />
-                        <span>{item.description || "No description"}</span>
+
+                     <div className="text-sm text-[#7A8075] flex items-start gap-2">
+                      <Calendar className="w-4 h-4 mt-0.5" />
+                      <div>
+                        <p className="text-xs text-[#7A8075] mt-0.5">
+                          {item.date || "No date"}
+                        </p>
                       </div>
+                    </div>
                     </div>
                   </div>
                 ))}
@@ -1069,17 +1076,48 @@ export default function AdminSiteDetails() {
                   <p className="text-lg font-semibold text-[#254431]">{selectedImage.site_name || site.namesite || "Unknown site"}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">Identifier</p>
-                  <p className="text-base font-medium text-[#254431]">{selectedImage.identifier || "No identifier"}</p>
+                  <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">Caption</p>
+                  <p className="text-base font-medium text-[#254431]">{selectedImage.caption || "No caption"}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">Description</p>
-                  <p className="text-sm text-[#4B5563] leading-6">{selectedImage.description || "No description"}</p>
+                  <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">Identifier</p>
+                  <p className="text-sm text-[#4B5563] leading-6">{selectedImage.identifier || "No identifier"}</p>
                 </div>
+
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
+                    Date
+                  </p>
+                  <p className="text-sm text-[#4B5563] leading-6">
+                    {selectedImage.date || "No date"}
+                  </p>
+                </div>
+
+                {selectedImage.photographer && (
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
+                        Photographer
+                      </p>
+                      <p className="text-sm text-[#4B5563]">
+                        {selectedImage.photographer}
+                      </p>
+                    </div>
+                  )}
+
                 <div>
                   <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">Filename</p>
                   <p className="text-sm text-[#4B5563] break-all">{selectedImage.filename}</p>
                 </div>
+
+                 <div>
+                    <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
+                      Storage Path
+                    </p>
+                    <p className="text-sm text-[#4B5563] break-all">
+                      {selectedImage.storage_key}
+                    </p>
+                  </div>
+                  
                 <div className="pt-2">
                   <a
                     href={selectedImage.imageUrl}

@@ -5,7 +5,7 @@ import { useEffect, useState, useMemo } from "react";
 import AdminNavBar from "../AdminNavBar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Image from "next/image";
-import { Loader2, MapPin, FileText, ImageIcon, X, Maximize2, Search, ArrowLeft } from "lucide-react";
+import { Loader2, MapPin, FileText, ImageIcon, X, Maximize2, Search, ArrowLeft, Calendar } from "lucide-react";
 import { useRouter } from 'next/navigation';
 
 type GalleryItem = {
@@ -16,20 +16,15 @@ type GalleryItem = {
   identifier?: string | null;
   date?: string | null;
   storage_key: string;
+  content_type: string;
   file_size_bytes?: number | null;
+  filename: string;
+  site_id: string | null; 
+  site_name?: string | null;
   imageUrl: string;
-  caption?: string | null;
-  
-  // Inspection attachment fields
-  response_id?: string | null;
-  question_id?: string | null;
-  content_type?: string | null;
-
-  // Homepage upload fields
-  date?: string | null;
   photographer?: string | null;
-  identifier?: string | null;
 };
+
 
 export default function GalleryPage() {
   const router = useRouter();
@@ -242,11 +237,8 @@ export default function GalleryPage() {
                     </div>
 
                     <div className="text-sm text-[#7A8075] flex items-start gap-2">
-                        <FileText className="w-4 h-4 mt-0.5" />
+                        <Calendar className="w-4 h-4 mt-0.5" />
                         <div>
-                          <p className="text-[#254431] font-medium">
-                            {item.identifier || "No identifier"}
-                          </p>
                           <p className="text-xs text-[#7A8075] mt-0.5">
                             {item.date || "No date"}
                           </p>
@@ -321,6 +313,18 @@ export default function GalleryPage() {
                       {selectedImage.date || "No date"}
                     </p>
                   </div>
+
+                  {selectedImage.photographer && (
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
+                        Photographer
+                      </p>
+                      <p className="text-sm text-[#4B5563]">
+                        {selectedImage.photographer}
+                      </p>
+                    </div>
+                  )}
+
 
                   <div>
                     <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
