@@ -8,6 +8,7 @@ import { createClient } from '@/utils/supabase/client';
 import Image from 'next/image';
 import { Suspense } from "react";
 import { SubmissionToast } from "./SubmissionToast";
+import UserNavBar from "../UserNavBar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import UploadImages from "@/components/UploadImages";
 
@@ -220,16 +221,20 @@ export default function HomeClient() {
                   </p>
                 </div>
               </div>
-              {/* Right: navbar — rendered inline, bg overridden to transparent */}
+              <div className="flex items-center gap-3 mt-4">
                 {currentUser?.role === 'admin' && (
-                    <button
-                      onClick={() => router.push('/admin/dashboard')}
-                      className="bg-[#E4EBE4] hover:bg-[#F7F2EA] mt-4 text-black px-4 py-2 rounded-xl flex items-center gap-2 font-semibold transition-all"
-                    >
-                      <Award className="w-5 h-5" />
-                      Admin
-                    </button>
-                  )}
+                  <button
+                    onClick={() => router.push('/admin/dashboard')}
+                    className="bg-[#E4EBE4] hover:bg-[#F7F2EA] text-black px-4 py-2 rounded-xl flex items-center gap-2 font-semibold transition-all"
+                  >
+                    <Award className="w-5 h-5" />
+                    Admin
+                  </button>
+                )}
+                <div className="[&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
+                  <UserNavBar />
+                </div>
+              </div>
             </div>
           </div>
         </div>
