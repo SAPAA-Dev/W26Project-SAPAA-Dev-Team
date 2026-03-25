@@ -250,11 +250,19 @@ export default function AdminSitesPage() {
               </div>
             </div>
           </div>
-          </div>
+        </div>
+
         {/* Stats Cards */}
         <div className="max-w-7xl mx-auto px-6 py-6 mt-2">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+
+            {/* Total Sites */}
+            <div className="relative group bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm cursor-default">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white text-[#254431] border-2 border-[#E4EBE4] text-xs rounded-xl px-3 py-2 text-center
+                opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">
+                Total number of protected area sites in the system.
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-white" />
+              </div>
               <div className="flex items-center gap-2 mb-2">
                 <MapPin className="w-5 h-5 text-[#356B43]" />
                 <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Sites</div>
@@ -262,7 +270,14 @@ export default function AdminSitesPage() {
               <div className="text-3xl font-bold text-[#254431]">{stats.totalSites}</div>
             </div>
 
-            <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+            {/* Total Inspected Sites */}
+            <div className="relative group bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm cursor-default">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white text-[#254431] border-2 border-[#E4EBE4] text-xs rounded-xl px-3 py-2 text-center
+                opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">
+                Sites that have had at least one inspection recorded.
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-white" />
+              </div>
+
               <div className="flex items-center gap-2 mb-2">
                 <ClipboardList className="w-5 h-5 text-[#356B43]" />
                 <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Inspected Sites</div>
@@ -270,7 +285,14 @@ export default function AdminSitesPage() {
               <div className="text-3xl font-bold text-[#254431]">{stats.totalInspections}</div>
             </div>
 
-            <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+            {/* Total Responses */}
+            <div className="relative group bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm cursor-default">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white text-[#254431] border-2 border-[#E4EBE4] text-xs rounded-xl px-3 py-2 text-center
+                opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">
+                Total inspection form submissions across all sites.
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-white" />
+              </div>
+            
               <div className="flex items-center gap-2 mb-2">
                 <ClipboardList className="w-5 h-5 text-[#356B43]" />
                 <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Responses</div>
@@ -278,7 +300,13 @@ export default function AdminSitesPage() {
               <div className="text-3xl font-bold text-[#254431]">{stats.totalResponses}</div>
             </div>
 
-            <div className="bg-[#D1FAE5] rounded-xl p-4 border-2 border-[#065F46]/20 shadow-sm">
+            {/* Active This Year */}
+            <div className="relative group bg-[#D1FAE5] rounded-xl p-4 border-2 border-[#065F46]/20 shadow-sm cursor-default">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-[#D1FAE5] text-[#065F46] border-2 border-[#065F46]/20 text-xs rounded-xl px-3 py-2 text-center
+                opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">
+                Sites inspected within the last 365 days, which are recently monitored.
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#D1FAE5]" />
+              </div>
               <div className="flex items-center gap-2 mb-2">
                 <TrendingUp className="w-5 h-5 text-[#065F46]" />
                 <div className="text-xs text-[#065F46] font-medium uppercase tracking-wide">Active over 365 Days</div>
@@ -286,7 +314,13 @@ export default function AdminSitesPage() {
               <div className="text-3xl font-bold text-[#065F46]">{stats.activeThisYear}</div>
             </div>
 
-            <div className="bg-[#FEE2E2] rounded-xl p-4 border-2 border-[#B91C1C]/20 shadow-sm">
+            {/* Needs Attention */}
+            <div className="relative group bg-[#FEE2E2] rounded-xl p-4 border-2 border-[#B91C1C]/20 shadow-sm cursor-default">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-[#FEE2E2] text-[#7F1D1D] border-2 border-[#B91C1C]/20 text-xs rounded-xl px-3 py-2 text-center
+                opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">
+                Sites last inspected over 2 years ago, which are overdue for a follow-up visit.
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#D1FAE5]" />
+              </div>
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="w-5 h-5 text-[#B91C1C]" />
                 <div className="text-xs text-[#B91C1C] font-medium uppercase tracking-wide">Needs Attention</div>
@@ -294,7 +328,7 @@ export default function AdminSitesPage() {
               <div className="text-3xl font-bold text-[#7F1D1D]">{stats.needsAttention}</div>
             </div>
           </div>
-        </div> 
+        </div>
             
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-6 py-8">
@@ -506,7 +540,7 @@ export default function AdminSitesPage() {
         open={showPdfModal}
         onClose={() => setShowPdfModal(false)}
         mode="multi-site"
-        siteNames={filteredSites.map(s => s.namesite)}
+        siteNames={filteredSites.filter(s => s.is_active).map(s => s.namesite)}
       />
 
       <EditSiteModal
