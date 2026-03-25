@@ -64,12 +64,16 @@ function completeVerificationIfPresent() {
 function ensureFormReady() {
   // Modal can appear slightly later in headed mode; dismiss defensively before key interactions.
   cy.get("body", { timeout: 20000 }).should("not.contain", "Loading inspection form...");
+  cy.wait(2000);
   dismissVerificationModalIfVisible();
   dismissVerificationModalIfVisible();
 }
 
 function attemptSubmitExpectBlocked() {
   ensureFormReady();
+  cy.wait(2000);
+  cy.contains('button', 'Close').click();
+  cy.wait(2000);
   cy.contains("button", "Review & Submit").scrollIntoView().click({ force: true });
   cy.contains("Required Questions Missing").should("be.visible");
   cy.contains("You must answer all required questions before submitting this report.").should("be.visible");
@@ -85,6 +89,7 @@ function attemptSubmitExpectBlocked() {
 function answerOneVisibleRequiredQuestionOnly() {
   // Answer exactly one visible required question, regardless of section/question wording.
   ensureFormReady();
+  cy.contains('How Visit').click();
   cy.contains("span", "Required")
     .filter(":visible")
     .first()
@@ -142,6 +147,7 @@ describe("Required question enforcement on submit", () => {
     });
 
     // Return to form and partially answer only one required question.
+    cy.wait(2000);
     cy.contains("button", "Back to Form").click({ force: true });
     ensureFormReady();
     answerOneVisibleRequiredQuestionOnly();

@@ -45,11 +45,11 @@ function photographerInput() {
 }
 
 function identifierInput() {
-    return cy.get('input[placeholder="Shorter Description"]').first().scrollIntoView();
+    return cy.get('input[placeholder="Short Description"]').first().scrollIntoView();
 }
 
 function captionInput() {
-    return cy.get('textarea[placeholder="Longer Description"]').first().scrollIntoView();
+    return cy.get('textarea[placeholder="Longer Description. What is it, why is it important?"]').first().scrollIntoView();
 }
 
 function fillAllFields() {

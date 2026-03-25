@@ -6,8 +6,8 @@ beforeEach(() => {
 
 function login() {
   cy.visit('http://localhost:3000/');
-  cy.get('#email').type('zoeandguy@gmail.com');
-  cy.get('#password').type('Cabbage4!');
+  cy.get('#email').type('jason.liang5129@gmail.com');
+  cy.get('#password').type('123Abc@@');
   cy.contains('button', 'Sign In').click();
   cy.url().should('include', '/sites');
 }
@@ -26,7 +26,7 @@ function navigateToExistingSIR() {
   cy.get('input[placeholder="Search by site name or county..."]').type('riverlot');
   cy.contains('Riverlot 56').click();
   cy.contains('Edit').first().click();
-  cy.wait(2000)
+  cy.wait(4000)
   cy.contains('Close').click();
 }
 
@@ -74,14 +74,14 @@ describe('Image Upload', () => {
 
     cy.get('input[type="file"]').first().selectFile('cypress/fixtures/test-image-2.jpg', { force: true });
 
-    cy.get('input[placeholder="Caption (optional)"]').first().type('Test caption');
-    cy.get('textarea[placeholder="Description (optional)"]').first().type('Test description');
+    cy.get('input[placeholder="Longer Description"]').first().type('Test caption');
+    cy.get('input[placeholder="Short Description"]').first().type('Test description');
 
     cy.contains('Click to upload images').should('be.visible');
     cy.get('input[type="file"]').first().selectFile('cypress/fixtures/test-image-3.jpg', { force: true });
 
-    cy.get('input[placeholder="Caption (optional)"]').eq(1).type('Test caption 2');
-    cy.get('textarea[placeholder="Description (optional)"]').eq(1).type('Test description 2');
+    cy.get('input[placeholder="Longer Description"]').eq(1).type('Test caption 2');
+    cy.get('input[placeholder="Short Description"]').eq(1).type('Test description 2');
 
     cy.contains('2 images total').should('exist');
   });
