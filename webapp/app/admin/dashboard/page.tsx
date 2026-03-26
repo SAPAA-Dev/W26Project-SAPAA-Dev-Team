@@ -277,7 +277,7 @@ export default function Dashboard() {
   return (
     <ProtectedRoute requireAdmin>
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-4 sm:px-6 py-4 shadow-lg">
           <div className="max-w-7xl mx-auto">
             {/* Back button */}
             <button
@@ -288,7 +288,7 @@ export default function Dashboard() {
               <span className="text-sm font-medium">Back</span>
             </button>
             
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-3">
               {/* Left: icon + title + subtitle */}
               <div className="flex items-center gap-4">
                 <Image
@@ -297,10 +297,10 @@ export default function Dashboard() {
                   width={140}
                   height={140}
                   priority
-                  className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+                  className="h-12 sm:h-16 w-auto flex-shrink-0 opacity-100 mt-1"
                 />
                 <div>
-                  <h1 className="text-3xl font-bold mt-3">Admin Dashboard</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold mt-3">Admin Dashboard</h1>
                   <p className="text-[#E4EBE4] text-base mt-0.5">
                     Monitor and analyze site inspection data
                   </p>
@@ -318,42 +318,42 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {/* Total Records */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
+            <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-[#E4EBE4] shadow-sm">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center flex-shrink-0">
                   <FileText className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Total Records</div>
-                  <div className="text-3xl font-bold text-[#254431]">{stats.totalInspections}</div>
+                  <div className="text-xs sm:text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Total Records</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-[#254431]">{stats.totalInspections}</div>
                 </div>
               </div>
             </div>
 
             {/* Image Gallery */}
             <Link href="/admin/gallery" className="block">
-              <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm hover:border-[#86A98A] hover:shadow-lg transition-all h-full">
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-[#E4EBE4] shadow-sm hover:border-[#86A98A] hover:shadow-lg transition-all h-full">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center flex-shrink-0">
                     <ImageIcon className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Image Gallery</div>
-                    <div className="text-3xl font-bold text-[#254431]">{items.length} images</div>
+                    <div className="text-sm sm:text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Image Gallery</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-[#254431]">{items.length} images</div>
                   </div>
                 </div>
               </div>
             </Link>
 
             {/* Last Record */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
+            <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-[#E4EBE4] shadow-sm">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-white" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#356B43] to-[#254431] rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-white"/>
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Last Record</div>
-                  <div className="text-3xl font-bold text-[#254431]">
+                  <div className="text-sm sm:text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Last Record</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-[#254431]">
                     {stats.lastInspectionDate
                       ? new Date(stats.lastInspectionDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
                       : "N/A"}
@@ -366,16 +366,16 @@ export default function Dashboard() {
           
 
           {/* Charts Section */}
-          <div className="grid lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Naturalness Distribution */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
+            <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-[#E4EBE4] shadow-sm">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-[#E4EBE4] rounded-lg flex items-center justify-center">
                   <PieChart className="w-5 h-5 text-[#356B43]" />
                 </div>
-                <h2 className="text-xl font-bold text-[#254431]">Naturalness Distribution</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-[#254431] leading-snug">Naturalness Distribution</h2>
               </div>
-              <div className="h-[300px] flex items-center justify-center">
+              <div className="h-[260px] sm:h-[300px] flex items-center justify-center">
                 {naturalnessData.length > 0 ? (
                   <Pie
                     data={{
@@ -406,12 +406,12 @@ export default function Dashboard() {
             </div>
 
             {/* Top 5 Sites */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
+            <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-[#E4EBE4] shadow-sm">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-[#E4EBE4] rounded-lg flex items-center justify-center">
-                  <BarChart3 className="w-5 h-5 text-[#356B43]" />
+                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-[#E4EBE4] rounded-lg flex items-center justify-center flex-shrink-0">
+                  <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-[#356B43]" />
                 </div>
-                <h2 className="text-xl font-bold text-[#254431]">Top 5 Sites</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-[#254431] leading-snug">Top 5 Sites</h2>
               </div>
               <div className="h-[300px] flex items-center justify-center">
                 {siteData.length > 0 ? (
@@ -443,29 +443,28 @@ export default function Dashboard() {
           </div>
 
           {/* Heatmap Section */}
-          <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-[#E4EBE4] shadow-sm">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-[#E4EBE4] rounded-lg flex items-center justify-center">
                 <MapPin className="w-5 h-5 text-[#356B43]" />
               </div>
-              <h2 className="text-xl font-bold text-[#254431]">Site Heatmap</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-[#254431] leading-snug">Site Heatmap</h2>
             </div>
 
             {/* Search Bar */}
             <div className="mb-6">
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1 relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A8075]" />
                   <input
-                    className="w-full pl-12 pr-4 py-3.5 bg-[#F7F2EA] border-2 border-[#86A98A] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-all"
-                    placeholder="Enter keyword to search sites..."
+                    className="w-full pl-12 pr-4 py-3 sm:py-3.5 bg-[#F7F2EA] border-2 border-[#86A98A] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-all"
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                   />
                 </div>
                 <button
-                  className="bg-gradient-to-r from-[#356B43] to-[#254431] text-white px-8 py-3.5 rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="w-full sm:w-auto justify-center bg-gradient-to-r from-[#356B43] to-[#254431] text-white px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   onClick={handleSearch}
                   disabled={!keyword.trim() || searchLoading}
                 >
@@ -483,7 +482,7 @@ export default function Dashboard() {
                 </button>
               </div>
               {points.length > 0 && (
-                <p className="text-sm text-[#7A8075] mt-3 flex items-center gap-2">
+                <p className="text-sm text-[#7A8075] mt-3 flex items-start sm:items-center gap-2 leading-relaxed">
                   <MapPin className="w-4 h-4" />
                   Found {points.length} location{points.length !== 1 ? 's' : ''} for "{keyword}"
                 </p>
@@ -491,7 +490,7 @@ export default function Dashboard() {
             </div>
 
             {/* Map Container */}
-            <div className="rounded-xl overflow-hidden border-2 border-[#E4EBE4] h-[500px]">
+            <div className="rounded-xl overflow-hidden border-2 border-[#E4EBE4] h-[320px] sm:h-[400px] lg:h-[500px]">
               <Map points={points} />
             </div>
           </div>
