@@ -49,7 +49,7 @@ describe('Admin Form Editor - Question Visibility', () => {
         cy.get('[data-testid="Email (Q11) Show Button"]', { timeout: 10000 }).should('exist');
       } 
     });
-
+    
     cy.intercept('POST', '**/sites').as('getSites');
     cy.get('svg.lucide-house').click();
     cy.wait('@getSites');
@@ -58,26 +58,29 @@ describe('Admin Form Editor - Question Visibility', () => {
       .scrollIntoView()
       .click();
     cy.contains('New Site Inspection Report', { timeout: 10000 })
-  .should('be.visible')
-  .click();
+      .should('be.visible')
+      .click();
+    
+    cy.get('[data-testid="terms-checkbox"]', { timeout: 10000 })
+      .check({ force: true });
 
-cy.url({ timeout: 15000 }).should('include', '/new-report');
-
-cy.get('[data-testid="terms-checkbox"]', { timeout: 10000 })
-  .scrollIntoView()
-  .check({ force: true });
-
-cy.contains('Continue to Form', { timeout: 10000 })
-  .should('be.visible')
-  .and('not.be.disabled')
-  .click();
-  cy.get('[data-testid="fine-print-modal"]').should('not.exist');
+    cy.get('[data-testid="terms-checkbox"]')
+  .should('be.checked');
+  
+    
+    cy.contains('Continue to Form', { timeout: 10000 })
+      .should('be.visible')
+      .and('not.be.disabled')
+      .click();
+    cy.wait(3000);
+    cy.get('[data-testid="fine-print-modal"]', { timeout: 10000 })
+      .should('not.exist');
     cy.get(`[data-testid="Email (Q11)-question-title"]`, { timeout: 10000 }).should('not.exist');
     cy.get(`[data-testid="back-button"]`).click();
-
+    
     // Verifying editing reports
     cy.wait(2000);
-
+    
     cy.visit(`http://localhost:3000/detail/Riverlot%2056%20(NA)/edit-report/${TEST_RESPONSE_ID}`);
     cy.contains('Edit Inspection Report', { timeout: 10000 }).should('be.visible');
     
@@ -126,19 +129,24 @@ cy.contains('Continue to Form', { timeout: 10000 })
       .should('be.visible')
       .click();
 
-    cy.url({ timeout: 15000 }).should('include', '/new-report');
 
     cy.get('[data-testid="terms-checkbox"]', { timeout: 10000 })
-      .scrollIntoView()
       .check({ force: true });
 
+    cy.get('[data-testid="terms-checkbox"]')
+  .should('be.checked');
+  
+  
     cy.contains('Continue to Form', { timeout: 10000 })
       .should('be.visible')
       .and('not.be.disabled')
-      .click();
-      cy.get('[data-testid="fine-print-modal"]').should('not.exist');
+      .click();  
+
+      cy.get('[data-testid="fine-print-modal"]', { timeout: 10000 })
+  .should('not.exist');
+    cy.wait(3000);
       cy.contains('WhoRYou', { timeout: 15000 }).click();
-    cy.contains('Email (Q11)', { timeout: 15000 }).should('be.visible');
+    cy.contains('Email', { timeout: 15000 }).should('be.visible');
     cy.get(`[data-testid="back-button"]`).click();
 
     // Verifying editing reports

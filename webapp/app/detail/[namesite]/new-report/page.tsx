@@ -82,6 +82,7 @@ export default function NewReportPage() {
   
   const [hasAccepted, setHasAccepted] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
+  const [hasDismissedVerification, setHasDismissedVerification] = useState(false);
   const [responses, setResponses] = useState<Record<number, any>>({});
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name: string; avatar: string } | null>(null);
@@ -132,25 +133,27 @@ export default function NewReportPage() {
           const stewardStatus = await isSteward(user.email);
           setIsStewardUser(stewardStatus);
 
-          if (!stewardStatus) {
+          if (!stewardStatus && !hasDismissedVerification) {
             setHasAccepted(false);   //new
             setShowVerification(true);
           }
-        } else {
+        } else if (!hasDismissedVerification) {
           setHasAccepted(false);
           setShowVerification(true);
         }
       } catch (err) {
         console.error('Error fetching user:', err);
         setCurrentUser(null);
+        if (!hasDismissedVerification) {
         setShowVerification(true);
+       }
       } finally {
         setIsLoading(false);
       }
     };
     
-    fetchUserAndCheckSteward();
-  }, []);
+      fetchUserAndCheckSteward();
+    }, [hasDismissedVerification]);
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -637,15 +640,15 @@ export default function NewReportPage() {
                 </div>
               </div>
               
-              <label className="flex items-center gap-3 cursor-pointer">
+              <label className="flex items-start gap-3 cursor-pointer">
                 <input 
                   type="checkbox" 
                   data-testid="terms-checkbox" 
                   checked={hasAccepted}
                   onChange={(e) => setHasAccepted(e.target.checked)}
-                  className="w-5 h-5 rounded border-[#E4EBE4] text-[#356B43] focus:ring-[#356B43]"
+                  className="w-5 h-5 mt-1 rounded border-[#E4EBE4] text-[#356B43] focus:ring-[#356B43]"
                 />
-                <span className="text-sm text-[#4B5563] leading-relaxed">
+                <div className="text-sm text-[#4B5563] leading-relaxed">
                   By agreeing to this, I understand that this form is being used solely for 
                   filling out <strong>Site Inspections</strong> and <strong>not for EMERGENCIES</strong>. I also
                   acknowledge that this Site Inspection is carried out on my own accord.
@@ -658,7 +661,7 @@ export default function NewReportPage() {
                       </span>
                     </Link>
                   </div>
-                </span>
+                </div>
               </label>
             </div>
 
@@ -674,7 +677,10 @@ export default function NewReportPage() {
                 <button
                   type="button"
                   disabled={!hasAccepted}
-                  onClick={() => setShowVerification(false)}
+                  onClick={() => {
+                    setShowVerification(false);
+                    setHasDismissedVerification(true);
+                  }}
                   className="w-full sm:flex-[2] py-3 bg-[#356B43] text-white font-bold rounded-xl shadow-lg hover:bg-[#254431] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   Continue to Form
