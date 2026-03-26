@@ -458,6 +458,7 @@ export default function Dashboard() {
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A8075]" />
                   <input
                     className="w-full pl-12 pr-4 py-3 sm:py-3.5 bg-[#F7F2EA] border-2 border-[#86A98A] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-all"
+                    placeholder="Enter keyword to search sites..."
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}

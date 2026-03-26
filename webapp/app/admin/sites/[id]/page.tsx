@@ -525,28 +525,28 @@ export default function AdminSiteDetails() {
             <span className="text-sm font-medium">Back to Admin Sites</span>
           </button>
 
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             {/* Left: icon + site info */}
-            <div className="flex items-start gap-4">
-              <Image
-                src="/images/sapaa-icon-white.png"
-                alt="SAPAA"
-                width={140}
-                height={140}
-                priority
-                className="h-12 sm:h-16 w-auto flex-shrink-0 opacity-100 mt-1"
-              />
+            <div className="flex items-start sm:items-center gap-3 sm:gap-4">
+                    <Image
+                      src="/images/sapaa-icon-white.png"
+                      alt="SAPAA"
+                      width={140}
+                      height={140}
+                      priority
+                      className="h-12 sm:h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+                    />
               <div>
                 <div className="flex items-center gap-3 mt-2.5">
-                  <h1 className="text-3xl font-bold">{site.namesite}</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold leading-tight break-words">{site.namesite}</h1>
                   <span className="px-3 py-1 bg-white/20 rounded-full text-xs font-semibold flex items-center gap-1">
                     <Settings className="w-3 h-3" />
                     Admin View
                   </span>
                 </div>
                 {site.county && (
-                  <div className="flex items-center gap-2 text-[#E4EBE4]">
-                    <MapPin className="w-5 h-5" />
+                  <div className="flex items-start sm:items-center gap-2 text-[#E4EBE4]">
+                    <MapPin className="w-5 h-5 flex-shrink-0" />
                     <span className="text-base">{site.county}</span>
                   </div>
                 )}
@@ -554,12 +554,12 @@ export default function AdminSiteDetails() {
             </div>
 
             {/* Right: export + last visit badge */}
-            <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto flex-shrink-0">
               <div className="relative export-menu-container">
                 <button
                   onClick={() => setShowExportMenu(!showExportMenu)}
-                  className="bg-white/10 px-4 py-2 rounded-full border border-white/20 hover:bg-white/20 transition-colors flex items-center gap-2 text-sm font-medium"
-                >
+                  className="w-full sm:w-auto justify-center bg-white/10 px-4 py-2 rounded-2xl sm:rounded-full border border-white/20 hover:bg-white/20 transition-colors flex items-center gap-2 text-sm font-medium"               
+               >
                   <Download className="w-4 h-4" />
                   Export
                 </button>
@@ -586,7 +586,7 @@ export default function AdminSiteDetails() {
                   </div>
                 )}
               </div>
-              <div className="bg-white/10 px-6 py-2 rounded-full border border-white/20 text-center">
+              <div className="bg-white/10 px-4 sm:px-6 py-2 rounded-2xl sm:rounded-full border border-white/20 text-center w-full sm:w-auto">
                 <div className="text-sm text-[#E4EBE4]">Last Visit</div>
                 <div className="text-lg font-bold">{ageText}</div>
               </div>
@@ -596,25 +596,27 @@ export default function AdminSiteDetails() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
 
         {/* Admin Tools Bar */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3">
           <button
             onClick={() => router.push(`/detail/${namesite}`)}
-            className="px-4 py-2.5 bg-white hover:bg-[#F7F2EA] rounded-xl text-sm font-medium transition-colors flex items-center gap-2 text-[#254431] border-2 border-[#E4EBE4]"
-          >
+            className="w-full sm:w-auto justify-center px-4 py-2.5 bg-white hover:bg-[#F7F2EA] rounded-xl text-sm font-medium transition-colors flex items-center gap-2 text-[#254431] border-2 border-[#E4EBE4]"        
+        
+        >
             <Eye className="w-4 h-4" />
             View as User
           </button>
           <button
             onClick={() => setShowDataQuality(!showDataQuality)}
-            className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 border-2 ${showDataQuality ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white border-[#254431]' : 'bg-white hover:bg-[#F7F2EA] text-[#254431] border-[#E4EBE4]'}`}
+            className={`w-full sm:w-auto justify-center px-4 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 border-2 ${showDataQuality ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white border-[#254431]' : 'bg-white hover:bg-[#F7F2EA] text-[#254431] border-[#E4EBE4]'}`}
+          
           >
             <CheckCircle2 className="w-4 h-4" />
             Data Quality
           </button>
-          <div className="flex-1 min-w-[200px]">
+          <div className="w-full sm:flex-1 sm:min-w-[200px]">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8075]" />
               <input
@@ -635,7 +637,7 @@ export default function AdminSiteDetails() {
               <BarChart3 className="w-5 h-5 text-[#356B43]" />
               Data Quality Analysis
             </h3>
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {inspections.map((response) => {
                 const quality = getDataQualityScore(response);
                 return (
@@ -666,13 +668,13 @@ export default function AdminSiteDetails() {
         )}
 
         {/* Stats Cards — matches site details style */}
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <ClipboardList className="w-5 h-5 text-[#356B43]" />
               <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Reports</div>
             </div>
-            <div className="text-3xl font-bold text-[#254431]">{activeInspections.length}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-[#254431]">{activeInspections.length}</div>
             {inspections.length !== activeInspections.length && (
               <div className="text-xs text-[#7A8075] mt-1">{inspections.length - activeInspections.length} inactive</div>
             )}
@@ -691,19 +693,19 @@ export default function AdminSiteDetails() {
               <TrendingUp className="w-5 h-5 text-[#356B43]" />
               <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Condition</div>
             </div>
-            <div className="text-3xl font-bold text-[#254431]">{avgText}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-[#254431]">{avgText}</div>
           </div>
         </div>
 
         {/* Naturalness Score Gradient */}
         {average !== null && (
-          <div className="bg-white rounded-2xl p-8 border-2 border-[#E4EBE4] shadow-sm">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-2xl p-4 sm:p-8 border-2 border-[#E4EBE4] shadow-sm">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-[#254431] mb-1">Naturalness Score</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-[#254431] mb-1">Naturalness Score</h2>
                 <p className="text-[#7A8075]">Average across active inspections</p>
               </div>
-              <div className="text-5xl font-bold text-[#356B43]">{average.toFixed(1)}</div>
+              <div className="text-3xl sm:text-5xl font-bold text-[#356B43]">{average.toFixed(1)}</div>
             </div>
             <div className="relative mb-4">
               <div className="h-8 rounded-full overflow-hidden bg-gradient-to-r from-[#B91C1C] via-[#E0A63A] via-[#84CC16] to-[#1C7C4D] shadow-inner"></div>
@@ -717,7 +719,7 @@ export default function AdminSiteDetails() {
                 </div>
               </div>
             </div>
-            <div className="flex justify-between text-sm font-medium text-[#7A8075] px-1">
+            <div className="grid grid-cols-2 sm:flex sm:justify-between gap-2 text-xs sm:text-sm font-medium text-[#7A8075] px-1">
               <span>1.0 Poor</span>
               <span>2.0 Fair</span>
               <span>3.0 Good</span>
@@ -727,7 +729,7 @@ export default function AdminSiteDetails() {
         )}
 
         {/* View Toggle — matches site details style with 3 tabs */}
-        <div className="flex gap-1.5">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-1.5">
           <button
             onClick={() => setViewMode('by-date')}
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 rounded-2xl font-semibold transition-all border-2 ${
@@ -823,11 +825,11 @@ export default function AdminSiteDetails() {
                       </button>
 
                       {/* Admin action buttons — directly visible */}
-                      <div className="flex items-center gap-2 mx-4">
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mx-4 mb-4 sm:mb-0">
                         <button
                           data-testid={`edit-button-${response.id}`}
                           onClick={() => handleOpenEditModal(response)}
-                          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-[#1E2520] bg-[#E4EBE4] hover:bg-[#356B43] hover:text-white transition-all"
+                          className="w-full sm:w-auto justify-center flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-[#1E2520] bg-[#E4EBE4] hover:bg-[#356B43] hover:text-white transition-all"
                           title="Edit Answers"
                         >
                           <Edit3 className="w-4 h-4" /> Edit Answers
@@ -836,7 +838,7 @@ export default function AdminSiteDetails() {
                           data-testid={`toggle-active-button-${response.id}`}
                           onClick={() => handleToggleActive(response)}
                           disabled={togglingId === response.id}
-                          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${response.is_active ? 'bg-[#FEE2E2] text-[#B91C1C] hover:bg-[#FECACA]' : 'bg-[#DCFCE7] text-[#166534] hover:bg-[#BBF7D0]'}`}
+                          className={`w-full sm:w-auto justify-center flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${response.is_active ? 'bg-[#FEE2E2] text-[#B91C1C] hover:bg-[#FECACA]' : 'bg-[#DCFCE7] text-[#166534] hover:bg-[#BBF7D0]'}`}
                           title={response.is_active ? 'Disable' : 'Enable'}
                         >
                           <Power className="w-4 h-4" />
@@ -954,8 +956,8 @@ export default function AdminSiteDetails() {
                         <div className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-3 border-t-2 border-[#E4EBE4] pt-4">
                           {qComp.answers.map((answer, idx) => (
                             <div key={`${answer.inspectionId}-${idx}`} className="bg-[#F7F2EA] rounded-lg p-4">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Calendar className="w-4 h-4 text-[#7A8075]" />
+                              <div className="flex items-start sm:items-center gap-2 mb-2">
+                                <Calendar className="w-4 h-4 text-[#7A8075] flex-shrink-0 mt-0.5 sm:mt-0" />
                                 <span className="text-sm font-semibold text-[#356B43]">{answer.displayDate}</span>
                               </div>
                               <p className="text-[#1E2520]">{answer.answer}</p>
@@ -1014,7 +1016,7 @@ export default function AdminSiteDetails() {
 
                     <div className="p-4 sm:p-5 space-y-3">
                       <div className="text-sm text-[#7A8075] flex items-start sm:items-center gap-2">
-                        <MapPin className="w-4 h-4" />
+                        <MapPin className="w-4 h-4 flex-shrink-0" />
                         <span>{item.site_name || site.namesite || "Unknown site"}</span>
                       </div>
                       <div className="text-sm text-[#7A8075] flex items-start gap-2">
@@ -1027,7 +1029,7 @@ export default function AdminSiteDetails() {
                       </div>
 
                      <div className="text-sm text-[#7A8075] flex items-start gap-2">
-                      <Calendar className="w-4 h-4 mt-0.5" />
+                      <Calendar className="w-4 h-4 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-xs text-[#7A8075] mt-0.5">
                           {item.date || "No date"}
