@@ -290,7 +290,7 @@ export default function Dashboard() {
             
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-3">
               {/* Left: icon + title + subtitle */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-start sm:items-center gap-3 sm:gap-4">
                 <Image
                   src="/images/sapaa-icon-white.png"
                   alt="SAPAA"
@@ -301,13 +301,13 @@ export default function Dashboard() {
                 />
                 <div>
                   <h1 className="text-2xl sm:text-3xl font-bold mt-3">Admin Dashboard</h1>
-                  <p className="text-[#E4EBE4] text-base mt-0.5">
+                  <p className="text-[#E4EBE4] text-sm sm:text-base mt-0.5 max-w-md">
                     Monitor and analyze site inspection data
                   </p>
                 </div>
               </div>
               {/* Right: navbar — rendered inline, bg overridden to transparent */}
-              <div className="[&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
+              <div className="w-full sm:w-auto [&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
                 <AdminNavBar />
               </div>
             </div>

@@ -231,7 +231,7 @@ export default function HomeClient() {
                     Admin
                   </button>
                 )}
-                <div className="[&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
+                <div className="w-full sm:w-auto [&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
                   <UserNavBar />
                 </div>
               </div>

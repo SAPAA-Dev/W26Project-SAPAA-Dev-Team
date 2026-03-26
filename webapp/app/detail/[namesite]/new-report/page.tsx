@@ -716,7 +716,7 @@ export default function NewReportPage() {
       )}
 
       {/* --- CONSOLIDATED HEADER --- */}
-      <header className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+      <header className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-4 sm:px-6 py-4 shadow-lg">
         <div className="max-w-7xl mx-auto">
 
         <button
@@ -731,14 +731,14 @@ export default function NewReportPage() {
         <div className="flex items-start justify-between">
 
           {/* Left: icon + form info */}
-          <div className="flex items-start gap-4">
+          <div className="flex items-start sm:items-center gap-3 sm:gap-4">
             <Image
               src="/images/sapaa-icon-white.png"
               alt="SAPAA"
               width={140}
               height={140}
               priority
-              className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+              className="h-12 sm:h-16 w-auto flex-shrink-0 opacity-100 mt-1"
             />
             <div>
               <h1 className="text-3xl font-bold mt-2.5">Site Inspection Form</h1>
