@@ -224,6 +224,7 @@ export default function HomeClient() {
               <div className="flex items-center justify-between sm:justify-end gap-3 mt-0 sm:mt-4 w-full sm:w-auto">
                 {currentUser?.role === 'admin' && (
                   <button
+                    data-testid="admin-button"
                     onClick={() => router.push('/admin/dashboard')}
                     className="bg-[#E4EBE4] hover:bg-[#F7F2EA] text-black px-3 sm:px-4 py-2 rounded-xl flex items-center gap-2 font-semibold transition-all text-sm sm:text-base"
                   >

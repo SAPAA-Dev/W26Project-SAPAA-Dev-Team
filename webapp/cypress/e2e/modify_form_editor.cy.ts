@@ -2,6 +2,7 @@
 // US 1.0.24 – Modify my Site Inspections Form Questions
 describe('Admin Form Editor - Editing Questions', () => {
   beforeEach(() => {  
+    cy.viewport(1280, 720);
     cy.visit('http://localhost:3000/')
     cy.get('#email').click();
     cy.get('#email').type('jason.liang5129@gmail.com');

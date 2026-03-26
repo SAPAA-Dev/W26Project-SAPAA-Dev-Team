@@ -132,8 +132,12 @@ export default function NewReportPage() {
           const stewardStatus = await isSteward(user.email);
           setIsStewardUser(stewardStatus);
 
-          setShowVerification(!stewardStatus);
+          if (!stewardStatus) {
+            setHasAccepted(false);   //new
+            setShowVerification(true);
+          }
         } else {
+          setHasAccepted(false);
           setShowVerification(true);
         }
       } catch (err) {
@@ -570,12 +574,14 @@ export default function NewReportPage() {
         </div>
       )}
             
-      {/* --- VERIFICATION POPUP (Only for non-stewards) --- */}
+      {/* --- VERIFICATION POPUP  --- */}
       {showVerification && !isStewardUser && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-          <div className="absolute inset-0 bg-[#254431]/80 backdrop-blur-sm" />
-          <div className="relative bg-white w-full max-w-lg sm:max-w-xl lg:max-w-2xl rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden 
-                          animate-in fade-in zoom-in duration-300">
+        <div data-testid="fine-print-modal" className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+           <div 
+            data-testid="fine-print-overlay"
+            className="absolute inset-0 bg-[#254431]/80 backdrop-blur-sm" 
+          />
+          <div className="relative bg-white w-full max-w-lg sm:max-w-xl lg:max-w-2xl rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden lg:max-h-none overflow-hidden animate-in fade-in zoom-in duration-300">
             <div className="p-6 border-b border-[#E4EBE4] flex items-center gap-3">
               <div className="w-10 h-10 bg-[#F7F2EA] rounded-full flex items-center justify-center">
                 <ShieldCheck className="w-6 h-6 text-[#356B43]" />
@@ -583,7 +589,7 @@ export default function NewReportPage() {
               <h2 className="text-xl font-bold text-[#254431]">The Fine Print Up Front</h2>
             </div>
 
-            <div className="p-4 sm:p-6 space-y-4 overflow-y-auto">
+            <div className="p-4 sm:p-6 space-y-4 overflow-y-auto overflow-hidden">
               <p className="font-medium text-[#254431]">Before proceeding with the site inspection form:</p>
               
               <div className="bg-[#F7F2EA] p-4 rounded-xl flex gap-3 items-start">
@@ -634,6 +640,7 @@ export default function NewReportPage() {
               <label className="flex items-center gap-3 cursor-pointer">
                 <input 
                   type="checkbox" 
+                  data-testid="terms-checkbox" 
                   checked={hasAccepted}
                   onChange={(e) => setHasAccepted(e.target.checked)}
                   className="w-5 h-5 rounded border-[#E4EBE4] text-[#356B43] focus:ring-[#356B43]"
@@ -658,12 +665,14 @@ export default function NewReportPage() {
             <div className="p-6 border-t border-[#E4EBE4] bg-[#F7F2EA]/50 space-y-3">
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
+                  type="button"
                   onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
                   className="w-full sm:flex-1 py-3 text-[#7A8075] font-bold hover:bg-[#E4EBE4] rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
+                  type="button"
                   disabled={!hasAccepted}
                   onClick={() => setShowVerification(false)}
                   className="w-full sm:flex-[2] py-3 bg-[#356B43] text-white font-bold rounded-xl shadow-lg hover:bg-[#254431] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
@@ -678,7 +687,10 @@ export default function NewReportPage() {
 
       {showRequiredPopup && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6">
-          <div className="absolute inset-0 bg-[#254431]/80 backdrop-blur-sm" />
+          <div 
+            data-testid="required-popup-overlay"
+            className="absolute inset-0 bg-[#254431]/80 backdrop-blur-sm" 
+          />
           <div className="relative bg-white w-full max-w-lg sm:max-w-xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
             <div className="p-4 sm:p-6 border-b border-[#E4EBE4] flex items-center gap-3">
               <div className="w-10 h-10 bg-[#F7F2EA] rounded-full flex items-center justify-center">
@@ -705,6 +717,7 @@ export default function NewReportPage() {
 
             <div className="p-6 border-t border-[#E4EBE4] bg-[#F7F2EA]/50">
               <button
+                type="button"
                 onClick={() => setShowRequiredPopup(false)}
                 className="w-full py-3 bg-[#356B43] text-white font-bold rounded-xl shadow-lg hover:bg-[#254431] transition-all"
               >
@@ -720,6 +733,7 @@ export default function NewReportPage() {
         <div className="max-w-7xl mx-auto">
 
         <button
+          type="button"
           onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
           className="flex items-center gap-1.5 text-[#86A98A] hover:text-white transition-colors mb-4 group"
           data-testid="back-button"
