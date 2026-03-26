@@ -121,8 +121,11 @@ export default function NewReportPage() {
     });
   }, []);
 
+  console.log("NewReportPage render");
+
 
   useEffect(() => {
+      console.log("verification effect ran", { hasDismissedVerification });
     const fetchUserAndCheckSteward = async () => {
       try {
         setIsLoading(true);
@@ -592,7 +595,7 @@ export default function NewReportPage() {
               <h2 className="text-xl font-bold text-[#254431]">The Fine Print Up Front</h2>
             </div>
 
-            <div className="p-4 sm:p-6 space-y-4 overflow-y-auto overflow-hidden">
+            <div className="p-4 sm:p-6 space-y-4 overflow-y-auto">
               <p className="font-medium text-[#254431]">Before proceeding with the site inspection form:</p>
               
               <div className="bg-[#F7F2EA] p-4 rounded-xl flex gap-3 items-start">
@@ -678,6 +681,7 @@ export default function NewReportPage() {
                   type="button"
                   disabled={!hasAccepted}
                   onClick={() => {
+                    console.log("continue clicked");
                     setShowVerification(false);
                     setHasDismissedVerification(true);
                   }}

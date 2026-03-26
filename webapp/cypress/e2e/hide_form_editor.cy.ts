@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-const TEST_RESPONSE_ID = 3237; 
+const TEST_RESPONSE_ID = 3237;
 
 // US 1.0.25 – Hide a Site Inspections Form Questions
 describe('Admin Form Editor - Question Visibility', () => {
@@ -60,22 +60,30 @@ describe('Admin Form Editor - Question Visibility', () => {
     cy.contains('New Site Inspection Report', { timeout: 10000 })
       .should('be.visible')
       .click();
-    
-    cy.get('[data-testid="terms-checkbox"]', { timeout: 10000 })
-      .check({ force: true });
 
-    cy.get('[data-testid="terms-checkbox"]')
-  .should('be.checked');
+
+  cy.wait(5000);
+  cy.get('[data-testid="fine-print-modal"]')
+  .click('topLeft', { force: true });
+  cy.get('[data-testid="terms-checkbox"]').check();
+  // The terms and conditions checkbox is checked.
+  cy.get('[data-testid="terms-checkbox"]')
+    .should('be.checked')
+  // The button is now enabled.
+  cy.get('[data-testid="fine-print-modal"] button.text-white')
+    .should('not.have.attr', 'disabled')
   
-    
-    cy.contains('Continue to Form', { timeout: 10000 })
-      .should('be.visible')
-      .and('not.be.disabled')
-      .click();
+  cy.get('[data-testid="fine-print-modal"] div.bg-\\[\\#F7F2EA\\]\\/50').click();
+  cy.get('[data-testid="fine-print-modal"] div.bg-\\[\\#F7F2EA\\]\\/50').should('not.exist');
+  // The fine print modal is closed.
+  cy.get('[data-testid="fine-print-modal"]')
+    .should('not.exist')
     cy.wait(3000);
+    cy.get(`[data-testid="Email (Q11)-question-title"]`, { timeout: 10000 }).should('not.exist');
+    
     cy.get('[data-testid="fine-print-modal"]', { timeout: 10000 })
       .should('not.exist');
-    cy.get(`[data-testid="Email (Q11)-question-title"]`, { timeout: 10000 }).should('not.exist');
+    
     cy.get(`[data-testid="back-button"]`).click();
     
     // Verifying editing reports
@@ -129,21 +137,23 @@ describe('Admin Form Editor - Question Visibility', () => {
       .should('be.visible')
       .click();
 
-
-    cy.get('[data-testid="terms-checkbox"]', { timeout: 10000 })
-      .check({ force: true });
-
-    cy.get('[data-testid="terms-checkbox"]')
-  .should('be.checked');
+  cy.wait(5000);
+  cy.get('[data-testid="fine-print-modal"]')
+  .click('topLeft', { force: true });
+  cy.get('[data-testid="terms-checkbox"]').check();
+  // The terms and conditions checkbox is checked.
+  cy.get('[data-testid="terms-checkbox"]')
+    .should('be.checked')
+  // The button is now enabled.
+  cy.get('[data-testid="fine-print-modal"] button.text-white')
+    .should('not.have.attr', 'disabled')
   
-  
-    cy.contains('Continue to Form', { timeout: 10000 })
-      .should('be.visible')
-      .and('not.be.disabled')
-      .click();  
+  cy.get('[data-testid="fine-print-modal"] div.bg-\\[\\#F7F2EA\\]\\/50').click();
+  cy.get('[data-testid="fine-print-modal"] div.bg-\\[\\#F7F2EA\\]\\/50').should('not.exist');
+  // The fine print modal is closed.
+  cy.get('[data-testid="fine-print-modal"]')
+    .should('not.exist')
 
-      cy.get('[data-testid="fine-print-modal"]', { timeout: 10000 })
-  .should('not.exist');
     cy.wait(3000);
       cy.contains('WhoRYou', { timeout: 15000 }).click();
     cy.contains('Email', { timeout: 15000 }).should('be.visible');
@@ -153,6 +163,8 @@ describe('Admin Form Editor - Question Visibility', () => {
     cy.wait(2000);
     cy.visit(`http://localhost:3000/detail/Riverlot%2056%20(NA)/edit-report/${TEST_RESPONSE_ID}`);
     cy.contains('Edit Inspection Report', { timeout: 10000 }).should('be.visible');
+    cy.contains('WhoRYou', { timeout: 15000 }).click();
     cy.get(`[data-testid="Email (Q11)-question-title"]`, { timeout: 10000 }).should('exist');
   });
 });
+
