@@ -574,8 +574,8 @@ export default function NewReportPage() {
       {showVerification && !isStewardUser && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
           <div className="absolute inset-0 bg-[#254431]/80 backdrop-blur-sm" />
-          
-          <div className="relative bg-white w-full max-w-lg sm:max-w-xl lg:max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-300">
+          <div className="relative bg-white w-full max-w-lg sm:max-w-xl lg:max-w-2xl rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden 
+                          animate-in fade-in zoom-in duration-300">
             <div className="p-6 border-b border-[#E4EBE4] flex items-center gap-3">
               <div className="w-10 h-10 bg-[#F7F2EA] rounded-full flex items-center justify-center">
                 <ShieldCheck className="w-6 h-6 text-[#356B43]" />
@@ -583,7 +583,7 @@ export default function NewReportPage() {
               <h2 className="text-xl font-bold text-[#254431]">The Fine Print Up Front</h2>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4 overflow-y-auto">
               <p className="font-medium text-[#254431]">Before proceeding with the site inspection form:</p>
               
               <div className="bg-[#F7F2EA] p-4 rounded-xl flex gap-3 items-start">
@@ -656,17 +656,17 @@ export default function NewReportPage() {
             </div>
 
             <div className="p-6 border-t border-[#E4EBE4] bg-[#F7F2EA]/50 space-y-3">
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
-                  className="flex-1 py-3 text-[#7A8075] font-bold hover:bg-[#E4EBE4] rounded-xl transition-colors"
+                  className="w-full sm:flex-1 py-3 text-[#7A8075] font-bold hover:bg-[#E4EBE4] rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
                 <button 
                   disabled={!hasAccepted}
                   onClick={() => setShowVerification(false)}
-                  className="flex-[2] py-3 bg-[#356B43] text-white font-bold rounded-xl shadow-lg hover:bg-[#254431] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="w-full sm:flex-[2] py-3 bg-[#356B43] text-white font-bold rounded-xl shadow-lg hover:bg-[#254431] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   Continue to Form
                 </button>
@@ -680,7 +680,7 @@ export default function NewReportPage() {
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6">
           <div className="absolute inset-0 bg-[#254431]/80 backdrop-blur-sm" />
           <div className="relative bg-white w-full max-w-lg sm:max-w-xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-            <div className="p-6 border-b border-[#E4EBE4] flex items-center gap-3">
+            <div className="p-4 sm:p-6 border-b border-[#E4EBE4] flex items-center gap-3">
               <div className="w-10 h-10 bg-[#F7F2EA] rounded-full flex items-center justify-center">
                 <AlertCircle className="w-6 h-6 text-[#B91C1C]" />
               </div>
