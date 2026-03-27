@@ -2,6 +2,7 @@
 
 describe("User Image Gallery", () => {
     beforeEach(() => {
+      cy.viewport(1280, 720);
       cy.visit("http://localhost:3000/");
       cy.get("#email").click();
       cy.get("#email").type("awayt7398@gmail.com");
