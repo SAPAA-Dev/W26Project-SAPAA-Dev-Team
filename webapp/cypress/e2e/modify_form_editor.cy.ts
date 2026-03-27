@@ -2,6 +2,7 @@
 // US 1.0.24 – Modify my Site Inspections Form Questions
 describe('Admin Form Editor - Editing Questions', () => {
   beforeEach(() => {  
+    cy.viewport(1280, 720);
     cy.visit('http://localhost:3000/')
     cy.get('#email').click();
     cy.get('#email').type('jason.liang5129@gmail.com');
@@ -120,8 +121,22 @@ describe('Admin Form Editor - Editing Questions', () => {
     cy.contains('Riverlot 56').scrollIntoView().click();
     cy.wait(2000);
     cy.contains('New Site Inspection Report').click();
-    cy.contains('I have read and agree to the terms and conditions').click();
-    cy.contains('Continue to Form').click();
+    cy.wait(5000);
+    cy.get('[data-testid="fine-print-modal"]')
+  .click('topLeft', { force: true });
+  cy.get('[data-testid="terms-checkbox"]').check();
+  // The terms and conditions checkbox is checked.
+  cy.get('[data-testid="terms-checkbox"]')
+    .should('be.checked')
+  // The button is now enabled.
+  cy.get('[data-testid="fine-print-modal"] button.text-white')
+    .should('not.have.attr', 'disabled')
+  
+  cy.get('[data-testid="fine-print-modal"] div.bg-\\[\\#F7F2EA\\]\\/50').click();
+  cy.get('[data-testid="fine-print-modal"] div.bg-\\[\\#F7F2EA\\]\\/50').should('not.exist');
+  // The fine print modal is closed.
+  cy.get('[data-testid="fine-print-modal"]')
+    .should('not.exist')
     cy.contains('hello this is a change');
   });
 
@@ -157,6 +172,7 @@ describe('User View - No Admin Form Editor', () => {
     cy.get('#password').type('Throw4w4!');
     cy.get('button.font-bold').click();
     cy.get('button.text-white').click();
+    cy.wait(5000);
     cy.contains('Admin').should('not.exist')
   });
 });
