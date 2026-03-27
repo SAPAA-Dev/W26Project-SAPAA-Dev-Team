@@ -390,7 +390,7 @@ export default function SignupPage() {
               One more step to go
             </h2>
             <p className="text-[#7A8075] text-center leading-relaxed mb-6">
-              We've sent a confirmation link to{' '}
+               We've notified an admin of a new user {' '}
               <span className="font-semibold text-[#1E2520]">{email}</span>.{' '}
               After verifying, your account will be reviewed for access.
             </p>
@@ -404,17 +404,6 @@ export default function SignupPage() {
                   <p className="text-xs text-[#7A8075]">Your details have been saved.</p>
                 </div>
               </div>
-
-              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#FFFBF3] border border-[#FCE5B8]">
-                <div className="w-7 h-7 rounded-full bg-[#FCE5B8] flex items-center justify-center flex-shrink-0 text-xs font-semibold text-[#B8711F]">
-                  2
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[#1E2520]">Verify your email</p>
-                  <p className="text-xs text-[#7A8075]">Click the link we sent to your inbox.</p>
-                </div>
-              </div>
-
               <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#FFFBF3] border border-[#FCE5B8]">
                 <div className="w-7 h-7 rounded-full bg-[#FCE5B8] flex items-center justify-center flex-shrink-0 text-xs font-semibold text-[#B8711F]">
                   3
