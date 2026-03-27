@@ -12,6 +12,7 @@ import {
 import { getCurrentUserUid } from "@/utils/supabase/queries";
 import { daysSince } from "@/app/sites/page";
 import { 
+    Home,
     ArrowLeft, 
     MapPin, 
     Calendar, 
@@ -32,8 +33,10 @@ import {
 import Image from 'next/image';
 import ProtectedRoute from "@/components/ProtectedRoute";
 import dynamic from 'next/dynamic';
-import HelpMenu from '@/components/HelpMenu';
 import { siteDetailSteps } from '@/components/TutorialOverlay';
+import { createClient } from '@/utils/supabase/client';
+import { logout } from "@/services/auth";
+import UserNavBar from "@/components/HeaderDropdown";
 
 const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
@@ -68,6 +71,34 @@ type GalleryItem = {
   imageUrl: string;
   photographer?: string | null;
 };
+
+async function getCurrentUser(): Promise<{ email: string; role: string; name: string; avatar: string} | null> {
+  try {
+    const supabase = createClient();
+    
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !session?.user) {
+      console.log('No session or session error');
+      return null;
+    }
+    
+    const email = session.user.email ?? '';
+    const role = session.user.user_metadata?.role ?? 'steward';
+    const name  = session.user.user_metadata?.full_name ?? '';
+    const avatar = session.user.user_metadata?.avatar_url ?? '';
+    console.log(session.user)
+    
+    return {
+      email,
+      role,
+      name,
+      avatar
+    };
+  } catch (error) {
+    return null;
+  }
+}
 
 function groupAnswersBySection(answers: FormAnswer[]) {
   const sections: Array<{
@@ -114,13 +145,17 @@ export default function SiteDetailScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>('by-date');
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set());
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [userLoading, setUserLoading] = useState(true);
 
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name:string; avatar:string } | null>(null);
   const [forceTutorial, setForceTutorial] = useState(false);
+
+  const [menuOpen, setMenuOpen] = useState(false); 
 
   const handleStartTutorial = useCallback(() => {
     setForceTutorial(false);
@@ -130,6 +165,21 @@ export default function SiteDetailScreen() {
   const handleTutorialFinish = useCallback(() => {
     setForceTutorial(false);
   }, []);
+
+      useEffect(() => {
+        const fetchUser = async () => {
+          setUserLoading(true);
+          try {
+            const user = await getCurrentUser();
+            setCurrentUser(user);
+          } catch (err) {
+            setCurrentUser(null);
+          } finally {
+            setUserLoading(false);
+          }
+        };
+        fetchUser();
+      }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -433,7 +483,8 @@ export default function SiteDetailScreen() {
           <div className="text-sm text-[#E4EBE4]">Last Visit</div>
           <div className="text-lg font-bold">{ageText}</div>
         </div>
-        <HelpMenu onStartTutorial={handleStartTutorial} />
+        <UserNavBar />
+
       </div>
     </div>
   </div>

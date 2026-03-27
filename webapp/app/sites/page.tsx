@@ -8,13 +8,12 @@ import { createClient } from '@/utils/supabase/client';
 import Image from 'next/image';
 import { Suspense } from "react";
 import { SubmissionToast } from "./SubmissionToast";
-import UserNavBar from "../UserNavBar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import UploadImages from "@/components/UploadImages";
 import { logout } from "@/services/auth";
 import dynamic from 'next/dynamic';
-import HelpMenu from '@/components/HelpMenu';
 import { sitesDashboardSteps } from '@/components/TutorialOverlay';
+import UserNavBar from "@/components/HeaderDropdown";
 
 const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
@@ -253,129 +252,10 @@ export default function HomeClient() {
               </p>
             </div>
           </div>
+
+          <UserNavBar/>
       
-          {/* Single unified menu */}
-          <div className="relative mt-4">
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              title="Open menu"
-              className={`w-11 h-11 rounded-full border flex flex-col items-center justify-center gap-[5px] transition-all
-                ${menuOpen
-                  ? 'bg-white/15 border-white/40'
-                  : 'bg-transparent border-white/25 hover:bg-white/10'
-                }`}
-            >
-              {/* Animated hamburger → X */}
-              <span className={`block w-[18px] h-[1.5px] bg-white rounded-full transition-all duration-200
-                ${menuOpen ? 'translate-y-[6.5px] rotate-45' : ''}`}
-              />
-              <span className={`block w-[18px] h-[1.5px] bg-white rounded-full transition-all duration-200
-                ${menuOpen ? 'opacity-0' : ''}`}
-              />
-              <span className={`block w-[18px] h-[1.5px] bg-white rounded-full transition-all duration-200
-                ${menuOpen ? '-translate-y-[6.5px] -rotate-45' : ''}`}
-              />
-            </button>
-      
-            {menuOpen && (
-              <>
-                {/* Backdrop — closes menu on outside click */}
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setMenuOpen(false)}
-                />
-      
-                <div className="absolute right-0 top-[calc(100%+8px)] w-60 bg-white rounded-xl shadow-xl border border-black/10 overflow-hidden z-50">
-      
-                  {/* Admin section — only for admins */}
-                  {currentUser?.role === 'admin' && (
-                    <div className="py-1.5 border-b border-black/[0.07]">
-                      <p className="text-[10.5px] font-semibold uppercase tracking-widest text-black/30 px-4 pt-2 pb-1">
-                        Admin
-                      </p>
-                      <button
-                        onClick={() => { setMenuOpen(false); router.push('/admin/dashboard'); }}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f5f3] transition-colors"
-                      >
-                        <span className="w-8 h-8 rounded-lg bg-[#f0efeb] flex items-center justify-center flex-shrink-0">
-                          <Home className="w-4 h-4 text-[#555]" />
-                        </span>
-                        <span className="text-sm font-medium text-[#1a1a1a]">Dashboard</span>
-                      </button>
-                      <button
-                        onClick={() => { setMenuOpen(false); router.push('/sites'); }}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f5f3] transition-colors"
-                      >
-                        <span className="w-8 h-8 rounded-lg bg-[#f0efeb] flex items-center justify-center flex-shrink-0">
-                          <MapPin className="w-4 h-4 text-[#555]" />
-                        </span>
-                        <span className="text-sm font-medium text-[#1a1a1a]">Sites</span>
-                      </button>
-                      <button
-                        onClick={() => { setMenuOpen(false); router.push('/gallery'); }}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f5f3] transition-colors"
-                      >
-                        <span className="w-8 h-8 rounded-lg bg-[#f0efeb] flex items-center justify-center flex-shrink-0">
-                          <ClipboardList className="w-4 h-4 text-[#555]" />
-                        </span>
-                        <span className="text-sm font-medium text-[#1a1a1a]">Image gallery</span>
-                      </button>
-                    </div>
-                  )}
-      
-                  {/* Help section */}
-                  <div className="py-1.5 border-b border-black/[0.07]">
-                    <p className="text-[10.5px] font-semibold uppercase tracking-widest text-black/30 px-4 pt-2 pb-1">
-                      Help
-                    </p>
-                    <button
-                      onClick={() => { setMenuOpen(false); handleStartTutorial(); }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f5f3] transition-colors"
-                    >
-                      <span className="w-8 h-8 rounded-lg bg-[#eef4fb] flex items-center justify-center flex-shrink-0">
-                        <TrendingUp className="w-4 h-4 text-[#2a6db5]" />
-                      </span>
-                      <div className="text-left">
-                        <p className="text-sm font-medium text-[#1a1a1a]">App tutorial</p>
-                        <p className="text-xs text-black/40">Replay the walkthrough</p>
-                      </div>
-                    </button>
-                    <a
-                      href="mailto:support@example.com"
-                      onClick={() => setMenuOpen(false)}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f5f3] transition-colors"
-                    >
-                      <span className="w-8 h-8 rounded-lg bg-[#eef4fb] flex items-center justify-center flex-shrink-0">
-                        <Search className="w-4 h-4 text-[#2a6db5]" />
-                      </span>
-                      <div className="text-left">
-                        <p className="text-sm font-medium text-[#1a1a1a]">Contact us</p>
-                        <p className="text-xs text-black/40">Send us a message</p>
-                      </div>
-                    </a>
-                  </div>
-      
-                  {/* Logout */}
-                  <div className="py-1.5">
-                    <button
-                      onClick={async () => {
-                        setMenuOpen(false);
-                        await logout();
-                        window.location.href = '/login';
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#fdf0f0] transition-colors"
-                    >
-                      <span className="w-8 h-8 rounded-lg bg-[#fdf0f0] flex items-center justify-center flex-shrink-0">
-                        <AlertCircle className="w-4 h-4 text-[#c0392b]" />
-                      </span>
-                      <span className="text-sm font-medium text-[#c0392b]">Logout</span>
-                    </button>
-                  </div>
-      
-                </div>
-              </>
-            )}
-          </div>
+
         </div>
       </div>
         
