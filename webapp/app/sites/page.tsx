@@ -231,7 +231,7 @@ export default function HomeClient() {
               />
             )}
 
-          <div id="tutorial-header" className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+          <div id="tutorial-header" className="max-w-7xl mx-auto">
           <Suspense fallback={null}>
             <SubmissionToast />
           </Suspense>
@@ -277,7 +277,7 @@ export default function HomeClient() {
         </div>
 
        </div>
-        
+
     {/* Stats Cards */}
   <div id="tutorial-stats" className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 mt-2">
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
