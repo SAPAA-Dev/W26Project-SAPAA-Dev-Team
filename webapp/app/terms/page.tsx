@@ -1,6 +1,16 @@
-import { Suspense } from "react";
-import TermsContent from "./TermsContent";
+"use client";
+
+import Link from "next/link";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+
 export default function TermsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const from = searchParams.get("from");
+
+
   return (
     <div className="min-h-screen bg-[#F7F2EA] flex flex-col">
       
