@@ -446,8 +446,7 @@ export default function SiteDetailScreen() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div id="tutorial-detail-stats" className="grid md:grid-cols-3 gap-4">
+        <div id="tutorial-detail-stats" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <ClipboardList className="w-5 h-5 text-[#356B43]" />
@@ -520,8 +519,7 @@ export default function SiteDetailScreen() {
         </div>
 
         {/* View Toggle */}
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-1.5">
-        <div id="tutorial-view-toggle" className="flex gap-1.5">
+        <div id="tutorial-view-toggle" className="flex flex-col sm:flex-row gap-2 sm:gap-1.5">
           <button
             onClick={() => setViewMode('by-date')}
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 sm:py-4 rounded-2xl font-semibold text-sm sm:text-base transition-all border-2 ${
