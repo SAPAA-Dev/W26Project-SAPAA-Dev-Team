@@ -492,7 +492,7 @@ export default function Dashboard() {
 
             {/* Map Container */}
             <div className="rounded-xl overflow-hidden border-2 border-[#E4EBE4] h-[320px] sm:h-[400px] lg:h-[500px]">
-              <Map points={points} />
+              <Map points={points} showHeatmap={true} />
             </div>
           </div>
         </div>
