@@ -390,9 +390,9 @@ export default function SignupPage() {
               One more step to go
             </h2>
             <p className="text-[#7A8075] text-center leading-relaxed mb-6">
-              We've notified an admin of a new user {' '} 
+              We've sent a confirmation link to{' '}
               <span className="font-semibold text-[#1E2520]">{email}</span>.{' '}
-              After authorization, your account will be granted for access.
+              After verifying, your account will be reviewed for access.
             </p>
             <div className="flex flex-col gap-3 mb-7">
               <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#F0F7F3] border border-[#C8DFD2]">
@@ -402,6 +402,16 @@ export default function SignupPage() {
                 <div>
                   <p className="text-sm font-semibold text-[#1E2520]">Account created</p>
                   <p className="text-xs text-[#7A8075]">Your details have been saved.</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#FFFBF3] border border-[#FCE5B8]">
+                <div className="w-7 h-7 rounded-full bg-[#FCE5B8] flex items-center justify-center flex-shrink-0 text-xs font-semibold text-[#B8711F]">
+                  2
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[#1E2520]">Verify your email</p>
+                  <p className="text-xs text-[#7A8075]">Click the link we sent to your inbox.</p>
                 </div>
               </div>
 
@@ -425,6 +435,22 @@ export default function SignupPage() {
             >
               Go to login
             </button>
+
+            <p className="text-center text-xs text-[#7A8075] mt-4">
+              Didn't receive an email?{' '}
+              
+              <button className="text-[#1C7C4D] font-medium hover:underline"
+                onClick={async () => {
+                  try{
+                    await  resendConfirmation(email);
+                  } catch (err){
+                    console.log(err)
+                  }
+              }}>
+                Resend confirmation
+              </button>
+            </p>
+
           </div>
         </div>
       )}

@@ -73,7 +73,7 @@ export default function UploadImages() {
   };
 
   const makeEntry = (f: File): FileEntry => ({
-    id: Math.random().toString(36).slice(2),
+    id: crypto.randomUUID(),
     file: f,
     preview: URL.createObjectURL(f),
     site: null,

@@ -89,9 +89,14 @@ describe("Admin Image Gallery", () => {
     cy.contains("Filename").should("be.visible");
     cy.contains("Riverlot 56 (NA)").should("be.visible");
     cy.contains("Haging Broken Tree").should("be.visible");
-    cy.contains("RiverLot56_01-31-2026_ZoeP_HangingTree.jpg").should("be.visible");
+    cy.contains("RiverLot56_01-31-2026_ZoeP_HangingTree.jpg")
+    .scrollIntoView()
+    .should("be.visible");
+
     cy.contains("Open full image in new tab")
-      .should("have.attr", "href", "https://example.com/RiverLot56_01-31-2026_ZoeP_HangingTree.jpg")
+      .scrollIntoView()
+      .should("be.visible")
+      .and("have.attr", "href", "https://example.com/RiverLot56_01-31-2026_ZoeP_HangingTree.jpg")
       .and("have.attr", "target", "_blank");
   });
 
@@ -99,8 +104,10 @@ describe("Admin Image Gallery", () => {
     cy.get('img[alt="CMPUT401W26 Visit"]').first().closest("button").click();
     cy.contains("Riverlot 56 (NA)").should("be.visible");
     cy.contains("CMPUT401W26 Visit").should("be.visible");
-    cy.contains("RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg").should("be.visible");
+    cy.contains("RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg").scrollIntoView().should("be.visible");
     cy.contains("Open full image in new tab")
+      .scrollIntoView()
+      .should("be.visible")
       .should("have.attr", "href", "https://example.com/RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg")
       .and("have.attr", "target", "_blank");
   });

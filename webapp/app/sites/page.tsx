@@ -8,6 +8,7 @@ import { createClient } from '@/utils/supabase/client';
 import Image from 'next/image';
 import { Suspense } from "react";
 import { SubmissionToast } from "./SubmissionToast";
+import UserNavBar from "../UserNavBar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import UploadImages from "@/components/UploadImages";
 
@@ -217,6 +218,7 @@ export default function HomeClient() {
   return (
     <ProtectedRoute>
     <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
+        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-4 sm:px-6 py-4 shadow-lg">
         {/* Tutorial Overlay — auto-starts on first visit, re-runs on forceRun */}
             {!loading && !userLoading && (
               <TutorialOverlay
@@ -234,89 +236,95 @@ export default function HomeClient() {
             <SubmissionToast />
           </Suspense>
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-3">
               {/* Left: icon + title + subtitle */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-start sm:items-center gap-3 sm:gap-4">
                 <Image
                   src="/images/sapaa-icon-white.png"
                   alt="SAPAA"
                   width={140}
                   height={140}
                   priority
-                  className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+                  className="h-12 sm:h-16 w-auto flex-shrink-0 opacity-100 mt-1"
                 />
                 <div>
-                  <h1 className="text-3xl font-bold mt-3">Protected Areas</h1>
-                  <p className="text-[#E4EBE4] text-base mt-0.5">
+                  <h1 className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-3 leading-tight">Protected Areas</h1>
+                  <p className="text-[#E4EBE4] text-sm sm:text-base mt-0.5 max-w-md">
                     Monitor and track site inspections across Alberta
                   </p>
                 </div>
               </div>
+
               {/* Right: Admin + Help buttons */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between sm:justify-end gap-3 mt-0 sm:mt-4 w-full sm:w-auto">
                   {currentUser?.role === 'admin' && (
                     <button
+                      data-testid="admin-button"
                       onClick={() => router.push('/admin/dashboard')}
-                      className="bg-[#356B43] hover:bg-[#254431] mt-2 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-semibold transition-all"
+                      className="bg-[#E4EBE4] hover:bg-[#F7F2EA] text-black px-3 sm:px-4 py-2 rounded-xl flex items-center gap-2 font-semibold transition-all text-sm sm:text-base"
                     >
                       <Award className="w-5 h-5" />
                       Admin
                     </button>
                   )}
                   <HelpMenu onStartTutorial={handleStartTutorial} />
+                   <div className="w-full sm:w-auto [&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
+                  <UserNavBar />
                 </div>
+               </div>
             </div>
           </div>
         </div>
 
+       </div>
         
     {/* Stats Cards */}
-    <div id="tutorial-stats" className="max-w-7xl mx-auto px-6 py-6 mt-2">
+  <div id="tutorial-stats" className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 mt-2">
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+        <div className="bg-white rounded-xl p-4 sm:p-5 border-2 border-[#E4EBE4] shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <MapPin className="w-5 h-5 text-[#356B43]" />
             <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Sites</div>
           </div>
-          <div className="text-3xl font-bold text-[#254431]">{stats.totalSites}</div>
+          <div className="text-2xl sm:text-3xl font-bold text-[#254431]">{stats.totalSites}</div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+        <div className="bg-white rounded-xl p-4 sm:p-5 border-2 border-[#E4EBE4] shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <ClipboardList className="w-5 h-5 text-[#356B43]" />
             <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Inspected Sites</div>
           </div>
-          <div className="text-3xl font-bold text-[#254431]">{stats.totalInspections}</div>
+          <div className="text-2xl sm:text-3xl font-bold text-[#254431]">{stats.totalInspections}</div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
+        <div className="bg-white rounded-xl p-4 sm:p-5 border-2 border-[#E4EBE4] shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <ClipboardList className="w-5 h-5 text-[#356B43]" />
             <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Responses</div>
           </div>
-          <div className="text-3xl font-bold text-[#254431]">{stats.totalResponses}</div>
+          <div className="text-2xl sm:text-3xl font-bold text-[#254431]">{stats.totalResponses}</div>
         </div>
 
-        <div className="bg-[#D1FAE5] rounded-xl p-4 border-2 border-[#065F46]/20 shadow-sm">
+        <div className="bg-[#D1FAE5] rounded-xl p-4 sm:p-5 border-2 border-[#065F46]/20 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-5 h-5 text-[#065F46]" />
             <div className="text-xs text-[#065F46] font-medium uppercase tracking-wide">Active over 365 Days</div>
           </div>
-          <div className="text-3xl font-bold text-[#065F46]">{stats.activeThisYear}</div>
+          <div className="text-2xl sm:text-3xl font-bold text-[#065F46]">{stats.activeThisYear}</div>
         </div>
 
-        <div className="bg-[#FEE2E2] rounded-xl p-4 border-2 border-[#B91C1C]/20 shadow-sm">
+        <div className="bg-[#FEE2E2] rounded-xl p-4 sm:p-5 border-2 border-[#B91C1C]/20 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Clock className="w-5 h-5 text-[#B91C1C]" />
             <div className="text-xs text-[#B91C1C] font-medium uppercase tracking-wide">Needs Attention</div>
           </div>
-          <div className="text-3xl font-bold text-[#7F1D1D]">{stats.needsAttention}</div>
+          <div className="text-2xl sm:text-3xl font-bold text-[#7F1D1D]">{stats.needsAttention}</div>
         </div>
       </div>
     </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Search and Sort */}
         <div className="mb-6 space-y-4">
           <div id="tutorial-search" className="relative">
@@ -326,8 +334,7 @@ export default function HomeClient() {
               placeholder="Search by site name or county..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"
-            />
+              className="w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"            />
           </div>
 
           <div className="flex items-center justify-between">
@@ -337,7 +344,7 @@ export default function HomeClient() {
             <div id="tutorial-sort" className="relative">
               <button
                 onClick={() => setShowSortMenu(!showSortMenu)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm"
               >
                 <ArrowUpDown className="w-4 h-4" />
                 Sort
@@ -397,7 +404,7 @@ export default function HomeClient() {
             <p className="text-[#7A8075]">Try adjusting your search or filters</p>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredSites.map((item) => {
               const age = daysSince(item.inspectdate ?? '1900-01-01');
               const ageText = formatAgeBadge(age, item.inspectdate);
@@ -408,11 +415,11 @@ export default function HomeClient() {
                 <button
                   key={item.id}
                   onClick={() => router.push(`/detail/${item.namesite}`)}
-                  className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] hover:border-[#86A98A] hover:shadow-lg transition-all text-left group"
+                  className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-[#E4EBE4] hover:border-[#86A98A] hover:shadow-lg transition-all text-left group"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <h3 className="text-lg font-bold text-[#254431] mb-1 group-hover:text-[#356B43] transition-colors">
+                      <h3 className="text-base sm:text-lg font-bold text-[#254431] mb-1 group-hover:text-[#356B43] transition-colors leading-snug">
                         {item.namesite}
                       </h3>
                       {item.county && (

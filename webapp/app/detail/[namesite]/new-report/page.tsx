@@ -82,6 +82,7 @@ export default function NewReportPage() {
   
   const [hasAccepted, setHasAccepted] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
+  const [hasDismissedVerification, setHasDismissedVerification] = useState(false);
   const [responses, setResponses] = useState<Record<number, any>>({});
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name: string; avatar: string } | null>(null);
@@ -120,8 +121,11 @@ export default function NewReportPage() {
     });
   }, []);
 
+  console.log("NewReportPage render");
+
 
   useEffect(() => {
+      console.log("verification effect ran", { hasDismissedVerification });
     const fetchUserAndCheckSteward = async () => {
       try {
         setIsLoading(true);
@@ -132,21 +136,27 @@ export default function NewReportPage() {
           const stewardStatus = await isSteward(user.email);
           setIsStewardUser(stewardStatus);
 
-          setShowVerification(!stewardStatus);
-        } else {
+          if (!stewardStatus && !hasDismissedVerification) {
+            setHasAccepted(false);   //new
+            setShowVerification(true);
+          }
+        } else if (!hasDismissedVerification) {
+          setHasAccepted(false);
           setShowVerification(true);
         }
       } catch (err) {
         console.error('Error fetching user:', err);
         setCurrentUser(null);
+        if (!hasDismissedVerification) {
         setShowVerification(true);
+       }
       } finally {
         setIsLoading(false);
       }
     };
     
-    fetchUserAndCheckSteward();
-  }, []);
+      fetchUserAndCheckSteward();
+    }, [hasDismissedVerification]);
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -550,78 +560,6 @@ export default function NewReportPage() {
             }
             setIsSubmitting(false);
           }
-              /**
-     * FORM DATA CAPTURED:
-     * 
-     * 1. USER INFORMATION:
-     *    - currentUser.email: User's email address
-     *    - currentUser.name: User's full name
-     *    - currentUser.role: User's role (e.g., 'steward')
-     *    - currentUser.avatar: User's avatar URL
-     *    - isStewardUser: Boolean indicating if user is a verified steward
-     * 
-     * 2. SITE INFORMATION:
-     *    - namesite: Name of the protected area being inspected (from URL params)
-     *    - pathname: Current page pathname
-     * 
-     * 3. VERIFICATION DATA (for non-stewards):
-     *    - hasAccepted: Boolean - user accepted terms and conditions
-     *    - verificationText: String - confirmation text typed by user
-     *    - showVerification: Boolean - whether verification popup was shown
-     * 
-     * 4. QUESTION RESPONSES:
-     *    - responses: Record<number, any> - Object mapping question IDs to answers
-     *      Structure: { [questionId]: answer }
-     *      Answer types vary by question_type:
-     *        - 'option': String (selected radio option text)
-     *        - 'text'/'text\n': String (textarea content)
-     *        - 'agreement': Boolean (checkbox state)
-     *        - 'site_select': String (protected area name)
-     *        - 'date': String (date in YYYY-MM-DD format)
-     *        - 'image': File[] (array of uploaded image files)
-     * 
-     * 5. QUESTIONS METADATA:
-     *    - questions: Question[] - Array of all questions from database
-     *      Each question contains:
-     *        - id: number
-     *        - title: string | null
-     *        - text: string | null
-     *        - question_type: string
-     *        - section: number
-     *        - answers: any[] (available answer options)
-     * 
-     * EXAMPLE DATA STRUCTURE TO SUBMIT:
-     * {
-     *   user: {
-     *     email: currentUser?.email,
-     *     name: currentUser?.name,
-     *     role: currentUser?.role,
-     *     isSteward: isStewardUser
-     *   },
-     *   site: {
-     *     name: namesite,
-     *     inspectionDate: new Date().toISOString()
-     *   },
-     *   verification: {
-     *     termsAccepted: hasAccepted,
-     *     verificationCompleted: !showVerification
-     *   },
-     *   responses: responses,
-     *   metadata: {
-     *     totalQuestions: questions.length,
-     *     answeredQuestions: Object.keys(responses).length,
-     *     completionRate: (Object.keys(responses).length / questions.length) * 100
-     *   }
-     * }
-     */
-
-    // console.log('Form data to submit:', {
-    //   user: currentUser,
-    //   site: namesite,
-    //   responses: responses,
-    //   isSteward: isStewardUser,
-    //   termsAccepted: hasAccepted
-    // });
   };
 
   if (isLoading) {
@@ -644,12 +582,14 @@ export default function NewReportPage() {
         </div>
       )}
             
-      {/* --- VERIFICATION POPUP (Only for non-stewards) --- */}
+      {/* --- VERIFICATION POPUP  --- */}
       {showVerification && !isStewardUser && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-          <div className="absolute inset-0 bg-[#254431]/80 backdrop-blur-sm" />
-          
-          <div className="relative bg-white w-full max-w-lg sm:max-w-xl lg:max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-300">
+        <div data-testid="fine-print-modal" className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+           <div 
+            data-testid="fine-print-overlay"
+            className="absolute inset-0 bg-[#254431]/80 backdrop-blur-sm" 
+          />
+          <div className="relative bg-white w-full max-w-lg sm:max-w-xl lg:max-w-2xl rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden lg:max-h-none overflow-hidden animate-in fade-in zoom-in duration-300">
             <div className="p-6 border-b border-[#E4EBE4] flex items-center gap-3">
               <div className="w-10 h-10 bg-[#F7F2EA] rounded-full flex items-center justify-center">
                 <ShieldCheck className="w-6 h-6 text-[#356B43]" />
@@ -657,7 +597,7 @@ export default function NewReportPage() {
               <h2 className="text-xl font-bold text-[#254431]">The Fine Print Up Front</h2>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4 overflow-y-auto">
               <p className="font-medium text-[#254431]">Before proceeding with the site inspection form:</p>
               
               <div className="bg-[#F7F2EA] p-4 rounded-xl flex gap-3 items-start">
@@ -705,14 +645,15 @@ export default function NewReportPage() {
                 </div>
               </div>
               
-              <label className="flex items-center gap-3 cursor-pointer">
+              <label className="flex items-start gap-3 cursor-pointer">
                 <input 
                   type="checkbox" 
+                  data-testid="terms-checkbox" 
                   checked={hasAccepted}
                   onChange={(e) => setHasAccepted(e.target.checked)}
-                  className="w-5 h-5 rounded border-[#E4EBE4] text-[#356B43] focus:ring-[#356B43]"
+                  className="w-5 h-5 mt-1 rounded border-[#E4EBE4] text-[#356B43] focus:ring-[#356B43]"
                 />
-                <span className="text-sm text-[#4B5563] leading-relaxed">
+                <div className="text-sm text-[#4B5563] leading-relaxed">
                   By agreeing to this, I understand that this form is being used solely for 
                   filling out <strong>Site Inspections</strong> and <strong>not for EMERGENCIES</strong>. I also
                   acknowledge that this Site Inspection is carried out on my own accord.
@@ -725,22 +666,28 @@ export default function NewReportPage() {
                       </span>
                     </Link>
                   </div>
-                </span>
+                </div>
               </label>
             </div>
 
             <div className="p-6 border-t border-[#E4EBE4] bg-[#F7F2EA]/50 space-y-3">
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
+                  type="button"
                   onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
-                  className="flex-1 py-3 text-[#7A8075] font-bold hover:bg-[#E4EBE4] rounded-xl transition-colors"
+                  className="w-full sm:flex-1 py-3 text-[#7A8075] font-bold hover:bg-[#E4EBE4] rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
+                  type="button"
                   disabled={!hasAccepted}
-                  onClick={() => setShowVerification(false)}
-                  className="flex-[2] py-3 bg-[#356B43] text-white font-bold rounded-xl shadow-lg hover:bg-[#254431] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  onClick={() => {
+                    console.log("continue clicked");
+                    setShowVerification(false);
+                    setHasDismissedVerification(true);
+                  }}
+                  className="w-full sm:flex-[2] py-3 bg-[#356B43] text-white font-bold rounded-xl shadow-lg hover:bg-[#254431] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   Continue to Form
                 </button>
@@ -752,9 +699,12 @@ export default function NewReportPage() {
 
       {showRequiredPopup && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6">
-          <div className="absolute inset-0 bg-[#254431]/80 backdrop-blur-sm" />
+          <div 
+            data-testid="required-popup-overlay"
+            className="absolute inset-0 bg-[#254431]/80 backdrop-blur-sm" 
+          />
           <div className="relative bg-white w-full max-w-lg sm:max-w-xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-            <div className="p-6 border-b border-[#E4EBE4] flex items-center gap-3">
+            <div className="p-4 sm:p-6 border-b border-[#E4EBE4] flex items-center gap-3">
               <div className="w-10 h-10 bg-[#F7F2EA] rounded-full flex items-center justify-center">
                 <AlertCircle className="w-6 h-6 text-[#B91C1C]" />
               </div>
@@ -779,6 +729,7 @@ export default function NewReportPage() {
 
             <div className="p-6 border-t border-[#E4EBE4] bg-[#F7F2EA]/50">
               <button
+                type="button"
                 onClick={() => setShowRequiredPopup(false)}
                 className="w-full py-3 bg-[#356B43] text-white font-bold rounded-xl shadow-lg hover:bg-[#254431] transition-all"
               >
@@ -790,10 +741,11 @@ export default function NewReportPage() {
       )}
 
       {/* --- CONSOLIDATED HEADER --- */}
-      <header className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+      <header className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-4 sm:px-6 py-4 shadow-lg">
         <div className="max-w-7xl mx-auto">
 
         <button
+          type="button"
           onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
           className="flex items-center gap-1.5 text-[#86A98A] hover:text-white transition-colors mb-4 group"
           data-testid="back-button"
@@ -805,14 +757,14 @@ export default function NewReportPage() {
         <div className="flex items-start justify-between">
 
           {/* Left: icon + form info */}
-          <div className="flex items-start gap-4">
+          <div className="flex items-start sm:items-center gap-3 sm:gap-4">
             <Image
               src="/images/sapaa-icon-white.png"
               alt="SAPAA"
               width={140}
               height={140}
               priority
-              className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+              className="h-12 sm:h-16 w-auto flex-shrink-0 opacity-100 mt-1"
             />
             <div>
               <h1 className="text-3xl font-bold mt-2.5">Site Inspection Form</h1>
