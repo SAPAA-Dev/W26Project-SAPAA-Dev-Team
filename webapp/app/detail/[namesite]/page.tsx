@@ -397,8 +397,7 @@ export default function SiteDetailScreen() {
         />
       )}
 
-      <div id="tutorial-detail-header" className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
-        <div className="max-w-7xl mx-auto">
+      <div id="tutorial-detail-header" className="max-w-7xl mx-auto">
 
     <button
       onClick={() => router.push('/sites')}
@@ -444,7 +443,7 @@ export default function SiteDetailScreen() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
-
+      
         {/* Stats Cards */}
         <div id="tutorial-detail-stats" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
@@ -504,7 +503,7 @@ export default function SiteDetailScreen() {
         )}
 
         {/* New Report Button */}
-        <div id="tutorial-new-report" className="mt-4">
+        <div className="mt-4">
           <button
             onClick={() => router.push(`/detail/${params.namesite}/new-report`)}
             className="w-full flex items-center justify-center border-2 border-[#065F46] gap-2 bg-gradient-to-r from-[#356B43] to-[#254431] text-white font-bold py-4 px-6 rounded-2xl shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all"
@@ -519,7 +518,7 @@ export default function SiteDetailScreen() {
         </div>
 
         {/* View Toggle */}
-        <div id="tutorial-view-toggle" className="flex flex-col sm:flex-row gap-2 sm:gap-1.5">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-1.5">
           <button
             onClick={() => setViewMode('by-date')}
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 sm:py-4 rounded-2xl font-semibold text-sm sm:text-base transition-all border-2 ${
@@ -835,7 +834,6 @@ export default function SiteDetailScreen() {
           )}
 
       </div>
-
       {/* Image Lightbox Modal */}
       {selectedImage && (
           <div
