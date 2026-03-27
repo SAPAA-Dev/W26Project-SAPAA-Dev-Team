@@ -112,14 +112,52 @@ export async function getQuestionResponseType() {
   }));
 }
 
+export async function getNextFormInspectionNumber() {
+  const supabase = createServerSupabase();
+  const currentYear = new Date().getFullYear();
+  const { data, error } = await supabase
+    .from('W26_form_responses')
+    .select('inspection_no')
+    .like('inspection_no', `${currentYear}-%`)
+    .order('inspection_no', { ascending: false })
+    .limit(1);
+
+  if (error) {
+    console.error('Error fetching inspection number:', error);
+    return null;
+  }
+
+  const inspectionNumber = data[0].inspection_no;
+
+  // If no previous records exist at all, start at 001 for the current year
+  if (!inspectionNumber) {
+    return `${currentYear}-001`;
+  }
+
+  // Split the string (e.g., "2026-005" -> ["2026", "005"])
+  const [yearPart, numPart] = inspectionNumber.split("-");
+
+  // Check if we've moved to a new year
+  if (yearPart !== currentYear.toString()) {
+    // Reset sequence for the new year
+    return `${currentYear}-001`;
+  }
+
+  const nextNum = parseInt(numPart, 10) + 1;
+  const paddedNum = nextNum.toString().padStart(3, "0");
+  return `${currentYear}-${paddedNum}`;
+}
+
 export async function addSiteInspectionReport(siteId: number, userId: any) {
   const supabase = createServerSupabase();
+  const newInspectNo = await getNextFormInspectionNumber();
 
   const { data, error } = await supabase
     .from('W26_form_responses')
     .insert({
       site_id: siteId,
       user_id: userId,
+      inspection_no: newInspectNo,
     })
     .select('id')
     .single();
