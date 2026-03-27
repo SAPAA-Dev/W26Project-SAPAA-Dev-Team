@@ -10,8 +10,8 @@ import { useRouter } from 'next/navigation';
 
 type GalleryItem = {
   id: string;
-  response_id: string;
-  question_id: string;
+  response_id?: string | null;
+  question_id?: string | null;
   caption?: string | null;
   identifier?: string | null;
   date?: string | null;

@@ -7,9 +7,7 @@ import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import Link from "next/link";
 import { 
-  LayoutDashboard, 
   FileText, 
-  TrendingUp, 
   Calendar,
   Search,
   MapPin,
@@ -30,11 +28,11 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 // dynamically import Leaflet 
 const Map = dynamic(() => import("./components/Map"), { ssr: false });
 
-type HeatPoint = {
-  latitude: number;
-  longitude: number;
-  weight: number;
-  namesite?: string;
+type HeatPoint = { 
+  latitude: number; 
+  longitude: number; 
+  weight: number; 
+  namesite?: string; 
 };
 
 type GalleryItem = {
@@ -59,18 +57,13 @@ export default function Dashboard() {
   const supabaseClient = createClient();
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState("");
-  const [stats, setStats] = useState<{
-    totalInspections: number;
-    lastInspectionDate: string | null;
-  }>({
-    totalInspections: 0,
-    lastInspectionDate: null,
-  });
+
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [naturalnessData, setNaturalnessData] = useState([]);
   const [siteData, setSiteData] = useState([]);
   const [points, setPoints] = useState<HeatPoint[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [stats, setStats] = useState<{ totalInspections: number; lastInspectionDate: string | null; }>({ totalInspections: 0, lastInspectionDate: null });
 
   const fetchStats = async () => {
     setLoading(true);
@@ -101,115 +94,23 @@ export default function Dashboard() {
     setPoints([]); // Clear map immediately
 
     try {
-      console.log(`Searching for: "${keyword}"`);
-      
       const response = await fetch(`/api/heatmap?keyword=${encodeURIComponent(keyword)}`);
-      
-      if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
-      }
-      
-      const data = await response.json();
-      const raw = data.data || [];
-      
-      console.log(`Found ${raw.length} sites`);
 
-      if (raw.length === 0) {
-        alert(`No sites found matching "${keyword}"`);
-        setSearchLoading(false);
-        return;
-      }
-
-      // Geocode each site with delay
-      const coords = [];
-      
-      for (let i = 0; i < raw.length; i++) {
-        const site = raw[i];
-        
-        try {
-          console.log(`📍 Geocoding ${i + 1}/${raw.length}: ${site.namesite}`);
-          
-          const geoResponse = await fetch(`/api/geocode?q=${encodeURIComponent(site.namesite)}`);
-          
-          if (!geoResponse.ok) {
-            console.warn(`Geocoding failed for ${site.namesite}`);
-            continue;
-          }
-          
-          const geo = await geoResponse.json();
-
-          if (geo?.latitude && geo?.longitude) {
-            coords.push({
-              latitude: geo.latitude,
-              longitude: geo.longitude,
-              weight: site.count,
-              namesite: site.namesite,
-            });
-            console.log(`Geocoded: ${site.namesite}`);
-          }
-          
-          // Small delay to avoid rate limiting
-          if (i < raw.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-          
-        } catch (error) {
-          console.error(`Error geocoding ${site.namesite}:`, error);
-        }
-      }
-
-      console.log(`Successfully geocoded ${coords.length}/${raw.length} sites`);
-      
-      if (coords.length === 0) {
-        alert(`Found ${raw.length} sites, but couldn't determine their locations.`);
-      }
-      
-      setPoints(coords);
-      
+      if (!response.ok) throw new Error(`API returned ${response.status}`);
+      const json = await response.json();
+      const raw: HeatPoint[] = json.data || [];
+      if (raw.length === 0) { alert(`No inspection reports mention "${keyword}"`); return; }
+      setPoints(raw);
     } catch (error: any) {
       console.error("Search error:", error);
       alert(`Search failed: ${error.message}`);
-      setPoints([]); // Clear map on error
-    } finally {
-      setSearchLoading(false);
-    }
+      setPoints([]);
+    } finally { setSearchLoading(false); }
   };
 
-  // Chart options for better appearance
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: true,
-    plugins: {
-      legend: {
-        position: 'bottom' as const,
-        labels: {
-          padding: 15,
-          font: {
-            size: 12,
-            family: 'system-ui, -apple-system, sans-serif'
-          },
-          color: '#254431'
-        }
-      },
-      tooltip: {
-        backgroundColor: '#254431',
-        padding: 12,
-        titleFont: {
-          size: 14
-        },
-        bodyFont: {
-          size: 13
-        }
-      }
-    }
-  };
+  const chartOptions = { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' as const, labels: { padding: 15, font: { size: 12, family: 'system-ui, -apple-system, sans-serif' }, color: '#254431' } }, tooltip: { backgroundColor: '#254431', padding: 12, titleFont: { size: 14 }, bodyFont: { size: 13 } } } };
 
-
-  useEffect(() => {
-    console.log("⚡ useEffect running - about to call fetchStats");
-    fetchStats();
-  }, []);
-
+ useEffect(() => { fetchStats(); }, []);
   useEffect(() => {
     const fetchGallery = async () => {
       try {

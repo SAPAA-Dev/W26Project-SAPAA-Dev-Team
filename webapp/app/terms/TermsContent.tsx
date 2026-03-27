@@ -1,6 +1,17 @@
-import { Suspense } from "react";
-import TermsContent from "./TermsContent";
-export default function TermsPage() {
+
+"use client";
+
+import Link from "next/link";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+
+export default function TermsContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const from = searchParams.get("from");
+
+
   return (
     <div className="min-h-screen bg-[#F7F2EA] flex flex-col">
       
@@ -144,7 +155,7 @@ export default function TermsPage() {
                 </ol>
 
                 <div className="bg-[#F7F2EA] p-4 rounded-xl space-y-2">
-                <p className="font-semibold text-[#254431] break-words leading-snug">
+                <p className="font-semibold text-[#254431]">
                     Administrative Notes
                 </p>
                 <ul className="list-disc pl-6 space-y-2">

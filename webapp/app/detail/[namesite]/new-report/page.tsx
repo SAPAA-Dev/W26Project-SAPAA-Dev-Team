@@ -484,6 +484,8 @@ export default function NewReportPage() {
 
                 // 2) upload the file to S3 using the presigned URL
                 await uploadFileToS3(uploadUrl, file);
+                
+                if (siteInspectionReportId === null) throw new Error("No report ID available");
 
                 attachmentsRows.push({
                     response_id: siteInspectionReportId,
