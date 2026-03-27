@@ -407,7 +407,7 @@ export default function SiteDetailScreen() {
       <span className="text-sm font-medium">Back to Sites</span>
     </button>
 
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
       {/* Left: icon + site info */}
       <div className="flex items-start sm:items-center gap-3 sm:gap-4">
         <Image
@@ -430,12 +430,15 @@ export default function SiteDetailScreen() {
       </div>
 
       {/* Right: last visit badge + Help button */}
-      <div className="flex items-center gap-3">
-          <div className="bg-white/10 px-4 sm:px-6 py-2 rounded-2xl sm:rounded-full border border-white/20 text-center flex-shrink-0 w-full sm:w-auto">
+      <div className="flex flex-wrap items-center gap-3 sm:justify-end min-w-0">
+        <div className="bg-white/10 px-4 sm:px-6 py-2 rounded-2xl sm:rounded-full border border-white/20 text-center flex-shrink-0">
           <div className="text-sm text-[#E4EBE4]">Last Visit</div>
           <div className="text-lg font-bold">{ageText}</div>
         </div>
-        <HelpMenu onStartTutorial={handleStartTutorial} />
+
+        <div className="flex-shrink-0 max-w-full">
+          <HelpMenu onStartTutorial={handleStartTutorial} />
+        </div>
       </div>
     </div>
   </div>
