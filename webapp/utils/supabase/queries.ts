@@ -82,6 +82,20 @@ export interface FormAnswer {
   section_title: string | null;
 }
 
+function getLatestInspectionDate(
+  responses: Array<{ inspection_date?: string | null; created_at?: string | null }>
+): string | null {
+  if (responses.length === 0) return null;
+
+  const sortedResponses = [...responses].sort((a, b) => {
+    const dateA = a.inspection_date ?? a.created_at ?? '';
+    const dateB = b.inspection_date ?? b.created_at ?? '';
+    return new Date(dateB).getTime() - new Date(dateA).getTime();
+  });
+
+  return sortedResponses[0]?.inspection_date ?? sortedResponses[0]?.created_at ?? null;
+}
+
 export async function uploadSiteInspectionAnswers(batchArray: SupabaseAnswer[]) {
   const supabase = createServerSupabase();
   const { data, error } = await supabase
@@ -470,6 +484,7 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
         county
       ),
       W26_form_responses (
+        inspection_date,
         created_at
       )
     `)
@@ -480,9 +495,7 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
 
   return (data ?? []).map((site: any, i: number) => {
     const responses = site.W26_form_responses ?? [];
-    const latestDate = responses.length > 0
-      ? responses.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at
-      : null;
+    const latestDate = getLatestInspectionDate(responses);
 
     return {
       id: site.id,
@@ -509,6 +522,7 @@ export async function getAllSites(): Promise<SiteSummary[]> {
         county
       ),
       W26_form_responses (
+        inspection_date,
         created_at
       )
     `)
@@ -518,9 +532,7 @@ export async function getAllSites(): Promise<SiteSummary[]> {
 
   return (data ?? []).map((site: any) => {
     const responses = site.W26_form_responses ?? [];
-    const latestDate = responses.length > 0
-      ? responses.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at
-      : null;
+    const latestDate = getLatestInspectionDate(responses);
 
     return {
       id: site.id,
@@ -588,6 +600,7 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
         county
       ),
       W26_form_responses (
+        inspection_date,
         created_at
       )
     `)
@@ -599,9 +612,7 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
 
   return (data ?? []).map((site: any) => {
     const responses = site.W26_form_responses ?? [];
-    const latestDate = responses.length > 0
-      ? responses.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at
-      : null;
+    const latestDate = getLatestInspectionDate(responses);
 
     return {
       id: site.id,
