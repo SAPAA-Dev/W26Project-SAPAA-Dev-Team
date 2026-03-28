@@ -148,7 +148,7 @@ export async function getNextFormInspectionNumber() {
   return `${currentYear}-${paddedNum}`;
 }
 
-export async function addSiteInspectionReport(siteId: number, userId: any) {
+export async function addSiteInspectionReport(siteId: number, userId: any, inspectionDate: string) {
   const supabase = createServerSupabase();
   const newInspectNo = await getNextFormInspectionNumber();
 
@@ -158,6 +158,7 @@ export async function addSiteInspectionReport(siteId: number, userId: any) {
       site_id: siteId,
       user_id: userId,
       inspection_no: newInspectNo,
+      inspection_date: inspectionDate,
     })
     .select('id')
     .single();
@@ -952,6 +953,17 @@ export async function getLastInspectionDate(): Promise<string | null> {
     .single();
   if (error || !data) return null;
   return data.created_at;
+}
+
+export async function getDateOfVisitQuestionId() {
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from('W26_questions')
+    .select('id')
+    .eq('question key', "Q21_Date_Of_Visit")
+    .single();
+  if (error || !data) return null;
+  return data.id;
 }
 export async function getNaturalnessDistribution(): Promise<{ naturalness_score: string; count: number }[]> {
   const supabase = createServerSupabase();
