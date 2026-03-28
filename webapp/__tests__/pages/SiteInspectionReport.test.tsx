@@ -26,6 +26,8 @@ const mockGetQuestionResponseType = jest.fn();
 const mockUploadSiteInspectionAnswers = jest.fn();
 const mockGetSitesOnline = jest.fn();
 const mockScrollTo = jest.fn();
+const mockGetDateOfVisitQuestionId = jest.fn();
+const mockRollbackSiteInspectionSubmission = jest.fn();
 
 jest.mock('@/utils/supabase/queries', () => ({
   getQuestionsOnline: (...args: any[]) => mockGetQuestionsOnline(...args),
@@ -36,6 +38,8 @@ jest.mock('@/utils/supabase/queries', () => ({
   getQuestionResponseType: (...args: any[]) => mockGetQuestionResponseType(...args),
   uploadSiteInspectionAnswers: (...args: any[]) => mockUploadSiteInspectionAnswers(...args),
   getSitesOnline: (...args: any[]) => mockGetSitesOnline(...args),
+  getDateOfVisitQuestionId: (...args: any[]) => mockGetDateOfVisitQuestionId(...args),
+  rollbackSiteInspectionSubmission: (...args: any[]) => mockRollbackSiteInspectionSubmission(...args),
 }));
 
 const mockGetUser = jest.fn();
@@ -254,6 +258,7 @@ function setupWhereUGoMocks() {
   mockGetQuestionsOnline.mockResolvedValue(WhereUGoQuestions);
   mockGetCurrentUserUid.mockResolvedValue('user-1');
   mockGetCurrentSiteId.mockResolvedValue('site-1');
+  mockGetDateOfVisitQuestionId.mockResolvedValue(37);
 }
 
 async function renderBeThereMainContent(mockOnChange: jest.Mock) {
@@ -683,6 +688,7 @@ describe('US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
   it('allows submission when all required fields are filled', async () => {
     setupWhereUGoMocks();
     mockAddSiteInspectionReport.mockResolvedValue({ id: 'report-123' });
+    mockGetDateOfVisitQuestionId.mockResolvedValue(37); 
     mockGetQuestionResponseType.mockResolvedValue([
       { question_id: 37, obs_value: 1, obs_comm: 0 },
       { question_id: 38, obs_value: 1, obs_comm: 0 },
@@ -710,7 +716,8 @@ describe('US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(mockAddSiteInspectionReport).toHaveBeenCalledWith('site-1', 'user-1');
+      expect(mockAddSiteInspectionReport).toHaveBeenCalledWith('site-1', 'user-1', '2026-02-12');
+      
       expect(mockUploadSiteInspectionAnswers).toHaveBeenCalledWith(
         expect.arrayContaining([
           expect.objectContaining({ question_id: 37, obs_value: '2026-02-12' }),
@@ -1810,20 +1817,32 @@ describe('US 1.0.16 - Add Photography Captured During Visit', () => {
     // Setup as steward so no verification popup
     mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
     mockIsSteward.mockResolvedValue(true);
-    mockGetQuestionsOnline.mockResolvedValue(photographyQuestions);
     mockGetCurrentUserUid.mockResolvedValue('user-1');
     mockGetCurrentSiteId.mockResolvedValue('site-1');
+    mockGetDateOfVisitQuestionId.mockResolvedValue(37);
     mockAddSiteInspectionReport.mockResolvedValue({ id: 'report-456' });
     mockGetQuestionResponseType.mockResolvedValue([
       { question_id: 100, obs_value: 0, obs_comm: 1 },
       { question_id: 101, obs_value: 0, obs_comm: 1 },
     ]);
+    mockGetQuestionsOnline.mockResolvedValue(WhereUGoQuestions);
 
     render(<NewReportPage />);
 
     await waitFor(() => {
       expect(screen.getByText('Review & Submit')).toBeInTheDocument();
     });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Date of Your Visit/i)).toBeInTheDocument();
+    });
+
+    const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
+    fireEvent.change(dateInput, { target: { value: '2026-02-12' } });
+
+    const siteInput = screen.getByPlaceholderText('Start typing to search for a protected area...');
+    fireEvent.change(siteInput, { target: { value: 'Elk Island National Park' } });
+    fireEvent.click(screen.getByText('Citizen Steward'));
 
     // Submit without uploading any images or entering remarks
     const submitButton = screen.getByText('Review & Submit');
@@ -1837,9 +1856,11 @@ describe('US 1.0.16 - Add Photography Captured During Visit', () => {
 
     // Should successfully call the upload function
     await waitFor(() => {
-      expect(mockAddSiteInspectionReport).toHaveBeenCalledWith('site-1', 'user-1');
+      expect(mockAddSiteInspectionReport).toHaveBeenCalledWith('site-1', 'user-1', '2026-02-12');
     });
   });
+
+  mockGetQuestionsOnline.mockResolvedValue(photographyQuestions);
 
   it('photography question is not marked as required', async () => {
     const mockOnChange = jest.fn();
