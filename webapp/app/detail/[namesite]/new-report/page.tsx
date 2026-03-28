@@ -1,6 +1,6 @@
 "use client";
 
-import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers, insertInspectionAttachments, rollbackSiteInspectionSubmission} from '@/utils/supabase/queries';
+import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers, insertInspectionAttachments, rollbackSiteInspectionSubmission, getInspectionDetailsOnline, getLastInspectionDate, getDateOfVisitQuestionId} from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
@@ -402,7 +402,9 @@ export default function NewReportPage() {
     try {
       const siteId = await getCurrentSiteId(namesite);
       const userUid = await getCurrentUserUid();
-      siteInspectionReportId = (await addSiteInspectionReport(siteId, userUid)).id;
+      const dateOfVisitQuestionId = await getDateOfVisitQuestionId();
+      const inspectionDate = responses[dateOfVisitQuestionId];
+      siteInspectionReportId = (await addSiteInspectionReport(siteId, userUid, inspectionDate)).id;
 
       // We need to figure out whether the answer to each question should be placed in the obs_value or obs_comm column in Supabase
       // So we convert the question response types into a map that we can search for it

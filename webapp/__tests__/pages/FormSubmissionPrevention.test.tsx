@@ -24,6 +24,7 @@ const mockGetQuestionResponseType = jest.fn();
 const mockUploadSiteInspectionAnswers = jest.fn();
 const mockGetSitesOnline = jest.fn();
 const mockInsertInspectionAttachments = jest.fn();
+const mockGetDateOfVisitQuestionId = jest.fn();
 const mockRollbackSiteInspectionSubmission = jest.fn();
 
 jest.mock('@/utils/supabase/queries', () => ({
@@ -36,6 +37,7 @@ jest.mock('@/utils/supabase/queries', () => ({
   uploadSiteInspectionAnswers: (...args: any[]) => mockUploadSiteInspectionAnswers(...args),
   getSitesOnline: (...args: any[]) => mockGetSitesOnline(...args),
   insertInspectionAttachments: (...args: any[]) => mockInsertInspectionAttachments(...args),
+  getDateOfVisitQuestionId: (...args: any[]) => mockGetDateOfVisitQuestionId(...args),
   rollbackSiteInspectionSubmission: (...args: any[]) => mockRollbackSiteInspectionSubmission(...args),
 }));
 

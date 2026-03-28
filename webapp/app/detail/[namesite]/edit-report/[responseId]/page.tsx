@@ -10,6 +10,7 @@ import {
   updateAttachmentMetadata,
   insertInspectionAttachments,
   getSiteIdForResponse,
+  getDateOfVisitQuestionId,
 } from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
 import React, { useState, useEffect, useCallback } from "react";
@@ -376,9 +377,11 @@ export default function EditReportPage() {
             obs_comm: isCommType ? String(answer) : null,
           });
         }
+        
       }
-
-      await updateSiteInspectionAnswers(responseId, answersArray);
+      const dateOfVisitQuestionId = await getDateOfVisitQuestionId();
+      const inspectionDate = responses[dateOfVisitQuestionId];
+      await updateSiteInspectionAnswers(responseId, answersArray, inspectionDate);
 
       // 3. Update metadata for any existing attachments that changed
       const metadataUpdates: Promise<void>[] = [];
