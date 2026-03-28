@@ -113,14 +113,53 @@ export async function getQuestionResponseType() {
   }));
 }
 
-export async function addSiteInspectionReport(siteId: number, userId: any) {
+export async function getNextFormInspectionNumber() {
   const supabase = createServerSupabase();
+  const currentYear = new Date().getFullYear();
+  const { data, error } = await supabase
+    .from('W26_form_responses')
+    .select('inspection_no')
+    .like('inspection_no', `${currentYear}-%`)
+    .order('inspection_no', { ascending: false })
+    .limit(1);
+
+  if (error) {
+    console.error('Error fetching inspection number:', error);
+    return null;
+  }
+
+  const inspectionNumber = data[0].inspection_no;
+
+  // If no previous records exist at all, start at 001 for the current year
+  if (!inspectionNumber) {
+    return `${currentYear}-001`;
+  }
+
+  // Split the string (e.g., "2026-005" -> ["2026", "005"])
+  const [yearPart, numPart] = inspectionNumber.split("-");
+
+  // Check if we've moved to a new year
+  if (yearPart !== currentYear.toString()) {
+    // Reset sequence for the new year
+    return `${currentYear}-001`;
+  }
+
+  const nextNum = parseInt(numPart, 10) + 1;
+  const paddedNum = nextNum.toString().padStart(3, "0");
+  return `${currentYear}-${paddedNum}`;
+}
+
+export async function addSiteInspectionReport(siteId: number, userId: any, inspectionDate: string) {
+  const supabase = createServerSupabase();
+  const newInspectNo = await getNextFormInspectionNumber();
 
   const { data, error } = await supabase
     .from('W26_form_responses')
     .insert({
       site_id: siteId,
       user_id: userId,
+      inspection_no: newInspectNo,
+      inspection_date: inspectionDate,
     })
     .select('id')
     .single();
@@ -856,9 +895,21 @@ export async function updateAttachmentMetadata(
 // Replaces all answers for an existing response (delete + reinsert), keeping the same response_id
 export async function updateSiteInspectionAnswers(
   responseId: number,
-  batchArray: Omit<SupabaseAnswer, 'response_id'>[]
+  batchArray: Omit<SupabaseAnswer, 'response_id'>[],
+  inspectionDate: string,
 ) {
   const supabase = createServerSupabase();
+
+  const { error: updateDateError } = await supabase
+    .from('W26_form_responses')
+    .update({
+      inspection_date: inspectionDate,
+    })
+    .eq('id', responseId)
+    .select('id')
+    .single();
+
+  if (updateDateError) throw new Error(updateDateError.message || 'Failed to clear existing answers');
 
   const { error: deleteError } = await supabase
     .from('W26_answers')
@@ -868,7 +919,6 @@ export async function updateSiteInspectionAnswers(
   if (deleteError) throw new Error(deleteError.message || 'Failed to clear existing answers');
 
   const rows = batchArray.map(a => ({ ...a, response_id: responseId }));
-
   const { data, error: insertError } = await supabase
     .from('W26_answers')
     .insert(rows);
@@ -921,6 +971,17 @@ export async function getLastInspectionDate(): Promise<string | null> {
     .single();
   if (error || !data) return null;
   return data.created_at;
+}
+
+export async function getDateOfVisitQuestionId() {
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from('W26_questions')
+    .select('id')
+    .eq('question key', "Q21_Date_Of_Visit")
+    .single();
+  if (error || !data) return null;
+  return data.id;
 }
 export async function getNaturalnessDistribution(): Promise<{ naturalness_score: string; count: number }[]> {
   const supabase = createServerSupabase();

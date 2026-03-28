@@ -52,6 +52,8 @@ jest.mock("@/utils/supabase/queries", () => ({
   getQuestionResponseType:     jest.fn().mockResolvedValue([]),
   uploadSiteInspectionAnswers: jest.fn().mockResolvedValue({}),
   insertInspectionAttachments: jest.fn().mockResolvedValue({}),
+  getDateOfVisitQuestionId:    jest.fn().mockResolvedValue(21), 
+  rollbackSiteInspectionSubmission: jest.fn().mockResolvedValue({}),
 }));
 
 jest.mock("@/utils/supabase/client", () => ({
@@ -260,7 +262,8 @@ describe("Private user info – never submitted to the database", () => {
 
       expect(addSiteInspectionReport as jest.Mock).toHaveBeenCalledWith(
         "site-456",
-        PRIVATE.uid
+        PRIVATE.uid,
+        undefined 
       );
 
       const strings = allStringValues(rows);
