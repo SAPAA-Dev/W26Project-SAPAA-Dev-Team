@@ -65,6 +65,7 @@ export interface FormResponse {
   id: number;
   user_id: string | null;
   created_at: string | null;
+  inspection_date: string | null;
   inspection_no: string | null;
   naturalness_score: string | null;
   naturalness_details: string | null;  
@@ -206,6 +207,7 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
       id,
       user_id,
       created_at,
+      inspection_date,
       inspection_no,
       is_active,
       W26_answers (
@@ -224,6 +226,7 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
       )
     `)
     .eq('site_id', siteData.id)
+    .order('inspection_date', { ascending: false })
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message || 'Failed to fetch form responses');
@@ -274,6 +277,7 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
       id: r.id,
       user_id: r.user_id ?? null,
       created_at: r.created_at,
+      inspection_date: r.inspection_date ?? null,
       inspection_no: r.inspection_no,
       naturalness_score: naturalness,
       naturalness_details: naturalnessDetailsValue,
@@ -682,6 +686,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
       id,
       user_id,
       created_at,
+      inspection_date,
       inspection_no,
       W26_answers (
         question_id,
@@ -700,6 +705,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
     `)
     .eq('site_id', siteData.id)
     .neq('is_active', false)
+    .order('inspection_date', { ascending: false })
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message || 'Failed to fetch form responses');
@@ -750,6 +756,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
       id: r.id,
       user_id: r.user_id ?? null,
       created_at: r.created_at,
+      inspection_date: r.inspection_date ?? null,
       inspection_no: r.inspection_no,
       naturalness_score: naturalness,
       naturalness_details: naturalnessDetailsValue,
