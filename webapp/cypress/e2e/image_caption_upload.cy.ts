@@ -17,29 +17,40 @@ function login() {
 }
 
 function openNewReport() {
-  cy.get("div.grid.gap-4.md\\:grid-cols-2.lg\\:grid-cols-3")
+  cy.get("div.grid.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3.gap-4")
     .find("button")
     .first()
     .click();
-
+  cy.wait(7000);
   cy.contains("button", "New Site Inspection Report").click();
   cy.url().should("include", "/new-report");
 }
 
+
 function dismissVerificationModalIfVisible() {
+  cy.wait(5000);
   cy.get("body").then(($body) => {
-    if ($body.text().includes("The Fine Print Up Front")) {
-      cy.contains("The Fine Print Up Front").should("be.visible");
-      cy.get('label:has(input[type="checkbox"]) input[type="checkbox"]').check({ force: true });
-      cy.wait(2000);
-      cy.contains("button", "Continue to Form")
-        .should("be.visible")
-        .and("not.be.disabled")
-        .click({ force: true });
-      cy.wait(2000);
-    }
+  if ($body.text().includes("The Fine Print Up Front")) {
+
+  cy.get('[data-testid="fine-print-modal"] div.overflow-y-auto').click('topLeft');
+  cy.get('[data-testid="terms-checkbox"]').check();
+  // The terms and conditions checkbox is checked.
+  cy.get('[data-testid="terms-checkbox"]')
+    .should('be.checked')
+  // The button is now enabled.
+  cy.get('[data-testid="fine-print-modal"] button.text-white')
+    .should('not.have.attr', 'disabled')
+  
+  cy.get('[data-testid="fine-print-modal"] button.text-white').click();
+  cy.wait(3000);
+  cy.get('[data-testid="fine-print-modal"] button.text-white').should('not.exist');
+  // The fine print modal is closed.
+  cy.get('[data-testid="fine-print-modal"]').should('not.exist')
+  cy.wait(3000);
+  }
   });
 }
+
 
 function completeVerificationIfPresent() {
   // Wait until user/steward check is done; only then can the modal state be trusted.
@@ -101,3 +112,6 @@ describe("Image Caption Behavior - Q81.1", () => {
     cy.contains("test-image.jpg").should("not.exist");
   });
 });
+
+
+

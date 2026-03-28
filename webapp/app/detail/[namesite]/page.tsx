@@ -359,7 +359,7 @@ export default function SiteDetailScreen() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-      <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+      <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-4 sm:px-6 py-4 shadow-lg">
         <div className="max-w-7xl mx-auto">
 
     <button
@@ -370,21 +370,21 @@ export default function SiteDetailScreen() {
       <span className="text-sm font-medium">Back to Sites</span>
     </button>
 
-    <div className="flex items-start justify-between">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       {/* Left: icon + site info */}
-      <div className="flex items-start gap-4">
+      <div className="flex items-start sm:items-center gap-3 sm:gap-4">
         <Image
           src="/images/sapaa-icon-white.png"
           alt="SAPAA"
           width={140}
           height={140}
           priority
-          className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+          className="h-12 sm:h-16 w-auto flex-shrink-0 opacity-100 mt-1"
         />
         <div>
-          <h1 className="text-3xl font-bold mt-2.5">{site.namesite}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2.5 leading-tight break-words">{site.namesite}</h1>
           {site.county && (
-            <div className="flex items-center gap-2 text-[#E4EBE4]">
+            <div className="flex items-start sm:items-center gap-2 text-[#E4EBE4]">
               <MapPin className="w-5 h-5" />
               <span className="text-base">{site.county}</span>
             </div>
@@ -393,7 +393,7 @@ export default function SiteDetailScreen() {
       </div>
 
       {/* Right: last visit badge */}
-      <div className="bg-white/10 px-6 py-2 rounded-full border border-white/20 text-center flex-shrink-0">
+      <div className="bg-white/10 px-4 sm:px-6 py-2 rounded-2xl sm:rounded-full border border-white/20 text-center flex-shrink-0 w-full sm:w-auto">
         <div className="text-sm text-[#E4EBE4]">Last Visit</div>
         <div className="text-lg font-bold">{ageText}</div>
       </div>
@@ -402,16 +402,16 @@ export default function SiteDetailScreen() {
 </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
 
         {/* Stats Cards */}
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <ClipboardList className="w-5 h-5 text-[#356B43]" />
               <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Reports</div>
             </div>
-            <div className="text-3xl font-bold text-[#254431]">{inspections.length}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-[#254431]">{inspections.length}</div>
           </div>
 
           <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
@@ -419,7 +419,7 @@ export default function SiteDetailScreen() {
               <Award className="w-5 h-5 text-[#356B43]" />
               <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Avg. Score</div>
             </div>
-            <div className="text-3xl font-bold text-[#254431]">{average !== null ? average.toFixed(1) : 'N/A'}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-[#254431]">{average !== null ? average.toFixed(1) : 'N/A'}</div>
           </div>
 
           <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
@@ -427,19 +427,19 @@ export default function SiteDetailScreen() {
               <TrendingUp className="w-5 h-5 text-[#356B43]" />
               <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Condition</div>
             </div>
-            <div className="text-3xl font-bold text-[#254431]">{avgText}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-[#254431]">{avgText}</div>
           </div>
         </div>
 
         {/* Naturalness Score Gradient */}
         {average !== null && (
           <div className="bg-white rounded-2xl p-8 border-2 border-[#E4EBE4] shadow-sm">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-[#254431] mb-1">Naturalness Score</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-[#254431] mb-1">Naturalness Score</h2>
                 <p className="text-[#7A8075]">Average across all inspections</p>
               </div>
-              <div className="text-5xl font-bold text-[#356B43]">{average.toFixed(1)}</div>
+              <div className="text-3xl sm:text-5xl font-bold text-[#356B43]">{average.toFixed(1)}</div>
             </div>
             <div className="relative mb-4">
               <div className="h-8 rounded-full overflow-hidden bg-gradient-to-r from-[#B91C1C] via-[#E0A63A] via-[#84CC16] to-[#1C7C4D] shadow-inner"></div>
@@ -453,7 +453,7 @@ export default function SiteDetailScreen() {
                 </div>
               </div>
             </div>
-            <div className="flex justify-between text-sm font-medium text-[#7A8075] px-1">
+            <div className="grid grid-cols-2 sm:flex sm:justify-between gap-2 text-xs sm:text-sm font-medium text-[#7A8075] px-1">
               <span>1.0 Poor</span>
               <span>2.0 Fair</span>
               <span>3.0 Good</span>
@@ -473,15 +473,15 @@ export default function SiteDetailScreen() {
               <line x1="12" y1="8" x2="12" y2="16" />
               <line x1="8" y1="12" x2="16" y2="12" />
             </svg>
-            <span className="text-lg">New Site Inspection Report</span>
+            <span className="text-base sm:text-lg text-center">New Site Inspection Report</span>
           </button>
         </div>
 
         {/* View Toggle */}
-        <div className="flex gap-1.5">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-1.5">
           <button
             onClick={() => setViewMode('by-date')}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 rounded-2xl font-semibold transition-all border-2 ${
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 sm:py-4 rounded-2xl font-semibold text-sm sm:text-base transition-all border-2 ${
               viewMode === 'by-date'
                 ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white shadow-md border-[#254431]'
                 : 'bg-white text-[#7A8075] hover:bg-[#F7F2EA] border-[#E4EBE4]'
@@ -519,7 +519,7 @@ export default function SiteDetailScreen() {
         {/* ── VIEW BY DATE ── */}
         {viewMode === 'by-date' && (
           <div className="space-y-4">
-            <h2 className="text-xl font-bold text-[#254431] flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-[#254431] flex items-center gap-2">
               <FileText className="w-6 h-6 text-[#356B43]" />
               Inspection Reports ({inspections.length})
             </h2>
@@ -530,19 +530,19 @@ export default function SiteDetailScreen() {
 
               return (
                 <div key={response.id} className="bg-white rounded-2xl border-2 border-[#E4EBE4] overflow-hidden shadow-sm hover:shadow-md transition-all">
-                  <div className="flex items-center">
+                  <div className="flex flex-col sm:flex-row sm:items-center">
                     {/* Main clickable area */}
                     <button
                       onClick={() => toggleInspection(response.id)}
-                      className="flex-1 flex items-center justify-between p-6 pr-4 text-left hover:bg-[#F7F2EA] transition-colors"
+                      className="flex-1 flex items-center justify-between p-4 sm:p-6 sm:pr-4 text-left hover:bg-[#F7F2EA] transition-colors"
                       data-testid={`expand-inspection-button`}
                     >
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-start sm:items-center gap-3 sm:gap-4">
                         <div className="w-12 h-12 bg-[#E4EBE4] rounded-xl flex items-center justify-center">
                           <FileText className="w-6 h-6 text-[#356B43]" />
                         </div>
                         <div>
-                          <h3 className="text-lg font-bold text-[#254431]">
+                          <h3 className="text-base sm:text-lg font-bold text-[#254431] leading-snug">
                             {response.created_at ? new Date(response.created_at).toLocaleDateString('en-US', {
                               year: 'numeric', month: 'long', day: 'numeric'
                             }) : 'N/A'}
@@ -561,7 +561,7 @@ export default function SiteDetailScreen() {
                     {isOwner && (
                       <button
                         onClick={() => router.push(`/detail/${params.namesite}/edit-report/${response.id}`)}
-                        className="flex items-center gap-1.5 mx-4 px-4 py-2 rounded-xl text-sm font-semibold text-[#356B43] bg-[#E4EBE4] hover:bg-[#356B43] hover:text-white transition-all"
+                        className="w-full sm:w-auto flex items-center justify-center p-2 bg-[#F7F2EA] hover:bg-[#E4EBE4] text-[#254431] rounded-lg transition-colors"
                         title="Edit this report"
                         data-testid="edit-form-button"
                       >
@@ -572,7 +572,7 @@ export default function SiteDetailScreen() {
                   </div>
 
                   {isExpanded && (
-                    <div className="px-6 pb-6 space-y-4 border-t-2 border-[#E4EBE4] pt-4">
+                    <div className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-4 border-t-2 border-[#E4EBE4] pt-4">
                       {response.steward && (
                         <div>
                           <p className="text-sm font-semibold text-[#7A8075] mb-1">Steward</p>
@@ -627,7 +627,7 @@ export default function SiteDetailScreen() {
         {viewMode === 'by-question' && (
           /* ── COMPARE BY QUESTION ── */
           <div className="space-y-4">
-            <h2 className="text-xl font-bold text-[#254431] flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-[#254431] flex items-center gap-2">
               <FileText className="w-6 h-6 text-[#356B43]" />
               Question Comparison ({questionComparisons.length} questions)
             </h2>
@@ -645,14 +645,14 @@ export default function SiteDetailScreen() {
                     <div key={qComp.questionId} className="bg-white rounded-2xl border-2 border-[#E4EBE4] overflow-hidden shadow-sm hover:shadow-md transition-all">
                       <button
                         onClick={() => toggleQuestion(qComp.questionId)}
-                        className="w-full flex items-center justify-between p-6 text-left hover:bg-[#F7F2EA] transition-colors"
+                        className="w-full flex items-center justify-between p-4 sm:p-6 text-left hover:bg-[#F7F2EA] transition-colors"
                       >
                         <div className="flex items-center gap-4 flex-1">
                           <div className="w-12 h-12 bg-[#E4EBE4] rounded-xl flex items-center justify-center flex-shrink-0">
                             <span className="text-sm font-bold text-[#356B43]">{qComp.questionId}</span>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[#1E2520] font-medium">{qComp.questionText}</p>
+                            <p className="text-[#1E2520] font-medium break-words leading-snug">{qComp.questionText}</p>
                             <p className="text-sm text-[#7A8075] mt-1">{qComp.answers.length} response{qComp.answers.length !== 1 ? 's' : ''} across inspections</p>
                           </div>
                         </div>
@@ -664,7 +664,7 @@ export default function SiteDetailScreen() {
                       </button>
 
                       {isExpanded && (
-                        <div className="px-6 pb-6 space-y-3 border-t-2 border-[#E4EBE4] pt-4">
+                        <div className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-3 border-t-2 border-[#E4EBE4] pt-4">
                           {qComp.answers.map((answer, idx) => (
                             <div key={`${answer.inspectionId}-${idx}`} className="bg-[#F7F2EA] rounded-lg p-4">
                               <div className="flex items-center gap-2 mb-2">
@@ -687,13 +687,13 @@ export default function SiteDetailScreen() {
         {viewMode === 'image-gallery' && (
           /* ── IMAGE GALLERY ── */
             <div className="space-y-4">
-              <h2 className="text-xl font-bold text-[#254431] flex items-center gap-2">
+              <h2 className="text-lg sm:text-xl font-bold text-[#254431] flex items-center gap-2">
                 <ImageIcon className="w-6 h-6 text-[#356B43]" />
                 Image Gallery ({galleryItems.length} images)
               </h2>
 
               {/* SEARCH BAR UI */}
-              <div className="mb-6">
+              <div className="mb-4 sm:mb-6">
                 <div className="relative w-full">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Search className="h-5 w-5 text-[#7A8075]" />
@@ -703,7 +703,7 @@ export default function SiteDetailScreen() {
                     placeholder="Filter by site, caption, photographer, identifier..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="block w-full pl-10 pr-10 py-2.5 border-2 border-[#E4EBE4] rounded-xl bg-white text-sm placeholder-[#7A8075] focus:outline-none focus:border-[#356B43] focus:ring-1 focus:ring-[#356B43] shadow-sm transition-all"
+                    className="block w-full pl-10 pr-10 py-3 sm:py-2.5 border-2 border-[#E4EBE4] rounded-xl bg-white text-sm sm:text-base placeholder-[#7A8075] focus:outline-none focus:border-[#356B43] focus:ring-1 focus:ring-[#356B43] shadow-sm transition-all"
                   />
                   {searchQuery && (
                     <button
@@ -723,11 +723,11 @@ export default function SiteDetailScreen() {
                   <p className="text-[#7A8075]">Loading gallery...</p>
                 </div>
               ) : galleryItems.length === 0 ? (
-                <div className="bg-white rounded-2xl border-2 border-[#E4EBE4] p-8 text-center text-[#7A8075]">
+                <div className="bg-white rounded-2xl border-2 border-[#E4EBE4] p-6 sm:p-8 text-center text-[#7A8075]">
                   No images found for this site.
                 </div>
               ) : filteredGalleryItems.length === 0 ? (
-                <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-[#E4EBE4]">
+                <div className="text-center py-16 sm:py-20 px-4 bg-white rounded-2xl border-2 border-dashed border-[#E4EBE4]">
                   <div className="bg-[#F7F2EA] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Search className="text-[#7A8075]" size={32} />
                   </div>
@@ -737,7 +737,7 @@ export default function SiteDetailScreen() {
                   <p className="text-[#7A8075] mt-1">Try adjusting your search query.</p>
                 </div>
               ) : (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                   {/* 4. MAP OVER FILTERED ITEMS */}
                   {filteredGalleryItems.map((item) => (
                     <div
@@ -747,7 +747,7 @@ export default function SiteDetailScreen() {
                       <button
                         type="button"
                         onClick={() => setSelectedImage(item)}
-                        className="group relative block w-full h-64 bg-[#F7F2EA] overflow-hidden"
+                        className="group relative block w-full h-56 sm:h-64 bg-[#F7F2EA] overflow-hidden"
                       >
                         <img
                           src={item.imageUrl}
@@ -761,8 +761,8 @@ export default function SiteDetailScreen() {
                         </div>
                       </button>
 
-                      <div className="p-4 space-y-3">
-                        <div className="text-sm text-[#7A8075] flex items-center gap-2">
+                      <div className="p-4 sm:p-5 space-y-3">
+                        <div className="text-sm text-[#7A8075] flex items-start sm:items-center gap-2">
                           <MapPin className="w-4 h-4" />
                           <span>{item.site_name || site.namesite || "Unknown site"}</span>
                         </div>
@@ -770,7 +770,7 @@ export default function SiteDetailScreen() {
                         <div className="text-sm text-[#7A8075] flex items-start gap-2">
                           <ImageIcon className="w-4 h-4 mt-0.5" />
                           <div>
-                            <p className="font-semibold text-[#254431]">
+                            <p className="font-semibold text-[#254431] break-words leading-snug">
                               {item.identifier || "No identifier"}
                             </p>
                             
@@ -798,11 +798,11 @@ export default function SiteDetailScreen() {
       {/* Image Lightbox Modal */}
       {selectedImage && (
           <div
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 md:p-8"
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-8"
             onClick={() => setSelectedImage(null)}
           >
             <div
-              className="relative w-full max-w-6xl bg-white rounded-2xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-6xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -813,21 +813,21 @@ export default function SiteDetailScreen() {
                 <X className="w-5 h-5" />
               </button>
 
-              <div className="grid lg:grid-cols-[minmax(0,1fr)_360px]">
-                <div className="bg-black flex items-center justify-center min-h-[300px] max-h-[85vh] overflow-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] flex-1 min-h-0">
+                <div className="bg-black flex items-center justify-center min-h-[220px] sm:min-h-[300px] lg:min-h-0 max-h-[40vh] sm:max-h-[50vh] lg:max-h-none overflow-auto">
                   <img
                     src={selectedImage.imageUrl}
                     alt={selectedImage.identifier || selectedImage.filename || "Inspection image"}
-                    className="max-w-full max-h-[85vh] object-contain"
+                    className="max-w-full max-h-[40vh] sm:max-h-[50vh] lg:max-h-[85vh] object-contain"
                   />
                 </div>
 
-                <div className="p-6 bg-white space-y-5 border-l border-[#E4EBE4]">
+                <div className="min-w-0 min-h-0 p-4 sm:p-6 bg-white space-y-4 sm:space-y-5 border-t lg:border-t-0 lg:border-l border-[#E4EBE4] overflow-y-auto">
                   <div>
                     <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
                       Site
                     </p>
-                    <p className="text-lg font-semibold text-[#254431]">
+                    <p className="text-base sm:text-lg font-semibold text-[#254431] break-words">
                       {selectedImage.site_name || site.namesite || "Unknown site"}
                     </p>
                   </div>
@@ -845,7 +845,7 @@ export default function SiteDetailScreen() {
                     <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
                       Identifier
                     </p>
-                    <p className="text-sm text-[#4B5563] leading-6">
+                    <p className="text-sm text-[#4B5563] leading-6 break-words">
                       {selectedImage.identifier || "No identifier"}
                     </p>
                   </div>
@@ -854,7 +854,7 @@ export default function SiteDetailScreen() {
                     <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
                       Date
                     </p>
-                    <p className="text-sm text-[#4B5563] leading-6">
+                    <p className="text-sm text-[#4B5563] leading-6 break-words">
                       {selectedImage.date || "No date"}
                     </p>
                   </div>
@@ -884,7 +884,7 @@ export default function SiteDetailScreen() {
                       href={selectedImage.imageUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center rounded-xl bg-[#254431] text-white px-4 py-2.5 font-medium hover:bg-[#356B43] transition-colors"
+                      className="w-full inline-flex items-center justify-center rounded-xl bg-[#254431] text-white px-4 py-2.5 font-medium hover:bg-[#356B43] transition-colors"
                     >
                       Open full image in new tab
                     </a>
