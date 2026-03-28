@@ -888,9 +888,21 @@ export async function updateAttachmentMetadata(
 // Replaces all answers for an existing response (delete + reinsert), keeping the same response_id
 export async function updateSiteInspectionAnswers(
   responseId: number,
-  batchArray: Omit<SupabaseAnswer, 'response_id'>[]
+  batchArray: Omit<SupabaseAnswer, 'response_id'>[],
+  inspectionDate: string,
 ) {
   const supabase = createServerSupabase();
+
+  const { error: updateDateError } = await supabase
+    .from('W26_form_responses')
+    .update({
+      inspection_date: inspectionDate,
+    })
+    .eq('id', responseId)
+    .select('id')
+    .single();
+
+  if (updateDateError) throw new Error(updateDateError.message || 'Failed to clear existing answers');
 
   const { error: deleteError } = await supabase
     .from('W26_answers')
@@ -900,7 +912,6 @@ export async function updateSiteInspectionAnswers(
   if (deleteError) throw new Error(deleteError.message || 'Failed to clear existing answers');
 
   const rows = batchArray.map(a => ({ ...a, response_id: responseId }));
-
   const { data, error: insertError } = await supabase
     .from('W26_answers')
     .insert(rows);
