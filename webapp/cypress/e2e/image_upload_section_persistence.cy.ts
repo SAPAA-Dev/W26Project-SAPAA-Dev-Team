@@ -17,29 +17,39 @@ function loginWithCurrentPattern() {
 }
 
 function openNewReport() {
-  cy.get("div.grid.gap-4.md\\:grid-cols-2.lg\\:grid-cols-3")
+  cy.get("div.grid.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3.gap-4")
     .find("button")
     .first()
     .click();
-
+  cy.wait(7000);
   cy.contains("button", "New Site Inspection Report").click();
   cy.url().should("include", "/new-report");
 }
 
 function dismissVerificationModalIfVisible() {
+  cy.wait(5000);
   cy.get("body").then(($body) => {
-    if ($body.text().includes("The Fine Print Up Front")) {
-      cy.get('label:has(input[type="checkbox"]) input[type="checkbox"]').check({ force: true });
-      cy.wait(1000);
-      cy.contains("button", "Continue to Form")
-        .should("be.visible")
-        .and("not.be.disabled")
-        .click({ force: true });
-      cy.wait(1000);
-      cy.contains("The Fine Print Up Front").should("not.exist");
-    }
+  if ($body.text().includes("The Fine Print Up Front")) {
+
+  cy.get('[data-testid="fine-print-modal"] div.overflow-y-auto').click('topLeft');
+  cy.get('[data-testid="terms-checkbox"]').check();
+  // The terms and conditions checkbox is checked.
+  cy.get('[data-testid="terms-checkbox"]')
+    .should('be.checked')
+  // The button is now enabled.
+  cy.get('[data-testid="fine-print-modal"] button.text-white')
+    .should('not.have.attr', 'disabled')
+  
+  cy.get('[data-testid="fine-print-modal"] button.text-white').click();
+  cy.wait(3000);
+  cy.get('[data-testid="fine-print-modal"] button.text-white').should('not.exist');
+  // The fine print modal is closed.
+  cy.get('[data-testid="fine-print-modal"]').should('not.exist')
+  cy.wait(3000);
+  }
   });
 }
+
 
 function completeVerificationIfPresent() {
   cy.get("body", { timeout: 20000 }).should("not.contain", "Loading inspection form...");
@@ -73,7 +83,7 @@ function uploadOneImage() {
 describe("Image Upload Persistence Across Section Switching - Q81.1", () => {
   it("keeps image and metadata when switching sections and returning", () => {
     const captionText = "Broken branch near trail entrance";
-    const descriptionText = "Large crack running up trunk of tree.";
+    const descriptionText = "Large crack up trunk";
 
     loginWithCurrentPattern();
     openNewReport();
@@ -84,18 +94,18 @@ describe("Image Upload Persistence Across Section Switching - Q81.1", () => {
     cy.contains(/1 image (total|selected)/i).should("be.visible");
     cy.contains("test-image.jpg").should("be.visible");
 
-    cy.get('input[placeholder="Caption (optional)"]')
+    cy.get('input[placeholder="Longer Description"]')
       .first()
       .scrollIntoView()
       .clear()
       .type(captionText);
-    cy.get('textarea[placeholder="Description (optional)"]')
+    cy.get('input[placeholder="Short Description"]')
       .first()
       .clear()
       .type(descriptionText);
 
-    cy.get('input[placeholder="Caption (optional)"]').first().should("have.value", captionText);
-    cy.get('textarea[placeholder="Description (optional)"]')
+    cy.get('input[placeholder="Longer Description"]').first().should("have.value", captionText);
+    cy.get('input[placeholder="Short Description"]')
       .first()
       .should("have.value", descriptionText);
 
@@ -104,8 +114,8 @@ describe("Image Upload Persistence Across Section Switching - Q81.1", () => {
 
     cy.contains("test-image.jpg").should("be.visible");
     cy.contains(/1 image (total|selected)/i).should("be.visible");
-    cy.get('input[placeholder="Caption (optional)"]').first().should("have.value", captionText);
-    cy.get('textarea[placeholder="Description (optional)"]')
+    cy.get('input[placeholder="Longer Description"]').first().should("have.value", captionText);
+    cy.get('input[placeholder="Short Description"]')
       .first()
       .should("have.value", descriptionText);
   });

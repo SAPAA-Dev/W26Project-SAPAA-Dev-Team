@@ -5,8 +5,9 @@ const galleryItemsForSelectedSite = [
     id: "img-1",
     response_id: "resp-1",
     question_id: "q-1",
-    caption: "Cracked Tree",
-    description: "Large crack running up the trunk of a tree.",
+    identifier: "Cracked Tree",
+    caption: "Large crack running up the trunk of a tree.",
+    photographer: "John Doe",
     storage_key: "uploads/RiverLot56_01-31-2026_ZoeP_CrackedTree.jpg",
     content_type: "image/jpeg",
     file_size_bytes: 654321,
@@ -19,9 +20,10 @@ const galleryItemsForSelectedSite = [
     id: "img-2",
     response_id: "resp-2",
     question_id: "q-2",
-    caption: "Hanging Broken Tree",
-    description:
+    identifier: "Hanging Broken Tree",
+    caption:
       "A tree we saw that seems to be broken, but hanging above the ground by the branches of surrounding trees.",
+    photographer: "John Doe",
     storage_key: "uploads/RiverLot56_01-31-2026_ZoeP_HangingTree.jpg",
     content_type: "image/jpeg",
     file_size_bytes: 123456,
@@ -34,8 +36,9 @@ const galleryItemsForSelectedSite = [
     id: "img-3",
     response_id: "resp-3",
     question_id: "q-3",
-    caption: "cross-country ski trails",
-    description: null,
+    identifier: "cross-country ski trails",
+    caption: null,
+    photographer: "John Doe",
     storage_key: "uploads/RiverLot56_02-01-2026_ZoeP_SkiTrail.jpg",
     content_type: "image/jpeg",
     file_size_bytes: 777000,
@@ -52,9 +55,9 @@ const homePageItemsForSelectedSite = [
     site_id: "site-1",
     site_name: "Riverlot 56 (NA)",
     date: "2026-01-31",
+    identifier: "CMPUT401W26 Visit",
+    caption: "Riverlot56 Visit with Frank Potter!",
     photographer: "Vishal Sivakumar",
-    caption: "CMPUT401W26 Visit",
-    description: "Riverlot56 Visit with Frank Potter!",
     storage_key: "homepage-image-uploads/site-1/user-1/RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg",
     filename: "RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg",
     file_size_bytes: 111111,
@@ -86,11 +89,9 @@ function openFirstSiteDetailWithGalleryStub() {
 
   cy.intercept("GET", "**/api/gallery*").as("getAdminGallery");
   cy.intercept("GET", "**/api/homepage-images*").as("getHomepageAdminGallery");
-
-  cy.get("div.grid.gap-4.md\\:grid-cols-2.lg\\:grid-cols-3")
-    .find("button")
-    .first()
-    .click();
+  
+  cy.get('input[placeholder="Search by site name or county..."]').type('riverlot');
+  cy.contains('Riverlot 56').click();
 
   cy.url().should("include", "/detail/");
   cy.wait(["@getSiteGallery", "@getHomepageSiteGallery"]);
@@ -151,7 +152,7 @@ describe("Site Details Image Gallery", () => {
 
     cy.contains("Site").should("be.visible");
     cy.contains("Caption").should("be.visible");
-    cy.contains("Description").should("be.visible");
+    cy.contains("Identifier").should("be.visible");
     cy.contains("Filename").should("be.visible");
     cy.contains("Riverlot 56 (NA)").should("be.visible");
     cy.contains("Hanging Broken Tree").should("be.visible");
@@ -176,7 +177,7 @@ describe("Site Details Image Gallery", () => {
 
     cy.contains("Site").should("be.visible");
     cy.contains("Caption").should("be.visible");
-    cy.contains("Description").should("be.visible");
+    cy.contains("Identifier").should("be.visible");
     cy.contains("Filename").should("be.visible");
     cy.contains("Riverlot 56 (NA)").should("be.visible");
     cy.contains("CMPUT401W26 Visit").should("be.visible");

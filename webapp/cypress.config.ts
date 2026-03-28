@@ -6,6 +6,7 @@ import * as path from "path";
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 export default defineConfig({
+  projectId: '9drph3',
   e2e: {
     setupNodeEvents(on, config) {
       on('task', {

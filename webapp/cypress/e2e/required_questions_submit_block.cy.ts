@@ -17,44 +17,40 @@ function login() {
 }
 
 function openNewReport() {
-  cy.get("div.grid.gap-4.md\\:grid-cols-2.lg\\:grid-cols-3")
+  cy.get("div.grid.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3.gap-4")
     .find("button")
     .first()
     .click();
-
+  cy.wait(7000);
   cy.contains("button", "New Site Inspection Report").click();
   cy.url().should("include", "/new-report");
 }
 
+
 function dismissVerificationModalIfVisible() {
+  cy.wait(5000);
   cy.get("body").then(($body) => {
-    if ($body.text().includes("The Fine Print Up Front")) {
-      cy.contains("The Fine Print Up Front")
-        .should("be.visible")
-        .parents("div.relative")
-        .first()
-        .as("verificationModal");
+  if ($body.text().includes("The Fine Print Up Front")) {
 
-      cy.get("@verificationModal").within(() => {
-        cy.get('input[type="checkbox"]').check({ force: true });
-        cy.contains("button", "Continue to Form")
-          .scrollIntoView()
-          .should("be.visible")
-          .and("not.be.disabled")
-          .click({ force: true });
-      });
-
-      // Retry close click once if the modal is still mounted due to async state updates.
-      cy.get("body").then(($nextBody) => {
-        if ($nextBody.text().includes("The Fine Print Up Front")) {
-          cy.contains("button", "Continue to Form").click({ force: true });
-        }
-      });
-
-      cy.contains("The Fine Print Up Front", { timeout: 15000 }).should("not.exist");
-    }
+  cy.get('[data-testid="fine-print-modal"] div.overflow-y-auto').click('topLeft');
+  cy.get('[data-testid="terms-checkbox"]').check();
+  // The terms and conditions checkbox is checked.
+  cy.get('[data-testid="terms-checkbox"]')
+    .should('be.checked')
+  // The button is now enabled.
+  cy.get('[data-testid="fine-print-modal"] button.text-white')
+    .should('not.have.attr', 'disabled')
+  
+  cy.get('[data-testid="fine-print-modal"] button.text-white').click();
+  cy.wait(3000);
+  cy.get('[data-testid="fine-print-modal"] button.text-white').should('not.exist');
+  // The fine print modal is closed.
+  cy.get('[data-testid="fine-print-modal"]').should('not.exist')
+  cy.wait(3000);
+  }
   });
 }
+
 
 function completeVerificationIfPresent() {
   cy.get("body", { timeout: 20000 }).should("not.contain", "Loading inspection form...");
@@ -64,12 +60,16 @@ function completeVerificationIfPresent() {
 function ensureFormReady() {
   // Modal can appear slightly later in headed mode; dismiss defensively before key interactions.
   cy.get("body", { timeout: 20000 }).should("not.contain", "Loading inspection form...");
+  cy.wait(2000);
   dismissVerificationModalIfVisible();
   dismissVerificationModalIfVisible();
 }
 
 function attemptSubmitExpectBlocked() {
   ensureFormReady();
+  cy.wait(2000);
+  cy.contains('button', 'Close').click();
+  cy.wait(2000);
   cy.contains("button", "Review & Submit").scrollIntoView().click({ force: true });
   cy.contains("Required Questions Missing").should("be.visible");
   cy.contains("You must answer all required questions before submitting this report.").should("be.visible");
@@ -85,6 +85,7 @@ function attemptSubmitExpectBlocked() {
 function answerOneVisibleRequiredQuestionOnly() {
   // Answer exactly one visible required question, regardless of section/question wording.
   ensureFormReady();
+  cy.contains('How Visit').click();
   cy.contains("span", "Required")
     .filter(":visible")
     .first()
@@ -142,6 +143,7 @@ describe("Required question enforcement on submit", () => {
     });
 
     // Return to form and partially answer only one required question.
+    cy.wait(2000);
     cy.contains("button", "Back to Form").click({ force: true });
     ensureFormReady();
     answerOneVisibleRequiredQuestionOnly();

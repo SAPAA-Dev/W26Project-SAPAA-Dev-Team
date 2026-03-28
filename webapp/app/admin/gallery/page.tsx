@@ -113,7 +113,7 @@ export default function GalleryPage() {
   return (
     <ProtectedRoute requireAdmin>
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-4 sm:px-6 py-4 shadow-lg">
           <div className="max-w-7xl mx-auto">
             {/* Back button */}
             <button
@@ -124,36 +124,36 @@ export default function GalleryPage() {
               <span className="text-sm font-medium">Back</span>
             </button>
             
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-3">
               {/* Left: icon + title + subtitle */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-start sm:items-center gap-3 sm:gap-4">
                 <Image
                   src="/images/sapaa-icon-white.png"
                   alt="SAPAA"
                   width={140}
                   height={140}
                   priority
-                  className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+                  className="h-12 sm:h-16 w-auto flex-shrink-0 opacity-100 mt-1"
                 />
                 <div>
-                  <h1 className="text-3xl font-bold mt-3">Image Gallery</h1>
-                  <p className="text-[#E4EBE4] text-base mt-0.5">
+                  <h1 className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-3 leading-tight">Image Gallery</h1>
+                  <p className="text-[#E4EBE4] text-sm sm:text-base mt-0.5 max-w-md">
                     View all uploaded inspection images and metadata
                   </p>
                 </div>
               </div>
               {/* Right: navbar — rendered inline, bg overridden to transparent */}
-              <div className="[&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
+              <div className="w-full sm:w-auto [&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
                 <AdminNavBar />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           
           {/* 3. Search Bar UI */}
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <div className="relative w-full">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-[#7A8075]" />
@@ -164,7 +164,7 @@ export default function GalleryPage() {
                 data-testid="admin-gallery-search-bar"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="block w-full pl-10 pr-10 py-2.5 border-2 border-[#E4EBE4] rounded-xl bg-white text-sm placeholder-[#7A8075] focus:outline-none focus:border-[#356B43] focus:ring-1 focus:ring-[#356B43] shadow-sm transition-all"
+                className="block w-full pl-10 pr-10 py-3 sm:py-2.5 border-2 border-[#E4EBE4] rounded-xl bg-white text-sm sm:text-base placeholder-[#7A8075] focus:outline-none focus:border-[#356B43] focus:ring-1 focus:ring-[#356B43] shadow-sm transition-all"
               />
               {searchQuery && (
                 <button
@@ -184,7 +184,7 @@ export default function GalleryPage() {
               <p className="text-[#7A8075]">Loading gallery...</p>
             </div>
           ) : filteredItems.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-[#E4EBE4]">
+            <div className="text-center py-16 sm:py-20 px-4 bg-white rounded-2xl border-2 border-dashed border-[#E4EBE4]">
               <div className="bg-[#F7F2EA] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="text-[#7A8075]" size={32} />
               </div>
@@ -196,7 +196,7 @@ export default function GalleryPage() {
               )}
             </div>
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {/* 4. Map over filteredItems instead of items */}
               {filteredItems.map((item) => (
                 <div
@@ -206,12 +206,12 @@ export default function GalleryPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedImage(item)}
-                    className="group relative block w-full h-64 bg-[#F7F2EA] overflow-hidden"
+                    className="group relative block w-full h-56 sm:h-64 bg-[#F7F2EA] overflow-hidden"
                   >
                     <img
                       src={item.imageUrl}
                       alt={item.identifier || item.caption ||item.filename || "Inspection image"}
-                      data-testid={`image-${item.caption}`}
+                      data-testid={`image-${item.identifier}`}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
@@ -221,8 +221,8 @@ export default function GalleryPage() {
                     </div>
                   </button>
 
-                  <div className="p-4 space-y-3">
-                    <div className="text-sm text-[#7A8075] flex items-center gap-2">
+                  <div className="p-4 sm:p-5 space-y-3">
+                    <div className="text-sm text-[#7A8075] flex items-start sm:items-center gap-2">
                       <MapPin className="w-4 h-4" />
                       <span>{item.site_name || "Unknown site"}</span>
                     </div>
@@ -230,7 +230,7 @@ export default function GalleryPage() {
                     <div className="text-sm text-[#7A8075] flex items-start gap-2">
                       <ImageIcon className="w-4 h-4 mt-0.5" />
                       <div>
-                        <p className="font-semibold text-[#254431]">
+                        <p className="font-semibold text-[#254431] break-words leading-snug">
                           {item.identifier || item.caption || "No caption"}
                         </p>
                       </div>
@@ -253,11 +253,11 @@ export default function GalleryPage() {
 
         {selectedImage && (
           <div
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 md:p-8"
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-8"
             onClick={() => setSelectedImage(null)}
           >
             <div
-              className="relative w-full max-w-6xl bg-white rounded-2xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-6xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -268,21 +268,21 @@ export default function GalleryPage() {
                 <X className="w-5 h-5" />
               </button>
 
-              <div className="grid lg:grid-cols-[minmax(0,1fr)_360px]">
-                <div className="bg-black flex items-center justify-center min-h-[300px] max-h-[85vh] overflow-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] flex-1 min-h-0">
+                <div className="bg-black flex items-center justify-center min-h-[220px] sm:min-h-[300px] lg:min-h-0 max-h-[40vh] sm:max-h-[50vh] lg:max-h-none overflow-auto">
                   <img
                     src={selectedImage.imageUrl}
                     alt={selectedImage.identifier || selectedImage.caption || selectedImage.filename || "Inspection image"}
-                    className="max-w-full max-h-[85vh] object-contain"
+                    className="max-w-full max-h-[40vh] sm:max-h-[50vh] lg:max-h-[85vh] object-contain"
                   />
                 </div>
 
-                <div className="p-6 bg-white space-y-5 border-l border-[#E4EBE4]">
+                <div className="min-w-0 min-h-0 p-4 sm:p-6 bg-white space-y-4 sm:space-y-5 border-t lg:border-t-0 lg:border-l border-[#E4EBE4] overflow-y-auto">
                   <div>
                     <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
                       Site
                     </p>
-                    <p className="text-lg font-semibold text-[#254431]">
+                    <p className="text-base sm:text-lg font-semibold text-[#254431] break-words">
                       {selectedImage.site_name || "Unknown site"}
                     </p>
                   </div>
@@ -300,7 +300,7 @@ export default function GalleryPage() {
                     <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
                       Identifier
                     </p>
-                    <p className="text-sm text-[#4B5563] leading-6">
+                    <p className="text-sm text-[#4B5563] leading-6 break-words">
                       {selectedImage.identifier || "No identifier"}
                     </p>
                   </div>
@@ -309,7 +309,7 @@ export default function GalleryPage() {
                     <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
                       Date
                     </p>
-                    <p className="text-sm text-[#4B5563] leading-6">
+                    <p className="text-sm text-[#4B5563] leading-6 break-words">
                       {selectedImage.date || "No date"}
                     </p>
                   </div>
@@ -349,7 +349,7 @@ export default function GalleryPage() {
                       href={selectedImage.imageUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center rounded-xl bg-[#254431] text-white px-4 py-2.5 font-medium hover:bg-[#356B43] transition-colors"
+                      className="w-full inline-flex items-center justify-center rounded-xl bg-[#254431] text-white px-4 py-2.5 font-medium hover:bg-[#356B43] transition-colors"
                     >
                       Open full image in new tab
                     </a>

@@ -73,7 +73,7 @@ export default function UploadImages() {
   };
 
   const makeEntry = (f: File): FileEntry => ({
-    id: Math.random().toString(36).slice(2),
+    id: crypto.randomUUID(),
     file: f,
     preview: URL.createObjectURL(f),
     site: null,
@@ -254,8 +254,7 @@ export default function UploadImages() {
       {/* FAB */}
       <button
         onClick={handleOpen}
-        className="fixed bottom-8 right-8 z-50 flex items-center gap-2 px-5 py-3.5 bg-[#356B43] hover:bg-[#254431] text-white text-sm font-semibold rounded-full shadow-lg transition-all hover:-translate-y-0.5"
-      >
+        className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 flex items-center gap-2 px-4 sm:px-5 py-3 sm:py-3.5 bg-[#356B43] hover:bg-[#254431] text-white text-sm font-semibold rounded-full shadow-lg transition-all hover:-translate-y-0.5"      >
         <Upload size={16} />
         Upload Images
       </button>
@@ -266,10 +265,10 @@ export default function UploadImages() {
           className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
           onClick={(e) => e.target === e.currentTarget && handleClose()}
         >
-          <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden">
+          <div className="bg-white rounded-2xl w-full max-w-5xl max-h-[90vh] shadow-2xl overflow-hidden flex flex-col">
 
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-100">
               <div>
                 <p className="text-sm font-semibold text-gray-900">Upload Site Images</p>
                 <p className="text-xs text-gray-400 mt-0.5">
@@ -284,7 +283,7 @@ export default function UploadImages() {
               </button>
             </div>
 
-            <div className="px-6 py-5">
+            <div className="px-4 sm:px-6 py-4 sm:py-5 overflow-y-auto flex-1">
 
               {/* Drop zone */}
               {files.length === 0 && (
@@ -348,14 +347,14 @@ export default function UploadImages() {
                   </div>
 
                   {/* Preview + fields */}
-                  <div className="flex gap-5">
+                  <div className="flex flex-col lg:flex-row gap-5">
 
                     {/* Left: image preview */}
-                    <div className="w-112 flex-shrink-0 flex flex-col items-center gap-2">
+                    <div className="w-full lg:w-[28rem] lg:flex-shrink-0 flex flex-col items-center gap-2">
                       <img
                         src={current.preview}
                         alt={current.file.name}
-                        className="w-full h-90 object-cover rounded-xl border border-gray-100"
+                        className="w-full h-64 sm:h-80 lg:h-[22.5rem] object-cover rounded-xl border border-gray-100"
                       />
 
                     </div>
@@ -495,17 +494,17 @@ export default function UploadImages() {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 border-t border-gray-100 bg-gray-50">
               <span className="text-xs text-gray-400">
                 {files.length > 0
                   ? <><strong className="text-gray-600">{files.filter(isComplete).length} / {files.length} complete </strong></>
                   : "No files selected"}
               </span>
-              <div className="flex flex-col items-end gap-2">
+              <div className="flex flex-col items-stretch sm:items-end gap-2 w-full sm:w-auto">
                 {uploadError && (
                   <p className="text-xs text-red-500">{uploadError}</p>
                 )}
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <button
                   onClick={handleClose}
                   className="px-4 py-2 text-sm font-medium text-gray-500 border border-gray-200 rounded-lg hover:border-gray-300 hover:text-gray-700 transition-colors"

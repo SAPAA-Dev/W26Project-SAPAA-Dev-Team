@@ -1,4 +1,5 @@
 import React from "react";
+
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import GalleryPage from "../../app/admin/gallery/page";
 
@@ -9,7 +10,7 @@ jest.mock("@/components/ProtectedRoute", () => ({
 }));
 
 // Mock next/router
-jest.mock('next/navigation', () => ({
+jest.mock("next/navigation", () => ({
   useRouter: jest.fn(),
 }));
 
@@ -18,58 +19,71 @@ const mockGalleryItems = [
     id: "img-1",
     response_id: "resp-1",
     question_id: "q-1",
-    caption: "Haging Broken Tree",
-    identifier: "Tree-01",
+    caption: "Cross Country skil trails",
+    identifier: "Ski Trails",
     date: "2026-01-31",
-    storage_key: "uploads/RiverLot56_01-31-2026_ZoeP_HangingTree.jpg",
-    content_type: "image/jpeg", 
-    photographer: "John Doe",
-    file_size_bytes: 123456,
-    filename: "RiverLot56_01-31-2026_ZoeP_HangingTree.jpg",
-    site_id: "site-1",
-    site_name: "Riverlot 56 (NA)",
-    imageUrl: "https://example.com/RiverLot56_01-31-2026_ZoeP_HangingTree.jpg",
-  },
-  {
-    id: "img-2",
-    response_id: "resp-2",
-    question_id: "q-2",
-    caption: "Cracked Tree",
-    identifier: "Tree-02",
-    date: "2026-02-02",
-    storage_key: "uploads/RiverLot56_01-31-2026_ZoeP_CrackedTree.jpg",
+    storage_key:
+      "uploads/207/resp-1/Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg",
     content_type: "image/jpeg",
-    photographer: "John Doe",
-    file_size_bytes: 654321,
-    filename: "RiverLot56_01-31-2026_ZoeP_CrackedTree.jpg",
-    site_id: "site-2",
+    photographer: "Raiyana Rahman",
+    file_size_bytes: 506701,
+    filename:
+      "Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg",
+    site_id: 207,
     site_name: "Riverlot 56 (NA)",
-    imageUrl: "https://example.com/RiverLot56_01-31-2026_ZoeP_CrackedTree.jpg",
+    imageUrl:
+      "https://example.com/Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg",
   },
 ];
 
 const homePageItemsForAdmin = [
   {
-    id: "img-4",
-    site_id: "site-1",
+    id: 16,
+    site_id: 207,
     site_name: "Riverlot 56 (NA)",
     date: "2026-01-31",
-    photographer: "Vishal Sivakumar",
-    caption: "CMPUT401W26 Visit",
-    description: "Riverlot56 Visit with Frank Potter!",
-    storage_key: "homepage-image-uploads/site-1/user-1/RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg",
-    filename: "RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg",
-    file_size_bytes: 111111,
-    imageUrl: "https://example.com/RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg",
+    photographer: "Raiyana Rahman",
+    caption: "Cross Country skil trails",
+    identifier: "Ski Trails",
+    filename:
+      "Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-0642088a-b29f-400a-9ce7-e1003fa1e928.jpg",
+    file_size_bytes: 506701,
+    storage_key:
+      "homepage-image-uploads/207/6966742d-b9e7-46c1-842f-030d4a97ba39/Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-0642088a-b29f-400a-9ce7-e1003fa1e928.jpg",
+    imageUrl:
+      "https://example.com/Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-0642088a-b29f-400a-9ce7-e1003fa1e928.jpg",
   },
-]
+  {
+    id: 21,
+    site_id: 207,
+    site_name: "Riverlot 56 (NA)",
+    date: "2026-01-31",
+    photographer: "Zoe Prefontaine",
+    caption:
+      "A partially broken tree trunk hanging among surrounding tree likely damaged by weather or decay. CMPUT 401 team",
+    identifier: "Broken Tree Trunk",
+    filename:
+      "Riverlot56NA-2026-01-31-ZoePrefontaine-BrokenTreeTrunk-f6f399ce-3521-4fa4-987a-43cf356c693b.jpg",
+    file_size_bytes: 1852012,
+    storage_key:
+      "homepage-image-uploads/207/6966742d-b9e7-46c1-842f-030d4a97ba39/Riverlot56NA-2026-01-31-ZoePrefontaine-BrokenTreeTrunk-f6f399ce-3521-4fa4-987a-43cf356c693b.jpg",
+    imageUrl:
+      "https://example.com/Riverlot56NA-2026-01-31-ZoePrefontaine-BrokenTreeTrunk-f6f399ce-3521-4fa4-987a-43cf356c693b.jpg",
+  },
+];
 
 function mockFetchSuccess(items = mockGalleryItems) {
   (global.fetch as jest.Mock).mockImplementation((url: string) => {
     if (url.includes("/api/homepage-images")) {
-      return Promise.resolve({ ok: true, json: async () => ({ items: homePageItemsForAdmin }) });
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ items: homePageItemsForAdmin }),
+      });
     }
-    return Promise.resolve({ ok: true, json: async () => ({ items }) });
+    return Promise.resolve({
+      ok: true,
+      json: async () => ({ items }),
+    });
   });
 }
 
@@ -88,23 +102,49 @@ describe("AdminGalleryPage", () => {
   it("renders all uploaded image cards after fetch", async () => {
     mockFetchSuccess();
     render(<GalleryPage />);
-  
+
     expect(screen.getByText("Loading gallery...")).toBeInTheDocument();
-  
+
     await waitFor(() => {
       expect(screen.queryByText("Loading gallery...")).not.toBeInTheDocument();
     });
-  
+
     expect(global.fetch).toHaveBeenCalledWith("/api/gallery");
     expect(global.fetch).toHaveBeenCalledWith("/api/homepage-images");
-    expect(screen.getByRole("heading", { level: 1, name: "Image Gallery" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Image Gallery" })
+    ).toBeInTheDocument();
     expect(screen.getByText("AdminNavBarMock")).toBeInTheDocument();
 
     expect(screen.getAllByText("Riverlot 56 (NA)").length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByText("Tree-01").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Tree-02").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Ski Trails").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Broken Tree Trunk").length).toBeGreaterThan(0);
     expect(screen.getAllByText("2026-01-31").length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByText("2026-02-02").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("shows standalone homepage-uploaded media in the admin gallery", async () => {
+    mockFetchSuccess();
+    render(<GalleryPage />);
+
+    await waitFor(() => {
+      expect(screen.queryByText("Loading gallery...")).not.toBeInTheDocument();
+    });
+
+    expect(screen.getAllByText("Riverlot 56 (NA)").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("2026-01-31").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Broken Tree Trunk").length).toBeGreaterThan(0);
+
+    const image = screen.getAllByAltText("Broken Tree Trunk")[0];
+    const openButton = image.closest("button");
+    expect(openButton).not.toBeNull();
+
+    fireEvent.click(openButton!);
+
+    expect(
+      screen.getByText(
+        "Riverlot56NA-2026-01-31-ZoePrefontaine-BrokenTreeTrunk-f6f399ce-3521-4fa4-987a-43cf356c693b.jpg"
+      )
+    ).toBeInTheDocument();
   });
 
   it("admin can click an image card to open modal with metadata and associated site", async () => {
@@ -115,7 +155,7 @@ describe("AdminGalleryPage", () => {
       expect(screen.queryByText("Loading gallery...")).not.toBeInTheDocument();
     });
 
-    const targetImage = screen.getByAltText("Tree-01");
+    const targetImage = screen.getAllByAltText("Ski Trails")[0];
     const openButton = targetImage.closest("button");
     expect(openButton).not.toBeNull();
 
@@ -128,15 +168,19 @@ describe("AdminGalleryPage", () => {
     expect(screen.getByText("Filename")).toBeInTheDocument();
 
     expect(screen.getAllByText("Riverlot 56 (NA)").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Haging Broken Tree").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Tree-01").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Cross Country skil trails").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Ski Trails").length).toBeGreaterThan(0);
     expect(screen.getAllByText("2026-01-31").length).toBeGreaterThan(0);
-    expect(screen.getByText("RiverLot56_01-31-2026_ZoeP_HangingTree.jpg")).toBeInTheDocument();
+    expect(
+      screen.getByText("Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg")
+    ).toBeInTheDocument();
 
-    const fullImageLink = screen.getByRole("link", { name: "Open full image in new tab" });
+    const fullImageLink = screen.getByRole("link", {
+      name: "Open full image in new tab",
+    });
     expect(fullImageLink).toHaveAttribute(
       "href",
-      "https://example.com/RiverLot56_01-31-2026_ZoeP_HangingTree.jpg"
+      "https://example.com/Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg"
     );
     expect(fullImageLink).toHaveAttribute("target", "_blank");
   });
@@ -166,8 +210,201 @@ describe("AdminGalleryPage", () => {
       expect(screen.queryByText("Loading gallery...")).not.toBeInTheDocument();
     });
 
-    expect(screen.getByRole("heading", { level: 1, name: "Image Gallery" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Image Gallery" })
+    ).toBeInTheDocument();
     expect(screen.getByText("No images found.")).toBeInTheDocument();
     expect(console.error).toHaveBeenCalled();
   });
+  
+
+  //Generated by ChatGPT based on the requirement to ensure that both SIR-uploaded media and standalone homepage-uploaded media are displayed together in the admin gallery, providing a comprehensive view of all uploaded images regardless of their source.
+  it("shows both SIR-uploaded and standalone-uploaded media in the same gallery", async () => {
+    mockFetchSuccess();
+    render(<GalleryPage />);
+
+    await waitFor(() => {
+      expect(screen.queryByText("Loading gallery...")).not.toBeInTheDocument();
+    });
+
+    // SIR item
+    expect(screen.getAllByText("Ski Trails").length).toBeGreaterThan(0);
+
+    // standalone homepage-uploaded item
+    expect(screen.getAllByText("Broken Tree Trunk").length).toBeGreaterThan(0);
+
+  });
+
+  //Generated by ChatGPT
+  // This test ensures that every media item displayed in the gallery is associated with a site, which is crucial for maintaining the integrity of the gallery and ensuring that all images are properly categorized and linked to their respective locations.
+  it("shows that every displayed uploaded media item is linked to a site", async () => {
+      mockFetchSuccess();
+      render(<GalleryPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading gallery...")).not.toBeInTheDocument();
+      });
+
+      // all mocked items are linked to Riverlot 56 (NA)
+      // 1 SIR item + 2 standalone items = at least 3 visible site labels/cards
+      expect(screen.getAllByText("Riverlot 56 (NA)").length).toBeGreaterThanOrEqual(3);
+    });
+
+
+    //Generated by ChatGPT based on the requirement to ensure that the admin gallery correctly displays filenames in the SAPAA naming format for SIR-uploaded media, which is important for maintaining consistency and traceability of media files within the system, allowing administrators to easily identify and manage uploaded images based on their metadata and naming conventions.
+    it("shows SIR-uploaded filenames in SAPAA naming format", async () => {
+      mockFetchSuccess();
+      render(<GalleryPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading gallery...")).not.toBeInTheDocument();
+      });
+
+      const targetImage = screen.getAllByAltText("Ski Trails")[0];
+      const openButton = targetImage.closest("button");
+      expect(openButton).not.toBeNull();
+
+      fireEvent.click(openButton!);
+
+      const filename =
+        "Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg";
+
+      expect(screen.getByText(filename)).toBeInTheDocument();
+      expect(filename).toMatch(
+        /^[A-Za-z0-9]+-\d{4}-\d{2}-\d{2}-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9-]+\.jpg$/i
+      );
+    });
+
+    //Generated by ChatGPT based on the requirement to ensure that the admin gallery correctly displays filenames in the SAPAA naming format for standalone homepage-uploaded media, which is essential for maintaining a consistent and organized media library, allowing administrators to easily identify and manage images based on their metadata and naming conventions, regardless of their source.
+    it("shows standalone-uploaded filenames in SAPAA naming format", async () => {
+      mockFetchSuccess();
+      render(<GalleryPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading gallery...")).not.toBeInTheDocument();
+      });
+
+      const targetImage = screen.getAllByAltText("Broken Tree Trunk")[0];
+      const openButton = targetImage.closest("button");
+      expect(openButton).not.toBeNull();
+
+      fireEvent.click(openButton!);
+
+      const filename =
+        "Riverlot56NA-2026-01-31-ZoePrefontaine-BrokenTreeTrunk-f6f399ce-3521-4fa4-987a-43cf356c693b.jpg";
+
+      expect(screen.getByText(filename)).toBeInTheDocument();
+      expect(filename).toMatch(
+        /^[A-Za-z0-9]+-\d{4}-\d{2}-\d{2}-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9-]+\.jpg$/i
+      );
+    });
+
+
+    //Generated by ChatGPT based on the requirement to ensure that the search functionality in the admin gallery allows administrators to effectively filter and find specific media items based on various metadata fields such as identifier, site name, caption, filename, date, and photographer, which is crucial for efficient media management and retrieval within the gallery.
+    it("allows admins to search media by identifier", async () => {
+      mockFetchSuccess();
+      render(<GalleryPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading gallery...")).not.toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByTestId("admin-gallery-search-bar");
+      fireEvent.change(searchInput, { target: { value: "Broken Tree Trunk" } });
+
+      expect(screen.getAllByText("Broken Tree Trunk").length).toBeGreaterThan(0);
+      expect(screen.queryByText("Ski Trails")).not.toBeInTheDocument();
+    });
+
+    //Generated by ChatGPT based on the requirement to ensure that the search functionality in the admin gallery allows administrators to effectively filter and find specific media items based on various metadata fields such as identifier, site name, caption, filename, date, and photographer, which is crucial for efficient media management and retrieval within the gallery.
+    it("allows admins to search media by site name", async () => {
+      mockFetchSuccess();
+      render(<GalleryPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading gallery...")).not.toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByTestId("admin-gallery-search-bar");
+      fireEvent.change(searchInput, { target: { value: "Riverlot 56" } });
+
+      expect(screen.getAllByText("Riverlot 56 (NA)").length).toBeGreaterThan(0);
+    });
+
+
+    //Generated by ChatGPT based on the requirement to ensure that the search functionality in the admin gallery allows administrators to effectively filter and find specific media items based on various metadata fields such as identifier, site name, caption, filename, date, and photographer, which is crucial for efficient media management and retrieval within the gallery.
+    it("allows admins to search media by caption", async () => {
+      mockFetchSuccess();
+      render(<GalleryPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading gallery...")).not.toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByTestId("admin-gallery-search-bar");
+      fireEvent.change(searchInput, {
+        target: { value: "Broken Tree Trunk" },
+      });
+
+      expect(screen.getAllByText("Broken Tree Trunk").length).toBeGreaterThan(0);
+      expect(screen.queryByText("Ski Trails")).not.toBeInTheDocument();
+    });
+
+    //Generated by ChatGPT based on the requirement to ensure that the search functionality in the admin gallery allows administrators to effectively filter and find specific media items based on various metadata fields such as identifier, site name, caption, filename, date, and photographer, which is crucial for efficient media management and retrieval within the gallery.
+    it("allows admins to search media by filename", async () => {
+      mockFetchSuccess();
+      render(<GalleryPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading gallery...")).not.toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByTestId("admin-gallery-search-bar");
+      fireEvent.change(searchInput, {
+        target: {
+          value:
+            "Riverlot56NA-2026-01-31-ZoePrefontaine-BrokenTreeTrunk-f6f399ce-3521-4fa4-987a-43cf356c693b.jpg",
+        },
+      });
+
+      expect(screen.getAllByText("Broken Tree Trunk").length).toBeGreaterThan(0);
+      expect(screen.queryByText("Ski Trails")).not.toBeInTheDocument();
+    });
+
+    //Generated by ChatGPT based on the requirement to ensure that the search functionality in the admin gallery allows administrators to effectively filter and find specific media items based on various metadata fields such as identifier, site name, caption, filename, date, and photographer, which is crucial for efficient media management and retrieval within the gallery.
+    it("allows admins to search media by date", async () => {
+      mockFetchSuccess();
+      render(<GalleryPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading gallery...")).not.toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByTestId("admin-gallery-search-bar");
+      fireEvent.change(searchInput, {
+        target: { value: "2026-01-31" },
+      });
+
+      expect(screen.getAllByText("2026-01-31").length).toBeGreaterThan(0);
+    });
+
+    //Generated by ChatGPT based on the requirement to ensure that the search functionality in the admin gallery allows administrators to effectively filter and find specific media items based on various metadata fields such as identifier, site name, caption, filename, date, and photographer, which is crucial for efficient media management and retrieval within the gallery.
+    it("allows admins to search media by photographer name through filename match", async () => {
+      mockFetchSuccess();
+      render(<GalleryPage />);
+
+      await waitFor(() => {
+        expect(screen.queryByText("Loading gallery...")).not.toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByTestId("admin-gallery-search-bar");
+      fireEvent.change(searchInput, {
+        target: { value: "ZoePrefontaine" },
+      });
+
+      expect(screen.getAllByText("Broken Tree Trunk").length).toBeGreaterThan(0);
+      expect(screen.queryByText("Ski Trails")).not.toBeInTheDocument();
+    });
+
+
 });

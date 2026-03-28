@@ -584,7 +584,7 @@ describe('HomeClient', () => {
         expect(screen.getByText('Elk Island National Park')).toBeInTheDocument();
       });
 
-      const sitesGrid = document.querySelector('.grid.gap-4.md\\:grid-cols-2.lg\\:grid-cols-3');
+      const sitesGrid = document.querySelector('.grid.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3.gap-4');
       expect(sitesGrid).toBeInTheDocument();
     });
 
