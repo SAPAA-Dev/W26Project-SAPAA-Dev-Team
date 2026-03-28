@@ -650,8 +650,7 @@ export default function SiteDetailScreen() {
                     {isOwner && (
                       <button
                         onClick={() => router.push(`/detail/${params.namesite}/edit-report/${response.id}`)}
-                        className="w-full sm:w-auto flex items-center justify-center p-2 bg-[#F7F2EA] hover:bg-[#E4EBE4] text-[#254431] rounded-lg transition-colors"
-                        title="Edit this report"
+                        className="w-full sm:w-auto flex items-center justify-center px-3 py-2 bg-[#F7F2EA] hover:bg-[#E4EBE4] text-[#254431] rounded-lg transition-colors mr-4 sm:mr-4"                        title="Edit this report"
                         data-testid="edit-form-button"
                       >
                         <Pencil className="w-4 h-4" />
