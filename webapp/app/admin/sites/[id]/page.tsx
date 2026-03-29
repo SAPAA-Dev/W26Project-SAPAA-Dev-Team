@@ -191,6 +191,31 @@ export default function AdminSiteDetails() {
     });
   }, [galleryItems, searchQuery]);
 
+      useEffect(() => {
+        if (selectedImage) {
+          document.body.style.overflow = "hidden";
+        } else {
+          document.body.style.overflow = "auto";
+        }
+
+        return () => {
+          document.body.style.overflow = "auto";
+        };
+      }, [selectedImage]);
+ 
+          useEffect(() => {
+            if (selectedImage) {
+              document.body.style.overflow = "hidden";
+            } else {
+              document.body.style.overflow = "auto";
+            }
+
+            return () => {
+              document.body.style.overflow = "auto";
+            };
+          }, [selectedImage]);
+
+
   useEffect(() => {
     const load = async () => {
       try {
