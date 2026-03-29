@@ -600,20 +600,20 @@ export default function MainContent({
                       type="text"
                       value={image.caption ?? ''}
                       onChange={(e) => updateExistingField(image.id, 'caption', e.target.value)}
-                      placeholder="Caption (optional)"
+                      placeholder="Caption"
                       className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
                     />
 
                     <textarea
                       value={image.identifier ?? ''}
                       onChange={(e) => updateExistingField(image.id, 'identifier', e.target.value)}
-                      placeholder="Identifier (optional)"
+                      placeholder="Identifier"
                       rows={2}
                       className="w-full mt-1 px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm resize-none"
                     />
 
                     <p className="mt-1 text-xs text-[#7A8075] italic flex items-center gap-1">
-                      <Lock className="w-3 h-3" /> Previously uploaded — cannot be removed
+                      <Lock className="w-3 h-3" /> Previously uploaded — cannot be removed or edited
                     </p>
                   </div>
                 </div>
