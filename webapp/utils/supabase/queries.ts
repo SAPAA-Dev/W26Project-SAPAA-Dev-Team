@@ -888,7 +888,7 @@ export async function getAttachmentsByResponseId(responseId: number): Promise<Ar
   return data ?? [];
 }
 
-// Updates caption and description for an existing W26_attachments row
+// Updates caption and identifier for an existing W26_attachments row
 export async function updateAttachmentMetadata(
   attachmentId: number,
   fields: { caption?: string | null; identifier?: string | null }

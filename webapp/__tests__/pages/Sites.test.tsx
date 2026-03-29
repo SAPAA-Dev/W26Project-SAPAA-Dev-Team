@@ -606,24 +606,31 @@ describe('Integration Tests', () => {
     expect(mockPush).toHaveBeenCalledWith('/detail/Waterton Lakes');
   });
 
-  it('should maintain search state while sorting', async () => {
-    const user = userEvent.setup();
-    render(<HomeClient />);
+it('should maintain search state while sorting', async () => {
+  const user = userEvent.setup();
+  render(<HomeClient />);
 
-    await waitFor(() => {
-      expect(screen.getByText('4 sites found')).toBeInTheDocument();
-    });
+  await waitFor(() => {
+    expect(screen.getByText('4 sites found')).toBeInTheDocument();
+  });
 
-    const searchInput = screen.getByPlaceholderText('Search by site name or county...');
-    await user.type(searchInput, 'National');
+  const searchInput = screen.getByPlaceholderText('Search by site name or county...');
+  await user.type(searchInput, 'National');
 
-    expect(screen.getByText('3 sites found')).toBeInTheDocument();
+  await waitFor(() => {
+    expect(searchInput).toHaveValue('National');
+  });
 
-    const sortButton = screen.getByRole('button', { name: /sort/i });
-    await user.click(sortButton);
-    await user.click(screen.getByText('Most Recent'));
+  expect(screen.getByText('3 sites found')).toBeInTheDocument();
 
+  const sortButton = screen.getByRole('button', { name: /sort/i });
+  await user.click(sortButton);
+  await user.click(screen.getByText('Most Recent'));
+
+  await waitFor(() => {
     expect(screen.getByText('3 sites found')).toBeInTheDocument();
     expect(searchInput).toHaveValue('National');
   });
+});
+
 });
