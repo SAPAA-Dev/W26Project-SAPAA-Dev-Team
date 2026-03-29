@@ -30,6 +30,7 @@ jest.mock('next/image', () => ({
 }));
 jest.mock('../../components/ProtectedRoute', () => ({ children }: any) => <div>{children}</div>);
 
+
 // Mock daysSince from sites page
 jest.mock('@/app/sites/page', () => ({
   daysSince: jest.fn((date: string) => {

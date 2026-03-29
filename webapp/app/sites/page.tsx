@@ -1,5 +1,8 @@
 'use client';
 
+
+
+
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSitesOnline, getTotalInspectionCount, SiteSummary } from '@/utils/supabase/queries';

@@ -35,6 +35,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import dynamic from 'next/dynamic';
 import { siteDetailSteps } from '@/components/TutorialOverlay';
 import { createClient } from '@/utils/supabase/client';
+import UserNavBar from "@/components/HeaderDropdown";
 
 const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
