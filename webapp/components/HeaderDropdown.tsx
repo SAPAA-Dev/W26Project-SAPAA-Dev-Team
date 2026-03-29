@@ -9,7 +9,9 @@ import React, { useState, Suspense, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 
-
+interface UserNavBarProps {
+  onStartTutorial?: () => void;
+}
 
 async function getCurrentUser(): Promise<{ email: string; role: string; name: string; avatar: string} | null> {
   try {
@@ -39,20 +41,13 @@ async function getCurrentUser(): Promise<{ email: string; role: string; name: st
 }
 
 
-export default function UserNavBar() {
+
+
+export default function UserNavBar({ onStartTutorial }: UserNavBarProps) {
+
     const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name:string; avatar:string } | null>(null);
     const [userLoading, setUserLoading] = useState(true);
     const [menuOpen, setMenuOpen] = useState(false);
-    const [forceTutorial, setForceTutorial] = useState(false);
-
-    const handleStartTutorial = useCallback(() => {
-    setForceTutorial(false);
-    setTimeout(() => setForceTutorial(true), 50);
-    }, []);
-
-    const handleTutorialFinish = useCallback(() => {
-    setForceTutorial(false);
-    }, []);
 
     const router = useRouter();
 
@@ -164,7 +159,7 @@ export default function UserNavBar() {
                     Help
                 </p>
                 <button
-                    onClick={() => { setMenuOpen(false); handleStartTutorial(); }}
+                    onClick={() => { setMenuOpen(false); onStartTutorial?.(); }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f5f3] transition-colors"
                 >
                     <span className="w-8 h-8 rounded-lg bg-[#eef4fb] flex items-center justify-center flex-shrink-0">

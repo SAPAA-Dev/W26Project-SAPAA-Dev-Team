@@ -1,5 +1,8 @@
 'use client';
 
+
+
+
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSitesOnline, getTotalInspectionCount, SiteSummary } from '@/utils/supabase/queries';
@@ -14,6 +17,8 @@ import { logout } from "@/services/auth";
 import dynamic from 'next/dynamic';
 import { sitesDashboardSteps } from '@/components/TutorialOverlay';
 import UserNavBar from "@/components/HeaderDropdown";
+import HelpMenu from '@/components/HelpMenu';
+import { siteDetailSteps } from '@/components/TutorialOverlay';
 
 const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
@@ -284,14 +289,14 @@ export default function HomeClient() {
             </div>
           </div>
 
-          <UserNavBar/>
+          <UserNavBar onStartTutorial={handleStartTutorial} />
       
 
         </div>
       </div>
         
     {/* Stats Cards */}
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 mt-2">
+    <div id="tutorial-stats" className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 mt-2">
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
       {[
         {
