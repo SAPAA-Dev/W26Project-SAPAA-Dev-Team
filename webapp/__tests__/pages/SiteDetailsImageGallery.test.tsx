@@ -9,6 +9,7 @@ jest.mock("next/navigation", () => ({
     replace: jest.fn(),
     back: jest.fn(),
   }),
+  usePathname: () => "/sites",
 }));
 
 jest.mock("next/image", () => ({
