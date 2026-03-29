@@ -16,6 +16,15 @@ jest.mock('@/services/auth', () => ({
   signInWithMicrosoft: jest.fn(),
 }));
 
+// Mock session
+jest.mock('@/utils/supabase/client', () => ({
+  createClient: jest.fn(() => ({
+    auth: {
+      getSession: jest.fn().mockResolvedValue({ data: { session: null } }),
+    },
+  })),
+}));
+
 // Mock next/image
 jest.mock('next/image', () => (props: any) => <img {...props} alt={props.alt} />);
 

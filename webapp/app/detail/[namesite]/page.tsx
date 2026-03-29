@@ -35,8 +35,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import dynamic from 'next/dynamic';
 import { siteDetailSteps } from '@/components/TutorialOverlay';
 import { createClient } from '@/utils/supabase/client';
-import { logout } from "@/services/auth";
-import UserNavBar from "@/components/HeaderDropdown";
 
 const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
@@ -71,6 +69,28 @@ type GalleryItem = {
   imageUrl: string;
   photographer?: string | null;
 };
+
+function getInspectionDate(response: FormResponse): string | null {
+  return response.inspection_date ?? response.created_at ?? null;
+}
+
+function formatInspectionDate(
+  dateString: string | null | undefined,
+  options?: Intl.DateTimeFormatOptions
+): string {
+  if (!dateString) return 'N/A';
+
+  const formatOptions = options ?? { year: 'numeric', month: 'numeric', day: 'numeric' };
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    return new Intl.DateTimeFormat('en-US', {
+      ...formatOptions,
+      timeZone: 'UTC',
+    }).format(new Date(`${dateString}T00:00:00Z`));
+  }
+
+  return new Date(dateString).toLocaleDateString('en-US', formatOptions);
+}
 
 async function getCurrentUser(): Promise<{ email: string; role: string; name: string; avatar: string} | null> {
   try {
@@ -181,6 +201,19 @@ export default function SiteDetailScreen() {
         fetchUser();
       }, []);
 
+    useEffect(() => {
+      if (selectedImage) {
+        document.body.style.overflow = "hidden";
+      } else {
+        document.body.style.overflow = "auto";
+      }
+
+      return () => {
+        document.body.style.overflow = "auto";
+      };
+    }, [selectedImage]);
+    
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -189,8 +222,6 @@ export default function SiteDetailScreen() {
           getCurrentUserUid(),
         ]);
         const details = await getFormResponsesBySite(siteData[0].namesite);
-
-        console.log(details);
 
         setSite(siteData[0]);
         setInspections(details);
@@ -217,8 +248,6 @@ export default function SiteDetailScreen() {
 
       try {
         setGalleryLoading(true);
-
-        console.log("Fetching gallery for site id:", site.id);
 
         const res = await fetch(`/api/sites/${site.id}/gallery`);
         const data = await res.json();
@@ -329,11 +358,12 @@ export default function SiteDetailScreen() {
           });
         }
         const value = a.obs_value ?? a.obs_comm ?? '';
+        const inspectionDate = getInspectionDate(response);
         if (value) {
           questionMap.get(key)!.answers.push({
             inspectionId: response.id,
-            date: response.created_at ?? '',
-            displayDate: response.created_at ? new Date(response.created_at).toLocaleDateString() : 'N/A',
+            date: inspectionDate ?? '',
+            displayDate: formatInspectionDate(inspectionDate),
             answer: value,
           });
         }
@@ -632,9 +662,11 @@ export default function SiteDetailScreen() {
                         </div>
                         <div>
                           <h3 className="text-base sm:text-lg font-bold text-[#254431] leading-snug">
-                            {response.created_at ? new Date(response.created_at).toLocaleDateString('en-US', {
-                              year: 'numeric', month: 'long', day: 'numeric'
-                            }) : 'N/A'}
+                            {formatInspectionDate(getInspectionDate(response), {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })}
                           </h3>
                           <p className="text-sm text-[#7A8075]">Score: {normalizeScore(response.naturalness_score)}</p>
                         </div>
@@ -646,11 +678,12 @@ export default function SiteDetailScreen() {
                       )}
                     </button>
 
-                    {/* Edit button — only visible to the submitting user */}
+                    {/* Edit button - only visible to the submitting user */}
+
                     {isOwner && (
                       <button
                         onClick={() => router.push(`/detail/${params.namesite}/edit-report/${response.id}`)}
-                        className="w-full sm:w-auto flex items-center justify-center p-2 bg-[#F7F2EA] hover:bg-[#E4EBE4] text-[#254431] rounded-lg transition-colors"
+                        className="w-full sm:w-auto flex items-center justify-center gap-1.5 mx-4 px-4 py-2 rounded-xl text-sm font-semibold bg-[#F7F2EA] hover:bg-[#E4EBE4] text-[#254431] transition-all"
                         title="Edit this report"
                         data-testid="edit-form-button"
                       >

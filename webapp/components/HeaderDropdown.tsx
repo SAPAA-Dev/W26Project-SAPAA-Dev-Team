@@ -28,7 +28,6 @@ async function getCurrentUser(): Promise<{ email: string; role: string; name: st
     const role = session.user.user_metadata?.role ?? 'steward';
     const name  = session.user.user_metadata?.full_name ?? '';
     const avatar = session.user.user_metadata?.avatar_url ?? '';
-    console.log(session.user)
     
     return {
       email,
@@ -93,7 +92,7 @@ export default function UserNavBar({ onStartTutorial }: UserNavBarProps) {
 
         {menuOpen && (
             <>
-            {/* Backdrop — closes menu on outside click */}
+            {/* Backdrop - closes menu on outside click */}
             <div
                 className="fixed inset-0 z-40"
                 onClick={() => setMenuOpen(false)}
@@ -101,7 +100,7 @@ export default function UserNavBar({ onStartTutorial }: UserNavBarProps) {
 
             <div className="absolute right-0 top-[calc(100%+8px)] w-60 bg-white rounded-xl shadow-xl border border-black/10 overflow-hidden z-50">
 
-                {/* Admin section — only for admins */}
+                {/* Admin section - only for admins */}
                 {currentUser?.role === 'admin' && (
                 <div className="py-1.5 border-b border-black/[0.07]">
                     <p className="text-[10.5px] font-semibold uppercase tracking-widest text-black/30 px-4 pt-2 pb-1">
@@ -172,7 +171,7 @@ export default function UserNavBar({ onStartTutorial }: UserNavBarProps) {
                     </div>
                 </button>
                 <a
-                    href="mailto:support@example.com"
+                    href="mailto:devteams@sapaastewards.com"
                     onClick={() => setMenuOpen(false)}
                     className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f5f3] transition-colors"
                 >

@@ -202,7 +202,7 @@ export const openApiSpec = {
             },
           },
           "403": {
-            description: "Forbidden — admin access required",
+            description: "Forbidden - admin access required",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/ErrorResponse" },
@@ -386,7 +386,7 @@ export const openApiSpec = {
             },
           },
           "403": {
-            description: "Forbidden — admin access required",
+            description: "Forbidden - admin access required",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/ErrorResponse" },
@@ -492,7 +492,7 @@ export const openApiSpec = {
             },
           },
           "403": {
-            description: "Forbidden — admin access required",
+            description: "Forbidden - admin access required",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/ErrorResponse" },
@@ -884,7 +884,7 @@ export const openApiSpec = {
             },
           },
           "403": {
-            description: "Forbidden — admin access required",
+            description: "Forbidden - admin access required",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/ErrorResponse" },

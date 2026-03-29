@@ -38,8 +38,6 @@ const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export async function GET() {
   try {
-    console.log("=== /api/gallery START ===");
-
     const supabase = await createClient();
 
     const {
@@ -47,16 +45,11 @@ export async function GET() {
       error: authError,
     } = await supabase.auth.getUser();
 
-    console.log("user:", user?.id);
-    console.log("authError:", authError);
-
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const role = user.user_metadata?.role;
-    console.log(user.user_metadata);
-    
 
     if (role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -80,11 +73,6 @@ export async function GET() {
     .in("content_type", ALLOWED_IMAGE_TYPES)
     .order("id", { ascending: false });
 
-
-    console.log("attachmentsError:", attachmentsError);
-    console.log("attachments count:", attachments?.length || 0);
-    console.log("attachments sample:", attachments?.slice(0, 3));
-
     if (attachmentsError) {
       console.error("Error fetching attachments:", attachmentsError);
       return NextResponse.json(
@@ -97,8 +85,6 @@ export async function GET() {
     const siteIds = [
       ...new Set((attachments || []).map((attachment) => attachment.site_id).filter(Boolean)),
     ];
-
-    console.log("siteIds:", siteIds);
 
     const { data: sites, error: sitesError } = await supabase
       .from("W26_sites-pa")
@@ -116,19 +102,10 @@ export async function GET() {
     const siteMap = new Map(
       (sites || []).map((site) => [site.id, site.namesite])
     );
-
-    console.log("siteMap:", Array.from(siteMap.entries()));
     
     const items = await Promise.all(
       (attachments || []).map(async (attachment) => {
         let imageUrl: string | null = null;
-
-        console.log("processing attachment:", {
-          id: attachment.id,
-          filename: attachment.filename,
-          storage_key: attachment.storage_key,
-          content_type: attachment.content_type,
-        });
 
         try {
           const command = new GetObjectCommand({
@@ -140,7 +117,6 @@ export async function GET() {
             expiresIn: 3600,
           });
 
-          console.log("signed URL generated for:", attachment.storage_key);
         } catch (s3Error) {
           console.error(
             `Failed to generate signed URL for ${attachment.storage_key}:`,
@@ -166,12 +142,7 @@ export async function GET() {
       })
     );
 
-    console.log("items before filtering:", items.length);
-
     const validItems = items.filter((item) => item.imageUrl);
-
-    console.log("validItems count:", validItems.length);
-    console.log("validItems sample:", validItems.slice(0, 3));
 
     return NextResponse.json({
       items: validItems,
