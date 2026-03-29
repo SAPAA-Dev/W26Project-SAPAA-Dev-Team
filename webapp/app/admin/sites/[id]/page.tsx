@@ -87,6 +87,28 @@ type GalleryItem = {
   photographer?: string | null;
 };
 
+function getInspectionDate(response: FormResponse): string | null {
+  return response.inspection_date ?? response.created_at ?? null;
+}
+
+function formatInspectionDate(
+  dateString: string | null | undefined,
+  options?: Intl.DateTimeFormatOptions
+): string {
+  if (!dateString) return 'No Date';
+
+  const formatOptions = options ?? { year: 'numeric', month: 'numeric', day: 'numeric' };
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    return new Intl.DateTimeFormat('en-US', {
+      ...formatOptions,
+      timeZone: 'UTC',
+    }).format(new Date(`${dateString}T00:00:00Z`));
+  }
+
+  return new Date(dateString).toLocaleDateString('en-US', formatOptions);
+}
+
 function groupAnswersBySection(answers: FormAnswer[]) {
   const sections: Array<{
     sectionId: number | null;
@@ -308,11 +330,16 @@ export default function AdminSiteDetails() {
           });
         }
         const value = a.obs_value ?? a.obs_comm ?? '';
+        const inspectionDate = getInspectionDate(response);
         if (value) {
           questionMap.get(key)!.answers.push({
             inspectionId: response.id,
-            date: response.created_at ?? '',
-            displayDate: response.created_at ? new Date(response.created_at).toLocaleDateString() : 'N/A',
+            date: inspectionDate ?? '',
+            displayDate: formatInspectionDate(inspectionDate, {
+              year: 'numeric',
+              month: 'numeric',
+              day: 'numeric',
+            }),
             answer: value,
           });
         }
@@ -443,7 +470,11 @@ export default function AdminSiteDetails() {
     if (format === 'csv') {
       const headers = ['Date', 'Score', 'Steward', 'Naturalness Details', 'Active'];
       const rows = inspections.map(insp => [
-        insp.created_at ? new Date(insp.created_at).toLocaleDateString() : '',
+        getInspectionDate(insp) ? formatInspectionDate(getInspectionDate(insp), {
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+        }) : '',
         insp.naturalness_score || '',
         insp.steward || '',
         insp.naturalness_details || '',
@@ -471,7 +502,7 @@ export default function AdminSiteDetails() {
   const getDataQualityScore = (response: AdminFormResponse): { score: number; issues: string[] } => {
     const issues: string[] = [];
     let score = 100;
-    if (!response.created_at) { issues.push('Missing date'); score -= 20; }
+    if (!getInspectionDate(response)) { issues.push('Missing date'); score -= 20; }
     if (!response.naturalness_score || response.naturalness_score.trim() === '') { issues.push('Missing naturalness score'); score -= 25; }
     if (response.answers.length === 0) { issues.push('No answers recorded'); score -= 15; }
     if (!response.naturalness_details || response.naturalness_details.trim() === '') { issues.push('Missing naturalness details'); score -= 10; }
@@ -483,6 +514,7 @@ export default function AdminSiteDetails() {
     const lower = filterText.toLowerCase();
     return inspections.filter(insp => {
       return (
+        (insp.inspection_date?.toLowerCase().includes(lower)) ||
         (insp.created_at?.toLowerCase().includes(lower)) ||
         (insp.naturalness_score?.toLowerCase().includes(lower)) ||
         (insp.naturalness_details?.toLowerCase().includes(lower)) ||
@@ -688,7 +720,11 @@ export default function AdminSiteDetails() {
                   <div key={response.id} className={`border-2 rounded-lg p-4 ${response.is_active ? 'border-[#E4EBE4]' : 'border-[#E4EBE4] opacity-50'}`}>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-[#7A8075]">
-                        {response.created_at ? new Date(response.created_at).toLocaleDateString() : 'No Date'}
+                        {formatInspectionDate(getInspectionDate(response), {
+                          year: 'numeric',
+                          month: 'numeric',
+                          day: 'numeric',
+                        })}
                       </span>
                       <span className={`text-sm font-bold ${quality.score >= 80 ? 'text-[#1C7C4D]' : quality.score >= 60 ? 'text-[#E0A63A]' : 'text-[#B91C1C]'}`}>
                         {quality.score}%
@@ -849,7 +885,11 @@ export default function AdminSiteDetails() {
                           <div>
                             <div className="flex items-center gap-2">
                               <h3 className="text-base sm:text-lg font-bold text-[#254431] leading-snug">
-                                {response.created_at ? new Date(response.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'No Date'}
+                                {formatInspectionDate(getInspectionDate(response), {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric',
+                                })}
                               </h3>
                               {isInactive && (
                                 <span className="px-2 py-0.5 bg-[#FEF3C7] text-[#92400E] text-xs font-bold rounded-full flex items-center gap-1">
@@ -1225,7 +1265,11 @@ export default function AdminSiteDetails() {
           <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex items-center justify-between p-6 border-b-2 border-[#E4EBE4] flex-shrink-0">
               <h2 className="text-2xl font-bold text-[#254431]">
-                Edit Report: {editingResponse.created_at ? new Date(editingResponse.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'No Date'}
+                Edit Report: {formatInspectionDate(getInspectionDate(editingResponse), {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
               </h2>
               <button onClick={() => { setEditingResponse(null); setEditAnswers([]); }} disabled={isSaving} className="w-10 h-10 rounded-xl hover:bg-[#E4EBE4] flex items-center justify-center transition-colors disabled:opacity-50">
                 <X className="w-6 h-6 text-[#7A8075]" />

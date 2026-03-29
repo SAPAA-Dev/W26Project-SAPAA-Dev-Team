@@ -65,6 +65,7 @@ const mockFormResponses = [
     id: 101,
     user_id: 'user-1',
     created_at: '2024-06-15T12:00:00Z',
+    inspection_date: '2024-06-15',
     inspection_no: 'INS-001',
     naturalness_score: '3.5',
     naturalness_details: 'Well preserved natural habitat',
@@ -101,6 +102,7 @@ const mockFormResponses = [
     id: 102,
     user_id: 'user-2',
     created_at: '2023-12-10T12:00:00Z',
+    inspection_date: '2023-12-10',
     inspection_no: 'INS-002',
     naturalness_score: '2.5',
     naturalness_details: 'Some degradation observed',
@@ -516,6 +518,34 @@ describe('AdminSiteDetails', () => {
       await waitFor(() => {
         expect(screen.getByText('Score: 3.5')).toBeInTheDocument();
         expect(screen.getByText('Score: 2.5')).toBeInTheDocument();
+      });
+    });
+
+    it('should order reports by inspection date rather than created_at', async () => {
+      mockGetFormResponsesBySiteAdmin.mockResolvedValue([
+        {
+          ...mockFormResponses[0],
+          id: 201,
+          created_at: '2024-01-01T12:00:00Z',
+          inspection_date: '2024-06-15',
+        },
+        {
+          ...mockFormResponses[1],
+          id: 202,
+          created_at: '2024-12-10T12:00:00Z',
+          inspection_date: '2023-12-10',
+        },
+      ]);
+
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        const inspectionButtons = screen
+          .getAllByRole('button')
+          .filter((button) => button.textContent?.includes('June 15, 2024') || button.textContent?.includes('December 10, 2023'));
+
+        expect(inspectionButtons[0]).toHaveTextContent('June 15, 2024');
+        expect(inspectionButtons[1]).toHaveTextContent('December 10, 2023');
       });
     });
 
