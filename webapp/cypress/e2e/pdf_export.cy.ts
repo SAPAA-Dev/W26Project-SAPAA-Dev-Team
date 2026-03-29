@@ -4,36 +4,56 @@ beforeEach(() => {
   cy.viewport(1280, 720);
 });
 
+function dismissTutorialIfPresent() {
+  cy.get('body').then(($body) => {
+    if ($body.find('.react-joyride__overlay').length) {
+      cy.get('[data-testid="tutorial-skip"], [aria-label="Skip"], button[data-action="skip"], button[data-action="close"]')
+        .first()
+        .click({ force: true });
+      cy.get('.react-joyride__overlay').should('not.exist', { timeout: 5000 });
+    }
+  });
+}
+
 function loginAsAdmin() {
   cy.visit('http://localhost:3000/');
   cy.get('#email').type('jason.liang5129@gmail.com');
   cy.get('#password').type('123Abc@@');
   cy.get('button.font-bold').click();
-  cy.get('button.text-white').click();
-  cy.wait(2000);
-  cy.contains('Admin').first().click();
-  cy.wait(2000);
-  cy.url().should('include', '/admin/dashboard');
+
+  cy.wait(3000);
+  dismissTutorialIfPresent();
+
+  cy.get('button[title="Open menu"]').then(($btn) => {
+    if ($btn.length) {
+      cy.wrap($btn).click();
+      cy.contains('Go to admin dashboard').click();
+    }
+  });
+
+  cy.url().should('include', '/admin/dashboard', { timeout: 10000 });
 }
 
 function navigateToSiteDetails() {
   cy.visit('http://localhost:3000/admin/sites');
-  cy.url().should('include', '/admin/sites');
-  cy.wait(2000);
+  cy.url().should('include', '/admin/sites', { timeout: 10000 });
+  dismissTutorialIfPresent();
+
   cy.get('input[placeholder="Search by site name or county..."]').type('riverlot');
   cy.contains('Riverlot 56').first().click();
-  cy.wait(2000);
+
+  // Updated URL check for new structure
+  cy.url().should('include', '/admin/sites/Riverlot', { timeout: 10000 });
+  dismissTutorialIfPresent();
 }
 
 function openSitePdfModal() {
-  cy.wait(2000);
   cy.contains('Export').click();
   cy.contains('Export as PDF').click();
   cy.contains('Export PDF Report').should('be.visible');
 }
 
 describe('PDF Export - Admin Access Only', () => {
-
   it('Export PDF button is accessible on the Admin panel', () => {
     loginAsAdmin();
     navigateToSiteDetails();
@@ -44,14 +64,13 @@ describe('PDF Export - Admin Access Only', () => {
   it('Bulk PDF button is accessible on the Admin sites list', () => {
     loginAsAdmin();
     cy.visit('http://localhost:3000/admin/sites');
-    cy.url().should('include', '/admin/sites');
-    cy.wait(2000);
+    cy.url().should('include', '/admin/sites', { timeout: 10000 });
+    dismissTutorialIfPresent();
     cy.contains('Bulk PDF').should('be.visible');
   });
 });
 
 describe('PDF Export - Select Sections', () => {
-
   beforeEach(() => {
     loginAsAdmin();
     navigateToSiteDetails();
@@ -67,7 +86,6 @@ describe('PDF Export - Select Sections', () => {
   it('Allows Admin to deselect a section', () => {
     openSitePdfModal();
     cy.contains('Advanced Options').click();
-    // Click the first section to deselect it
     cy.contains('Sections').parent().parent().find('button').filter(':has(svg)').first().click();
     cy.contains('Select all').should('be.visible');
   });
@@ -75,7 +93,6 @@ describe('PDF Export - Select Sections', () => {
   it('Shows error when all sections are deselected and disables export', () => {
     openSitePdfModal();
     cy.contains('Advanced Options').click();
-    // Deselect all sections one by one
     cy.contains('Sections').parent().parent().find('div.space-y-2 button').each(($btn) => {
       cy.wrap($btn).click();
     });
@@ -85,7 +102,6 @@ describe('PDF Export - Select Sections', () => {
 });
 
 describe('PDF Export - Select Time Period', () => {
-
   beforeEach(() => {
     loginAsAdmin();
     navigateToSiteDetails();
@@ -117,7 +133,6 @@ describe('PDF Export - Select Time Period', () => {
 });
 
 describe('PDF Export - Generates PDF Given Criteria', () => {
-
   beforeEach(() => {
     loginAsAdmin();
   });
@@ -159,11 +174,9 @@ describe('PDF Export - Generates PDF Given Criteria', () => {
 
     openSitePdfModal();
 
-    // Set date range
     cy.get('input[type="date"]').first().type('2024-01-01');
     cy.get('input[type="date"]').last().type('2024-12-31');
 
-    // Deselect a section
     cy.contains('Advanced Options').click();
     cy.contains('Sections').parent().parent().find('div.space-y-2 button').first().click();
 
@@ -174,8 +187,8 @@ describe('PDF Export - Generates PDF Given Criteria', () => {
 
   it('Generates a bulk multi-site PDF', () => {
     cy.visit('http://localhost:3000/admin/sites');
-    cy.url().should('include', '/admin/sites');
-    cy.wait(2000);
+    cy.url().should('include', '/admin/sites', { timeout: 10000 });
+    dismissTutorialIfPresent();
 
     cy.intercept('POST', '/api/pdf', (req) => {
       expect(req.body.mode).to.eq('multi-site');

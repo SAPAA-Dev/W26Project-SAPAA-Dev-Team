@@ -14,6 +14,8 @@ import { logout } from "@/services/auth";
 import dynamic from 'next/dynamic';
 import { sitesDashboardSteps } from '@/components/TutorialOverlay';
 import UserNavBar from "@/components/HeaderDropdown";
+import HelpMenu from '@/components/HelpMenu';
+import { siteDetailSteps } from '@/components/TutorialOverlay';
 
 const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
@@ -96,7 +98,6 @@ export default function HomeClient() {
   const [userLoading, setUserLoading] = useState(true);
   const [totalResponses, setTotalResponses] = useState<number>(0);
   const [menuOpen, setMenuOpen] = useState(false); 
-  
   const [forceTutorial, setForceTutorial] = useState(false);
 
   const handleStartTutorial = useCallback(() => {
@@ -253,14 +254,14 @@ export default function HomeClient() {
             </div>
           </div>
 
-          <UserNavBar/>
+          <UserNavBar onStartTutorial={handleStartTutorial} />
       
 
         </div>
       </div>
         
     {/* Stats Cards */}
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 mt-2">
+    <div id="tutorial-stats" className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 mt-2">
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-xl p-4 sm:p-5 border-2 border-[#E4EBE4] shadow-sm">
           <div className="flex items-center gap-2 mb-2">

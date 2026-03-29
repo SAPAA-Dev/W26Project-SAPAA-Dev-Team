@@ -483,7 +483,7 @@ export default function SiteDetailScreen() {
           <div className="text-sm text-[#E4EBE4]">Last Visit</div>
           <div className="text-lg font-bold">{ageText}</div>
         </div>
-        <UserNavBar />
+        <UserNavBar onStartTutorial={handleStartTutorial} />
 
       </div>
     </div>

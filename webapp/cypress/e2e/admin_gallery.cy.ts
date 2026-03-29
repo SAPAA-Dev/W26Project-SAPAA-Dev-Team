@@ -1,16 +1,31 @@
 /// <reference types="cypress" />
 
+function dismissTutorialIfPresent() {
+  cy.wait(2000);
+  cy.get('body').then(($body) => {
+    if ($body.find('.react-joyride__overlay').length > 0) {
+      cy.get('[data-testid="tutorial-skip"], [aria-label="Skip"], button[data-action="skip"], button[data-action="close"]')
+        .first()
+        .click({ force: true });
+      cy.get('.react-joyride__overlay').should('not.exist', { timeout: 5000 });
+    }
+  });
+}
+
 describe("Admin Image Gallery", () => {
   beforeEach(() => {
     cy.visit("http://localhost:3000/");
-    cy.get("#email").click();
-    cy.get("#email").type("jason.liang5129@gmail.com");
-    cy.get("#password").click();
-    cy.get("#password").type("123Abc@@");
+    cy.get("#email").click().type("jason.liang5129@gmail.com");
+    cy.get("#password").click().type("123Abc@@");
     cy.get("button.font-bold").click();
-    cy.get("button.text-white").click();
-    cy.contains("Admin").first().click();
-    cy.url().should("include", "/admin/dashboard");
+
+    cy.wait(3000);
+    dismissTutorialIfPresent();
+
+    // Navigate to admin via hamburger
+    cy.get('button[title="Open menu"]').click();
+    cy.contains('Go to admin dashboard').click();
+    cy.url().should("include", "/admin/dashboard", { timeout: 10000 });
 
     cy.intercept("GET", "**/api/gallery", {
       statusCode: 200,
@@ -90,8 +105,8 @@ describe("Admin Image Gallery", () => {
     cy.contains("Riverlot 56 (NA)").should("be.visible");
     cy.contains("Haging Broken Tree").should("be.visible");
     cy.contains("RiverLot56_01-31-2026_ZoeP_HangingTree.jpg")
-    .scrollIntoView()
-    .should("be.visible");
+      .scrollIntoView()
+      .should("be.visible");
 
     cy.contains("Open full image in new tab")
       .scrollIntoView()
@@ -104,7 +119,9 @@ describe("Admin Image Gallery", () => {
     cy.get('img[alt="CMPUT401W26 Visit"]').first().closest("button").click();
     cy.contains("Riverlot 56 (NA)").should("be.visible");
     cy.contains("CMPUT401W26 Visit").should("be.visible");
-    cy.contains("RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg").scrollIntoView().should("be.visible");
+    cy.contains("RiverLot56-2026-01-31-Vishal-CMPUT401Visit-1A2B3C4D.jpg")
+      .scrollIntoView()
+      .should("be.visible");
     cy.contains("Open full image in new tab")
       .scrollIntoView()
       .should("be.visible")

@@ -1,7 +1,4 @@
 /// <reference types="cypress" />
-// US 1.0.30 – (Admin) Edit Site Profile
-// As an Admin, I want to be able to update a profile for each site,
-// so that users of the app can stay informed about the state of the site.
 
 Cypress.on('uncaught:exception', (err) => {
   if (err.message.includes('Invalid or unexpected token')) {
@@ -12,11 +9,22 @@ Cypress.on('uncaught:exception', (err) => {
 const TEST_SITE_NAME = 'Riverlot 56 (NA)';
 const UPDATED_SITE_NAME = 'Riverlot 56 (NA) - Edited';
 
+function dismissTutorialIfPresent() {
+  cy.wait(2000);
+  cy.get('body').then(($body) => {
+    if ($body.find('.react-joyride__overlay').length > 0) {
+      cy.get('[data-testid="tutorial-skip"], [aria-label="Skip"], button[data-action="skip"], button[data-action="close"]')
+        .first()
+        .click({ force: true });
+      cy.get('.react-joyride__overlay').should('not.exist', { timeout: 5000 });
+    }
+  });
+}
+
 describe('Admin Edit Site Profile', () => {
   let originalCountyId: number | null = null;
 
   before(() => {
-    // Capture original site info for cleanup
     cy.task('getSiteInfo', TEST_SITE_NAME).then((site: any) => {
       if (site) {
         originalCountyId = site.ab_county;
@@ -25,8 +33,6 @@ describe('Admin Edit Site Profile', () => {
   });
 
   after(() => {
-    // Restore site to original state after all tests
-    // The site name may have been changed, so try both names
     cy.task('restoreSite', {
       namesite: UPDATED_SITE_NAME,
       originalName: TEST_SITE_NAME,
@@ -39,85 +45,95 @@ describe('Admin Edit Site Profile', () => {
     });
   });
 
-  // Helper: login as admin and navigate to admin sites
   function loginAsAdmin() {
     cy.visit('http://localhost:3000/');
     cy.get('#email').type('jason.liang5129@gmail.com', { force: true });
     cy.get('#password').type('123Abc@@', { force: true });
     cy.get('button.font-bold').click({ force: true });
-    cy.get('button.text-white').click({ force: true });
-    cy.wait(5000);
-    cy.contains('Admin', { timeout: 15000 }).first().click();
-    cy.wait(5000);
-    cy.get('button[title="admin dropdown menu"]', { timeout: 10000 }).click();
-    cy.contains('Sites').click();
-    cy.url().should('include', '/admin/sites');
-    // Wait for site cards to be loaded
+
+    cy.wait(3000);
+    dismissTutorialIfPresent();
+
+    cy.get('button[title="Open menu"]').click();
+    cy.contains('Go to admin dashboard').click();
+    cy.url().should('include', '/admin/dashboard', { timeout: 10000 });
+
+    // Navigate directly to avoid dropdown redirect race condition
+    cy.visit('http://localhost:3000/admin/sites');
+    cy.url().should('include', '/admin/sites', { timeout: 10000 });
     cy.get('[data-testid^="edit-site-button-"]', { timeout: 15000 }).should('have.length.greaterThan', 0);
   }
 
-  // Helper: open the edit modal for a given site and wait for it to be ready
   function openEditModal(siteName: string) {
     cy.contains(siteName, { timeout: 10000 })
       .closest('.group')
       .find('[data-testid^="edit-site-button-"]')
       .click();
     cy.get('[data-testid="edit-site-modal"]', { timeout: 10000 }).should('be.visible');
-    // Wait for the input to be enabled (not in saving state)
     cy.get('[data-testid="edit-site-name-input"]', { timeout: 10000 }).should('not.be.disabled');
   }
 
-  // Admins can access option to edit site profile
   it('should show edit (pencil) button on site cards for admins', () => {
     loginAsAdmin();
     cy.get('[data-testid^="edit-site-button-"]').should('have.length.greaterThan', 0);
   });
 
-  // Admins can open the edit modal
   it('should open edit site modal when pencil button is clicked', () => {
     loginAsAdmin();
     openEditModal(TEST_SITE_NAME);
     cy.get('[data-testid="edit-site-name-input"]').should('have.value', TEST_SITE_NAME);
   });
 
-  // Name of site should be able to be updated
   it('should update the site name', () => {
     loginAsAdmin();
     openEditModal(TEST_SITE_NAME);
 
-    // Clear and type new name
     cy.get('[data-testid="edit-site-name-input"]').clear().type(UPDATED_SITE_NAME);
     cy.get('[data-testid="edit-site-save-button"]').click();
 
-    // Modal should close and card should show updated name
     cy.get('[data-testid="edit-site-modal"]', { timeout: 10000 }).should('not.exist');
+
+    cy.url().then((url) => {
+      if (!url.includes('/admin/sites')) {
+        cy.visit('http://localhost:3000/admin/sites');
+        cy.url().should('include', '/admin/sites', { timeout: 10000 });
+      }
+    });
+
     cy.contains(UPDATED_SITE_NAME, { timeout: 10000 }).should('be.visible');
 
-    // Revert name back for subsequent tests
     openEditModal(UPDATED_SITE_NAME);
     cy.get('[data-testid="edit-site-name-input"]').clear().type(TEST_SITE_NAME);
     cy.get('[data-testid="edit-site-save-button"]').click();
     cy.get('[data-testid="edit-site-modal"]', { timeout: 10000 }).should('not.exist');
+
+    cy.url().then((url) => {
+      if (!url.includes('/admin/sites')) {
+        cy.visit('http://localhost:3000/admin/sites');
+        cy.url().should('include', '/admin/sites', { timeout: 10000 });
+      }
+    });
+
     cy.contains(TEST_SITE_NAME, { timeout: 10000 }).should('be.visible');
   });
 });
 
-// Non-admin users cannot access option to edit site profile
 describe('Non-Admin Cannot Edit Site Profile', () => {
   it('should not show the admin panel or edit buttons to steward users', () => {
     cy.visit('http://localhost:3000/');
     cy.get('#email').type('awayt7398@gmail.com', { force: true });
     cy.get('#password').type('Throw4w4!', { force: true });
     cy.get('button.font-bold').click({ force: true });
-    cy.get('button.text-white').click({ force: true });
-    cy.wait(5000);
 
-    // Non-admin should not see Admin menu at all
-    cy.contains('Admin').should('not.exist');
-
-    // Non-admin cannot directly navigate to admin sites page
-    cy.visit('http://localhost:3000/admin/sites');
     cy.wait(3000);
+    dismissTutorialIfPresent();
+
+    cy.get('button[title="Open menu"]').click();
+    cy.contains('Admin').should('not.exist');
+    cy.get('div.fixed.inset-0').click({ force: true });
+
+    cy.visit('http://localhost:3000/admin/sites');
+    cy.url().should('include', '/admin/sites', { timeout: 10000 });
     cy.get('[data-testid^="edit-site-button-"]').should('not.exist');
   });
 });

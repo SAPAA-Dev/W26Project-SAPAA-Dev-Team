@@ -134,7 +134,6 @@ describe("Site Details Image Gallery", () => {
       expect(interception.request.url).to.match(/\/api\/homepage-images\/\d+$/);
     });
   
-    // Admin-level endpoints should not have been called
     cy.get("@getAdminGallery.all").should("have.length", 0);
     cy.get("@getHomepageAdminGallery.all").should("have.length", 0);
   
