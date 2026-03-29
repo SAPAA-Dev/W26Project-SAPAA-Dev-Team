@@ -26,7 +26,6 @@ async function getCurrentUser(): Promise<{ email: string; role: string; name: st
     const role = session.user.user_metadata?.role ?? 'steward';
     const name  = session.user.user_metadata?.full_name ?? '';
     const avatar = session.user.user_metadata?.avatar_url ?? '';
-    console.log(session.user)
     
     return {
       email,
@@ -177,7 +176,7 @@ export default function UserNavBar() {
                     </div>
                 </button>
                 <a
-                    href="mailto:support@example.com"
+                    href="mailto:devteams@sapaastewards.com"
                     onClick={() => setMenuOpen(false)}
                     className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f5f3] transition-colors"
                 >

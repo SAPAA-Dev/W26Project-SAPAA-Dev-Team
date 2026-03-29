@@ -225,8 +225,6 @@ export default function SiteDetailScreen() {
         ]);
         const details = await getFormResponsesBySite(siteData[0].namesite);
 
-        console.log(details);
-
         setSite(siteData[0]);
         setInspections(details);
         setCurrentUserId(uid ?? null);
@@ -252,8 +250,6 @@ export default function SiteDetailScreen() {
 
       try {
         setGalleryLoading(true);
-
-        console.log("Fetching gallery for site id:", site.id);
 
         const res = await fetch(`/api/sites/${site.id}/gallery`);
         const data = await res.json();

@@ -762,7 +762,6 @@ describe('US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         // Find the answer for question 32 (email)
         const emailAnswer = answersArray.find((a: any) => a.question_id === 32);
         expect(emailAnswer).toBeDefined();
-        console.log(emailAnswer);
         expect(emailAnswer.obs_comm).toBe('newemail@gmail.com');
     });
 });

@@ -251,7 +251,8 @@ export default function UploadImages() {
       {/* FAB */}
       <button
         onClick={handleOpen}
-        className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 flex items-center gap-2 px-4 sm:px-5 py-3 sm:py-3.5 bg-[#356B43] hover:bg-[#254431] text-white text-sm font-semibold rounded-full shadow-lg transition-all hover:-translate-y-0.5"      >
+        className="fixed bottom-8 right-8 z-50 flex items-center gap-2 px-5 py-3.5 bg-gradient-to-r from-[#356B43] to-[#254431] hover:from-[#254431] hover:to-[#356B43] text-white text-sm font-semibold rounded-full shadow-lg transition-all hover:-translate-y-0.5"
+      >
         <Upload size={16} />
         Upload Images
       </button>
@@ -262,24 +263,17 @@ export default function UploadImages() {
           className="fixed inset-0 z-[200] flex items-center justify-center bg-[#254431]/60 backdrop-blur-md p-4"
           onClick={(e) => e.target === e.currentTarget && handleClose()}
         >
-          <div className="bg-white rounded-2xl w-full max-w-5xl max-h-[90vh] shadow-2xl overflow-hidden flex flex-col">
+          <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
 
             {/* Header */}
-            <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-100">
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Upload Site Images</p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {files.length === 0 ? "Select images to upload" : `${files.length} image${files.length !== 1 ? "s" : ""} selected`}
-                </p>
-              </div>
-            <div className="bg-gradient-to-r from-[#254431] to-[#356B43] px-6 py-5 flex items-center justify-between flex-shrink-0">
+            <div className="bg-gradient-to-r from-[#254431] to-[#356B43] px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                  <Upload className="w-5 h-5 text-white" />
+                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white">Upload Site Images</h2>
-                  <p className="text-sm text-[#86A98A]">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Upload Site Images</h2>
+                  <p className="text-xs sm:text-sm text-[#86A98A]">
                     {files.length === 0
                       ? "Select images to upload"
                       : `${files.length} image${files.length !== 1 ? "s" : ""} selected · ${files.filter(isComplete).length} complete`}
@@ -290,18 +284,17 @@ export default function UploadImages() {
                 onClick={handleClose}
                 className="text-white/60 hover:text-white transition-colors p-1"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </div>
 
-            <div className="px-4 sm:px-6 py-4 sm:py-5 overflow-y-auto flex-1">
-            {/* Body */}
-            <div className="p-4 space-y-3">
+            {/* Body — scrollable */}
+            <div className="p-4 space-y-3 overflow-y-auto">
 
               {/* Drop zone */}
               {files.length === 0 && (
                 <div
-                  className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-colors ${
+                  className={`border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center cursor-pointer transition-colors ${
                     dragging
                       ? "border-[#356B43] bg-[#F7F2EA]"
                       : "border-[#E4EBE4] bg-[#F7F2EA] hover:border-[#356B43]"
@@ -382,19 +375,20 @@ export default function UploadImages() {
                     </div>
                   </div>
 
-                  {/* Preview + fields */}
-                  <div className="flex flex-col lg:flex-row gap-5">
+                  {/* Preview + fields — stacks on mobile, side by side on desktop */}
+                  <div className="flex flex-col lg:flex-row gap-4">
 
-                    {/* Left: image preview */}
-                    <div className="w-full lg:w-[28rem] lg:flex-shrink-0 flex flex-col items-center gap-2">
+                    {/* Image preview */}
+                    <div className="w-full lg:w-96 flex-shrink-0">
                       <img
                         src={current.preview}
                         alt={current.file.name}
-                        className="w-full h-64 sm:h-80 lg:h-[22.5rem] object-cover rounded-xl border border-gray-100"
+                        className="w-full object-cover rounded-2xl border-2 border-[#E4EBE4]"
+                        style={{ maxHeight: '360px' }}
                       />
                     </div>
 
-                    {/* Right: all metadata fields in one card */}
+                    {/* Metadata fields */}
                     <div className="flex-1 min-w-0 bg-[#F7F2EA] rounded-2xl border-2 border-[#E4EBE4] p-4 flex flex-col gap-2.5">
 
                       {/* Site selector */}
@@ -452,8 +446,8 @@ export default function UploadImages() {
                         )}
                       </div>
 
-                      {/* Date + Photographer side by side */}
-                      <div className="grid grid-cols-2 gap-2.5">
+                      {/* Date + Photographer — stacks on mobile */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <div>
                           <label className="block text-xs font-semibold uppercase tracking-wide text-[#7A8075] mb-1">
                             Date of Visit <span className="text-[#B91C1C]">*</span>
@@ -541,32 +535,37 @@ export default function UploadImages() {
             </div>
 
             {/* Footer */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 border-t border-gray-100 bg-gray-50">
-              <span className="text-xs text-gray-400">
-                {files.length > 0
-                  ? <><strong className="text-gray-600">{files.filter(isComplete).length} / {files.length} complete </strong></>
-                  : "No files selected"}
-              </span>
-              <div className="flex flex-col items-stretch sm:items-end gap-2 w-full sm:w-auto">
-                {uploadError && (
-                  <p className="text-xs text-red-500">{uploadError}</p>
-                )}
-                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                <button
-                  onClick={handleClose}
-                  className="px-4 py-2 text-sm font-medium text-gray-500 border border-gray-200 rounded-lg hover:border-gray-300 hover:text-gray-700 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  data-testid="upload-submit-btn"
-                  onClick={handleUpload}
-                  disabled={!canUpload || isSubmitting}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#356B43] hover:bg-[#254431] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
-                >
-                  <Upload size={14} />
-                  {isSubmitting ? "Uploading..." : "Upload"}
-                </button>
+            <div className="border-t-2 border-[#E4EBE4] px-4 sm:px-6 py-4 flex-shrink-0">
+              {uploadError && (
+                <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-[#FEE2E2] rounded-xl">
+                  <AlertCircle className="w-4 h-4 text-[#B91C1C] flex-shrink-0" />
+                  <p className="text-sm text-[#B91C1C]">{uploadError}</p>
+                </div>
+              )}
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm text-[#7A8075] shrink-0">
+                  {files.length > 0 ? (
+                    <><strong className="text-[#254431]">{files.filter(isComplete).length} / {files.length}</strong> complete</>
+                  ) : (
+                    "No files selected"
+                  )}
+                </p>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <button
+                    onClick={handleClose}
+                    className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl border-2 border-[#E4EBE4] text-[#7A8075] hover:bg-[#F7F2EA] font-medium transition-colors text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    data-testid="upload-submit-btn"
+                    onClick={handleUpload}
+                    disabled={!canUpload || isSubmitting}
+                    className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-[#356B43] to-[#254431] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-all"
+                  >
+                    <Upload size={14} />
+                    {isSubmitting ? "Uploading..." : "Upload"}
+                  </button>
                 </div>
               </div>
             </div>
