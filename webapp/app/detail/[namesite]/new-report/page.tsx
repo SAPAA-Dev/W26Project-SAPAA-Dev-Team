@@ -136,7 +136,6 @@ export default function NewReportPage() {
       console.log("verification effect ran", { hasDismissedVerification });
     const fetchUserAndCheckSteward = async () => {
       try {
-        setIsLoading(true);
         const user = await getCurrentUser();
         setCurrentUser(user);
         
