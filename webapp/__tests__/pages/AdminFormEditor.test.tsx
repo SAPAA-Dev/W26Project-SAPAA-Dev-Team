@@ -365,10 +365,10 @@ describe('FormEditorPage', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /Add Question/i }));
 
-      // Default type is Radio (option) — "Answer Options" label should appear
+      // Default type is Radio (option) - "Answer Options" label should appear
       expect(screen.getByText('Answer Options')).toBeInTheDocument();
 
-      // Switch to Text type — options section should disappear
+      // Switch to Text type - options section should disappear
       fireEvent.click(screen.getByTestId('question-type-Text'));
 
       expect(screen.queryByText('Answer Options')).not.toBeInTheDocument();

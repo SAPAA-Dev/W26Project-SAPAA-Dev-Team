@@ -288,7 +288,7 @@ export default function UploadImages() {
               </button>
             </div>
 
-            {/* Body — scrollable */}
+            {/* Body - scrollable */}
             <div className="p-4 space-y-3 overflow-y-auto">
 
               {/* Drop zone */}
@@ -375,7 +375,7 @@ export default function UploadImages() {
                     </div>
                   </div>
 
-                  {/* Preview + fields — stacks on mobile, side by side on desktop */}
+                  {/* Preview + fields - stacks on mobile, side by side on desktop */}
                   <div className="flex flex-col lg:flex-row gap-4">
 
                     {/* Image preview */}
@@ -446,7 +446,7 @@ export default function UploadImages() {
                         )}
                       </div>
 
-                      {/* Date + Photographer — stacks on mobile */}
+                      {/* Date + Photographer - stacks on mobile */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <div>
                           <label className="block text-xs font-semibold uppercase tracking-wide text-[#7A8075] mb-1">

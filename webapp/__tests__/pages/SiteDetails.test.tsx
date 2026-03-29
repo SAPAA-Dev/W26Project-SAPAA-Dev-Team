@@ -198,7 +198,7 @@ describe('SiteDetailScreen', () => {
       render(<SiteDetailScreen />);
       await waitFor(() => {
         expect(screen.getByText(/Avg. Score/i)).toBeInTheDocument();
-        // scores are strings like "4 = Great", "3 = Good", "2 = Fair" — numeric prefixes average to 3.0
+        // scores are strings like "4 = Great", "3 = Good", "2 = Fair" - numeric prefixes average to 3.0
         const scoreElements = screen.getAllByText('3.0');
         expect(scoreElements.length).toBeGreaterThan(0);
       });

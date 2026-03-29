@@ -226,7 +226,7 @@ export default function TermsPage() {
                     Resize images to no more than 1,000 pixels on the longest side.
                 </li>
                 <li>
-                    Crop unnecessary background — focus on the subject.
+                    Crop unnecessary background - focus on the subject.
                 </li>
                 <li>
                     Captions may include subject, site, date, and photographer name.

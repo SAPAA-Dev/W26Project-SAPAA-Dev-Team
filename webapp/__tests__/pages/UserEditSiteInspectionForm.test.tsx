@@ -4,19 +4,19 @@ import EditReportPage from '@/app/detail/[namesite]/edit-report/[responseId]/pag
 import * as queries from '@/utils/supabase/queries';
 import { devNull } from 'os';
 
-// — Navigation
+// - Navigation
 jest.mock('next/navigation', () => ({
   useParams: jest.fn(() => ({ namesite: 'Test%20Site', responseId: '42' })),
   useRouter: jest.fn(() => ({ push: jest.fn(), back: jest.fn() })),
 }));
 
-// — Next Image
+// - Next Image
 jest.mock('next/image', () => ({
   __esModule: true,
   default: (props: any) => <img {...props} />,
 }));
 
-// — Queries
+// - Queries
 jest.mock('@/utils/supabase/queries');
 jest.mock('@/utils/supabase/client', () => ({
   createClient: () => ({
@@ -24,7 +24,7 @@ jest.mock('@/utils/supabase/client', () => ({
   }),
 }));
 
-// — Browser APIs
+// - Browser APIs
 global.URL.createObjectURL = jest.fn(() => 'blob:fake');
 global.URL.revokeObjectURL = jest.fn();
 global.fetch = jest.fn((url: string) => {
@@ -590,7 +590,7 @@ const mockResponses: Record<string | number, any> = {
   };
 
 beforeEach(() => {
-  // Default mock returns — override per test as needed
+  // Default mock returns - override per test as needed
   (queries.getQuestionsOnline as jest.Mock).mockResolvedValue([]);
   (queries.getFormResponseById as jest.Mock).mockResolvedValue({});
   (queries.getResponseOwnerId as jest.Mock).mockResolvedValue('user-123'); // matches auth user → authorized
@@ -629,7 +629,7 @@ describe('US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         render(<EditReportPage />);
         await waitFor(() => expect(screen.getByText('Edit Inspection Report')).toBeInTheDocument());
       
-        // ── Section 1 (WhoRYou) — active by default ──────────────────────────────
+        // ── Section 1 (WhoRYou) - active by default ──────────────────────────────
         await waitFor(() => expect(screen.getByTestId('question-input-32')).toBeInTheDocument());
       
         expect((screen.getByTestId('question-input-32') as HTMLTextAreaElement).value).toBe('testuser@example.com');

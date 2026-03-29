@@ -41,7 +41,7 @@ function detectImageFormat(buf: Buffer): 'png' | 'jpg' | null {
   }
 
   // WebP: 52 49 46 46 ... 57 45 42 50  (RIFF....WEBP)
-  // Not supported by @react-pdf/renderer — return null
+  // Not supported by @react-pdf/renderer - return null
   return null;
 }
 

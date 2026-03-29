@@ -589,7 +589,7 @@ export default function AdminSiteDetails() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-      {/* Header — matches site details layout */}
+      {/* Header - matches site details layout */}
       <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-4 sm:px-6 py-4 shadow-lg">
         <div className="max-w-7xl mx-auto">
           <button
@@ -746,7 +746,7 @@ export default function AdminSiteDetails() {
           </div>
         )}
 
-        {/* Stats Cards — matches site details style */}
+        {/* Stats Cards - matches site details style */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
             <div className="flex items-center gap-2 mb-2">
@@ -807,7 +807,7 @@ export default function AdminSiteDetails() {
           </div>
         )}
 
-        {/* View Toggle — matches site details style with 3 tabs */}
+        {/* View Toggle - matches site details style with 3 tabs */}
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-1.5">
           <button
             onClick={() => setViewMode('by-date')}
@@ -872,7 +872,7 @@ export default function AdminSiteDetails() {
                     }`}
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center">
-                      {/* Main clickable area — matches site details */}
+                      {/* Main clickable area - matches site details */}
                       <button
                         onClick={() => toggleInspection(response.id)}
                         className="flex-1 flex items-center justify-between p-4 sm:p-6 sm:pr-4 text-left hover:bg-[#F7F2EA] transition-colors"
@@ -907,7 +907,7 @@ export default function AdminSiteDetails() {
                         )}
                       </button>
 
-                      {/* Admin action buttons — directly visible */}
+                      {/* Admin action buttons - directly visible */}
                       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mx-4 mb-4 sm:mb-0">
                         <button
                           data-testid={`edit-button-${response.id}`}

@@ -34,7 +34,7 @@ export async function GET(request: Request) {
       );
     }
 
-    // Build Supabase query — filter by whichever params were provided
+    // Build Supabase query - filter by whichever params were provided
     let query = supabase
       .from("W26_attachments")
       .select(

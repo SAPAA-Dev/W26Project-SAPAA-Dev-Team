@@ -154,7 +154,7 @@ export default function GalleryPage() {
                   </p>
                 </div>
               </div>
-              {/* Right: navbar — rendered inline, bg overridden to transparent */}
+              {/* Right: navbar - rendered inline, bg overridden to transparent */}
               <div className="w-full sm:w-auto [&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
                 <UserNavBar />
               </div>

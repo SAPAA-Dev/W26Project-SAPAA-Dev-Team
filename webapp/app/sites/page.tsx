@@ -248,7 +248,7 @@ export default function HomeClient() {
     <ProtectedRoute>
 
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-      {/* Tutorial Overlay — auto-starts on first visit, re-runs on forceRun */}
+      {/* Tutorial Overlay - auto-starts on first visit, re-runs on forceRun */}
       {!loading && !userLoading && (
         <TutorialOverlay
           key={forceTutorial ? 'force' : 'auto'}
