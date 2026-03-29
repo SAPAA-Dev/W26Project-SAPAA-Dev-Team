@@ -79,7 +79,7 @@ export default function EditReportPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Existing attachments (already in AWS — non-removable, metadata editable)
+  // Existing attachments (already in AWS - non-removable, metadata editable)
   const [existingAttachments, setExistingAttachments] = useState<ExistingAttachment[]>([]);
   // Track which existing attachments had their metadata changed so we only update those
   const [originalAttachmentMeta, setOriginalAttachmentMeta] = useState<
@@ -135,8 +135,6 @@ export default function EditReportPage() {
         setCurrentUser(user);
         setQuestions(questionsData || []);
         setResponses(existingAnswers);
-        console.log(questionsData);
-        console.log(existingAnswers);
         const { items = [] } = await siteImagesRes.json();
   
         const hydrated: ExistingAttachment[] = items.map((a: any) => ({
@@ -315,7 +313,7 @@ export default function EditReportPage() {
   // ── Submit handler ────────────────────────────────────────────────────────
 
   const handleSubmit = async () => {
-    // 1. Required-fields check (exclude image questions — existing images count)
+    // 1. Required-fields check (exclude image questions - existing images count)
     const questionNumberMap = buildQuestionNumberMap(questions);
     const missingRequired = questions
       .filter((q) => {
@@ -340,9 +338,8 @@ export default function EditReportPage() {
     setIsSaving(true);
 
     try {
-      // 2. Persist regular (non-image) answers — same delete+reinsert logic as before
+      // 2. Persist regular (non-image) answers - same delete+reinsert logic as before
       const data = await getQuestionResponseType();
-      console.log(data);
       const observationTypeMap = new Map(
         data.map((q) => [String(q.question_id), { obs_value: q.obs_value, obs_comm: q.obs_comm }])
       );
@@ -352,7 +349,7 @@ export default function EditReportPage() {
       for (const [questionId, answer] of Object.entries(responses)) {
         if (questionId.includes('_comm')) continue;
 
-        // Skip image question responses — those are handled separately via W26_attachments
+        // Skip image question responses - those are handled separately via W26_attachments
         const question = questions.find((q) => q.id === Number(questionId));
         if (question?.question_type.trim() === 'image') continue;
 
@@ -400,7 +397,7 @@ export default function EditReportPage() {
       }
       await Promise.all(metadataUpdates);
 
-      // Step 4 — upload new local images using the same flow as new-report
+      // Step 4 - upload new local images using the same flow as new-report
       if (siteId) {
         const imageQuestions = questions.filter((q) => q.question_type.trim() === 'image');
 
@@ -561,7 +558,7 @@ export default function EditReportPage() {
       </div>
     </header>
 
-      {/* Form — same MainContent as new-report, extended with existing-attachment props */}
+      {/* Form - same MainContent as new-report, extended with existing-attachment props */}
       <MainContent
         responses={responses}
         onResponsesChange={setResponses}

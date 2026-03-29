@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { login, signInWithGoogle, signInWithMicrosoft } from '@/services/auth';
+import { createClient } from '@/utils/supabase/client';
 import { Mail, Lock, Loader2, Eye, EyeOff, Leaf, MapPin, TrendingUp } from 'lucide-react';
 import Image from 'next/image';
 
@@ -13,6 +14,17 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.push('/sites');
+      }
+    };
+    checkSession();
+  }, []);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,8 +88,6 @@ export default function LoginPage() {
                 </div>
             </div>
                 
-             
-
             <h1 className="text-5xl font-bold leading-tight mb-6">
               Welcome back.
               <span className="block text-[#86A98A] mt-2">

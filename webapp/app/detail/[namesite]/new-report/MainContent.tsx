@@ -54,7 +54,7 @@ interface MainContentProps {
 
 // An image already persisted in AWS + W26_attachments
 export interface ExistingAttachment {
-  id: number;           // W26_attachments.id — used for metadata updates
+  id: number;           // W26_attachments.id - used for metadata updates
   question_id: number;
   storage_key: string;
   filename: string | null;
@@ -68,7 +68,7 @@ export interface ExistingAttachment {
 
 // A locally-selected image that has not yet been uploaded to AWS
 export interface LocalImage {
-  id: string;           // crypto.randomUUID() — client-only
+  id: string;           // crypto.randomUUID() - client-only
   file: File;
   caption: string;
   identifier: string;
@@ -366,7 +366,7 @@ export default function MainContent({
                 );
               })}
         
-              {/* Other free-text — only when Other is checked */}
+              {/* Other free-text - only when Other is checked */}
               {Array.isArray(response) && response.includes('Other') && (
                 <div className="ml-2 pl-4 border-l-2 border-[#356B43]/30">
                   <label className="block text-sm font-semibold text-[#254431] mb-1">
@@ -451,9 +451,9 @@ export default function MainContent({
         );
 
       case 'image': {
-        // Local images: newly picked files, not yet uploaded — stored in responses[question.id]
+        // Local images: newly picked files, not yet uploaded - stored in responses[question.id]
         const localImages: LocalImage[] = Array.isArray(response) ? (response as LocalImage[]) : [];
-        // Existing images: already in AWS — pulled from the existingAttachments prop
+        // Existing images: already in AWS - pulled from the existingAttachments prop
         const persistedImages: ExistingAttachment[] = existingForQuestion(question.id);
 
         const addFiles = (newFiles: File[]) => {

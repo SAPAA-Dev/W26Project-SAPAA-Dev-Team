@@ -1242,14 +1242,14 @@ describe('US 1.0.7 - Add Trip Details about how the trip went', () => {
     expect(screen.getByText('0 / 4 answered')).toBeInTheDocument();
     unmount();
 
-    // Only optional Q41.1 and Q43 answered — required Q41/Q42 still missing
+    // Only optional Q41.1 and Q43 answered - required Q41/Q42 still missing
     const { unmount: unmount2 } = render(
       <StickyFooter questions={tripDetailsQuestions} responses={{ 411: 'Some details', 43: 'Looked good' }} />
     );
     expect(screen.getByText('2 / 4 answered')).toBeInTheDocument();
     unmount2();
 
-    // All required answered, optional skipped — should be accepted
+    // All required answered, optional skipped - should be accepted
     render(
       <StickyFooter questions={tripDetailsQuestions} responses={{ 41: 'Routine Inspection', 42: '1-3 hours' }} />
     );

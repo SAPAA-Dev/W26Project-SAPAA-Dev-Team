@@ -652,7 +652,7 @@ export async function getInspectionDetailsOnline(namesite: string): Promise<Insp
 
 
 export async function insertInspectionAttachments(rows: Array<{
-  response_id: number;
+  response_id: number | null;
   question_id: number;
   storage_key: string; // placeholder for now
   filename?: string | null;

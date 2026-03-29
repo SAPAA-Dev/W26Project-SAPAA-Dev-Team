@@ -256,7 +256,7 @@ describe("Private user info – never submitted to the database", () => {
 
 
   describe("uid scoping", () => {
-    it("the uid is passed to addSiteInspectionReport to link the report — not stored in answers", async () => {
+    it("the uid is passed to addSiteInspectionReport to link the report - not stored in answers", async () => {
       const { addSiteInspectionReport } = require("@/utils/supabase/queries");
       const rows = await submitForm();
 
@@ -270,7 +270,7 @@ describe("Private user info – never submitted to the database", () => {
       strings.forEach(val => expect(val).not.toContain(PRIVATE.uid));
     });
 
-    it("response_id in each row is the report id — not the user uid", async () => {
+    it("response_id in each row is the report id - not the user uid", async () => {
       const rows = await submitForm();
       rows.forEach(row => {
         expect(row.response_id).toBe(99);

@@ -71,7 +71,7 @@ describe('Image Upload', () => {
     navigateToExistingSIR();
 
     cy.wait('@siteImages');
-    cy.contains('Previously uploaded — cannot be removed').should('exist');
+    cy.contains('Previously uploaded - cannot be removed').should('exist');
 
     cy.contains('Any Last Words').closest('[class*="rounded"]').find('textarea').type('Added final remarks');
   });

@@ -48,8 +48,6 @@ export async function fetchFormSections(): Promise<FormSection[]> {
     .select("id, title, description, header")
     .order("id", { ascending: true });
 
-    console.log("Fetched sections:", data);
-
   if (error) throw new Error("Failed to load sections: " + error.message);
   return data || [];
 }
