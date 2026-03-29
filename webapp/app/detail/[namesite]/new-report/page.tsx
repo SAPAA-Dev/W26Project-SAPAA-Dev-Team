@@ -2,7 +2,7 @@
 
 import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers, insertInspectionAttachments, rollbackSiteInspectionSubmission, getInspectionDetailsOnline, getLastInspectionDate, getDateOfVisitQuestionId} from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useParams, useRouter, usePathname } from "next/navigation";
 import { 
@@ -79,6 +79,7 @@ export default function NewReportPage() {
   const params = useParams();
   const router = useRouter();
   const namesite = decodeURIComponent(params.namesite as string);
+  const isMountedRef = useRef(true);
   
   const [hasAccepted, setHasAccepted] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
@@ -122,6 +123,13 @@ export default function NewReportPage() {
   }, []);
 
   console.log("NewReportPage render");
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
 
   useEffect(() => {
@@ -548,7 +556,9 @@ export default function NewReportPage() {
               localStorage.removeItem(draftKey);
             }
             console.log("Draft cleared after successful submission");
-            router.push('/sites?submitted=true');
+            if (isMountedRef.current) {
+              router.push('/sites?submitted=true');
+            }
           } catch (error) {
             console.error(error);
             if (siteInspectionReportId !== null) {
@@ -558,7 +568,9 @@ export default function NewReportPage() {
                 console.error('Failed to roll back incomplete submission:', rollbackError);
               }
             }
-            setIsSubmitting(false);
+            if (isMountedRef.current) {
+              setIsSubmitting(false);
+            }
           }
   };
 

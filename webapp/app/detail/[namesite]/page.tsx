@@ -72,6 +72,28 @@ type GalleryItem = {
   photographer?: string | null;
 };
 
+function getInspectionDate(response: FormResponse): string | null {
+  return response.inspection_date ?? response.created_at ?? null;
+}
+
+function formatInspectionDate(
+  dateString: string | null | undefined,
+  options?: Intl.DateTimeFormatOptions
+): string {
+  if (!dateString) return 'N/A';
+
+  const formatOptions = options ?? { year: 'numeric', month: 'numeric', day: 'numeric' };
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    return new Intl.DateTimeFormat('en-US', {
+      ...formatOptions,
+      timeZone: 'UTC',
+    }).format(new Date(`${dateString}T00:00:00Z`));
+  }
+
+  return new Date(dateString).toLocaleDateString('en-US', formatOptions);
+}
+
 async function getCurrentUser(): Promise<{ email: string; role: string; name: string; avatar: string} | null> {
   try {
     const supabase = createClient();
@@ -342,11 +364,12 @@ export default function SiteDetailScreen() {
           });
         }
         const value = a.obs_value ?? a.obs_comm ?? '';
+        const inspectionDate = getInspectionDate(response);
         if (value) {
           questionMap.get(key)!.answers.push({
             inspectionId: response.id,
-            date: response.created_at ?? '',
-            displayDate: response.created_at ? new Date(response.created_at).toLocaleDateString() : 'N/A',
+            date: inspectionDate ?? '',
+            displayDate: formatInspectionDate(inspectionDate),
             answer: value,
           });
         }
@@ -645,9 +668,11 @@ export default function SiteDetailScreen() {
                         </div>
                         <div>
                           <h3 className="text-base sm:text-lg font-bold text-[#254431] leading-snug">
-                            {response.created_at ? new Date(response.created_at).toLocaleDateString('en-US', {
-                              year: 'numeric', month: 'long', day: 'numeric'
-                            }) : 'N/A'}
+                            {formatInspectionDate(getInspectionDate(response), {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })}
                           </h3>
                           <p className="text-sm text-[#7A8075]">Score: {normalizeScore(response.naturalness_score)}</p>
                         </div>
