@@ -133,7 +133,6 @@ export default function NewReportPage() {
   useEffect(() => {
     const fetchUserAndCheckSteward = async () => {
       try {
-        setIsLoading(true);
         const user = await getCurrentUser();
         setCurrentUser(user);
         

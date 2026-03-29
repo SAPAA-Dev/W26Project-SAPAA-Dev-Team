@@ -596,24 +596,16 @@ export default function MainContent({
                       </span>
                     </div>
 
-                    <input
-                      type="text"
-                      value={image.caption ?? ''}
-                      onChange={(e) => updateExistingField(image.id, 'caption', e.target.value)}
-                      placeholder="Caption (optional)"
-                      className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
-                    />
+                    <div className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg bg-[#F7F2EA] text-[#254431] text-sm">
+                      {image.caption?.trim() || "No caption"}
+                    </div>
 
-                    <textarea
-                      value={image.identifier ?? ''}
-                      onChange={(e) => updateExistingField(image.id, 'identifier', e.target.value)}
-                      placeholder="Identifier (optional)"
-                      rows={2}
-                      className="w-full mt-1 px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm resize-none"
-                    />
+                    <div className="w-full mt-1 px-3 py-2 border-2 border-[#E4EBE4] rounded-lg bg-[#F7F2EA] text-[#254431] text-sm min-h-[60px] break-words">
+                      {image.identifier?.trim() || "No identifier"}
+                    </div>
 
                     <p className="mt-1 text-xs text-[#7A8075] italic flex items-center gap-1">
-                      <Lock className="w-3 h-3" /> Previously uploaded - cannot be removed
+                      <Lock className="w-3 h-3" /> Previously uploaded — cannot be removed or edited
                     </p>
                   </div>
                 </div>
