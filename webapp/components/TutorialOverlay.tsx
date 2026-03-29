@@ -71,7 +71,7 @@ export const sitesDashboardSteps: Step[] = [
     disableBeacon: true,
     title: '📊 Key Statistics',
     content:
-      'These cards give you a quick overview of the entire program — how many protected sites there are, how many have been inspected, total inspection responses submitted, sites active within the past year, and sites that may need attention.',
+      'These cards give you a quick overview of the entire program - how many protected sites there are, how many have been inspected, total inspection responses submitted, sites active within the past year, and sites that may need attention.',
   },
   {
     target: '#tutorial-search',
@@ -113,7 +113,7 @@ export const siteDetailSteps: Step[] = [
     disableBeacon: true,
     title: '📋 Site Detail Page',
     content:
-      'This page shows you everything about a specific protected area — its inspection history, scores, and photos. Let\'s take a quick look at the key sections.',
+      'This page shows you everything about a specific protected area - its inspection history, scores, and photos. Let\'s take a quick look at the key sections.',
   },
   {
     target: '#tutorial-detail-header',
@@ -134,7 +134,7 @@ export const siteDetailSteps: Step[] = [
     disableBeacon: true,
     title: '✏️ Starting an Inspection',
     content:
-      'Ready to record a site inspection? Click this button to open the inspection form. It will guide you through each section — just answer the questions about what you observe at the site.',
+      'Ready to record a site inspection? Click this button to open the inspection form. It will guide you through each section - just answer the questions about what you observe at the site.',
   },
   {
     target: '#tutorial-view-toggle',

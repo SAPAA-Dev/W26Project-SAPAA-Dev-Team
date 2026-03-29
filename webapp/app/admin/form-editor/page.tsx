@@ -72,7 +72,7 @@ function getTypeLabel(type: string) {
   return found?.label ?? type;
 }
 
-// Format: "Question Test (Q70)" — title text ending with (Q<number>)
+// Format: "Question Test (Q70)" - title text ending with (Q<number>)
 const QUESTION_TITLE_REGEX = /\(Q(\d+)\)$/;
 function isValidQuestionTitle(title: string): boolean {
   const t = title.trim();
@@ -85,7 +85,7 @@ function getQNumberFromTitle(title: string): string | null {
   return m ? m[1]! : null;
 }
 
-// Format: "Q70_QuestionTest" — Q<number>_ then only letters and numbers (no spaces, no underscores after)
+// Format: "Q70_QuestionTest" - Q<number>_ then only letters and numbers (no spaces, no underscores after)
 const QUESTION_KEY_REGEX = /^Q(\d+)_[a-zA-Z0-9]+$/;
 function isValidQuestionKey(key: string): boolean {
   const k = key.trim();
@@ -339,7 +339,7 @@ export default function FormEditorPage() {
                   </p>
                 </div>
               </div>
-              {/* Right: navbar — rendered inline, bg overridden to transparent */}
+              {/* Right: navbar - rendered inline, bg overridden to transparent */}
               <div className="w-full sm:w-auto [&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
                 <AdminNavBar />
               </div>

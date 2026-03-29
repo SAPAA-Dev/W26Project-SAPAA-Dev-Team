@@ -35,8 +35,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import dynamic from 'next/dynamic';
 import { siteDetailSteps } from '@/components/TutorialOverlay';
 import { createClient } from '@/utils/supabase/client';
-import { logout } from "@/services/auth";
-import UserNavBar from "@/components/HeaderDropdown";
 
 const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
@@ -225,8 +223,6 @@ export default function SiteDetailScreen() {
         ]);
         const details = await getFormResponsesBySite(siteData[0].namesite);
 
-        console.log(details);
-
         setSite(siteData[0]);
         setInspections(details);
         setCurrentUserId(uid ?? null);
@@ -252,8 +248,6 @@ export default function SiteDetailScreen() {
 
       try {
         setGalleryLoading(true);
-
-        console.log("Fetching gallery for site id:", site.id);
 
         const res = await fetch(`/api/sites/${site.id}/gallery`);
         const data = await res.json();
@@ -519,7 +513,6 @@ export default function SiteDetailScreen() {
           <div className="text-sm text-[#E4EBE4]">Last Visit</div>
           <div className="text-lg font-bold">{ageText}</div>
         </div>
-        <UserNavBar />
 
       </div>
     </div>
@@ -684,11 +677,13 @@ export default function SiteDetailScreen() {
                       )}
                     </button>
 
-                    {/* Edit button — only visible to the submitting user */}
+                    {/* Edit button - only visible to the submitting user */}
+
                     {isOwner && (
                       <button
                         onClick={() => router.push(`/detail/${params.namesite}/edit-report/${response.id}`)}
-                className="w-full sm:w-auto flex items-center justify-center px-3 py-2 bg-[#F7F2EA] hover:bg-[#E4EBE4] text-[#254431] rounded-lg transition-colors mr-4 sm:mr-4"                        title="Edit this report"
+                        className="w-full sm:w-auto flex items-center justify-center gap-1.5 mx-4 px-4 py-2 rounded-xl text-sm font-semibold bg-[#F7F2EA] hover:bg-[#E4EBE4] text-[#254431] transition-all"
+                        title="Edit this report"
                         data-testid="edit-form-button"
                       >
                         <Pencil className="w-4 h-4" />

@@ -652,7 +652,7 @@ export async function getInspectionDetailsOnline(namesite: string): Promise<Insp
 
 
 export async function insertInspectionAttachments(rows: Array<{
-  response_id: number;
+  response_id: number | null;
   question_id: number;
   storage_key: string; // placeholder for now
   filename?: string | null;
@@ -891,7 +891,7 @@ export async function getAttachmentsByResponseId(responseId: number): Promise<Ar
 // Updates caption and description for an existing W26_attachments row
 export async function updateAttachmentMetadata(
   attachmentId: number,
-  fields: { caption?: string | null; description?: string | null }
+  fields: { caption?: string | null; identifier?: string | null }
 ) {
   const supabase = createServerSupabase();
 

@@ -251,7 +251,7 @@ describe('Admin Hide/Show Questions on Site Inspection Form', () => {
         expect(formActions.toggleQuestionActive).toHaveBeenCalledWith(102, true);
       });
 
-      // Past report data is fetched by response ID — no is_active filter
+      // Past report data is fetched by response ID - no is_active filter
       const reportData = await queries.getFormResponseById(42);
 
       // The answer for the hidden question is STILL in the report

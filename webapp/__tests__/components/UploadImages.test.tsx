@@ -69,7 +69,7 @@ describe("US 2.0.8 - User Upload of Standalone Site Images", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Image 1 of 1/i)).toBeInTheDocument();
-      expect(screen.getByText(/0 \/ 1 complete/i)).toBeInTheDocument();
+      expect(screen.getByText(/1 image selected · 0 complete/i)).toBeInTheDocument();
       expect(screen.getByTestId("upload-submit-btn")).toBeDisabled();
     });
   });

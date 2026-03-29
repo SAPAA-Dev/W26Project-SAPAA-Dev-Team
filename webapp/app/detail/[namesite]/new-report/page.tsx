@@ -122,8 +122,6 @@ export default function NewReportPage() {
     });
   }, []);
 
-  console.log("NewReportPage render");
-
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
@@ -133,7 +131,6 @@ export default function NewReportPage() {
 
 
   useEffect(() => {
-      console.log("verification effect ran", { hasDismissedVerification });
     const fetchUserAndCheckSteward = async () => {
       try {
         setIsLoading(true);
@@ -185,12 +182,9 @@ export default function NewReportPage() {
     const initDraftKey = async () => {
       const userUid = await getCurrentUserUid();
       const siteId = await getCurrentSiteId(namesite);
-      // console.log("userUid:", userUid);
-      // console.log("siteId:", siteId);
 
       if (userUid && siteId) {
         const key = `inspection-draft-${userUid}-${siteId}`;
-        // console.log("Draft key created:", key);
         setDraftKey(key);
       }
     };
@@ -231,7 +225,6 @@ export default function NewReportPage() {
           );
 
           setResponses(normalizedResponses);
-      console.log("Draft restored");
     }
 
     setIsDraftLoaded(true); // VERY IMPORTANT
@@ -245,7 +238,6 @@ export default function NewReportPage() {
     if (!draftKey || !isDraftLoaded) return;
 
     localStorage.setItem(draftKey, JSON.stringify(responses));
-    console.log("Draft saved");
   }, [responses, draftKey, isDraftLoaded]);
 
 
@@ -337,9 +329,6 @@ export default function NewReportPage() {
   async function uploadFileToS3(uploadUrl: string, file: File) {
   // 1) Validate URL + detect mixed content
   const u = new URL(uploadUrl);
-  console.log("S3 upload URL origin:", u.origin);
-  console.log("App origin:", window.location.origin);
-  console.log("S3 upload URL protocol:", u.protocol);
 
   if (window.location.protocol === "https:" && u.protocol !== "https:") {
     throw new Error("Blocked: uploadUrl is not https (mixed content).");
@@ -432,7 +421,7 @@ export default function NewReportPage() {
       //what goes into W26_attachments table: response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier
       // We also need to prepare the data for the attachments table, which means we need to generate the S3 keys for each uploaded file and store those in an array of objects/dictionaries as well
       const attachmentsRows: Array<{
-        response_id: number;
+        response_id: number | null;
         question_id: number;
         site_id: number;
         storage_key: string;
@@ -555,7 +544,7 @@ export default function NewReportPage() {
             if (draftKey) {
               localStorage.removeItem(draftKey);
             }
-            console.log("Draft cleared after successful submission");
+
             if (isMountedRef.current) {
               router.push('/sites?submitted=true');
             }
@@ -695,7 +684,6 @@ export default function NewReportPage() {
                   type="button"
                   disabled={!hasAccepted}
                   onClick={() => {
-                    console.log("continue clicked");
                     setShowVerification(false);
                     setHasDismissedVerification(true);
                   }}

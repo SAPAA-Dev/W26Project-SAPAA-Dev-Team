@@ -290,7 +290,7 @@ describe('fetchReportData', () => {
     const result = await fetchReportData(request);
     const response10 = result.sites[0].responses.find((r) => r.id === 10)!;
 
-    // "Notes" question has empty obs_value and null obs_comm — should be filtered
+    // "Notes" question has empty obs_value and null obs_comm - should be filtered
     expect(response10.answers).toHaveLength(1);
     expect(response10.answers[0].question_text).toBe('Trees?');
   });
@@ -417,7 +417,7 @@ describe('fetchReportData', () => {
       },
     ]);
 
-    // Mock fetch for image buffer (JPEG header) — use clean ArrayBuffer
+    // Mock fetch for image buffer (JPEG header) - use clean ArrayBuffer
     const jpegAb = new ArrayBuffer(6);
     new Uint8Array(jpegAb).set([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]);
     global.fetch = jest.fn().mockResolvedValue({
@@ -483,7 +483,7 @@ describe('fetchReportData', () => {
       },
     ]);
 
-    // WebP magic bytes: RIFF....WEBP — use clean ArrayBuffer
+    // WebP magic bytes: RIFF....WEBP - use clean ArrayBuffer
     const webpAb = new ArrayBuffer(12);
     new Uint8Array(webpAb).set([
       0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00,
@@ -525,7 +525,7 @@ describe('fetchReportData', () => {
       },
     ]);
 
-    // PNG magic bytes — use clean ArrayBuffer
+    // PNG magic bytes - use clean ArrayBuffer
     const pngAb = new ArrayBuffer(8);
     new Uint8Array(pngAb).set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
     global.fetch = jest.fn().mockResolvedValue({
