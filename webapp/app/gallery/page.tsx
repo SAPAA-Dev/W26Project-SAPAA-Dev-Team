@@ -35,6 +35,18 @@ export default function GalleryPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
+    if (selectedImage) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [selectedImage]);
+
+  useEffect(() => {
     const fetchGallery = async () => {
       try {
         const res = await fetch("/api/user-gallery/sir-upload");

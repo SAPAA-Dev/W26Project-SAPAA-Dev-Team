@@ -35,6 +35,19 @@ export default function GalleryPage() {
   // 1. Add Search State
   const [searchQuery, setSearchQuery] = useState("");
 
+    useEffect(() => {
+      if (selectedImage) {
+        document.body.style.overflow = "hidden";
+      } else {
+        document.body.style.overflow = "auto";
+      }
+
+      return () => {
+        document.body.style.overflow = "auto";
+      };
+    }, [selectedImage]);
+
+
   useEffect(() => {
     const fetchGallery = async () => {
       try {
