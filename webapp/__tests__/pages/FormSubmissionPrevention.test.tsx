@@ -91,6 +91,8 @@ describe('Prevent Multiple Form Submissions', () => {
     jest.clearAllMocks();
     localStorage.clear();
     setupStewardMocks();
+    global.URL.createObjectURL = jest.fn(() => 'blob:test-preview');
+    global.URL.revokeObjectURL = jest.fn();
   });
 
   it('disables submit button and shows "Submitting..." text during submission', async () => {
@@ -356,6 +358,70 @@ describe('Prevent Multiple Form Submissions', () => {
     });
 
     // Verify submission was not attempted
+    expect(mockAddSiteInspectionReport).not.toHaveBeenCalled();
+    expect(mockUploadSiteInspectionAnswers).not.toHaveBeenCalled();
+  });
+
+  it('does not submit when an uploaded image is missing required metadata fields', async () => {
+    const questionsWithImageUpload = [
+      {
+        id: 1,
+        title: 'Required Test Question (Q1)',
+        text: 'This is required',
+        question_type: 'option',
+        section: 4,
+        answers: [{ text: 'Yes' }, { text: 'No' }],
+        formorder: 1,
+        is_required: true,
+        sectionTitle: 'Test',
+        sectionDescription: 'Test',
+        sectionHeader: 'Test',
+      },
+      {
+        id: 81,
+        title: 'Upload Images, GPS Files, etc. (Q81.1)',
+        text: 'Optional image upload',
+        question_type: 'image',
+        section: 4,
+        answers: [],
+        formorder: 2,
+        is_required: false,
+        sectionTitle: 'Test',
+        sectionDescription: 'Test',
+        sectionHeader: 'Test',
+      },
+    ];
+
+    mockGetQuestionsOnline.mockResolvedValue(questionsWithImageUpload);
+
+    render(<NewReportPage />);
+
+    fireEvent.click(await screen.findByText('Yes'));
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const imageFile = new File(['fake-image'], 'test-image.jpg', { type: 'image/jpeg' });
+    fireEvent.change(fileInput, { target: { files: [imageFile] } });
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('Longer Description')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Short Description')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Owner of digital file')).toBeInTheDocument();
+    });
+
+    const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
+    fireEvent.change(dateInput, { target: { value: '' } });
+
+    const submitButton = screen.getByRole('button', { name: /Review & Submit/i });
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Required Questions Missing/i)).toBeInTheDocument();
+      expect(screen.getByText(/Missing required image fields:/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Q81\.1 image: Caption, Identifier, Photographer, Date/i)
+      ).toBeInTheDocument();
+    });
+
     expect(mockAddSiteInspectionReport).not.toHaveBeenCalled();
     expect(mockUploadSiteInspectionAnswers).not.toHaveBeenCalled();
   });

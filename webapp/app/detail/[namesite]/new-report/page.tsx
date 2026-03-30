@@ -91,6 +91,7 @@ export default function NewReportPage() {
   const [isStewardUser, setIsStewardUser] = useState(false);
   const [showRequiredPopup, setShowRequiredPopup] = useState(false);
   const [missingRequiredQuestionNumbers, setMissingRequiredQuestionNumbers] = useState<string[]>([]);
+  const [missingImageMetadataDetails, setMissingImageMetadataDetails] = useState<string[]>([]);
   const [draftKey, setDraftKey] = useState<string | null>(null);
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -287,6 +288,36 @@ export default function NewReportPage() {
     });
   };
 
+  const getMissingImageMetadataDetails = (
+    currentResponses: Record<number, any>,
+    questionNumberMap: Record<number, string>
+  ): string[] => {
+    const details: string[] = [];
+
+    for (const [questionId, answer] of Object.entries(currentResponses)) {
+      if (!isImageWithMetaArray(answer)) continue;
+
+      answer.forEach((image, index) => {
+        const missingFields: string[] = [];
+
+        if (!image.caption?.trim()) missingFields.push('Caption');
+        if (!image.identifier?.trim()) missingFields.push('Identifier');
+        if (!image.photographer?.trim()) missingFields.push('Photographer');
+        if (!image.date?.trim()) missingFields.push('Date');
+
+        if (missingFields.length === 0) return;
+
+        const questionNumber =
+          questionNumberMap[Number(questionId)] ?? `Question ${questionId}`;
+        const imageLabel = answer.length > 1 ? `image ${index + 1}` : 'image';
+
+        details.push(`${questionNumber} ${imageLabel}: ${missingFields.join(', ')}`);
+      });
+    }
+
+    return details;
+  };
+
 
   const PRESIGN_ROUTE = "/api/s3/presign";
 
@@ -381,16 +412,19 @@ export default function NewReportPage() {
     const missingRequiredNumbers = questions
       .filter((question) => question.is_required === true && !isAnswered(responses[question.id]))
       .map((question) => questionNumberMap[question.id] ?? `Question ${question.id}`);
+    const missingImageMetadata = getMissingImageMetadataDetails(responses, questionNumberMap);
 
-    if (missingRequiredNumbers.length > 0) {
+    if (missingRequiredNumbers.length > 0 || missingImageMetadata.length > 0) {
       setMissingRequiredQuestionNumbers(sortQuestionNumbers(missingRequiredNumbers));
+      setMissingImageMetadataDetails(missingImageMetadata);
       setShowRequiredPopup(true);
-      showToast("Please complete all required questions before submitting.");
+      showToast("Please complete all required questions and uploaded image fields before submitting.");
       return;
     }
 
     setShowRequiredPopup(false);
     setMissingRequiredQuestionNumbers([]);
+    setMissingImageMetadataDetails([]);
     setIsSubmitting(true);
 
     let siteInspectionReportId: number | null = null;
@@ -712,18 +746,32 @@ export default function NewReportPage() {
 
             <div className="p-6 space-y-4 overflow-y-auto">
               <p className="text-[#254431] font-medium">
-                You must answer all required questions before submitting this report.
+                You must answer all required questions and complete required image metadata before submitting this report.
               </p>
-              <div className="bg-[#F7F2EA] border border-[#E4EBE4] rounded-xl p-4 max-h-64 overflow-y-auto">
-                <p className="text-sm font-semibold text-[#254431] mb-2">
-                  Missing required question numbers:
-                </p>
-                <ul className="list-disc pl-5 text-sm text-[#7A8075] space-y-1">
-                  {missingRequiredQuestionNumbers.map((questionNumber) => (
-                    <li key={questionNumber}>{questionNumber}</li>
-                  ))}
-                </ul>
-              </div>
+              {missingRequiredQuestionNumbers.length > 0 && (
+                <div className="bg-[#F7F2EA] border border-[#E4EBE4] rounded-xl p-4 max-h-64 overflow-y-auto">
+                  <p className="text-sm font-semibold text-[#254431] mb-2">
+                    Missing required question numbers:
+                  </p>
+                  <ul className="list-disc pl-5 text-sm text-[#7A8075] space-y-1">
+                    {missingRequiredQuestionNumbers.map((questionNumber) => (
+                      <li key={questionNumber}>{questionNumber}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {missingImageMetadataDetails.length > 0 && (
+                <div className="bg-[#F7F2EA] border border-[#E4EBE4] rounded-xl p-4 max-h-64 overflow-y-auto">
+                  <p className="text-sm font-semibold text-[#254431] mb-2">
+                    Missing required image fields:
+                  </p>
+                  <ul className="list-disc pl-5 text-sm text-[#7A8075] space-y-1">
+                    {missingImageMetadataDetails.map((detail) => (
+                      <li key={detail}>{detail}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
             <div className="p-6 border-t border-[#E4EBE4] bg-[#F7F2EA]/50">
