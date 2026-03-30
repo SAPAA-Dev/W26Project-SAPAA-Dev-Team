@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Mail, LogOut, BadgeInfo, Images, House, ShieldUser} from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
+
 import React, { useState, Suspense, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -12,6 +13,11 @@ import { useRouter } from 'next/navigation';
 interface UserNavBarProps {
   onStartTutorial?: () => void;
 }
+
+const ROUTES = {
+  home: "/sites",
+  gallery: "/gallery"
+};
 
 async function getCurrentUser(): Promise<{ email: string; role: string; name: string; avatar: string} | null> {
   try {
@@ -46,25 +52,25 @@ async function getCurrentUser(): Promise<{ email: string; role: string; name: st
 export default function UserNavBar({ onStartTutorial }: UserNavBarProps) {
 
     const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name:string; avatar:string } | null>(null);
-    const [userLoading, setUserLoading] = useState(true);
     const [menuOpen, setMenuOpen] = useState(false);
+    
+    const pathname = usePathname();
 
     const router = useRouter();
 
     useEffect(() => {
     const fetchUser = async () => {
-        setUserLoading(true);
         try {
         const user = await getCurrentUser();
         setCurrentUser(user);
         } catch (err) {
         setCurrentUser(null);
-        } finally {
-        setUserLoading(false);
-        }
+        } 
     };
     fetchUser();
     }, []);
+
+
 
 
   return (
@@ -125,28 +131,42 @@ export default function UserNavBar({ onStartTutorial }: UserNavBarProps) {
                     <p className="text-[10.5px] font-semibold uppercase tracking-widest text-black/30 px-4 pt-2 pb-1">
                         Pages
                     </p>
+                    {/* Routes */}
                     <button
-                    onClick={() => { setMenuOpen(false); router.push('/sites'); }}
+                    onClick={() => {
+                        setMenuOpen(false);
+                        router.push(ROUTES.home);
+                    }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f5f3] transition-colors"
                     >
-                        
                     <span className="w-8 h-8 rounded-lg bg-[#f0efeb] flex items-center justify-center flex-shrink-0">
                         <House className="w-4 h-4 text-[#555]" />
                     </span>
+
                     <div className="text-left">
-                    <span className="text-sm font-medium text-[#1a1a1a]">Home</span>
-                    <p className="text-xs text-black/40">Go to Homepage</p>
+                        <span
+                        className={`text-sm text-[#1a1a1a] ${
+                            pathname == ROUTES.home ? "font-bold" : "font-medium"
+                        }`}
+                        >
+                        Home
+                        </span>
+                        <p className="text-xs text-black/40">Go to Homepage</p>
                     </div>
                     </button>
                     <button
-                    onClick={() => { setMenuOpen(false); router.push('/gallery'); }}
+                    onClick={() => { setMenuOpen(false);router.push(ROUTES.gallery); }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f5f3] transition-colors"
                     >
                     <span className="w-8 h-8 rounded-lg bg-[#f0efeb] flex items-center justify-center flex-shrink-0">
                         <Images className="w-4 h-4 text-[#555]" />
                     </span>
                     <div className="text-left">
-                    <span className="text-sm font-medium text-[#1a1a1a]">Image gallery</span>
+                    <span className={`text-sm text-[#1a1a1a] ${
+                            pathname == ROUTES.gallery ? "font-bold" : "font-medium"
+                    }`}>
+                        Image gallery
+                    </span>
                     <p className="text-xs text-black/40">Go to gallery</p>
                     </div>
                     </button>
