@@ -88,6 +88,7 @@ export default function EditReportPage() {
 
   const [showRequiredPopup, setShowRequiredPopup] = useState(false);
   const [missingRequiredQuestionNumbers, setMissingRequiredQuestionNumbers] = useState<string[]>([]);
+  const [missingImageMetadataDetails, setMissingImageMetadataDetails] = useState<string[]>([]);
   const [siteId, setSiteId] = useState<number | null>(null);
   const [sectionNavigation, setSectionNavigation] = useState<SectionNavigationState>({
     isOnLastSection: false,
@@ -192,6 +193,10 @@ export default function EditReportPage() {
     siteId: number;
     responseId: number;
     questionId: number;
+    date: string;
+    photographer: string;
+    identifier: string;
+    siteName: string;
   }) {
     const res = await fetch(PRESIGN_ROUTE, {
       method: "POST",
@@ -204,7 +209,7 @@ export default function EditReportPage() {
       const err = await res.json().catch(() => ({}));
       throw new Error(err?.error || "Failed to get presigned URL");
     }
-    return (await res.json()) as { uploadUrl: string; key: string };
+    return (await res.json()) as { uploadUrl: string; key: string; generatedFilename: string };
   }
 
   async function uploadFileToS3(uploadUrl: string, file: File) {
@@ -256,6 +261,45 @@ export default function EditReportPage() {
 
       return a.localeCompare(b, undefined, { numeric: true });
     });
+  };
+
+  const isLocalImageArray = (value: any): value is LocalImage[] => {
+    return (
+      Array.isArray(value) &&
+      value.length > 0 &&
+      value[0] &&
+      value[0].file instanceof File
+    );
+  };
+
+  const getMissingImageMetadataDetails = (
+    currentResponses: Record<number | string, any>,
+    questionNumberMap: Record<number, string>
+  ): string[] => {
+    const details: string[] = [];
+
+    for (const [questionId, answer] of Object.entries(currentResponses)) {
+      if (!isLocalImageArray(answer)) continue;
+
+      answer.forEach((image, index) => {
+        const missingFields: string[] = [];
+
+        if (!image.caption?.trim()) missingFields.push('Caption');
+        if (!image.identifier?.trim()) missingFields.push('Identifier');
+        if (!image.photographer?.trim()) missingFields.push('Photographer');
+        if (!image.date?.trim()) missingFields.push('Date');
+
+        if (missingFields.length === 0) return;
+
+        const questionNumber =
+          questionNumberMap[Number(questionId)] ?? `Question ${questionId}`;
+        const imageLabel = answer.length > 1 ? `image ${index + 1}` : 'image';
+
+        details.push(`${questionNumber} ${imageLabel}: ${missingFields.join(', ')}`);
+      });
+    }
+
+    return details;
   };
 
   // Returns the site_id for the current response (needed for S3 key + attachment insert)
@@ -326,15 +370,18 @@ export default function EditReportPage() {
         return !isAnswered(responses[q.id]);
       })
       .map((q) => questionNumberMap[q.id] ?? `Question ${q.id}`);
+    const missingImageMetadata = getMissingImageMetadataDetails(responses, questionNumberMap);
 
-    if (missingRequired.length > 0) {
+    if (missingRequired.length > 0 || missingImageMetadata.length > 0) {
       setMissingRequiredQuestionNumbers(sortQuestionNumbers(missingRequired));
+      setMissingImageMetadataDetails(missingImageMetadata);
       setShowRequiredPopup(true);
       return;
     }
 
     setShowRequiredPopup(false);
     setMissingRequiredQuestionNumbers([]);
+    setMissingImageMetadataDetails([]);
     setIsSaving(true);
 
     try {
@@ -411,13 +458,17 @@ export default function EditReportPage() {
           const attachmentRows = [];
 
           for (const image of imageList) {
-            const { uploadUrl, key } = await getPresignedUrl({
+            const { uploadUrl, key, generatedFilename } = await getPresignedUrl({
               filename: image.file.name,
               contentType: image.file.type,
               fileSize: image.file.size,
               responseId,
               questionId: imageQuestion.id,
               siteId,
+              date: image.date,
+              photographer: image.photographer,
+              identifier: image.identifier,
+              siteName: namesite,
             });
 
             await uploadFileToS3(uploadUrl, image.file);
@@ -427,11 +478,13 @@ export default function EditReportPage() {
               question_id: imageQuestion.id,
               site_id: siteId,
               storage_key: key,
-              filename: image.file.name,
+              filename: generatedFilename,
               content_type: image.file.type,
               file_size_bytes: image.file.size,
               caption: image.caption?.trim() || null,
+              photographer: image.photographer?.trim() || null,
               identifier: image.identifier?.trim() || null,
+              date: image.date?.trim() || null,
             });
           }
 
@@ -498,16 +551,28 @@ export default function EditReportPage() {
             </div>
             <div className="p-6 space-y-4 overflow-y-auto">
               <p className="text-[#254431] font-medium">
-                You must answer all required questions before saving changes.
+                You must answer all required questions and complete required image metadata before saving changes.
               </p>
-              <div className="bg-[#F7F2EA] border border-[#E4EBE4] rounded-xl p-4 max-h-64 overflow-y-auto">
-                <p className="text-sm font-semibold text-[#254431] mb-2">Missing required questions:</p>
-                <ul className="list-disc pl-5 text-sm text-[#7A8075] space-y-1">
-                  {missingRequiredQuestionNumbers.map((n) => (
-                    <li key={n}>{n}</li>
-                  ))}
-                </ul>
-              </div>
+              {missingRequiredQuestionNumbers.length > 0 && (
+                <div className="bg-[#F7F2EA] border border-[#E4EBE4] rounded-xl p-4 max-h-64 overflow-y-auto">
+                  <p className="text-sm font-semibold text-[#254431] mb-2">Missing required questions:</p>
+                  <ul className="list-disc pl-5 text-sm text-[#7A8075] space-y-1">
+                    {missingRequiredQuestionNumbers.map((n) => (
+                      <li key={n}>{n}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {missingImageMetadataDetails.length > 0 && (
+                <div className="bg-[#F7F2EA] border border-[#E4EBE4] rounded-xl p-4 max-h-64 overflow-y-auto">
+                  <p className="text-sm font-semibold text-[#254431] mb-2">Missing required image fields:</p>
+                  <ul className="list-disc pl-5 text-sm text-[#7A8075] space-y-1">
+                    {missingImageMetadataDetails.map((detail) => (
+                      <li key={detail}>{detail}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
             <div className="p-6 border-t border-[#E4EBE4] bg-[#F7F2EA]/50">
               <button
