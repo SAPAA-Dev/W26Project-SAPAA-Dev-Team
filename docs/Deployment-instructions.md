@@ -439,10 +439,10 @@ The application uses Supabase Auth `user_metadata` to also store user authorizat
 1. Log in with an admin account
 2. Verify the Admin Dashboard loads, charts display data, and heatmap search works
 
-### 7. Test API Endpoints
+### 7. Test API Endpoints (See API Documentation)
 
 ```bash
-# Test geocoding
+# Example Test on geocoding
 curl https://your-project-name.vercel.app/api/geocode?q=Alberta
 ```
 
@@ -507,15 +507,6 @@ Before going to production, ensure:
 2. Check IAM policy grants `s3:PutObject`, `s3:GetObject`, and `s3:DeleteObject` on your bucket
 3. Verify the bucket CORS configuration allows requests from your Vercel domain
 4. Check browser console and network tab for specific error codes
-
-### Issue: "Geocoding not working"
-
-**Symptoms:** Heatmap doesn't show locations, admin dashboard search returns no results.
-
-**Solutions:**
-1. Verify `OPENCAGE_API_KEY` is set
-2. Check OpenCage API quota (free tier: 2,500 requests/day)
-3. Verify the API key is valid in your OpenCage dashboard
 
 ### Issue: "Build fails on Vercel"
 
