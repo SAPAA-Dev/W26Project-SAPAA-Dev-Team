@@ -1,6 +1,6 @@
 # SAPAA
 ## Protected Areas Inspection App
-### UI / UX Design Documentation - v2.0
+### UI / UX Design Documentation - v3.0
 #### Design System Reference for Development Teams
 `Next.js` · `Tailwind CSS` · `Supabase` · `AWS`
 
@@ -10,7 +10,7 @@
 
 ### 1.1 Purpose
 
-This document defines the complete UI/UX design system for the SAPAA (Stewards of Alberta's Protected Areas Association) web application. It covers design principles, usability heuristics, accessibility considerations, and component-level implementation guidance for both the web (Next.js) and mobile (React Native) platforms.
+This document defines the complete UI/UX design system for the SAPAA (Stewards of Alberta's Protected Areas Association) web application. It covers design principles, usability heuristics, accessibility considerations, responsive design patterns, and component-level implementation guidance for the web (Next.js) platform.
 
 Consistency is critical. Every page must follow the patterns described here so that users experience a coherent interface across all screens and workflows.
 
@@ -25,7 +25,9 @@ Consistency is critical. Every page must follow the patterns described here so t
 | Drag and Drop | `@dnd-kit/core` + `@dnd-kit/sortable` |
 | Maps | Leaflet (SSR-guarded with mounted state) |
 | Charts | Chart.js via `react-chartjs-2` |
-| Icons | `lucide-react` |
+| Icons | `lucide-react` (primary), `@mui/icons-material`, `react-icons` |
+| UI Components | `@mui/material` v7 (selective use alongside Tailwind) |
+| Guided Tours | `react-joyride` (in-app tutorials) |
 
 ### 1.3 Application Pages
 
@@ -35,7 +37,9 @@ Consistency is critical. Every page must follow the patterns described here so t
 | `/detail/[namesite]` | SiteDetailScreen - single site view |
 | `/detail/[namesite]/new-report` | New inspection report form |
 | `/detail/[namesite]/edit-report/[responseId]` | Edit existing report |
+| `/gallery` | Image gallery with search and filtering |
 | `/login` `/signup` | Authentication pages |
+| `/terms` | Terms of service page |
 | `/admin/dashboard` | Admin analytics and stats |
 | `/admin/account-management` | User account administration |
 | `/admin/sites` | Site management |
@@ -228,8 +232,9 @@ A user manual is available as an app tutorial. In-app tooltips and hints are pro
 - **Screen readers:** Semantic HTML and ARIA labels are used where needed.
 - **Colour contrast:** All text meets WCAG AA standards.
 - **Focus indicators:** Clear focus states are provided for keyboard navigation.
-- **Responsive design:** Works on various screen sizes from mobile to desktop.
+- **Responsive design:** Mobile-first approach using Tailwind breakpoints. See Section 20 for full responsive design specification.
 - **Alt text:** All images include descriptive alt text.
+- **Touch targets:** Interactive elements meet minimum 44x44px touch target size for mobile accessibility.
 
 ---
 
@@ -338,7 +343,7 @@ Known exceptions exist (for example Form Editor header uses `max-w-[100vw]`) and
 
 ### 7.3 Main Content Padding
 
-The main content `div` always uses `px-6 py-6` for outer padding. Inner sections add their own vertical spacing via `mb-6` or `space-y-6`.
+The main content `div` uses responsive padding: `px-4 sm:px-6 py-4 sm:py-6` on most pages. Inner sections add their own vertical spacing via `mb-6` or `space-y-6`.
 
 ### 7.4 Three-Column Admin Layout (Form Editor)
 
@@ -360,8 +365,10 @@ The application uses a shared green-header style but not one identical markup st
 
 ### 8.1 Standard Header (Primary Site/Detail Pattern)
 
+Headers use responsive padding and font sizes to adapt to different screen sizes:
+
 ```tsx
-<div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+<div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-4 sm:px-6 py-4 shadow-lg">
   <div className="max-w-7xl mx-auto">
     {/* Optional back button */}
     <button className="flex items-center gap-1.5 text-[#86A98A] hover:text-white
@@ -369,16 +376,16 @@ The application uses a shared green-header style but not one identical markup st
       <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
       <span className="text-sm font-medium">Back to Sites</span>
     </button>
-    <div className="flex items-start justify-between">
+    <div className="flex items-start justify-between flex-col sm:flex-row">
       <div className="flex items-start gap-4">
         <Image src="/images/sapaa-icon-white.png" alt="SAPAA"
                width={140} height={140} priority
-               className="h-16 w-auto flex-shrink-0 opacity-80 mt-1" />
+               className="h-12 sm:h-16 w-auto flex-shrink-0 opacity-80 mt-1" />
         <div>
-          <h1 className="text-3xl font-bold">{title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">{title}</h1>
           <div className="flex items-center gap-2 text-[#E4EBE4] mt-1">
-            <Icon className="w-5 h-5" />
-            <span className="text-base">{subtitle}</span>
+            <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-sm sm:text-base">{subtitle}</span>
           </div>
         </div>
       </div>
@@ -490,9 +497,10 @@ Used only in the HomeClient stats strip. Kept for backward compatibility but sho
 
 | Property | Value |
 |---|---|
-| Grid | `grid grid-cols-1 md:grid-cols-3 gap-6` |
+| Admin Grid | `grid grid-cols-1 md:grid-cols-3 gap-6` |
+| Site List Grid | `grid grid-cols-2 md:grid-cols-5 gap-4` (compact strip) |
 | Card radius | `rounded-2xl` (large style) / `rounded-xl` (compact) |
-| Card padding | `p-6` (large) / `p-4` (compact) |
+| Card padding | `p-4 sm:p-5` (responsive) / `p-6` (large) / `p-4` (compact) |
 | Border | `border-2 border-[#E4EBE4]` |
 
 ### 9.4 Coloured Card Variants
@@ -1015,6 +1023,237 @@ Re-apply all query mocks in `beforeEach` after `jest.clearAllMocks()`. Import th
 
 ---
 
+## 20. Responsive Design
+
+The application uses a mobile-first responsive design approach. All responsive behaviour is implemented through Tailwind CSS responsive utility classes — no custom CSS media queries are used (except for dark mode preference detection in `globals.css`).
+
+![UI Responsive Overview](images/ui_responsive_overview.png)
+
+### 20.1 Breakpoints
+
+The application follows Tailwind's standard breakpoint system:
+
+| Breakpoint | Min Width | Usage |
+|---|---|---|
+| (base) | 0px | Mobile phones — single-column layouts, stacked elements |
+| `sm:` | 640px | Large phones / small tablets — two-column grids, inline buttons |
+| `md:` | 768px | Tablets — expanded stat grids, increased padding |
+| `lg:` | 1024px | Desktop — three-column grids, side-by-side modals, flex-row layouts |
+| `xl:` | 1280px | Large desktop — four-column image galleries, wider padding |
+| `2xl:` | 1536px | Extra-large — maximum content widths |
+
+### 20.2 Mobile-First Approach
+
+Base styles always target the smallest screen. Larger breakpoints override progressively:
+
+```tsx
+{/* Text: small on mobile, larger on tablet+ */}
+className="text-2xl sm:text-3xl font-bold"
+
+{/* Padding: tighter on mobile, more spacious on tablet+ */}
+className="px-4 sm:px-6 py-4 sm:py-6"
+
+{/* Layout: stacked on mobile, side-by-side on tablet+ */}
+className="flex flex-col sm:flex-row"
+```
+
+### 20.3 Responsive Grid Layouts
+
+The application uses several responsive grid patterns depending on content type:
+
+| Pattern | Classes | Used For |
+|---|---|---|
+| Site Cards | `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4` | Site listing, admin sites |
+| Image Gallery | `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6` | Gallery pages |
+| Stats Strip | `grid grid-cols-2 md:grid-cols-5 gap-4` | Site list dashboard stats |
+| Admin Stats | `grid grid-cols-1 md:grid-cols-3 gap-6` | Admin dashboard stat cards |
+
+![UI Responsive Grid](images/ui_responsive_grid.png)
+
+### 20.4 Navigation — Hamburger Menu
+
+Navigation uses an animated hamburger menu accessible on all screen sizes (no separate desktop navigation bar). The `HeaderDropdown` and `AdminNavBar` components implement this:
+
+- **Trigger:** 44x44px button (`w-11 h-11`) with three animated lines
+- **Animation:** Lines transform to an X icon when open via `translate-y` and `rotate` transforms
+- **Dropdown:** Fixed-width menu (`w-60`) positioned absolutely, with backdrop overlay
+- **Backdrop:** `fixed inset-0 z-40` semi-transparent overlay for mobile touch dismissal
+
+```tsx
+{/* Hamburger button — always visible, no breakpoint hiding */}
+<button onClick={() => setMenuOpen(!menuOpen)}
+        className="w-11 h-11 flex flex-col items-center justify-center gap-[5px] rounded-xl
+                   bg-white/10 hover:bg-white/20 transition-all">
+  <span className={`block h-[2px] w-5 bg-white transition-all duration-300
+        ${menuOpen ? 'translate-y-[7px] rotate-45' : ''}`} />
+  <span className={`block h-[2px] w-5 bg-white transition-all duration-300
+        ${menuOpen ? 'opacity-0' : ''}`} />
+  <span className={`block h-[2px] w-5 bg-white transition-all duration-300
+        ${menuOpen ? '-translate-y-[7px] -rotate-45' : ''}`} />
+</button>
+```
+
+![UI Hamburger Menu](images/ui_hamburger_menu.png)
+
+### 20.5 Authentication Pages — Split Layout
+
+Login and signup pages use a two-column split layout on desktop that collapses to single-column on mobile:
+
+```tsx
+<div className="grid lg:grid-cols-2 min-h-screen">
+  {/* Left panel: branding — hidden on mobile, visible on lg+ */}
+  <div className="hidden lg:flex flex-col justify-between relative overflow-hidden
+                  bg-gradient-to-br from-[#356B43] via-[#254431] to-[#356B43]
+                  text-[#F7F2EA] px-12 xl:px-16 py-12">
+    ...
+  </div>
+
+  {/* Right panel: form — always visible */}
+  <div className="flex items-center justify-center px-6 sm:px-8 lg:px-12 py-12">
+    {/* Mobile-only logo (hidden on lg+) */}
+    <div className="lg:hidden flex items-center gap-3 mb-8">
+      ...
+    </div>
+    ...
+  </div>
+</div>
+```
+
+![UI Login Responsive](images/ui_login_responsive.png)
+
+### 20.6 Responsive Typography
+
+Text sizes scale up at breakpoints to maintain readability:
+
+| Element | Mobile | Tablet (`sm:`) | Desktop (`lg:`) |
+|---|---|---|---|
+| Page title (header) | `text-2xl` | `text-3xl` | `text-3xl` |
+| Section heading | `text-xl` | `text-2xl` | `text-2xl` |
+| Stat numbers | `text-2xl` | `text-3xl` | `text-3xl` |
+| Body text | `text-sm` | `text-base` | `text-base` |
+| Labels/captions | `text-xs` | `text-sm` | `text-sm` |
+| Icon sizes | `w-4 h-4` | `w-5 h-5` | `w-5 h-5` |
+
+### 20.7 Responsive Spacing
+
+Padding and gap values increase at breakpoints:
+
+| Element | Mobile | Tablet (`sm:`) | Desktop (`md:`/`lg:`) |
+|---|---|---|---|
+| Page padding | `px-4 py-4` | `px-6 py-6` | `px-6 py-8` |
+| Card padding | `p-4` | `p-5` or `p-6` | `p-6` |
+| Grid gap | `gap-4` | `gap-6` | `gap-6` |
+| Button padding | `px-4 py-2.5` | `px-5 py-2.5` | `px-5 py-2.5` |
+
+### 20.8 Responsive Modals
+
+Image preview modals adapt from stacked to side-by-side layout:
+
+```tsx
+{/* Modal overlay — responsive padding */}
+<div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm
+                flex items-center justify-center p-3 sm:p-4 md:p-8">
+  {/* Modal content — stacked on mobile, two-column on desktop */}
+  <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] flex-1 min-h-0">
+    {/* Image viewer: responsive max-height */}
+    <div className="max-h-[40vh] sm:max-h-[50vh] lg:max-h-[85vh]">
+      <img className="object-contain" ... />
+    </div>
+    {/* Details sidebar: stacks below image on mobile, fixed 360px on lg+ */}
+    <div className="min-h-[220px] sm:min-h-[300px] lg:min-h-0 overflow-y-auto">
+      ...
+    </div>
+  </div>
+</div>
+```
+
+![UI Responsive Modal](images/ui_responsive_modal.png)
+
+### 20.9 Sticky Report Footer
+
+The new-report and edit-report pages use a responsive sticky footer with section navigation, progress bar, and submit button:
+
+```tsx
+<footer className="sticky bottom-0 bg-white border-t-2 border-[#E4EBE4]
+                   p-4 md:px-8 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-50">
+  <div className="max-w-7xl mx-auto flex flex-col gap-4 lg:flex-row lg:items-end">
+    {/* Section nav buttons: stacked on mobile, row on sm+ */}
+    <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
+      <button className="w-full sm:w-auto sm:min-w-[10rem] ...">← Previous</button>
+      <button className="w-full sm:w-auto sm:min-w-[10rem] ...">Next →</button>
+    </div>
+    {/* Progress bar: full width on mobile, fills remaining space on lg+ */}
+    <div className="w-full min-w-0 lg:flex-1">...</div>
+    {/* Submit: full width on mobile, auto width on sm+ */}
+    <button className="w-full sm:w-auto sm:min-w-[13rem] lg:flex-shrink-0 ...">
+      Review & Submit
+    </button>
+  </div>
+</footer>
+```
+
+![UI Responsive Footer](images/ui_responsive_footer.png)
+
+### 20.10 Responsive Visibility
+
+Use Tailwind's `hidden` and display utilities to show/hide elements at breakpoints:
+
+| Pattern | Classes | Example |
+|---|---|---|
+| Mobile-only | `lg:hidden` | Compact logo on login page |
+| Desktop-only | `hidden lg:flex` | Left branding panel on auth pages |
+| Desktop-only (block) | `hidden lg:block` | Live preview panel in Form Editor |
+
+**Important:** Do not use `hidden md:flex` or similar on text that tests must find (see Section 19.2).
+
+### 20.11 Responsive Buttons
+
+Buttons adapt from full-width stacked layout on mobile to inline auto-width on larger screens:
+
+```tsx
+{/* Full-width on mobile, auto-width side-by-side on sm+ */}
+<div className="flex flex-col sm:flex-row gap-3">
+  <button className="w-full sm:w-auto sm:min-w-[10rem] ...">Cancel</button>
+  <button className="w-full sm:w-auto sm:min-w-[10rem] ...">Save</button>
+</div>
+```
+
+### 20.12 Responsive Images
+
+Gallery images and thumbnails use responsive heights:
+
+| Context | Mobile | Tablet (`sm:`) | Desktop (`lg:`) |
+|---|---|---|---|
+| Gallery card | `h-56` | `h-64` | `h-64` |
+| Modal image | `max-h-[40vh]` | `max-h-[50vh]` | `max-h-[85vh]` |
+| Header logo | `h-12` | `h-16` | `h-16` |
+
+All images use `object-contain` for proper scaling without distortion.
+
+### 20.13 Files with Responsive Patterns
+
+The following files contain significant responsive design implementation:
+
+| File | Responsive Features |
+|---|---|
+| `app/sites/page.tsx` | Stats grid (2→5 cols), card grid (1→2→3 cols), responsive header |
+| `app/gallery/page.tsx` | Image grid (1→2→3→4 cols), responsive modal |
+| `app/login/page.tsx` | Split layout (1→2 cols), hidden/visible panels |
+| `app/signup/page.tsx` | Same split layout pattern as login |
+| `app/detail/[namesite]/page.tsx` | Responsive site detail, expandable sections |
+| `app/detail/[namesite]/new-report/Footer.tsx` | Sticky footer with responsive button layout |
+| `app/admin/dashboard/page.tsx` | Responsive chart layout, stats grid |
+| `app/admin/sites/page.tsx` | Responsive site management grid |
+| `app/admin/gallery/page.tsx` | Responsive gallery grid |
+| `app/admin/form-editor/page.tsx` | Three-column layout, preview panel hidden on mobile |
+| `app/admin/account-management/page.tsx` | Responsive account cards/table |
+| `components/HeaderDropdown.tsx` | Hamburger menu navigation |
+| `app/admin/AdminNavBar.tsx` | Admin hamburger menu navigation |
+| `components/UploadImages.tsx` | Responsive upload modal |
+| `app/terms/TermsContent.tsx` | Responsive text layout |
+
+---
+
 ## Appendix A - Quick Reference
 
 ### A.1 Full Colour Tokens
@@ -1045,11 +1284,17 @@ Re-apply all query mocks in `beforeEach` after `jest.clearAllMocks()`. Import th
 - Add `data-testid` to all interactive elements.
 - Do not use `hidden md:flex` on text that tests must find.
 - Wrap Leaflet maps in a mounted guard (Section 15.3).
+- **Use responsive padding:** `px-4 sm:px-6` for horizontal padding, `py-4 sm:py-6` for vertical.
+- **Use responsive grids:** Start with `grid-cols-1` and scale up with `sm:grid-cols-2 lg:grid-cols-3`.
+- **Use responsive text sizes:** Base at mobile size and scale with `sm:` prefix (e.g., `text-2xl sm:text-3xl`).
+- **Stack on mobile, row on desktop:** Use `flex flex-col sm:flex-row` for groups of buttons or inline elements.
+- **Full-width buttons on mobile:** Use `w-full sm:w-auto` for action buttons.
+- **Test at all breakpoints:** Verify layout at 375px (mobile), 768px (tablet), and 1280px (desktop).
 
 ---
 
 *End of Document*
 
-**Document Version:** 2.0  
-**Last Updated:** March 2026  
+**Document Version:** 3.0
+**Last Updated:** March 2026
 **Prepared for:** Stewards of Alberta's Protected Areas Association
