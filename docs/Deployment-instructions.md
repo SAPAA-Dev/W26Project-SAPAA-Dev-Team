@@ -27,7 +27,7 @@ The SAPAA Web Application is a Next.js application that provides a web interface
 - **AWS S3** - Image storage
 - **Vercel** - Deployment platform
 
-**Deployed URL:** https://sapaa-webapp.vercel.app/
+**Deployed URL:** [https://w26-project-sapaa-dev-team.vercel.app/](https://w26-project-sapaa-dev-team.vercel.app)
 
 ---
 
@@ -551,25 +551,487 @@ If you encounter issues not covered here:
 ---
 
 ## API Documentation
-
-### 1. Heatmap API
-
-**Endpoint:** `GET /api/heatmap`
-
-**Description:** Searches for sites matching a keyword and returns visit counts for heatmap visualization.
-
+ 
+The full interactive API reference is available at `/api/openapi` on your deployed instance (OpenAPI 3.0 / Swagger UI).
+ 
+All endpoints are served from the base URL `https://your-project-name.vercel.app` (or `http://localhost:3000` for local development).
+ 
+---
+ 
+### Inspection Gallery
+ 
+#### 1. Get All Inspection Gallery Images
+ 
+**Endpoint:** `GET /api/gallery`
+ 
+**Description:** Returns all uploaded inspection image attachments with metadata and signed S3 URLs. Admin only.
+ 
+**Authentication:** Required — Admin role
+ 
+**Query Parameters:** None
+ 
+**Response `200`:**
+```json
+{
+  "items": [
+    {
+      "id": 14,
+      "response_id": 3226,
+      "question_id": 27,
+      "caption": "Cross Country ski trails",
+      "identifier": "Ski Trails",
+      "date": "2026-01-31",
+      "storage_key": "inspections/207/3226/27/Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg",
+      "content_type": "image/jpeg",
+      "file_size_bytes": 506701,
+      "filename": "Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg",
+      "site_id": 207,
+      "site_name": "Riverlot 56 (NA)",
+      "imageUrl": "https://sapaa-inspection-images.s3.ca-central-1.amazonaws.com/..."
+    }
+  ]
+}
+```
+ 
+| Status | Description |
+|---|---|
+| `200` | Gallery items returned successfully |
+| `401` | Unauthorized |
+| `403` | Forbidden — admin access required |
+| `500` | Failed to load gallery |
+ 
+---
+ 
+#### 2. Get Inspection Images by Site or Response
+ 
+**Endpoint:** `GET /api/site-images`
+ 
+**Description:** Returns uploaded image attachments filtered by site ID and/or response ID. At least one query parameter must be provided.
+ 
+**Authentication:** Required
+ 
 **Query Parameters:**
-
-| Parameter | Required | Description |
+ 
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `siteid` | integer | No* | Filter images by site ID |
+| `responseid` | integer | No* | Filter images by response ID |
+ 
+*At least one of `siteid` or `responseid` must be provided.
+ 
+**Example Request:**
+```bash
+GET /api/site-images?siteid=207
+GET /api/site-images?responseid=3235
+GET /api/site-images?siteid=207&responseid=3235
+```
+ 
+**Response `200`:**
+```json
+{
+  "items": [
+    {
+      "id": 14,
+      "response_id": 3235,
+      "question_id": 27,
+      "storage_key": "inspections/207/3235/27/Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg",
+      "filename": "Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg",
+      "content_type": "image/jpeg",
+      "file_size_bytes": 506701,
+      "caption": "Cross Country ski trails",
+      "identifier": "Ski Trails",
+      "site_id": 207,
+      "imageUrl": "https://sapaa-inspection-images.s3.ca-central-1.amazonaws.com/..."
+    }
+  ]
+}
+```
+ 
+| Status | Description |
+|---|---|
+| `200` | Site images returned successfully |
+| `400` | Provide at least one of: `siteid`, `responseid` |
+| `401` | Unauthorized |
+| `500` | Failed to fetch site images |
+ 
+---
+ 
+#### 3. Get Gallery Images for a Specific Site
+ 
+**Endpoint:** `GET /api/sites/{siteId}/gallery`
+ 
+**Description:** Returns image attachments for a specific site including signed S3 URLs. Requires authentication.
+ 
+**Authentication:** Required
+ 
+**Path Parameters:**
+ 
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `siteId` | integer | Yes | Site ID |
+ 
+**Example Request:**
+```bash
+GET /api/sites/207/gallery
+```
+ 
+**Response `200`:**
+```json
+{
+  "items": [
+    {
+      "id": 14,
+      "caption": "Cross Country ski trails",
+      "identifier": "Ski Trails",
+      "filename": "Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg",
+      "file_size_bytes": 506701,
+      "site_name": "Riverlot 56 (NA)",
+      "response_id": 3235,
+      "imageUrl": "https://sapaa-inspection-images.s3.ca-central-1.amazonaws.com/..."
+    }
+  ]
+}
+```
+ 
+| Status | Description |
+|---|---|
+| `200` | Gallery items returned successfully |
+| `400` | Invalid site ID |
+| `401` | Unauthorized |
+| `500` | Failed to load gallery |
+ 
+---
+ 
+### Homepage Image Gallery
+ 
+#### 4. Get All Homepage Image Uploads
+ 
+**Endpoint:** `GET /api/homepage-images`
+ 
+**Description:** Returns all homepage image uploads with metadata and signed S3 URLs. Admin only.
+ 
+**Authentication:** Required — Admin role
+ 
+**Query Parameters:** None
+ 
+**Response `200`:**
+```json
+{
+  "items": [
+    {
+      "id": 16,
+      "site_id": 207,
+      "site_name": "Riverlot 56 (NA)",
+      "date": "2026-01-31",
+      "photographer": "Raiyana Rahman",
+      "caption": "Cross Country ski trails",
+      "identifier": "Ski Trails",
+      "filename": "Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-0642088a-b29f-400a-9ce7-e1003fa1e928.jpg",
+      "file_size_bytes": 506701,
+      "storage_key": "homepage-image-uploads/207/6966742d-b9e7-46c1-842f-030d4a97ba39/Riverlot56NA-...",
+      "imageUrl": "https://sapaa-inspection-images.s3.ca-central-1.amazonaws.com/homepage-image-uploads/..."
+    }
+  ]
+}
+```
+ 
+| Status | Description |
+|---|---|
+| `200` | Homepage images returned successfully |
+| `401` | Unauthorized |
+| `403` | Forbidden — admin access required |
+| `500` | Failed to load images |
+ 
+---
+ 
+#### 5. Get Homepage Image Uploads for a Specific Site
+ 
+**Endpoint:** `GET /api/homepage-images/{siteId}`
+ 
+**Description:** Returns homepage image uploads for a specific site including metadata and signed S3 URLs. Admin only.
+ 
+**Authentication:** Required — Admin role
+ 
+**Path Parameters:**
+ 
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `siteId` | integer | Yes | Site ID |
+ 
+**Example Request:**
+```bash
+GET /api/homepage-images/207
+```
+ 
+**Response `200`:** Returns the same `HomepageImageItem` schema as above, scoped to the given site.
+ 
+| Status | Description |
+|---|---|
+| `200` | Homepage images for site returned successfully |
+| `400` | Invalid site ID |
+| `401` | Unauthorized |
+| `500` | Failed to load images |
+ 
+---
+ 
+### Uploads
+ 
+#### 6. Generate Presigned S3 URL for Inspection Images
+ 
+**Endpoint:** `POST /api/s3/presign`
+ 
+**Description:** Generates a short-lived presigned S3 URL for uploading an inspection image attachment and returns the generated SAPAA-standardized filename.
+ 
+**Authentication:** Required
+ 
+**Request Body (`application/json`):**
+```json
+{
+  "filename": "tree-photo.jpg",
+  "contentType": "image/jpeg",
+  "fileSize": 245678,
+  "responseId": 3226,
+  "questionId": 27,
+  "siteId": 207,
+  "siteName": "Riverlot 56 (NA)",
+  "date": "2026-01-31",
+  "photographer": "Raiyana Rahman",
+  "identifier": "Ski Trails"
+}
+```
+ 
+**Response `200`:**
+```json
+{
+  "uploadUrl": "https://example-bucket.s3.amazonaws.com/...",
+  "key": "inspections/207/3226/27/Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg",
+  "generatedFilename": "Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg"
+}
+```
+ 
+| Status | Description |
+|---|---|
+| `200` | Presigned upload URL generated successfully |
+| `400` | Invalid file data, missing IDs or metadata, unsupported file type, or file too large |
+| `401` | Unauthorized |
+| `500` | Failed to generate upload URL |
+ 
+---
+ 
+#### 7. Generate Presigned S3 URL for Homepage Images
+ 
+**Endpoint:** `POST /api/s3/presign-homepage-images`
+ 
+**Description:** Generates a short-lived presigned S3 URL for uploading a homepage image using standardized SAPAA filename metadata.
+ 
+**Authentication:** Required
+ 
+**Request Body (`application/json`):**
+```json
+{
+  "contentType": "image/jpeg",
+  "fileSize": 688724,
+  "siteId": 207,
+  "siteName": "Riverlot 56 (NA)",
+  "date": "2026-01-31",
+  "photographer": "Zoe Prefontaine",
+  "identifier": "Broken Tree Trunk"
+}
+```
+ 
+**Response `200`:**
+```json
+{
+  "uploadUrl": "https://example-bucket.s3.amazonaws.com/...",
+  "key": "homepage-image-uploads/207/user-id/Riverlot56NA-2026-01-31-ZoePrefontaine-BrokenTreeTrunk-f6f399ce-3521-4fa4-987a-43cf356c693b.jpg"
+}
+```
+ 
+| Status | Description |
+|---|---|
+| `200` | Presigned upload URL generated successfully |
+| `400` | Invalid file data, missing metadata, unsupported type, or file too large |
+| `401` | Unauthorized |
+| `500` | Failed to generate upload URL |
+ 
+---
+ 
+### User Gallery
+ 
+#### 8. Get All Homepage Image Uploads (User)
+ 
+**Endpoint:** `GET /api/user-gallery/homepage-upload`
+ 
+**Description:** Returns all homepage image uploads with metadata and signed S3 URLs, ordered by date descending. Requires authentication.
+ 
+**Authentication:** Required
+ 
+**Query Parameters:** None
+ 
+**Response `200`:** Returns the same `HomepageImageItem` schema as endpoint 4, available to all authenticated users.
+ 
+| Status | Description |
+|---|---|
+| `200` | Homepage images returned successfully |
+| `401` | Unauthorized |
+| `500` | Failed to load images |
+ 
+---
+ 
+#### 9. Get All Inspection Image Attachments (User)
+ 
+**Endpoint:** `GET /api/user-gallery/sir-upload`
+ 
+**Description:** Returns all inspection image attachments (JPEG, PNG, WebP) across all sites, with resolved site names and signed S3 URLs. Ordered by ID descending. Requires authentication.
+ 
+**Authentication:** Required
+ 
+**Query Parameters:** None
+ 
+**Response `200`:**
+```json
+{
+  "items": [
+    {
+      "id": 14,
+      "response_id": 3226,
+      "question_id": 27,
+      "caption": "Cross Country ski trails",
+      "identifier": "Ski Trails",
+      "date": "2026-01-31",
+      "storage_key": "inspections/207/3226/27/Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg",
+      "content_type": "image/jpeg",
+      "file_size_bytes": 506701,
+      "filename": "Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg",
+      "site_id": 207,
+      "site_name": "Riverlot 56 (NA)",
+      "imageUrl": "https://sapaa-inspection-images.s3.ca-central-1.amazonaws.com/..."
+    }
+  ]
+}
+```
+ 
+| Status | Description |
+|---|---|
+| `200` | Gallery items returned successfully |
+| `401` | Unauthorized |
+| `500` | Failed to load gallery |
+ 
+---
+ 
+### PDF Export
+ 
+#### 10. Generate PDF Inspection Report
+ 
+**Endpoint:** `POST /api/pdf`
+ 
+**Description:** Generates PDF inspection reports in single, site, or multi-site mode. Admin only.
+ 
+**Authentication:** Required — Admin role
+ 
+**Request Body (`application/json`):**
+```json
+{
+  "mode": "single",
+  "responseId": 3235,
+  "options": {
+    "includeImages": false,
+    "maxImagesPerInspection": 5,
+    "includeEmptyAnswers": false,
+    "includeCoverPage": true,
+    "includeNaturalnessSummary": true,
+    "selectedSections": "all",
+    "sortOrder": "newest",
+    "pageSize": "LETTER"
+  }
+}
+```
+ 
+**Request Body Fields:**
+ 
+| Field | Type | Description |
 |---|---|---|
-| `keyword` | No | Search term to match against site names |
-
+| `mode` | string | Report mode: `single`, `site`, or `multi-site` |
+| `responseId` | integer | Required when `mode` is `single` |
+| `options.includeImages` | boolean | Include images in PDF (default: `false`) |
+| `options.maxImagesPerInspection` | integer | Max images per inspection, 0–20 (default: `5`) |
+| `options.includeEmptyAnswers` | boolean | Include unanswered questions (default: `false`) |
+| `options.includeCoverPage` | boolean | Include a cover page (default: `true`) |
+| `options.includeNaturalnessSummary` | boolean | Include naturalness summary section (default: `true`) |
+| `options.selectedSections` | string | `all` or `custom` (default: `all`) |
+| `options.sortOrder` | string | `newest` or `oldest` (default: `newest`) |
+| `options.pageSize` | string | `LETTER` or `A4` (default: `LETTER`) |
+ 
+**Response `200`:** Returns the generated PDF as `application/pdf`.
+ 
+| Status | Description |
+|---|---|
+| `200` | PDF generated successfully (`application/pdf`) |
+| `401` | Unauthorized |
+| `403` | Forbidden — admin access required |
+| `500` | Failed to generate PDF |
+ 
+---
+ 
+### Utility Endpoints
+ 
+#### 11. Geocoding API
+ 
+**Endpoint:** `GET /api/geocode`
+ 
+**Description:** Geocodes a location name to coordinates using the OpenCage API.
+ 
+**Authentication:** Required
+ 
+**Query Parameters:**
+ 
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `q` | string | Yes | Location name to geocode |
+ 
+**Example Request:**
+```bash
+GET /api/geocode?q=Elk Island Provincial Park
+```
+ 
+**Response `200`:**
+```json
+{
+  "latitude": 53.5731,
+  "longitude": -112.8583
+}
+```
+ 
+| Status | Description |
+|---|---|
+| `200` | Coordinates returned successfully |
+| `400` | Missing `q` parameter |
+| `500` | Geocoding failed |
+ 
+**Rate Limits:** Limited by OpenCage API quota (2,500 requests/day on free tier).
+ 
+---
+ 
+#### 12. Heatmap API
+ 
+**Endpoint:** `GET /api/heatmap`
+ 
+**Description:** Searches for sites matching a keyword and returns visit counts for heatmap visualization.
+ 
+**Authentication:** Required
+ 
+**Query Parameters:**
+ 
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `keyword` | string | No | Search term to match against site names |
+ 
 **Example Request:**
 ```bash
 GET /api/heatmap?keyword=park
 ```
-
-**Example Response:**
+ 
+**Response `200`:**
 ```json
 {
   "data": [
@@ -578,38 +1040,70 @@ GET /api/heatmap?keyword=park
   ]
 }
 ```
-
-**Empty Response:**
-```json
-{
-  "data": [],
-  "message": "No sites found"
-}
-```
-
-**Error Response:**
-```json
-{
-  "error": "Database query failed"
-}
-```
-Status: `400` or `500`
-
-**Authentication:** Requires an authenticated user session (handled by middleware).
-
+ 
+| Status | Description |
+|---|---|
+| `200` | Site data returned successfully |
+| `400` | Invalid query or database error |
+| `500` | Database query failed |
+ 
 ---
-
-### 3. Authentication Endpoints
-
+ 
+### Authentication Endpoints
+ 
 These routes are handled internally by Next.js and Supabase. Use the frontend login/signup pages instead of calling them directly.
-
+ 
 | Route | Description |
 |---|---|
 | `POST /login` | User login |
 | `POST /signup` | User registration |
 | `GET /auth/callback` | OAuth callback handler |
 | `GET /auth/confirm` | Email confirmation handler |
-
+ 
+---
+ 
+### Data Schemas
+ 
+#### `GalleryItem`
+ 
+| Field | Type | Nullable | Description |
+|---|---|---|---|
+| `id` | integer | No | Record ID |
+| `response_id` | integer | No | Associated inspection response ID |
+| `question_id` | integer | No | Associated inspection question ID |
+| `caption` | string | Yes | Image caption |
+| `identifier` | string | Yes | Short image label |
+| `date` | string | Yes | Date of inspection (`YYYY-MM-DD`) |
+| `storage_key` | string | No | S3 object key |
+| `content_type` | string | No | MIME type (e.g. `image/jpeg`) |
+| `file_size_bytes` | integer | Yes | File size in bytes |
+| `filename` | string | No | SAPAA-standardized filename |
+| `site_id` | integer | No | Associated site ID |
+| `site_name` | string | Yes | Human-readable site name |
+| `imageUrl` | string | No | Signed S3 URL for image access |
+ 
+#### `HomepageImageItem`
+ 
+| Field | Type | Nullable | Description |
+|---|---|---|---|
+| `id` | integer | No | Record ID |
+| `site_id` | integer | No | Associated site ID |
+| `site_name` | string | Yes | Human-readable site name |
+| `date` | string | No | Upload date (`YYYY-MM-DD`) |
+| `photographer` | string | Yes | Photographer name |
+| `caption` | string | Yes | Image caption |
+| `identifier` | string | Yes | Short image label |
+| `filename` | string | No | SAPAA-standardized filename |
+| `file_size_bytes` | integer | Yes | File size in bytes |
+| `storage_key` | string | No | S3 object key |
+| `imageUrl` | string | No | Signed S3 URL for image access |
+ 
+#### `ErrorResponse`
+ 
+| Field | Type | Description |
+|---|---|---|
+| `error` | string | Human-readable error message |
+ 
 ---
 
 ## Required Libraries and Dependencies
