@@ -232,7 +232,7 @@ A user manual is available as an app tutorial. In-app tooltips and hints are pro
 - **Screen readers:** Semantic HTML and ARIA labels are used where needed.
 - **Colour contrast:** All text meets WCAG AA standards.
 - **Focus indicators:** Clear focus states are provided for keyboard navigation.
-- **Responsive design:** Mobile-first approach using Tailwind breakpoints. See Section 20 for full responsive design specification.
+- **Responsive design:** Mobile-first approach using Tailwind breakpoints. See Section 22 for full responsive design specification.
 - **Alt text:** All images include descriptive alt text.
 - **Touch targets:** Interactive elements meet minimum 44x44px touch target size for mobile accessibility.
 
@@ -924,31 +924,344 @@ Each sortable item exposes only a grip handle (not the whole card) as the drag t
 
 ![UI Drag Visual Feedback](images/ui_drag_drop_feedback.png) 
 
-## 17. AdminNavBar
+## 17. UserNavBar
+
+The `UserNavBar` component (`components/HeaderDropdown.tsx`) is the primary navigation component for all steward-facing pages. It renders an animated hamburger menu in the page header.
+
+![UI UserNavBar](images/ui_user_navbar.png)
+
+### 17.1 Structure
+
+The menu is divided into four sections, separated by thin borders:
+
+| Section | Items | Condition |
+|---|---|---|
+| Admin | Admin Dashboard link | Only visible when `currentUser.role === 'admin'` |
+| Pages | Home (`/sites`), Image Gallery (`/gallery`) | Always visible |
+| Help | App Tutorial (triggers `onStartTutorial`), Contact Us (mailto link) | Always visible |
+| Logout | Logout button | Always visible |
+
+### 17.2 Hamburger Button
+
+```tsx
+<button
+  onClick={() => setMenuOpen(!menuOpen)}
+  title="Open menu"
+  className={`w-11 h-11 rounded-full border flex flex-col items-center justify-center gap-[5px] transition-all
+    ${menuOpen
+      ? 'bg-white/15 border-white/40'
+      : 'bg-transparent border-white/25 hover:bg-white/10'
+    }`}
+>
+  {/* Three animated lines → X */}
+  <span className={`block w-[18px] h-[1.5px] bg-white rounded-full transition-all duration-200
+    ${menuOpen ? 'translate-y-[6.5px] rotate-45' : ''}`} />
+  <span className={`block w-[18px] h-[1.5px] bg-white rounded-full transition-all duration-200
+    ${menuOpen ? 'opacity-0' : ''}`} />
+  <span className={`block w-[18px] h-[1.5px] bg-white rounded-full transition-all duration-200
+    ${menuOpen ? '-translate-y-[6.5px] -rotate-45' : ''}`} />
+</button>
+```
+
+### 17.3 Dropdown Menu
+
+The dropdown is positioned absolutely below the trigger and uses a fixed backdrop for outside-click dismissal:
+
+```tsx
+{/* Backdrop — closes menu on outside click */}
+<div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+
+{/* Menu panel */}
+<div className="absolute right-0 top-[calc(100%+8px)] w-60 bg-white rounded-xl
+                shadow-xl border border-black/10 overflow-hidden z-50">
+  ...
+</div>
+```
+
+### 17.4 Menu Item Pattern
+
+Each item follows a consistent layout with a 32x32 icon container and label/description:
+
+```tsx
+<button className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f5f3] transition-colors">
+  <span className="w-8 h-8 rounded-lg bg-[#f0efeb] flex items-center justify-center flex-shrink-0">
+    <Icon className="w-4 h-4 text-[#555]" />
+  </span>
+  <div className="text-left">
+    <span className="text-sm font-medium text-[#1a1a1a]">Label</span>
+    <p className="text-xs text-black/40">Description text</p>
+  </div>
+</button>
+```
+
+### 17.5 Active Page Bolding
+
+The current page is indicated by bolding the menu item label. The active route is detected via `usePathname()`:
+
+```tsx
+<span className={`text-sm text-[#1a1a1a] ${
+  pathname === ROUTES.home ? "font-bold" : "font-medium"
+}`}>
+```
+
+### 17.6 Icon Colour Conventions
+
+| Section | Icon Container Background | Icon Colour |
+|---|---|---|
+| Admin | `bg-[#f0efeb]` | `text-[#555]` |
+| Pages | `bg-[#f0efeb]` | `text-[#555]` |
+| Help | `bg-[#eef4fb]` | `text-[#2a6db5]` |
+| Logout | `bg-[#fdf0f0]` | `text-[#c0392b]` |
+
+### 17.7 Props
+
+| Prop | Type | Description |
+|---|---|---|
+| `onStartTutorial` | `() => void` (optional) | Callback to trigger the react-joyride tutorial overlay |
+
+### 17.8 Test-Critical Elements
+
+- Menu trigger button: `title="Open menu"`
+- Menu item labels: `Home`, `Image gallery`, `App tutorial`, `Contact us`, `Admin`, `Logout`
+- Logout action calls `logout()` then navigates to `/login`
+
+---
+
+## 18. AdminNavBar
 
 The `AdminNavBar` component is shared across all admin pages. Its internal structure must not be modified since UI tests depend on specific elements being present.
 
 ![UI AdminNavbar](images/ui_admin_navbar.png) 
 
-### 17.1 Test-Critical Elements
+### 18.1 Test-Critical Elements
 
 - A home link to `/sites` (currently icon-only `Home`, no visible `"Home"` text label).
 - A button with `title="admin dropdown menu"` (hamburger/menu trigger).
 - Dropdown item labels (`Dashboard`, `Account Management`, `Sites`, `Form Editor`).
 
-### 17.2 Current Spacing
+### 18.2 Current Spacing
 
 Current `AdminNavBar` buttons use `p-2` and do not include `ml-2` on the hamburger button.
 
-### 17.3 Inline Rendering in Headers
+### 18.3 Inline Rendering in Headers
 
 When rendered inside a page header, `AdminNavBar`'s background is overridden with the child selector approach described in Section 8.2.
 
 ---
 
-## 18. Database and Data Layer
+## 19. Image Upload
 
-### 18.1 Active Tables (W26_ prefix)
+The application supports two distinct image upload workflows: homepage gallery uploads (via the `UploadImages` component) and Site Inspection Report (SIR) image attachments (inline within the report form). Both use drag-and-drop with presigned S3 URLs.
+
+### 19.1 Homepage Image Upload (`UploadImages` Component)
+
+The `UploadImages` component (`components/UploadImages.tsx`) provides a floating action button (FAB) and full-screen modal for uploading images to the homepage gallery. It is rendered on the Sites dashboard (`/sites`).
+
+![UI Upload FAB](images/ui_upload_fab.png)
+
+#### FAB (Floating Action Button)
+
+```tsx
+<button className="fixed bottom-8 right-8 z-50 flex items-center gap-2 px-5 py-3.5
+                   bg-gradient-to-r from-[#356B43] to-[#254431]
+                   hover:from-[#254431] hover:to-[#356B43]
+                   text-white text-sm font-semibold rounded-full shadow-lg
+                   transition-all hover:-translate-y-0.5">
+  <Upload size={16} />
+  Upload Images
+</button>
+```
+
+#### Modal Structure
+
+The modal uses a full-screen overlay with a responsive layout that stacks on mobile and sits side-by-side on desktop:
+
+![UI Upload Modal](images/ui_upload_modal.png)
+
+```tsx
+{/* Overlay */}
+<div className="fixed inset-0 z-[200] flex items-center justify-center
+                bg-[#254431]/60 backdrop-blur-md p-4">
+  {/* Modal container */}
+  <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl
+                  overflow-hidden flex flex-col max-h-[90vh]">
+    {/* Header — gradient banner */}
+    {/* Body — scrollable content */}
+    {/* Footer — status + action buttons */}
+  </div>
+</div>
+```
+
+#### Drop Zone (Empty State)
+
+When no images are selected, the modal shows a dashed-border drop zone:
+
+```tsx
+<div className="border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center
+                cursor-pointer transition-colors border-[#E4EBE4] bg-[#F7F2EA]
+                hover:border-[#356B43]">
+  <ImageIcon size={32} className="mx-auto mb-3 text-[#86A98A]" />
+  <p className="text-sm text-[#7A8075]">
+    Drop images here or <span className="text-[#356B43] font-semibold underline">browse files</span>
+  </p>
+  <p className="text-xs text-[#7A8075]/60 mt-1">JPEG, PNG, HEIC supported</p>
+</div>
+```
+
+#### Per-Image Editor
+
+Once images are added, the editor shows a carousel with navigation and a responsive metadata form:
+
+```tsx
+{/* Preview + fields — stacks on mobile, side by side on desktop */}
+<div className="flex flex-col lg:flex-row gap-4">
+  {/* Image preview */}
+  <div className="w-full lg:w-96 flex-shrink-0">
+    <img className="w-full object-cover rounded-2xl border-2 border-[#E4EBE4]"
+         style={{ maxHeight: '360px' }} />
+  </div>
+  {/* Metadata fields on cream background */}
+  <div className="flex-1 min-w-0 bg-[#F7F2EA] rounded-2xl border-2 border-[#E4EBE4] p-4">
+    ...
+  </div>
+</div>
+```
+
+#### Required Metadata Fields
+
+| Field | Type | Validation |
+|---|---|---|
+| Site | Searchable dropdown | Required — search by name or county |
+| Date of Visit | Date picker | Required — max today |
+| Photographer | Text input | Required — max 25 characters (no whitespace counted) |
+| Identifier | Text input | Required — max 20 characters (short description) |
+| Caption | Textarea | Required — longer description |
+
+#### Upload Flow
+
+1. User selects/drops images → `FileEntry` objects created with previews
+2. User fills metadata for each image via carousel navigation
+3. Completion status tracked: `{completed} / {total} complete`
+4. Upload button enabled only when all images have complete metadata
+5. Presigned URLs fetched from `/api/s3/presign-homepage-images`
+6. Files PUT directly to S3, then metadata rows inserted via `insertHomepageImageUpload`
+7. On success, redirects to `/sites?image-upload=true` (triggers success toast)
+
+#### Footer
+
+```tsx
+<div className="border-t-2 border-[#E4EBE4] px-4 sm:px-6 py-4 flex-shrink-0">
+  {/* Error alert (if upload failed) */}
+  <div className="flex items-center justify-between gap-3">
+    <p className="text-sm text-[#7A8075]">
+      <strong>{completed} / {total}</strong> complete
+    </p>
+    <div className="flex items-center gap-2 sm:gap-3">
+      <button className="... border-2 border-[#E4EBE4] text-[#7A8075] ...">Cancel</button>
+      <button data-testid="upload-submit-btn" className="... bg-gradient-to-r from-[#356B43] to-[#254431] ...">
+        Upload
+      </button>
+    </div>
+  </div>
+</div>
+```
+
+### 19.2 SIR Image Attachment (New/Edit Report)
+
+Within Site Inspection Reports, image-type questions render an inline upload zone directly in the form. This is implemented in `app/detail/[namesite]/new-report/MainContent.tsx`.
+
+![UI SIR Image Upload](images/ui_sir_image_upload.png)
+
+#### Drop Zone
+
+```tsx
+<div className="border-2 border-dashed rounded-xl p-8 text-center transition-colors
+                bg-[#F7F2EA]/30 border-[#E4EBE4] hover:border-[#356B43]">
+  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mx-auto">
+    <ImageIcon className="w-8 h-8 text-[#356B43]" />
+  </div>
+  <p className="text-[#254431] font-bold text-lg">Click to upload images</p>
+  <p className="text-sm text-[#7A8075] mt-1">PNG, JPG, WEBP up to 10MB each</p>
+</div>
+```
+
+#### Image Count Indicator
+
+When images are attached, a count banner appears:
+
+```tsx
+<div className="flex items-center gap-2 p-3 bg-[#356B43]/10 rounded-lg">
+  <ImageIcon className="w-5 h-5 text-[#356B43]" />
+  <span className="text-sm text-[#356B43] font-semibold">
+    {totalCount} image{totalCount > 1 ? 's' : ''} total
+    {persistedImages.length > 0 && ` (${persistedImages.length} previously uploaded)`}
+  </span>
+</div>
+```
+
+#### Image Cards Grid
+
+Attached images display in a responsive two-column grid with metadata fields:
+
+```tsx
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+  {/* Previously uploaded images — non-removable, shown with Lock icon */}
+  {/* Newly selected images — removable, with editable metadata */}
+</div>
+```
+
+#### Previously Uploaded Images (Edit Mode)
+
+When editing an existing report, previously uploaded images are shown with a lock badge and cannot be removed:
+
+- Green-tinted border: `border-2 border-[#356B43]/40`
+- Lock icon with "Previously uploaded — cannot be removed or edited" message
+- Read-only caption and identifier fields on cream background
+
+#### New Image Metadata Fields
+
+| Field | Type | Validation |
+|---|---|---|
+| Caption | Text input | Required — max 25 characters |
+| Identifier | Textarea | Required — description of the image |
+| Photographer | Text input | Required — max 25 characters |
+| Date | Date picker | Required — max today |
+
+#### SIR Upload Flow
+
+1. User drops/selects images on the question's drop zone
+2. `LocalImageEntry` objects created with preview URLs
+3. User fills caption, identifier, photographer, date per image
+4. On form submission, presigned URLs fetched from `/api/s3/presign` (SIR route)
+5. Files PUT to S3, then metadata saved to `W26_attachments` table
+6. In edit mode, existing attachments shown as locked alongside new uploads
+
+### 19.3 Key Differences Between Upload Contexts
+
+| Feature | Homepage Upload | SIR Image Attachment |
+|---|---|---|
+| Component | `UploadImages` (shared component) | Inline in `MainContent.tsx` |
+| Trigger | FAB button → modal | Drop zone within form question |
+| Layout | Full-screen modal with carousel | Inline two-column grid |
+| Site selection | Searchable dropdown | Inherited from current site |
+| S3 route | `/api/s3/presign-homepage-images` | `/api/s3/presign` |
+| DB table | `insertHomepageImageUpload` | `W26_attachments` |
+| Edit behaviour | N/A (upload only) | Locked previous + new uploads |
+| File types | JPEG, PNG, HEIC | PNG, JPG, WEBP (10MB limit) |
+
+### 19.4 Test-Critical Elements
+
+| Test ID | Element |
+|---|---|
+| `upload-modal` | Site search container in UploadImages modal |
+| `upload-submit-btn` | Upload submit button in UploadImages modal |
+| `image-upload-{questionId}` | File input for SIR image questions |
+
+---
+
+## 20. Database and Data Layer
+
+### 20.1 Active Tables (W26_ prefix)
 
 | Table | Purpose |
 |---|---|
@@ -961,7 +1274,7 @@ When rendered inside a page header, `AdminNavBar`'s background is overridden wit
 | `W26_form_sections` | Form section metadata |
 | `W26_ab_counties` | County/region lookup |
 
-### 18.2 Postgres RPC Functions
+### 20.2 Postgres RPC Functions
 
 Aggregate queries are implemented as Supabase RPC functions to avoid complex client-side joins:
 
@@ -970,15 +1283,15 @@ Aggregate queries are implemented as Supabase RPC functions to avoid complex cli
 | `get_naturalness_distribution()` | Returns normalised naturalness score buckets with counts from `W26_answers` |
 | `get_top_sites_distribution()` | Returns top 5 active sites by inspection count from `W26_form_responses` and `W26_sites-pa` |
 
-### 18.3 Naturalness Score Normalisation
+### 20.3 Naturalness Score Normalisation
 
 Raw `obs_value` data for naturalness is inconsistently stored (e.g., "4 - Great", "4 = Great", "Great"). The RPC uses `ILIKE` pattern matching with a `CASE` statement to normalise these into five canonical buckets: Great, Good, Passable, Terrible, and Cannot Answer.
 
 ---
 
-## 19. Testing Conventions
+## 21. Testing Conventions
 
-### 19.1 Test IDs
+### 21.1 Test IDs
 
 Components commonly use `data-testid` attributes for reliable test selection. Prefer test IDs and stable semantic selectors.  
 Current test suites also include some CSS/text selectors where no stable test ID exists.
@@ -1001,7 +1314,7 @@ Current test suites also include some CSS/text selectors where no stable test ID
 | `{question} Hide Button` | Toggle button when question is active |
 | `{question} Show Button` | Toggle button when question is hidden |
 
-### 19.2 Test-Critical UI Text
+### 21.2 Test-Critical UI Text
 
 The following strings/attributes are currently asserted by parts of the UI test suite:
 
@@ -1009,7 +1322,7 @@ The following strings/attributes are currently asserted by parts of the UI test 
 - Admin menu trigger title: `"admin dropdown menu"`
 - Logo alt text varies by page (`"SAPAA"` and `"Logo"` both exist in current implementation)
 
-### 19.3 Mocking Strategy
+### 21.3 Mocking Strategy
 
 AdminDashboard tests require these mocks:
 
@@ -1023,13 +1336,13 @@ Re-apply all query mocks in `beforeEach` after `jest.clearAllMocks()`. Import th
 
 ---
 
-## 20. Responsive Design
+## 22. Responsive Design
 
 The application uses a mobile-first responsive design approach. All responsive behaviour is implemented through Tailwind CSS responsive utility classes — no custom CSS media queries are used (except for dark mode preference detection in `globals.css`).
 
 ![UI Responsive Overview](images/ui_responsive_overview.png)
 
-### 20.1 Breakpoints
+### 22.1 Breakpoints
 
 The application follows Tailwind's standard breakpoint system:
 
@@ -1042,7 +1355,7 @@ The application follows Tailwind's standard breakpoint system:
 | `xl:` | 1280px | Large desktop — four-column image galleries, wider padding |
 | `2xl:` | 1536px | Extra-large — maximum content widths |
 
-### 20.2 Mobile-First Approach
+### 22.2 Mobile-First Approach
 
 Base styles always target the smallest screen. Larger breakpoints override progressively:
 
@@ -1057,7 +1370,7 @@ className="px-4 sm:px-6 py-4 sm:py-6"
 className="flex flex-col sm:flex-row"
 ```
 
-### 20.3 Responsive Grid Layouts
+### 22.3 Responsive Grid Layouts
 
 The application uses several responsive grid patterns depending on content type:
 
@@ -1070,7 +1383,7 @@ The application uses several responsive grid patterns depending on content type:
 
 ![UI Responsive Grid](images/ui_responsive_grid.png)
 
-### 20.4 Navigation — Hamburger Menu
+### 22.4 Navigation — Hamburger Menu
 
 Navigation uses an animated hamburger menu accessible on all screen sizes (no separate desktop navigation bar). The `HeaderDropdown` and `AdminNavBar` components implement this:
 
@@ -1095,7 +1408,7 @@ Navigation uses an animated hamburger menu accessible on all screen sizes (no se
 
 ![UI Hamburger Menu](images/ui_hamburger_menu.png)
 
-### 20.5 Authentication Pages — Split Layout
+### 22.5 Authentication Pages — Split Layout
 
 Login and signup pages use a two-column split layout on desktop that collapses to single-column on mobile:
 
@@ -1121,7 +1434,7 @@ Login and signup pages use a two-column split layout on desktop that collapses t
 
 ![UI Login Responsive](images/ui_login_responsive.png)
 
-### 20.6 Responsive Typography
+### 22.6 Responsive Typography
 
 Text sizes scale up at breakpoints to maintain readability:
 
@@ -1134,7 +1447,7 @@ Text sizes scale up at breakpoints to maintain readability:
 | Labels/captions | `text-xs` | `text-sm` | `text-sm` |
 | Icon sizes | `w-4 h-4` | `w-5 h-5` | `w-5 h-5` |
 
-### 20.7 Responsive Spacing
+### 22.7 Responsive Spacing
 
 Padding and gap values increase at breakpoints:
 
@@ -1145,9 +1458,9 @@ Padding and gap values increase at breakpoints:
 | Grid gap | `gap-4` | `gap-6` | `gap-6` |
 | Button padding | `px-4 py-2.5` | `px-5 py-2.5` | `px-5 py-2.5` |
 
-### 20.8 Responsive Modals
+### 22.8 Responsive Modals
 
-Image preview modals adapt from stacked to side-by-side layout:
+Image preview modals adapt from stacked to side-by-side layout. To capture a good screenshot, navigate to Riverlot 56 and search "Site Trails" in the gallery for a representative image with metadata.
 
 ```tsx
 {/* Modal overlay — responsive padding */}
@@ -1169,7 +1482,7 @@ Image preview modals adapt from stacked to side-by-side layout:
 
 ![UI Responsive Modal](images/ui_responsive_modal.png)
 
-### 20.9 Sticky Report Footer
+### 22.9 Sticky Report Footer
 
 The new-report and edit-report pages use a responsive sticky footer with section navigation, progress bar, and submit button:
 
@@ -1194,7 +1507,7 @@ The new-report and edit-report pages use a responsive sticky footer with section
 
 ![UI Responsive Footer](images/ui_responsive_footer.png)
 
-### 20.10 Responsive Visibility
+### 22.10 Responsive Visibility
 
 Use Tailwind's `hidden` and display utilities to show/hide elements at breakpoints:
 
@@ -1204,9 +1517,9 @@ Use Tailwind's `hidden` and display utilities to show/hide elements at breakpoin
 | Desktop-only | `hidden lg:flex` | Left branding panel on auth pages |
 | Desktop-only (block) | `hidden lg:block` | Live preview panel in Form Editor |
 
-**Important:** Do not use `hidden md:flex` or similar on text that tests must find (see Section 19.2).
+**Important:** Do not use `hidden md:flex` or similar on text that tests must find (see Section 21.2).
 
-### 20.11 Responsive Buttons
+### 22.11 Responsive Buttons
 
 Buttons adapt from full-width stacked layout on mobile to inline auto-width on larger screens:
 
@@ -1218,7 +1531,7 @@ Buttons adapt from full-width stacked layout on mobile to inline auto-width on l
 </div>
 ```
 
-### 20.12 Responsive Images
+### 22.12 Responsive Images
 
 Gallery images and thumbnails use responsive heights:
 
@@ -1230,7 +1543,7 @@ Gallery images and thumbnails use responsive heights:
 
 All images use `object-contain` for proper scaling without distortion.
 
-### 20.13 Files with Responsive Patterns
+### 22.13 Files with Responsive Patterns
 
 The following files contain significant responsive design implementation:
 
@@ -1340,12 +1653,15 @@ The following responsive changes were applied across the application:
 - Section 1.1: Updated scope (removed React Native reference, added responsive design)
 - Section 1.2: Added MUI v7, react-icons, react-joyride to tech stack
 - Section 1.3: Added `/gallery` and `/terms` routes
-- Section 4.1: Added touch target accessibility, cross-referenced Section 20
+- Section 4.1: Added touch target accessibility, cross-referenced Section 22
 - Section 7.3: Updated padding to responsive values
 - Section 8.1: Updated header code with responsive classes
 - Section 9.3: Added site list grid pattern and responsive card padding
-- Section 20: New comprehensive responsive design section (20.1–20.13)
+- Section 17: New UserNavBar section (hamburger menu, dropdown structure, menu items, active page bolding, icon conventions, props, test elements)
+- Section 19: New Image Upload section (homepage UploadImages component, SIR image attachments, drop zones, metadata fields, upload flows, comparison table)
+- Section 22: New comprehensive responsive design section (22.1–22.13)
 - Appendix A.2: Added 6 responsive checklist items for new pages
+- All sections renumbered (17→17 UserNavBar, old 17 AdminNavBar→18, new 19 Image Upload, 18→20 Database, 19→21 Testing, new 22 Responsive)
 
 ---
 
