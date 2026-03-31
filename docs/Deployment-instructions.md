@@ -386,19 +386,19 @@ The application uses Supabase Auth `user_metadata` to store user roles in the `u
 
 The application uses Supabase Auth `user_metadata` to also store user authorization status in the `user_metadata.authenicated` field.
 
-**How Authoirzation Work:**
+**How Authorization Works:**
 - Upon account creation authorization is set to: `False` (assigned automatically as admin aproval is required for application access)
 - Upon admin aproval of account the value is then set to: `True` (Indicating an admin has allowed you access to the application)
 
 **Setting Authorization Status:**
 
 1. Go to Admin Dashbaord
-2. Enter Account Manager
+2. Proceed to Account Management
 3. Click the user you want to Authorize
 4. Toggle their approval status to: **Approved**
 5. Click **Save**
 
-**Note:** New users created through the signup page default to `Salse`. Only admins can change user authorization status through the Account Management interface.
+**Note:** New users created through the signup page default to `False`. Only admins can change user authorization status through the account management interface.
 
 ---
 
