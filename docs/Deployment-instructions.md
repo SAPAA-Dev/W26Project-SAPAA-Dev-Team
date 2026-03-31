@@ -541,7 +541,7 @@ If you encounter issues not covered here:
 
 ## API Documentation
  
-The full interactive API reference is available at `/api/openapi` on your deployed instance (OpenAPI 3.0 / Swagger UI).
+The full interactive API reference is available at `/api-docs` on your deployed instance (OpenAPI 3.0 / Swagger UI).
  
 All endpoints are served from the base URL `https://your-project-name.vercel.app` (or `http://localhost:3000` for local development).
  
