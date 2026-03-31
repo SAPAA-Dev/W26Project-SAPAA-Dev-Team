@@ -79,14 +79,14 @@ function attemptSubmitExpectBlocked() {
   cy.wait(2000);
   cy.contains("button", "Review & Submit").scrollIntoView().click({ force: true });
   cy.contains("Required Questions Missing").should("be.visible");
-  cy.contains("You must answer all required questions before submitting this report.").should("be.visible");
+  cy.contains("You must answer all required questions and complete required image metadata before submitting this report.").should("be.visible");
   cy.contains("Missing required question numbers:").should("be.visible");
   cy.contains("button", "Back to Form").should("be.visible");
   cy.contains("Missing required question numbers:")
     .parent()
     .find("ul li")
     .its("length")
-    .should("be.greaterThan", 0);
+    .should("be.greaterThan", 0)
 }
 
 function answerOneVisibleRequiredQuestionOnly() {

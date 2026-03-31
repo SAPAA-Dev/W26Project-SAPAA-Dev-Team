@@ -51,42 +51,23 @@ function login() {
 
 
 function dismissVerificationModalIfVisible() {
-  cy.get("body").then(($body) => {
-    if ($body.text().includes("The Fine Print Up Front")) {
-      cy.contains("The Fine Print Up Front")
-        .should("be.visible")
-        .parents("div.relative")
-        .first()
-        .as("verificationModal");
-
-      cy.get("@verificationModal").within(() => {
-        cy.get('input[type="checkbox"]').check({ force: true });
-        cy.contains("button", "Continue to Form")
-          .scrollIntoView()
-          .should("be.visible")
-          .and("not.be.disabled")
-          .click({ force: true });
-      });
-
-      cy.get("body").then(($nextBody) => {
-        if ($nextBody.text().includes("The Fine Print Up Front")) {
-          cy.contains("button", "Continue to Form").click({ force: true });
-        }
-      });
-
-      cy.contains("The Fine Print Up Front", { timeout: 15000 }).should("not.exist");
-    }
-  });
+  cy.wait(5000);
+  cy.get('[data-testid="fine-print-modal"]').click('topLeft', { force: true });
+  cy.get('[data-testid="terms-checkbox"]').check();
+  cy.get('[data-testid="terms-checkbox"]').should('be.checked');
+  cy.get('[data-testid="fine-print-modal"] button.text-white').should('not.have.attr', 'disabled');
+  cy.get('[data-testid="fine-print-modal"] div.bg-\\[\\#F7F2EA\\]\\/50').click();
+  cy.get('[data-testid="fine-print-modal"] div.bg-\\[\\#F7F2EA\\]\\/50').should('not.exist');
+  cy.get('[data-testid="fine-print-modal"]').should('not.exist');
+  cy.contains("The Fine Print Up Front", { timeout: 15000 }).should("not.exist");
 }
 
 function ensureFormReady() {
   cy.get("body", { timeout: 20000 }).should("not.contain", "Loading inspection form...");
   dismissVerificationModalIfVisible();
-  dismissVerificationModalIfVisible();
 }
 
 function clickSectionByIndex(index: number) {
-  ensureFormReady();
   cy.get("main aside nav button:visible").eq(index).scrollIntoView().click({ force: true });
   cy.get("section.flex-1").should("be.visible");
 }

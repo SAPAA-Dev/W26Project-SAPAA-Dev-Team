@@ -195,7 +195,7 @@ export default function UploadImages() {
           identifier: entry.identifier,
         });
 
-        const filename = key.split("/").pop()!;
+        const filename = key.split("/").pop()!; 
 
         await uploadFileToS3(uploadUrl, file);
 

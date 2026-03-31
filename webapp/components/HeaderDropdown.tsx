@@ -46,8 +46,9 @@ async function getCurrentUser(): Promise<{ email: string; role: string; name: st
   }
 }
 
-
-
+export const navigate = (url: string) => {
+    window.location.href = url;
+};
 
 export default function UserNavBar({ onStartTutorial }: UserNavBarProps) {
 
@@ -69,7 +70,6 @@ export default function UserNavBar({ onStartTutorial }: UserNavBarProps) {
     };
     fetchUser();
     }, []);
-
 
 
 
@@ -211,7 +211,7 @@ export default function UserNavBar({ onStartTutorial }: UserNavBarProps) {
                     onClick={async () => {
                     setMenuOpen(false);
                     await logout();
-                    window.location.href = '/login';
+                    navigate('/login');
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#fdf0f0] transition-colors"
                 >
