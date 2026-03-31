@@ -181,7 +181,7 @@ AWS_S3_BUCKET=your_bucket_name
 
 ```
 
-**⚠️ Important:**
+**Important:**
 - Never commit `.env.local` to version control
 - The `.env.local` file is already in `.gitignore`
 - `SUPABASE_SECRET` and all `AWS_*` keys are server-side only — never prefix them with `NEXT_PUBLIC_`
