@@ -1,5 +1,17 @@
 /// <reference types="cypress" />
-// US 1.0.30 – Rich Text Editor Formatting
+
+function dismissTutorialIfPresent() {
+  cy.wait(2000);
+  cy.get('body').then(($body) => {
+    if ($body.find('.react-joyride__overlay').length > 0) {
+      cy.get('[data-testid="tutorial-skip"], [aria-label="Skip"], button[data-action="skip"], button[data-action="close"]')
+        .first()
+        .click({ force: true });
+      cy.get('.react-joyride__overlay').should('not.exist', { timeout: 5000 });
+    }
+  });
+}
+
 describe('Rich Text Editor - Formatting', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/')
@@ -8,18 +20,13 @@ describe('Rich Text Editor - Formatting', () => {
     cy.get('#password').click();
     cy.get('#password').type('123Abc@@');
     cy.get('button.font-bold').click();
-    cy.wait(1000);
-    cy.get('button.text-white').click();
-    cy.wait(5000);
-    cy.contains('Admin').first().click({force: true});
-    cy.wait(5000);
-    cy.get('button[title="admin dropdown menu"]').click();
-    cy.wait(2000);
-    cy.contains('Form Editor').click();
     cy.wait(3000);
-    cy.url().should('include', '/admin/form-editor')
+    dismissTutorialIfPresent();
+    cy.url().should('include', '/sites');
 
-    // Open a section and click edit on the first question to access the rich text editor
+    cy.visit('http://localhost:3000/admin/form-editor');
+    cy.url().should('include', '/admin/form-editor', { timeout: 10000 });
+
     cy.get('[data-testid^="section-button-"]').first().click();
     cy.wait(3000);
     cy.get('[data-testid="edit-question-button"]').first().click();
@@ -31,7 +38,6 @@ describe('Rich Text Editor - Formatting', () => {
     cy.get('[data-testid="edit-question-subtext"]').clear().type(testText);
     cy.wait(1000);
 
-    // Select the text
     cy.get('[data-testid="edit-question-subtext"]')
       .invoke('val')
       .then((val) => {
@@ -40,11 +46,9 @@ describe('Rich Text Editor - Formatting', () => {
       });
     cy.wait(1000);
 
-    // Click the Bold button
     cy.get('button[title="Bold (Ctrl+B)"]').first().click();
     cy.wait(1000);
 
-    // Verify bold markdown markers were applied
     cy.get('[data-testid="edit-question-subtext"]')
       .should('have.value', `**${testText}**`);
   });
@@ -54,16 +58,15 @@ describe('Rich Text Editor - Formatting', () => {
     cy.get('[data-testid="edit-question-subtext"]').clear().type(testText);
     cy.wait(1000);
 
-    // Select the text
+
     cy.get('[data-testid="edit-question-subtext"]')
       .setSelection(0, testText.length);
     cy.wait(1000);
 
-    // Click the Italic button
     cy.get('button[title="Italic (Ctrl+I)"]').first().click();
     cy.wait(1000);
 
-    // Verify italic markdown markers were applied
+
     cy.get('[data-testid="edit-question-subtext"]')
       .should('have.value', `*${testText}*`);
   });
@@ -73,16 +76,16 @@ describe('Rich Text Editor - Formatting', () => {
     cy.get('[data-testid="edit-question-subtext"]').clear().type(testText);
     cy.wait(1000);
 
-    // Select the text
+
     cy.get('[data-testid="edit-question-subtext"]')
       .setSelection(0, testText.length);
     cy.wait(1000);
 
-    // Click the Underline button
+
     cy.get('button[title="Underline (Ctrl+U)"]').first().click();
     cy.wait(1000);
 
-    // Verify underline HTML tags were applied
+
     cy.get('[data-testid="edit-question-subtext"]')
       .should('have.value', `<u>${testText}</u>`);
   });

@@ -154,7 +154,7 @@ export default function TermsPage() {
                 </ol>
 
                 <div className="bg-[#F7F2EA] p-4 rounded-xl space-y-2">
-                <p className="font-semibold text-[#254431]">
+                <p className="font-semibold text-[#254431] break-words leading-snug">
                     Administrative Notes
                 </p>
                 <ul className="list-disc pl-6 space-y-2">
@@ -226,7 +226,7 @@ export default function TermsPage() {
                     Resize images to no more than 1,000 pixels on the longest side.
                 </li>
                 <li>
-                    Crop unnecessary background — focus on the subject.
+                    Crop unnecessary background - focus on the subject.
                 </li>
                 <li>
                     Captions may include subject, site, date, and photographer name.

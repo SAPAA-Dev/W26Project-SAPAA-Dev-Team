@@ -208,7 +208,7 @@ describe("NewReportPage – Liability / Verification Popup", () => {
       });
     });
 
-    it("does not navigate away when continuing — user stays on the form", async () => {
+    it("does not navigate away when continuing - user stays on the form", async () => {
       await completeVerification();
       const continueBtn = screen.getByRole("button", { name: /continue to form/i });
       await userEvent.click(continueBtn);

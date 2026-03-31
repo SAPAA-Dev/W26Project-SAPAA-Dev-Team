@@ -54,7 +54,7 @@ interface MainContentProps {
 
 // An image already persisted in AWS + W26_attachments
 export interface ExistingAttachment {
-  id: number;           // W26_attachments.id — used for metadata updates
+  id: number;           // W26_attachments.id - used for metadata updates
   question_id: number;
   storage_key: string;
   filename: string | null;
@@ -68,7 +68,7 @@ export interface ExistingAttachment {
 
 // A locally-selected image that has not yet been uploaded to AWS
 export interface LocalImage {
-  id: string;           // crypto.randomUUID() — client-only
+  id: string;           // crypto.randomUUID() - client-only
   file: File;
   caption: string;
   identifier: string;
@@ -366,7 +366,7 @@ export default function MainContent({
                 );
               })}
         
-              {/* Other free-text — only when Other is checked */}
+              {/* Other free-text - only when Other is checked */}
               {Array.isArray(response) && response.includes('Other') && (
                 <div className="ml-2 pl-4 border-l-2 border-[#356B43]/30">
                   <label className="block text-sm font-semibold text-[#254431] mb-1">
@@ -451,9 +451,9 @@ export default function MainContent({
         );
 
       case 'image': {
-        // Local images: newly picked files, not yet uploaded — stored in responses[question.id]
+        // Local images: newly picked files, not yet uploaded - stored in responses[question.id]
         const localImages: LocalImage[] = Array.isArray(response) ? (response as LocalImage[]) : [];
-        // Existing images: already in AWS — pulled from the existingAttachments prop
+        // Existing images: already in AWS - pulled from the existingAttachments prop
         const persistedImages: ExistingAttachment[] = existingForQuestion(question.id);
 
         const addFiles = (newFiles: File[]) => {
@@ -596,24 +596,16 @@ export default function MainContent({
                       </span>
                     </div>
 
-                    <input
-                      type="text"
-                      value={image.caption ?? ''}
-                      onChange={(e) => updateExistingField(image.id, 'caption', e.target.value)}
-                      placeholder="Caption (optional)"
-                      className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
-                    />
+                    <div className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg bg-[#F7F2EA] text-[#254431] text-sm">
+                      {image.caption?.trim() || "No caption"}
+                    </div>
 
-                    <textarea
-                      value={image.identifier ?? ''}
-                      onChange={(e) => updateExistingField(image.id, 'identifier', e.target.value)}
-                      placeholder="Identifier (optional)"
-                      rows={2}
-                      className="w-full mt-1 px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm resize-none"
-                    />
+                    <div className="w-full mt-1 px-3 py-2 border-2 border-[#E4EBE4] rounded-lg bg-[#F7F2EA] text-[#254431] text-sm min-h-[60px] break-words">
+                      {image.identifier?.trim() || "No identifier"}
+                    </div>
 
                     <p className="mt-1 text-xs text-[#7A8075] italic flex items-center gap-1">
-                      <Lock className="w-3 h-3" /> Previously uploaded — cannot be removed
+                      <Lock className="w-3 h-3" /> Previously uploaded — cannot be removed or edited
                     </p>
                   </div>
                 </div>

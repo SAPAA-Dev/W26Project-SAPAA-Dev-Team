@@ -2,7 +2,33 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import GalleryPage from "../../app/gallery/page";
 
-jest.mock("../../app/UserNavBar", () => () => <div>UserNavBarMock</div>);
+
+jest.mock('@/utils/supabase/client', () => ({
+  createClient: () => ({
+    auth: {
+      getSession: jest.fn().mockResolvedValue({
+        data: {
+          session: {
+            user: {
+              email: 'test@test.com',
+              user_metadata: {
+                role: 'admin',
+                full_name: 'Test User',
+                avatar_url: '',
+              },
+            },
+          },
+        },
+        error: null,
+      }),
+      onAuthStateChange: jest.fn(() => ({
+        data: { subscription: { unsubscribe: jest.fn() } },
+      })),
+    },
+  }),
+}));
+
+jest.mock("@/components/HeaderDropdown", () => () => <div>UserNavBarMock</div>);
 jest.mock("@/components/ProtectedRoute", () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -12,6 +38,18 @@ jest.mock("@/components/ProtectedRoute", () => ({
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
 }));
+
+export const createClient = () => ({
+  auth: {
+    getSession: jest.fn().mockResolvedValue({
+      data: { session: null },
+      error: null,
+    }),
+    onAuthStateChange: jest.fn(() => ({
+      data: { subscription: { unsubscribe: jest.fn() } },
+    })),
+  },
+});
 
 const mockGalleryItems = [
   {

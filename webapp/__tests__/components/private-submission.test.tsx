@@ -52,6 +52,8 @@ jest.mock("@/utils/supabase/queries", () => ({
   getQuestionResponseType:     jest.fn().mockResolvedValue([]),
   uploadSiteInspectionAnswers: jest.fn().mockResolvedValue({}),
   insertInspectionAttachments: jest.fn().mockResolvedValue({}),
+  getDateOfVisitQuestionId:    jest.fn().mockResolvedValue(21), 
+  rollbackSiteInspectionSubmission: jest.fn().mockResolvedValue({}),
 }));
 
 jest.mock("@/utils/supabase/client", () => ({
@@ -254,20 +256,21 @@ describe("Private user info – never submitted to the database", () => {
 
 
   describe("uid scoping", () => {
-    it("the uid is passed to addSiteInspectionReport to link the report — not stored in answers", async () => {
+    it("the uid is passed to addSiteInspectionReport to link the report - not stored in answers", async () => {
       const { addSiteInspectionReport } = require("@/utils/supabase/queries");
       const rows = await submitForm();
 
       expect(addSiteInspectionReport as jest.Mock).toHaveBeenCalledWith(
         "site-456",
-        PRIVATE.uid
+        PRIVATE.uid,
+        undefined 
       );
 
       const strings = allStringValues(rows);
       strings.forEach(val => expect(val).not.toContain(PRIVATE.uid));
     });
 
-    it("response_id in each row is the report id — not the user uid", async () => {
+    it("response_id in each row is the report id - not the user uid", async () => {
       const rows = await submitForm();
       rows.forEach(row => {
         expect(row.response_id).toBe(99);

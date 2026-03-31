@@ -1,16 +1,26 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+
+
+
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSitesOnline, getTotalInspectionCount, SiteSummary } from '@/utils/supabase/queries';
-import { Award, Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock } from 'lucide-react';
+import { Award, Search, MapPin, Calendar, Home, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import Image from 'next/image';
 import { Suspense } from "react";
 import { SubmissionToast } from "./SubmissionToast";
-import UserNavBar from "../UserNavBar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import UploadImages from "@/components/UploadImages";
+import { logout } from "@/services/auth";
+import dynamic from 'next/dynamic';
+import { sitesDashboardSteps } from '@/components/TutorialOverlay';
+import UserNavBar from "@/components/HeaderDropdown";
+import HelpMenu from '@/components/HelpMenu';
+import { siteDetailSteps } from '@/components/TutorialOverlay';
+
+const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
 type UnifiedSite = SiteSummary;
 
@@ -55,7 +65,6 @@ async function getCurrentUser(): Promise<{ email: string; role: string; name: st
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
     if (sessionError || !session?.user) {
-      console.log('No session or session error');
       return null;
     }
     
@@ -63,7 +72,6 @@ async function getCurrentUser(): Promise<{ email: string; role: string; name: st
     const role = session.user.user_metadata?.role ?? 'steward';
     const name  = session.user.user_metadata?.full_name ?? '';
     const avatar = session.user.user_metadata?.avatar_url ?? '';
-    console.log(session.user)
     
     return {
       email,
@@ -90,11 +98,57 @@ export default function HomeClient() {
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name:string; avatar:string } | null>(null);
   const [userLoading, setUserLoading] = useState(true);
   const [totalResponses, setTotalResponses] = useState<number>(0);
+  const [menuOpen, setMenuOpen] = useState(false); 
+  const [activeTooltip, setActiveTooltip] = useState<number | null>(null);
+  
+  const [forceTutorial, setForceTutorial] = useState(false);
+
+  const handleStartTutorial = useCallback(() => {
+    setForceTutorial(false);
+    setTimeout(() => setForceTutorial(true), 50);
+  }, []);
+
+  const handleTutorialFinish = useCallback(() => {
+    setForceTutorial(false);
+  }, []);
+
 
   useEffect(() => {
     getTotalInspectionCount().then(setTotalResponses).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showSortMenu && !target.closest('.sort-menu-container')) {
+        setShowSortMenu(false);
+      }
+    };
+  
+    if (showSortMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showSortMenu]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (activeTooltip !== null && !target.closest('.stat-card')) {
+        setActiveTooltip(null);
+      }
+    };
+  
+    if (activeTooltip !== null) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [activeTooltip]);
+  
   useEffect(() => {
     const fetchUser = async () => {
       setUserLoading(true);
@@ -197,117 +251,145 @@ export default function HomeClient() {
 
   return (
     <ProtectedRoute>
-    <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-        <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
-          <Suspense fallback={null}>
-            <SubmissionToast />
-          </Suspense>
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-3">
-              {/* Left: icon + title + subtitle */}
-              <div className="flex items-center gap-4">
-                <Image
-                  src="/images/sapaa-icon-white.png"
-                  alt="SAPAA"
-                  width={140}
-                  height={140}
-                  priority
-                  className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
-                />
-                <div>
-                  <h1 className="text-3xl font-bold mt-3">Protected Areas</h1>
-                  <p className="text-[#E4EBE4] text-base mt-0.5">
-                    Monitor and track site inspections across Alberta
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 mt-4">
-                {currentUser?.role === 'admin' && (
-                  <button
-                    onClick={() => router.push('/admin/dashboard')}
-                    className="bg-[#E4EBE4] hover:bg-[#F7F2EA] text-black px-4 py-2 rounded-xl flex items-center gap-2 font-semibold transition-all"
-                  >
-                    <Award className="w-5 h-5" />
-                    Admin
-                  </button>
-                )}
-                <div className="[&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
-                  <UserNavBar />
-                </div>
-              </div>
+
+      <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
+      {/* Tutorial Overlay - auto-starts on first visit, re-runs on forceRun */}
+      {!loading && !userLoading && (
+        <TutorialOverlay
+          key={forceTutorial ? 'force' : 'auto'}
+          steps={sitesDashboardSteps}
+          tutorialKey="sites"
+          userId={currentUser?.email ?? null}
+          forceRun={forceTutorial}
+          onFinish={handleTutorialFinish}
+        />
+      )}
+      
+        <div id="tutorial-header" className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+        <Suspense fallback={null}>
+          <SubmissionToast />
+        </Suspense>
+      
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          {/* Logo + title */}
+          <div className="flex items-center gap-4">
+            <Image
+              src="/images/sapaa-icon-white.png"
+              alt="SAPAA"
+              width={140}
+              height={140}
+              priority
+              className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+            />
+            <div>
+              <h1 className="text-3xl font-bold mt-3">Protected Areas</h1>
+              <p className="text-[#E4EBE4] text-base mt-0.5">
+                Monitor and track site inspections across Alberta
+              </p>
             </div>
           </div>
-        </div>
 
-        
-    {/* Stats Cards */}
-    <div className="max-w-7xl mx-auto px-6 py-6 mt-2">
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <MapPin className="w-5 h-5 text-[#356B43]" />
-            <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Sites</div>
-          </div>
-          <div className="text-3xl font-bold text-[#254431]">{stats.totalSites}</div>
-        </div>
+          <UserNavBar onStartTutorial={handleStartTutorial} />
+      
 
-        <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <ClipboardList className="w-5 h-5 text-[#356B43]" />
-            <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Inspected Sites</div>
-          </div>
-          <div className="text-3xl font-bold text-[#254431]">{stats.totalInspections}</div>
-        </div>
-
-        <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <ClipboardList className="w-5 h-5 text-[#356B43]" />
-            <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Responses</div>
-          </div>
-          <div className="text-3xl font-bold text-[#254431]">{stats.totalResponses}</div>
-        </div>
-
-        <div className="bg-[#D1FAE5] rounded-xl p-4 border-2 border-[#065F46]/20 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-5 h-5 text-[#065F46]" />
-            <div className="text-xs text-[#065F46] font-medium uppercase tracking-wide">Active over 365 Days</div>
-          </div>
-          <div className="text-3xl font-bold text-[#065F46]">{stats.activeThisYear}</div>
-        </div>
-
-        <div className="bg-[#FEE2E2] rounded-xl p-4 border-2 border-[#B91C1C]/20 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <Clock className="w-5 h-5 text-[#B91C1C]" />
-            <div className="text-xs text-[#B91C1C] font-medium uppercase tracking-wide">Needs Attention</div>
-          </div>
-          <div className="text-3xl font-bold text-[#7F1D1D]">{stats.needsAttention}</div>
         </div>
       </div>
+        
+    {/* Stats Cards */}
+    <div id="tutorial-stats" className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 mt-2">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      {[
+        {
+          icon: <MapPin className="w-5 h-5 text-[#356B43]" />,
+          label: 'Total Sites',
+          value: stats.totalSites,
+          tooltip: 'Total number of protected area sites in the system.',
+          bg: 'bg-white', border: 'border-[#E4EBE4]',
+          textColor: 'text-[#254431]', labelColor: 'text-[#7A8075]',
+          tooltipBg: 'bg-white', tooltipText: 'text-[#254431]', tooltipBorder: 'border-[#E4EBE4]', arrowColor: 'border-t-white',
+        },
+        {
+          icon: <ClipboardList className="w-5 h-5 text-[#356B43]" />,
+          label: 'Total Inspected Sites',
+          value: stats.totalInspections,
+          tooltip: 'Sites that have had at least one inspection recorded.',
+          bg: 'bg-white', border: 'border-[#E4EBE4]',
+          textColor: 'text-[#254431]', labelColor: 'text-[#7A8075]',
+          tooltipBg: 'bg-white', tooltipText: 'text-[#254431]', tooltipBorder: 'border-[#E4EBE4]', arrowColor: 'border-t-white',
+        },
+        {
+          icon: <ClipboardList className="w-5 h-5 text-[#356B43]" />,
+          label: 'Total Responses',
+          value: stats.totalResponses,
+          tooltip: 'Total inspection form submissions across all sites.',
+          bg: 'bg-white', border: 'border-[#E4EBE4]',
+          textColor: 'text-[#254431]', labelColor: 'text-[#7A8075]',
+          tooltipBg: 'bg-white', tooltipText: 'text-[#254431]', tooltipBorder: 'border-[#E4EBE4]', arrowColor: 'border-t-white',
+        },
+        {
+          icon: <TrendingUp className="w-5 h-5 text-[#065F46]" />,
+          label: 'Active over 365 Days',
+          value: stats.activeThisYear,
+          tooltip: 'Sites inspected within the last 365 days, considered actively monitored.',
+          bg: 'bg-[#D1FAE5]', border: 'border-[#065F46]/20',
+          textColor: 'text-[#065F46]', labelColor: 'text-[#065F46]',
+          tooltipBg: 'bg-[#D1FAE5]', tooltipText: 'text-[#065F46]', tooltipBorder: 'border-[#065F46]/20', arrowColor: 'border-t-[#D1FAE5]',
+        },
+        {
+          icon: <Clock className="w-5 h-5 text-[#B91C1C]" />,
+          label: 'Needs Attention',
+          value: stats.needsAttention,
+          tooltip: 'Sites last inspected over 2 years ago, requires a follow-up visit.',
+          bg: 'bg-[#FEE2E2]', border: 'border-[#B91C1C]/20',
+          textColor: 'text-[#7F1D1D]', labelColor: 'text-[#B91C1C]',
+          tooltipBg: 'bg-[#FEE2E2]', tooltipText: 'text-[#7F1D1D]', tooltipBorder: 'border-[#B91C1C]/20', arrowColor: 'border-t-[#FEE2E2]',
+        },
+      ].map((card, i) => (
+        <div
+          key={i}
+          className={`stat-card relative group ${card.bg} rounded-xl p-4 sm:p-5 border-2 ${card.border} shadow-sm cursor-pointer`}
+          onClick={() => setActiveTooltip(activeTooltip === i ? null : i)}
+        >
+          {/* Tooltip */}
+          <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-44 ${card.tooltipBg} ${card.tooltipText} border-2 ${card.tooltipBorder} text-xs rounded-xl px-3 py-2 text-center
+            transition-opacity duration-200 pointer-events-none z-10 shadow-lg
+            ${activeTooltip === i ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+            {card.tooltip}
+            <div className={`absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent ${card.arrowColor}`} />
+          </div>
+
+          <div className="flex items-center gap-2 mb-2">
+            {card.icon}
+            <div className={`text-xs ${card.labelColor} font-medium uppercase tracking-wide`}>{card.label}</div>
+          </div>
+          <div className={`text-2xl sm:text-3xl font-bold ${card.textColor}`}>{card.value}</div>
+        </div>
+      ))}
+    </div>
     </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Search and Sort */}
         <div className="mb-6 space-y-4">
-          <div className="relative">
+         <div id="tutorial-search" className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A8075]" />
             <input
               type="text"
               placeholder="Search by site name or county..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"
-            />
+              className="w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"            />
           </div>
 
           <div className="flex items-center justify-between">
             <p className="text-[#7A8075] font-medium">
               {filteredSites.length} {filteredSites.length === 1 ? 'site' : 'sites'} found
             </p>
-            <div className="relative">
+             <div id="tutorial-sort" className="relative sort-menu-container">
               <button
                 onClick={() => setShowSortMenu(!showSortMenu)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm"
               >
                 <ArrowUpDown className="w-4 h-4" />
                 Sort
@@ -357,6 +439,7 @@ export default function HomeClient() {
         </div>
 
         {/* Sites Grid */}
+        <div id="tutorial-site-list">
         {filteredSites.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-20 h-20 bg-[#E4EBE4] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -366,7 +449,7 @@ export default function HomeClient() {
             <p className="text-[#7A8075]">Try adjusting your search or filters</p>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredSites.map((item) => {
               const age = daysSince(item.inspectdate ?? '1900-01-01');
               const ageText = formatAgeBadge(age, item.inspectdate);
@@ -377,11 +460,11 @@ export default function HomeClient() {
                 <button
                   key={item.id}
                   onClick={() => router.push(`/detail/${item.namesite}`)}
-                  className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] hover:border-[#86A98A] hover:shadow-lg transition-all text-left group"
+                  className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-[#E4EBE4] hover:border-[#86A98A] hover:shadow-lg transition-all text-left group"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <h3 className="text-lg font-bold text-[#254431] mb-1 group-hover:text-[#356B43] transition-colors">
+                      <h3 className="text-base sm:text-lg font-bold text-[#254431] mb-1 group-hover:text-[#356B43] transition-colors leading-snug">
                         {item.namesite}
                       </h3>
                       {item.county && (
@@ -429,6 +512,7 @@ export default function HomeClient() {
             <UploadImages />
           </div>
         )}
+        </div>
       </div>
     </div>
     </ProtectedRoute>
