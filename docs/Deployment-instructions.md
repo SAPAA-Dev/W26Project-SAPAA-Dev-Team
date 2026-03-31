@@ -407,7 +407,7 @@ The application uses Supabase Auth `user_metadata` to also store user authorizat
 ### 1. Verify Environment Variables
 
 1. Go to Vercel Dashboard → Your Project → **Settings** → **Environment Variables**
-2. Ensure all 8 required variables are present and enabled for Production
+2. Ensure all 7 required variables are present and enabled for Production
 
 ### 2. Configure Supabase Redirect URLs
 
