@@ -30,6 +30,7 @@ jest.mock('next/image', () => ({
 }));
 jest.mock('../../components/ProtectedRoute', () => ({ children }: any) => <div>{children}</div>);
 
+
 // Mock daysSince from sites page
 jest.mock('@/app/sites/page', () => ({
   daysSince: jest.fn((date: string) => {
@@ -52,6 +53,7 @@ const mockInspections = [
     id: 3207,
     user_id: 'user-123',
     created_at: '2024-06-15T19:28:47.017305+00:00',
+    inspection_date: '2024-06-15',
     inspection_no: null,
     naturalness_score: '4 = Great',
     naturalness_details: 'Site is in good condition',
@@ -71,6 +73,7 @@ const mockInspections = [
     id: 3208,
     user_id: 'user-456',
     created_at: '2024-03-10T10:00:00.000000+00:00',
+    inspection_date: '2024-03-10',
     inspection_no: null,
     naturalness_score: '3 = Good',
     naturalness_details: 'Minor erosion detected',
@@ -85,6 +88,7 @@ const mockInspections = [
     id: 3209,
     user_id: 'user-789',
     created_at: '2023-12-01T08:00:00.000000+00:00',
+    inspection_date: '2023-12-01',
     inspection_no: null,
     naturalness_score: '2 = Fair',
     naturalness_details: 'Requires maintenance',
@@ -195,7 +199,7 @@ describe('SiteDetailScreen', () => {
       render(<SiteDetailScreen />);
       await waitFor(() => {
         expect(screen.getByText(/Avg. Score/i)).toBeInTheDocument();
-        // scores are strings like "4 = Great", "3 = Good", "2 = Fair" — numeric prefixes average to 3.0
+        // scores are strings like "4 = Great", "3 = Good", "2 = Fair" - numeric prefixes average to 3.0
         const scoreElements = screen.getAllByText('3.0');
         expect(scoreElements.length).toBeGreaterThan(0);
       });
@@ -313,6 +317,35 @@ describe('SiteDetailScreen', () => {
       await waitFor(() => {
         const scoreElements = screen.getAllByText(/Score:/i);
         expect(scoreElements.length).toBeGreaterThan(0);
+      });
+    });
+
+    it('should order reports by inspection date rather than created_at', async () => {
+      const inspectionsSortedByInspectionDate = [
+        {
+          ...mockInspections[0],
+          id: 4001,
+          created_at: '2024-01-01T00:00:00.000000+00:00',
+          inspection_date: '2024-06-15',
+        },
+        {
+          ...mockInspections[1],
+          id: 4002,
+          created_at: '2024-12-01T00:00:00.000000+00:00',
+          inspection_date: '2024-03-10',
+        },
+      ];
+
+      (supabaseQueries.getFormResponsesBySite as jest.Mock).mockResolvedValue(
+        inspectionsSortedByInspectionDate
+      );
+
+      render(<SiteDetailScreen />);
+
+      await waitFor(() => {
+        const inspectionButtons = screen.getAllByTestId('expand-inspection-button');
+        expect(inspectionButtons[0]).toHaveTextContent('June 15, 2024');
+        expect(inspectionButtons[1]).toHaveTextContent('March 10, 2024');
       });
     });
 

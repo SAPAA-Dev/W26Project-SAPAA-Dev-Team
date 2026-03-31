@@ -41,7 +41,7 @@ function detectImageFormat(buf: Buffer): 'png' | 'jpg' | null {
   }
 
   // WebP: 52 49 46 46 ... 57 45 42 50  (RIFF....WEBP)
-  // Not supported by @react-pdf/renderer — return null
+  // Not supported by @react-pdf/renderer - return null
   return null;
 }
 
@@ -50,10 +50,7 @@ async function fetchImageBuffer(url: string): Promise<{ buffer: Buffer; format: 
     const res = await fetch(url);
     if (!res.ok) return undefined;
     const arrayBuffer = await res.arrayBuffer();
-    // Use Uint8Array to create a proper copy — Buffer.from(arrayBuffer) only
-    // creates a view that shares memory with the fetch response, which can be
-    // reclaimed by the runtime and leave the Buffer with invalid data.
-    const buffer = Buffer.from(new Uint8Array(arrayBuffer));
+    const buffer = Buffer.from(arrayBuffer);
     const format = detectImageFormat(buffer);
     if (!format) return undefined; // unsupported format (webp, etc.)
     return { buffer, format };
@@ -131,7 +128,7 @@ function filterResponsesByOptions(
   }
   if (options.dateTo) {
     const to = new Date(options.dateTo);
-    to.setUTCHours(23, 59, 59, 999);
+    to.setHours(23, 59, 59, 999);
     filtered = filtered.filter((r) => {
       if (!r.created_at) return false;
       return new Date(r.created_at) <= to;
@@ -258,6 +255,9 @@ export async function fetchReportData(request: PdfRequest): Promise<PdfReportDat
       break;
     }
     case 'multi-site': {
+      if (request.siteNames.length > 50) {
+        throw new Error('Maximum 50 sites allowed for multi-site export');
+      }
       sites = await Promise.all(
         request.siteNames.map((name) => fetchSiteData(name, options))
       );

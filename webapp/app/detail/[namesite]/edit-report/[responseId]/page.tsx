@@ -10,6 +10,7 @@ import {
   updateAttachmentMetadata,
   insertInspectionAttachments,
   getSiteIdForResponse,
+  getDateOfVisitQuestionId,
 } from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
 import React, { useState, useEffect, useCallback } from "react";
@@ -78,7 +79,7 @@ export default function EditReportPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Existing attachments (already in AWS — non-removable, metadata editable)
+  // Existing attachments (already in AWS - non-removable, metadata editable)
   const [existingAttachments, setExistingAttachments] = useState<ExistingAttachment[]>([]);
   // Track which existing attachments had their metadata changed so we only update those
   const [originalAttachmentMeta, setOriginalAttachmentMeta] = useState<
@@ -87,6 +88,7 @@ export default function EditReportPage() {
 
   const [showRequiredPopup, setShowRequiredPopup] = useState(false);
   const [missingRequiredQuestionNumbers, setMissingRequiredQuestionNumbers] = useState<string[]>([]);
+  const [missingImageMetadataDetails, setMissingImageMetadataDetails] = useState<string[]>([]);
   const [siteId, setSiteId] = useState<number | null>(null);
   const [sectionNavigation, setSectionNavigation] = useState<SectionNavigationState>({
     isOnLastSection: false,
@@ -134,8 +136,6 @@ export default function EditReportPage() {
         setCurrentUser(user);
         setQuestions(questionsData || []);
         setResponses(existingAnswers);
-        console.log(questionsData);
-        console.log(existingAnswers);
         const { items = [] } = await siteImagesRes.json();
   
         const hydrated: ExistingAttachment[] = items.map((a: any) => ({
@@ -193,6 +193,10 @@ export default function EditReportPage() {
     siteId: number;
     responseId: number;
     questionId: number;
+    date: string;
+    photographer: string;
+    identifier: string;
+    siteName: string;
   }) {
     const res = await fetch(PRESIGN_ROUTE, {
       method: "POST",
@@ -205,7 +209,7 @@ export default function EditReportPage() {
       const err = await res.json().catch(() => ({}));
       throw new Error(err?.error || "Failed to get presigned URL");
     }
-    return (await res.json()) as { uploadUrl: string; key: string };
+    return (await res.json()) as { uploadUrl: string; key: string; generatedFilename: string };
   }
 
   async function uploadFileToS3(uploadUrl: string, file: File) {
@@ -257,6 +261,45 @@ export default function EditReportPage() {
 
       return a.localeCompare(b, undefined, { numeric: true });
     });
+  };
+
+  const isLocalImageArray = (value: any): value is LocalImage[] => {
+    return (
+      Array.isArray(value) &&
+      value.length > 0 &&
+      value[0] &&
+      value[0].file instanceof File
+    );
+  };
+
+  const getMissingImageMetadataDetails = (
+    currentResponses: Record<number | string, any>,
+    questionNumberMap: Record<number, string>
+  ): string[] => {
+    const details: string[] = [];
+
+    for (const [questionId, answer] of Object.entries(currentResponses)) {
+      if (!isLocalImageArray(answer)) continue;
+
+      answer.forEach((image, index) => {
+        const missingFields: string[] = [];
+
+        if (!image.caption?.trim()) missingFields.push('Caption');
+        if (!image.identifier?.trim()) missingFields.push('Identifier');
+        if (!image.photographer?.trim()) missingFields.push('Photographer');
+        if (!image.date?.trim()) missingFields.push('Date');
+
+        if (missingFields.length === 0) return;
+
+        const questionNumber =
+          questionNumberMap[Number(questionId)] ?? `Question ${questionId}`;
+        const imageLabel = answer.length > 1 ? `image ${index + 1}` : 'image';
+
+        details.push(`${questionNumber} ${imageLabel}: ${missingFields.join(', ')}`);
+      });
+    }
+
+    return details;
   };
 
   // Returns the site_id for the current response (needed for S3 key + attachment insert)
@@ -314,7 +357,7 @@ export default function EditReportPage() {
   // ── Submit handler ────────────────────────────────────────────────────────
 
   const handleSubmit = async () => {
-    // 1. Required-fields check (exclude image questions — existing images count)
+    // 1. Required-fields check (exclude image questions - existing images count)
     const questionNumberMap = buildQuestionNumberMap(questions);
     const missingRequired = questions
       .filter((q) => {
@@ -327,21 +370,23 @@ export default function EditReportPage() {
         return !isAnswered(responses[q.id]);
       })
       .map((q) => questionNumberMap[q.id] ?? `Question ${q.id}`);
+    const missingImageMetadata = getMissingImageMetadataDetails(responses, questionNumberMap);
 
-    if (missingRequired.length > 0) {
+    if (missingRequired.length > 0 || missingImageMetadata.length > 0) {
       setMissingRequiredQuestionNumbers(sortQuestionNumbers(missingRequired));
+      setMissingImageMetadataDetails(missingImageMetadata);
       setShowRequiredPopup(true);
       return;
     }
 
     setShowRequiredPopup(false);
     setMissingRequiredQuestionNumbers([]);
+    setMissingImageMetadataDetails([]);
     setIsSaving(true);
 
     try {
-      // 2. Persist regular (non-image) answers — same delete+reinsert logic as before
+      // 2. Persist regular (non-image) answers - same delete+reinsert logic as before
       const data = await getQuestionResponseType();
-      console.log(data);
       const observationTypeMap = new Map(
         data.map((q) => [String(q.question_id), { obs_value: q.obs_value, obs_comm: q.obs_comm }])
       );
@@ -351,7 +396,7 @@ export default function EditReportPage() {
       for (const [questionId, answer] of Object.entries(responses)) {
         if (questionId.includes('_comm')) continue;
 
-        // Skip image question responses — those are handled separately via W26_attachments
+        // Skip image question responses - those are handled separately via W26_attachments
         const question = questions.find((q) => q.id === Number(questionId));
         if (question?.question_type.trim() === 'image') continue;
 
@@ -376,9 +421,11 @@ export default function EditReportPage() {
             obs_comm: isCommType ? String(answer) : null,
           });
         }
+        
       }
-
-      await updateSiteInspectionAnswers(responseId, answersArray);
+      const dateOfVisitQuestionId = await getDateOfVisitQuestionId();
+      const inspectionDate = responses[dateOfVisitQuestionId];
+      await updateSiteInspectionAnswers(responseId, answersArray, inspectionDate);
 
       // 3. Update metadata for any existing attachments that changed
       const metadataUpdates: Promise<void>[] = [];
@@ -397,7 +444,7 @@ export default function EditReportPage() {
       }
       await Promise.all(metadataUpdates);
 
-      // Step 4 — upload new local images using the same flow as new-report
+      // Step 4 - upload new local images using the same flow as new-report
       if (siteId) {
         const imageQuestions = questions.filter((q) => q.question_type.trim() === 'image');
 
@@ -411,13 +458,17 @@ export default function EditReportPage() {
           const attachmentRows = [];
 
           for (const image of imageList) {
-            const { uploadUrl, key } = await getPresignedUrl({
+            const { uploadUrl, key, generatedFilename } = await getPresignedUrl({
               filename: image.file.name,
               contentType: image.file.type,
               fileSize: image.file.size,
               responseId,
               questionId: imageQuestion.id,
               siteId,
+              date: image.date,
+              photographer: image.photographer,
+              identifier: image.identifier,
+              siteName: namesite,
             });
 
             await uploadFileToS3(uploadUrl, image.file);
@@ -427,11 +478,13 @@ export default function EditReportPage() {
               question_id: imageQuestion.id,
               site_id: siteId,
               storage_key: key,
-              filename: image.file.name,
+              filename: generatedFilename,
               content_type: image.file.type,
               file_size_bytes: image.file.size,
               caption: image.caption?.trim() || null,
+              photographer: image.photographer?.trim() || null,
               identifier: image.identifier?.trim() || null,
+              date: image.date?.trim() || null,
             });
           }
 
@@ -498,16 +551,28 @@ export default function EditReportPage() {
             </div>
             <div className="p-6 space-y-4 overflow-y-auto">
               <p className="text-[#254431] font-medium">
-                You must answer all required questions before saving changes.
+                You must answer all required questions and complete required image metadata before saving changes.
               </p>
-              <div className="bg-[#F7F2EA] border border-[#E4EBE4] rounded-xl p-4 max-h-64 overflow-y-auto">
-                <p className="text-sm font-semibold text-[#254431] mb-2">Missing required questions:</p>
-                <ul className="list-disc pl-5 text-sm text-[#7A8075] space-y-1">
-                  {missingRequiredQuestionNumbers.map((n) => (
-                    <li key={n}>{n}</li>
-                  ))}
-                </ul>
-              </div>
+              {missingRequiredQuestionNumbers.length > 0 && (
+                <div className="bg-[#F7F2EA] border border-[#E4EBE4] rounded-xl p-4 max-h-64 overflow-y-auto">
+                  <p className="text-sm font-semibold text-[#254431] mb-2">Missing required questions:</p>
+                  <ul className="list-disc pl-5 text-sm text-[#7A8075] space-y-1">
+                    {missingRequiredQuestionNumbers.map((n) => (
+                      <li key={n}>{n}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {missingImageMetadataDetails.length > 0 && (
+                <div className="bg-[#F7F2EA] border border-[#E4EBE4] rounded-xl p-4 max-h-64 overflow-y-auto">
+                  <p className="text-sm font-semibold text-[#254431] mb-2">Missing required image fields:</p>
+                  <ul className="list-disc pl-5 text-sm text-[#7A8075] space-y-1">
+                    {missingImageMetadataDetails.map((detail) => (
+                      <li key={detail}>{detail}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
             <div className="p-6 border-t border-[#E4EBE4] bg-[#F7F2EA]/50">
               <button
@@ -523,7 +588,7 @@ export default function EditReportPage() {
 
       {/* Header */}
             {/* --- CONSOLIDATED HEADER --- */}
-            <header className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+            <header className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-4 sm:px-6 py-4 shadow-lg">
         <div className="max-w-7xl mx-auto">
 
         <button
@@ -538,14 +603,14 @@ export default function EditReportPage() {
         <div className="flex items-start justify-between">
 
           {/* Left: icon + form info */}
-          <div className="flex items-start gap-4">
+          <div className="flex items-start sm:items-center gap-3 sm:gap-4">
             <Image
               src="/images/sapaa-icon-white.png"
               alt="SAPAA"
               width={140}
               height={140}
               priority
-              className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+              className="h-12 sm:h-16 w-auto flex-shrink-0 opacity-100 mt-1"
             />
             <div>
               <h1 className="text-3xl font-bold mt-2.5">Edit Inspection Report</h1>
@@ -558,7 +623,7 @@ export default function EditReportPage() {
       </div>
     </header>
 
-      {/* Form — same MainContent as new-report, extended with existing-attachment props */}
+      {/* Form - same MainContent as new-report, extended with existing-attachment props */}
       <MainContent
         responses={responses}
         onResponsesChange={setResponses}

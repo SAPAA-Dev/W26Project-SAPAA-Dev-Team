@@ -65,6 +65,7 @@ export interface FormResponse {
   id: number;
   user_id: string | null;
   created_at: string | null;
+  inspection_date: string | null;
   inspection_no: string | null;
   naturalness_score: string | null;
   naturalness_details: string | null;  
@@ -79,6 +80,20 @@ export interface FormAnswer {
   obs_comm: string | null;
   section_id: number | null;
   section_title: string | null;
+}
+
+function getLatestInspectionDate(
+  responses: Array<{ inspection_date?: string | null; created_at?: string | null }>
+): string | null {
+  if (responses.length === 0) return null;
+
+  const sortedResponses = [...responses].sort((a, b) => {
+    const dateA = a.inspection_date ?? a.created_at ?? '';
+    const dateB = b.inspection_date ?? b.created_at ?? '';
+    return new Date(dateB).getTime() - new Date(dateA).getTime();
+  });
+
+  return sortedResponses[0]?.inspection_date ?? sortedResponses[0]?.created_at ?? null;
 }
 
 export async function uploadSiteInspectionAnswers(batchArray: SupabaseAnswer[]) {
@@ -112,14 +127,53 @@ export async function getQuestionResponseType() {
   }));
 }
 
-export async function addSiteInspectionReport(siteId: number, userId: any) {
+export async function getNextFormInspectionNumber() {
   const supabase = createServerSupabase();
+  const currentYear = new Date().getFullYear();
+  const { data, error } = await supabase
+    .from('W26_form_responses')
+    .select('inspection_no')
+    .like('inspection_no', `${currentYear}-%`)
+    .order('inspection_no', { ascending: false })
+    .limit(1);
+
+  if (error) {
+    console.error('Error fetching inspection number:', error);
+    return null;
+  }
+
+  const inspectionNumber = data[0].inspection_no;
+
+  // If no previous records exist at all, start at 001 for the current year
+  if (!inspectionNumber) {
+    return `${currentYear}-001`;
+  }
+
+  // Split the string (e.g., "2026-005" -> ["2026", "005"])
+  const [yearPart, numPart] = inspectionNumber.split("-");
+
+  // Check if we've moved to a new year
+  if (yearPart !== currentYear.toString()) {
+    // Reset sequence for the new year
+    return `${currentYear}-001`;
+  }
+
+  const nextNum = parseInt(numPart, 10) + 1;
+  const paddedNum = nextNum.toString().padStart(3, "0");
+  return `${currentYear}-${paddedNum}`;
+}
+
+export async function addSiteInspectionReport(siteId: number, userId: any, inspectionDate: string) {
+  const supabase = createServerSupabase();
+  const newInspectNo = await getNextFormInspectionNumber();
 
   const { data, error } = await supabase
     .from('W26_form_responses')
     .insert({
       site_id: siteId,
       user_id: userId,
+      inspection_no: newInspectNo,
+      inspection_date: inspectionDate,
     })
     .select('id')
     .single();
@@ -206,6 +260,7 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
       id,
       user_id,
       created_at,
+      inspection_date,
       inspection_no,
       is_active,
       W26_answers (
@@ -224,6 +279,7 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
       )
     `)
     .eq('site_id', siteData.id)
+    .order('inspection_date', { ascending: false })
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message || 'Failed to fetch form responses');
@@ -274,6 +330,7 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
       id: r.id,
       user_id: r.user_id ?? null,
       created_at: r.created_at,
+      inspection_date: r.inspection_date ?? null,
       inspection_no: r.inspection_no,
       naturalness_score: naturalness,
       naturalness_details: naturalnessDetailsValue,
@@ -427,6 +484,7 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
         county
       ),
       W26_form_responses (
+        inspection_date,
         created_at
       )
     `)
@@ -437,9 +495,7 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
 
   return (data ?? []).map((site: any, i: number) => {
     const responses = site.W26_form_responses ?? [];
-    const latestDate = responses.length > 0
-      ? responses.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at
-      : null;
+    const latestDate = getLatestInspectionDate(responses);
 
     return {
       id: site.id,
@@ -466,6 +522,7 @@ export async function getAllSites(): Promise<SiteSummary[]> {
         county
       ),
       W26_form_responses (
+        inspection_date,
         created_at
       )
     `)
@@ -475,9 +532,7 @@ export async function getAllSites(): Promise<SiteSummary[]> {
 
   return (data ?? []).map((site: any) => {
     const responses = site.W26_form_responses ?? [];
-    const latestDate = responses.length > 0
-      ? responses.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at
-      : null;
+    const latestDate = getLatestInspectionDate(responses);
 
     return {
       id: site.id,
@@ -545,6 +600,7 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
         county
       ),
       W26_form_responses (
+        inspection_date,
         created_at
       )
     `)
@@ -556,9 +612,7 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
 
   return (data ?? []).map((site: any) => {
     const responses = site.W26_form_responses ?? [];
-    const latestDate = responses.length > 0
-      ? responses.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at
-      : null;
+    const latestDate = getLatestInspectionDate(responses);
 
     return {
       id: site.id,
@@ -598,7 +652,7 @@ export async function getInspectionDetailsOnline(namesite: string): Promise<Insp
 
 
 export async function insertInspectionAttachments(rows: Array<{
-  response_id: number;
+  response_id: number | null;
   question_id: number;
   storage_key: string; // placeholder for now
   filename?: string | null;
@@ -682,6 +736,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
       id,
       user_id,
       created_at,
+      inspection_date,
       inspection_no,
       W26_answers (
         question_id,
@@ -700,6 +755,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
     `)
     .eq('site_id', siteData.id)
     .neq('is_active', false)
+    .order('inspection_date', { ascending: false })
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message || 'Failed to fetch form responses');
@@ -750,6 +806,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
       id: r.id,
       user_id: r.user_id ?? null,
       created_at: r.created_at,
+      inspection_date: r.inspection_date ?? null,
       inspection_no: r.inspection_no,
       naturalness_score: naturalness,
       naturalness_details: naturalnessDetailsValue,
@@ -831,10 +888,10 @@ export async function getAttachmentsByResponseId(responseId: number): Promise<Ar
   return data ?? [];
 }
 
-// Updates caption and description for an existing W26_attachments row
+// Updates caption and identifier for an existing W26_attachments row
 export async function updateAttachmentMetadata(
   attachmentId: number,
-  fields: { caption?: string | null; description?: string | null; identifier?: string | null }
+  fields: { caption?: string | null; identifier?: string | null }
 ) {
   const supabase = createServerSupabase();
 
@@ -849,9 +906,21 @@ export async function updateAttachmentMetadata(
 // Replaces all answers for an existing response (delete + reinsert), keeping the same response_id
 export async function updateSiteInspectionAnswers(
   responseId: number,
-  batchArray: Omit<SupabaseAnswer, 'response_id'>[]
+  batchArray: Omit<SupabaseAnswer, 'response_id'>[],
+  inspectionDate: string,
 ) {
   const supabase = createServerSupabase();
+
+  const { error: updateDateError } = await supabase
+    .from('W26_form_responses')
+    .update({
+      inspection_date: inspectionDate,
+    })
+    .eq('id', responseId)
+    .select('id')
+    .single();
+
+  if (updateDateError) throw new Error(updateDateError.message || 'Failed to clear existing answers');
 
   const { error: deleteError } = await supabase
     .from('W26_answers')
@@ -861,7 +930,6 @@ export async function updateSiteInspectionAnswers(
   if (deleteError) throw new Error(deleteError.message || 'Failed to clear existing answers');
 
   const rows = batchArray.map(a => ({ ...a, response_id: responseId }));
-
   const { data, error: insertError } = await supabase
     .from('W26_answers')
     .insert(rows);
@@ -914,6 +982,17 @@ export async function getLastInspectionDate(): Promise<string | null> {
     .single();
   if (error || !data) return null;
   return data.created_at;
+}
+
+export async function getDateOfVisitQuestionId() {
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from('W26_questions')
+    .select('id')
+    .eq('question key', "Q21_Date_Of_Visit")
+    .single();
+  if (error || !data) return null;
+  return data.id;
 }
 export async function getNaturalnessDistribution(): Promise<{ naturalness_score: string; count: number }[]> {
   const supabase = createServerSupabase();

@@ -4,19 +4,19 @@ import EditReportPage from '@/app/detail/[namesite]/edit-report/[responseId]/pag
 import * as queries from '@/utils/supabase/queries';
 import { devNull } from 'os';
 
-// — Navigation
+// - Navigation
 jest.mock('next/navigation', () => ({
   useParams: jest.fn(() => ({ namesite: 'Test%20Site', responseId: '42' })),
   useRouter: jest.fn(() => ({ push: jest.fn(), back: jest.fn() })),
 }));
 
-// — Next Image
+// - Next Image
 jest.mock('next/image', () => ({
   __esModule: true,
   default: (props: any) => <img {...props} />,
 }));
 
-// — Queries
+// - Queries
 jest.mock('@/utils/supabase/queries');
 jest.mock('@/utils/supabase/client', () => ({
   createClient: () => ({
@@ -24,7 +24,7 @@ jest.mock('@/utils/supabase/client', () => ({
   }),
 }));
 
-// — Browser APIs
+// - Browser APIs
 global.URL.createObjectURL = jest.fn(() => 'blob:fake');
 global.URL.revokeObjectURL = jest.fn();
 global.fetch = jest.fn((url: string) => {
@@ -590,7 +590,7 @@ const mockResponses: Record<string | number, any> = {
   };
 
 beforeEach(() => {
-  // Default mock returns — override per test as needed
+  // Default mock returns - override per test as needed
   (queries.getQuestionsOnline as jest.Mock).mockResolvedValue([]);
   (queries.getFormResponseById as jest.Mock).mockResolvedValue({});
   (queries.getResponseOwnerId as jest.Mock).mockResolvedValue('user-123'); // matches auth user → authorized
@@ -600,6 +600,7 @@ beforeEach(() => {
   (queries.updateSiteInspectionAnswers as jest.Mock).mockResolvedValue(undefined);
   (queries.updateAttachmentMetadata as jest.Mock).mockResolvedValue(undefined);
   (queries.insertInspectionAttachments as jest.Mock).mockResolvedValue(undefined);
+  window.scrollTo = jest.fn();
 });
 
 describe('US 1.0.22 – (User) Edit My Site Inspections Form', () => {
@@ -629,7 +630,7 @@ describe('US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         render(<EditReportPage />);
         await waitFor(() => expect(screen.getByText('Edit Inspection Report')).toBeInTheDocument());
       
-        // ── Section 1 (WhoRYou) — active by default ──────────────────────────────
+        // ── Section 1 (WhoRYou) - active by default ──────────────────────────────
         await waitFor(() => expect(screen.getByTestId('question-input-32')).toBeInTheDocument());
       
         expect((screen.getByTestId('question-input-32') as HTMLTextAreaElement).value).toBe('testuser@example.com');
@@ -697,7 +698,7 @@ describe('US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         expect((screen.getByDisplayValue('Cleanup (e.g. Trash removal)') as HTMLInputElement).checked).toBe(true);
       
         // ── Section 8 (Close) ───────────────────────────────────────────────────
-        fireEvent.click(screen.getByRole('button', { name: /Close/i }));
+        fireEvent.click(await screen.findByRole('button', { name: /Close/i }));
         await waitFor(() => expect(screen.getByTestId('question-input-28')).toBeInTheDocument());
       
         expect((screen.getByTestId('question-input-28') as HTMLTextAreaElement).value).toBe('');
@@ -731,6 +732,47 @@ describe('US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         expect(queries.updateSiteInspectionAnswers).not.toHaveBeenCalled();
     });
 
+    it("blocks saving when a newly uploaded image is missing required metadata fields", async () => {
+        (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(mockQuestions);
+        (queries.getFormResponseById as jest.Mock).mockResolvedValue(mockResponses);
+
+        render(<EditReportPage />);
+
+        await waitFor(() => expect(screen.getByText('Edit Inspection Report')).toBeInTheDocument());
+        await waitFor(() => expect(screen.queryByText('Loading questions...')).not.toBeInTheDocument());
+
+        fireEvent.click(await screen.findByRole('button', { name: /Close/i }));
+        await waitFor(() => expect(screen.getByText(/click to upload images/i)).toBeInTheDocument());
+
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        const imageFile = new File(['fake-image'], 'edit-image.jpg', { type: 'image/jpeg' });
+        fireEvent.change(fileInput, { target: { files: [imageFile] } });
+
+        await waitFor(() => {
+          expect(screen.getByPlaceholderText('Longer Description')).toBeInTheDocument();
+          expect(screen.getByPlaceholderText('Short Description')).toBeInTheDocument();
+          expect(screen.getByPlaceholderText('Owner of digital file')).toBeInTheDocument();
+        });
+
+        const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
+        fireEvent.change(dateInput, { target: { value: '' } });
+
+        const saveButton = screen.getByRole('button', { name: /Save Changes/i });
+        await waitFor(() => expect(saveButton).toBeEnabled());
+        fireEvent.click(saveButton);
+
+        await waitFor(() => {
+          expect(screen.getByText('Required Questions Missing')).toBeInTheDocument();
+          expect(screen.getByText(/Missing required image fields:/i)).toBeInTheDocument();
+          expect(
+            screen.getByText(/Q81\.1 image: Caption, Identifier, Photographer, Date/i)
+          ).toBeInTheDocument();
+        });
+
+        expect(queries.updateSiteInspectionAnswers).not.toHaveBeenCalled();
+        expect(queries.insertInspectionAttachments).not.toHaveBeenCalled();
+    });
+
     it("if user changes a required question, submission is changed", async () => {
         (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(mockQuestions);
         (queries.getFormResponseById as jest.Mock).mockResolvedValue(mockResponses);
@@ -762,7 +804,6 @@ describe('US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         // Find the answer for question 32 (email)
         const emailAnswer = answersArray.find((a: any) => a.question_id === 32);
         expect(emailAnswer).toBeDefined();
-        console.log(emailAnswer);
         expect(emailAnswer.obs_comm).toBe('newemail@gmail.com');
     });
 });

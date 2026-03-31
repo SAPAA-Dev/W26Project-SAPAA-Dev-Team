@@ -72,7 +72,7 @@ function getTypeLabel(type: string) {
   return found?.label ?? type;
 }
 
-// Format: "Question Test (Q70)" — title text ending with (Q<number>)
+// Format: "Question Test (Q70)" - title text ending with (Q<number>)
 const QUESTION_TITLE_REGEX = /\(Q(\d+)\)$/;
 function isValidQuestionTitle(title: string): boolean {
   const t = title.trim();
@@ -85,7 +85,7 @@ function getQNumberFromTitle(title: string): string | null {
   return m ? m[1]! : null;
 }
 
-// Format: "Q70_QuestionTest" — Q<number>_ then only letters and numbers (no spaces, no underscores after)
+// Format: "Q70_QuestionTest" - Q<number>_ then only letters and numbers (no spaces, no underscores after)
 const QUESTION_KEY_REGEX = /^Q(\d+)_[a-zA-Z0-9]+$/;
 function isValidQuestionKey(key: string): boolean {
   const k = key.trim();
@@ -310,7 +310,7 @@ export default function FormEditorPage() {
   return (
     <ProtectedRoute requireAdmin>
     <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
-      <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+      <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-4 sm:px-6 py-4 shadow-lg">
           <div className="max-w-7xl mx-auto">
             {/* Back button */}
             <button
@@ -321,26 +321,26 @@ export default function FormEditorPage() {
               <span className="text-sm font-medium">Back</span>
             </button>
             
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-3">
               {/* Left: icon + title + subtitle */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-start sm:items-center gap-3 sm:gap-4">
                 <Image
                   src="/images/sapaa-icon-white.png"
                   alt="SAPAA"
                   width={140}
                   height={140}
                   priority
-                  className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+                  className="h-12 sm:h-16 w-auto flex-shrink-0 opacity-100 mt-1"
                 />
                 <div>
-                  <h1 className="text-3xl font-bold mt-3">Form Editor</h1>
-                  <p className="text-[#E4EBE4] text-base mt-0.5">
+                  <h1 className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-3 leading-tight">Form Editor</h1>
+                  <p className="text-[#E4EBE4] text-sm sm:text-base mt-0.5 max-w-md">
                     Manage inspection form sections and questions
                   </p>
                 </div>
               </div>
-              {/* Right: navbar — rendered inline, bg overridden to transparent */}
-              <div className="[&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
+              {/* Right: navbar - rendered inline, bg overridden to transparent */}
+              <div className="w-full sm:w-auto [&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
                 <AdminNavBar />
               </div>
             </div>
