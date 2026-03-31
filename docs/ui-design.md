@@ -1293,6 +1293,62 @@ The following files contain significant responsive design implementation:
 
 ---
 
+## Appendix B - Changelog (v2.0 → v3.0)
+
+### B.1 Summary
+
+Version 3.0 documents the responsive design overhaul implemented during Sprint 5 via the `Sprint-5-ResponsiveUI` branch (PRs #193, #195, #199, #202).
+
+### B.2 Codebase Changes Made
+
+The following responsive changes were applied across the application:
+
+| File | Changes Made |
+|---|---|
+| `app/sites/page.tsx` | Responsive stats grid (`grid-cols-2 md:grid-cols-5`), site card grid (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`), responsive header padding/text, new hamburger-based `UserNavBar` integration |
+| `app/gallery/page.tsx` | Four-breakpoint image grid (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`), responsive gap spacing, responsive modal with viewport-relative image heights |
+| `app/login/page.tsx` | Split-screen layout (`grid lg:grid-cols-2`), left branding panel hidden on mobile (`hidden lg:flex`), mobile-only compact logo (`lg:hidden`), responsive form padding |
+| `app/signup/page.tsx` | Same split-screen responsive pattern as login page |
+| `app/detail/[namesite]/page.tsx` | Responsive header with `flex-col sm:flex-row`, responsive text sizes, responsive card grid, expandable sections with responsive padding |
+| `app/detail/[namesite]/new-report/page.tsx` | Responsive form layout, responsive section padding |
+| `app/detail/[namesite]/new-report/Footer.tsx` | Sticky footer with `flex-col lg:flex-row` layout, full-width buttons on mobile (`w-full sm:w-auto`), responsive progress bar |
+| `app/detail/[namesite]/edit-report/[responseId]/page.tsx` | Responsive form editing layout matching new-report patterns |
+| `app/admin/dashboard/page.tsx` | Responsive stat cards (`grid-cols-1 md:grid-cols-3`), responsive chart containers, responsive header text |
+| `app/admin/sites/page.tsx` | Responsive site management grid, responsive card padding (`p-4 sm:p-6`) |
+| `app/admin/sites/[id]/page.tsx` | Responsive site detail layout, responsive image gallery grid |
+| `app/admin/gallery/page.tsx` | Responsive gallery grid matching public gallery pattern |
+| `app/admin/form-editor/page.tsx` | Preview panel hidden on mobile (`hidden lg:block`), three-column layout collapses to single column |
+| `app/admin/account-management/page.tsx` | Responsive account cards, responsive header with action button |
+| `components/HeaderDropdown.tsx` | New animated hamburger menu (`w-11 h-11`), three-line-to-X animation, dropdown with backdrop overlay, active page bolding |
+| `app/admin/AdminNavBar.tsx` | Admin hamburger menu matching user nav pattern |
+| `components/UploadImages.tsx` | Responsive upload modal with `flex-col lg:flex-row` layout |
+| `app/terms/TermsContent.tsx` | Responsive text padding and sizing |
+
+### B.3 Key Patterns Introduced
+
+- **Mobile-first responsive classes** (`sm:`, `md:`, `lg:`, `xl:`) added to all page and component files
+- **Animated hamburger menu** replaced previous desktop navigation across both user and admin interfaces
+- **Responsive grids** replaced fixed-column layouts on all card/gallery pages
+- **Split auth layout** with conditional panel visibility (`hidden lg:flex` / `lg:hidden`)
+- **Responsive sticky footer** for report forms with stacked-to-inline button progression
+- **Responsive modals** with viewport-relative image sizing and stacked-to-side-by-side detail panels
+- **Full-width → auto-width** button pattern for mobile/desktop adaptation
+- **Responsive typography and spacing** scaling at `sm:` and `lg:` breakpoints across all pages
+
+### B.4 Document Changes
+
+- Section 1.1: Updated scope (removed React Native reference, added responsive design)
+- Section 1.2: Added MUI v7, react-icons, react-joyride to tech stack
+- Section 1.3: Added `/gallery` and `/terms` routes
+- Section 4.1: Added touch target accessibility, cross-referenced Section 20
+- Section 7.3: Updated padding to responsive values
+- Section 8.1: Updated header code with responsive classes
+- Section 9.3: Added site list grid pattern and responsive card padding
+- Section 20: New comprehensive responsive design section (20.1–20.13)
+- Appendix A.2: Added 6 responsive checklist items for new pages
+
+---
+
 *End of Document*
 
 **Document Version:** 3.0
