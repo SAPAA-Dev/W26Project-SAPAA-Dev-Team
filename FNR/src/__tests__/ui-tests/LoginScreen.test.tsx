@@ -4,7 +4,7 @@ import { PaperProvider } from 'react-native-paper';
 
 /**
  * ---------------------------------------------------------
- *  FIXED ICON MOCK — NO WARNINGS, NO act() ERRORS
+ *  FIXED ICON MOCK - NO WARNINGS, NO act() ERRORS
  * ---------------------------------------------------------
  * We mock createIconSet() itself, because Expo Vector Icons
  * triggers an internal setState() inside that factory.

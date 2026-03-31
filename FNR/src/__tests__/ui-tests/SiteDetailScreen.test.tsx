@@ -383,7 +383,7 @@ describe('SiteDetailScreen', () => {
       wrapper: AllTheProviders,
     });
 
-    // Average of 2.0 and 4.0 is 3.0 — may appear in multiple places
+    // Average of 2.0 and 4.0 is 3.0 - may appear in multiple places
     await waitFor(() => {
       expect(getAllByText(/^3(?:\.0)?$/).length).toBeGreaterThan(0);
     });
