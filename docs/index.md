@@ -561,20 +561,20 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 6. If sign out fails, an error message is displayed and the user can try again
 
 ---
-### **P6 – Miscellaneous User Stories**
+### **P6 – Miscellaneous UI Tasks**
 ---
 
-#### US 6.0.2 – Change Text Size on Screen | Story Points: 3
+#### TASK 6.0.1 – Web Application Responsiveness
 
-> **As** a User, **I want** to be able to choose the size of text on screen from a set of preset font sizes, **so that** the app is more accessible my needs and vision..
+> Ensure the web application layout dynamically adjusts to provide a seamless experience across all screen sizes, from mobile phones to large desktop monitors. The interface should automatically reposition elements and scale content to maintain usability and visual clarity on any device. This involves testing and refining the UI to eliminate horizontal scrolling and ensure all features remain accessible regardless of the user's display.
 
-> **Acceptance Tests**  
+#### TASK 6.0.2 – Front-End Error Handling & Validation 
 
-> 1. There are a few (~3) font size options offered to the user
-> 2. Users can change font size by selecting one of the other options
-> 3. When an option is selected the text on screen will change size to match the selected option
-> 4. UI and information should be legible and responsive regardless of font size
-> 5. If a user selects the font size they are already using, nothing should change
+> Implement an error-handling system to manage API failures and incorrect user inputs gracefully. This includes adding "toast" notifications or alert banners for system errors and ensuring that form fields provide clear and real-time validation messages. The goal is to prevent the application from crashing and to keep the user informed when an action cannot be completed.
+
+#### TASK 6.0.3 – Inspection Fields Integration
+
+> Update the existing form submission logic to include ```inspection_number``` and ```inspection_date``` as required fields for every test entry. This involves modifying existing database schema and submission logic to ensure these new identifiers are correctly associated with each submitted inspection record.
 
 ## MoSCoW
 
@@ -633,6 +633,9 @@ Each user story is categorized into one of the following priority levels:
 * US 4.0.3 - Update Site Profile of a Particular Site
 * US 4.0.4 - Disable Site Profile of a Particular Site
 * US 5.0.1 - Admin Approval of Users
+* TASK 6.0.1 – Web Application Responsiveness
+* TASK 6.0.2 – Front-End Error Handling & Validation 
+* TASK 6.0.3 – Inspection Fields Integration
 
 ### Could Have
 * US 1.0.17 - (Admin) Add Questions Site Inspections Form
@@ -640,7 +643,6 @@ Each user story is categorized into one of the following priority levels:
 * US 1.0.19 - Admin Viewing Images and Metadata
 * US 2.0.9 – Homescreen Gallery View
 * US 5.0.2 - Sign out feature
-* US 6.0.2 - Change Size of Text on Screen
 
 ### Would Like But Won't Get
 * US 1.0.20 - Admin Editing Image Metadata
