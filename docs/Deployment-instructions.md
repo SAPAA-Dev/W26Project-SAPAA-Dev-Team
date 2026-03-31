@@ -336,9 +336,7 @@ After deployment, your app will be available at `https://your-project-name.verce
 1. Log into your Supabase Dashboard
 2. Go to **SQL Editor**
 3. Run the SQL scripts provided by your development team to create the required tables and views:
-   - Tables: `inspectheader`, `inspectquestions`
-   - Views: `sites_list_fnr`, `sites_report_fnr_test`, `sites_detail_fnr_test`
-   - Tables: `inspectdetails_fnr_test`
+   - Tables: - `W26_sites-pa`, `W26_answers`, `W26_attachments`, `W26_form_sections`, `W26_form_reponses`, `W26_questions`
 
 **Note:** Contact your development team for the complete SQL schema.
 
