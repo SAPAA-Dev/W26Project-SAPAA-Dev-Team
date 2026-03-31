@@ -1,5 +1,17 @@
 /// <reference types="cypress" />
 
+function dismissTutorialIfPresent() {
+  cy.wait(2000);
+  cy.get('body').then(($body) => {
+    if ($body.find('.react-joyride__overlay').length > 0) {
+      cy.get('[data-testid="tutorial-skip"], [aria-label="Skip"], button[data-action="skip"], button[data-action="close"]')
+        .first()
+        .click({ force: true });
+      cy.get('.react-joyride__overlay').should('not.exist', { timeout: 5000 });
+    }
+  });
+}
+
 const galleryItemsForSelectedSite = [
   {
     id: "img-1",
@@ -74,6 +86,8 @@ function loginWithCurrentPattern() {
   cy.get("button.font-bold").click();
   cy.get("button.text-white").click();
   cy.url().should("include", "/sites");
+  cy.wait(3000);
+  dismissTutorialIfPresent();
 }
 
 function openFirstSiteDetailWithGalleryStub() {

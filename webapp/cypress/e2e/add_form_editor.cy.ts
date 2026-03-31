@@ -2,6 +2,7 @@
 
 // Helper to dismiss the tutorial if it appears
 function dismissTutorialIfPresent() {
+  cy.wait(3000);
   cy.get('body').then(($body) => {
     if ($body.find('.react-joyride__overlay').length > 0) {
       // Find and click the skip/close button inside the joyride tooltip
@@ -11,6 +12,7 @@ function dismissTutorialIfPresent() {
     }
   });
 }
+
 // Helper to open the hamburger menu and click a nav item by label
 function hamburgerNavigateTo(label: string) {
   // Sites page uses "Open menu", admin pages use "user dropdown menu"
