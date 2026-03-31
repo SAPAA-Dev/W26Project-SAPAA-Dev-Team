@@ -1188,7 +1188,6 @@ This triggers a new Vercel deployment from the stable commit.
 - **Vercel Analytics**: Monitor performance and errors
 - **Supabase Dashboard**: Monitor database usage and logs
 - **AWS CloudWatch / S3 Access Logs**: Monitor S3 usage and errors
-- **OpenCage Dashboard**: Monitor API usage and quota
 
 ### Backup Strategy
 
