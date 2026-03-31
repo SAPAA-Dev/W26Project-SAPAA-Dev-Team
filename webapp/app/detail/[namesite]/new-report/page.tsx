@@ -208,16 +208,11 @@ export default function NewReportPage() {
                   key,
                   value.map((item) => {
                     if (item && typeof item === 'object' && 'previewUrl' in item) {
-                      return {
-                        caption: '',
-                        identifier: '',
-                        photographer: '',
-                        date: '',
-                        ...item,
-                      };
+                      return null;
                     }
                     return item;
-                  }),
+                  })
+                  .filter(Boolean),
                 ];
               }
               return [key, value];
