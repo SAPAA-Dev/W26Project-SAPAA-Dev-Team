@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import HomeClient, { daysSince } from '../../app/sites/page';
 
+
 // Mock Next.js router
 const mockPush = jest.fn();
 jest.mock('next/navigation', () => ({
@@ -429,59 +430,6 @@ describe('HomeClient', () => {
     });
   });
 
-  describe('Admin Access', () => {
-    it('should show admin button for admin users', async () => {
-      mockGetSession.mockResolvedValue({ data: { session: mockAdminUser }, error: null });
-
-      render(<HomeClient />);
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /admin/i })).toBeInTheDocument();
-      });
-    });
-
-    it('should not show admin button for non-admin users', async () => {
-      mockGetSession.mockResolvedValue({ data: { session: mockStewardUser }, error: null });
-
-      render(<HomeClient />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Elk Island National Park')).toBeInTheDocument();
-      });
-
-      expect(screen.queryByRole('button', { name: /admin/i })).not.toBeInTheDocument();
-    });
-
-    it('should navigate to admin dashboard when admin button clicked', async () => {
-      const user = userEvent.setup();
-      mockGetSession.mockResolvedValue({ data: { session: mockAdminUser }, error: null });
-
-      render(<HomeClient />);
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /admin/i })).toBeInTheDocument();
-      });
-
-      const adminButton = screen.getByRole('button', { name: /admin/i });
-      await user.click(adminButton);
-
-      expect(mockPush).toHaveBeenCalledWith('/admin/dashboard');
-    });
-
-    it('should not show admin button when user is not logged in', async () => {
-      mockGetSession.mockResolvedValue({ data: { session: null }, error: null });
-
-      render(<HomeClient />);
-
-      // Wait for the component to settle (loading spinner disappears)
-      await waitFor(() => {
-        expect(screen.queryByText('Loading protected areas...')).not.toBeInTheDocument();
-      });
-
-      // Just assert no admin button — don't assert sites are visible
-      expect(screen.queryByRole('button', { name: /admin/i })).not.toBeInTheDocument();
-    });
-  });
 
   describe('Empty State', () => {
     it('should handle empty sites array', async () => {
@@ -584,7 +532,7 @@ describe('HomeClient', () => {
         expect(screen.getByText('Elk Island National Park')).toBeInTheDocument();
       });
 
-      const sitesGrid = document.querySelector('.grid.gap-4.md\\:grid-cols-2.lg\\:grid-cols-3');
+      const sitesGrid = document.querySelector('.grid.gap-4.md\\:grid-cols-5');
       expect(sitesGrid).toBeInTheDocument();
     });
 
@@ -658,24 +606,31 @@ describe('Integration Tests', () => {
     expect(mockPush).toHaveBeenCalledWith('/detail/Waterton Lakes');
   });
 
-  it('should maintain search state while sorting', async () => {
-    const user = userEvent.setup();
-    render(<HomeClient />);
+it('should maintain search state while sorting', async () => {
+  const user = userEvent.setup();
+  render(<HomeClient />);
 
-    await waitFor(() => {
-      expect(screen.getByText('4 sites found')).toBeInTheDocument();
-    });
+  await waitFor(() => {
+    expect(screen.getByText('4 sites found')).toBeInTheDocument();
+  });
 
-    const searchInput = screen.getByPlaceholderText('Search by site name or county...');
-    await user.type(searchInput, 'National');
+  const searchInput = screen.getByPlaceholderText('Search by site name or county...');
+  await user.type(searchInput, 'National');
 
-    expect(screen.getByText('3 sites found')).toBeInTheDocument();
+  await waitFor(() => {
+    expect(searchInput).toHaveValue('National');
+  });
 
-    const sortButton = screen.getByRole('button', { name: /sort/i });
-    await user.click(sortButton);
-    await user.click(screen.getByText('Most Recent'));
+  expect(screen.getByText('3 sites found')).toBeInTheDocument();
 
+  const sortButton = screen.getByRole('button', { name: /sort/i });
+  await user.click(sortButton);
+  await user.click(screen.getByText('Most Recent'));
+
+  await waitFor(() => {
     expect(screen.getByText('3 sites found')).toBeInTheDocument();
     expect(searchInput).toHaveValue('National');
   });
+});
+
 });

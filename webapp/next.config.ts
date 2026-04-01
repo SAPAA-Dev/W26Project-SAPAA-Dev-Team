@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 require('dotenv').config()
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   /* config options here */
    images: {
     remotePatterns: [

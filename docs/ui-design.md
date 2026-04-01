@@ -1,6 +1,6 @@
 # SAPAA
 ## Protected Areas Inspection App
-### UI / UX Design Documentation - v2.0
+### UI / UX Design Documentation - v3.0
 #### Design System Reference for Development Teams
 `Next.js` · `Tailwind CSS` · `Supabase` · `AWS`
 
@@ -10,7 +10,7 @@
 
 ### 1.1 Purpose
 
-This document defines the complete UI/UX design system for the SAPAA (Stewards of Alberta's Protected Areas Association) web application. It covers design principles, usability heuristics, accessibility considerations, and component-level implementation guidance for both the web (Next.js) and mobile (React Native) platforms.
+This document defines the complete UI/UX design system for the SAPAA (Stewards of Alberta's Protected Areas Association) web application. It covers design principles, usability heuristics, accessibility considerations, responsive design patterns, and component-level implementation guidance for the web (Next.js) platform.
 
 Consistency is critical. Every page must follow the patterns described here so that users experience a coherent interface across all screens and workflows.
 
@@ -25,22 +25,28 @@ Consistency is critical. Every page must follow the patterns described here so t
 | Drag and Drop | `@dnd-kit/core` + `@dnd-kit/sortable` |
 | Maps | Leaflet (SSR-guarded with mounted state) |
 | Charts | Chart.js via `react-chartjs-2` |
-| Icons | `lucide-react` |
+| Icons | `lucide-react` (primary), `@mui/icons-material`, `react-icons` |
+| UI Components | `@mui/material` v7 (selective use alongside Tailwind) |
+| Guided Tours | `react-joyride` (in-app tutorials) |
 
 ### 1.3 Application Pages
 
-| Route | Component |
-|---|---|
-| `/sites` | HomeClient - public site listing |
-| `/detail/[namesite]` | SiteDetailScreen - single site view |
-| `/detail/[namesite]/new-report` | New inspection report form |
-| `/detail/[namesite]/edit-report/[responseId]` | Edit existing report |
-| `/login` `/signup` | Authentication pages |
-| `/admin/dashboard` | Admin analytics and stats |
-| `/admin/account-management` | User account administration |
-| `/admin/sites` | Site management |
-| `/admin/gallery` | Inspection photo gallery |
-| `/admin/form-editor` | Form section and question editor |
+| Route | Component | Purpose |
+|---|---|---|
+| `/sites` | HomeClient | Public site listing |
+| `/detail/[namesite]` | SiteDetailScreen | Single site view |
+| `/detail/[namesite]/new-report` | NewReportPage | New inspection report form |
+| `/detail/[namesite]/edit-report/[responseId]` | EditReportPage | Edit existing report |
+| `/gallery` | GalleryPage | User image gallery with search and filtering |
+| `/login`  | LoginPage | User login page |
+| `/signup` | SignupPage | User sign up page |
+| `/terms` | TermsContent | Terms of service page |
+| `/admin/dashboard` | Dashboard | Admin analytics and stats |
+| `/admin/account-management` | AccountManagementPage | User account administration |
+| `/admin/sites` | AdminSitesPage | All sites management |
+| `/admin/sites/[id]` | AdminSiteDetails | Site management |
+| `/admin/gallery` | GalleryPage | Admin image gallery with search and filtering |
+| `/admin/form-editor` | FormEditorPage | Form section and question editor |
 
 ---
 
@@ -51,9 +57,10 @@ Consistency is critical. Every page must follow the patterns described here so t
 Maintain a consistent visual language to reduce cognitive load and build user confidence.
 
 **Unified navigation shell:**
-Consistent header with SAPAA logo, gradient green background, and navigation elements. Admin pages use a hamburger menu for navigation.
+Consistent header with SAPAA logo, gradient green background, and navigation elements. Both User and Admin pages use a hamburger menu for navigation.
 
-![UI Header](images/ui_header.png) 
+![UI Header User](images/ui_header_user.png) 
+![UI Header Admin](images/ui_header_admin.png)
 
 **Standardised colour palette:** Primary green (`#254431`, `#356B43`) for headers and primary actions. White (`#FFFFFF`) for content cards. Light grey (`#F7F2EA`, `#E4EBE4`) for dividers and secondary surfaces. Red (`#B91C1C`) for destructive actions.
 
@@ -228,8 +235,9 @@ A user manual is available as an app tutorial. In-app tooltips and hints are pro
 - **Screen readers:** Semantic HTML and ARIA labels are used where needed.
 - **Colour contrast:** All text meets WCAG AA standards.
 - **Focus indicators:** Clear focus states are provided for keyboard navigation.
-- **Responsive design:** Works on various screen sizes from mobile to desktop.
+- **Responsive design:** Mobile-first approach using Tailwind breakpoints. See Section 22 for full responsive design specification.
 - **Alt text:** All images include descriptive alt text.
+- **Touch targets:** Interactive elements meet minimum 44x44px touch target size for mobile accessibility.
 
 ---
 
@@ -338,7 +346,7 @@ Known exceptions exist (for example Form Editor header uses `max-w-[100vw]`) and
 
 ### 7.3 Main Content Padding
 
-The main content `div` always uses `px-6 py-6` for outer padding. Inner sections add their own vertical spacing via `mb-6` or `space-y-6`.
+The main content `div` uses responsive padding: `px-4 sm:px-6 py-4 sm:py-6` on most pages. Inner sections add their own vertical spacing via `mb-6` or `space-y-6`.
 
 ### 7.4 Three-Column Admin Layout (Form Editor)
 
@@ -360,8 +368,10 @@ The application uses a shared green-header style but not one identical markup st
 
 ### 8.1 Standard Header (Primary Site/Detail Pattern)
 
+Headers use responsive padding and font sizes to adapt to different screen sizes:
+
 ```tsx
-<div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+<div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-4 sm:px-6 py-4 shadow-lg">
   <div className="max-w-7xl mx-auto">
     {/* Optional back button */}
     <button className="flex items-center gap-1.5 text-[#86A98A] hover:text-white
@@ -369,16 +379,16 @@ The application uses a shared green-header style but not one identical markup st
       <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
       <span className="text-sm font-medium">Back to Sites</span>
     </button>
-    <div className="flex items-start justify-between">
+    <div className="flex items-start justify-between flex-col sm:flex-row">
       <div className="flex items-start gap-4">
         <Image src="/images/sapaa-icon-white.png" alt="SAPAA"
                width={140} height={140} priority
-               className="h-16 w-auto flex-shrink-0 opacity-80 mt-1" />
+               className="h-12 sm:h-16 w-auto flex-shrink-0 opacity-80 mt-1" />
         <div>
-          <h1 className="text-3xl font-bold">{title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">{title}</h1>
           <div className="flex items-center gap-2 text-[#E4EBE4] mt-1">
-            <Icon className="w-5 h-5" />
-            <span className="text-base">{subtitle}</span>
+            <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-sm sm:text-base">{subtitle}</span>
           </div>
         </div>
       </div>
@@ -490,9 +500,10 @@ Used only in the HomeClient stats strip. Kept for backward compatibility but sho
 
 | Property | Value |
 |---|---|
-| Grid | `grid grid-cols-1 md:grid-cols-3 gap-6` |
+| Admin Grid | `grid grid-cols-1 md:grid-cols-3 gap-6` |
+| Site List Grid | `grid grid-cols-2 md:grid-cols-5 gap-4` (compact strip) |
 | Card radius | `rounded-2xl` (large style) / `rounded-xl` (compact) |
-| Card padding | `p-6` (large) / `p-4` (compact) |
+| Card padding | `p-4 sm:p-5` (responsive) / `p-6` (large) / `p-4` (compact) |
 | Border | `border-2 border-[#E4EBE4]` |
 
 ### 9.4 Coloured Card Variants
@@ -916,31 +927,344 @@ Each sortable item exposes only a grip handle (not the whole card) as the drag t
 
 ![UI Drag Visual Feedback](images/ui_drag_drop_feedback.png) 
 
-## 17. AdminNavBar
+## 17. UserNavBar
+
+The `UserNavBar` component (`components/HeaderDropdown.tsx`) is the primary navigation component for all steward-facing pages. It renders an animated hamburger menu in the page header.
+
+![UI UserNavBar](images/ui_user_navbar.png)
+
+### 17.1 Structure
+
+The menu is divided into four sections, separated by thin borders:
+
+| Section | Items | Condition |
+|---|---|---|
+| Admin | Admin Dashboard link | Only visible when `currentUser.role === 'admin'` |
+| Pages | Home (`/sites`), Image Gallery (`/gallery`) | Always visible |
+| Help | App Tutorial (triggers `onStartTutorial`), Contact Us (mailto link) | Always visible |
+| Logout | Logout button | Always visible |
+
+### 17.2 Hamburger Button
+
+```tsx
+<button
+  onClick={() => setMenuOpen(!menuOpen)}
+  title="Open menu"
+  className={`w-11 h-11 rounded-full border flex flex-col items-center justify-center gap-[5px] transition-all
+    ${menuOpen
+      ? 'bg-white/15 border-white/40'
+      : 'bg-transparent border-white/25 hover:bg-white/10'
+    }`}
+>
+  {/* Three animated lines → X */}
+  <span className={`block w-[18px] h-[1.5px] bg-white rounded-full transition-all duration-200
+    ${menuOpen ? 'translate-y-[6.5px] rotate-45' : ''}`} />
+  <span className={`block w-[18px] h-[1.5px] bg-white rounded-full transition-all duration-200
+    ${menuOpen ? 'opacity-0' : ''}`} />
+  <span className={`block w-[18px] h-[1.5px] bg-white rounded-full transition-all duration-200
+    ${menuOpen ? '-translate-y-[6.5px] -rotate-45' : ''}`} />
+</button>
+```
+
+### 17.3 Dropdown Menu
+
+The dropdown is positioned absolutely below the trigger and uses a fixed backdrop for outside-click dismissal:
+
+```tsx
+{/* Backdrop — closes menu on outside click */}
+<div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+
+{/* Menu panel */}
+<div className="absolute right-0 top-[calc(100%+8px)] w-60 bg-white rounded-xl
+                shadow-xl border border-black/10 overflow-hidden z-50">
+  ...
+</div>
+```
+
+### 17.4 Menu Item Pattern
+
+Each item follows a consistent layout with a 32x32 icon container and label/description:
+
+```tsx
+<button className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f5f3] transition-colors">
+  <span className="w-8 h-8 rounded-lg bg-[#f0efeb] flex items-center justify-center flex-shrink-0">
+    <Icon className="w-4 h-4 text-[#555]" />
+  </span>
+  <div className="text-left">
+    <span className="text-sm font-medium text-[#1a1a1a]">Label</span>
+    <p className="text-xs text-black/40">Description text</p>
+  </div>
+</button>
+```
+
+### 17.5 Active Page Bolding
+
+The current page is indicated by bolding the menu item label. The active route is detected via `usePathname()`:
+
+```tsx
+<span className={`text-sm text-[#1a1a1a] ${
+  pathname === ROUTES.home ? "font-bold" : "font-medium"
+}`}>
+```
+
+### 17.6 Icon Colour Conventions
+
+| Section | Icon Container Background | Icon Colour |
+|---|---|---|
+| Admin | `bg-[#f0efeb]` | `text-[#555]` |
+| Pages | `bg-[#f0efeb]` | `text-[#555]` |
+| Help | `bg-[#eef4fb]` | `text-[#2a6db5]` |
+| Logout | `bg-[#fdf0f0]` | `text-[#c0392b]` |
+
+### 17.7 Props
+
+| Prop | Type | Description |
+|---|---|---|
+| `onStartTutorial` | `() => void` (optional) | Callback to trigger the react-joyride tutorial overlay |
+
+### 17.8 Test-Critical Elements
+
+- Menu trigger button: `title="Open menu"`
+- Menu item labels: `Home`, `Image gallery`, `App tutorial`, `Contact us`, `Admin`, `Logout`
+- Logout action calls `logout()` then navigates to `/login`
+
+---
+
+## 18. AdminNavBar
 
 The `AdminNavBar` component is shared across all admin pages. Its internal structure must not be modified since UI tests depend on specific elements being present.
 
 ![UI AdminNavbar](images/ui_admin_navbar.png) 
 
-### 17.1 Test-Critical Elements
+### 18.1 Test-Critical Elements
 
 - A home link to `/sites` (currently icon-only `Home`, no visible `"Home"` text label).
 - A button with `title="admin dropdown menu"` (hamburger/menu trigger).
 - Dropdown item labels (`Dashboard`, `Account Management`, `Sites`, `Form Editor`).
 
-### 17.2 Current Spacing
+### 18.2 Current Spacing
 
 Current `AdminNavBar` buttons use `p-2` and do not include `ml-2` on the hamburger button.
 
-### 17.3 Inline Rendering in Headers
+### 18.3 Inline Rendering in Headers
 
 When rendered inside a page header, `AdminNavBar`'s background is overridden with the child selector approach described in Section 8.2.
 
 ---
 
-## 18. Database and Data Layer
+## 19. Image Upload
 
-### 18.1 Active Tables (W26_ prefix)
+The application supports two distinct image upload workflows: homepage gallery uploads (via the `UploadImages` component) and Site Inspection Report (SIR) image attachments (inline within the report form). Both use drag-and-drop with presigned S3 URLs.
+
+### 19.1 Homepage Image Upload (`UploadImages` Component)
+
+The `UploadImages` component (`components/UploadImages.tsx`) provides a floating action button (FAB) and full-screen modal for uploading images to the homepage gallery. It is rendered on the Sites dashboard (`/sites`).
+
+![UI Upload FAB](images/ui_upload_fab.png)
+
+#### FAB (Floating Action Button)
+
+```tsx
+<button className="fixed bottom-8 right-8 z-50 flex items-center gap-2 px-5 py-3.5
+                   bg-gradient-to-r from-[#356B43] to-[#254431]
+                   hover:from-[#254431] hover:to-[#356B43]
+                   text-white text-sm font-semibold rounded-full shadow-lg
+                   transition-all hover:-translate-y-0.5">
+  <Upload size={16} />
+  Upload Images
+</button>
+```
+
+#### Modal Structure
+
+The modal uses a full-screen overlay with a responsive layout that stacks on mobile and sits side-by-side on desktop:
+
+![UI Upload Modal](images/ui_upload_modal.png)
+
+```tsx
+{/* Overlay */}
+<div className="fixed inset-0 z-[200] flex items-center justify-center
+                bg-[#254431]/60 backdrop-blur-md p-4">
+  {/* Modal container */}
+  <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl
+                  overflow-hidden flex flex-col max-h-[90vh]">
+    {/* Header — gradient banner */}
+    {/* Body — scrollable content */}
+    {/* Footer — status + action buttons */}
+  </div>
+</div>
+```
+
+#### Drop Zone (Empty State)
+
+When no images are selected, the modal shows a dashed-border drop zone:
+
+```tsx
+<div className="border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center
+                cursor-pointer transition-colors border-[#E4EBE4] bg-[#F7F2EA]
+                hover:border-[#356B43]">
+  <ImageIcon size={32} className="mx-auto mb-3 text-[#86A98A]" />
+  <p className="text-sm text-[#7A8075]">
+    Drop images here or <span className="text-[#356B43] font-semibold underline">browse files</span>
+  </p>
+  <p className="text-xs text-[#7A8075]/60 mt-1">JPEG, PNG, HEIC supported</p>
+</div>
+```
+
+#### Per-Image Editor
+
+Once images are added, the editor shows a carousel with navigation and a responsive metadata form:
+
+```tsx
+{/* Preview + fields — stacks on mobile, side by side on desktop */}
+<div className="flex flex-col lg:flex-row gap-4">
+  {/* Image preview */}
+  <div className="w-full lg:w-96 flex-shrink-0">
+    <img className="w-full object-cover rounded-2xl border-2 border-[#E4EBE4]"
+         style={{ maxHeight: '360px' }} />
+  </div>
+  {/* Metadata fields on cream background */}
+  <div className="flex-1 min-w-0 bg-[#F7F2EA] rounded-2xl border-2 border-[#E4EBE4] p-4">
+    ...
+  </div>
+</div>
+```
+
+#### Required Metadata Fields
+
+| Field | Type | Validation |
+|---|---|---|
+| Site | Searchable dropdown | Required — search by name or county |
+| Date of Visit | Date picker | Required — max today |
+| Photographer | Text input | Required — max 25 characters (no whitespace counted) |
+| Identifier | Text input | Required — max 20 characters (short description) |
+| Caption | Textarea | Required — longer description |
+
+#### Upload Flow
+
+1. User selects/drops images → `FileEntry` objects created with previews
+2. User fills metadata for each image via carousel navigation
+3. Completion status tracked: `{completed} / {total} complete`
+4. Upload button enabled only when all images have complete metadata
+5. Presigned URLs fetched from `/api/s3/presign-homepage-images`
+6. Files PUT directly to S3, then metadata rows inserted via `insertHomepageImageUpload`
+7. On success, redirects to `/sites?image-upload=true` (triggers success toast)
+
+#### Footer
+
+```tsx
+<div className="border-t-2 border-[#E4EBE4] px-4 sm:px-6 py-4 flex-shrink-0">
+  {/* Error alert (if upload failed) */}
+  <div className="flex items-center justify-between gap-3">
+    <p className="text-sm text-[#7A8075]">
+      <strong>{completed} / {total}</strong> complete
+    </p>
+    <div className="flex items-center gap-2 sm:gap-3">
+      <button className="... border-2 border-[#E4EBE4] text-[#7A8075] ...">Cancel</button>
+      <button data-testid="upload-submit-btn" className="... bg-gradient-to-r from-[#356B43] to-[#254431] ...">
+        Upload
+      </button>
+    </div>
+  </div>
+</div>
+```
+
+### 19.2 SIR Image Attachment (New/Edit Report)
+
+Within Site Inspection Reports, image-type questions render an inline upload zone directly in the form. This is implemented in `app/detail/[namesite]/new-report/MainContent.tsx`.
+
+![UI SIR Image Upload](images/ui_sir_image_upload.png)
+
+#### Drop Zone
+
+```tsx
+<div className="border-2 border-dashed rounded-xl p-8 text-center transition-colors
+                bg-[#F7F2EA]/30 border-[#E4EBE4] hover:border-[#356B43]">
+  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mx-auto">
+    <ImageIcon className="w-8 h-8 text-[#356B43]" />
+  </div>
+  <p className="text-[#254431] font-bold text-lg">Click to upload images</p>
+  <p className="text-sm text-[#7A8075] mt-1">PNG, JPG, WEBP up to 10MB each</p>
+</div>
+```
+
+#### Image Count Indicator
+
+When images are attached, a count banner appears:
+
+```tsx
+<div className="flex items-center gap-2 p-3 bg-[#356B43]/10 rounded-lg">
+  <ImageIcon className="w-5 h-5 text-[#356B43]" />
+  <span className="text-sm text-[#356B43] font-semibold">
+    {totalCount} image{totalCount > 1 ? 's' : ''} total
+    {persistedImages.length > 0 && ` (${persistedImages.length} previously uploaded)`}
+  </span>
+</div>
+```
+
+#### Image Cards Grid
+
+Attached images display in a responsive two-column grid with metadata fields:
+
+```tsx
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+  {/* Previously uploaded images — non-removable, shown with Lock icon */}
+  {/* Newly selected images — removable, with editable metadata */}
+</div>
+```
+
+#### Previously Uploaded Images (Edit Mode)
+
+When editing an existing report, previously uploaded images are shown with a lock badge and cannot be removed:
+
+- Green-tinted border: `border-2 border-[#356B43]/40`
+- Lock icon with "Previously uploaded — cannot be removed or edited" message
+- Read-only caption and identifier fields on cream background
+
+#### New Image Metadata Fields
+
+| Field | Type | Validation |
+|---|---|---|
+| Caption | Text input | Required — max 25 characters |
+| Identifier | Textarea | Required — description of the image |
+| Photographer | Text input | Required — max 25 characters |
+| Date | Date picker | Required — max today |
+
+#### SIR Upload Flow
+
+1. User drops/selects images on the question's drop zone
+2. `LocalImageEntry` objects created with preview URLs
+3. User fills caption, identifier, photographer, date per image
+4. On form submission, presigned URLs fetched from `/api/s3/presign` (SIR route)
+5. Files PUT to S3, then metadata saved to `W26_attachments` table
+6. In edit mode, existing attachments shown as locked alongside new uploads
+
+### 19.3 Key Differences Between Upload Contexts
+
+| Feature | Homepage Upload | SIR Image Attachment |
+|---|---|---|
+| Component | `UploadImages` (shared component) | Inline in `MainContent.tsx` |
+| Trigger | FAB button → modal | Drop zone within form question |
+| Layout | Full-screen modal with carousel | Inline two-column grid |
+| Site selection | Searchable dropdown | Inherited from current site |
+| S3 route | `/api/s3/presign-homepage-images` | `/api/s3/presign` |
+| DB table | `insertHomepageImageUpload` | `W26_attachments` |
+| Edit behaviour | N/A (upload only) | Locked previous + new uploads |
+| File types | JPEG, PNG, HEIC | PNG, JPG, WEBP (10MB limit) |
+
+### 19.4 Test-Critical Elements
+
+| Test ID | Element |
+|---|---|
+| `upload-modal` | Site search container in UploadImages modal |
+| `upload-submit-btn` | Upload submit button in UploadImages modal |
+| `image-upload-{questionId}` | File input for SIR image questions |
+
+---
+
+## 20. Database and Data Layer
+
+### 20.1 Active Tables (W26_ prefix)
 
 | Table | Purpose |
 |---|---|
@@ -953,7 +1277,7 @@ When rendered inside a page header, `AdminNavBar`'s background is overridden wit
 | `W26_form_sections` | Form section metadata |
 | `W26_ab_counties` | County/region lookup |
 
-### 18.2 Postgres RPC Functions
+### 20.2 Postgres RPC Functions
 
 Aggregate queries are implemented as Supabase RPC functions to avoid complex client-side joins:
 
@@ -962,15 +1286,15 @@ Aggregate queries are implemented as Supabase RPC functions to avoid complex cli
 | `get_naturalness_distribution()` | Returns normalised naturalness score buckets with counts from `W26_answers` |
 | `get_top_sites_distribution()` | Returns top 5 active sites by inspection count from `W26_form_responses` and `W26_sites-pa` |
 
-### 18.3 Naturalness Score Normalisation
+### 20.3 Naturalness Score Normalisation
 
 Raw `obs_value` data for naturalness is inconsistently stored (e.g., "4 - Great", "4 = Great", "Great"). The RPC uses `ILIKE` pattern matching with a `CASE` statement to normalise these into five canonical buckets: Great, Good, Passable, Terrible, and Cannot Answer.
 
 ---
 
-## 19. Testing Conventions
+## 21. Testing Conventions
 
-### 19.1 Test IDs
+### 21.1 Test IDs
 
 Components commonly use `data-testid` attributes for reliable test selection. Prefer test IDs and stable semantic selectors.  
 Current test suites also include some CSS/text selectors where no stable test ID exists.
@@ -993,7 +1317,7 @@ Current test suites also include some CSS/text selectors where no stable test ID
 | `{question} Hide Button` | Toggle button when question is active |
 | `{question} Show Button` | Toggle button when question is hidden |
 
-### 19.2 Test-Critical UI Text
+### 21.2 Test-Critical UI Text
 
 The following strings/attributes are currently asserted by parts of the UI test suite:
 
@@ -1001,7 +1325,7 @@ The following strings/attributes are currently asserted by parts of the UI test 
 - Admin menu trigger title: `"admin dropdown menu"`
 - Logo alt text varies by page (`"SAPAA"` and `"Logo"` both exist in current implementation)
 
-### 19.3 Mocking Strategy
+### 21.3 Mocking Strategy
 
 AdminDashboard tests require these mocks:
 
@@ -1012,6 +1336,237 @@ AdminDashboard tests require these mocks:
 - `global.fetch` - default mock in `beforeEach` returning `{ ok: true, json: async () => ({ items: [] }) }`
 
 Re-apply all query mocks in `beforeEach` after `jest.clearAllMocks()`. Import the Dashboard component only after all mocks are registered.
+
+---
+
+## 22. Responsive Design
+
+The application uses a mobile-first responsive design approach. All responsive behaviour is implemented through Tailwind CSS responsive utility classes — no custom CSS media queries are used (except for dark mode preference detection in `globals.css`).
+
+![UI Responsive Overview](images/ui_responsive_overview.png)
+
+### 22.1 Breakpoints
+
+The application follows Tailwind's standard breakpoint system:
+
+| Breakpoint | Min Width | Usage |
+|---|---|---|
+| (base) | 0px | Mobile phones — single-column layouts, stacked elements |
+| `sm:` | 640px | Large phones / small tablets — two-column grids, inline buttons |
+| `md:` | 768px | Tablets — expanded stat grids, increased padding |
+| `lg:` | 1024px | Desktop — three-column grids, side-by-side modals, flex-row layouts |
+| `xl:` | 1280px | Large desktop — four-column image galleries, wider padding |
+| `2xl:` | 1536px | Extra-large — maximum content widths |
+
+### 22.2 Mobile-First Approach
+
+Base styles always target the smallest screen. Larger breakpoints override progressively:
+
+```tsx
+{/* Text: small on mobile, larger on tablet+ */}
+className="text-2xl sm:text-3xl font-bold"
+
+{/* Padding: tighter on mobile, more spacious on tablet+ */}
+className="px-4 sm:px-6 py-4 sm:py-6"
+
+{/* Layout: stacked on mobile, side-by-side on tablet+ */}
+className="flex flex-col sm:flex-row"
+```
+
+### 22.3 Responsive Grid Layouts
+
+The application uses several responsive grid patterns depending on content type:
+
+| Pattern | Classes | Used For |
+|---|---|---|
+| Site Cards | `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4` | Site listing, admin sites |
+| Image Gallery | `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6` | Gallery pages |
+| Stats Strip | `grid grid-cols-2 md:grid-cols-5 gap-4` | Site list dashboard stats |
+| Admin Stats | `grid grid-cols-1 md:grid-cols-3 gap-6` | Admin dashboard stat cards |
+
+![UI Responsive Grid](images/ui_responsive_grid.png)
+
+### 22.4 Navigation — Hamburger Menu
+
+Navigation uses an animated hamburger menu accessible on all screen sizes (no separate desktop navigation bar). The `HeaderDropdown` and `AdminNavBar` components implement this:
+
+- **Trigger:** 44x44px button (`w-11 h-11`) with three animated lines
+- **Animation:** Lines transform to an X icon when open via `translate-y` and `rotate` transforms
+- **Dropdown:** Fixed-width menu (`w-60`) positioned absolutely, with backdrop overlay
+- **Backdrop:** `fixed inset-0 z-40` semi-transparent overlay for mobile touch dismissal
+
+```tsx
+{/* Hamburger button — always visible, no breakpoint hiding */}
+<button onClick={() => setMenuOpen(!menuOpen)}
+        className="w-11 h-11 flex flex-col items-center justify-center gap-[5px] rounded-xl
+                   bg-white/10 hover:bg-white/20 transition-all">
+  <span className={`block h-[2px] w-5 bg-white transition-all duration-300
+        ${menuOpen ? 'translate-y-[7px] rotate-45' : ''}`} />
+  <span className={`block h-[2px] w-5 bg-white transition-all duration-300
+        ${menuOpen ? 'opacity-0' : ''}`} />
+  <span className={`block h-[2px] w-5 bg-white transition-all duration-300
+        ${menuOpen ? '-translate-y-[7px] -rotate-45' : ''}`} />
+</button>
+```
+
+![UI Hamburger Menu](images/ui_hamburger_menu.png)
+
+### 22.5 Authentication Pages — Split Layout
+
+Login and signup pages use a two-column split layout on desktop that collapses to single-column on mobile:
+
+```tsx
+<div className="grid lg:grid-cols-2 min-h-screen">
+  {/* Left panel: branding — hidden on mobile, visible on lg+ */}
+  <div className="hidden lg:flex flex-col justify-between relative overflow-hidden
+                  bg-gradient-to-br from-[#356B43] via-[#254431] to-[#356B43]
+                  text-[#F7F2EA] px-12 xl:px-16 py-12">
+    ...
+  </div>
+
+  {/* Right panel: form — always visible */}
+  <div className="flex items-center justify-center px-6 sm:px-8 lg:px-12 py-12">
+    {/* Mobile-only logo (hidden on lg+) */}
+    <div className="lg:hidden flex items-center gap-3 mb-8">
+      ...
+    </div>
+    ...
+  </div>
+</div>
+```
+
+![UI Login Responsive](images/ui_login_responsive.png)
+
+### 22.6 Responsive Typography
+
+Text sizes scale up at breakpoints to maintain readability:
+
+| Element | Mobile | Tablet (`sm:`) | Desktop (`lg:`) |
+|---|---|---|---|
+| Page title (header) | `text-2xl` | `text-3xl` | `text-3xl` |
+| Section heading | `text-xl` | `text-2xl` | `text-2xl` |
+| Stat numbers | `text-2xl` | `text-3xl` | `text-3xl` |
+| Body text | `text-sm` | `text-base` | `text-base` |
+| Labels/captions | `text-xs` | `text-sm` | `text-sm` |
+| Icon sizes | `w-4 h-4` | `w-5 h-5` | `w-5 h-5` |
+
+### 22.7 Responsive Spacing
+
+Padding and gap values increase at breakpoints:
+
+| Element | Mobile | Tablet (`sm:`) | Desktop (`md:`/`lg:`) |
+|---|---|---|---|
+| Page padding | `px-4 py-4` | `px-6 py-6` | `px-6 py-8` |
+| Card padding | `p-4` | `p-5` or `p-6` | `p-6` |
+| Grid gap | `gap-4` | `gap-6` | `gap-6` |
+| Button padding | `px-4 py-2.5` | `px-5 py-2.5` | `px-5 py-2.5` |
+
+### 22.8 Responsive Modals
+
+Image preview modals adapt from stacked to side-by-side layout. To capture a good screenshot, navigate to Riverlot 56 and search "Site Trails" in the gallery for a representative image with metadata.
+
+```tsx
+{/* Modal overlay — responsive padding */}
+<div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm
+                flex items-center justify-center p-3 sm:p-4 md:p-8">
+  {/* Modal content — stacked on mobile, two-column on desktop */}
+  <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] flex-1 min-h-0">
+    {/* Image viewer: responsive max-height */}
+    <div className="max-h-[40vh] sm:max-h-[50vh] lg:max-h-[85vh]">
+      <img className="object-contain" ... />
+    </div>
+    {/* Details sidebar: stacks below image on mobile, fixed 360px on lg+ */}
+    <div className="min-h-[220px] sm:min-h-[300px] lg:min-h-0 overflow-y-auto">
+      ...
+    </div>
+  </div>
+</div>
+```
+
+![UI Responsive Modal](images/ui_responsive_modal.png)
+
+### 22.9 Sticky Report Footer
+
+The new-report and edit-report pages use a responsive sticky footer with section navigation, progress bar, and submit button:
+
+```tsx
+<footer className="sticky bottom-0 bg-white border-t-2 border-[#E4EBE4]
+                   p-4 md:px-8 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-50">
+  <div className="max-w-7xl mx-auto flex flex-col gap-4 lg:flex-row lg:items-end">
+    {/* Section nav buttons: stacked on mobile, row on sm+ */}
+    <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
+      <button className="w-full sm:w-auto sm:min-w-[10rem] ...">← Previous</button>
+      <button className="w-full sm:w-auto sm:min-w-[10rem] ...">Next →</button>
+    </div>
+    {/* Progress bar: full width on mobile, fills remaining space on lg+ */}
+    <div className="w-full min-w-0 lg:flex-1">...</div>
+    {/* Submit: full width on mobile, auto width on sm+ */}
+    <button className="w-full sm:w-auto sm:min-w-[13rem] lg:flex-shrink-0 ...">
+      Review & Submit
+    </button>
+  </div>
+</footer>
+```
+
+![UI Responsive Footer](images/ui_responsive_footer.png)
+
+### 22.10 Responsive Visibility
+
+Use Tailwind's `hidden` and display utilities to show/hide elements at breakpoints:
+
+| Pattern | Classes | Example |
+|---|---|---|
+| Mobile-only | `lg:hidden` | Compact logo on login page |
+| Desktop-only | `hidden lg:flex` | Left branding panel on auth pages |
+| Desktop-only (block) | `hidden lg:block` | Live preview panel in Form Editor |
+
+**Important:** Do not use `hidden md:flex` or similar on text that tests must find (see Section 21.2).
+
+### 22.11 Responsive Buttons
+
+Buttons adapt from full-width stacked layout on mobile to inline auto-width on larger screens:
+
+```tsx
+{/* Full-width on mobile, auto-width side-by-side on sm+ */}
+<div className="flex flex-col sm:flex-row gap-3">
+  <button className="w-full sm:w-auto sm:min-w-[10rem] ...">Cancel</button>
+  <button className="w-full sm:w-auto sm:min-w-[10rem] ...">Save</button>
+</div>
+```
+
+### 22.12 Responsive Images
+
+Gallery images and thumbnails use responsive heights:
+
+| Context | Mobile | Tablet (`sm:`) | Desktop (`lg:`) |
+|---|---|---|---|
+| Gallery card | `h-56` | `h-64` | `h-64` |
+| Modal image | `max-h-[40vh]` | `max-h-[50vh]` | `max-h-[85vh]` |
+| Header logo | `h-12` | `h-16` | `h-16` |
+
+All images use `object-contain` for proper scaling without distortion.
+
+### 22.13 Files with Responsive Patterns
+
+The following files contain significant responsive design implementation:
+
+| File | Responsive Features |
+|---|---|
+| `app/sites/page.tsx` | Stats grid (2→5 cols), card grid (1→2→3 cols), responsive header |
+| `app/gallery/page.tsx` | Image grid (1→2→3→4 cols), responsive modal |
+| `app/login/page.tsx` | Split layout (1→2 cols), hidden/visible panels |
+| `app/signup/page.tsx` | Same split layout pattern as login |
+| `app/detail/[namesite]/page.tsx` | Responsive site detail, expandable sections |
+| `app/detail/[namesite]/new-report/Footer.tsx` | Sticky footer with responsive button layout |
+| `app/admin/dashboard/page.tsx` | Responsive chart layout, stats grid |
+| `app/admin/sites/page.tsx` | Responsive site management grid |
+| `app/admin/gallery/page.tsx` | Responsive gallery grid |
+| `app/admin/form-editor/page.tsx` | Three-column layout, preview panel hidden on mobile |
+| `app/admin/account-management/page.tsx` | Responsive account cards/table |
+| `components/HeaderDropdown.tsx` | Hamburger menu navigation |
+| `app/admin/AdminNavBar.tsx` | Admin hamburger menu navigation |
+| `components/UploadImages.tsx` | Responsive upload modal |
+| `app/terms/TermsContent.tsx` | Responsive text layout |
 
 ---
 
@@ -1045,11 +1600,76 @@ Re-apply all query mocks in `beforeEach` after `jest.clearAllMocks()`. Import th
 - Add `data-testid` to all interactive elements.
 - Do not use `hidden md:flex` on text that tests must find.
 - Wrap Leaflet maps in a mounted guard (Section 15.3).
+- **Use responsive padding:** `px-4 sm:px-6` for horizontal padding, `py-4 sm:py-6` for vertical.
+- **Use responsive grids:** Start with `grid-cols-1` and scale up with `sm:grid-cols-2 lg:grid-cols-3`.
+- **Use responsive text sizes:** Base at mobile size and scale with `sm:` prefix (e.g., `text-2xl sm:text-3xl`).
+- **Stack on mobile, row on desktop:** Use `flex flex-col sm:flex-row` for groups of buttons or inline elements.
+- **Full-width buttons on mobile:** Use `w-full sm:w-auto` for action buttons.
+- **Test at all breakpoints:** Verify layout at 375px (mobile), 768px (tablet), and 1280px (desktop).
+
+---
+
+## Appendix B - Changelog (v2.0 → v3.0)
+
+### B.1 Summary
+
+Version 3.0 documents the responsive design overhaul implemented during Sprint 5 via the `Sprint-5-ResponsiveUI` branch (PRs #193, #195, #199, #202).
+
+### B.2 Codebase Changes Made
+
+The following responsive changes were applied across the application:
+
+| File | Changes Made |
+|---|---|
+| `app/sites/page.tsx` | Responsive stats grid (`grid-cols-2 md:grid-cols-5`), site card grid (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`), responsive header padding/text, new hamburger-based `UserNavBar` integration |
+| `app/gallery/page.tsx` | Four-breakpoint image grid (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`), responsive gap spacing, responsive modal with viewport-relative image heights |
+| `app/login/page.tsx` | Split-screen layout (`grid lg:grid-cols-2`), left branding panel hidden on mobile (`hidden lg:flex`), mobile-only compact logo (`lg:hidden`), responsive form padding |
+| `app/signup/page.tsx` | Same split-screen responsive pattern as login page |
+| `app/detail/[namesite]/page.tsx` | Responsive header with `flex-col sm:flex-row`, responsive text sizes, responsive card grid, expandable sections with responsive padding |
+| `app/detail/[namesite]/new-report/page.tsx` | Responsive form layout, responsive section padding |
+| `app/detail/[namesite]/new-report/Footer.tsx` | Sticky footer with `flex-col lg:flex-row` layout, full-width buttons on mobile (`w-full sm:w-auto`), responsive progress bar |
+| `app/detail/[namesite]/edit-report/[responseId]/page.tsx` | Responsive form editing layout matching new-report patterns |
+| `app/admin/dashboard/page.tsx` | Responsive stat cards (`grid-cols-1 md:grid-cols-3`), responsive chart containers, responsive header text |
+| `app/admin/sites/page.tsx` | Responsive site management grid, responsive card padding (`p-4 sm:p-6`) |
+| `app/admin/sites/[id]/page.tsx` | Responsive site detail layout, responsive image gallery grid |
+| `app/admin/gallery/page.tsx` | Responsive gallery grid matching public gallery pattern |
+| `app/admin/form-editor/page.tsx` | Preview panel hidden on mobile (`hidden lg:block`), three-column layout collapses to single column |
+| `app/admin/account-management/page.tsx` | Responsive account cards, responsive header with action button |
+| `components/HeaderDropdown.tsx` | New animated hamburger menu (`w-11 h-11`), three-line-to-X animation, dropdown with backdrop overlay, active page bolding |
+| `app/admin/AdminNavBar.tsx` | Admin hamburger menu matching user nav pattern |
+| `components/UploadImages.tsx` | Responsive upload modal with `flex-col lg:flex-row` layout |
+| `app/terms/TermsContent.tsx` | Responsive text padding and sizing |
+
+### B.3 Key Patterns Introduced
+
+- **Mobile-first responsive classes** (`sm:`, `md:`, `lg:`, `xl:`) added to all page and component files
+- **Animated hamburger menu** replaced previous desktop navigation across both user and admin interfaces
+- **Responsive grids** replaced fixed-column layouts on all card/gallery pages
+- **Split auth layout** with conditional panel visibility (`hidden lg:flex` / `lg:hidden`)
+- **Responsive sticky footer** for report forms with stacked-to-inline button progression
+- **Responsive modals** with viewport-relative image sizing and stacked-to-side-by-side detail panels
+- **Full-width → auto-width** button pattern for mobile/desktop adaptation
+- **Responsive typography and spacing** scaling at `sm:` and `lg:` breakpoints across all pages
+
+### B.4 Document Changes
+
+- Section 1.1: Updated scope (removed React Native reference, added responsive design)
+- Section 1.2: Added MUI v7, react-icons, react-joyride to tech stack
+- Section 1.3: Added `/gallery` and `/terms` routes
+- Section 4.1: Added touch target accessibility, cross-referenced Section 22
+- Section 7.3: Updated padding to responsive values
+- Section 8.1: Updated header code with responsive classes
+- Section 9.3: Added site list grid pattern and responsive card padding
+- Section 17: New UserNavBar section (hamburger menu, dropdown structure, menu items, active page bolding, icon conventions, props, test elements)
+- Section 19: New Image Upload section (homepage UploadImages component, SIR image attachments, drop zones, metadata fields, upload flows, comparison table)
+- Section 22: New comprehensive responsive design section (22.1–22.13)
+- Appendix A.2: Added 6 responsive checklist items for new pages
+- All sections renumbered (17→17 UserNavBar, old 17 AdminNavBar→18, new 19 Image Upload, 18→20 Database, 19→21 Testing, new 22 Responsive)
 
 ---
 
 *End of Document*
 
-**Document Version:** 2.0  
-**Last Updated:** March 2026  
-**Prepared for:** Stewards of Alberta's Protected Areas Association
+**Document Version:** 3.0   
+**Last Updated:** March 2026     
+**Prepared for:** Stewards of Alberta's Protected Areas Association     

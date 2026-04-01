@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
     // Admin only
     const role = user.user_metadata?.role;
     if (role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden — admin access required' }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden - admin access required' }, { status: 403 });
     }
 
     // Parse request

@@ -4,67 +4,70 @@ beforeEach(() => {
   cy.viewport(1280, 720);
 });
 
+function dismissTutorialIfPresent() {
+  cy.wait(2000);
+  cy.get('body').then(($body) => {
+    if ($body.find('.react-joyride__overlay').length > 0) {
+      cy.get('[data-testid="tutorial-skip"], [aria-label="Skip"], button[data-action="skip"], button[data-action="close"]')
+        .first()
+        .click({ force: true });
+      cy.get('.react-joyride__overlay').should('not.exist', { timeout: 5000 });
+    }
+  });
+}
+
 function login() {
   cy.visit("http://localhost:3000/");
-  cy.get("#email").click();
-  cy.get("#email").type("jason.liang5129@gmail.com");
-  cy.get("#password").click();
-  cy.get("#password").type("123Abc@@");
+  cy.get("#email").click().type("jason.liang5129@gmail.com");
+  cy.get("#password").click().type("123Abc@@");
   cy.get("button.font-bold").click();
-  cy.get("button.text-white").click();
+
+  cy.wait(3000);
+  dismissTutorialIfPresent();
+
   cy.url().should("include", "/sites");
 }
 
-function openNewReport() {
-  cy.get("div.grid.gap-4.md\\:grid-cols-2.lg\\:grid-cols-3")
-    .find("button")
-    .first()
-    .should("be.visible")
-    .click({ force: true });
+  function openNewReport() {
+    cy.contains('Riverlot 56', { timeout: 15000 })
+      .should('be.visible');
 
-  cy.contains("button", "New Site Inspection Report", { timeout: 15000 })
-    .should("be.visible")
-    .click({ force: true });
-  cy.url().should("include", "/new-report");
-}
+    dismissTutorialIfPresent();
+
+    cy.contains('Riverlot 56')
+      .scrollIntoView()
+      .click();
+
+    cy.url().should("include", "/detail", { timeout: 10000 });
+
+    dismissTutorialIfPresent();
+
+    cy.contains("button", "New Site Inspection Report", { timeout: 15000 })
+      .should("be.visible")
+      .click({ force: true });
+
+    cy.url().should("include", "/new-report", { timeout: 10000 });
+  }
+
 
 function dismissVerificationModalIfVisible() {
-  cy.get("body").then(($body) => {
-    if ($body.text().includes("The Fine Print Up Front")) {
-      cy.contains("The Fine Print Up Front")
-        .should("be.visible")
-        .parents("div.relative")
-        .first()
-        .as("verificationModal");
-
-      cy.get("@verificationModal").within(() => {
-        cy.get('input[type="checkbox"]').check({ force: true });
-        cy.contains("button", "Continue to Form")
-          .scrollIntoView()
-          .should("be.visible")
-          .and("not.be.disabled")
-          .click({ force: true });
-      });
-
-      cy.get("body").then(($nextBody) => {
-        if ($nextBody.text().includes("The Fine Print Up Front")) {
-          cy.contains("button", "Continue to Form").click({ force: true });
-        }
-      });
-
-      cy.contains("The Fine Print Up Front", { timeout: 15000 }).should("not.exist");
-    }
-  });
+  cy.wait(5000);
+  cy.get('[data-testid="fine-print-modal"]').click('topLeft', { force: true });
+  cy.get('[data-testid="terms-checkbox"]').check();
+  cy.get('[data-testid="terms-checkbox"]').should('be.checked');
+  cy.get('[data-testid="fine-print-modal"] button.text-white').should('not.have.attr', 'disabled');
+  cy.get('[data-testid="fine-print-modal"] div.bg-\\[\\#F7F2EA\\]\\/50').click();
+  cy.get('[data-testid="fine-print-modal"] div.bg-\\[\\#F7F2EA\\]\\/50').should('not.exist');
+  cy.get('[data-testid="fine-print-modal"]').should('not.exist');
+  cy.contains("The Fine Print Up Front", { timeout: 15000 }).should("not.exist");
 }
 
 function ensureFormReady() {
   cy.get("body", { timeout: 20000 }).should("not.contain", "Loading inspection form...");
   dismissVerificationModalIfVisible();
-  dismissVerificationModalIfVisible();
 }
 
 function clickSectionByIndex(index: number) {
-  ensureFormReady();
   cy.get("main aside nav button:visible").eq(index).scrollIntoView().click({ force: true });
   cy.get("section.flex-1").should("be.visible");
 }
@@ -127,21 +130,17 @@ function fillQuestionCard($card: JQuery<HTMLElement>, sectionIndex: number, card
       ) as HTMLInputElement | null;
       if (fileInput) {
         cy.wrap(fileInput).selectFile("cypress/fixtures/test-image.jpg", { force: true });
-
         const captionInput = root.querySelector(
           'input[placeholder="Caption (optional)"]'
         ) as HTMLInputElement | null;
         if (captionInput) {
           cy.wrap(captionInput).clear({ force: true }).type(`${textValue}-caption`, { force: true });
         }
-
         const descriptionInput = root.querySelector(
           'textarea[placeholder="Description (optional)"]'
         ) as HTMLTextAreaElement | null;
         if (descriptionInput) {
-          cy.wrap(descriptionInput)
-            .clear({ force: true })
-            .type(`${textValue}-description`, { force: true });
+          cy.wrap(descriptionInput).clear({ force: true }).type(`${textValue}-description`, { force: true });
         }
         return;
       }
@@ -246,7 +245,6 @@ describe("Full form fill + section persistence (no submit)", () => {
       }
     });
 
-    // Final global progress check; do not submit.
     cy.get("footer")
       .contains(/\d+\s*\/\s*\d+\s*answered/i)
       .should("be.visible")

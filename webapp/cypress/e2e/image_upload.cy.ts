@@ -25,15 +25,25 @@ function navigateToNewReport() {
 function navigateToExistingSIR() {
   cy.get('input[placeholder="Search by site name or county..."]').type('riverlot');
   cy.contains('Riverlot 56').click();
-  cy.contains('Edit').first().click();
-  cy.wait(4000)
-  cy.contains('Close').click();
+  cy.get('[data-testid="edit-form-button"]').click();
+  cy.wait(5000)
+  cy.contains('Close').scrollIntoView().click();
 }
 
 function dismissFinePrintModal() {
-  cy.contains('I have read and agree').closest('label, div').find('input[type="checkbox"]').check();
-  cy.wait(1000);
-  cy.contains('button', 'Continue to Form').click();
+  cy.wait(5000);
+  cy.get('[data-testid="fine-print-modal"]')
+  .click('topLeft', { force: true });
+  cy.get('[data-testid="terms-checkbox"]').check();
+  // The terms and conditions checkbox is checked.
+  cy.get('[data-testid="terms-checkbox"]')
+    .should('be.checked')
+  // The button is now enabled.
+  cy.get('[data-testid="fine-print-modal"] button.text-white')
+    .should('not.have.attr', 'disabled')
+  
+  cy.get('[data-testid="fine-print-modal"] div.bg-\\[\\#F7F2EA\\]\\/50').click();
+  cy.get('[data-testid="fine-print-modal"] div.bg-\\[\\#F7F2EA\\]\\/50').should('not.exist');
 }
 
 describe('Image Upload', () => {
@@ -61,7 +71,7 @@ describe('Image Upload', () => {
     navigateToExistingSIR();
 
     cy.wait('@siteImages');
-    cy.contains('Previously uploaded — cannot be removed').should('exist');
+    cy.contains('Previously uploaded — cannot be removed or edited').should('exist');
 
     cy.contains('Any Last Words').closest('[class*="rounded"]').find('textarea').type('Added final remarks');
   });
@@ -101,3 +111,4 @@ describe('Image Upload', () => {
   });
 
 });
+

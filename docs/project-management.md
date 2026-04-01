@@ -182,20 +182,26 @@ This page provides a general overview of the assigned tasks and roles for the du
 |US 3.0.1 - Access the mobile version of the Site Inspection Form|5|
 |US 3.0.2 - Offline Data Syncing|8|
 |US 5.0.2 – Sign Out Feature|2|
-|US 6.0.2 – Change Text Size on Screen|3|
+|TASK 6.0.1 – Web Application Responsiveness|N/A|
+|TASK 6.0.2 – Front-End Error Handling & Validation|N/A|
+|TASK 6.0.3 – Inspection Fields Integration|N/A|
 
-**Sprint Velocity:** 31
+**Sprint Velocity:** 28
 
 #### Tasks
 
 |Task|Related US|Assignee|Due|
 |:---:|:---:|:---:|:---:|
-|Sign out feature|US 5.0.2|Harveer|Mar 24th|
-|Homescreen Gallery View|US 2.0.9|Raiyana, Zoe|Mar 25th|
-|Change text size on screen|US 6.0.2|Vishal, Braden, Jason|Mar 26th|
-|Data Migration|All US|Everyone|Mar 30th|
-|Deployment Instructions|Documentation|Harveer, Raiyana|Mar 24th|
-|A Job Description|Docmentation|Everyone|Mar 26th|
-|User manual|Documentation|Akib, Braden, Jason, Vishal, Zoe|Mar 27th|
+|Homescreen Gallery View|US 2.0.9|Vishal|Mar 25th|
+|Web Application Responsiveness|TASK 6.0.1|Raiyana|Mar 26th|
+|Sign out feature|US 5.0.2|Harveer|Mar 27th|
+|Inspection Fields Integration|TASK 6.0.3|Akib, Jason|Mar 27th|
+|Front-End Error Handling & Validation|TASK 6.0.2|Akib|Mar 28th|
+|Deployment Instructions|Documentation|Harveer, Raiyana|Mar 29th|
+|Job Description|Documentation|Braden, Vishal|Mar 29th|
+|User manual|Documentation|Braden|Mar 30th|
+|Admin manual|Documentation|Braden, Jason|Mar 30th|
+|UI Consistency|All US|Everyone|Mar 30th|
 |Finalize Sprint 5 acceptance tests|All US|Everyone|Mar 30th|
+|Project Portal Upload|Documentation|Harveer|Mar 29th|
 |Finalize documentation|Documentation|Everyone|Mar 31st|

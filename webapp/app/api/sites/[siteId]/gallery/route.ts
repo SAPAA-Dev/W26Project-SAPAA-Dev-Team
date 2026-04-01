@@ -38,10 +38,6 @@ export async function GET(
 ) {
   try {
     const { siteId } = await params;
-
-    console.log("=== /api/sites/[siteId]/gallery START ===");
-    console.log("siteId from params:", siteId);
-
     const numericSiteId = Number(siteId);
 
     if (!siteId || Number.isNaN(numericSiteId)) {

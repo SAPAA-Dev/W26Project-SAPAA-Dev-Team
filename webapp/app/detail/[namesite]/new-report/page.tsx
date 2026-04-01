@@ -1,8 +1,8 @@
 "use client";
 
-import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers, insertInspectionAttachments, rollbackSiteInspectionSubmission} from '@/utils/supabase/queries';
+import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers, insertInspectionAttachments, rollbackSiteInspectionSubmission, getInspectionDetailsOnline, getLastInspectionDate, getDateOfVisitQuestionId} from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useParams, useRouter, usePathname } from "next/navigation";
 import { 
@@ -79,9 +79,11 @@ export default function NewReportPage() {
   const params = useParams();
   const router = useRouter();
   const namesite = decodeURIComponent(params.namesite as string);
+  const isMountedRef = useRef(true);
   
   const [hasAccepted, setHasAccepted] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
+  const [hasDismissedVerification, setHasDismissedVerification] = useState(false);
   const [responses, setResponses] = useState<Record<number, any>>({});
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name: string; avatar: string } | null>(null);
@@ -89,6 +91,7 @@ export default function NewReportPage() {
   const [isStewardUser, setIsStewardUser] = useState(false);
   const [showRequiredPopup, setShowRequiredPopup] = useState(false);
   const [missingRequiredQuestionNumbers, setMissingRequiredQuestionNumbers] = useState<string[]>([]);
+  const [missingImageMetadataDetails, setMissingImageMetadataDetails] = useState<string[]>([]);
   const [draftKey, setDraftKey] = useState<string | null>(null);
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -120,11 +123,17 @@ export default function NewReportPage() {
     });
   }, []);
 
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
 
   useEffect(() => {
     const fetchUserAndCheckSteward = async () => {
       try {
-        setIsLoading(true);
         const user = await getCurrentUser();
         setCurrentUser(user);
         
@@ -132,21 +141,27 @@ export default function NewReportPage() {
           const stewardStatus = await isSteward(user.email);
           setIsStewardUser(stewardStatus);
 
-          setShowVerification(!stewardStatus);
-        } else {
+          if (!stewardStatus && !hasDismissedVerification) {
+            setHasAccepted(false);   //new
+            setShowVerification(true);
+          }
+        } else if (!hasDismissedVerification) {
+          setHasAccepted(false);
           setShowVerification(true);
         }
       } catch (err) {
         console.error('Error fetching user:', err);
         setCurrentUser(null);
+        if (!hasDismissedVerification) {
         setShowVerification(true);
+       }
       } finally {
         setIsLoading(false);
       }
     };
     
-    fetchUserAndCheckSteward();
-  }, []);
+      fetchUserAndCheckSteward();
+    }, [hasDismissedVerification]);
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -167,12 +182,9 @@ export default function NewReportPage() {
     const initDraftKey = async () => {
       const userUid = await getCurrentUserUid();
       const siteId = await getCurrentSiteId(namesite);
-      // console.log("userUid:", userUid);
-      // console.log("siteId:", siteId);
 
       if (userUid && siteId) {
         const key = `inspection-draft-${userUid}-${siteId}`;
-        // console.log("Draft key created:", key);
         setDraftKey(key);
       }
     };
@@ -196,16 +208,11 @@ export default function NewReportPage() {
                   key,
                   value.map((item) => {
                     if (item && typeof item === 'object' && 'previewUrl' in item) {
-                      return {
-                        caption: '',
-                        identifier: '',
-                        photographer: '',
-                        date: '',
-                        ...item,
-                      };
+                      return null;
                     }
                     return item;
-                  }),
+                  })
+                  .filter(Boolean),
                 ];
               }
               return [key, value];
@@ -213,7 +220,6 @@ export default function NewReportPage() {
           );
 
           setResponses(normalizedResponses);
-      console.log("Draft restored");
     }
 
     setIsDraftLoaded(true); // VERY IMPORTANT
@@ -227,7 +233,6 @@ export default function NewReportPage() {
     if (!draftKey || !isDraftLoaded) return;
 
     localStorage.setItem(draftKey, JSON.stringify(responses));
-    console.log("Draft saved");
   }, [responses, draftKey, isDraftLoaded]);
 
 
@@ -278,6 +283,36 @@ export default function NewReportPage() {
     });
   };
 
+  const getMissingImageMetadataDetails = (
+    currentResponses: Record<number, any>,
+    questionNumberMap: Record<number, string>
+  ): string[] => {
+    const details: string[] = [];
+
+    for (const [questionId, answer] of Object.entries(currentResponses)) {
+      if (!isImageWithMetaArray(answer)) continue;
+
+      answer.forEach((image, index) => {
+        const missingFields: string[] = [];
+
+        if (!image.caption?.trim()) missingFields.push('Caption');
+        if (!image.identifier?.trim()) missingFields.push('Identifier');
+        if (!image.photographer?.trim()) missingFields.push('Photographer');
+        if (!image.date?.trim()) missingFields.push('Date');
+
+        if (missingFields.length === 0) return;
+
+        const questionNumber =
+          questionNumberMap[Number(questionId)] ?? `Question ${questionId}`;
+        const imageLabel = answer.length > 1 ? `image ${index + 1}` : 'image';
+
+        details.push(`${questionNumber} ${imageLabel}: ${missingFields.join(', ')}`);
+      });
+    }
+
+    return details;
+  };
+
 
   const PRESIGN_ROUTE = "/api/s3/presign";
 
@@ -319,9 +354,6 @@ export default function NewReportPage() {
   async function uploadFileToS3(uploadUrl: string, file: File) {
   // 1) Validate URL + detect mixed content
   const u = new URL(uploadUrl);
-  console.log("S3 upload URL origin:", u.origin);
-  console.log("App origin:", window.location.origin);
-  console.log("S3 upload URL protocol:", u.protocol);
 
   if (window.location.protocol === "https:" && u.protocol !== "https:") {
     throw new Error("Blocked: uploadUrl is not https (mixed content).");
@@ -375,16 +407,19 @@ export default function NewReportPage() {
     const missingRequiredNumbers = questions
       .filter((question) => question.is_required === true && !isAnswered(responses[question.id]))
       .map((question) => questionNumberMap[question.id] ?? `Question ${question.id}`);
+    const missingImageMetadata = getMissingImageMetadataDetails(responses, questionNumberMap);
 
-    if (missingRequiredNumbers.length > 0) {
+    if (missingRequiredNumbers.length > 0 || missingImageMetadata.length > 0) {
       setMissingRequiredQuestionNumbers(sortQuestionNumbers(missingRequiredNumbers));
+      setMissingImageMetadataDetails(missingImageMetadata);
       setShowRequiredPopup(true);
-      showToast("Please complete all required questions before submitting.");
+      showToast("Please complete all required questions and uploaded image fields before submitting.");
       return;
     }
 
     setShowRequiredPopup(false);
     setMissingRequiredQuestionNumbers([]);
+    setMissingImageMetadataDetails([]);
     setIsSubmitting(true);
 
     let siteInspectionReportId: number | null = null;
@@ -392,7 +427,9 @@ export default function NewReportPage() {
     try {
       const siteId = await getCurrentSiteId(namesite);
       const userUid = await getCurrentUserUid();
-      siteInspectionReportId = (await addSiteInspectionReport(siteId, userUid)).id;
+      const dateOfVisitQuestionId = await getDateOfVisitQuestionId();
+      const inspectionDate = responses[dateOfVisitQuestionId];
+      siteInspectionReportId = (await addSiteInspectionReport(siteId, userUid, inspectionDate)).id;
 
       // We need to figure out whether the answer to each question should be placed in the obs_value or obs_comm column in Supabase
       // So we convert the question response types into a map that we can search for it
@@ -412,7 +449,7 @@ export default function NewReportPage() {
       //what goes into W26_attachments table: response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier
       // We also need to prepare the data for the attachments table, which means we need to generate the S3 keys for each uploaded file and store those in an array of objects/dictionaries as well
       const attachmentsRows: Array<{
-        response_id: number;
+        response_id: number | null;
         question_id: number;
         site_id: number;
         storage_key: string;
@@ -474,6 +511,8 @@ export default function NewReportPage() {
 
                 // 2) upload the file to S3 using the presigned URL
                 await uploadFileToS3(uploadUrl, file);
+                
+                if (siteInspectionReportId === null) throw new Error("No report ID available");
 
                 attachmentsRows.push({
                     response_id: siteInspectionReportId,
@@ -535,8 +574,10 @@ export default function NewReportPage() {
             if (draftKey) {
               localStorage.removeItem(draftKey);
             }
-            console.log("Draft cleared after successful submission");
-            router.push('/sites?submitted=true');
+
+            if (isMountedRef.current) {
+              router.push('/sites?submitted=true');
+            }
           } catch (error) {
             console.error(error);
             if (siteInspectionReportId !== null) {
@@ -546,80 +587,10 @@ export default function NewReportPage() {
                 console.error('Failed to roll back incomplete submission:', rollbackError);
               }
             }
-            setIsSubmitting(false);
+            if (isMountedRef.current) {
+              setIsSubmitting(false);
+            }
           }
-              /**
-     * FORM DATA CAPTURED:
-     * 
-     * 1. USER INFORMATION:
-     *    - currentUser.email: User's email address
-     *    - currentUser.name: User's full name
-     *    - currentUser.role: User's role (e.g., 'steward')
-     *    - currentUser.avatar: User's avatar URL
-     *    - isStewardUser: Boolean indicating if user is a verified steward
-     * 
-     * 2. SITE INFORMATION:
-     *    - namesite: Name of the protected area being inspected (from URL params)
-     *    - pathname: Current page pathname
-     * 
-     * 3. VERIFICATION DATA (for non-stewards):
-     *    - hasAccepted: Boolean - user accepted terms and conditions
-     *    - verificationText: String - confirmation text typed by user
-     *    - showVerification: Boolean - whether verification popup was shown
-     * 
-     * 4. QUESTION RESPONSES:
-     *    - responses: Record<number, any> - Object mapping question IDs to answers
-     *      Structure: { [questionId]: answer }
-     *      Answer types vary by question_type:
-     *        - 'option': String (selected radio option text)
-     *        - 'text'/'text\n': String (textarea content)
-     *        - 'agreement': Boolean (checkbox state)
-     *        - 'site_select': String (protected area name)
-     *        - 'date': String (date in YYYY-MM-DD format)
-     *        - 'image': File[] (array of uploaded image files)
-     * 
-     * 5. QUESTIONS METADATA:
-     *    - questions: Question[] - Array of all questions from database
-     *      Each question contains:
-     *        - id: number
-     *        - title: string | null
-     *        - text: string | null
-     *        - question_type: string
-     *        - section: number
-     *        - answers: any[] (available answer options)
-     * 
-     * EXAMPLE DATA STRUCTURE TO SUBMIT:
-     * {
-     *   user: {
-     *     email: currentUser?.email,
-     *     name: currentUser?.name,
-     *     role: currentUser?.role,
-     *     isSteward: isStewardUser
-     *   },
-     *   site: {
-     *     name: namesite,
-     *     inspectionDate: new Date().toISOString()
-     *   },
-     *   verification: {
-     *     termsAccepted: hasAccepted,
-     *     verificationCompleted: !showVerification
-     *   },
-     *   responses: responses,
-     *   metadata: {
-     *     totalQuestions: questions.length,
-     *     answeredQuestions: Object.keys(responses).length,
-     *     completionRate: (Object.keys(responses).length / questions.length) * 100
-     *   }
-     * }
-     */
-
-    // console.log('Form data to submit:', {
-    //   user: currentUser,
-    //   site: namesite,
-    //   responses: responses,
-    //   isSteward: isStewardUser,
-    //   termsAccepted: hasAccepted
-    // });
   };
 
   if (isLoading) {
@@ -642,12 +613,14 @@ export default function NewReportPage() {
         </div>
       )}
             
-      {/* --- VERIFICATION POPUP (Only for non-stewards) --- */}
+      {/* --- VERIFICATION POPUP  --- */}
       {showVerification && !isStewardUser && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-          <div className="absolute inset-0 bg-[#254431]/80 backdrop-blur-sm" />
-          
-          <div className="relative bg-white w-full max-w-lg sm:max-w-xl lg:max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-300">
+        <div data-testid="fine-print-modal" className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+           <div 
+            data-testid="fine-print-overlay"
+            className="absolute inset-0 bg-[#254431]/80 backdrop-blur-sm" 
+          />
+          <div className="relative bg-white w-full max-w-lg sm:max-w-xl lg:max-w-2xl rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden lg:max-h-none overflow-hidden animate-in fade-in zoom-in duration-300">
             <div className="p-6 border-b border-[#E4EBE4] flex items-center gap-3">
               <div className="w-10 h-10 bg-[#F7F2EA] rounded-full flex items-center justify-center">
                 <ShieldCheck className="w-6 h-6 text-[#356B43]" />
@@ -655,7 +628,7 @@ export default function NewReportPage() {
               <h2 className="text-xl font-bold text-[#254431]">The Fine Print Up Front</h2>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4 overflow-y-auto">
               <p className="font-medium text-[#254431]">Before proceeding with the site inspection form:</p>
               
               <div className="bg-[#F7F2EA] p-4 rounded-xl flex gap-3 items-start">
@@ -703,14 +676,15 @@ export default function NewReportPage() {
                 </div>
               </div>
               
-              <label className="flex items-center gap-3 cursor-pointer">
+              <label className="flex items-start gap-3 cursor-pointer">
                 <input 
                   type="checkbox" 
+                  data-testid="terms-checkbox" 
                   checked={hasAccepted}
                   onChange={(e) => setHasAccepted(e.target.checked)}
-                  className="w-5 h-5 rounded border-[#E4EBE4] text-[#356B43] focus:ring-[#356B43]"
+                  className="w-5 h-5 mt-1 rounded border-[#E4EBE4] text-[#356B43] focus:ring-[#356B43]"
                 />
-                <span className="text-sm text-[#4B5563] leading-relaxed">
+                <div className="text-sm text-[#4B5563] leading-relaxed">
                   By agreeing to this, I understand that this form is being used solely for 
                   filling out <strong>Site Inspections</strong> and <strong>not for EMERGENCIES</strong>. I also
                   acknowledge that this Site Inspection is carried out on my own accord.
@@ -723,22 +697,27 @@ export default function NewReportPage() {
                       </span>
                     </Link>
                   </div>
-                </span>
+                </div>
               </label>
             </div>
 
             <div className="p-6 border-t border-[#E4EBE4] bg-[#F7F2EA]/50 space-y-3">
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
+                  type="button"
                   onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
-                  className="flex-1 py-3 text-[#7A8075] font-bold hover:bg-[#E4EBE4] rounded-xl transition-colors"
+                  className="w-full sm:flex-1 py-3 text-[#7A8075] font-bold hover:bg-[#E4EBE4] rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
+                  type="button"
                   disabled={!hasAccepted}
-                  onClick={() => setShowVerification(false)}
-                  className="flex-[2] py-3 bg-[#356B43] text-white font-bold rounded-xl shadow-lg hover:bg-[#254431] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  onClick={() => {
+                    setShowVerification(false);
+                    setHasDismissedVerification(true);
+                  }}
+                  className="w-full sm:flex-[2] py-3 bg-[#356B43] text-white font-bold rounded-xl shadow-lg hover:bg-[#254431] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   Continue to Form
                 </button>
@@ -750,9 +729,12 @@ export default function NewReportPage() {
 
       {showRequiredPopup && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6">
-          <div className="absolute inset-0 bg-[#254431]/80 backdrop-blur-sm" />
+          <div 
+            data-testid="required-popup-overlay"
+            className="absolute inset-0 bg-[#254431]/80 backdrop-blur-sm" 
+          />
           <div className="relative bg-white w-full max-w-lg sm:max-w-xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-            <div className="p-6 border-b border-[#E4EBE4] flex items-center gap-3">
+            <div className="p-4 sm:p-6 border-b border-[#E4EBE4] flex items-center gap-3">
               <div className="w-10 h-10 bg-[#F7F2EA] rounded-full flex items-center justify-center">
                 <AlertCircle className="w-6 h-6 text-[#B91C1C]" />
               </div>
@@ -761,22 +743,37 @@ export default function NewReportPage() {
 
             <div className="p-6 space-y-4 overflow-y-auto">
               <p className="text-[#254431] font-medium">
-                You must answer all required questions before submitting this report.
+                You must answer all required questions and complete required image metadata before submitting this report.
               </p>
-              <div className="bg-[#F7F2EA] border border-[#E4EBE4] rounded-xl p-4 max-h-64 overflow-y-auto">
-                <p className="text-sm font-semibold text-[#254431] mb-2">
-                  Missing required question numbers:
-                </p>
-                <ul className="list-disc pl-5 text-sm text-[#7A8075] space-y-1">
-                  {missingRequiredQuestionNumbers.map((questionNumber) => (
-                    <li key={questionNumber}>{questionNumber}</li>
-                  ))}
-                </ul>
-              </div>
+              {missingRequiredQuestionNumbers.length > 0 && (
+                <div className="bg-[#F7F2EA] border border-[#E4EBE4] rounded-xl p-4 max-h-64 overflow-y-auto">
+                  <p className="text-sm font-semibold text-[#254431] mb-2">
+                    Missing required question numbers:
+                  </p>
+                  <ul className="list-disc pl-5 text-sm text-[#7A8075] space-y-1">
+                    {missingRequiredQuestionNumbers.map((questionNumber) => (
+                      <li key={questionNumber}>{questionNumber}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {missingImageMetadataDetails.length > 0 && (
+                <div className="bg-[#F7F2EA] border border-[#E4EBE4] rounded-xl p-4 max-h-64 overflow-y-auto">
+                  <p className="text-sm font-semibold text-[#254431] mb-2">
+                    Missing required image fields:
+                  </p>
+                  <ul className="list-disc pl-5 text-sm text-[#7A8075] space-y-1">
+                    {missingImageMetadataDetails.map((detail) => (
+                      <li key={detail}>{detail}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
             <div className="p-6 border-t border-[#E4EBE4] bg-[#F7F2EA]/50">
               <button
+                type="button"
                 onClick={() => setShowRequiredPopup(false)}
                 className="w-full py-3 bg-[#356B43] text-white font-bold rounded-xl shadow-lg hover:bg-[#254431] transition-all"
               >
@@ -788,10 +785,11 @@ export default function NewReportPage() {
       )}
 
       {/* --- CONSOLIDATED HEADER --- */}
-      <header className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
+      <header className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-4 sm:px-6 py-4 shadow-lg">
         <div className="max-w-7xl mx-auto">
 
         <button
+          type="button"
           onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
           className="flex items-center gap-1.5 text-[#86A98A] hover:text-white transition-colors mb-4 group"
           data-testid="back-button"
@@ -803,14 +801,14 @@ export default function NewReportPage() {
         <div className="flex items-start justify-between">
 
           {/* Left: icon + form info */}
-          <div className="flex items-start gap-4">
+          <div className="flex items-start sm:items-center gap-3 sm:gap-4">
             <Image
               src="/images/sapaa-icon-white.png"
               alt="SAPAA"
               width={140}
               height={140}
               priority
-              className="h-16 w-auto flex-shrink-0 opacity-100 mt-1"
+              className="h-12 sm:h-16 w-auto flex-shrink-0 opacity-100 mt-1"
             />
             <div>
               <h1 className="text-3xl font-bold mt-2.5">Site Inspection Form</h1>

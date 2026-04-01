@@ -26,3 +26,9 @@ nav:
   - Meeting Minutes: 'meeting-minutes.md'
   - UI/UX design: 'ui-design.md'
   - API Documentation: 'api-documentation.md'
+  - User Manual: 'user-manual.md'
+  - Admin Manual: 'admin-manual.md'
+  - Job Documentation: 'job-documentation.md'
+  - Deployment Instructions: 'Deployment-manual.md'
+  - Static Analysis: 'sonar-qube.md'
+  
