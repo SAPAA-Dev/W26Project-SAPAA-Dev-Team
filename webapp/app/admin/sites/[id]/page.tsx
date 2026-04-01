@@ -443,18 +443,18 @@ export default function AdminSiteDetails() {
         .filter(a => a.obs_value || a.obs_comm)
         .map(a => ({
           question_id: a.question_id,
-          obs_value: a.obs_value || null,
-          obs_comm: a.obs_comm || null,
+          obs_value: a.obs_value.trim() !== '' ? a.obs_value.trim() : null,
+          obs_comm: a.obs_comm.trim() !== '' ? a.obs_comm.trim() : null,
         }));
-
-      await updateSiteInspectionAnswers(editingResponse.id, batchArray);
-
-      // Reload data
+  
+      const inspectionDate = editingResponse.inspection_date ?? editingResponse.created_at ?? new Date().toISOString().split('T')[0];
+      await updateSiteInspectionAnswers(editingResponse.id, batchArray, inspectionDate);
+  
       if (site) {
         const details = await getFormResponsesBySiteAdmin(site.namesite);
         setInspections(details);
       }
-
+  
       setEditingResponse(null);
       setEditAnswers([]);
     } catch (err: any) {
