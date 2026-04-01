@@ -30,4 +30,5 @@ nav:
   - Admin Manual: 'admin-manual.md'
   - Job Documentation: 'job-documentation.md'
   - Deployment Instructions: 'Deployment-manual.md'
+  - Static Analysis: 'sonar-qube.md'
   
