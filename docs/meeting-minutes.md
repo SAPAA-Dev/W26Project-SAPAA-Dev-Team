@@ -955,3 +955,161 @@ The team met with Frank and Gabriel to demo new functionality/design such as sit
 
 ---
 
+## Sprint 5
+
+---
+
+### March 24, 2026 – Meeting #1
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA WebApp |
+| **Time** | 7:00 PM – 10:30 PM |
+| **Mode** | Online |
+| **Attendees** | Braden, Jason, Raiyana, Vishal |
+
+#### Summary
+
+The team worked together (work session) to work on upcoming user stories and discussing new tasks. The session was focused on clearing integration blockers and collaborating directly on shared user stories. Based on our scope and provided by our client Frank to our product managers, three tasks were added:
+
+1. TASK 6.0.1 – Web Application Responsiveness
+2. TASK 6.0.2 – Front-End Error Handling & Validation 
+3. TASK 6.0.3 – Inspection Fields Integration
+
+The team made continued progress on Sprint 5 tasks including SonarQube results, making minor UI tweaks, and finishing US 2.0.9 (User Image Gallery). 
+
+#### Key Discussions & Decisions
+
+- Jason and Vishal worked on UI Tweaks across the webapp.
+- Raiyana worked on polishing the codebase for SonarQube tests.
+- Vishal worked on finishing US 2.0.9.
+- Everyone discussed the removal and addition of user stories and tasks based on time capacity and client's immediate requirements.
+
+#### Action Items
+
+- Finish more minor UI tweaks across the webapp. (Harveer, Jason, Vishal)
+- Finish US 5.0.2 for user logout. (Harveer)
+- Discussing the addition of new tasks to the entire team. (everyone)
+
+#### Next Meeting Agenda
+
+- Discuss addition and removal of user stories and tasks with TA Shahriar.
+- Demo our webapp's Sprint-4 features.
+
+---
+
+### March 25, 2026 – Meeting #2
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA WebApp |
+| **Time** | 10:00 AM – 11:00 AM |
+| **Mode** | In-Person at KHRA |
+| **Attendees** | Akib, Braden, Harveer, Jason, Raiyana, Shahriar, Vishal, Zoe |
+
+#### Summary
+
+Sprint-5 check-in with our TA to demo the Sprint-4 state of our webapp, demoing these features:
+
+1. Uploading Images from Homepage
+2. Admin Search in Gallery + Site Gallery Search
+3. Admin Approval of Users
+4. PDF Generation
+5. Admin Editing and Disabling Sites
+6. Next/Previous anchoring in SIR + updated metadata schema for image uploading
+7. While doing all this, back navigations across the webapp
+
+Additionally, feedback was gathered on recent progress. Finally, discussions of Sprint-5 details regarding SonarQube results, documentation requirements, and planned features.
+
+#### Key Discussions & Decisions
+
+- Received feedback from the TA on the current state and progress of the project.
+- Discussed documentation requirements (Job Descriptions, Manuals, Deployment, Portal) for Sprint-5.
+- Team discussions on refactoring user stories to new tasks TASK 6.0.1, TASK 6.0.2, and TASK 6.0.3 based on final client requirements.
+
+#### Action Items
+
+- Finish US 5.0.2 for allowing user to logout. (Harveer)
+- Finish TASK 6.0.1 to make the entire webapp responsive. (Raiyana)
+- Finish TASK 6.0.2 to ensure users know of any errors in the frontend. (Akib)
+- Finish TASK 6.0.3 to ensure that the inspection_no and inspection_date are correctly pushed to W26_form_responses. (Akib, Jason)
+- Make minor UI Fixes on various pages such as UserNavBar, Pie Charts in Admin Dashboard, Automatic Login, Loading Pages, and Admin Site Gallery Search. (Harveer, Jason, Vishal, Zoe)
+
+#### Next Meeting Agenda
+
+- Work Session to finish majority of Sprint-5 tasks and documentation requirements.
+
+---
+
+### March 28, 2026 – Meeting #3
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA WebApp |
+| **Time** | 4:00 PM – 8:30 PM |
+| **Mode** | Online |
+| **Attendees** | Akib, Braden, Harveer, Jason, Raiyana, Vishal |
+
+#### Summary
+
+The team worked together (work session) to resolve outstanding Git pull requests and make continued progress on Sprint 5 tasks. The session was focused on clearing integration blockers and collaborating directly on remaining tasks and user stories. Work on documentation requirements such as User and Admin Manuals and the Job Descriptions were worked on during this work session. New Tasks were completed and merged, and UI was cleaned up across all pages.
+
+#### Key Discussions & Decisions
+
+- Akib, Harveer, Jason, Vishal worked on UI Tweaks across the webapp.
+- TASK 6.0.1, TASK 6.0.2, and TASK 6.0.3 were completed and merged into Sprint-5. (Akib, Jason, Raiyana)
+- US 5.0.2 was merged into Sprint-5. (Harveer)
+- UI Tests were refactored by Harveer based on new UserNavBar and AdminNavBar. (Harveer)
+- Documentation work on Manuals and Job Descriptions. (Braden)
+
+#### Action Items
+
+- Continue work on the manuals for users and admins. (Braden, Jason, Raiyana)
+- Add testing for US 5.0.2. (Vishal)
+- Update old documentation for new tasks. (Vishal)
+- Update UI Documentation based on the new changes such as responsiveness. (Braden, Vishal)
+- Work on deployment documentation. (Harveer)
+
+#### Next Meeting Agenda
+
+- Continue finishing up all documentation tasks in work sessions. 
+
+---
+
+### March 30, 2026 – Meeting #4
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA WebApp |
+| **Time** | 7:00 PM – 11:00 PM |
+| **Mode** | Online |
+| **Attendees** | Jason, Raiyana, Vishal |
+
+#### Summary
+
+The team worked together (work session) to resolve outstanding Git pull requests and make continued progress on Sprint 5 documentation. The session was focused on clearing integration blockers and collaborating directly on remaining tasks and user stories. Work on documentation requirements such as User and Admin Manuals were completed during this work session. Old documentation was updated based on new changes, and testing was added for US 5.0.2.
+
+#### Key Discussions & Decisions
+
+- Added testing for US 5.0.2. (Vishal)
+- Updated old documentation for new tasks. (Vishal)
+- Finished work on the manuals for users and admins. (Braden, Jason, Raiyana)
+
+#### Action Items
+
+- Finish on deployment documentation. (Harveer)
+- Finish UI Documentation based on the new changes such as responsiveness. (Braden, Vishal)
+- Update the SonarQube results on MKDocs. (Raiyana)
+- Add project to CMPUT401Portal online. (Harveer)
+
+#### Next Meeting Agenda
+
+- Finish up all documentation tasks.
+- Deploy all changes and make the Sprint-5 release. 
+
+---
+

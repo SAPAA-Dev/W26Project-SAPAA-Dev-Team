@@ -57,7 +57,7 @@ The user may enter metadata such as:
 The frontend uses different endpoints depending on the upload source:
 
 #### For SIR image uploads
-`POST /api/s3/presign`
+`````POST /api/s3/presign```
 
 Request data includes:
 
@@ -73,7 +73,7 @@ Request data includes:
 - photographer
 
 #### For standalone homepage image uploads
-`POST /api/s3/presign-homepage-images`
+````POST /api/s3/presign-homepage-images```
 
 Request data includes:
 
@@ -176,13 +176,11 @@ In particular, the **gallery administration endpoint** is only accessible to use
 
 ## Admin-only Endpoints
 
-
-### ``` GET /api/gallery ```
+### `GET /api/gallery`
 
 This endpoint returns all uploaded SIR image attachments across all sites along with their associated metadata and signed image URLs.
 
 Because this endpoint exposes all media files and metadata in the system, it is protected with a **server-side authorization check**.
-
 
 #### Access Level
 
@@ -202,7 +200,6 @@ When a request is received, the server:
 Returns a JSON object containing a list of images and their metadata.
 
 Example response:
-
 ```json
 {
   "items": [
@@ -224,10 +221,8 @@ Example response:
   ]
 }
 ```
+
 ---
-
-
-### Homepage Image Endpoints
 
 ### `GET /api/homepage-images`
 
@@ -238,7 +233,6 @@ Returns all standalone homepage image uploads with metadata and signed image URL
 Admin users only.
 
 #### Response Format
-
 ```json
 {
   "items": [
@@ -261,23 +255,21 @@ Admin users only.
 
 ---
 
-### GET `/api/homepage-images/{siteId}`
+### `GET /api/homepage-images/{siteId}`
 
 Returns standalone homepage image uploads for a specific site.
 
-### Access Level
+#### Access Level
 
 Admin users only.
 
-### Path Parameters
+#### Path Parameters
 
 | Parameter | Type    | Required | Description |
 |-----------|---------|----------|-------------|
 | `siteId`  | integer | Yes      | Site ID |
 
-### Response
-
-#### 200 OK
+#### Response
 
 ```json
 {
@@ -311,11 +303,12 @@ Admin users only.
   ]
 }
 ```
+
 ---
 
 ## Authentication based endpoint
 
-### ```GET /api/sites/{siteId}/gallery```
+### `GET /api/sites/{siteId}/gallery`
 
 Returns SIR image attachments associated with a specific site.
 
@@ -327,13 +320,11 @@ Authenticated users only.
 
 Unlike `/api/gallery`, which is restricted to administrators, this endpoint allows normal users to view images associated with sites they have access to.
 
-
 #### Response
 
 Returns a JSON object containing a list of images and their metadata.
 
 Example response:
-
 ```json
 {
   "items": [
@@ -353,20 +344,18 @@ Example response:
 
 ---
 
-### ```GET /api/site-images```
+### `GET /api/site-images`
 
 Returns image attachments associated with a site or inspection response.
 
 Images are stored in AWS S3 while metadata is stored in the Supabase database.  
 This endpoint generates temporary **signed URLs** that allow images to be securely viewed.
 
-
 #### Access Level
 
 Authenticated users only.
 
 The server verifies that the requester is logged in before returning any image metadata.
-
 
 #### Query Parameters
 
@@ -377,25 +366,19 @@ The server verifies that the requester is logged in before returning any image m
 
 At least **one** parameter must be provided.
 
-
 #### Example Requests
 
 **Retrieve images for a site:** ```/api/site-images?siteid=207```
 
-
 **Retrieve images for an inspection response:** ```/api/site-images?responseid=3235```
 
-
 **Retrieve images filtered by both:** ```/api/site-images?siteid=207&responseid=3235```
-
-
 
 #### Response Format
 
 Returns a JSON object containing an array of images.
 
 Example:
-
 ```json
 {
   "items": [
@@ -416,14 +399,81 @@ Example:
 }
 ```
 
+---
 
+### `GET /api/user-gallery/homepage-upload`
+
+Returns all standalone homepage image uploads with metadata and signed S3 URLs, ordered by date descending.
+
+#### Access Level
+
+Authenticated users only.
+
+Unlike `/api/homepage-images`, which is restricted to administrators, this endpoint allows all authenticated users to retrieve homepage image uploads.
+
+#### Response
+
+Returns a JSON object containing a list of images and their metadata.
+
+Example response:
+```json
+{
+  "items": [
+    {
+      "id": 16,
+      "site_id": 207,
+      "site_name": "Riverlot 56 (NA)",
+      "date": "2026-01-31",
+      "photographer": "Raiyana Rahman",
+      "caption": "Cross Country ski trails",
+      "identifier": "Ski Trails",
+      "filename": "Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-0642088a-b29f-400a-9ce7-e1003fa1e928.jpg",
+      "file_size_bytes": 506701,
+      "imageUrl": "https://sapaa-inspection-images.s3.ca-central-1.amazonaws.com/..."
+    }
+  ]
+}
+```
 
 ---
 
+### `GET /api/user-gallery/sir-upload`
 
+Returns all SIR inspection image attachments (JPEG, PNG, WebP) across all sites with resolved site names and signed S3 URLs, ordered by ID descending.
 
+#### Access Level
 
+Authenticated users only.
 
+Unlike `/api/gallery`, which is restricted to administrators, this endpoint allows all authenticated users to retrieve SIR inspection images across all sites.
+
+#### Response
+
+Returns a JSON object containing a list of images and their metadata.
+
+Example response:
+```json
+{
+  "items": [
+    {
+      "id": 14,
+      "response_id": 3226,
+      "question_id": 27,
+      "caption": "Cross Country ski trails",
+      "identifier": "Ski Trails",
+      "date": "2026-01-31",
+      "content_type": "image/jpeg",
+      "file_size_bytes": 506701,
+      "filename": "Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg",
+      "site_id": 207,
+      "site_name": "Riverlot 56 (NA)",
+      "imageUrl": "https://sapaa-inspection-images.s3.ca-central-1.amazonaws.com/..."
+    }
+  ]
+}
+```
+
+---
 
 ## Security Model
 
@@ -484,12 +534,30 @@ Admins can view all uploaded images through the gallery interface.
 
 Features include:
 
-- viewing SIR and standalone homepage-uploaded images
-- viewing metadata
-- viewing storage path
-- inspecting captions, identifiers, filenames, dates, and photographer name (in file name)
+- viewing SIR inspection images across all sites
+- viewing standalone homepage-uploaded images
+- viewing metadata such as storage path,captions, identifiers, filenames, and dates 
+- images are displayed using signed S3 URLs generated by the server
 
-Images are displayed using signed S3 URLs generated by the server.
+![Admin Gallery View](images/admin_gallery_view.png)
+![Admin Photo View](images/admin_photo_view.png)
+---
+
+## User Gallery
+
+Authenticated users can view uploaded images through the user gallery interface.
+
+Features include:
+
+- viewing SIR inspection images across all sites
+- viewing standalone homepage-uploaded images
+- viewing metadata such as captions, identifiers, filenames, and dates
+- images are displayed using signed S3 URLs generated by the server
+
+Unlike the Admin Gallery, the user gallery does not expose storage paths beyond what is embedded in the filename.
+
+![User Gallery View](images/user_gallery_view.png)
+![User Photo View](images/user_photo_view.png)
 
 ---
 
@@ -504,6 +572,8 @@ Images are displayed using signed S3 URLs generated by the server.
 | `/api/sites/{siteId}/gallery` | Retrieve SIR images for a specific site |
 | `/api/homepage-images` | Retrieve all standalone homepage images |
 | `/api/homepage-images/{siteId}` | Retrieve standalone homepage images for a specific site |
+| `/api/user-gallery/homepage-upload` | Retrieve all standalone homepage images |
+| `/api/user-gallery/sir-upload` | Retrieve all SIR inspection images |
 
 ---
 
@@ -520,3 +590,4 @@ Key features of the architecture include:
 - scalable image retrieval
 
 This architecture allows SAPAA to efficiently store and organize large numbers of inspection images while maintaining strong security and performance
+````

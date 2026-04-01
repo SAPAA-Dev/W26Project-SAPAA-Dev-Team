@@ -31,20 +31,22 @@ Consistency is critical. Every page must follow the patterns described here so t
 
 ### 1.3 Application Pages
 
-| Route | Component |
-|---|---|
-| `/sites` | HomeClient - public site listing |
-| `/detail/[namesite]` | SiteDetailScreen - single site view |
-| `/detail/[namesite]/new-report` | New inspection report form |
-| `/detail/[namesite]/edit-report/[responseId]` | Edit existing report |
-| `/gallery` | Image gallery with search and filtering |
-| `/login` `/signup` | Authentication pages |
-| `/terms` | Terms of service page |
-| `/admin/dashboard` | Admin analytics and stats |
-| `/admin/account-management` | User account administration |
-| `/admin/sites` | Site management |
-| `/admin/gallery` | Inspection photo gallery |
-| `/admin/form-editor` | Form section and question editor |
+| Route | Component | Purpose |
+|---|---|---|
+| `/sites` | HomeClient | Public site listing |
+| `/detail/[namesite]` | SiteDetailScreen | Single site view |
+| `/detail/[namesite]/new-report` | NewReportPage | New inspection report form |
+| `/detail/[namesite]/edit-report/[responseId]` | EditReportPage | Edit existing report |
+| `/gallery` | GalleryPage | User image gallery with search and filtering |
+| `/login`  | LoginPage | User login page |
+| `/signup` | SignupPage | User sign up page |
+| `/terms` | TermsContent | Terms of service page |
+| `/admin/dashboard` | Dashboard | Admin analytics and stats |
+| `/admin/account-management` | AccountManagementPage | User account administration |
+| `/admin/sites` | AdminSitesPage | All sites management |
+| `/admin/sites/[id]` | AdminSiteDetails | Site management |
+| `/admin/gallery` | GalleryPage | Admin image gallery with search and filtering |
+| `/admin/form-editor` | FormEditorPage | Form section and question editor |
 
 ---
 
@@ -55,9 +57,10 @@ Consistency is critical. Every page must follow the patterns described here so t
 Maintain a consistent visual language to reduce cognitive load and build user confidence.
 
 **Unified navigation shell:**
-Consistent header with SAPAA logo, gradient green background, and navigation elements. Admin pages use a hamburger menu for navigation.
+Consistent header with SAPAA logo, gradient green background, and navigation elements. Both User and Admin pages use a hamburger menu for navigation.
 
-![UI Header](images/ui_header.png) 
+![UI Header User](images/ui_header_user.png) 
+![UI Header Admin](images/ui_header_admin.png)
 
 **Standardised colour palette:** Primary green (`#254431`, `#356B43`) for headers and primary actions. White (`#FFFFFF`) for content cards. Light grey (`#F7F2EA`, `#E4EBE4`) for dividers and secondary surfaces. Red (`#B91C1C`) for destructive actions.
 
@@ -1667,6 +1670,6 @@ The following responsive changes were applied across the application:
 
 *End of Document*
 
-**Document Version:** 3.0
-**Last Updated:** March 2026
-**Prepared for:** Stewards of Alberta's Protected Areas Association
+**Document Version:** 3.0   
+**Last Updated:** March 2026     
+**Prepared for:** Stewards of Alberta's Protected Areas Association     
