@@ -65,7 +65,7 @@ export default function StickyFooter({
               type="button"
               disabled={!canGoPrevious}
               onClick={onPreviousSection}
-              className="w-full sm:w-auto sm:min-w-[10rem] px-5 py-3 border-2 border-[#E4EBE4] text-[#254431] font-bold rounded-xl transition-colors hover:bg-[#E4EBE4] disabled:cursor-not-allowed disabled:border-[#D9E1D5] disabled:bg-[#EDF2EA] disabled:text-[#9AA49B]"
+              className="w-full sm:flex-1 lg:flex-initial lg:min-w-[10rem] px-5 py-3 border-2 border-[#E4EBE4] text-[#254431] font-bold rounded-xl transition-colors hover:bg-[#E4EBE4] disabled:cursor-not-allowed disabled:border-[#D9E1D5] disabled:bg-[#EDF2EA] disabled:text-[#9AA49B]"
             >
               ← Previous
             </button>
@@ -73,7 +73,7 @@ export default function StickyFooter({
               type="button"
               disabled={!canGoNext}
               onClick={onNextSection}
-              className="w-full sm:w-auto sm:min-w-[10rem] px-5 py-3 font-bold rounded-xl transition-colors bg-[#356B43] text-white hover:bg-[#254431] disabled:cursor-not-allowed disabled:bg-[#C9D3C5] disabled:text-[#6B7280]"
+              className="w-full sm:flex-1 lg:flex-initial lg:min-w-[10rem] px-5 py-3 font-bold rounded-xl transition-colors bg-[#356B43] text-white hover:bg-[#254431] disabled:cursor-not-allowed disabled:bg-[#C9D3C5] disabled:text-[#6B7280]"
             >
               Next →
             </button>

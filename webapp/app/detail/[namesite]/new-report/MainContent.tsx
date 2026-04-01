@@ -422,19 +422,42 @@ export default function MainContent({
           </div>
         );
 
-      case 'site_select':
+      case 'site_select': {
+        const isLockedSiteName = question.autofill_key === 'site_name';
+
         return (
           <div className="space-y-2">
-            <input
-              type="text"
-              value={response || ''}
-              onChange={(e) => handleResponse(question.id, e.target.value)}
-              placeholder="Start typing to search for a protected area..."
-              className="w-full px-4 py-3 border-2 border-[#E4EBE4] rounded-xl focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] font-medium placeholder:text-[#7A8075]"
-            />
-            <p className="text-xs text-[#7A8075]">Enter the name of the protected area you visited</p>
-          </div>
-        );
+            <div className="relative">
+              <input
+                type="text"
+                value={response || ''}
+                onChange={(e) => {
+                  if (!isLockedSiteName) {
+                    handleResponse(question.id, e.target.value);
+                  }
+                }}
+                readOnly={isLockedSiteName}
+                placeholder="Start typing to search for a protected area..."
+                className={`w-full px-4 py-3 border-2 rounded-xl transition-colors font-medium placeholder:text-[#7A8075] ${
+                  isLockedSiteName
+                    ? 'border-[#E4EBE4] bg-[#F7F2EA] text-[#7A8075]'
+                    : 'border-[#E4EBE4] focus:border-[#356B43] focus:outline-none text-[#254431]'
+                }`}
+              />
+
+              {isLockedSiteName && (
+                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8075]" />
+              )}
+            </div>
+
+            <p className="text-xs text-[#7A8075]">
+              {isLockedSiteName
+                ? 'This site name is automatically filled and cannot be changed.'
+                : 'Enter the name of the protected area you visited'}
+      </p>
+    </div>
+  );
+}
 
       case 'date':
         return (
@@ -701,6 +724,7 @@ export default function MainContent({
                     <input
                       type="date"
                       value={image.date ?? ''}
+                      max = {today}
                       onChange={(e) => updateLocalField(image.id, 'date', e.target.value)}
                       className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
                     />

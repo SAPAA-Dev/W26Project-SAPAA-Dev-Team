@@ -1199,6 +1199,7 @@ For deployment support or issues, contact your development team with error messa
 
 ---
 
-**Document Version:** 2.0
-**Last Updated:** March 2026
-**Prepared for:** Stewards of Alberta's Protected Areas Association
+**Document Version:** 2.0    
+**Last Updated:** March 2026    
+**Prepared for:** Stewards of Alberta's Protected Areas Association    
+
