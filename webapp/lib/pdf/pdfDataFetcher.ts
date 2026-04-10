@@ -98,7 +98,7 @@ async function fetchAttachmentsForResponse(
     attachments.push({
       filename: row.filename ?? 'unknown',
       caption: row.caption,
-      description: row.description,
+      identifier: row.identifier,
       imageBuffer,
       contentType: detectedFormat === 'png' ? 'image/png' : 'image/jpeg',
     });
