@@ -436,7 +436,8 @@ export async function getQuestionsOnline(): Promise<question[]> {
       )
     `)
     .eq('is_active', true)
-    .eq('W26_question_options.is_active', true);
+    .eq('W26_question_options.is_active', true)
+    .order('position', { referencedTable: 'W26_question_options', ascending: true });
 
   if (error) {
     throw new Error(error.message || 'Failed to fetch questions');
