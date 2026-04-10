@@ -22,7 +22,7 @@ export type PdfRequest =
 export interface PdfAttachment {
   filename: string;
   caption: string | null;
-  description: string | null;
+  identifier: string | null;
   imageBuffer?: Buffer;
   contentType: string;
 }
