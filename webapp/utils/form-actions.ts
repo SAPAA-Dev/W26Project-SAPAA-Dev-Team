@@ -74,8 +74,10 @@ export async function fetchFormQuestions(): Promise<FormQuestion[]> {
         is_active
       )
     `)
-  .order("formorder", { ascending: true });
+  .order("formorder", { ascending: true })
+  .order('position', { referencedTable: 'W26_question_options', ascending: true });
   if (error) throw new Error("Failed to load questions: " + error.message);
+  
 
   return (data || []).map((q: any) => ({
     id: q.id,
