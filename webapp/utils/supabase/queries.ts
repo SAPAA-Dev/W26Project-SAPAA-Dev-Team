@@ -874,14 +874,14 @@ export async function getAttachmentsByResponseId(responseId: number): Promise<Ar
   content_type: string | null;
   file_size_bytes: number | null;
   caption: string | null;
-  description: string | null;
+  identifier: string | null;
   site_id: number | null;
 }>> {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
     .from('W26_attachments')
-    .select('id, question_id, storage_key, filename, content_type, file_size_bytes, caption, description, site_id')
+    .select('id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier, site_id')
     .eq('response_id', responseId);
 
   if (error) throw new Error(error.message || 'Failed to fetch attachments');
