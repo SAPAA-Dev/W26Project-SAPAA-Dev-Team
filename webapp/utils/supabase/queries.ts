@@ -59,8 +59,6 @@ interface SupabaseAnswer {
   obs_comm: string | null;
 }
 
-
-
 export interface FormResponse {
   id: number;
   user_id: string | null;
@@ -81,6 +79,8 @@ export interface FormAnswer {
   section_id: number | null;
   section_title: string | null;
 }
+
+let keyMapPromise: Promise<Record<string, number>> | null = null;
 
 function getLatestInspectionDate(
   responses: Array<{ inspection_date?: string | null; created_at?: string | null }>
@@ -226,119 +226,6 @@ export async function setFormResponseActive(responseId: number, isActive: boolea
   if (error) {
     throw new Error(error.message || 'Failed to update form response status');
   }
-}
-
-export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(FormResponse & { is_active: boolean })[]> {
-  const supabase = createServerSupabase();
-
-  const { data: siteData, error: siteError } = await supabase
-    .from('W26_sites-pa')
-    .select('id')
-    .eq('namesite', siteName)
-    .single();
-
-  if (siteError || !siteData) throw new Error('Site not found');
-
-  const { data: keyData, error: keyError } = await supabase
-    .from('W26_questions')
-    .select('id, "question key"')
-    .in('"question key"', ['Q31_Naturalness', 'Q32_Natural_Comm', 'Q13_FirstandLastNameForGuests']);
-
-  if (keyError) throw new Error(keyError.message);
-
-  const keyMap = Object.fromEntries(
-    (keyData ?? []).map((q: any) => [q['question key'], q.id])
-  );
-
-  const naturalnessId = Number(keyMap['Q31_Naturalness']);
-  const naturalnessDetailsId = Number(keyMap['Q32_Natural_Comm']);
-  const stewardId = Number(keyMap['Q13_FirstandLastNameForGuests']);
-
-  const { data, error } = await supabase
-    .from('W26_form_responses')
-    .select(`
-      id,
-      user_id,
-      created_at,
-      inspection_date,
-      inspection_no,
-      is_active,
-      W26_answers (
-        question_id,
-        obs_value,
-        obs_comm,
-        W26_questions (
-          id,
-          form_question,
-          section_id,
-          W26_form_sections!W26_questions_section_id_fkey (
-            id,
-            title
-          )
-        )
-      )
-    `)
-    .eq('site_id', siteData.id)
-    .order('inspection_date', { ascending: false })
-    .order('created_at', { ascending: false });
-
-  if (error) throw new Error(error.message || 'Failed to fetch form responses');
-
-  return (data ?? []).map((r: any) => {
-    const answers: FormAnswer[] = Object.values(
-      (r.W26_answers ?? []).reduce((acc: any, a: any) => {
-        const qid = a.question_id;
-        if (!acc[qid]) {
-          acc[qid] = {
-            question_id: qid,
-            question_text: a.W26_questions?.form_question ?? `Question ${qid}`,
-            obs_value: [],
-            obs_comm: null,
-            section_id: a.W26_questions?.section_id ?? null,
-            section_title: a.W26_questions?.W26_form_sections?.title ?? null,
-          };
-        }
-        if (a.obs_value === 'Other' && a.obs_comm) {
-          acc[qid].obs_value.push('Other');
-          acc[qid].obs_comm = a.obs_comm;
-        } else if (a.obs_value) {
-          acc[qid].obs_value.push(a.obs_value);
-        } else if (a.obs_comm) {
-          acc[qid].obs_comm = a.obs_comm;
-        }
-        return acc;
-      }, {})
-    ).map((a: any) => ({
-      ...a,
-      obs_value: a.obs_value.length > 0 ? a.obs_value.join('; ') : null,
-    }))
-    .sort((a: any, b: any) => {
-      if (a.section_id !== b.section_id) {
-        return (a.section_id ?? 0) - (b.section_id ?? 0);
-      }
-      return a.question_id - b.question_id;
-    });
-
-    const naturalness = answers.find(a => a.question_id === naturalnessId)?.obs_value ?? null;
-    const naturalnessDetailsValue =
-      answers.find(a => a.question_id === naturalnessDetailsId)?.obs_value ??
-      answers.find(a => a.question_id === naturalnessDetailsId)?.obs_comm ??
-      null;
-    const stewardVal = answers.find(a => a.question_id === stewardId)?.obs_comm ?? null;
-
-    return {
-      id: r.id,
-      user_id: r.user_id ?? null,
-      created_at: r.created_at,
-      inspection_date: r.inspection_date ?? null,
-      inspection_no: r.inspection_no,
-      naturalness_score: naturalness,
-      naturalness_details: naturalnessDetailsValue,
-      steward: stewardVal,
-      is_active: r.is_active ?? true,
-      answers: answers.filter(a => a.question_id !== naturalnessId && a.question_id !== stewardId),
-    };
-  });
 }
 
 export async function getCurrentUserUid() {
@@ -655,7 +542,7 @@ export async function getInspectionDetailsOnline(namesite: string): Promise<Insp
 export async function insertInspectionAttachments(rows: Array<{
   response_id: number | null;
   question_id: number;
-  storage_key: string; // placeholder for now
+  storage_key: string; 
   filename?: string | null;
   content_type?: string | null;
   file_size_bytes?: number | null;
@@ -705,6 +592,120 @@ export async function insertHomepageImageUpload(rows: Array<{
   return data;
 }
 
+export async function getReportQuestionKeyMap() {
+  if (!keyMapPromise) {
+    keyMapPromise = (async () => {
+      const supabase = createServerSupabase();
+      const { data, error } = await supabase
+        .from('W26_questions')
+        .select('id, "question key"')
+        .in('"question key"', ['Q31_Naturalness', 'Q32_Natural_Comm', 'Q13_FirstandLastNameForGuests']);
+      if (error) throw new Error(error.message);
+      return Object.fromEntries((data ?? []).map((q: any) => [q['question key'], q.id]));
+    })();
+  }
+  return keyMapPromise;
+}
+
+// Answer reduction for better user viewing on frontend
+function reduceAnswers(
+  rawAnswers: any[],
+  keyMap: { naturalnessId: number; naturalnessDetailsId: number; stewardId: number }
+): { answers: FormAnswer[]; naturalness: string | null; naturalnessDetails: string | null; steward: string | null } {
+  const answers: FormAnswer[] = Object.values(
+    (rawAnswers ?? []).reduce((acc: any, a: any) => {
+      const qid = a.question_id;
+      if (!acc[qid]) {
+        acc[qid] = {
+          question_id: qid,
+          question_text: a.W26_questions?.form_question ?? `Question ${qid}`,
+          obs_value: [],
+          obs_comm: null,
+          section_id: a.W26_questions?.section_id ?? null,
+          section_title: a.W26_questions?.W26_form_sections?.title ?? null,
+        };
+      }
+      if (a.obs_value === 'Other' && a.obs_comm) {
+        acc[qid].obs_comm = a.obs_comm;
+      } else if (a.obs_value) {
+        acc[qid].obs_value.push(a.obs_value);
+      } else if (a.obs_comm) {
+        acc[qid].obs_comm = a.obs_comm;
+      }
+      return acc;
+    }, {})
+  )
+    .map((a: any) => ({ ...a, obs_value: a.obs_value.length > 0 ? a.obs_value.join('; ') : null }))
+    .sort((a: any, b: any) => (a.section_id ?? 0) - (b.section_id ?? 0) || a.question_id - b.question_id);
+
+  const naturalness = answers.find(a => a.question_id === keyMap.naturalnessId)?.obs_value ?? null;
+  const naturalnessDetails =
+    answers.find(a => a.question_id === keyMap.naturalnessDetailsId)?.obs_value ??
+    answers.find(a => a.question_id === keyMap.naturalnessDetailsId)?.obs_comm ??
+    null;
+  const steward = answers.find(a => a.question_id === keyMap.stewardId)?.obs_comm ?? null;
+
+  return {
+    answers: answers.filter(a => a.question_id !== keyMap.naturalnessId && a.question_id !== keyMap.stewardId),
+    naturalness,
+    naturalnessDetails,
+    steward,
+  };
+}
+
+// Admin viewing for sites, difference is the is_active flag so that admin can see all reports
+export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(FormResponse & { is_active: boolean })[]> {
+  const supabase = createServerSupabase();
+
+  const { data: siteData, error: siteError } = await supabase
+    .from('W26_sites-pa')
+    .select('id')
+    .eq('namesite', siteName)
+    .single();
+
+  if (siteError || !siteData) throw new Error('Site not found');
+
+  const keyMap = await getReportQuestionKeyMap();
+  const ids = {
+    naturalnessId: Number(keyMap['Q31_Naturalness']),
+    naturalnessDetailsId: Number(keyMap['Q32_Natural_Comm']),
+    stewardId: Number(keyMap['Q13_FirstandLastNameForGuests']),
+  };
+
+  const { data, error } = await supabase
+    .from('W26_form_responses')
+    .select(`
+      id, user_id, created_at, inspection_date, inspection_no, is_active,
+      W26_answers (
+        question_id, obs_value, obs_comm,
+        W26_questions ( id, form_question, section_id,
+          W26_form_sections!W26_questions_section_id_fkey ( id, title ) )
+      )
+    `)
+    .eq('site_id', siteData.id)
+    .order('inspection_date', { ascending: false })
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message || 'Failed to fetch form responses');
+
+  return (data ?? []).map((r: any) => {
+    const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.W26_answers, ids);
+    return {
+      id: r.id,
+      user_id: r.user_id ?? null,
+      created_at: r.created_at,
+      inspection_date: r.inspection_date ?? null,
+      inspection_no: r.inspection_no,
+      naturalness_score: naturalness,
+      naturalness_details: naturalnessDetails,
+      steward,
+      is_active: r.is_active ?? true,
+      answers,
+    };
+  });
+}
+
+// User viewing for sites, uses is_active flag to prevent users from viewing disabled responses
 export async function getFormResponsesBySite(siteName: string): Promise<FormResponse[]> {
   const supabase = createServerSupabase();
 
@@ -716,93 +717,32 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
 
   if (siteError || !siteData) throw new Error('Site not found');
 
-  const { data: keyData, error: keyError } = await supabase
-    .from('W26_questions')
-    .select('id, "question key"')
-    .in('"question key"', ['Q31_Naturalness', 'Q32_Natural_Comm', 'Q13_FirstandLastNameForGuests']);
-
-  if (keyError) throw new Error(keyError.message);
-
-  const keyMap = Object.fromEntries(
-    (keyData ?? []).map((q: any) => [q['question key'], q.id])
-  );
-
-  const naturalnessId = Number(keyMap['Q31_Naturalness']);
-  const naturalnessDetailsId = Number(keyMap['Q32_Natural_Comm']);
-  const stewardId = Number(keyMap['Q13_FirstandLastNameForGuests']);
+  const keyMap = await getReportQuestionKeyMap();
+  const ids = {
+    naturalnessId: Number(keyMap['Q31_Naturalness']),
+    naturalnessDetailsId: Number(keyMap['Q32_Natural_Comm']),
+    stewardId: Number(keyMap['Q13_FirstandLastNameForGuests']),
+  };
 
   const { data, error } = await supabase
     .from('W26_form_responses')
     .select(`
-      id,
-      user_id,
-      created_at,
-      inspection_date,
-      inspection_no,
+      id, user_id, created_at, inspection_date, inspection_no,
       W26_answers (
-        question_id,
-        obs_value,
-        obs_comm,
-        W26_questions (
-          id,
-          form_question,
-          section_id,
-          W26_form_sections!W26_questions_section_id_fkey (
-            id,
-            title
-          )
-        )
+        question_id, obs_value, obs_comm,
+        W26_questions ( id, form_question, section_id,
+          W26_form_sections!W26_questions_section_id_fkey ( id, title ) )
       )
     `)
     .eq('site_id', siteData.id)
-    .neq('is_active', false)
+    .eq('is_active', true)
     .order('inspection_date', { ascending: false })
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message || 'Failed to fetch form responses');
 
   return (data ?? []).map((r: any) => {
-    const answers: FormAnswer[] = Object.values(
-      (r.W26_answers ?? []).reduce((acc: any, a: any) => {
-        const qid = a.question_id;
-        if (!acc[qid]) {
-          acc[qid] = {
-            question_id: qid,
-            question_text: a.W26_questions?.form_question ?? `Question ${qid}`,
-            obs_value: [],
-            obs_comm: null,
-            section_id: a.W26_questions?.section_id ?? null,
-            section_title: a.W26_questions?.W26_form_sections?.title ?? null,
-          };
-        }
-        if (a.obs_value === 'Other' && a.obs_comm) {
-          acc[qid].obs_value.push('Other');  
-          acc[qid].obs_comm = a.obs_comm;
-        } else if (a.obs_value) {
-          acc[qid].obs_value.push(a.obs_value);
-        } else if (a.obs_comm) {
-          acc[qid].obs_comm = a.obs_comm;
-        }
-        return acc;
-      }, {})
-    ).map((a: any) => ({
-      ...a,
-      obs_value: a.obs_value.length > 0 ? a.obs_value.join('; ') : null,
-    }))
-    .sort((a: any, b: any) => {
-      if (a.section_id !== b.section_id) {
-        return (a.section_id ?? 0) - (b.section_id ?? 0);
-      }
-      return a.question_id - b.question_id;
-    });
-
-    const naturalness = answers.find(a => a.question_id === naturalnessId)?.obs_value ?? null;
-    const naturalnessDetailsValue =
-      answers.find(a => a.question_id === naturalnessDetailsId)?.obs_value ??
-      answers.find(a => a.question_id === naturalnessDetailsId)?.obs_comm ??
-      null;
-    const steward = answers.find(a => a.question_id === stewardId)?.obs_comm ?? null;
-
+    const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.W26_answers, ids);
     return {
       id: r.id,
       user_id: r.user_id ?? null,
@@ -810,9 +750,9 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
       inspection_date: r.inspection_date ?? null,
       inspection_no: r.inspection_no,
       naturalness_score: naturalness,
-      naturalness_details: naturalnessDetailsValue,
+      naturalness_details: naturalnessDetails,
       steward,
-      answers: answers.filter(a => a.question_id !== naturalnessId && a.question_id !== stewardId),
+      answers,
     };
   });
 }
@@ -1013,4 +953,95 @@ export async function getTopSitesDistribution(): Promise<{ namesite: string; cou
     namesite: r.namesite,
     count: Number(r.count),
   }));
+}
+
+// --- Add these three new batch helpers ---
+export async function getSitesByNames(siteNames: string[]): Promise<Array<{
+  id: number;
+  namesite: string;
+  ab_county: number | null;
+  W26_ab_counties: { county: string } | null;
+}>> {
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from('W26_sites-pa')
+    .select('id, namesite, ab_county, W26_ab_counties(county)')
+    .in('namesite', siteNames);
+  if (error) throw new Error(error.message || 'Failed to fetch sites');
+  return (data ?? []) as any;
+}
+
+export async function getFormResponsesForSiteIds(
+  siteIds: number[],
+  keyMap: Record<string, number>
+): Promise<Map<number, FormResponse[]>> {
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from('W26_form_responses')
+    .select(`
+      id, site_id, user_id, created_at, inspection_date, inspection_no,
+      W26_answers (
+        question_id, obs_value, obs_comm,
+        W26_questions ( id, form_question, section_id,
+          W26_form_sections!W26_questions_section_id_fkey ( id, title ) )
+      )
+    `)
+    .in('site_id', siteIds)
+    .eq('is_active', true)
+    .order('inspection_date', { ascending: false });
+
+  if (error) throw new Error(error.message || 'Failed to fetch form responses');
+
+  const ids = {
+    naturalnessId: Number(keyMap['Q31_Naturalness']),
+    naturalnessDetailsId: Number(keyMap['Q32_Natural_Comm']),
+    stewardId: Number(keyMap['Q13_FirstandLastNameForGuests']),
+  };
+
+  const bySite = new Map<number, FormResponse[]>();
+  for (const r of data ?? []) {
+    const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.W26_answers, ids);
+    const formResponse: FormResponse = {
+      id: r.id,
+      user_id: r.user_id ?? null,
+      created_at: r.created_at,
+      inspection_date: r.inspection_date ?? null,
+      inspection_no: r.inspection_no,
+      naturalness_score: naturalness,
+      naturalness_details: naturalnessDetails,
+      steward,
+      answers,
+    };
+    const list = bySite.get(r.site_id) ?? [];
+    list.push(formResponse);
+    bySite.set(r.site_id, list);
+  }
+  return bySite;
+}
+
+export async function getAttachmentsForResponseIds(responseIds: number[]): Promise<Array<{
+  id: number;
+  response_id: number;
+  question_id: number | null;
+  storage_key: string | null;
+  filename: string | null;
+  content_type: string | null;
+  file_size_bytes: number | null;
+  caption: string | null;
+  identifier: string | null;
+}>> {
+  if (responseIds.length === 0) return [];
+  const supabase = createServerSupabase();
+  const CHUNK = 300;
+  const out: any[] = [];
+  for (let i = 0; i < responseIds.length; i += CHUNK) {
+    const chunk = responseIds.slice(i, i + CHUNK);
+    const { data, error } = await supabase
+      .from('W26_attachments')
+      .select('id, response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier')
+      .in('response_id', chunk);
+    if (error) throw new Error(error.message || 'Failed to fetch attachments');
+    out.push(...(data ?? []));
+  }
+  return out;
 }
