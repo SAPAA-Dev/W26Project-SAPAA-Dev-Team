@@ -1,3 +1,8 @@
+import { POST } from '@/app/api/pdf/route';
+import { createClient } from '@/utils/supabase/server';
+import { processPdfJob } from '@/lib/pdf/processPdfJob';
+import { NextRequest } from 'next/server';
+
 jest.mock('next/server', () => ({
   NextResponse: {
     json: jest.fn((body, init) => ({
@@ -5,29 +10,16 @@ jest.mock('next/server', () => ({
       json: async () => body,
     })),
   },
+  after: jest.fn((cb: () => void) => cb()), // run immediately in tests
 }));
 
 jest.mock('@/utils/supabase/server', () => ({
   createClient: jest.fn(),
 }));
 
-jest.mock('@react-pdf/renderer', () => ({
-  renderToBuffer: jest.fn(),
+jest.mock('@/lib/pdf/processPdfJob', () => ({
+  processPdfJob: jest.fn(),
 }));
-
-jest.mock('@/lib/pdf/inspectionReport', () => ({
-  InspectionReportDocument: jest.fn(),
-}));
-
-jest.mock('@/lib/pdf/pdfDataFetcher', () => ({
-  fetchReportData: jest.fn(),
-}));
-
-import { POST } from '@/app/api/pdf/route';
-import { createClient } from '@/utils/supabase/server';
-import { renderToBuffer } from '@react-pdf/renderer';
-import { fetchReportData } from '@/lib/pdf/pdfDataFetcher';
-import { NextRequest } from 'next/server';
 
 function makeRequest(body: any): NextRequest {
   return {
@@ -37,20 +29,25 @@ function makeRequest(body: any): NextRequest {
 
 describe('POST /api/pdf', () => {
   const mockGetUser = jest.fn();
+  const mockSingle = jest.fn();
+  const mockSelect = jest.fn(() => ({ single: mockSingle }));
+  const mockInsert = jest.fn(() => ({ select: mockSelect }));
+  const mockFrom = jest.fn(() => ({ insert: mockInsert }));
 
   beforeEach(() => {
     jest.clearAllMocks();
 
     (createClient as jest.Mock).mockResolvedValue({
       auth: { getUser: mockGetUser },
+      from: mockFrom,
     });
 
-    (renderToBuffer as jest.Mock).mockResolvedValue(Buffer.from('fake-pdf'));
-    (fetchReportData as jest.Mock).mockResolvedValue({
-      sites: [],
-      generatedAt: new Date().toISOString(),
-      options: {},
+    mockSingle.mockResolvedValue({
+      data: { id: 'job-123' },
+      error: null,
     });
+
+    (processPdfJob as jest.Mock).mockResolvedValue(undefined);
   });
 
   // ── Auth Tests ──
@@ -91,7 +88,7 @@ describe('POST /api/pdf', () => {
     expect(body.error).toMatch(/admin/i);
   });
 
-  // ── Request Validation Tests ──
+  // ── Request Validation Tests (unchanged — parseRequest logic didn't change) ──
 
   it('returns 500 if request body has no mode', async () => {
     mockGetUser.mockResolvedValue({
@@ -171,41 +168,50 @@ describe('POST /api/pdf', () => {
     expect(body.error).toMatch(/invalid mode/i);
   });
 
-  // ── Success Tests ──
+  // ── Job Creation Tests (replaces the old "returns PDF" tests) ──
 
-  it('returns PDF for valid single mode request', async () => {
+  it('creates a job and returns 202 with jobId for valid single mode request', async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
       error: null,
     });
 
     const res = await POST(makeRequest({ mode: 'single', responseId: 42 }));
+    const body = await res.json();
 
-    expect(res.status).toBe(200);
-    expect(res.headers.get('Content-Type')).toBe('application/pdf');
-    expect(res.headers.get('Content-Disposition')).toContain('SAPAA_Inspection_42');
-    expect(fetchReportData).toHaveBeenCalledWith(
-      expect.objectContaining({ mode: 'single', responseId: 42 })
+    expect(res.status).toBe(202);
+    expect(body).toEqual({ jobId: 'job-123' });
+    expect(mockFrom).toHaveBeenCalledWith('S26_pdf_jobs');
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'pending',
+        mode: 'single',
+        created_by: 'u1',
+        request_payload: expect.objectContaining({ mode: 'single', responseId: 42 }),
+      })
     );
   });
 
-  it('returns PDF for valid site mode request', async () => {
+  it('creates a job for valid site mode request', async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
       error: null,
     });
 
     const res = await POST(makeRequest({ mode: 'site', siteName: 'Elk Island' }));
+    const body = await res.json();
 
-    expect(res.status).toBe(200);
-    expect(res.headers.get('Content-Type')).toBe('application/pdf');
-    expect(res.headers.get('Content-Disposition')).toContain('SAPAA_Elk_Island');
-    expect(fetchReportData).toHaveBeenCalledWith(
-      expect.objectContaining({ mode: 'site', siteName: 'Elk Island' })
+    expect(res.status).toBe(202);
+    expect(body).toEqual({ jobId: 'job-123' });
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: 'site',
+        request_payload: expect.objectContaining({ siteName: 'Elk Island' }),
+      })
     );
   });
 
-  it('returns PDF for valid multi-site mode request', async () => {
+  it('creates a job for valid multi-site mode request', async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
       error: null,
@@ -214,13 +220,30 @@ describe('POST /api/pdf', () => {
     const res = await POST(
       makeRequest({ mode: 'multi-site', siteNames: ['Site A', 'Site B'] })
     );
+    const body = await res.json();
 
-    expect(res.status).toBe(200);
-    expect(res.headers.get('Content-Type')).toBe('application/pdf');
-    expect(res.headers.get('Content-Disposition')).toContain('SAPAA_MultiSite_Report');
+    expect(res.status).toBe(202);
+    expect(body).toEqual({ jobId: 'job-123' });
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: 'multi-site',
+        request_payload: expect.objectContaining({ siteNames: ['Site A', 'Site B'] }),
+      })
+    );
   });
 
-  // ── Options Validation Tests ──
+  it('kicks off processPdfJob with the created jobId', async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      error: null,
+    });
+
+    await POST(makeRequest({ mode: 'site', siteName: 'Elk Island' }));
+
+    expect(processPdfJob).toHaveBeenCalledWith('job-123');
+  });
+
+  // ── Options Validation Tests (unchanged logic, still checked via request_payload) ──
 
   it('applies default options when none provided', async () => {
     mockGetUser.mockResolvedValue({
@@ -230,15 +253,17 @@ describe('POST /api/pdf', () => {
 
     await POST(makeRequest({ mode: 'site', siteName: 'Test' }));
 
-    expect(fetchReportData).toHaveBeenCalledWith(
+    expect(mockInsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        options: expect.objectContaining({
-          includeImages: false,
-          includeCoverPage: true,
-          includeNaturalnessSummary: true,
-          sortOrder: 'newest',
-          pageSize: 'LETTER',
-          maxImagesPerInspection: 5,
+        request_payload: expect.objectContaining({
+          options: expect.objectContaining({
+            includeImages: false,
+            includeCoverPage: true,
+            includeNaturalnessSummary: true,
+            sortOrder: 'newest',
+            pageSize: 'LETTER',
+            maxImagesPerInspection: 5,
+          }),
         }),
       })
     );
@@ -258,9 +283,11 @@ describe('POST /api/pdf', () => {
       })
     );
 
-    expect(fetchReportData).toHaveBeenCalledWith(
+    expect(mockInsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        options: expect.objectContaining({ maxImagesPerInspection: 5 }),
+        request_payload: expect.objectContaining({
+          options: expect.objectContaining({ maxImagesPerInspection: 5 }),
+        }),
       })
     );
   });
@@ -279,9 +306,11 @@ describe('POST /api/pdf', () => {
       })
     );
 
-    expect(fetchReportData).toHaveBeenCalledWith(
+    expect(mockInsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        options: expect.objectContaining({ pageSize: 'LETTER' }),
+        request_payload: expect.objectContaining({
+          options: expect.objectContaining({ pageSize: 'LETTER' }),
+        }),
       })
     );
   });
@@ -300,9 +329,11 @@ describe('POST /api/pdf', () => {
       })
     );
 
-    expect(fetchReportData).toHaveBeenCalledWith(
+    expect(mockInsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        options: expect.objectContaining({ sortOrder: 'newest' }),
+        request_payload: expect.objectContaining({
+          options: expect.objectContaining({ sortOrder: 'newest' }),
+        }),
       })
     );
   });
@@ -326,16 +357,17 @@ describe('POST /api/pdf', () => {
       })
     );
 
-    expect(fetchReportData).toHaveBeenCalledWith(
+    expect(mockInsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        options: expect.objectContaining({
-          includeImages: true,
-          pageSize: 'A4',
-          sortOrder: 'oldest',
-          includeEmptyAnswers: true,
-          // defaults preserved
-          includeCoverPage: true,
-          includeNaturalnessSummary: true,
+        request_payload: expect.objectContaining({
+          options: expect.objectContaining({
+            includeImages: true,
+            pageSize: 'A4',
+            sortOrder: 'oldest',
+            includeEmptyAnswers: true,
+            includeCoverPage: true,
+            includeNaturalnessSummary: true,
+          }),
         }),
       })
     );
@@ -343,31 +375,17 @@ describe('POST /api/pdf', () => {
 
   // ── Error Handling ──
 
-  it('returns 500 when fetchReportData throws', async () => {
+  it('returns 500 when job insert fails', async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
       error: null,
     });
-    (fetchReportData as jest.Mock).mockRejectedValue(new Error('Site not found'));
-
-    const res = await POST(makeRequest({ mode: 'site', siteName: 'Missing' }));
-    const body = await res.json();
-
-    expect(res.status).toBe(500);
-    expect(body.error).toBe('Site not found');
-  });
-
-  it('returns 500 when renderToBuffer throws', async () => {
-    mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
-      error: null,
-    });
-    (renderToBuffer as jest.Mock).mockRejectedValue(new Error('Render failed'));
+    mockSingle.mockResolvedValue({ data: null, error: { message: 'Insert failed' } });
 
     const res = await POST(makeRequest({ mode: 'site', siteName: 'Test' }));
     const body = await res.json();
 
     expect(res.status).toBe(500);
-    expect(body.error).toBe('Render failed');
+    expect(body.error).toMatch(/failed to create export job/i);
   });
 });

@@ -209,6 +209,7 @@ export default function PdfExportModal({
   const handleExport = async () => {
     setLoading(true);
     setError(null);
+
     try {
       let body: any;
       const apiOptions = {
@@ -243,23 +244,12 @@ export default function PdfExportModal({
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `Failed to generate PDF (${res.status})`);
+        throw new Error(errData.error || `Failed to start export (${res.status})`);
       }
 
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const disposition = res.headers.get('Content-Disposition');
-      const match = disposition?.match(/filename="(.+?)"/);
-      a.download = match?.[1] ?? 'SAPAA_Report.pdf';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
       onClose();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to generate PDF';
+      const message = err instanceof Error ? err.message : 'Failed to start PDF export';
       setError(message);
     } finally {
       setLoading(false);

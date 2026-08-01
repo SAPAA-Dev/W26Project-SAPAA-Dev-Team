@@ -955,7 +955,6 @@ export async function getTopSitesDistribution(): Promise<{ namesite: string; cou
   }));
 }
 
-// --- Add these three new batch helpers ---
 export async function getSitesByNames(siteNames: string[]): Promise<Array<{
   id: number;
   namesite: string;
@@ -966,7 +965,8 @@ export async function getSitesByNames(siteNames: string[]): Promise<Array<{
   const { data, error } = await supabase
     .from('W26_sites-pa')
     .select('id, namesite, ab_county, W26_ab_counties(county)')
-    .in('namesite', siteNames);
+    .in('namesite', siteNames)
+    .order('namesite', { ascending: true }); 
   if (error) throw new Error(error.message || 'Failed to fetch sites');
   return (data ?? []) as any;
 }
@@ -976,21 +976,37 @@ export async function getFormResponsesForSiteIds(
   keyMap: Record<string, number>
 ): Promise<Map<number, FormResponse[]>> {
   const supabase = createServerSupabase();
-  const { data, error } = await supabase
-    .from('W26_form_responses')
-    .select(`
-      id, site_id, user_id, created_at, inspection_date, inspection_no,
-      W26_answers (
-        question_id, obs_value, obs_comm,
-        W26_questions ( id, form_question, section_id,
-          W26_form_sections!W26_questions_section_id_fkey ( id, title ) )
-      )
-    `)
-    .in('site_id', siteIds)
-    .eq('is_active', true)
-    .order('inspection_date', { ascending: false });
+  const PAGE_SIZE = 1000;
+  const allRows: any[] = [];
+  let page = 0;
+  
+  while (true) {
+    const from = page * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    console.log(from, to);
+    const { data, error } = await supabase
+      .from('W26_form_responses')
+      .select(`
+        id, site_id, user_id, created_at, inspection_date, inspection_no,
+        W26_answers (
+          question_id, obs_value, obs_comm,
+          W26_questions ( id, form_question, section_id,
+            W26_form_sections!W26_questions_section_id_fkey ( id, title ) )
+        )
+      `)
+      .in('site_id', siteIds)
+      .eq('is_active', true)
+      .order('id', { ascending: false }) 
+      .order('inspection_date', { ascending: false })
+      .range(from, to);
 
-  if (error) throw new Error(error.message || 'Failed to fetch form responses');
+    if (error) throw new Error(error.message || 'Failed to fetch form responses');
+    
+    allRows.push(...(data ?? []));
+    console.log('Total rows fetched:', allRows.length);
+    if (!data || data.length < PAGE_SIZE) break; // last page reached
+    page++;
+  }
 
   const ids = {
     naturalnessId: Number(keyMap['Q31_Naturalness']),
@@ -999,7 +1015,7 @@ export async function getFormResponsesForSiteIds(
   };
 
   const bySite = new Map<number, FormResponse[]>();
-  for (const r of data ?? []) {
+  for (const r of allRows) {
     const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.W26_answers, ids);
     const formResponse: FormResponse = {
       id: r.id,
