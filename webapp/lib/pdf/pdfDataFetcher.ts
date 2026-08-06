@@ -2,10 +2,15 @@ import {
   getFormResponsesBySite,
   getAttachmentsByResponseId,
   getSiteByName,
+  getSitesByNames,
+  getFormResponsesForSiteIds,
+  getAttachmentsForResponseIds,
+  getReportQuestionKeyMap,
 } from '@/utils/supabase/queries';
 import { createServerSupabase } from '@/utils/supabase/server';
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import pLimit from 'p-limit';
 import { PdfRequest, PdfReportData, PdfSiteData, PdfAttachment, PdfOptions } from './types';
 
 const REGION = process.env.AWS_REGION!;
@@ -22,26 +27,10 @@ function getS3Client() {
   });
 }
 
-/**
- * Detect image format from the first bytes of a buffer.
- * @react-pdf/renderer only supports PNG and JPEG.
- * Returns 'png', 'jpg', or null if unsupported (e.g. webp).
- */
 function detectImageFormat(buf: Buffer): 'png' | 'jpg' | null {
   if (buf.length < 4) return null;
-
-  // PNG: 89 50 4E 47
-  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) {
-    return 'png';
-  }
-
-  // JPEG: FF D8 FF
-  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) {
-    return 'jpg';
-  }
-
-  // WebP: 52 49 46 46 ... 57 45 42 50  (RIFF....WEBP)
-  // Not supported by @react-pdf/renderer - return null
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'png';
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'jpg';
   return null;
 }
 
@@ -52,59 +41,53 @@ async function fetchImageBuffer(url: string): Promise<{ buffer: Buffer; format: 
     const arrayBuffer = await res.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const format = detectImageFormat(buffer);
-    if (!format) return undefined; // unsupported format (webp, etc.)
+    if (!format) return undefined;
     return { buffer, format };
   } catch {
     return undefined;
   }
 }
 
-async function fetchAttachmentsForResponse(
-  responseId: number,
-  options: PdfOptions
-): Promise<PdfAttachment[]> {
-  if (!options.includeImages) return [];
+// Bounded concurrency: at most 15 image downloads in flight at once
+const imageDownloadLimit = pLimit(15);
 
-  const rows = await getAttachmentsByResponseId(responseId);
+async function downloadOneAttachment(row: {
+  filename: string | null;
+  caption: string | null;
+  identifier: string | null;
+  storage_key: string | null;
+}): Promise<PdfAttachment> {
+  let imageBuffer: Buffer | undefined;
+  let detectedFormat: 'png' | 'jpg' = 'jpg';
 
-  const imageRows = rows
-    .filter((r) => r.content_type && ALLOWED_IMAGE_TYPES.includes(r.content_type))
-    .slice(0, options.maxImagesPerInspection);
-
-  const attachments: PdfAttachment[] = [];
-  const s3 = getS3Client();
-
-  for (const row of imageRows) {
-    let imageBuffer: Buffer | undefined;
-    let detectedFormat: 'png' | 'jpg' = 'jpg';
-
-    if (row.storage_key) {
-      try {
-        const command = new GetObjectCommand({
-          Bucket: BUCKET,
-          Key: row.storage_key,
-        });
-        const presignedUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
-        const result = await fetchImageBuffer(presignedUrl);
-        if (result) {
-          imageBuffer = result.buffer;
-          detectedFormat = result.format;
-        }
-      } catch {
-        // Skip image on error
+  if (row.storage_key) {
+    try {
+      const s3 = getS3Client();
+      const command = new GetObjectCommand({ Bucket: BUCKET, Key: row.storage_key });
+      const presignedUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
+      const result = await fetchImageBuffer(presignedUrl);
+      if (result) {
+        imageBuffer = result.buffer;
+        detectedFormat = result.format;
       }
+    } catch {
+      // Skip image on error
     }
-
-    attachments.push({
-      filename: row.filename ?? 'unknown',
-      caption: row.caption,
-      identifier: row.identifier,
-      imageBuffer,
-      contentType: detectedFormat === 'png' ? 'image/png' : 'image/jpeg',
-    });
   }
 
-  return attachments;
+  return {
+    filename: row.filename ?? 'unknown',
+    caption: row.caption,
+    identifier: row.identifier,
+    imageBuffer,
+    contentType: detectedFormat === 'png' ? 'image/png' : 'image/jpeg',
+  };
+}
+
+async function downloadAttachmentRows(
+  rows: Array<{ filename: string | null; caption: string | null; identifier: string | null; storage_key: string | null }>
+): Promise<PdfAttachment[]> {
+  return Promise.all(rows.map(row => imageDownloadLimit(() => downloadOneAttachment(row))));
 }
 
 function filterResponsesByOptions(
@@ -113,12 +96,10 @@ function filterResponsesByOptions(
 ) {
   let filtered = [...responses];
 
-  // Filter by selected response IDs
   if (options.selectedResponseIds && options.selectedResponseIds.length > 0) {
     filtered = filtered.filter((r) => options.selectedResponseIds!.includes(r.id));
   }
 
-  // Filter by date range
   if (options.dateFrom) {
     const from = new Date(options.dateFrom);
     filtered = filtered.filter((r) => {
@@ -135,14 +116,12 @@ function filterResponsesByOptions(
     });
   }
 
-  // Sort
   filtered.sort((a, b) => {
     const da = new Date(a.created_at ?? 0).getTime();
     const db = new Date(b.created_at ?? 0).getTime();
     return options.sortOrder === 'newest' ? db - da : da - db;
   });
 
-  // Filter sections from answers
   if (options.selectedSections !== 'all') {
     filtered = filtered.map((r) => ({
       ...r,
@@ -152,7 +131,6 @@ function filterResponsesByOptions(
     }));
   }
 
-  // Filter empty answers
   if (!options.includeEmptyAnswers) {
     filtered = filtered.map((r) => ({
       ...r,
@@ -163,10 +141,54 @@ function filterResponsesByOptions(
   return filtered;
 }
 
-async function fetchSiteData(
-  siteName: string,
-  options: PdfOptions
-): Promise<PdfSiteData> {
+async function fetchMultiSiteData(siteNames: string[], options: PdfOptions): Promise<PdfSiteData[]> {
+  const siteRows = await getSitesByNames(siteNames);
+  if (siteRows.length === 0) throw new Error('No matching sites found');
+
+  const keyMap = await getReportQuestionKeyMap();
+  const siteIds = siteRows.map(s => s.id);
+  const responsesBySite = await getFormResponsesForSiteIds(siteIds, keyMap);
+
+  const sites: PdfSiteData[] = siteRows.map(site => {
+    const raw = responsesBySite.get(site.id) ?? [];
+    const responses = filterResponsesByOptions(raw, options);
+    return {
+      siteName: site.namesite,
+      county: site.W26_ab_counties?.county ?? null,
+      responses,
+      attachmentsByResponse: undefined,
+    };
+  });
+
+  if (options.includeImages) {
+    const allResponseIds = sites.flatMap(s => s.responses.map(r => r.id));
+    const attachmentRows = await getAttachmentsForResponseIds(allResponseIds);
+
+    const byResponse = new Map<number, typeof attachmentRows>();
+    for (const row of attachmentRows) {
+      const list = byResponse.get(row.response_id) ?? [];
+      list.push(row);
+      byResponse.set(row.response_id, list);
+    }
+
+    for (const site of sites) {
+      const map = new Map<number, PdfAttachment[]>();
+      for (const r of site.responses) {
+        const rows = (byResponse.get(r.id) ?? [])
+          .filter(row => row.content_type && ALLOWED_IMAGE_TYPES.includes(row.content_type))
+          .slice(0, options.maxImagesPerInspection);
+        if (rows.length > 0) {
+          map.set(r.id, await downloadAttachmentRows(rows));
+        }
+      }
+      site.attachmentsByResponse = map;
+    }
+  }
+
+  return sites;
+}
+
+async function fetchSiteData(siteName: string, options: PdfOptions): Promise<PdfSiteData> {
   const siteInfo = await getSiteByName(siteName);
   if (!siteInfo.length) throw new Error(`Site not found: ${siteName}`);
 
@@ -174,13 +196,15 @@ async function fetchSiteData(
   const responses = filterResponsesByOptions(rawResponses, options);
 
   let attachmentsByResponse: Map<number, PdfAttachment[]> | undefined;
-
   if (options.includeImages) {
     attachmentsByResponse = new Map();
     for (const r of responses) {
-      const atts = await fetchAttachmentsForResponse(r.id, options);
-      if (atts.length > 0) {
-        attachmentsByResponse.set(r.id, atts);
+      const rows = await getAttachmentsByResponseId(r.id);
+      const imageRows = rows
+        .filter(row => row.content_type && ALLOWED_IMAGE_TYPES.includes(row.content_type))
+        .slice(0, options.maxImagesPerInspection);
+      if (imageRows.length > 0) {
+        attachmentsByResponse.set(r.id, await downloadAttachmentRows(imageRows));
       }
     }
   }
@@ -193,10 +217,7 @@ async function fetchSiteData(
   };
 }
 
-async function fetchSingleResponse(
-  responseId: number,
-  options: PdfOptions
-): Promise<PdfSiteData> {
+async function fetchSingleResponse(responseId: number, options: PdfOptions): Promise<PdfSiteData> {
   const supabase = createServerSupabase();
 
   const { data: responseData, error } = await supabase
@@ -225,18 +246,16 @@ async function fetchSingleResponse(
   let attachmentsByResponse: Map<number, PdfAttachment[]> | undefined;
   if (options.includeImages) {
     attachmentsByResponse = new Map();
-    const atts = await fetchAttachmentsForResponse(responseId, options);
-    if (atts.length > 0) {
-      attachmentsByResponse.set(responseId, atts);
+    const rows = await getAttachmentsByResponseId(responseId);
+    const imageRows = rows
+      .filter(row => row.content_type && ALLOWED_IMAGE_TYPES.includes(row.content_type))
+      .slice(0, options.maxImagesPerInspection);
+    if (imageRows.length > 0) {
+      attachmentsByResponse.set(responseId, await downloadAttachmentRows(imageRows));
     }
   }
 
-  return {
-    siteName,
-    county,
-    responses,
-    attachmentsByResponse,
-  };
+  return { siteName, county, responses, attachmentsByResponse };
 }
 
 export async function fetchReportData(request: PdfRequest): Promise<PdfReportData> {
@@ -245,22 +264,15 @@ export async function fetchReportData(request: PdfRequest): Promise<PdfReportDat
 
   switch (request.mode) {
     case 'single': {
-      const site = await fetchSingleResponse(request.responseId, options);
-      sites = [site];
+      sites = [await fetchSingleResponse(request.responseId, options)];
       break;
     }
     case 'site': {
-      const site = await fetchSiteData(request.siteName, options);
-      sites = [site];
+      sites = [await fetchSiteData(request.siteName, options)];
       break;
     }
     case 'multi-site': {
-      if (request.siteNames.length > 50) {
-        throw new Error('Maximum 50 sites allowed for multi-site export');
-      }
-      sites = await Promise.all(
-        request.siteNames.map((name) => fetchSiteData(name, options))
-      );
+      sites = await fetchMultiSiteData(request.siteNames, options);
       break;
     }
   }

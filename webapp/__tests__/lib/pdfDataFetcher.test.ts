@@ -4,11 +4,19 @@ import { FormResponse } from '@/utils/supabase/queries';
 const mockGetSiteByName = jest.fn();
 const mockGetFormResponsesBySite = jest.fn();
 const mockGetAttachmentsByResponseId = jest.fn();
+const mockGetSitesByNames = jest.fn();
+const mockGetFormResponsesForSiteIds = jest.fn();
+const mockGetAttachmentsForResponseIds = jest.fn();
+const mockGetReportQuestionKeyMap = jest.fn();
 
 jest.mock('@/utils/supabase/queries', () => ({
   getSiteByName: (...args: any[]) => mockGetSiteByName(...args),
   getFormResponsesBySite: (...args: any[]) => mockGetFormResponsesBySite(...args),
   getAttachmentsByResponseId: (...args: any[]) => mockGetAttachmentsByResponseId(...args),
+  getSitesByNames: (...args: any[]) => mockGetSitesByNames(...args),
+  getFormResponsesForSiteIds: (...args: any[]) => mockGetFormResponsesForSiteIds(...args),
+  getAttachmentsForResponseIds: (...args: any[]) => mockGetAttachmentsForResponseIds(...args),
+  getReportQuestionKeyMap: (...args: any[]) => mockGetReportQuestionKeyMap(...args),
 }));
 
 const mockSupabaseFrom = jest.fn();
@@ -116,6 +124,12 @@ describe('fetchReportData', () => {
     ]);
     mockGetFormResponsesBySite.mockResolvedValue(mockResponses);
     mockGetAttachmentsByResponseId.mockResolvedValue([]);
+    mockGetReportQuestionKeyMap.mockResolvedValue({
+      Q31_Naturalness: 1,
+      Q32_Natural_Comm: 2,
+      Q13_FirstandLastNameForGuests: 3,
+    });
+    mockGetAttachmentsForResponseIds.mockResolvedValue([]);
   });
 
   // ── Site mode ──
@@ -309,14 +323,17 @@ describe('fetchReportData', () => {
   });
 
   // ── Multi-site mode ──
-
+  
   it('fetches multiple sites for multi-site mode', async () => {
-    mockGetSiteByName
-      .mockResolvedValueOnce([{ namesite: 'Site A', county: 'County 1' }])
-      .mockResolvedValueOnce([{ namesite: 'Site B', county: 'County 2' }]);
-    mockGetFormResponsesBySite
-      .mockResolvedValueOnce([mockResponses[0]])
-      .mockResolvedValueOnce([mockResponses[1]]);
+    mockGetSitesByNames.mockResolvedValue([
+      { id: 1, namesite: 'Site A', ab_county: null, W26_ab_counties: { county: 'County 1' } },
+      { id: 2, namesite: 'Site B', ab_county: null, W26_ab_counties: { county: 'County 2' } },
+    ]);
+
+    const bySite = new Map();
+    bySite.set(1, [mockResponses[0]]);
+    bySite.set(2, [mockResponses[1]]);
+    mockGetFormResponsesForSiteIds.mockResolvedValue(bySite);
 
     const request: PdfRequest = {
       mode: 'multi-site',
@@ -328,7 +345,21 @@ describe('fetchReportData', () => {
 
     expect(result.sites).toHaveLength(2);
     expect(result.sites[0].siteName).toBe('Site A');
+    expect(result.sites[0].county).toBe('County 1');
     expect(result.sites[1].siteName).toBe('Site B');
+    expect(result.sites[1].county).toBe('County 2');
+  });
+
+  it('throws when no sites match in multi-site mode', async () => {
+    mockGetSitesByNames.mockResolvedValue([]);
+
+    const request: PdfRequest = {
+      mode: 'multi-site',
+      siteNames: ['Nonexistent'],
+      options: DEFAULT_OPTIONS,
+    };
+
+    await expect(fetchReportData(request)).rejects.toThrow('No matching sites found');
   });
 
   // ── Single mode ──

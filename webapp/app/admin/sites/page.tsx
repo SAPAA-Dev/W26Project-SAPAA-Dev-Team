@@ -9,6 +9,7 @@ import Image from 'next/image';
 import AdminNavBar from '../AdminNavBar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PdfExportModal from '@/components/PdfExportModal';
+import PdfExportsDropdown from '@/components/PdfExportsDropdown';
 
 type UnifiedSite = SiteSummary;
 
@@ -59,6 +60,7 @@ export default function AdminSitesPage() {
   const [totalResponses, setTotalResponses] = useState<number>(0);
   const [showPdfModal, setShowPdfModal] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState<number | null>(null);
+  const [showExportsDropdown, setShowExportsDropdown] = useState(false);
 
   useEffect(() => {
     getTotalInspectionCount().then(setTotalResponses).catch(() => {});
@@ -371,46 +373,58 @@ export default function AdminSitesPage() {
                     Bulk PDF
                   </button>
                 )}
-              <div className="relative sort-menu-container">
-              <button
-                onClick={() => setShowSortMenu(!showSortMenu)}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm"
-              >
-                  <ArrowUpDown className="w-4 h-4" />
-                  Sort
-                </button>
-                {showSortMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border-2 border-[#E4EBE4] overflow-hidden z-10">
-                    <button
-                      onClick={() => { setSortBy({ field: 'name', direction: 'asc' }); setShowSortMenu(false); }}
-                      className="w-full text-left px-4 py-3 hover:bg-[#F7F2EA] text-[#1E2520] transition-colors border-b border-[#E4EBE4]"
-                    >
-                      Name (A-Z)
-                    </button>
-                    <button
-                      onClick={() => { setSortBy({ field: 'name', direction: 'desc' }); setShowSortMenu(false); }}
-                      className="w-full text-left px-4 py-3 hover:bg-[#F7F2EA] text-[#1E2520] transition-colors border-b border-[#E4EBE4]"
-                    >
-                      Name (Z-A)
-                    </button>
-                    <button
-                      onClick={() => { setSortBy({ field: 'date', direction: 'asc' }); setShowSortMenu(false); }}
-                      className="w-full text-left px-4 py-3 hover:bg-[#F7F2EA] text-[#1E2520] transition-colors border-b border-[#E4EBE4]"
-                    >
-                      Most Recent
-                    </button>
-                    <button
-                      onClick={() => { setSortBy({ field: 'date', direction: 'desc' }); setShowSortMenu(false); }}
-                      className="w-full text-left px-4 py-3 hover:bg-[#F7F2EA] text-[#1E2520] transition-colors"
-                    >
-                      Oldest First
-                    </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setShowExportsDropdown(!showExportsDropdown)}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm"
+                  >
+                    <Clock className="w-4 h-4" />
+                    Exports
+                  </button>
+                  {showExportsDropdown && (
+                    <PdfExportsDropdown onClose={() => setShowExportsDropdown(false)} />
+                  )}
+                </div>
+                <div className="relative sort-menu-container">
+                  <button
+                    onClick={() => setShowSortMenu(!showSortMenu)}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm"
+                  >
+                    <ArrowUpDown className="w-4 h-4" />
+                    Sort
+                  </button>
+                  {showSortMenu && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border-2 border-[#E4EBE4] overflow-hidden z-10">
+                      <button
+                        onClick={() => { setSortBy({ field: 'name', direction: 'asc' }); setShowSortMenu(false); }}
+                        className="w-full text-left px-4 py-3 hover:bg-[#F7F2EA] text-[#1E2520] transition-colors border-b border-[#E4EBE4]"
+                      >
+                        Name (A-Z)
+                      </button>
+                      <button
+                        onClick={() => { setSortBy({ field: 'name', direction: 'desc' }); setShowSortMenu(false); }}
+                        className="w-full text-left px-4 py-3 hover:bg-[#F7F2EA] text-[#1E2520] transition-colors border-b border-[#E4EBE4]"
+                      >
+                        Name (Z-A)
+                      </button>
+                      <button
+                        onClick={() => { setSortBy({ field: 'date', direction: 'asc' }); setShowSortMenu(false); }}
+                        className="w-full text-left px-4 py-3 hover:bg-[#F7F2EA] text-[#1E2520] transition-colors border-b border-[#E4EBE4]"
+                      >
+                        Most Recent
+                      </button>
+                      <button
+                        onClick={() => { setSortBy({ field: 'date', direction: 'desc' }); setShowSortMenu(false); }}
+                        className="w-full text-left px-4 py-3 hover:bg-[#F7F2EA] text-[#1E2520] transition-colors"
+                      >
+                        Oldest First
+                      </button>
+                    </div>
+                  )}
                   </div>
-                )}
                 </div>
               </div>
             </div>
-          </div>
 
 
           {/* Sites Grid */}

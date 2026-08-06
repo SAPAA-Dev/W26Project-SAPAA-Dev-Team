@@ -182,7 +182,8 @@ describe("Supabase site functions", () => {
         },
       ];
 
-      const eqSecond = jest.fn().mockResolvedValue({ data: mockData, error: null });
+      const orderMock = jest.fn().mockResolvedValue({ data: mockData, error: null });
+      const eqSecond = jest.fn().mockReturnValue({ order: orderMock });
       const eqFirst = jest.fn().mockReturnValue({ eq: eqSecond });
       const select = jest.fn().mockReturnValue({ eq: eqFirst });
 
@@ -192,17 +193,19 @@ describe("Supabase site functions", () => {
 
       expect(eqFirst).toHaveBeenCalledWith("is_active", true);
       expect(eqSecond).toHaveBeenCalledWith("W26_question_options.is_active", true);
+      expect(orderMock).toHaveBeenCalledWith("position", { referencedTable: "W26_question_options", ascending: true });
       expect(result.map((question) => question.is_required)).toEqual([true, false, null]);
     });
 
     it("throws error if Supabase fails", async () => {
-      const eqSecond = jest.fn().mockResolvedValue({ data: null, error: { message: "Failed questions" } });
+      const orderMock = jest.fn().mockResolvedValue({ data: null, error: { message: "Failed to fetch questions" } });
+      const eqSecond = jest.fn().mockReturnValue({ order: orderMock });
       const eqFirst = jest.fn().mockReturnValue({ eq: eqSecond });
       const select = jest.fn().mockReturnValue({ eq: eqFirst });
-
+    
       mockFrom.mockReturnValueOnce({ select });
-
-      await expect(queries.getQuestionsOnline()).rejects.toThrow("Failed questions");
+    
+      await expect(queries.getQuestionsOnline()).rejects.toThrow("Failed to fetch questions");
     });
   });
 

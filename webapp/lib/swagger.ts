@@ -165,6 +165,40 @@ export const openApiSpec = {
           },
         },
       },
+
+      PdfJobCreatedResponse: {
+        type: "object",
+        properties: {
+          jobId: {
+            type: "string",
+            format: "uuid",
+            example: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          },
+        },
+      },
+
+      PdfJobStatusResponse: {
+        type: "object",
+        properties: {
+          status: {
+            type: "string",
+            enum: ["pending", "processing", "complete", "failed"],
+            example: "complete",
+          },
+          downloadUrl: {
+            type: "string",
+            nullable: true,
+            description: "Signed S3 URL, present only when status is \"complete\"",
+            example: "https://sapaa-inspection-images.s3.ca-central-1.amazonaws.com/pdf-exports/...",
+          },
+          error: {
+            type: "string",
+            nullable: true,
+            description: "Present when status is \"failed\"",
+            example: "Site not found",
+          },
+        },
+      },
     },
   },
 
@@ -815,10 +849,10 @@ export const openApiSpec = {
 
     "/api/pdf": {
       post: {
-        summary: "Generate PDF reports for site inspections",
+        summary: "Start a PDF export job for site inspections",
         tags: ["PDF Export"],
         description:
-          "Generates PDF inspection reports in single, site, or multi-site mode. Admin only.",
+          "Creates a background job to generate a PDF inspection report in single, site, or multi-site mode. Returns immediately with a jobId — the actual PDF is generated asynchronously. Poll or subscribe to GET /api/pdf/status/{jobId} for completion and the download link. Admin only.",
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -864,14 +898,11 @@ export const openApiSpec = {
           },
         },
         responses: {
-          "200": {
-            description: "PDF generated successfully",
+          "202": {
+            description: "Job created and queued for background processing",
             content: {
-              "application/pdf": {
-                schema: {
-                  type: "string",
-                  format: "binary",
-                },
+              "application/json": {
+                schema: { $ref: "#/components/schemas/PdfJobCreatedResponse" },
               },
             },
           },
@@ -892,7 +923,53 @@ export const openApiSpec = {
             },
           },
           "500": {
-            description: "Failed to generate PDF",
+            description: "Invalid request body, or failed to create export job",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" },
+              },
+            },
+          },
+        },
+      },
+    },
+
+    "/api/pdf/status/{jobId}": {
+      get: {
+        summary: "Get the status of a PDF export job",
+        tags: ["PDF Export"],
+        description:
+          "Returns the current status of a PDF export job. Once status is \"complete\", the response includes a time-limited (1 hour) signed S3 download URL.",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "jobId",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+            description: "The job ID returned from POST /api/pdf",
+            example: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Job status retrieved successfully",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/PdfJobStatusResponse" },
+              },
+            },
+          },
+          "401": {
+            description: "Unauthorized",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" },
+              },
+            },
+          },
+          "404": {
+            description: "No job exists with the given ID",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/ErrorResponse" },

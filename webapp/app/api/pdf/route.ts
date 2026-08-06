@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
-import { renderToBuffer } from '@react-pdf/renderer';
-import React from 'react';
-import { InspectionReportDocument } from '@/lib/pdf/inspectionReport';
-import { fetchReportData } from '@/lib/pdf/pdfDataFetcher';
 import { PdfRequest, PdfOptions } from '@/lib/pdf/types';
-
-export const maxDuration = 60;
+import { processPdfJob } from '@/lib/pdf/processPdfJob';
 
 const DEFAULT_OPTIONS: PdfOptions = {
   includeImages: false,
@@ -29,7 +25,6 @@ function parseRequest(body: any): PdfRequest {
     ...body.options,
   };
 
-  // Validate
   if (options.maxImagesPerInspection < 0 || options.maxImagesPerInspection > 20) {
     options.maxImagesPerInspection = 5;
   }
@@ -66,7 +61,6 @@ function parseRequest(body: any): PdfRequest {
 
 export async function POST(req: NextRequest) {
   try {
-    // Authenticate
     const supabase = await createClient();
     const {
       data: { user },
@@ -77,47 +71,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Admin only
     const role = user.user_metadata?.role;
     if (role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden - admin access required' }, { status: 403 });
     }
 
-    // Parse request
     const body = await req.json();
     const request = parseRequest(body);
 
-    // Fetch data
-    const reportData = await fetchReportData(request);
+    const { data: job, error: insertError } = await supabase
+      .from('S26_pdf_jobs')
+      .insert({
+        status: 'pending',
+        mode: request.mode,
+        request_payload: request,
+        created_by: user.id,
+      })
+      .select('id')
+      .single();
 
-    // Render PDF
-    const element = React.createElement(InspectionReportDocument, {
-      data: reportData,
-    });
-    const buffer = await renderToBuffer(element as any);
-
-    // Generate filename
-    const dateStr = new Date().toISOString().split('T')[0];
-    let filename: string;
-    if (request.mode === 'single') {
-      filename = `SAPAA_Inspection_${request.responseId}_${dateStr}.pdf`;
-    } else if (request.mode === 'site') {
-      const safeName = request.siteName.replace(/[^a-zA-Z0-9]/g, '_');
-      filename = `SAPAA_${safeName}_${dateStr}.pdf`;
-    } else {
-      filename = `SAPAA_MultiSite_Report_${dateStr}.pdf`;
+    if (insertError || !job) {
+      return NextResponse.json({ error: 'Failed to create export job' }, { status: 500 });
     }
 
-    const pdfBytes = new Uint8Array(buffer);
-    return new Response(pdfBytes, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${filename}"`,
-      },
+    after(() => {
+      processPdfJob(job.id).catch((err) => {
+        console.error('PDF job processing error:', err);
+      });
     });
+
+    return NextResponse.json({ jobId: job.id }, { status: 202 });
   } catch (err) {
-    console.error('PDF generation error:', err);
-    const message = err instanceof Error ? err.message : 'Failed to generate PDF';
+    console.error('PDF export start error:', err);
+    const message = err instanceof Error ? err.message : 'Failed to start PDF export';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
