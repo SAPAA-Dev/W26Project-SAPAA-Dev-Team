@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import JSZip from "jszip";
 import pLimit from "p-limit";
 import AdminNavBar from "../AdminNavBar";
@@ -28,7 +28,7 @@ type GalleryItem = {
   imageUrl: string;
 };
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 52;
 
 export default function GalleryPage() {
   const router = useRouter();
@@ -36,11 +36,13 @@ export default function GalleryPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
+  const prevQueryRef = useRef(debouncedQuery);
 
   useEffect(() => {
     if (selectedImage) document.body.style.overflow = "hidden";
@@ -56,10 +58,18 @@ export default function GalleryPage() {
   useEffect(() => { setPage(1); }, [debouncedQuery]);
 
   useEffect(() => {
+    const queryChanged = prevQueryRef.current !== debouncedQuery;
+    prevQueryRef.current = debouncedQuery;
+    const effectivePage = queryChanged ? 1 : page;
+    if (queryChanged) setPage(1);
+
     const load = async () => {
       setLoading(true);
       try {
-        const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
+        const params = new URLSearchParams({
+          page: String(effectivePage),
+          pageSize: String(PAGE_SIZE),
+        });
         if (debouncedQuery) params.set("search", debouncedQuery);
         const res = await fetch(`/api/gallery-combined?${params}`);
         const data = await res.json();
@@ -70,8 +80,10 @@ export default function GalleryPage() {
         console.error("Gallery fetch error:", err);
       } finally {
         setLoading(false);
+        setInitialLoading(false);
       }
     };
+
     load();
   }, [page, debouncedQuery]);
 
@@ -193,10 +205,12 @@ export default function GalleryPage() {
                 </button>
               )}
             </div>
+
+            {/* Download All button — primary action style */}
             <button
               onClick={downloadAllAsZip}
               disabled={downloading || total === 0}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm disabled:opacity-50 whitespace-nowrap"
+              className="flex items-center justify-center gap-2 px-5 py-3 bg-[#254431] text-white font-bold rounded-xl hover:bg-[#1e3828] transition-colors shadow-lg disabled:cursor-not-allowed disabled:bg-[#C9D3C5] disabled:text-[#6B7280] disabled:shadow-none whitespace-nowrap"
             >
               {downloading ? (
                 <>
@@ -210,6 +224,7 @@ export default function GalleryPage() {
                 </>
               )}
             </button>
+
           </div>
 
           {loading ? (
@@ -264,30 +279,10 @@ export default function GalleryPage() {
                   </div>
                 ))}
               </div>
-
-              {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-3 mt-8">
-                  <button
-                    disabled={page === 1}
-                    onClick={() => setPage((p) => p - 1)}
-                    className="px-4 py-2 rounded-xl border-2 border-[#E4EBE4] text-[#254431] font-medium disabled:opacity-40 hover:bg-[#F7F2EA] transition-colors"
-                  >
-                    Previous
-                  </button>
-                  <span className="text-sm text-[#7A8075]">Page {page} of {totalPages}</span>
-                  <button
-                    disabled={page >= totalPages}
-                    onClick={() => setPage((p) => p + 1)}
-                    className="px-4 py-2 rounded-xl border-2 border-[#E4EBE4] text-[#254431] font-medium disabled:opacity-40 hover:bg-[#F7F2EA] transition-colors"
-                  >
-                    Next
-                  </button>
-                </div>
-              )}
             </>
           )}
         </div>
-
+        
         {selectedImage && (
           <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-8" onClick={() => setSelectedImage(null)}>
             <div className="relative w-full max-w-6xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
@@ -319,6 +314,39 @@ export default function GalleryPage() {
           </div>
         )}
       </div>
+
+
+    {/* Sticky pagination footer — only renders when there's more than one page */}
+    {totalPages >= 1 && !selectedImage && !initialLoading && (
+      <footer className="sticky bottom-0 bg-white border-t-2 border-[#E4EBE4] px-4 md:px-8 py-2 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-50">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage((p) => p - 1)}
+            className="px-5 py-3 border-2 border-[#E4EBE4] text-[#254431] font-bold rounded-xl hover:bg-[#E4EBE4] transition-colors disabled:cursor-not-allowed disabled:border-[#D9E1D5] disabled:bg-[#EDF2EA] disabled:text-[#9AA49B]"
+          >
+            ← Previous
+          </button>
+
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-sm font-bold text-[#254431]">
+              Page {page} of {totalPages}
+            </span>
+            <span className="text-xs font-medium text-[#7A8075]">
+              {total} images total
+            </span>
+          </div>
+
+          <button
+            disabled={page >= totalPages}
+            onClick={() => setPage((p) => p + 1)}
+            className="px-5 py-3 bg-[#356B43] text-white font-bold rounded-xl hover:bg-[#254431] transition-colors disabled:cursor-not-allowed disabled:bg-[#C9D3C5] disabled:text-[#6B7280]"
+          >
+            Next →
+          </button>
+        </div>
+      </footer>
+    )}
     </ProtectedRoute>
   );
 }
