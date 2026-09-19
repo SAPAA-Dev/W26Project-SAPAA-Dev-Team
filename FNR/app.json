@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "StewardLog",
+    "slug": "stewardlog",
+    "version": "1.0.0",
+    "scheme": "stewardlog",
+    "entryPoint": "./App.tsx",
+    "orientation": "portrait",
+    "icon": "./src/assets/play_store_512.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./src/assets/play_store_512.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.zdev.stewardlog",
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/play_store_512.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./src/assets/play_store_512.png"
+    },
+    "plugins": [
+      "expo-sqlite",
+      "expo-asset",
+      "expo-video",
+      "expo-secure-store",
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "e40fa398-935d-4662-91b1-534885fe1571"
+      }
+    }
+  }
+}

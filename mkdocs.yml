@@ -1,0 +1,34 @@
+site_name: Winter 2026 SAPAA Project
+theme:
+  name: material 
+  features: 
+  language: en
+  palette:
+    - scheme: default
+      primary: green
+      accent: green
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: green
+      accent: green
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+nav:
+  - Project Documentation: 'index.md'
+  - Project Management: 'project-management.md'
+  - Software Design: 'software-design.md'
+  - Media Storage Architecture: 'aws-architecture.md'
+  - Teamwork: 'teamwork.md'
+  - Traceability Matrix: 'traceability-matrix.md'
+  - Meeting Minutes: 'meeting-minutes.md'
+  - UI/UX design: 'ui-design.md'
+  - API Documentation: 'api-documentation.md'
+  - User Manual: 'user-manual.md'
+  - Admin Manual: 'admin-manual.md'
+  - Job Documentation: 'job-documentation.md'
+  - Deployment Instructions: 'Deployment-manual.md'
+  - Static Analysis: 'sonar-qube.md'
+  
