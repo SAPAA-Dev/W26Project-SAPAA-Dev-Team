@@ -1,0 +1,79 @@
+Week 3 Meeting Summary — Onboarding call with Fall '25 SAPAA team (Vishal, Mehrdad, Harveer/Harbir, Rihanna, product owner Alyssa)
+
+Purpose
+- New (current) team's onboarding call with the previous semester's dev team, to understand the existing SAPAA codebase, repo setup, and Frank's (mentor/client) expectations before starting Sprint 1.
+
+Repo & Access
+- Use Frank's repository, NOT the previous team's personal copy — Frank's has the latest/most up-to-date code.
+- Access details sent via a shared "dev team" email in the team chat — covers GitHub, Supabase, and Vercel logins (watch the password format: capital "E" + space).
+- The email also includes a link to the repo and to the old team's GitHub Pages documentation — described as very helpful for getting oriented.
+- Two deployments exist in parallel:
+  - Course requirement: deploy via Vercel + Supabase (this is the graded repo — treat as top priority).
+  - Frank's own site: previously the old team pushed finished/approved sprint work over to Frank's side after each sprint review, so he could see it live.
+- No CI/CD pipeline currently exists beyond the course-required Supabase/Cypress instance running "Mondos" (likely Cypress) tests — team will need to build out smoke tests, E2E tests, and front-end tests themselves.
+- Issue tracking: previous team used GitHub Issues plus a Kanban board (mentioned as "essential for 401's purpose"); multiple GitHub Pages documented user story rankings and issue tracking. New team can pick their own system, but it may be TA-dependent — confirm with TA.
+
+What's Already Built (by the previous/Fall '25 team)
+- Web app (primary focus of previous team's work):
+  - Form / site inspection support
+  - Image upload and an image gallery view (admin-only)
+  - PDF generation
+  - Sprint breakdown as described: forms (sprint 2), image support (sprint 3), image fixes + PDF generation based on Frank's feedback (sprint 4), documentation cleanup (sprint 5)
+  - Code base for the web app was described as "pretty clean."
+- Admin panel (not visible/accessible to normal users):
+  - Account management: approve/reject new sign-ups, reset passwords, change user role (Steward or Admin), change approval status to pending
+  - Image gallery view across sites, inspections, and homepage uploads
+  - Site/inspection detail view — can expand and view each site inspection
+  - Built-in app tutorial/walkthrough feature (repeatable via dropdown menu), built for an older, less tech-savvy user base
+  - Note: manual logout required — the app auto-reloads your session with the current access token, so logging out only works from the homepage
+- Map:
+  - Present on the web app (admin side, shown as a heat map) but essentially unchanged/static since Fall '25 semester
+  - Search functionality does not currently work (tested live with "ATV" — failed) — needs development
+  - Unclear whether it's still Google Maps or was switched to OpenStreetMap — check documentation, not confirmed live
+  - Relevant because Google Maps API has a monthly hit/request limit — worth investigating usage before building further on it
+- User/account management:
+  - Only basic features exist: reset password, create account, delete account, approval status
+  - Called out as "clunky" and not fully developed
+  - Data inconsistency noted between users who sign up via Google OAuth vs. normal email sign-up
+  - Sign-up currently requires two-step verification: (1) confirmation email, (2) manual admin approval — this flow may be partially broken (confirmation emails not reliably sending; one teammate's account was auto-approved without going through the process)
+
+Mobile App
+- Significantly behind the web app — "one iteration behind," previous team did no work on it at all last semester
+- Built on React 18 — will require upgrading to React 19, expected to be a substantial effort
+- Lives in the SAME repository as the web app (not a separate repo)
+- Described as fairly straightforward/basic — team should boot it up and explore to assess current state
+- Per Harveer, Frank wants the web app prioritized and finished before heavy investment in mobile — confirm current priority directly with Frank, as requirements may have changed
+
+New/Outstanding Requirements from Frank (not yet built)
+- Gamification features:
+  - Ideas floated by previous team: trophies/badges (e.g., "most site visits"), a community board where members post site visits for others to react to (thumbs up, etc.)
+  - Very open-ended — was listed only as a "post-requirement" in the old team's backlog, never scoped or built
+  - Whether badge design and award logic is high priority is unclear — needs direct discussion with Frank
+  - Noted tension: Frank wants gamification but also called the current UI "bland/basic" — UI direction should be resolved with Frank before diving in
+- People/place management:
+  - Essentially nothing beyond the basic account actions listed above has been built
+  - Frank likely wants something resembling a user-facing profile page (not just admin-side management)
+  - Mehrdad's advice: the team has NO KPIs or stats being measured at all right now — that is priority #1; deciding how/where to display those stats (map vs. profile page) is priority #2. Don't let display design get ahead of actually having data to show.
+- A staging environment between production and course dev branch — did not exist before; explicitly left for the current team to build
+- Likely a dedicated UI/UX-focused sprint later in the term (previous team had one; current team should check with their TA whether this is still part of the course structure) — save major visual/design work for that sprint rather than doing it piecemeal
+
+Process & Working Norms
+- Frank runs weekly meetings every Friday (he owns/schedules them)
+- Expects a slide deck each week covering: what was done, what's planned next, and any open questions — he specifically likes seeing "slide notes"
+- Previous team will share a Google Drive folder with all their past Friday presentation decks as a style reference
+- Frank is described as a demanding but responsive and invested mentor — expects polished/proper work, not necessarily deeply technical himself, but happy to answer questions any time
+- Sprint 1 guidance from previous team:
+  - Focus mainly on drafting user stories and defining project requirements/scope in discussion with Frank
+  - Spend some time getting familiar with the existing codebase where possible, to be ready for Sprint 2
+  - Unlike a greenfield project, there's an existing codebase to evaluate — factor that into how Sprint 1 is scoped
+- Previous team's general git workflow: develop/merge on the course (Vercel/Supabase) repo first, then push completed & approved work to Frank's separate deployment after each sprint
+
+Live Demo Notes (from walking through the current web app)
+- Admin dropdown (top right) is the entry point to admin-only pages
+- Admin landing page currently only has the image gallery view as a clickable/functional feature
+- Team was shown account management live: adding teammates as users, changing role/approval status
+- Confirmed the sign-up/approval email flow may be unreliable — recommend testing this early
+- App tutorial feature works and can be replayed anytime from the dropdown
+
+Note
+- The transcript file (week3.txt) contains this same meeting content duplicated 6 times (a transcription/export artifact) — only one copy was needed to produce this summary.
