@@ -14,7 +14,11 @@ The Scrum Master is responsible for facilitating Scrum ceremonies, removing impe
 
 **Person Assigned:**
 
-- **Scrum Master:** Jason Liang   
+- **Sprint 1:** Chris
+- **Sprint 2:** Aaron
+- **Sprint 3:** Jayden
+- **Sprint 4:** Abhinav
+- **Sprint 5:** Alissa
 
 
 ---
@@ -26,27 +30,26 @@ The Product Owner defines and prioritizes the product backlog items based on cus
 
 **Person Assigned:**
 
-
-- **Sprint 1:** Harveer Deol 
-- **Sprint 2:** Harveer Deol 
-- **Sprint 3:** Raiyana Rahman
-- **Sprint 4:** Harveer Deol   
-- **Sprint 5:** Harveer Deol 
+- **Sprint 1:** Alissa
+- **Sprint 2:** Chris
+- **Sprint 3:** Aaron
+- **Sprint 4:** Zanab
+- **Sprint 5:** Abhinav
 
 
 
 ## Belbin Roles
 Source: [https://www.belbin.com/about/belbin-team-roles](https://www.belbin.com/about/belbin-team-roles)
 
-|Name                   |Preferred Roles    |Manageable Roles   |Least Preferred Roles  |
-|-----------------------|-------------------|-------------------|-----------------------|
-|Vishal Sivakumar       |TW, CF, SP         |CO, PL, IMP        |RI, ME, SH             |
-|Harveer Deol           |RI, CO, TW         |IMP, SH, ME        |PL, CF, SP             |
-|Jason Liang            |TW, IMP, CF        |SH, ME, SP         |CO, PL, RI             |
-|Braden Wood            |SP, IMP, CF        |CO, SH, PL         |ME, RI, TW             |
-|Zoe Prefontaine        |ME, TW, PL         |CF, SP, CO         |SH, IMP, RI            |
-|Akib Choudhury         |CF, SH, SP         |PL, ME, IMP        |TW, RI, CO             |
-|Raiyana Rahman         |CF, IMP, PL        |CO, ME, TW         |SH, RI, SP             |
+|Name   |Preferred Roles |Manageable Roles |Least Preferred Roles |
+|-------|----------------|------------------|-----------------------|
+|Chris  |SH             |PL               |RI                    |
+|Abhinav|TW             |IMP              |RI                    |
+|Jayden |IMP            |TW               |SH                    |
+|Saumya |CF             |TW               |SH                    |
+|Aaron  |CO             |TW               |ME                    |
+|Alissa |TW             |CO               |PL                    |
+|Zanab  |TW             |IMP              |RI                    |
 
 
 
@@ -55,69 +58,64 @@ Source: [https://www.belbin.com/about/belbin-team-roles](https://www.belbin.com/
 ### Thinking Roles
 
 #### PL (Plant)
-> Tends to be highly creative and good at solving problems in unconventional ways.
+> This role helps the team come up with novel solutions to difficult problems.
 
-1. Zoe Prefontaine (preferred)
-2. Raiyana Rahman (preferred)
+- Chris
+- Aaron
+- Zanab
 
 #### ME (Monitor Evaluator)
-> Provides a logical eye, making impartial judgements where required and weighs up the team's options in a dispassionate way.
+> This role keeps the team focused on the important objectives, making sure work is correctly delegated based on individuals strengths.
 
-1. Zoe Prefontaine (preferred)
-2. Jason Liang (manageable)
-3. Akib Choudhury (manageable)
-4. Raiyana Rahman (manageable)
+- Chris
+- Alissa
 
 
 #### SP (Specialist)
-> Brings in-depth knowledge of a key area to the team.
+> This role brings in-depth knowledge of a key area to the team.
 
-1. Braden Woods (preferred)
-2. Vishal Sivakumar (preferred)
-3. Akib Choudhury (preferred)
+- Jayden
 
 
 ### Action Roles
 #### SH (Shaper)
-> Provides the necessary drive to ensure that the team keeps moving and does not lose focus or momentum.
+> This role provides the drive to keep the team focused and in momentum.
 
-1. Akib Choudhury (preferred)
-2. Jason Liang (manageable)
+- Chris
 
 
 #### IMP (Implementer)
-> Needed to plan a workable strategy and carry it out as efficiently as possible.
+> This role plans a workable strategy and carries it out as efficiently as possible.
 
-1. Jason Liang (preferred)
-2. Braden Woods (preferred)
-3. Raiyana Rahman (preferred)
+- Jayden
+- Zanab
 
 
 #### CF (Completer Finisher)
-> Most effectively used at the end of tasks to polish and scrutinise the work for errors, subjecting it to the highest standards of quality control.
+> This role is most effectively used at the end of tasks to polish and scrutinise the work for errors, subjecting it to the highest standards of quality control.
 
-1. Akib Choudhury (preferred)
-2. Raiyana Rahman (preferred)
-3. Jason Liang (preferred)
-4. Braden Woods (preferred)
+- Saumya
+- Zanab
 
 
 ### People Roles
 #### RI (Resource Investigator)
-> Uses their inquisitive nature to find ideas to bring back to the team. 
+> This role is comfortable with reaching out to outside sources to help the team in getting clarification, gathering information needed to support their team's work, and unblock tasks.
 
-1. Harveer Deol (preferred)
+- No members currently assigned
 
 #### TW (Teamworker)
-> Helps the team to gel, using their versatility to identify the work required and complete it on behalf of the team.
+> This role helps create an encouraging atmosphere and positive work relationships. They make sure everyone feels heard and comfortable to give their own input, working alongside other members where needed.
 
-1. Vishal Sivakumar (preferred)
-2. Jason Liang (preferred)
+- Alissa
+- Abhinav
+- Jayden
+- Saumya
+- Zanab
+- Aaron
 
-#### CO (Co-ordinator)
-> Needed to focus on the team's objectives, draw out team members and delegate work appropriately.
+#### CO (Coordinator)
+> This role is confident in assigning and defining tasks ensuring that everyone stays on track and understands their share of work.
 
-1. Harveer Deol (preferred)
-2. Vishal Sivakumar (manageable)
-3. Braden Woods (manageable)
-4. Raiyana Rahman (manageable)
+- Aaron
+- Alissa
