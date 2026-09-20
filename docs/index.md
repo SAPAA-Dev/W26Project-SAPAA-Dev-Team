@@ -3,8 +3,13 @@
 
 ## Executive summary
 
-SAPAA currently manages site inspection data through a manual pipeline. Stewards submit observations via Google Forms, Admin converts them in MS Excel, and the results are stored in a local MS Access database. This project replaces that temporary setup with a sustainable, low-cost cloud data infrastructure that automatically ingests inspection data into a PostgreSQL database, enables Admin to manage the data and generate PDF reports. A major focus of our implementation is scalable and cost-aware image management. Inspection images are stored in AWS S3, providing a reliable, secure, and affordable solution for handling large volumes of media. The primary user is the Admin, who needs a reliable, maintainable system that eliminates manual data handling, while keeping his access to the data as well as report generation and distribution. This project also hopes to create Android and iOS versions of the web application for stewards to bring out into the field and be able to log their observations while offline.
+## Executive summary
 
+SAPAA currently manages site inspection data through a manual pipeline. Stewards submit observations via Google Forms, Admin converts them in MS Excel, and the results are stored in a local MS Access database. This project replaces that temporary setup with a sustainable, low-cost cloud data infrastructure that automatically ingests inspection data into a PostgreSQL database, enables Admin to manage the data, and generate PDF reports. A major focus of our implementation is scalable and cost-aware image management: inspection images are stored in AWS S3, providing a reliable, secure, and affordable solution for handling large volumes of media.
+
+This work also advances the client's original vision of People and Place Management for v2.0, though with a narrower scope this semester: Admin's new ability to approve and manage user accounts lays the groundwork for People Management, and updated Site profiles are a first step toward Place Management. Full geographic display and volunteer activity-tracking features are deferred to a future phase.
+
+The primary user is the Admin, who needs a reliable, maintainable system that eliminates manual data handling while retaining access to the data, report generation, and distribution. Longer-term, the project aims to extend this to Android and iOS apps so stewards can log observations offline in the field, though that work is out of scope for this semester.
 
 
 ## Project glossary
@@ -24,6 +29,10 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 - **SAPAA Stewards:** The web application that allows stewards to submit Site Inspection data easily and automatically uploads data to the PostgreSQL database.
 
 - **SAPAA Stewards Mobile:** The mobile application, usable on both Android and iOS, that stewards can use while offline to submit their Site Inspection data
+
+-  **People Management**: A planned v2.0 capability to support and track the community of volunteer stewards, including individual activity history — intended to support future volunteer recognition. Partially addressed this semester via Admin user-approval workflows.
+
+-  **Place Management**: A planned v2.0 capability to better display where a Site is and what activity has occurred there, extending the geographic presentation on the SAPAA website. Partially addressed this semester via  Site profile editing; full mapping/geographic display is deferred
 
 
      
@@ -651,21 +660,6 @@ Each user story is categorized into one of the following priority levels:
 * US 3.0.2 - Offline Data Syncing
 
 
-## Similar Products
-
-* [Park Protector](https://playgroundguardian.com/solutions/playground-inspection-software/)  
-    - High/low frequency inspections, multi-site management, reporting, and scheduling  
-    - Scheduling inspections across many sites and recurring inspection plans
-    - Inspiration: Similar inspection history for each site and export capabilities
-    - Useful to SAPAA: A system that monitors inspection reports is similar to SAPAA’s site inspection reports
-* [iNaturalist](https://www.inaturalist.org/)  
-    - A community platform for sharing and identifying nature observations.
-    - Inspiration: offers ideas for building intuitive photo galleries, tagging ecological attributes, and storing long-term environmental data.
-    - Relevant to SAPAA: helps shape how inspection data can be organized to show ecological change over time.
-* [Avenza Maps](https://store.avenza.com/)  
-    - A mobile app for offline maps and PDF map layers.
-    - Inspiration: highlights clear workflows for downloading, caching, and updating large data bundles for offline use.
-    - Relevant to SAPAA: directly applicable to the Field Notes Reader, which requires offline access to inspection data and reports.
 
 
 ## Open-source Projects
@@ -721,5 +715,23 @@ Each user story is categorized into one of the following priority levels:
 
 ### Testing & Tools
   * [Jest Testing Framework](https://jestjs.io/)
-  * [Postman](https://www.postman.com/) for API testing  
+  * [Postman](https://www.postman.com/) for API testing
+
+
+
+## Similar Products
+
+* [Park Protector](https://playgroundguardian.com/solutions/playground-inspection-software/)  
+    - High/low frequency inspections, multi-site management, reporting, and scheduling  
+    - Scheduling inspections across many sites and recurring inspection plans
+    - Inspiration: Similar inspection history for each site and export capabilities
+    - Useful to SAPAA: A system that monitors inspection reports is similar to SAPAA’s site inspection reports
+* [iNaturalist](https://www.inaturalist.org/)  
+    - A community platform for sharing and identifying nature observations.
+    - Inspiration: offers ideas for building intuitive photo galleries, tagging ecological attributes, and storing long-term environmental data.
+    - Relevant to SAPAA: helps shape how inspection data can be organized to show ecological change over time.
+* [Avenza Maps](https://store.avenza.com/)  
+    - A mobile app for offline maps and PDF map layers.
+    - Inspiration: highlights clear workflows for downloading, caching, and updating large data bundles for offline use.
+    - Relevant to SAPAA: directly applicable to the Field Notes Reader, which requires offline access to inspection data and reports.
 
