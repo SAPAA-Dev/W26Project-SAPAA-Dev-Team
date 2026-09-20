@@ -30,551 +30,158 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 ## User Stories
 ---
-### **P1 – Implement Site Inspection Web Application for SAPAA**
+### **1 - People Management**
 ---
 
-#### US 1.0.1 – Access Site Inspection Form on Web Application | Story Points: 3   
-> **As** a User, **I want** to be able to access the Site Inspection form on the web page, **so that** I can fill out the Site Inspection Form with my information
+#### US 1.0.1 – Add User Profiles | Story Points: x  
+> **As** a User, **I want** to be able to view my profile and profiles of other stewards, **so that** I can see their details and contributions
 
 > **Acceptance Tests**
 
-> 1. Should have the New Site Inspection Report button visible and enabled
-> 2. Should navigate to the new report page when clicking the "New Site Inspection Report" button
-> 3. Blocks submission and shows the required questions popup when a mandatory field is missing 
-> 4. Successfully calls uploadSiteInspectionAnswers when all required questions are answered
+> 1. Should be able to navigate to own profile by clicking "my profile" in the menu under pages
+> 2. Should be able to navigate to a users profile by clicking on their email via their inspection report
+> 3. Profile information matches what is stored in the database
+> 4. Should be able to return to the previous page after navigating to a user's profile
 
-#### US 1.0.2 – Add Personal Information to Site Inspection Form | Story Points: 1    
-> **As** a User, **I want** to be able to add my personal details, **so that** I can be identified for completing the Site Inspection.
-
-> **Acceptance Tests**
-
-> 1. User can enter steward name 
-> 2. User can enter first and last names of guests 
-> 3. User can enter contact information (email and phone) 
-> 4. User can indicate SAPAA membership
-> 5. Footer tracks progress correctly 
-
-#### US 1.0.3 – Liability Check | Story Points: 1
-**As** a User, **I want** to be prompted to verify that I am not a volunteer and this is not an emergency, **so that** I can ensure I am accessing the correct resource(s).
+#### US 1.0.2 - Allow Editing Own Profile | Story Points: x
+> **As** a User, **I want** to be able to edit my own profile information, **so that** I can I can keep my details and interests up-to-date
 
 > **Acceptance Tests**
 
-> 1. System displays a loading spinner followed by a mandatory verification popup before form access is granted
-> 2. Popup explicitly displays an emergency notice regarding 911 and a "310-LAND" contact link
-> 3. System requires the user to type an exact, case-sensitive phrase (shown in a code block) to proceed
-> 4. System displays real-time validation errors for incorrect, partial, or trailing-space phrase entries
-> 5. Verified stewards bypass the liability popup entirely and see a "Steward Badge" in the header
-> 6. Users can click "Cancel" to exit the process, which triggers a navigation back to the previous page.
-> 7. The popup state is fresh upon re-navigation, ensuring users cannot "trick" the system by going back and forward.
-
-#### US 1.0.4 – Have access to the Terms and Conditions of Inputting Information | Story Points: 1
-**As** a User, **I want** to be able to see the Terms and Conditions of filling out the Site Inspection Form, **so that** I am aware of how my information will be used for and the level of privacy I am agreeing to.
-
-> **Acceptance Tests**
-
-> 1. "Continue to Form" button remains disabled by default and only enables when the Terms and Conditions checkbox is explicitly checked
-> 2. "Continue" button reacts dynamically to checkbox toggling, and non-steward verification blocks form access until all terms are accepted
-> 3. Keyboard-accessible link to the Terms is available within the popup; clicking it allows viewing terms without closing the active verification state
-> 4. The terms link includes a from query parameter for tracking, and the "checked" state is preserved after the popup is dismissed to record the agreement.
-
-#### US 1.0.5 – Add Details Regarding the Overview of my Visit | Story Points: 1   
-> **As** a User, **I want** to be able to add details regarding my visit, **so that** I can describe which site I went to and when I visited it.
-
-> **Acceptance Tests**
-
-> 1. User can enter date of visit 
-> 2. User can enter which site they are inspecting
-> 3. User can select their designated steward status 
-> 4. User can select only ONE designated steward option (radio button behavior) 
-> 5. Displays all required fields with Required badge
-> 6. Footer tracks progress correctly 
-> 7. Allows submission when all required fields are filled
-> 8. Displays error when submitting without required fields
-
-#### US 1.0.6 – Rank the Health of the Site | Story Points: 1   
-> **As** a User, **I want** to be able to rank the state of the site during my visit, **so that** I can describe its health and my thoughts on its current condition.
-
-> **Acceptance Tests**
-
-> 1. Renders the overall impression section and reaches questions 2.1 to 2.3 
-> 2. User can select naturalness score "4 = Great"
-> 3. User can select naturalness score "3 = Good" 
-> 4. User can select naturalness score "2 = Passable" 
-> 5. User can select naturalness score "1 = Bad"
-> 6. User can select naturalness score "0 = Terrible"
-> 7. User can enter comments on how healthy they felt the site was
-> 8. User can enter comments about changes from their previous visit 
-> 9. User can clear change-in-conditions comments if not applicable
-
-#### US 1.0.7 – Add Details Regarding How the Trip Went | Story Points: 1
-> **As** a User, **I want** to be able to add details regarding how my trip went, **so that** I can describe the duration and the reason for my visit.
-
-> **Acceptance Tests**
-
-> 1. User can enter reasoning for visiting the site (Q41) and additional details (Q41.1) 
-> 2. User can input duration of trip and comments (Q42) 
-> 3. User can input visit details (Q43) 
-> 4. Q41 and Q42 are required; Q41.1 and Q43 are not 
-> 5. Footer shows error for missing required Q41/Q42 but accepts missing optional Q41.1/Q43
-
-#### US 1.0.8 – Address What Amenities are in the Site | Story Points: 1 
-> **As** a User, **I want** to be able to add details regarding ease of use of the site, **so that** I can be as detailed as possible in my report.
-
-> **Acceptance Tests**
-
-> 1. User can select amenities options for ease to visit 
-> 2. User can select signage and trails options for ease-of-use details 
-> 3. User can unselect a previously selected ease-to-visit option 
-
-#### US 1.0.9 – Designation as a Protected Site | Story Points: 1 
-> **As** a User, **I want** to indicate how I know the site is a protected area, **so that** it can be ensured that the sites are properly designated as protected areas.
-
-> **Acceptance Tests**
-
-> 1. User can indicate protected status by selecting signage
-> 2. User can indicate protected status by selecting fencing
-> 3. User can select "Signage" as protected-area evidence
-> 4. User can select "Fencing" as protected-area evidence 
-> 5. User can select "Exists but in disrepair" as protected-area evidence 
-> 6. User can select "Not Applicable" as protected-area evidence
-> 7. User can deselect a protected-area indicator option
-
-#### US 1.0.10 – Indicate submissions to iNaturalist | Story Points: 1 
-> **As** a User, **I want** to be told about iNaturalist and indicate if I am posting to it, **so that** it can be documented if my findings have yet been shared to iNaturalist (Q53).
-
-> **Acceptance Tests** 
-
-> 1. Renders section 4 and the 4.2 Submissions to iNaturalist question
-> 2. User can select "Yes" for submissions to iNaturalist
-> 3. User can select "No, Not this time" for submissions to iNaturalist
-> 4. User can select "No, not a member of iNaturalist" for submissions to iNaturalist
-> 5. User can select "What is iNaturalist?" for submissions to iNaturalist 
-> 6. User can select "Other/Not Applicable" for submissions to iNaturalist 
-> 7. Selecting a new iNaturalist option replaces the previous one
-
-#### US 1.0.11 – Address details of Landscape changes | Story Points: 2 
-> **As** a User, **I want** to be able to add details regarding any significant site changes, **so that** important or significant changes can be tracked in my report
-
-> **Acceptance Tests**
-
-> 1. User can enter details about recent landscape changes (Q54)
-> 2. Q54 is optional and submitting without it does not show an error 
-
-#### US 1.0.12 – Address any Biological Observations that is in the Site | Story Points: 1 
-> **As** a User, **I want** to be able to add details regarding any biological observations that I saw or noticed on the site **so that** I can update the site’s information with new / changing / consistent wildlife sightings.
-
-> **Acceptance Tests**
-
-> 1. Allows the user to enter biological wildlife observations
-> 2. Allows the user to delete text from the biological observations box and ensures it is empty
-> 3. Does not include question number 4.3 in the missing required questions popup when answered
-
-#### US 1.0.13 - Address Any Human Disturbances - Section 8 | Story Points: 1
-> **As** a User, **I want** to be able to add details regarding any human disturbances I noticed during my visit, **so that** I can be as detailed as possible in my report
-
-> **Acceptance Tests**
-
-> 1. Renders section 5 questions 5.1 through 5.8 
-> 2. User can indicate what other visitors were doing
-> 3. User can indicate agricultural activity 
-> 4. User can indicate resource extraction activity
-> 5. User can indicate motorized disturbance 
-> 6. User can indicate gathering and dumping activity 
-> 7. User can indicate infrastructure encroachment 
-> 8. User can enter invasive plants or disease comments 
-> 9. User can enter comments on human disturbances
-> 10. Comments can be cleared when not applicable
-
-#### US 1.0.14 - Add Other Comments | Story Points: 2
-> **As** a User, **I want** to be able to add comments/information that aren’t specifically mentioned in the questions, **so that** I can share all information I see as important, even when it isn’t specifically asked for.
-
-> **Acceptance Tests**
-
-> 1. User can enter their comments in beThere section
-> 2. User can enter their comments in notThere section
-> 3. User can enter their comments in 2BDone section
-> 4. User can enter their comments in Close section
-> 5. Does not include comments in the missing required questions popup when answered
-
-#### US 1.0.15 – Inform SAPAA of Any Restorative Work that Needs to be Done / Was Done | Story Points: 2
-> **As** a User, **I want** to be able to add details regarding any actions I believe need to be taken upon the land or that I took, **so that** I can relay the necessary restoration information to the right bodies of power.
-
-> **Acceptance Tests** 
-
-> 1. Renders section 6 questions 6.1 through 6.4
-> 2. User can indicate urgently needed restorative actions
-> 3. User can add nearby resident contact information
-> 4. User can indicate actions they have taken to help restore/protect the site
-> 5. User can add general comments
-> 6. Comments can be cleared when not applicable
-
-#### US 1.0.16 – Add Any Photography Captured During Visit | Story Points: 5
-> **As** a User, **I want** to be able to add any photography taken during my visit, **so that** I can use photos to help make my report clearer and provide visual evidence of my observations.
-
-> **Acceptance Tests**
-
-> 1. User can upload images taken during their visit 
-> 2. User can add final remarks alongside photography 
-> 3. Displays uploaded image file names and count
-> 4. User can remove uploaded media
-> 5. User can replace uploaded media by uploading new files
-> 6. User can add additional images to existing uploads 
-> 7. Submitting the form without uploading images does not result in any error
-> 8. Photography question is not marked as required
-> 9. Removing all images clears the file count display 
-
-
-#### US 1.0.17 – (Admin) Add Questions Site Inspections Form | Story Points: 3  
-
-> **As** an admin, **I want** to be able to add questions on the Site Inspection Form, **so that** I can add new questions as needed.  
-
-> **Acceptance Tests**
-
-> 1. Admin fills in the form, clicks save, and the new question appears in the list. Empty titles are rejected
-> 2. Question title must end in (QXX) and match the question key format, otherwise saving is blocked
-> 3. After an admin adds a question, it immediately appears for all users filling out the form
-> 4. Non-admin users cannot access the question editor; the page requires requireAdmin=true
-
-#### US 1.0.18 – Adding Image Identifier | Story Points: 2 
-> **As** a User, **I want** to be able to add Identifier to the images that I upload, **so that** context can be given for the images.
-
-> **Acceptance Tests**
-
-> 1. Shows optional caption input after uploading an image
-> 2. Allows adding caption when initially empty
-> 3. Allows editing the image caption before submitting
-> 4. Allows deleting the image caption before submitting 
-> 5. Removing image clears uploaded entry and revokes object URL
-
-#### US 1.0.19 - Admin Viewing Images and Metadata | Story Points: 2
-> **As** an Admin. **I want** to be able to view the images uploaded by the users, **so that** I can keep track of site inspection and monitor site well-being.
-
-> **Acceptance Tests**
-
-> 1. Renders all uploaded image cards after fetch
-> 2. Admin can click an image card to open modal with metadata and associated site
-> 3. Shows empty state when API returns no images
-> 4. Handles API error response without crashing
-
-
-#### US 1.0.20 – Admin Editing Image Metadata | Story Points: 3 
-
-> **As** an Admin. **I want** to be able to edit image metadata **so that** I can make sure that the image data is accurate for the report's compliance.
-
-> **Acceptance Tests**  
-
-> 1. Admin can access an image’s metadata
-> 2. Admin can change the metadata
-> 3. Admin can save the changes to the metadata
-> 4. Other users can see the updated image’s metadata
-
-#### TASK 1.0.21 - View and understand the Supabase and decide if it is suitable 
-> Get acquainted with the existing supabase and decide if it is necessary to modify or rebuild it, or migrate to a different database management system
-
-
-#### US 1.0.22 – (User) Edit My Site Inspections Form | Story Points: 5
-
-> **As** a User, **I want** to be able to modify my Site Inspection forms after the fact, **so that** I can make edits to my forms as needed.
-
-> **Acceptance Tests**  
-
-> 1. Renders the edit form when user is authorized
-> 2. Shows access denied when user is not the owner 
-> 3. All previous responses are filled correctly
-> 4. Shows required popup if user clears a required question and attempts to submit
-> 5. If user changes a required question, submission is changed
-
-#### US 1.0.23 – Non-Public Information | Story Points: 2
-> **As** a User. **I want** to have somewhere to write information that won’t be published publically **so that** sensitive information / information for SAPAA only isn’t leaked
-
-> **Acceptance Tests**
-
-> 1. System ensures that name, email, and user_id are never included in the site inspection answers payload
-> 2. User roles and avatar URLs are explicitly excluded from the database submission for inspection records
-> 3. The submission payload is restricted to only the four allowed data columns; no unauthorized keys are permitted
-> 4. The uid is used only for internal report linking and is never stored within the publicly accessible answers array
-> 5. The response_id in the database refers to the report itself, not the private ID of the user who submitted it
-> 6. Automated checks confirm that sensitive user strings (like the actual email text) never appear within any submitted row values
-
-#### US 1.0.24 – Modify my Site Inspections Form Questions | Story Points: 8
-> **As** an admin, **I want** to be able to modify the questions on the Site Inspection Form, **so that** I can make any changes / correct any errors as I see fit.
-
-> **Acceptance Tests**
-
-> 1. Admin sees the header, navbar, sidebar sections, and questions for the selected section. Clicking a section loads its questions
-> 2. Admin clicks edit, modifies the title, subtext, or options, clicks save, and the updated question appears. A success message is shown and the form closes
-> 3. Admin fills in the add question form with a valid title and type, clicks save, and the new question appears. Save is disabled when the title is empty
-> 4. Admin can hide or show a question; the button label updates between "Hide" and "Show" to reflect the current state
-> 5. After an edit or addition is saved, questions are refetched and the updated data is immediately reflected in the form
-> 6. Clicking cancel on either the edit or add form discards all changes without saving 
-> 7. Non-admins cannot access the editor. If saving, adding, or toggling visibility fails, an appropriate error or alert is displayed
-
-#### US 1.0.25 – Hide a Site Inspections Form Questions | Story Points: 3
-> **As** an admin, **I want** to be able to hide any of the questions on the Site Inspection Form, **so that** only the questions I want are visible.
-
-> **Acceptance Tests**
-
-> 1. After an admin hides a question, it no longer appears in the user-facing form or the edit report form
-> 2. Hiding a question does not affect past submissions; existing answers for that question remain retrievable
-> 3. After an admin shows a hidden question, it reappears in both the user-facing form and the edit report form
-> 4. Hidden questions display a "Hidden" badge and a "Show" button; visible questions display only a "Hide" button with no badge
-> 5. Toggling a question's visibility immediately updates the admin UI without waiting for the server response
-  
-#### US 1.0.26 – Persist Site Inspection Form Draft | Story Points: 5
-> **As** a user, **I want** my answers to be automatically saved as a draft, **so that** I do not lose my progress if I refresh, navigate away, or accidentally close my tab.
-
-> **Acceptance Tests** 
-
-> 1. Saves responses to local storage on change and restores them after rerendering
-> 2. Separates drafts by site so Site A data does not appear on Site B
-> 3. Restores draft when returning to the page after navigating away
-> 4. Clears draft data from localStorage after successful submission
-
-#### US 1.0.27 – Enforce Required Questions on Site Inspection Form | Story Points: 3
-> **As** a user, **I want** to be prevented from submitting the form if required questions are unanswered, **so that** the report is complete and contains all mandatory information.
-
-> **Acceptance Tests** 
-
-> 1. If a user attempts to submit the Site Inspection Form without answering all required questions, a pop up message is displayed indicating that required questions must be completed before submission
-> 2. Blocks submission and shows the required questions popup when a mandatory field is missing
-> 3. The form submission is blocked until all required questions are answered
-> 4. Successfully calls uploadSiteInspectionAnswers when all required questions are answered 
-> 5. Optional questions do not prevent submission if left unanswered 
-
-#### US 1.0.28 – Autofill Applicable Form Questions | Story Points: 3
-> **As** a user, **I want** applicable information to be auto-filled into my report form, **so that** I can save time from having to manually enter that information myself.
-
-> **Acceptance Tests**
-
-> 1. Information is auto-filled when a new form is opened
-> 2. User's name is auto-filled 
-> 3. User's email is auto-filled 
-> 4. User's phone number is auto-filled 
-> 5. Date of visit is auto-filled with the current date
-> 6. Information is only auto-filled when it exists for the given user (not all user's have all of this information saved on their account)
-> 7. Auto-filled information can be manually edited afterwards
-
-#### TASK 1.0.29 - Refactor the Database Schema and Produce an Updated ER Diagram 
-> Analyze the existing Supabase database schema, identify structural issues and inconsistencies, and refactor the design to better support the Site Inspection Form functionality. Update relationships, normalize tables where necessary, and produce a clear ER diagram that reflects the revised data model.
-
-#### US 1.0.30 - Rich Text Formatting for Form Description Fields | Story Points: 3
-> **As** an admin, **I want** to apply bold, underline, italic, and link formatting to question subtext and section descriptions in the form editor, **so that** I can write clearer, more expressive descriptions for inspectors filling out site inspection forms without needing to know HTML.
-
-> **Acceptance Tests**
-
-> 1. Toolbar available: When editing a question's subtext or a section's description, a formatting toolbar with B, U, I, and link buttons is displayed above the text input.
-> 2. Bold formatting: Selecting text and clicking B (or pressing Ctrl+B / Cmd+B) wraps the selection in .... Clicking again removes the markers.
-> 3. Underline formatting: Selecting text and clicking U (or pressing Ctrl+U / Cmd+U) wraps the selection in .... Clicking again removes the markers.
-> 4. Italic formatting: Selecting text and clicking I (or pressing Ctrl+I / Cmd+I) wraps the selection in .... Clicking again removes the markers.
-> 5. Link embedding: Selecting text and clicking the link button converts it to selected text with url pre-selected for immediate replacement. With no selection, link text is inserted with link text pre-selected.
-> 6. Live preview: The right-side preview panel in the form editor reflects all formatting changes in real time, for both the "Add Question" and "Edit Question" workflows.
-> 7. Consumer form rendering: Bold, underline, italic, and links in question subtext and section descriptions render correctly for inspectors on the New Report and Edit Report pages. Links open in a new tab.
-> 8. Backward compatibility: Existing plain-text descriptions and subtext display identically to before; no data migration is required.
-> 9. XSS safety: Raw HTML other than `<script>` is not rendered; only the allowed element set (strong, em, u, a) is processed.
+> 1. Should only be able to edit own profile
+> 2. Required information is removed -> Prevents user from saving updates and required fields are highlighted
+> 3. Valid entries in updated profile fields on save -> UI refreshes with updated information
+> 4. Changes to profile details persist when revisiting page, on log in, etc.
+
+#### TODO: DISCUSS WITH FRANK
+- Remaining user stories are TBD from the following suggestions (Discuss with frank):
+    - If we are introducing an organization structure (i.e manager roles that can assign inspections to stewards under their supervision), what places in the application should this relationship be displayed? (user profile, manager-restricted view, organization page)
+    - Should we allow users to favourite sites? Display the # of favourites on a site in the map or site profile
+    - How do we want to display user activity and contributions:
+        - Top inspector leaderboard (on all or a single site?):
+        - Daily, Weekly streak
+        - Rank user’s top activities
+            - how many activities (top 5)? what date range do we determine this data from?
+            - expand to view timeline of all activities or table of activities and their count
+        - Other stats or badges:
+            - Hours on site (ex. KPI card on user profile or badges for reaching x number of hours)
+            - Sites visited (ex. KPI card on user profile or badges for visiting x number of sites)
+            - Badge for being the first inspector for a site
+            - Badges for visiting sites that “need attention”
+            - Badges for including more information on an inspection report (ex. including an image)
+            - Badges for doing x or more activities at a single site
+            - Badges for inspecting a site x or more times
 
 ---
-### **P2 – Site Image Management System**
+### **2 – Place Management**
 ---
-
-#### US 2.0.1 – Manage the uploading and storing of site inspection images | Story Points: 8
-> **As** an Admin, **I want** images uploaded from the Site Inspection Form web application to be stored in an AWS S3 bucket and referenced in the database, **so that** they can be accessed and managed for future reports.
+#### US 2.0.1 - View Sites on an Interactive Map | Story Points: x
+> **As** a User, **I want** to view a map with landmarked sites, , **so that** I can easily see where it is located
 
 > **Acceptance Tests**
 
-> 1. Images are stored in AWS S3 (tests for generating presigned and preventing upload for unsupported and large size files)
-> 2. Image metadata is stored in the database (metadata consistency across AWS and Supabase)
-> 3. Uploaded images are accessible through the application
+> 1. Should be able to navigate to a map view through the menu
+> 2. Clicking on location in the site profile -> Should display site on the map in "selected" mode (i.e showing its details)
+> 3. Clicking on a site on the map -> Should show additional information on the site
+> 4. Should highlight the site if it is selected on the map
 
-#### US 2.0.2 – Image Metadata| Story Points: 2
-> **As** a User, **I want** the image I upload to retain its metadata, such as descriptions, **so that** I do not have to retype previous descriptions.
+#### US 2.0.2 - Allow Admins to Add New Sites | Story Points: x
+> **As** an Admin, **I want** to be able to add a new site through the app UI, **so that** I am not limited to direct database inserts.
 
 > **Acceptance Tests**
 
-> 1. Keeps uploaded image visible after switching sections and returning
-> 2. Keeps caption and description values after switching sections and returning
+> 1. Existing site name or existing location is entered -> Warn user of possible duplicate
+> 2. Required Information is missing (name, description, location, etc.) -> Prevents user from adding site and required fields are highlighted 
 
-#### US 2.0.3 – Gallery View | Story Points: 3 
+#### US 2.0.3 -  | Story Points: x
+> **As** an Admin, **I want** to deactivate and reactivate a site, **so that** I can toggle its visibility throughout the app
 
-> **As** a User, **I want** to be able to see a gallery view of uploaded images, **so that** I can reference/view multiple images at once.
+#### US 2.0.4 - | Story Points: x
+> **As** an admin, **I want** to delete a site, **so that** I can remove incorrect or duplicate site information
+>  TODO, ADDRESS COMMENTS: How does this cascade, and affect user stats (site visits, their inspection history)?
 
-> **Acceptance Tests**  
+#### US 2.0.5 - | Story Points: x
+> TODO: As an admin I just want to be able to edit the sites if a steward was the one who inspected the site, so that _______
 
-> 1. Renders multiple site images in gallery layout
-> 2. Uses site-scoped gallery endpoint for selected site 
-> 3. Opens image detail modal with metadata from selected card 
-> 4. Switches detailed view when another image is opened
+> Needs clarification on if the admin can edit steward-submitted inspections (limited to certain fields?), or the site’s details?
 
-#### US 2.0.4 – Offline Image Viewing | Story Points: 5
+#### US 2.0.6 - | Story Points: x
+> As a the admin i want to see sites classified by controlled types, regions, subregions, and counties, so that filtering and reporting remain consistent.
+> TODO, ADDRESS COMMENTS: This is somewhat implemented in the homepage but can also be added to the map. Additional filters can include which sites “Need Attention”.
+> REVISED SUGGESTION: 2.0.6 As a user, I want to be able to search and filter sites on a map by county, so that I can easily find the site I am looking for
 
-> **As** a User, **I want** to be able to view images offline, **so that** I can reference previous images where I don’t have internet access
+#### US 2.0.7 - | Story Points: x
+> As a user, I want to be able to upload images of a site directly, so that others can see the recent state of the site
 
-> **Acceptance Tests**  
+#### US 2.0.8 - | Story Points: x
+> As a user, I want a section in the inspection form to upload images, so that I can easily submit images with other inspection details
 
-> 1. Previously viewed or downloaded images are accessible without an internet connection (airplane mode).
-> 2. Images load correctly in offline mode without application errors.
-> 3. Users are informed when images are unavailable due to not being cached.
+#### US 2.0.9 - | Story Points: x
+> As a user, I want to be able to remove images, so that inaccurate depictions of a site are not shown to others
+> TODO, ADDRES COMMENTS: Allow permission to certain stewards or only admin roles? 
 
+#### US 2.0.10 - | Story Points: x
+> As a SAPAA user, I want to view a place’s identity, location, classification, status, assigned people, and related inspections so that I can understand the place before taking action.
+> TODO, ADDRES COMMENTS: This is implemented in the homepage, clicking a site shows its details. Additionally we can add user story:
+> REVISED SUGGESTION: 2.0.10 As a user, I want to be able to see a site’s details by clicking on the site from the map view, so that I can easily gather context on the site while exploring the map
 
-#### TASK 2.0.5 - Discover other suitable image storage platforms
-> Discover more viable and cheaper solutions to be able to upload and store images online (as opposed to supabase). The budget is under CAD$50 per month.
-
-
-#### TASK 2.0.6 - Refactor Report Rendering to Use Updated Database Schema
-> Update report rendering logic to fetch and display data using the refactored Supabase schema. Modify queries and joins to align with the new Form Responses and Answers tables and verified correct rendering of all question types.
-
-#### US 2.0.7 – Admin Management of Media Files  | Story Points: 13
-
-> **As** an Admin, **I want** all uploaded media files to be stored with standardized metadata and linked to a site, **so that** I can organize, search, and manage images regardless of whether they were uploaded through an SIR or as standalone media
-
-> **Acceptance Tests**  
-
-> 1. All uploaded media files are linked to one existing site
-> 2. The system stores metadata for each media file, including site, date, uploader name, and identifier.
-> 3. Media files are saved using the SAPAA naming format derived from the metadata. e.g. ClydeFen-2025-01-23-BobSuruncle-ATVTrack.jpg.
-> 4. Admins can view all media files in the image gallery with their associated metadata.
-> 5. Admins can search or filter media files using stored metadata fields.
-
-
-#### US 2.0.8 – User Upload of Standalone Site Images  | Story Points: 8
-
-> **As** a User, **I want** to upload a standalone image without creating an SIR, **so that** I can store site-related photos with metadata even when they are not tied to a specific inspection report.
-
-> **Acceptance Tests**  
-
-> 1. Opens upload modal and displays dropzone when Upload Images is clicked
-> 2. Shows image editor and keeps submit disabled until required fields are complete
-> 3. Shows character-limit warnings when photographer/identifier max lengths are reached
-> 4. Closes modal and returns to base state when cancel is clicked
-> 5. Submits completed upload and redirects user to sites page with upload flag
-
-#### US 2.0.9 – Homescreen Gallery View  | Story Points: 5
-
-> **As** a User, **I want** to access a centralized Image Gallery, **so that** I can quickly browse through site photos without having to navigate into each individual site.
-
-> **Acceptance Tests**  
-
-> 1. Renders all uploaded image cards after fetch
-> 2. User can click an image card to open modal with metadata and associated site
-> 3. Shows empty state when API returns no images 
-> 4. Handles API error response without crashing
+#### US 2.0.11 - | Story Points: x
+> As an admin I want to view significant changes made to a place so that I can understand how and why its record changed.
+> TODO, ADDRESS COMMENTS: Need clarificarion: Update history? changes to naturalness and other stats overtime?
 
 ---
-### **P3 – Site Inspection Mobile Application (Android & iOS)**
+### **3 - Admin Persona**
 ---
+#### US 3.0.1 - | Story Points: x
+> As an admin, I want to see what a steward can access and what they cannot and have special permissions set for them
+> TODO, ADDRESS COMMENTS: Viewing permission roles already implemented, possible additions can be:
+> 3.0.x As an admin, I want to switch my view to “as a steward”, so that I can see what the steward role sees
+> 3.0.y As an admin, I want to revoke a users access, so that they can no longer use the app
+    > Acceptance Criteria:
+        > When a user with revoked access attempts to log in, they should see a message that “do not have access”
+        > When a user with revoked access attempts to sign up with the same email,  they should see a message that the email is taken
+        > When a user is revoked access, I should still be able to view their profile and historical contributes with their profile status as “deactivated”
+    > The current workaround to this is to set user access back to “pending”. There should be a separate status to denote if a user was removed. There is a similar story to deactivate a users account, is that satisfied by this?
+> Follow up questions:
+    > Do want to distinguish roles + use cases in the website for different types of stewards? for example, government stewards vs those that are just interested? What entities in the app can a steward edit?
 
-#### US 3.0.1 – Access the mobile version of the Site Inspection Form | Story Points: 5
+#### US 3.0.2 - | Story Points: x
+> As an admin, I want to assign one or more users to one or more places, so that stewardship responsibility is explicit and maintainable.
+> TODO, ADDRESS COMMENTS: Is assigning a user to inspect a site an intended use case? If so, what are the types of inspections, does the assigner set this type? Should all admins be allowed to assign a user or do we want to differentiate admins (can assign) vs superadmins (developers)?
+> Additional user stories should be made to surface who is assigned where (to the manager), progress of assigned inspections (to the manager), the assignees own progress on assigned inspections
 
-> **As** a User, **I want** to be able to access the Site Inspection form on the mobile app, **so that** I can make observations and reports while I’m out in the field.
+#### US 3.0.3 - | Story Points: x
+> As an admin, I want to be able to search and filter users, so that ________
+> TODO, ADDRESS COMMENTS:  Search and filters are already implemented in Account management. What additional filters do we want, if any? Is this functionality desired on other pages? fill in reason in “so that …”
 
-> **Acceptance Tests**  
+#### US 3.0.4 - | Story Points: x
+> As an admin, I want to group steward by permissions and traits, so that _____
+> TODO, ADDRESS COMMENTS: Group where and what traits? Assign then to an organization group, and if so we need to plan that organization in the db? Is this satisfied by the search and filters user story, if we allow filtering on permissions (i.e “Approval Status”)?
 
-> 1. Users can access the Site Inspection Form on both Android and iOS applications.
-> 2. The mobile form supports all required inspection fields.
-> 3. The SIR can be submitted from the mobile application
-> 4. Form input is usable on small screens in field conditions.
-> 5. Reports done on the mobile application are visible on the web and vice versa
+#### US 3.0.5 - | Story Points: x
+> As an admin, I want to export stewards names and their positions in bulk so that I can know what is going on with my memberships and whatnot, so we can gamify shit.
+> TODO, ADDRESS COMMENTS: - How does this scale, do we allow export for all stewards?
+> Is this use case geared towards admins who can assign stewards to inspect sites, limiting the export to users they manage? see US 3.0.2
 
+#### US 3.0.6 - | Story Points: x
+> As an admin, I want to be able to update a person’s information so that member records are up-to-date
+> TODO, ADDRESS COMMENTS: What information?
 
-
-#### US 3.0.2 – Offline Data Syncing  | Story Points: 8 
-
-> **As** a User, **I want** the information that I gather while offline to be automatically uploaded once I regain connection, **so that** I don’t have to waste time manually reuploading information.  
-
-> **Acceptance Tests**  
-
-> 1. Inspection data can be collected while the device is offline. 
-> 2. Offline data is automatically uploaded once connectivity is restored. 
-> 3. Users can see the sync status of pending inspections. 
-> 4. Offline data is temporarily stored locally
-
-
----
-### **P4 – Site Management**
----
-
-#### US 4.0.1 – PDF Generation of SIRs | Story Points: 5
-
-> **As** an Admin, **I want** to generate a customizable PDF export of Site Inspection Reports, **so that** I can review historical site data and provide documentation for audits or stakeholders.
-
-> **Acceptance Tests** 
-
-> 1. The Export Modal must display the correct context based on the user's selection and provide clear exit paths
-> 2. Users must be able to customize the report content via quick toggles and advanced filters
-> 3. The modal must adapt its data selection controls based on whether a single inspection or an entire site is selected
-> 4. The system must provide clear feedback during the PDF generation process and handle errors gracefully
-> 5. The system must accurately fetch and map inspection data based on the selected mode (Single, Site, or Multi-site)
-> 6. The data engine must strictly honor all user-defined filters to ensure the report only contains requested information
-> 7. The system must optimize image processing to prevent report bloat and ensure file compatibility
-
-#### US 4.0.3 – Update Site Profile of a Particular Site | Story Points: 3
-
-> **As** an Admin, **I want** to be able to update a profile for each site, **so that** users of the app can stay informed about the state of the site
-
-> **Acceptance Tests**  
-
-> 1. The system must provide a reliable list of available counties to ensure accurate site categorization
-> 2. Users must be able to modify and save site details, including name and location settings
-> 3. The site management features must be restricted to authorized users and provide clear entry points for editing
-> 4. The editing modal must provide a seamless flow for modifying and persisting site changes
-
-#### US 4.0.4 – Disable Site Profile of a Particular Site | Story Points: 3
-
-> **As** an Admin, **I want** to be able to remove a profile for each site, **so that** I can keep what crown land is up to date
-
-> **Acceptance Tests**  
-
-> 1. The system must provide a comprehensive view of all sites, regardless of their current operational status
-> 2. Administrators must be able to toggle the operational status of any site to control its availability in the system
-> 3. The admin interface must provide clear visual indicators for the operational status of every site
-> 4. Administrators must be able to change a site's visibility through the edit flow, with the system ensuring only intentional changes are processed
+#### US 3.0.7 - | Story Points: x
+> As an admin, I want to see a history of admin actions I have performed such as role changes, status changes, site assignments, and etc., so that I can keep track of my work and hold myself accountable
 
 ---
-### **P5 – User Accounts User Stories**
+### **4 - General Features**
 ---
-
-#### US 5.0.1 – Admin Approval of Users | Story Points: 5
-
-> **As** an Admin, **I want** to be able to review and approve new user registrations, **so that** only authorized individuals can access the webapp.
-
-> **Acceptance Tests** 
-
-> 1. New user signup creates account with authenticated: false status
-> 2. Admin can filter to show only pending approval users
-> 3. Pending user displays pending approval badge in admin list
-> 4. Admin can approve pending user; authenticated flag set to true
-> 5. Admin can reject pending user; authenticated flag remains false
-> 6. Admin account management page displays user approval statistics
-> 7. Approved user displays approved badge in admin list
-> 8. Admin can revoke approval from previously approved user; authenticated set to false
-
-#### US 5.0.2 – Sign Out Feature | Story Points: 2
-
-> **As** a User, **I want** to be able to sign out of the app **so that** I can access the app through a different account.
-
-> **Acceptance Tests**  
-
-> 1. User is logged out and all tokens are revoked
-> 2. User is redirected to the home page
-> 3. Login information remains stored in the database
-> 4. User can sign back in with the same or a different account
-> 5. Back navigation does not return to protected screens
-> 6. If sign out fails, an error message is displayed and the user can try again
-
----
-### **P6 – Miscellaneous UI Tasks**
----
-
-#### TASK 6.0.1 – Web Application Responsiveness
-
-> Ensure the web application layout dynamically adjusts to provide a seamless experience across all screen sizes, from mobile phones to large desktop monitors. The interface should automatically reposition elements and scale content to maintain usability and visual clarity on any device. This involves testing and refining the UI to eliminate horizontal scrolling and ensure all features remain accessible regardless of the user's display.
-
-#### TASK 6.0.2 – Front-End Error Handling & Validation 
-
-> Implement an error-handling system to manage API failures and incorrect user inputs gracefully. This includes adding "toast" notifications or alert banners for system errors and ensuring that form fields provide clear and real-time validation messages. The goal is to prevent the application from crashing and to keep the user informed when an action cannot be completed.
-
-#### TASK 6.0.3 – Inspection Fields Integration
-
-> Update the existing form submission logic to include ```inspection_number``` and ```inspection_date``` as required fields for every test entry. This involves modifying existing database schema and submission logic to ensure these new identifiers are correctly associated with each submitted inspection record.
+#### US 4.0.1 - | Story Points: x
+> As a user, I want to be able to view site data offline, so that I can read its details during my visit without needing to be online
+#### US 4.0.2 - | Story Points: x
+> As a steward, I want offline/online map layers, so that I can navigate complex areas.
+#### US 4.0.3 - | Story Points: x
+> As a steward, I should be able to see and continue drafts of my site inspections that are autosaved, so that I can resume my progress in the event I lose connection
+#### US 4.0.4 - | Story Points: x
+> As a steward, I want to be able to edit my previous inspections, so that I can easily fix incorrectly submitted entries
+> TODO, ADDRESS COMMENT: Should this go through admin approval?
 
 ## MoSCoW
 
