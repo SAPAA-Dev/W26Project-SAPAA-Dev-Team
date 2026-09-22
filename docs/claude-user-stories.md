@@ -226,8 +226,7 @@ defect people will actually hit.
 
 As a user, I want to search for a site and find it.
 
-Search was reported broken during the handover call, tested live, and failed. It has not been
-touched since.
+Search was reported broken during the handover call, but the current web and mobile implementations already filter site names/counties and have tests. If the deployed app still fails, record the deployed commit/environment as a regression before estimating this as new work.
 
 ### F26-C5. Load the sites list in pages (2 points) — New
 
