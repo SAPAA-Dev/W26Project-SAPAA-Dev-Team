@@ -1,37 +1,241 @@
 # Project Management
 
-This page provides a general overview of the assigned tasks and roles for the duration of five sprints (subject to change).
+This page provides an overview of the assigned tasks and roles for the duration of five sprints
+(subject to change).
+
+> **Sprint 1 is due September 29, 2026, confirmed in the September 19 working session.**
+> Sprints 2 to 5 are proposed on a two week cadence from that date and need confirming.
+> They are worked backwards from the client's commitment to field testing in early December 2026.
 
 ## Story Map
-[View the Story Map on MURAL](https://app.mural.co/t/w26sapaa5191/m/w26sapaa5191/1769738797979/50f464dfdeaa98350a875ad25dff2f1a613ea7a3?sender=ubcb7600326dec09377448403)
 
-![Story Map](images/W26-SAPAA-Storymap.png)
+_The Fall 2026 story map is in progress. It will be added here as `images/F26-SAPAA-Storymap.png`
+once the user stories in `index.md` are finalised._
+
+The ranked backlog the plan below is drawn from lives in [Issues Backlog](issues.md), and the
+evidence behind it is in [Investigation](investigation/README.md).
 
 ## Project Plan
 
-**Project Scrum Master:** Jason Liang
+Scrum Master and Product Owner rotate each sprint. The full rotation is on the
+[Teamwork](teamwork.md) page.
 
-**Project Product Owner:** Harveer Deol, Raiyana Rahman
+**Sprint 1 Scrum Master:** Chris
+
+**Sprint 1 Product Owner:** Alissa
+
+**Team:** Saumya, Chris, Zanab, Abhinav, Alissa, Aaron, Jayden
 
 ### Sprint 1
-**Due:** *February 1, 2026*
+**Due:** *September 29, 2026*
+
+Sprint 1 is documentation and discovery. There is an existing codebase inherited from two previous
+teams, so a large part of this sprint is establishing what actually exists before committing to a
+backlog.
 
 #### Tasks
 
 |Task|Related US|Assignee|Due|
 |:---:|:---:|:---:|:---:|
-|User Stories|Documentation|Everyone|Jan 30th|
-|Project Requirements Doc|Documentation|Raiyana|Jan 30th|
-|Architecture Diagram|Documentation|Vishal, Braden|Jan 30th|
-|UML Diagram|Documentation|Braden|Jan 30th|
-|Sequence Diagram|Documentation|Vishal|Jan 31st|
-|User Interface Mockup|Documentation|Jason, Akib, Braden|Jan 31st|
-|Software Design Doc|Documentation|Raiyana|Feb 1st|
-|Project Management Doc|Documentation|Jason, Raiyana, Vishal|Feb 1st|
-|Team Canvas|Documentation|Everyone|Jan 31st|
-|Teamwork Doc|Documentation|Jason|Jan 31st|
-|Research and evaluate image management options|TASK 2.0.5|Harveer, Zoe, Akib, Raiyana|Jan 29th|
-|Understand the previous project database|TASK 1.0.21|Harveer, Jason, Vishal, Braden|Jan 27th|
+|User Stories|Documentation|Alissa, Saumya|Sep 26th|
+|Project Requirements Doc|Documentation|Alissa|Sep 26th|
+|Project Overview: exec summary, glossary, similar products|Documentation|Zanab|Sep 26th|
+|UML Class and Sequence Diagrams|Documentation|Jayden|Sep 26th|
+|High-Level Architecture Diagram|Documentation|Saumya|Sep 26th|
+|Low-Fidelity Wireframes and UI Flow Diagram|Documentation|Abhinav|Sep 27th|
+|Software Design Doc|Documentation|Abhinav|Sep 27th|
+|Project Management Doc|Documentation|Saumya|Sep 28th|
+|Team Canvas|Documentation|Everyone|Sep 19th (done)|
+|Teamwork Doc|Documentation|Chris|Sep 19th (done)|
+|Handover investigation of inherited codebase|Documentation|Saumya|Sep 21st (done)|
+|Issues backlog and prioritisation|Documentation|Saumya|Sep 21st (done)|
+|Meeting minutes for Fall 2026 to date|Documentation|Chris|Sep 26th|
+|UI audit of the deployed application|Documentation|Aaron|Sep 22nd (done)|
+|Mobile application user stories|Documentation|Chris|Sep 27th|
+|Confirm scope and open questions with client|Documentation|Saumya, Alissa|Sep 26th|
+
+### Sprint 2
+**Due:** *October 13, 2026 (proposed)*
+
+Access control and foundations. Nothing else in the backlog is safe to build until authorisation is
+enforced on the server, so this sprint clears that first.
+
+#### User stories
+
+|User Story|Story points|
+|:---:|:---:|
+|Stop `/gallery` leaking every user's photos|2|
+|Remove committed secrets from docs and tests|2|
+|Rotate the service role key and remove it from the mobile bundle|2|
+|Enforce caller identity on every server action|5|
+|Move `role` out of `user_metadata` into a table with RLS|5|
+|Log every role change|2|
+|Fix the mobile delete-by-index bug|2|
+|Fix the failing test on main|1|
+|Add `.env.example` and a working setup guide|2|
+
+**Sprint Velocity:** 23
+
+#### Tasks
+
+|Task|Related US|Assignee|Due|
+|:---:|:---:|:---:|:---:|
+|Add owner filter to user gallery routes|Gallery leak|TBD|Oct 2nd|
+|Migrate Cypress suite to team-owned test accounts|Remove secrets|TBD|Oct 3rd|
+|Scrub keys from docs and rotate|Remove secrets|TBD|Oct 3rd|
+|Move service role calls behind a server endpoint|Rotate key|TBD|Oct 6th|
+|Add caller checks to all server actions|Caller identity|TBD|Oct 8th|
+|Create roles table and RLS policies|Role table|TBD|Oct 8th|
+|Seed first admin as a database record|Role table|TBD|Oct 8th|
+|Add role change audit table|Log role changes|TBD|Oct 9th|
+|Fix delete to use the real key, not list index|Mobile delete bug|TBD|Oct 6th|
+|Write `.env.example` and update README setup|Setup guide|TBD|Oct 9th|
+|Sprint 2 review and retrospective|All US|Everyone|Oct 10th|
+
+### Sprint 3
+**Due:** *October 27, 2026 (proposed)*
+
+Place management foundations. Sites currently have no coordinates, so every map story is blocked
+until that is fixed.
+
+#### User stories
+
+|User Story|Story points|
+|:---:|:---:|
+|Decide the canonical database schema (spike)|2|
+|Add real coordinates to sites|5|
+|Show stewards a map|2|
+|Cache geocoding results and bound the quota|2|
+|Key site detail pages by id, not name|2|
+|Make site search work|2|
+|Put the database schema in version control|5|
+|Paginate the sites list|2|
+
+**Sprint Velocity:** 22
+
+#### Tasks
+
+|Task|Related US|Assignee|Due|
+|:---:|:---:|:---:|:---:|
+|Write schema decision record and agree it with the team|Schema spike|TBD|Oct 15th|
+|Add latitude and longitude columns to sites|Site coordinates|TBD|Oct 17th|
+|Backfill coordinates for existing sites|Site coordinates|TBD|Oct 20th|
+|Read map from stored coordinates instead of geocoding|Site coordinates|TBD|Oct 21st|
+|Expose the map to stewards, not just admins|Steward map|TBD|Oct 22nd|
+|Move site detail routing to id|Site detail by id|TBD|Oct 20th|
+|Fix site search|Site search|TBD|Oct 21st|
+|Add migrations directory and commit current schema|Schema in VCS|TBD|Oct 23rd|
+|Add pagination to the sites list|Paginate sites|TBD|Oct 22nd|
+|Sprint 3 review and retrospective|All US|Everyone|Oct 24th|
+
+### Sprint 4
+**Due:** *November 10, 2026 (proposed)*
+
+People management and KPIs. Measurement comes before display, per the mentor's advice in the
+handover call.
+
+#### User stories
+
+|User Story|Story points|
+|:---:|:---:|
+|Instrument the events KPIs are built from|5|
+|Build the user profile page|5|
+|Port the KPIs that already exist in the mobile app|5|
+|Stop mobile silently discarding offline edits|8|
+|Add password reset|2|
+|Send the approval email the app already promises|2|
+|Fix logout|2|
+
+**Sprint Velocity:** 29
+
+#### Tasks
+
+|Task|Related US|Assignee|Due|
+|:---:|:---:|:---:|:---:|
+|Design and add activity event recording|Instrument events|TBD|Oct 30th|
+|Build profile page using existing name and avatar fields|Profile page|TBD|Nov 4th|
+|Port sites inspected, naturalness, top five, needs attention|Port KPIs|TBD|Nov 5th|
+|Add a local write queue to the mobile app|Offline edits|TBD|Nov 5th|
+|Flush queued writes on reconnect|Offline edits|TBD|Nov 6th|
+|Add password reset route and login link|Password reset|TBD|Nov 3rd|
+|Send approval email or remove the promise|Approval email|TBD|Nov 3rd|
+|Fix logout and move the control out of the homepage|Fix logout|TBD|Nov 4th|
+|Sprint 4 review and retrospective|All US|Everyone|Nov 7th|
+
+### Sprint 5
+**Due:** *November 24, 2026 (proposed)*
+
+Polish, history and field test readiness. Leaves a buffer before December field testing.
+
+#### User stories
+
+|User Story|Story points|
+|:---:|:---:|
+|Record inspection edit history|5|
+|Add "Compare by Question" to the web app|5|
+|Add image deletion and clean up orphaned files|5|
+|Stand up a staging environment|5|
+|Fix login and signup accessibility|2|
+|Let stewards export their own PDFs|2|
+|Make CI actually gate merges|2|
+|Prepare for December field testing|2|
+|Fix the mobile "Sync Now" button|2|
+|Write a backup and recovery runbook|2|
+
+**Sprint Velocity:** 32
+
+#### Tasks
+
+|Task|Related US|Assignee|Due|
+|:---:|:---:|:---:|:---:|
+|Add an answer history table and stop delete-and-reinsert|Edit history|TBD|Nov 17th|
+|Build the compare by question view|Compare by question|TBD|Nov 18th|
+|Add image delete plus storage cleanup on report delete|Image deletion|TBD|Nov 18th|
+|Create a staging environment and document promotion|Staging|TBD|Nov 19th|
+|Fix form element, labels, autocomplete and contrast on auth pages|Accessibility|TBD|Nov 17th|
+|Open PDF export to stewards|Steward PDF|TBD|Nov 17th|
+|Add lint, build and E2E to CI and fix branch triggers|CI gating|TBD|Nov 19th|
+|Confirm field test date, testers and scenarios with client|Field testing|TBD|Nov 14th|
+|Make Sync Now actually refresh site data|Sync Now|TBD|Nov 18th|
+|Write the backup and recovery runbook|Backup runbook|TBD|Nov 20th|
+|Sprint 5 review and retrospective|All US|Everyone|Nov 21st|
+|Finalise documentation and handover|Documentation|Everyone|Nov 21st|
+
+### Milestones
+
+|Milestone|Target|
+|:---:|:---:|
+|Requirements and design agreed with client|End of Sprint 1|
+|Authorisation enforced server side|End of Sprint 2|
+|Sites have real coordinates and stewards can use the map|End of Sprint 3|
+|Stewards have profiles and the app measures activity|End of Sprint 4|
+|Release candidate ready for field testing|End of Sprint 5|
+|Client field testing|Early December 2026|
+
+### Notes on estimation
+
+Story points map from the effort scale in [Issues Backlog](issues.md): S is 2 points, M is 5,
+L is 8, XL is 13. Estimates assume LLM assistance, so a point reflects judgement and review effort
+rather than typing.
+
+Velocity rises across the sprints (23, 22, 29, 32) on the assumption that the team speeds up once
+the codebase is familiar and the access control work is behind us. Revisit after Sprint 2 with
+real numbers.
+
+Assignees for Sprints 2 to 5 are marked TBD and will be filled in at each sprint planning session.
+
+---
+
+## Archive: Winter 2026 Project Plan (previous team)
+
+The plan below belongs to the **Winter 2026** team (Jason Liang, Raiyana Rahman, Vishal Sivakumar,
+Harveer Deol, Braden Woods, Akib Zaman Choudhury, Zoe Prefontaine). It is kept as the delivery
+record for the code this project inherited. It is **not** the Fall 2026 plan and the names, dates
+and story numbers in it refer to their work, not ours.
+
+Their Sprint 1 roles were Scrum Master Jason Liang, Product Owners Harveer Deol and
+Raiyana Rahman. Their story map is at `images/W26-SAPAA-Storymap.png` and their MURAL board is on
+a workspace we do not have access to.
 
 ### Sprint 2
 **Due:** *February 15, 2026*
