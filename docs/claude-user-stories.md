@@ -422,9 +422,7 @@ to his own deployment after each sprint.
 
 As a developer, I want the build, linter and tests to run on every pull request.
 
-None of those run now. The workflow points at five branches that do not exist, and its deploy step
-runs a compose file that is not in the repo, while the deployment manual says no CI is needed at
-all.
+Only the webapp test job runs on pull requests; lint/build checks are absent. The deploy job is main-push-only and invokes `/home/ubuntu/deploy/docker-compose.yml` outside the repo, while the deployment manual says no CI is needed at all.
 
 ### F26-I3. Make a fresh clone work (2 points) — New
 
