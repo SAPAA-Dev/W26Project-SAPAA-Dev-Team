@@ -387,9 +387,7 @@ to fix stale site data. Both of the remedies the manual gives are wrong.
 
 As a volunteer, I want to install the app on my phone.
 
-The build setup is Android only, there is no iOS configuration, nothing has been published, and the
-user manual tells people to search an app store where the app does not appear. An iPhone volunteer
-cannot get this app today. Worth resolving before December field testing if iPhones are in scope.
+The EAS build profiles currently define Android artifacts only; the repo does include an iOS Expo configuration and an `ios` script, so “there is no iOS configuration” is not accurate. The publication gap still needs resolving before December field testing if iPhones are in scope.
 
 ### F26-H2. Ask for camera and location permission properly (2 points) — New
 
