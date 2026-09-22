@@ -5,8 +5,10 @@ the deployed app. They are not merged into `index.md` yet. The point of keeping 
 so the team can review them, argue about them, throw some out, and then fold the survivors into
 the real backlog.
 
-Evidence for every claim below is in `docs/investigation/`. Where a story says something is
-broken or missing, that was checked against the code, not assumed.
+Evidence for every claim below is in `docs/investigation/`. That folder is not on this branch, it
+arrives with the Sprint 1 documentation pull request, so those references only resolve once that
+one is merged. Where a story says something is broken or missing, it was checked against the code
+rather than assumed.
 
 ## About the numbering
 
