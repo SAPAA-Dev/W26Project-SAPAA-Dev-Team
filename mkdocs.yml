@@ -22,6 +22,7 @@ nav:
   - Software Design: 'software-design.md'
   - Media Storage Architecture: 'aws-architecture.md'
   - Teamwork: 'teamwork.md'
+  - Contributing: 'contributing.md'
   - Traceability Matrix: 'traceability-matrix.md'
   - Meeting Minutes: 'meeting-minutes.md'
   - UI/UX design: 'ui-design.md'
