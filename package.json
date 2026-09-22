@@ -20,6 +20,7 @@
   "name": "f25project-SAPAA",
   "version": "1.0.0",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks || true",
     "android": "expo run:android",
     "ios": "expo run:ios"
   },

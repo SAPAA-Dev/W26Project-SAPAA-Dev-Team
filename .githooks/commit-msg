@@ -1,0 +1,37 @@
+#!/bin/sh
+# Validates commit message "(<type>): <description>" and branch name "<type>/<short-description>".
+# Bypass with: git commit --no-verify
+set -e
+
+TYPES='feat|fix|docs|chore|refactor|style|perf|build|ci|test|del'
+
+msg=$(head -n 1 "$1")
+
+# Let git's own generated messages through (merge, revert, autosquash).
+case "$msg" in
+  Merge\ *|Revert\ *|fixup!\ *|squash!\ *) exit 0 ;;
+esac
+
+if ! printf '%s' "$msg" | grep -Eq "^\(($TYPES)\): .*[^[:space:]]"; then
+  echo "commit rejected: message must be \"(<type>): <description>\"" >&2
+  echo "  got:   $msg" >&2
+  echo "  types: $(echo "$TYPES" | tr '|' ' ')" >&2
+  echo "  e.g.   (feat): add supplier search" >&2
+  echo "  bypass: git commit --no-verify" >&2
+  exit 1
+fi
+
+branch=$(git symbolic-ref --short -q HEAD || echo "")
+case "$branch" in
+  ''|main|master) exit 0 ;;   # detached HEAD and long-lived branches are exempt
+esac
+
+if ! printf '%s' "$branch" | grep -Eq "^($TYPES)/[a-z0-9]+(-[a-z0-9]+)*$"; then
+  echo "commit rejected: branch must be \"<type>/<short-description>\" (lowercase kebab-case)" >&2
+  echo "  got:   $branch" >&2
+  echo "  types: $(echo "$TYPES" | tr '|' ' ')" >&2
+  echo "  e.g.   feat/supplier-search" >&2
+  echo "  rename: git branch -m feat/supplier-search" >&2
+  echo "  bypass: git commit --no-verify" >&2
+  exit 1
+fi
