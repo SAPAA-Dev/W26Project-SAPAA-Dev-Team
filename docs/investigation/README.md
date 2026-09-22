@@ -10,8 +10,10 @@ the deployed app, and the mobile app.
 
 | Document | What it is |
 |---|---|
-| **[MISSING-USER-STORIES.md](MISSING-USER-STORIES.md)** | **The deliverable.** 51 stories we are missing, plus the draft stories that need to change, plus new questions for Frank. |
 | **[THE-SCHEMA-SPLIT.md](THE-SCHEMA-SPLIT.md)** | The biggest finding: two inspection systems in one database, sharing one table. Read this before planning any sprint. |
+
+The candidate user stories that came out of this work are in `docs/claude-user-stories.md`, and the
+defects and engineering work are in `docs/issues.md`.
 
 ## Supporting reports
 
