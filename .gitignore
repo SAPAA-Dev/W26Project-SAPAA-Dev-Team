@@ -176,3 +176,6 @@ node_modules
 # cypress files
 webapp/cypress.env.json
 webapp/cypress/screenshots
+
+# IDE
+.idea/

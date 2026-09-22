@@ -5,9 +5,9 @@
 
 SAPAA currently manages site inspection data through a manual pipeline. Stewards submit observations via Google Forms, Admin converts them in MS Excel, and the results are stored in a local MS Access database. This project replaces that temporary setup with a sustainable, low-cost cloud data infrastructure that automatically ingests inspection data into a PostgreSQL database, enables Admin to manage the data, and generate PDF reports. A major focus of our implementation is scalable and cost-aware image management: inspection images are stored in AWS S3, providing a reliable, secure, and affordable solution for handling large volumes of media.
 
-This work also advances the client's original vision of People and Place Management for v2.0, though with a narrower scope this semester: Admin's new ability to approve and manage user accounts lays the groundwork for People Management, and updated Site profiles are a first step toward Place Management. Full geographic display and volunteer activity-tracking features are deferred to a future phase.
+This work also advances the client's original vision of People and Place Management for v2.0, though with a narrower scope this semester: Admin's new ability to approve and manage user accounts lays the groundwork for People Management, and updated Site profiles are a first step toward Place Management.
 
-The primary user is the Admin, who needs a reliable, maintainable system that eliminates manual data handling while retaining access to the data, report generation, and distribution. Longer-term, the project aims to extend this to Android and iOS apps so stewards can log observations offline in the field, though that work is out of scope for this semester.
+The primary user is the Admin, who needs a reliable, maintainable system that eliminates manual data handling while retaining access to the data, report generation, and distribution. Longer-term, the project aims to extend this to Android and iOS apps so stewards can log observations offline in the field if time permits in the semester.
 
 
 
@@ -30,7 +30,7 @@ The primary user is the Admin, who needs a reliable, maintainable system that el
 - **SAPAA Stewards Mobile:** The mobile application, usable on both Android and iOS, that stewards can use while offline to submit their Site Inspection data
 - **People Management**: A planned v2.0 capability to support and track the community of volunteer stewards, including individual activity history — intended to support future volunteer recognition. Partially addressed this semester via Admin user-approval workflows.
 
--  **Place Management**: A planned v2.0 capability to better display where a Site is and what activity has occurred there, extending the geographic presentation on the SAPAA website. Partially addressed this semester via  Site profile editing; full mapping/geographic display is deferred
+-  **Place Management**: A planned v2.0 capability to better display where a Site is and what activity has occurred there, extending the geographic presentation on the SAPAA website. Partially addressed this semester via Site profile editing.
 
 
 
