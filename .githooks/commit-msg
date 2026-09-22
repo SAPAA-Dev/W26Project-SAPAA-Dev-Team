@@ -17,7 +17,6 @@ if ! printf '%s' "$msg" | grep -Eq "^\(($TYPES)\): .*[^[:space:]]"; then
   echo "  got:   $msg" >&2
   echo "  types: $(echo "$TYPES" | tr '|' ' ')" >&2
   echo "  e.g.   (feat): add supplier search" >&2
-  echo "  bypass: git commit --no-verify" >&2
   exit 1
 fi
 
@@ -32,6 +31,5 @@ if ! printf '%s' "$branch" | grep -Eq "^($TYPES)/[a-z0-9]+(-[a-z0-9]+)*$"; then
   echo "  types: $(echo "$TYPES" | tr '|' ' ')" >&2
   echo "  e.g.   feat/supplier-search" >&2
   echo "  rename: git branch -m feat/supplier-search" >&2
-  echo "  bypass: git commit --no-verify" >&2
   exit 1
 fi
