@@ -100,8 +100,7 @@ promising it.
 As a user, I want signing out to keep me signed out, so that the next person on a shared device
 cannot use my account.
 
-Coming back to the site silently signs you back in from the stored token, and the only sign out
-control is on the home page.
+The web and mobile apps already expose logout controls beyond the home page and call Supabase signOut. If the remaining defect is session restoration or browser back-button access after logout, specify and test that behavior instead of treating logout itself as new.
 
 ### F26-A8. Keep a record of role changes (2 points) — New
 
