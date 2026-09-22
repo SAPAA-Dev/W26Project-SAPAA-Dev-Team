@@ -3,7 +3,8 @@
 This page provides an overview of the assigned tasks and roles for the duration of five sprints
 (subject to change).
 
-> **Dates below are proposed and need confirming against the Fall 2026 course schedule.**
+> **Sprint 1 is due September 29, 2026, confirmed in the September 19 working session.**
+> Sprints 2 to 5 are proposed on a two week cadence from that date and need confirming.
 > They are worked backwards from the client's commitment to field testing in early December 2026.
 
 ## Story Map
@@ -26,7 +27,7 @@ Scrum Master and Product Owner rotate each sprint. The full rotation is on the
 **Team:** Saumya, Chris, Zanab, Abhinav, Alissa, Aaron, Jayden
 
 ### Sprint 1
-**Due:** *September 26, 2026 (proposed)*
+**Due:** *September 29, 2026*
 
 Sprint 1 is documentation and discovery. There is an existing codebase inherited from two previous
 teams, so a large part of this sprint is establishing what actually exists before committing to a
@@ -36,23 +37,25 @@ backlog.
 
 |Task|Related US|Assignee|Due|
 |:---:|:---:|:---:|:---:|
-|User Stories|Documentation|Alissa, Saumya|Sep 24th|
-|Project Requirements Doc|Documentation|Zanab|Sep 24th|
-|Architecture Diagram|Documentation|Abhinav|Sep 24th|
-|ER and UML Diagrams|Documentation|Aaron|Sep 24th|
-|Sequence Diagrams|Documentation|Abhinav|Sep 25th|
-|Low-Fidelity Wireframes and UI Flow Diagram|Documentation|Jayden, Chris|Sep 25th|
-|Software Design Doc|Documentation|Aaron|Sep 26th|
-|Project Management Doc|Documentation|Saumya, Chris|Sep 26th|
+|User Stories|Documentation|Alissa, Saumya|Sep 26th|
+|Project Requirements Doc|Documentation|Alissa|Sep 26th|
+|Project Overview: exec summary, glossary, similar products|Documentation|Zanab|Sep 26th|
+|UML Class and Sequence Diagrams|Documentation|Jayden|Sep 26th|
+|High-Level Architecture Diagram|Documentation|Saumya|Sep 26th|
+|Low-Fidelity Wireframes and UI Flow Diagram|Documentation|Abhinav|Sep 27th|
+|Software Design Doc|Documentation|Abhinav|Sep 27th|
+|Project Management Doc|Documentation|Saumya|Sep 28th|
 |Team Canvas|Documentation|Everyone|Sep 19th (done)|
 |Teamwork Doc|Documentation|Chris|Sep 19th (done)|
 |Handover investigation of inherited codebase|Documentation|Saumya|Sep 21st (done)|
 |Issues backlog and prioritisation|Documentation|Saumya|Sep 21st (done)|
-|Meeting minutes for Fall 2026 to date|Documentation|Chris|Sep 25th|
-|Confirm scope and open questions with client|Documentation|Alissa|Sep 26th|
+|Meeting minutes for Fall 2026 to date|Documentation|Chris|Sep 26th|
+|UI audit of the deployed application|Documentation|Aaron|Sep 22nd (done)|
+|Mobile application user stories|Documentation|Chris|Sep 27th|
+|Confirm scope and open questions with client|Documentation|Saumya, Alissa|Sep 26th|
 
 ### Sprint 2
-**Due:** *October 10, 2026 (proposed)*
+**Due:** *October 13, 2026 (proposed)*
 
 Access control and foundations. Nothing else in the backlog is safe to build until authorisation is
 enforced on the server, so this sprint clears that first.
@@ -90,7 +93,7 @@ enforced on the server, so this sprint clears that first.
 |Sprint 2 review and retrospective|All US|Everyone|Oct 10th|
 
 ### Sprint 3
-**Due:** *October 24, 2026 (proposed)*
+**Due:** *October 27, 2026 (proposed)*
 
 Place management foundations. Sites currently have no coordinates, so every map story is blocked
 until that is fixed.
@@ -126,7 +129,7 @@ until that is fixed.
 |Sprint 3 review and retrospective|All US|Everyone|Oct 24th|
 
 ### Sprint 4
-**Due:** *November 7, 2026 (proposed)*
+**Due:** *November 10, 2026 (proposed)*
 
 People management and KPIs. Measurement comes before display, per the mentor's advice in the
 handover call.
@@ -160,7 +163,7 @@ handover call.
 |Sprint 4 review and retrospective|All US|Everyone|Nov 7th|
 
 ### Sprint 5
-**Due:** *November 21, 2026 (proposed)*
+**Due:** *November 24, 2026 (proposed)*
 
 Polish, history and field test readiness. Leaves a buffer before December field testing.
 

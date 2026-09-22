@@ -1,8 +1,117 @@
 # Meeting Minutes
 
+Minutes for the current Fall 2026 team are in the first section. The Winter 2026 sections below
+are the previous team's records and are kept unchanged.
+
 ---
 
+# Fall 2026
+
 ## Sprint 1
+
+---
+
+### September 18, 2026 – Meeting #1: Handover call with previous teams
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA SIR |
+| **Mode** | Online |
+| **Attendees** | Saumya, Chris, Zanab, Abhinav, Alissa, Aaron, Jayden, plus Vishal, Harveer, Raiyana and Alyssa from the Winter 2026 team and Mehrdad from the Fall 2025 team |
+
+#### Summary
+
+Onboarding call with the two previous teams to understand the existing codebase, repository setup and Frank's expectations before starting Sprint 1. Full transcript in `meetings/week3/week3.txt`, detailed summary in `meetings/week3/week3Summary.txt`.
+
+#### Key Discussions & Decisions
+
+- Work from Frank's repository rather than the previous team's personal copy, since it holds the latest code.
+- Two deployments run in parallel: the course Vercel and Supabase instance, and Frank's own site, which received approved work after each sprint review.
+- The previous team built the site inspection form, image upload and gallery, PDF generation and the admin panel. They did no work on the mobile app.
+- The map exists on the admin side as a heat map and has been unchanged since Fall 2025. Search does not work.
+- Account management is limited to password reset, account creation and deletion, and approval status. It was described as clunky.
+- Sign up requires a confirmation email and then manual admin approval, and that flow may be partly broken.
+- Mehrdad's advice: the project measures no KPIs at all. That is priority one. Deciding where to display them is priority two.
+- No staging environment exists. It was deliberately left for this team.
+- Frank runs weekly Friday meetings and expects a slide deck covering what was done, what is next, and open questions.
+
+#### Action Items
+
+- Get access to GitHub, Supabase and Vercel through the shared dev team email (Everyone).
+- Boot up the mobile app and assess its state (Everyone).
+- Confirm with Frank whether the web app stays the priority over mobile (Saumya).
+
+#### Next Meeting Agenda
+
+- Team working session to draft user stories and plan Sprint 1.
+
+---
+
+### September 19, 2026 – Meeting #2: Sprint 1 working session
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA SIR |
+| **Time** | 2:49 PM – 7:27 PM MDT |
+| **Mode** | Online, with some members in person at ETLC |
+| **Attendees** | Saumya, Abhinav, Alissa, Aaron, Jayden, Chris (joined later). Zanab absent, at work. |
+
+#### Summary
+
+Long working session covering repository setup, a first pass at user stories, an audit of the deployed application, the team canvas, and the division of Sprint 1 documentation work. The team drafted roughly 80 to 90 user stories, agreed on a commit convention and a code review process, and assigned owners to each Sprint 1 deliverable. Full transcript in `meetings/week3/sep19-working-session.txt` (raw transcript) and the summary below.
+
+#### Key Discussions & Decisions
+
+- Sprint 1 is due September 29, 2026.
+- Repository set up with the previous team's work as upstream. A `meetings` folder was added for transcripts and minutes.
+- User stories are written from the point of view of app personas, admin and steward. Stories written from a developer's point of view were cut.
+- Defects in features that already exist become bug tickets or issues, not user stories. User stories cover what the team is adding this term.
+- MoSCoW will be used for prioritisation. Story points will be estimated once the story list is confirmed with Frank, with the whole team present so estimates can be averaged.
+- Acceptance criteria are required on every story and will be written by the team rather than generated.
+- GitHub Issues is the issue tracker. A Discord integration for issue notifications was proposed.
+- Commit messages use the format `(<purpose>): <text>`, where purpose is one of docs, chore, feat, del, fix, refactor, style, perf, build or ci.
+- Code review: the Scrum Master reviews first, then a second reviewer. Pull requests should stay under 500 lines. Code written with LLM assistance must be reviewed manually.
+- Branch protection was deferred during Sprint 1 because the work is documentation rather than code.
+- Application audit by Aaron found that map search does not work and that the map fails to load with no connection. Nothing else appeared broken.
+- Logout only works from the home page.
+- The map uses OpenStreetMap, not Google Maps.
+- About 270 sites need to be placed on the map.
+- The mobile app lives in the same repository under `FNR` and is built with Expo for iOS and Android.
+- Gamification ideas discussed: badges for activities recorded in the inspection form, for visiting sites flagged as needing attention after two years, and for site condition reporting.
+- Several stories need Frank's input before they can be finalised, particularly around steward types and permissions. Those are being marked for the client meeting.
+- Whether DevOps and release tasks can be written as user stories is a question for the TA.
+
+#### Action Items
+
+- Finish the user stories, add acceptance criteria, and mark the ones needing Frank's input (Alissa).
+- Classify the user stories using MoSCoW (Saumya).
+- Write the project overview: executive summary, glossary, similar products, open source projects and technical resources (Zanab).
+- Create the UML class and sequence diagrams for the new features (Jayden).
+- Create the low fidelity UI mockups and the UI flow diagram for the new pages, desktop first (Abhinav).
+- Update the software design document and its diagrams (Abhinav).
+- Plan the high level architecture diagram (Saumya).
+- Finish the team canvas and the teamwork document (Chris).
+- Draft the mobile application user stories (Chris).
+- Review the previous teams' documentation and codebase (Chris).
+- Create and assign GitHub issues for Sprint 1 work (Saumya).
+- Schedule a call with Frank earlier in the week rather than waiting for Friday (Saumya).
+- Ask the TA whether DevOps and release work can be written as user stories (Abhinav).
+
+#### Next Meeting Agenda
+
+- Lab session: review the draft user stories with the TA and confirm which need Frank's input.
+- Client call with Frank to confirm priorities and clarify People and Place management.
+
+---
+
+
+---
+
+# Winter 2026 (previous team)
+
+## Winter 2026 Sprint 1
 
 ---
 
@@ -302,7 +411,7 @@ The team wrapped up the final Sprint 1 requirements and transitioned focus towar
 
 ---
 
-## Sprint 2
+## Winter 2026 Sprint 2
 
 ---
 
@@ -525,7 +634,7 @@ The team held a final online work session to close out Sprint 2. All remaining p
 
 ---
 
-## Sprint 3
+## Winter 2026 Sprint 3
 
 ---
 
@@ -675,7 +784,7 @@ The team met with Frank, Gabriel, and Mehrdad to demo Sprint 3 capabilities, inc
 
 ---
 
-## Sprint 4
+## Winter 2026 Sprint 4
 
 ---
 
@@ -955,7 +1064,7 @@ The team met with Frank and Gabriel to demo new functionality/design such as sit
 
 ---
 
-## Sprint 5
+## Winter 2026 Sprint 5
 
 ---
 
