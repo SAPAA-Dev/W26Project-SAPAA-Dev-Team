@@ -214,7 +214,10 @@ airplane mode on is still present and syncs once reconnected.
 ### 12. Make site search work
 `Labels: bug`
 
-Reported broken during the handover call, tested live and failed, never fixed.
+Reported broken during the handover call, and Aaron reproduced it live on 19 September. But the
+web and mobile code already filter site names and counties, and there are tests covering it, so
+this is a regression rather than missing work. Pin down the deployed commit and environment where
+it fails before estimating.
 
 ### 13. Key site detail pages by id, not name
 `Labels: bug`
@@ -238,9 +241,10 @@ access without an admin.
 ### 16. Show stewards a map
 `Labels: feature`
 
-The Leaflet map and heatmap exist but are admin only, under
-`webapp/app/admin/dashboard/components/Map.tsx`. Every map story in the backlog is written from a
-user's point of view against an admin only feature. Depends on issue 7.
+The web dashboard map and heat map are admin only, under
+`webapp/app/admin/dashboard/components/Map.tsx`, but the mobile app already gives authenticated
+users map and analytics tabs. The gap is web specific, so the story should say so or define what
+is actually missing. Depends on issue 7.
 
 ### 17. Send the approval email the app already promises
 `Labels: bug`
@@ -258,8 +262,9 @@ having.
 ## Tier 2, high value with moderate work
 
 ### 19. Fix logout
-Returning to the site silently signs the user back in from the stored token, and the only logout
-control is on the homepage. `Labels: bug`
+Both apps already expose logout controls beyond the home page and call Supabase `signOut`. If a
+defect remains it is session restoration or reaching pages with the back button after logging out.
+Specify and test that behaviour rather than treating logout as missing. `Labels: bug`
 
 ### 20. Paginate the sites list
 `/sites` fetches every site and filters and sorts client side in a `useMemo`. `Labels: bug`
@@ -287,9 +292,10 @@ Deliberately left for this team by the client. Also covers the obligation to pus
 the client's own deployment after each sprint. `Labels: infra`
 
 ### 26. Make CI actually gate merges
-No lint, build or end to end checks run. The workflow targets branches `Sprint-2` through
-`Sprint-5` that do not exist, and its deploy step runs `docker-compose` against a file that is not
-in the repo, while the deployment manual says Vercel and no GitHub Actions. `Labels: infra`
+Only the webapp test job runs on pull requests. Lint and build checks are absent. The deploy job
+runs on pushes to main only and invokes `/home/ubuntu/deploy/docker-compose.yml`, which lives
+outside the repo, while the deployment manual says no CI is needed. The workflow also still
+triggers on `Sprint-2` through `Sprint-5`, which do not exist on origin. `Labels: infra`
 
 ### 27. Record inspection edit history
 Editing an inspection deletes the old answers and inserts new ones with no record of what changed.
@@ -370,9 +376,10 @@ The one device with a camera is the one that cannot attach a photo, while the we
 complete upload pipeline. `Labels: mobile, feature`
 
 ### 45. Publish the mobile app so volunteers can install it
-The build config is Android only, no iOS profile exists, nothing is published, and the manual tells
-people to search an app store where the app does not appear. An iPhone volunteer cannot receive
-this app today. `Labels: mobile, infra`
+The EAS build profiles define Android artifacts only. The repo does have an iOS Expo config and an
+`ios` script, so the platform is not unconfigured, but nothing has been published and the manual
+tells people to search an app store where the app does not appear. The publication gap still needs
+resolving before December field testing if iPhones are in scope. `Labels: mobile, infra`
 
 ### 46. Declare and request device permissions
 Camera, photo library and location are none of them declared or requested. `Labels: mobile`
