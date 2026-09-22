@@ -213,8 +213,7 @@ the map) that all sit on top of this one. They cannot be estimated honestly unti
 
 As a steward, I want to see the map, so that I can find the protected area I am visiting.
 
-The map and heat map already exist but are admin only. The map stories in the draft are written
-from a user's point of view against a feature users cannot reach.
+The web dashboard's map and heat map are admin-only, but the mobile app already exposes map and analytics tabs to authenticated users. If this story is web-only, say so; otherwise define the missing capability.
 
 ### F26-C3. Stop site links breaking when a site is renamed (2 points) — New
 
