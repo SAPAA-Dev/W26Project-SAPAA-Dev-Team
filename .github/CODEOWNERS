@@ -1,0 +1,8 @@
+# Owners are requested for review automatically when a PR touches their files.
+# Owner approval is NOT required on top of the 2 approvals; see docs/contributing.md.
+# Add area owners below as the team settles who looks after what, e.g.:
+#   /webapp/  @github-user
+#   /FNR/     @github-user
+
+/.github/   @snp05016
+/.githooks/ @snp05016

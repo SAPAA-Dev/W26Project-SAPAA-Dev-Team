@@ -30,12 +30,14 @@ check pass feat/supplier-search    "Merge branch 'main' into feat/supplier-searc
 check fail feat/supplier-search    "add supplier search"
 check fail feat/supplier-search    "feat: add supplier search"
 check fail feat/supplier-search    "(feature): add supplier search"
-check fail feat/supplier-search    "(feat):no space after colon"
+check pass feat/supplier-search    "(feat):no space after colon"
+check fail feat/supplier-search    "(feat):"
 check fail feat/supplier-search    "(feat): "
 check fail supplier-search         "(feat): add supplier search"
 check fail feat/Supplier-Search     "(feat): add supplier search"
 check fail feat/supplier_search    "(feat): add supplier search"
 check fail feature/supplier-search "(feat): add supplier search"
+check fail Zanab-Akbar-patch-1     "(docs): update readme"
 
 [ "$fails" -eq 0 ] || { echo "$fails check(s) failed"; exit 1; }
 echo "all checks passed"

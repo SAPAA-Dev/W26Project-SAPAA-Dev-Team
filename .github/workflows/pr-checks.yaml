@@ -1,0 +1,73 @@
+name: PR checks
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  # Branch name, PR title and every commit go through the same .githooks/commit-msg
+  # the team runs locally, so the rules only live in one place.
+  conventions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check branch name, PR title and commit messages
+        env:
+          BRANCH: ${{ github.head_ref }}
+          TITLE: ${{ github.event.pull_request.title }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          fail=0
+          msg=$(mktemp)
+          printf '%s\n' "$TITLE" > "$msg"
+          echo "PR title: $TITLE"
+          sh .githooks/commit-msg "$msg" || fail=1
+          for sha in $(git rev-list --no-merges "$BASE..$HEAD"); do
+            git log -1 --format=%B "$sha" > "$msg"
+            echo "commit $(git log -1 --format='%h %s' "$sha")"
+            sh .githooks/commit-msg "$msg" || fail=1
+          done
+          [ "$fail" -eq 0 ] || { echo "::error::See docs/contributing.md for the naming rules."; exit 1; }
+
+  # Informal only: never fails. Lockfiles and docs/ don't count.
+  pr-size:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Warn when the PR is over 500 lines
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          lines=$(git diff --numstat "$BASE...$HEAD" -- . ':(exclude)docs/**' ':(exclude)**/package-lock.json' \
+            | awk '$1 != "-" { n += $1 + $2 } END { print n + 0 }')
+          echo "Changed lines (excluding docs/ and lockfiles): $lines"
+          case ",$LABELS," in *,large-pr,*) labelled=1 ;; *) labelled=0 ;; esac
+          if [ "$lines" -gt 500 ]; then
+            echo "::warning::This PR changes $lines lines. Consider splitting it into smaller PRs."
+            if [ "$labelled" -eq 0 ]; then
+              gh pr edit "$PR" --add-label large-pr
+              gh pr comment "$PR" --body "Heads up: this PR changes **$lines lines** (not counting docs/ and lockfiles), which is over our 500-line guideline. Big PRs are hard to review properly, so consider splitting it. This is only a warning and won't block the merge."
+            fi
+          elif [ "$labelled" -eq 1 ]; then
+            gh pr edit "$PR" --remove-label large-pr
+          fi

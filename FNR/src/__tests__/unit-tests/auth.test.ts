@@ -44,7 +44,7 @@ jest.mock('expo-linking', () => ({
 }));
 
 describe('Auth module full', () => {
-  afterEach(() => {
+  beforeEach(() => {
     jest.resetAllMocks();
 
     // Ensure onAuthStateChange always returns valid subscription
@@ -172,7 +172,7 @@ describe('Auth module full', () => {
       const unsubscribe = subscribeToAuth(callback);
 
       await new Promise(process.nextTick);
-      expect(callback).toHaveBeenCalledWith({ isAuthenticated: true, user: { id: '1', email: 'a@b.com', role: 'steward' } });
+      expect(callback).toHaveBeenCalledWith({ isAuthenticated: true, user: { id: '1', email: 'a@b.com', role: 'steward', authenticated: false } });
       unsubscribe();
     });
   });

@@ -33,6 +33,8 @@ Examples:
 (docs): update setup instructions
 ```
 
+The space after `):` is optional, so `(docs):update setup instructions` also passes.
+
 ## Branch names
 
 ```text
@@ -75,16 +77,42 @@ sh .githooks/test-hooks.sh
 
 ## Bypassing the hook
 
-It is an ordinary local git hook, so it can be skipped deliberately:
+It is an ordinary local git hook, so it can be skipped with `git commit --no-verify`. That only
+gets you past your own machine: CI runs the same script on every commit in a PR, so a
+badly named commit will still fail the PR. Fix it with `git commit --amend` or an interactive
+rebase, then force-push your branch.
 
-```bash
-git commit --no-verify
-```
+## GitHub rules
 
-```bash
-git push --no-verify
-```
+These are enforced on GitHub itself, not just locally.
 
-Nothing in CI rejects a commit for its message, so use the bypass when you have a reason to
-and keep to the convention the rest of the time — this history is what the team reads at
-sprint reviews.
+**Branches.** GitHub rejects any new branch whose name doesn't start with one of the types
+above followed by `/`. `main` and `gh-pages` are the only exceptions. So `feat/site-search`
+works, but `saumya/test` or `Zanab-Akbar-patch-1` won't push. When you edit a file in the
+GitHub web editor, rename its suggested `patch-1` branch before you commit.
+
+**`main` is PR-only.** Nobody can push, force-push or delete `main` directly. Everything
+goes through a pull request, and a PR needs all of these before it can merge:
+
+- **2 approvals from teammates.** Pushing a new commit dismisses earlier approvals, and the
+  latest push has to be approved by someone other than its author.
+- **All review conversations resolved.**
+- **Green checks:** `webapp-tests`, `mobile-tests`, `docs-build`, `hook-tests` and
+  `conventions` (branch name, PR title and every commit message).
+
+**Squash merge only.** Each PR lands on `main` as one commit, and the PR title is its
+message. That's why the PR title has to follow the `(<type>): <description>` format too.
+Branches are deleted automatically after merge.
+
+**Copilot.** Copilot reviews every PR automatically. Its review never counts as one of the
+2 approvals, because GitHub only lets Copilot comment. If the second reviewer is genuinely
+unavailable, a repo admin can merge with 1 teammate approval plus a Copilot review that has
+no unresolved comments. GitHub logs every one of those bypasses, so use it sparingly and say
+why in the PR.
+
+**Large PRs.** When a PR changes more than 500 lines, it gets a `large-pr` label and a
+comment suggesting you split it. `docs/` and lockfiles don't count. It's only a nudge and
+never blocks the merge.
+
+**Code owners.** `.github/CODEOWNERS` auto-requests reviewers based on the files a PR
+touches. An owner's approval isn't required beyond the normal 2.

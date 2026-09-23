@@ -1,5 +1,6 @@
 #!/bin/sh
 # Validates commit message "(<type>): <description>" and branch name "<type>/<short-description>".
+# CI runs this same script on every PR commit and the PR title, passing the branch in $BRANCH.
 # Bypass with: git commit --no-verify
 set -e
 
@@ -12,7 +13,7 @@ case "$msg" in
   Merge\ *|Revert\ *|fixup!\ *|squash!\ *) exit 0 ;;
 esac
 
-if ! printf '%s' "$msg" | grep -Eq "^\(($TYPES)\): .*[^[:space:]]"; then
+if ! printf '%s' "$msg" | grep -Eq "^\(($TYPES)\): ?.*[^[:space:]]"; then
   echo "commit rejected: message must be \"(<type>): <description>\"" >&2
   echo "  got:   $msg" >&2
   echo "  types: $(echo "$TYPES" | tr '|' ' ')" >&2
@@ -20,7 +21,7 @@ if ! printf '%s' "$msg" | grep -Eq "^\(($TYPES)\): .*[^[:space:]]"; then
   exit 1
 fi
 
-branch=$(git symbolic-ref --short -q HEAD || echo "")
+branch=${BRANCH:-$(git symbolic-ref --short -q HEAD || echo "")}
 case "$branch" in
   ''|main|master) exit 0 ;;   # detached HEAD and long-lived branches are exempt
 esac
