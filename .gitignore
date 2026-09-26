@@ -179,3 +179,7 @@ webapp/cypress/screenshots
 
 # IDE
 .idea/
+ruvector.db
+.claude-flow/
+.agents/.claude-flow/
+tars.svg
