@@ -2,6 +2,7 @@ const { execFileSync, spawn } = require('node:child_process');
 const { existsSync } = require('node:fs');
 const path = require('node:path');
 const dotenv = require('dotenv');
+const { createClient } = require('@supabase/supabase-js');
 
 const webappDir = path.resolve(__dirname, '..');
 const supabaseDir = path.join(webappDir, 'supabase');
@@ -46,22 +47,56 @@ if (!url || !publishableKey || !secretKey) {
   process.exit(1);
 }
 
-const child = spawn('next', ['dev'], {
-  cwd: webappDir,
-  stdio: 'inherit',
-  env: {
-    ...process.env,
-    NEXT_PUBLIC_SUPABASE_URL: url,
-    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
-    SUPABASE_SECRET: secretKey,
-  },
-});
+async function startDevServer() {
+  const supabaseAdmin = createClient(url, secretKey);
+  const adminEmail = 'admin@example.com';
+  const adminAttributes = {
+    email: adminEmail,
+    password: 's&&uper$#sec&&ure',
+    email_confirm: true,
+    user_metadata: {
+      username: 'admin',
+      role: 'admin',
+      authenticated: true,
+    },
+  };
 
-child.on('error', (error) => {
-  console.error(`Could not start Next.js: ${error.message}`);
+  const { data: userList, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+    page: 1,
+    perPage: 1000,
+  });
+  if (listError) throw listError;
+
+  const existingAdmin = userList.users.find(
+    (user) => user.email === adminEmail || user.email === 'admin@local.test'
+  );
+  const { error: adminError } = existingAdmin
+    ? await supabaseAdmin.auth.admin.updateUserById(existingAdmin.id, adminAttributes)
+    : await supabaseAdmin.auth.admin.createUser(adminAttributes);
+  if (adminError) throw adminError;
+
+  const child = spawn('next', ['dev'], {
+    cwd: webappDir,
+    stdio: 'inherit',
+    env: {
+      ...process.env,
+      NEXT_PUBLIC_SUPABASE_URL: url,
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
+      SUPABASE_SECRET: secretKey,
+    },
+  });
+
+  child.on('error', (error) => {
+    console.error(`Could not start Next.js: ${error.message}`);
+    process.exit(1);
+  });
+  child.on('exit', (code, signal) => {
+    if (signal) process.kill(process.pid, signal);
+    else process.exit(code ?? 1);
+  });
+}
+
+startDevServer().catch((error) => {
+  console.error(`Could not seed the local admin account: ${error.message}`);
   process.exit(1);
-});
-child.on('exit', (code, signal) => {
-  if (signal) process.kill(process.pid, signal);
-  else process.exit(code ?? 1);
 });
