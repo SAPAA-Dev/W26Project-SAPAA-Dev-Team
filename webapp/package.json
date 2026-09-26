@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "prepare": "git config core.hooksPath .githooks || true",
-    "dev": "next dev",
+    "dev": "node scripts/local_supabase.js",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
