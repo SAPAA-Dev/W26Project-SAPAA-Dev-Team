@@ -1,5 +1,6 @@
-# Project Requirements
+# Winter 2026 Requirements (archive)
 
+*Inherited from the Winter 2026 team. We keep this page for reference only. We do not update it for Fall 2026.*
 
 ## Executive summary
 
@@ -285,7 +286,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 5. If user changes a required question, submission is changed
 
 #### US 1.0.23 – Non-Public Information | Story Points: 2
-> **As** a User. **I want** to have somewhere to write information that won’t be published publically **so that** sensitive information / information for SAPAA only isn’t leaked
+> **As** a User. **I want** to have somewhere to write information that won’t be published publicly **so that** sensitive information / information for SAPAA only isn’t leaked
 
 > **Acceptance Tests**
 

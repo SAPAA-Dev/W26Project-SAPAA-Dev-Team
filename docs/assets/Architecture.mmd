@@ -1,0 +1,89 @@
+%% SAPAA system architecture, Fall 2026.
+%% The diagram shows the system as the code is today. Items with the "proposed" style do not exist in the code.
+%% Evidence: webapp/utils/supabase/*.ts, webapp/app/api/**, webapp/lib/pdf/*.ts,
+%% FNR/src/services/*.ts, FNR/src/screens/*.tsx, googleSheets/code.gs, .github/workflows/*.yaml
+flowchart TB
+    subgraph Legend["Legend"]
+        direction LR
+        LegendComponent["Component in this repository"]
+        LegendStore[("Data store")]
+        LegendExternal{{"External service"}}
+        LegendProposed["Proposed, not in the code today"]:::proposed
+        LegendFrom["A"] -->|"call or data flow"| LegendTo["B"]
+        LegendProposedFrom["A"] -.->|"proposed call"| LegendProposedTo["B"]
+    end
+
+    subgraph ClientLayer["1. Client layer"]
+        Browser["Web browser<br/>admins and stewards"]
+        Mobile["StewardLog mobile app<br/>Expo 54, React Native 0.81<br/>FNR/"]
+        SQLite[("expo-sqlite<br/>offline copy of site data")]
+        Sheets["Google Sheets with Apps Script<br/>googleSheets/code.gs"]
+    end
+
+    subgraph AppLayer["2. Application layer: Vercel"]
+        Next["Next.js 16 web app, webapp/<br/>pages, server actions,<br/>middleware.ts refreshes the session"]
+        Api["API route handlers<br/>webapp/app/api/<br/>S3 presign, gallery, PDF, geocode, heatmap, OpenAPI"]
+        PdfJob["PDF job<br/>lib/pdf/processPdfJob.ts<br/>runs after the response"]
+    end
+
+    subgraph DataLayer["3. Data and storage layer"]
+        subgraph Supabase["Supabase"]
+            Auth["Supabase Auth<br/>sessions and OAuth sign-in"]
+            Database[("PostgreSQL<br/>W26_* and S26_* tables: web app<br/>legacy tables: mobile app and Sheets")]
+            Edge["Edge Functions add-user, delete-user<br/>source is not in this repository"]
+        end
+        S3[("AWS S3 bucket, ca-central-1<br/>inspection photos and PDF files")]
+    end
+
+    subgraph ExternalLayer["4. External services"]
+        OAuth{{"OAuth providers<br/>Google, Microsoft Azure, GitHub"}}
+        OpenCage{{"OpenCage Geocoding API"}}
+        Osm{{"OpenStreetMap tiles"}}
+        GoogleMaps{{"Google My Maps embed"}}
+        Cdn{{"cdnjs<br/>PDF.js, Leaflet marker icons"}}
+        INaturalist{{"iNaturalist API<br/>US 4.0.5, US 4.0.7"}}:::proposed
+    end
+
+    subgraph ToolingLayer["5. Build and documentation tooling"]
+        GitHub["GitHub repository"]
+        Actions["GitHub Actions<br/>Jest tests, MkDocs build"]
+        Pages{{"GitHub Pages<br/>project documentation"}}
+    end
+
+    Browser -->|"HTTPS: pages and server actions"| Next
+    Browser -->|"fetch /api/*"| Api
+    Browser -->|"PUT file with presigned URL"| S3
+    Browser -->|"map tiles"| Osm
+    Browser -->|"marker icons"| Cdn
+
+    Next -->|"supabase-js: sign in, session cookies"| Auth
+    Next -->|"supabase-js: queries"| Database
+    Api -->|"supabase-js: queries"| Database
+    Api -->|"AWS SDK: presigned PUT and GET URLs"| S3
+    Api -->|"geocode an address"| OpenCage
+    Api -->|"start job with after()"| PdfJob
+    PdfJob -->|"read report data"| Database
+    PdfJob -->|"write PDF file"| S3
+    Api -.->|"proposed: photo import, top observations"| INaturalist
+
+    Auth -->|"OAuth redirect"| OAuth
+
+    Mobile -->|"supabase-js: sign in"| Auth
+    Mobile -->|"supabase-js: read and write legacy tables"| Database
+    Mobile -->|"admin screens: create and delete users"| Edge
+    Edge --> Auth
+    Mobile -->|"cache and read offline"| SQLite
+    Mobile -->|"geocode site names"| OpenCage
+    Mobile -->|"WebView map"| GoogleMaps
+    Mobile -->|"PDF.js in WebView"| Cdn
+
+    Sheets -->|"UrlFetchApp: REST /rest/v1, legacy tables"| Database
+
+    GitHub -->|"push"| Actions
+    Actions -->|"deploy docs on push to main"| Pages
+
+    classDef proposed stroke-dasharray: 5 5,fill:#fff8e1,stroke:#b8860b
+    classDef external fill:#eef3ff,stroke:#4a6fa5
+    classDef store fill:#eaf7ea,stroke:#3c763d
+    class LegendExternal,OAuth,OpenCage,Osm,GoogleMaps,Cdn,Pages external
+    class LegendStore,SQLite,Database,S3 store

@@ -1,152 +1,184 @@
 # Project Requirements
-<!--
-Note this is based off: https://ualberta-cmput401.github.io/course-docs/project-expectations/#project-requirements
-
-Fall 2026 checkboxes (2/6):
-- Executive summary ☑
-- Project glossary ☑
-- User stories ☐
-- Similar products ☑
-- Open-source products ☑
-- Technical resources ☑
--->
-
 
 ## Executive summary
 
-SAPAA Stewards manage site inspections and observations in-app using sustainable, low-cost cloud data infrastructure that automatically ingests inspection data into a PostgreSQL database, enables Admin to manage the data, and generate PDF reports. One major focus of the implementation is towards scalable and cost-aware image management: inspection images are stored in AWS S3, providing a reliable, secure, and affordable solution for handling large volumes of media. This projects focuses to enhance overall file management as the app expands to integrate with iNaturalist and offers interactive maps that require storing files containing geographic location data like tracks, routes, and points of interest. 
+SAPAA is a volunteer society. Its stewards visit about 270 protected areas in Alberta and file a Site Inspection Report
+(SIR) after each visit. The client wants to stop the manual handling of these reports ("Google sheets are dead. Do not
+store data in Google Sheets.") and wants to know where each natural area is and what stewards did there. SAPAA Stewards
+gives the Admin and the stewards one system for this work. Stewards fill in the SIR in the web application, and they can
+look up sites in the StewardLog mobile application. Each report goes directly into a PostgreSQL database, and its photos
+go to AWS S3. The Admin approves user accounts, examines the data and makes PDF reports without manual data entry. This
+term, the team first evaluates and fixes the bugs and minor enhancements on the client's list (version 1.1). Then the
+team adds a site map, GPX track upload, steward profiles and simple gamification (version 2.0). These features help SAPAA
+manage its people and places and give stewards a reason to visit more sites.
 
-For this semester, we are advancing the client's original vision with a version 1.1 and version 2.0 of the application.
+### Scope for Fall 2026
 
-Version 1.1 will be about fixing existing bugs pain points in the application, and improving the user experience. Below
-you can find more detailed stories about these pain points, but the general focus is to polish the application for both
-and users to the fullest extent so that it's ready for public release.
+Version 1.1 fixes the bugs and pain points in the application and improves the user experience for Admins and stewards,
+so that the application is ready for public release. The [user stories](user-stories.md) give the details.
 
-Version 2.0 will be about building out more ambitious features, such as the client's vision of People and Place
-Management for v2.0, though with a narrower scope this semester: Admin's new ability to approve and manage user accounts
-lays the groundwork for People Management, and updated Site profiles are a first step toward Place Management.
-Additionally, there will be a focus on gamification throughout the application to enhance steward engagement.
+Version 2.0 starts the client's vision of People Management and Place Management, with a smaller scope this term. The
+new Admin tools to approve and manage user accounts are the base for People Management. The new site profiles and the
+site map are a first step toward Place Management. Simple gamification increases steward engagement.
 
-The primary user is the Admin, who needs a reliable, maintainable system that eliminates manual data handling while retaining access to the data, report generation, and distribution. Further enhancements to user experience should motivate stewards to plan more visits and submit reports. Longer-term, the project aims to extend this to Android and iOS apps so stewards can easily log observations offline in the field if time permits in the semester.
+The primary user is the Admin, who needs a reliable system that does not need manual data handling and that still gives
+access to the data, the reports and their distribution. The stewards are the second group of users. The StewardLog
+mobile application (Expo, in the `FNR/` folder) already exists for Android and iOS and keeps an offline copy of site
+data. The client said that offline capability on the web application is necessary, but it is not in a charter project
+for this term.
 
 
 ## User Stories
-[Click to be directed to user stories.](user-stories.md)
+[Click to go to the user stories.](user-stories.md)
 
 
 ## Project glossary
 
-- **SAPAA:** Stewards of Alberta’s Protected Areas Association. A volunteer society that supports the stewardship of 
-Alberta’s protected natural areas.
+- **Admin:** The SAPAA administrator. The Admin manages Site Inspection data, approves user accounts, makes official
+reports and sends information to stewards.
 
-- **Natural Area:** One of the about 260 protected areas under Alberta's Wilderness Areas, Ecological Reserves, Natural
-Areas and Heritage Rangelands (WAERNAHR) Act, which SAPAA primarily stewards. Provincial parks fall under the Parks Act
-and are not SAPAA's focus.
+- **GPX (GPS Exchange Format):** A standard file format for GPS data, for example the track of a walk through a site.
+A steward records a track with a phone or a handheld GPS and uploads the GPX file to the application.
 
-- **Site:** A specific Natural Area monitored and reported on by SAPAA stewards.
+- **iNaturalist:** A public platform where people record and identify observations of plants and animals. The client asked
+the team to register for it before the September 26 field trip. Integration with iNaturalist is a later client project
+(Project 3).
 
-- **Site Inspection:** A record of field observations, ecological conditions, safety notes, and steward activities for a
-given Site.
+- **KML (Keyhole Markup Language):** A file format for geographic shapes such as points, lines and area boundaries. The
+Government of Alberta publishes the site boundaries that the SAPAA website uses as KML.
 
-- **Steward** A SAPAA volunteer responsible for visiting Sites and submitting inspection data.
+- **Natural Area:** A class of protected area under Alberta's Wilderness Areas, Ecological Reserves, Natural Areas and
+Heritage Rangelands (WAERNAHR) Act. SAPAA stewards these areas. Provincial parks are under the Parks Act and are not the
+focus of SAPAA.
 
-- **Admin:** The SAPAA administrator responsible for managing Site Inspection data, generating official reports, and
-distributing information to stewards.
+- **Naturalness score:** A score in the Site Inspection Report that tells the condition of the site.
 
-- **SAPAA Stewards:** The web application that allows stewards to submit Site Inspection data easily and automatically
-uploads data to the PostgreSQL database.
+- **People Management:** A planned client capability to support and track the community of volunteer stewards,
+including the activity history of each steward, for future volunteer recognition. This term, the Admin user approval
+tools are the first part of it.
 
-- **SIR-SAPAA:** same definition as "Sapaa Stewards"
+- **Place Management:** A planned client capability to show where a Site is and what activity occurred there, as an
+extension of the maps on the SAPAA website. This term, site profile editing and the site map are the first part of it.
 
-- **SAPAA Stewards Mobile:** The mobile application, usable on both Android and iOS, that stewards can use while offline to submit their Site Inspection data
+- **Protected Area:** An area of land that Alberta law protects to conserve nature. SAPAA stewards the protected areas
+under the WAERNAHR Act, for example Natural Areas and Ecological Reserves.
 
-- **People Management**: A planned v2.0 capability to support and track the community of volunteer stewards, including individual activity history — intended to support future volunteer recognition. Partially addressed this semester via Admin user-approval workflows.
+- **SAPAA:** Stewards of Alberta's Protected Areas Association. A volunteer society that supports the stewardship of
+the protected natural areas of Alberta.
 
--  **Place Management**: A planned v2.0 capability to better display where a Site is and what activity has occurred
-there, extending the geographic presentation on the SAPAA website. Partially addressed this semester via Site profile
-editing.
+- **SAPAA Stewards (also SIR-SAPAA):** The web application. Stewards use it to submit Site Inspection Reports, and it
+sends the data automatically to the PostgreSQL database.
+
+- **Site:** One protected area that SAPAA stewards monitor and report on.
+
+- **Site Inspection Report (SIR):** One completed inspection form for one visit to one Site. It records field
+observations, ecological conditions, safety notes and steward activities.
+
+- **Steward:** A SAPAA volunteer who visits Sites and submits Site Inspection Reports.
+
+- **StewardLog:** The mobile application for Android and iOS. Its code is in the `FNR/` folder of the repository. It shows
+site data and inspection history and keeps an offline copy of site data.
+
+
+## Similar Products
+
+* [Park Protector](https://playgroundguardian.com/solutions/playground-inspection-software/)
+    - **Function:** Inspection software for parks and playgrounds. It schedules frequent and infrequent inspections,
+      manages many sites, keeps an inspection history for each site and makes reports.
+    - **How we may use it:** Inspiration for the inspection history on each site page and for report export. Its
+      recurring inspection plans are an example for the "sites that need attention" features.
+* [iNaturalist](https://www.inaturalist.org/)
+    - **Function:** A community platform to share and identify observations of nature, with photos, locations and
+      species tags.
+    - **How we may use it:** Inspiration for photo galleries, for tags on ecological attributes and for the display of
+      long-term environmental data. The client wants a link to iNaturalist from each site page, and a later project
+      integrates with it.
+* [Avenza Maps](https://store.avenza.com/)
+    - **Function:** A mobile application for offline maps and PDF map layers.
+    - **How we may use it:** Inspiration for the workflow to download, cache and update large data bundles for offline
+      use. This applies to the StewardLog mobile application, which keeps an offline copy of site data.
+* [ArcGIS Survey123](https://survey123.arcgis.com/)
+    - **Function:** A commercial form application from Esri for field data collection. It collects form answers, photos
+      and GPS locations, also offline, and shows the results on maps and dashboards.
+    - **How we may use it:** Inspiration for the Site Inspection form layout, photo attachments and the link between
+      each answer and a location on the map.
+* [Gaia GPS](https://www.gaiagps.com/)
+    - **Function:** A mobile and web application for offline topographic maps. It records tracks and imports and
+      exports GPX and KML files.
+    - **How we may use it:** Inspiration for the GPX track upload and for the display of a track on the site map.
+
 
 ## Open-source Projects
-* [LimeSurvey](https://www.limesurvey.org/)
-    - **What it is:** Open-source alternative to survey platforms like Google Forms
-    - **How we’ll use it (external interface):**  
-      - Get ideas from the code about how we can structure our web application to handle the Site Inspection form
-     
 
+* [LimeSurvey](https://www.limesurvey.org/)
+    - **Function:** An open-source survey platform, an alternative to Google Forms.
+    - **How we may use it:** Examine its code for the structure of questions, sections and answer options. This can
+      help the design of the Site Inspection form and the Admin form editor.
 * [Ecorismap](https://ecorismap-pro.web.app/)
-    - **What it is:** Open-source offline application for recording and checking location information during field surveys
-    - **How we’ll use it (external interface):**  
-      - Analyze the way the code handles offline data recording and the cross-platform React Native app structure
+    - **Function:** An open-source offline application to record and check location data during field surveys.
+    - **How we may use it:** Examine how its code records data offline and how its cross-platform React Native
+      application is structured. This can help the offline work on StewardLog.
+* [KoboToolbox](https://www.kobotoolbox.org/)
+    - **Function:** An open-source platform for field data collection. Its forms work offline on mobile devices and
+      collect photos and GPS locations.
+    - **How we may use it:** Examine how it stores form answers offline and sends them to the server when a connection
+      is available. This is a reference for offline inspection reports.
+* [ODK (Open Data Kit)](https://getodk.org/)
+    - **Function:** An open-source set of tools for mobile data collection. ODK Collect fills in forms offline on
+      Android and records GPS points, lines and areas.
+    - **How we may use it:** Examine its form definitions and its capture of GPS geometry. This is a reference for the
+      GPX upload and for form questions that change over time.
+
 
 ## Technical Resources
 
-Documentation and references the team expects to rely on this term.
+Documentation and references that the team uses this term.
 
 **Platform and backend**
 
-* [Supabase documentation](https://supabase.com/docs) - Postgres, Auth, Storage and Row Level Security. The Row Level Security guide matters most to us, since our current authorisation gap is that permissions are not enforced server side.
-* [Supabase Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security) - the mechanism we plan to use to stop users editing their own roles.
-* [PostgREST](https://postgrest.org/) - Supabase's query layer. Worth reading because a Google Apps Script in this repo writes to the database through it directly.
-* [What is Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) - inspection images and generated PDFs are stored here. Presigned URL docs are the relevant part.
+* [Supabase documentation](https://supabase.com/docs) - Postgres, Auth, Storage and Row Level Security.
+* [Supabase Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security) - a database
+  mechanism that controls which rows each user can read or change. Access control is being improved; see the
+  [issue backlog](issues.md).
+* [PostgreSQL documentation](https://www.postgresql.org/docs/) - the database under Supabase.
+* [PostgREST](https://postgrest.org/) - the query layer of Supabase. A Google Apps Script in this repository writes to
+  the database through it directly.
+* [What is Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) - inspection photos and
+  PDF reports are stored here. The presigned URL pages are the relevant part.
+* [AWS IAM](https://docs.aws.amazon.com/iam/) and [AWS Budgets and billing alerts](https://docs.aws.amazon.com/cost-management/)
+  - access to the S3 bucket and control of cloud cost.
 
 **Frontend and mobile**
 
-* [Next.js App Router](https://nextjs.org/docs/app) - the web application is built on this. The Server Actions page is important: every exported function in a `'use server'` file is a public endpoint, which is the root of our authorisation problem.
+* [Next.js App Router](https://nextjs.org/docs/app) - the web application uses it. The Server Actions page is important
+  for access control. Access control is being improved; see the [issue backlog](issues.md).
 * [React documentation](https://react.dev/)
-* [Expo documentation](https://docs.expo.dev/) - the mobile application uses Expo. EAS Build is what we would need for publishing.
-* [Leaflet](https://leafletjs.com/reference.html) - the existing map and heat map.
+* [Expo documentation](https://docs.expo.dev/) - the StewardLog mobile application uses Expo. EAS Build is necessary for
+  publication to the app stores.
+* [React Native documentation](https://reactnative.dev/docs/getting-started)
+* [Leaflet](https://leafletjs.com/reference.html) - the current map and heat map.
 
 **Geographic data**
 
-* [OpenStreetMap wiki](https://wiki.openstreetmap.org/) - the tile source the map uses.
-* [OpenCage geocoding API](https://opencagedata.com/api) - currently used to look up site positions from their names. The free tier allows 2,500 requests a day, which is a constraint on any map work.
+* [OpenStreetMap wiki](https://wiki.openstreetmap.org/) - the tile source of the map.
+* [OpenCage geocoding API](https://opencagedata.com/api) - the application uses it to find site positions from site
+  names. The free tier allows 2,500 requests each day, which is a limit for all map work.
+* [GPX 1.1 schema](https://www.topografix.com/gpx.asp) - the format of uploaded GPS tracks.
+* [KML reference](https://developers.google.com/kml/documentation/kmlreference) - the format of the site boundaries
+  from the Government of Alberta.
+* [iNaturalist API](https://api.inaturalist.org/v1/docs/) - for the link to and later integration with iNaturalist.
 
 **Testing and delivery**
 
-* [Jest](https://jestjs.io/docs/getting-started) and [Cypress](https://docs.cypress.io/) - the test frameworks already in the repository.
-* [GitHub Actions](https://docs.github.com/en/actions) - including self hosted runners, which the Sprint 3 rubric requires.
-* [Vercel documentation](https://vercel.com/docs) - the deployment platform.
+* [Jest](https://jestjs.io/docs/getting-started) and [Cypress](https://docs.cypress.io/) - the test frameworks in the
+  repository.
+* [GitHub Actions](https://docs.github.com/en/actions) - including self-hosted runners, which the Sprint 3 rubric
+  requires.
+* [Vercel documentation](https://vercel.com/docs) - the deployment platform of the web application.
 
 **Process**
 
 * [Belbin team roles](https://www.belbin.com/about/belbin-team-roles)
-* [Nielsen's ten usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/) - required by the Sprint 3 user interface rubric.
-* [WCAG contrast checker](https://accessibilityaid.com/free-tools/colour-contrast-checker) - also Sprint 3.
-
-## Backend: Supabase + PostgreSQL + AWS
-  * [Supabase Documentation](https://supabase.com/docs)  
-  * [PostgreSQL Documentation](https://www.postgresql.org/docs/) 
-  * [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) 
-
-
-### Cloud Infrastructure & Cost Control
-  * [AWS IAM](https://docs.aws.amazon.com/iam/)
-  * [AWS Budgets & Billing Alerts](https://docs.aws.amazon.com/cost-management/)
-
-### Deployment: Cybera
-  * [Cybera Documentation](https://wiki.cybera.ca/spaces/RAC/pages/8880558/Rapid+Access+Cloud)
-
-### Mobile: React Native
-  * [React Native Documentation](https://reactnative.dev/docs/getting-started)
-
-### Testing & Tools
-  * [Jest Testing Framework](https://jestjs.io/)
-  * [Postman](https://www.postman.com/) for API testing
-
-## Similar Products
-
-* [Park Protector](https://playgroundguardian.com/solutions/playground-inspection-software/)  
-    - High/low frequency inspections, multi-site management, reporting, and scheduling  
-    - Scheduling inspections across many sites and recurring inspection plans
-    - Inspiration: Similar inspection history for each site and export capabilities
-    - Useful to SAPAA: A system that monitors inspection reports is similar to SAPAA’s site inspection reports
-* [iNaturalist](https://www.inaturalist.org/)  
-    - A community platform for sharing and identifying nature observations.
-    - Inspiration: offers ideas for building intuitive photo galleries, tagging ecological attributes, and storing long-term environmental data.
-    - Relevant to SAPAA: helps shape how inspection data can be organized to show ecological change over time.
-* [Avenza Maps](https://store.avenza.com/)  
-    - A mobile app for offline maps and PDF map layers.
-    - Inspiration: highlights clear workflows for downloading, caching, and updating large data bundles for offline use.
-    - Relevant to SAPAA: directly applicable to the Field Notes Reader, which requires offline access to inspection data and reports.
- 
-
+* [Nielsen's ten usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/) - required by the
+  Sprint 3 user interface rubric.
+* [WCAG contrast checker](https://accessibilityaid.com/free-tools/colour-contrast-checker) - also for Sprint 3.

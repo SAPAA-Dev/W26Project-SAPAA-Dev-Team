@@ -1,3 +1,7 @@
+# Traceability Matrix (Winter 2026)
+
+*Inherited from the Winter 2026 team. We keep this page for reference only. We do not update it for Fall 2026.*
+
 [View the Traceability Matrix here](https://docs.google.com/spreadsheets/d/1lidLGHJA07vB-MdxcdPFwCnxkWpWXxtmATjuhJUGd7k/edit?usp=sharing)
 
 <iframe 

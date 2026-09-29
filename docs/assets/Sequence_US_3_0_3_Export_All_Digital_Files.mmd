@@ -1,5 +1,5 @@
 ---
-title: "US 3.0.3 Export All Digital Files"
+title: "US 3.0.3: Export all digital files from SIR-SAPAA"
 config:
   theme: base
   sequence:
@@ -52,7 +52,7 @@ sequenceDiagram
 
     Admin->>Page: Select Export all files
     Page->>Api: POST /api/export: createExportJob()
-    Api->>Api: Check caller is Admin<br/>from a trusted role source
+    Api->>Api: Check caller is Admin<br/>from a trusted role source, store not decided
     alt Caller is not Admin
         Api-->>Page: 403. No job is made
         Page-->>Admin: Show "not allowed"
@@ -69,15 +69,27 @@ sequenceDiagram
         end
         alt A file is missing or the job fails
             Job->>DB: Update W26_export_jobs row: status failed,<br/>error with file names
-            Page-->>Admin: Show Failed with reason
         else Zip is made (AT 1, AT 2)
             Job->>S3: Put zip file
             Job->>DB: Update W26_export_jobs row: status complete,<br/>storage_path of the zip
-            Page->>Api: GET /api/export/status/[jobId]:<br/>getExportJobStatus(jobId)
+        end
+        Page->>Api: GET /api/export/status/[jobId]:<br/>getExportJobStatus(jobId)
+        Api->>Api: Check session. Check caller is Admin or job creator
+        alt Caller is not Admin and not the job creator
+            Api-->>Page: 403. No status and no URL
+        else Caller is allowed
             Api->>DB: Read W26_export_jobs row
-            DB-->>Api: storage_path
-            Api-->>Page: Presigned download URL
-            Page-->>Admin: Download ZIP with all images, GPX files and completed PDFs
+            DB-->>Api: status, error, storage_path
+            alt Status is failed
+                Api-->>Page: Failed with error
+                Page-->>Admin: Show Failed with reason
+            else Status is pending or processing
+                Api-->>Page: Not ready
+                Page-->>Admin: Show progress and ask again later
+            else Status is complete
+                Api-->>Page: Presigned download URL
+                Page-->>Admin: Download ZIP with all images, GPX files and completed PDFs
+            end
         end
     end
 

@@ -1,7 +1,14 @@
 # User Story Summaries
 
+The full stories and acceptance tests are in [User Stories](user-stories.md). The sprint plan is in
+[Project Management](project-management.md).
 
-Sprint 2:
+## Sprint 1
+
+Sprint 1 has no user stories. It is documentation and discovery.
+
+## Sprint 2
+
 - **US 1.0.1 - Add User Profiles**
     - Steward views steward profiles with skills, focus areas, and SIR count.
 - **US 1.0.2 - Allow Editing Own Profile**
@@ -24,19 +31,19 @@ Sprint 2:
     - Steward submits a SIR without a photo identifier.
 - **US 5.0.4 - Sign Out Properly**
     - User signs out and stays signed out on shared devices.
+- **US 7.0.1 - Let Stewards Export Their Own Reports**
+    - Steward exports own SIR as a PDF.
 - **US 7.0.5 - Delete an Image and Clean Up After It**
     - Admin deletes an image and removes the stored file.
 - **US 7.0.6 - Export More Than 50 Site Inspection Reports**
     - Admin exports more than 50 SIRs at once.
 - **US 7.0.7 - Hide Fields on a SIR Before Export**
     - Admin hides selected fields before SIR export.
-- **US 7.0.1 - Let Stewards Export Their Own Reports**
-    - Steward exports own SIR as a PDF.
 - **US 7.0.8 - Delete a Site Inspection Report**
     - Admin deletes a SIR after confirmation.
 
+## Sprint 3
 
-Sprint 3:
 - **US 1.0.3 - Show history of Site Inspections on a Steward's Profile**
     - Steward views past inspections from a steward profile.
 - **US 1.0.4 - Aggregate User Activity and Contributions on a user's profile**
@@ -62,12 +69,8 @@ Sprint 3:
 - **US 6.0.1 - Store Each Site's Geometry From the Shared Source**
     - Each site stores boundary and centre point from the shared KML source.
 
+## Sprint 4
 
-
-
-
-
-Sprint 4:
 - **US 1.0.5 - Earn Points for Inspection Activity**
     - Steward earns points for visits, photos, and inspection activity.
 - **US 2.0.12 - Score a Site for To-Visit Priority**
@@ -76,11 +79,18 @@ Sprint 4:
     - Admin views a reminder when site scores are one year old.
 - **US 3.0.3 - Export all digital files from SIR-SAPAA**
     - Admin exports all images and digital files at once.
-
-
 - **US 7.0.3 - See All Inspections in One View**
     - Admin views summary counts across all SIRs.
+
+## Sprint 5
+
+No stories planned yet.
+
+## Won't Have
+
+These stories are not planned for a sprint.
+
 - **US 7.0.4 - Compare One Question Across Years**
     - Steward compares answers for one question across years.
-
-Sprint 5
+- **US 7.0.9 - Record Audio During a Site Inspection**
+    - Steward records audio during a SIR and plays it back.

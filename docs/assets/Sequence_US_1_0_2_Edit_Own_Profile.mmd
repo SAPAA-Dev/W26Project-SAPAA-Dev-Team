@@ -1,5 +1,5 @@
 ---
-title: "US 1.0.2: Edit Own Profile"
+title: "US 1.0.2: Allow Editing Own Profile"
 config:
   theme: base
   sequence:
@@ -79,7 +79,7 @@ sequenceDiagram
                 Action-->>Profile: Field errors (422)
                 Profile-->>Steward: Highlight the fields with errors
             else Values are valid
-                Action->>DB: Update profile of session user<br/>(profile store not decided)
+                Action->>DB: Update W26_profiles row of session user<br/>(proposed)
                 activate DB
                 alt Database error
                     DB-->>Action: Error

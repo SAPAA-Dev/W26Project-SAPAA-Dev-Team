@@ -1,5 +1,5 @@
 ---
-title: "US 4.0.7 Show the Top iNaturalist Observations for a Site"
+title: "US 4.0.7: Show the Top iNaturalist Observations for a Site"
 config:
   theme: base
   sequence:
@@ -51,18 +51,25 @@ sequenceDiagram
 
     Steward->>Page: Open a Site page
     Page->>Server: Read the Site (exists) with its boundary (proposed, US 6.0.1)
-    Server->>DB: Read W26_sites-pa row
-    DB-->>Page: Site with boundary
-    Page->>INat: GET /v1/observations with the bounding box of the boundary,<br/>order_by=(popularity measure), per_page=5 (proposed)
-    Note over Page,INat: Public read. No iNaturalist account is needed (AT 4).
-    alt iNaturalist returns observations
-        INat-->>Page: At most 5 observations, with photo, species name and link
-        Page-->>Steward: Show at most 5 observations with the species name (AT 1, AT 2, AT 5)
-    else No observations
-        INat-->>Page: Empty list
-        Page-->>Steward: Show "No iNaturalist observations were found" (AT 3)
-    else iNaturalist does not respond
-        Page-->>Steward: Show that observations are not available. The rest of the page still loads
+    Server->>Server: Check session and approved account (proposed)
+    alt No valid session or account not approved
+        Server-->>Page: Refuse (401)
+        Page-->>Steward: Go to /login
+    else Access allowed
+        Server->>DB: Read W26_sites-pa row
+        DB-->>Server: Site row with boundary
+        Server-->>Page: Site with boundary
+        Page->>INat: GET /v1/observations with the bounding box of the boundary,<br/>order_by=(popularity measure), per_page=5 (proposed)
+        Note over Page,INat: Public read. No iNaturalist account is needed (AT 4).
+        alt iNaturalist returns observations
+            INat-->>Page: At most 5 observations, with photo, species name and link
+            Page-->>Steward: Show at most 5 observations with the species name (AT 1, AT 2, AT 5)
+        else No observations
+            INat-->>Page: Empty list
+            Page-->>Steward: Show "No iNaturalist observations were found" (AT 3)
+        else iNaturalist does not respond
+            Page-->>Steward: Show that observations are not available. The rest of the page still loads
+        end
     end
 
     Note over Steward,INat: Open questions: the measure of "most popular" (votes, faves or comments),<br/>and if a bounding box is correct for a Site with an irregular shape.<br/>This uses the same browser call as US 4.0.5. It needs the Site boundary from US 6.0.1.

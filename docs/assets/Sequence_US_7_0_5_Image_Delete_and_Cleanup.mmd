@@ -1,5 +1,5 @@
 ---
-title: "US 7.0.5 Delete an Image and Clean Up After It"
+title: "US 7.0.5: Delete an Image and Clean Up After It"
 config:
   theme: base
   sequence:
@@ -56,7 +56,7 @@ sequenceDiagram
     Page->>Page: Show Delete only to Admins (AT 2) (proposed)
     Admin->>Page: Select Delete on an image and confirm (proposed)
     Page->>Api: DELETE with image kind (inspection attachment<br/>or homepage upload) and image id (proposed)
-    Api->>Api: Check caller is Admin from a trusted role source
+    Api->>Api: Check caller is Admin from a trusted role source, store not decided
     alt Caller is not Admin (AT 2)
         Api-->>Page: 403. Nothing is deleted
     else Caller is Admin

@@ -1,4 +1,7 @@
 # SAPAA
+
+*Inherited from the Winter 2026 team. We keep this page for reference only. We do not update it for Fall 2026.*
+
 ## Protected Areas Inspection App
 ### UI / UX Design Documentation - v3.0
 #### Design System Reference for Development Teams

@@ -1,5 +1,5 @@
 ---
-title: "US 4.0.2 Offline and Online Map Layers"
+title: "US 4.0.2: Offline and Online Map Layers"
 config:
   theme: base
   sequence:
@@ -46,7 +46,7 @@ sequenceDiagram
     participant Cache as Browser tile cache<br/>(proposed)
     participant Tiles as Tile server<br/>OpenStreetMap today
 
-    Note over Steward,Tiles: Covers US 4.0.2 (MoSCoW: Would Like But Won't Get). Platform: web,<br/>as the client said on Sep 25. "(proposed)" = the step is not in the code today.
+    Note over Steward,Tiles: Covers US 4.0.2. Platform: web,<br/>as the client said on Sep 25. "(proposed)" = the step is not in the code today.
 
     Steward->>Map: Select an area and Download for offline use (proposed)
     Map->>Map: List tiles for the area and zoom levels (proposed)

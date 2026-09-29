@@ -1,5 +1,5 @@
 ---
-title: "US 2.0.2: Add a New Site"
+title: "US 2.0.2: Allow Admins to Add New Sites"
 config:
   theme: base
   sequence:
@@ -64,6 +64,7 @@ sequenceDiagram
     Admin->>Page: Select a boundary (AT1), enter name and county
     Page->>Actions: findSitesWithName(name) (Proposed)
     activate Actions
+    Actions->>Actions: Check session and Admin role on server (Proposed)
     Actions->>DB: Read W26_sites-pa rows with the same name,<br/>active and inactive
     activate DB
     DB-->>Actions: Matching Sites

@@ -1,5 +1,5 @@
 ---
-title: "US 4.0.4 Edit My Previous Inspections"
+title: "US 4.0.4: Edit My Previous Inspections"
 config:
   theme: base
   sequence:
@@ -51,6 +51,7 @@ sequenceDiagram
 
     Steward->>Edit: Open own SIR from the site page and select Edit
     Edit->>Server: getResponseOwnerId(responseId)
+    Server->>Server: Check session and approved account (proposed)
     Server->>DB: Read user_id of W26_form_responses row
     DB-->>Server: Owner id
     Server-->>Edit: Owner id
@@ -61,6 +62,7 @@ sequenceDiagram
         Edit-->>Steward: Show "not allowed". No edit mode
     else Caller is the owner
         Edit->>Server: getFormResponseById(responseId)
+        Server->>Server: Same session check (proposed)
         Server->>DB: Read W26_answers
         DB-->>Server: Answers
         Server-->>Edit: Answers

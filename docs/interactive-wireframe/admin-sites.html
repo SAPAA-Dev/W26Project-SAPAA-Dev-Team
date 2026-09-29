@@ -33,12 +33,12 @@
     <input class="searchbar" placeholder="Search by site name or county">
 
     <div class="banner warn" id="geomBanner">
-      <span>&#9888; 3 sites are missing matched geometry from the shared government source.</span>
+      <span>&#9888; 3 sites are missing matched geometry from the shared government source.<span class="us">US 6.0.1</span></span>
       <button class="btn warn" onclick="showToast('Opens geometry-matching tool')">Review</button>
     </div>
 
     <div style="display:flex; gap:10px; justify-content:flex-end; margin-bottom:18px;">
-      <button class="btn" onclick="toggleAddSite(true)">Add Site</button>
+      <span class="us">US 2.0.2</span><button class="btn" onclick="toggleAddSite(true)">Add Site</button>
       <button class="btn">Bulk PDF</button>
       <button class="btn">Export</button>
       <button class="btn">Sort</button>
@@ -46,7 +46,7 @@
 
     <!-- Add Site form -->
     <div class="modal" id="addSiteForm" style="display:none; width:100%; max-width:420px;">
-      <h3>Add Site</h3>
+      <h3>Add Site <span class="us">US 2.0.2</span></h3>
       <div class="field-label">Site Name</div>
       <input class="field-input" id="newSiteName">
       <div class="field-error-text">Site name is required.</div>
@@ -74,6 +74,7 @@
       </div>
     </div>
 
+    <div style="margin-bottom:8px; font-size:11px;">Update <span class="us">US 2.0.5</span> Deactivate / Reactivate <span class="us">US 2.0.3</span> Delete <span class="us">US 2.0.4</span></div>
     <div class="row" id="sitesGrid">
       <div class="card site-card" style="width:200px;" id="siteCardA">
         <div class="bar w2"></div><div class="bar w2"></div>

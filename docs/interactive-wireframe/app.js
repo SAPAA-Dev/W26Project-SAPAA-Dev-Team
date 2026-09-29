@@ -23,9 +23,9 @@ function renderAccountBar(){
     el.innerHTML = 'Signed in as <a href="profile.html">'+getUserName()+'</a> ('+getRole()+')'
       + '<span style="flex:1"></span>'
       + '<a onclick="switchRole()">Switch to '+(getRole()==='admin'?'Steward':'Admin')+' view</a>'
-      + '<a onclick="signOut()">Sign Out</a>';
+      + '<a onclick="signOut()">Sign Out</a><span class="us">US 5.0.4</span>';
   } else {
-    el.innerHTML = 'Not signed in (browsing as guest Steward view)'
+    el.innerHTML = 'Not signed in (prototype shows the Steward view)'
       + '<span style="flex:1"></span>'
       + '<a href="profile.html">Profile</a>'
       + '<a href="signin.html">Sign In</a>';
@@ -109,10 +109,16 @@ function initTagInput(containerId, initialTags){
 // =====================================================================================
 // USER STORIES — this is the ONE place to edit. The panel beside the screen on every
 // page is built from this object. Keys must match each page's <body data-page="..."> —
-// see the list of pages at the bottom of this section. Sourced from readme.md.
+// see the list of pages at the bottom of this section. Sourced from docs/user-stories.md.
 // Set `id`/`pts` to null for anything that isn't a numbered project story yet.
 // =====================================================================================
 var STORIES = {
+  home: {
+    label: 'Home',
+    items: [
+      { id:null, pts:null, text:"Entry page. A site card opens the Site Report (US 2.0.8). 'View Map' opens the Site Map (US 2.0.1)." }
+    ]
+  },
   map: {
     label: 'Site Map',
     items: [
@@ -127,7 +133,8 @@ var STORIES = {
     items: [
       { id:'US 2.0.8', pts:3, text:"The detail view opens the same whether I arrive from the map or the home list, and shows the same name, county and last-inspected date either way." },
       { id:'US 2.0.9', pts:5, text:"As a Steward, I want to upload the GPX file my device recorded during a visit, so the visit is logged and the next steward can see which part of the Site was already covered." },
-      { id:'US 2.0.10', pts:1, text:"As a Steward, I want links to the SAPAA website and iNaturalist from a site page, so I can quickly learn more (opens in a new tab, not my current one)." },
+      { id:'US 2.0.10', pts:1, text:"As a Steward, I want links to the SAPAA website and iNaturalist from a site page, so I can quickly learn more (opens in a new tab, not my current one). Not drawn on this screen yet." },
+      { id:'US 3.0.2', pts:5, text:"As an Admin, I want to assign an individual for a site, so that other stewards can reach out to them for more information. This screen shows the assigned steward. The assign control is not drawn yet." },
       { id:'US 4.0.4', pts:5, text:"As a Steward, I want to edit my own previous inspections, so I can fix incorrectly submitted entries — but I shouldn't be able to edit anyone else's." },
       { id:'US 7.0.1', pts:2, text:"As a Steward, I want to export my own SIR as a PDF, so I can keep or share a copy of my report." },
       { id:'US 7.0.4', pts:5, text:"As a Steward, I want to pick one question and see how its answers changed over the years at a Site, so I can see what's getting better or worse." }
@@ -182,6 +189,24 @@ var STORIES = {
     items:[
       { id:'US 5.0.2', pts:2, text:"As a User, I want to reset my password myself (email → verification code → new password), so I don't need an Admin to get me back in." }
     ]
+  },
+  'not-drawn': {
+    label: 'Not drawn yet (no screen)',
+    items: [
+      { id:'US 1.0.5', pts:5, text:"Earn Points for Inspection Activity" },
+      { id:'US 2.0.10', pts:1, text:"Add links to Site Page" },
+      { id:'US 2.0.11', pts:5, text:"Show Safety Information for a Site" },
+      { id:'US 2.0.12', pts:8, text:"Score a Site for To-Visit Priority" },
+      { id:'US 2.0.13', pts:3, text:"Flag Site Points That Are a Year Old" },
+      { id:'US 3.0.3', pts:8, text:"Export all digital files from SIR-SAPAA" },
+      { id:'US 4.0.5', pts:5, text:"iNaturalist integration" },
+      { id:'US 4.0.6', pts:1, text:"Demote Photo Identifier to optional field" },
+      { id:'US 4.0.7', pts:5, text:"Show the Top iNaturalist Observations for a Site" },
+      { id:'US 7.0.6', pts:5, text:"Export More Than 50 Site Inspection Reports" },
+      { id:'US 7.0.7', pts:5, text:"Hide Fields on a SIR Before Export" },
+      { id:'US 7.0.8', pts:5, text:"Delete a Site Inspection Report" },
+      { id:'US 7.0.9', pts:5, text:"Record Audio During a Site Inspection" }
+    ]
   }
 };
 
@@ -190,7 +215,7 @@ function renderStories(){
   if(!stage || document.getElementById('storiesPanel')) return;
   var current = document.body.getAttribute('data-page');
   var html = '<h2>User Stories</h2>'
-    + '<p class="hint">From the project\u2019s user stories (readme.md). Edit the <code>STORIES</code> object at the top of app.js to change this panel \u2014 the block for the page you\u2019re on highlights automatically.</p>';
+    + '<p class="hint">From the project\u2019s user stories (docs/user-stories.md). Edit the <code>STORIES</code> object at the top of app.js to change this panel \u2014 the block for the page you\u2019re on highlights automatically.</p>';
   Object.keys(STORIES).forEach(function(key){
     var group = STORIES[key];
     var isCurrent = key === current;

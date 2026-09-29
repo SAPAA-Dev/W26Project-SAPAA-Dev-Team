@@ -1,121 +1,105 @@
 # Teamwork
-This page provides an overview of the team and its members.
+This page gives an overview of the team and its members.
 
 ## Team Canvas
 ![Team Canvas](images/team_canvas.png)
 
-# Scrum Roles
+## Scrum Roles
 
+The Scrum Master and the Product Owner change each sprint.
 
-## Scrum Master
+| Sprint | Scrum Master | Product Owner |
+|--------|--------------|---------------|
+| Sprint 1 | Chris | Alissa |
+| Sprint 2 | Aaron | Chris |
+| Sprint 3 | Jayden | Aaron |
+| Sprint 4 | Abhinav | Zanab |
+| Sprint 5 | Alissa | Abhinav |
 
-**Role Description:**  
-The Scrum Master is responsible for facilitating Scrum ceremonies, removing impediments, and ensuring that the team adheres to Scrum principles.
+### Scrum Master
 
-**Person Assigned:**
+The Scrum Master runs the Scrum ceremonies, removes impediments and makes sure that the team follows the Scrum
+principles.
 
-- **Sprint 1:** Chris
-- **Sprint 2:** Aaron
-- **Sprint 3:** Jayden
-- **Sprint 4:** Abhinav
-- **Sprint 5:** Alissa
+### Product Owner
 
-
----
-
-## Product Owner
-
-**Role Description:**  
-The Product Owner defines and prioritizes the product backlog items based on customer needs and business value. They represent the voice of the customer, ensuring that the development team builds a product that meets expectations.
-
-**Person Assigned:**
-
-- **Sprint 1:** Alissa
-- **Sprint 2:** Chris
-- **Sprint 3:** Aaron
-- **Sprint 4:** Zanab
-- **Sprint 5:** Abhinav
-
+The Product Owner defines the product backlog items and sets their priority from customer needs and business value. The
+Product Owner is the voice of the customer and makes sure that the development team builds a product that meets the
+expectations of the customer.
 
 
 ## Belbin Roles
 Source: [https://www.belbin.com/about/belbin-team-roles](https://www.belbin.com/about/belbin-team-roles)
 
-|Name   |Preferred Roles |Manageable Roles |Least Preferred Roles |
-|-------|----------------|------------------|-----------------------|
-|Chris  |SH             |PL               |RI                    |
-|Abhinav|TW             |IMP              |RI                    |
-|Jayden |IMP            |TW               |SH                    |
-|Saumya |CF             |TW               |SH                    |
-|Aaron  |CO             |TW               |ME                    |
-|Alissa |TW             |CO               |PL                    |
-|Zanab  |TW             |IMP              |RI                    |
+| Name | Preferred Roles | Manageable Roles | Least Preferred Roles |
+|------|-----------------|------------------|-----------------------|
+| Chris | SH | PL | RI |
+| Abhinav | TW | IMP | RI |
+| Jayden | IMP | TW | SH |
+| Saumya | CF | TW | SH |
+| Aaron | CO | TW | ME |
+| Alissa | TW | CO | PL |
+| Zanab | TW | IMP | RI |
 
-
-
-
+The lists below come from the table. Each list gives the members who have the role as a preferred role or as a
+manageable role.
 
 ### Thinking Roles
 
 #### PL (Plant)
-> This role helps the team come up with novel solutions to difficult problems.
+> The Plant is creative and finds new solutions to difficult problems.
 
-- Chris
-- Aaron
-- Zanab
+- Chris (manageable)
 
 #### ME (Monitor Evaluator)
-> This role keeps the team focused on the important objectives, making sure work is correctly delegated based on individuals strengths.
+> The Monitor Evaluator examines all options with logic and makes impartial decisions.
 
-- Chris
-- Alissa
-
+- No member has this role as a preferred or manageable role.
 
 #### SP (Specialist)
-> This role brings in-depth knowledge of a key area to the team.
+> The Specialist gives the team deep knowledge of one key area.
 
-- Jayden
-
+- No member has this role as a preferred or manageable role.
 
 ### Action Roles
+
 #### SH (Shaper)
-> This role provides the drive to keep the team focused and in momentum.
+> The Shaper gives the team the drive to keep its focus and momentum when work is difficult.
 
-- Chris
-
+- Chris (preferred)
 
 #### IMP (Implementer)
-> This role plans a workable strategy and carries it out as efficiently as possible.
+> The Implementer changes ideas into a practical plan and does the plan efficiently.
 
-- Jayden
-- Zanab
-
+- Jayden (preferred)
+- Abhinav (manageable)
+- Zanab (manageable)
 
 #### CF (Completer Finisher)
-> This role is most effectively used at the end of tasks to polish and scrutinise the work for errors, subjecting it to the highest standards of quality control.
+> The Completer Finisher examines the work at the end of a task, finds errors and makes sure that the quality is high.
 
-- Saumya
-- Zanab
-
+- Saumya (preferred)
 
 ### People Roles
-#### RI (Resource Investigator)
-> This role is comfortable with reaching out to outside sources to help the team in getting clarification, gathering information needed to support their team's work, and unblock tasks.
 
-- Alissa
+#### RI (Resource Investigator)
+> The Resource Investigator speaks with people outside the team to find information, ideas and help for the team.
+
+- No member has this role as a preferred or manageable role.
 
 #### TW (Teamworker)
-> This role helps create an encouraging atmosphere and positive work relationships. They make sure everyone feels heard and comfortable to give their own input, working alongside other members where needed.
+> The Teamworker helps the team to work well together, listens to all members and supports them where necessary.
 
-- Alissa
-- Abhinav
-- Jayden
-- Saumya
-- Zanab
-- Aaron
+- Abhinav (preferred)
+- Alissa (preferred)
+- Zanab (preferred)
+- Jayden (manageable)
+- Saumya (manageable)
+- Aaron (manageable)
 
 #### CO (Coordinator)
-> This role is confident in assigning and defining tasks ensuring that everyone stays on track and understands their share of work.
+> The Coordinator makes the team goals clear, gives tasks to the correct members and makes sure that all members know
+> their part of the work.
 
-- Aaron
-- Alissa
+- Aaron (preferred)
+- Alissa (manageable)

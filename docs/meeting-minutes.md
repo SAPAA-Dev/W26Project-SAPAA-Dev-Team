@@ -17,9 +17,16 @@ are the previous team's records and are kept unchanged.
 |-------|---------|
 | **Company** | SAPAA |
 | **Project** | SAPAA SIR |
-| **Time** | 9:30 PM – 10:00 PM MDT |
-| **Mode** | Online |
-| **Attendees** | Chris, Aaron, Saumya, Alissa, Zanab, Abhinav, Jayden, and Alex (TA)| 
+| **Date** | September 16, 2026 |
+| **Time** | 9:30 AM – 10:00 AM MDT |
+| **Location** | Online |
+| **Attendees** | Chris, Aaron, Saumya, Alissa, Zanab, Abhinav, Jayden, and Alex (TA) |
+
+#### Agenda
+
+- Sprint 1 deliverables and the course documents.
+- Expectations for each project document.
+- Scrum roles for the semester.
 
 #### Summary
 
@@ -27,13 +34,14 @@ Introduction to Sprint 1 deliverables. Alex went over the course docs, expectati
 
 #### Key Discussions & Decisions
 
-- Group chose to meet Alex during lab times at 9:30 
-- Alex suggested meeting with SAPAA students from previous 401 semesters to discuss the state of the app and what needs to be worked on
-- Group agreed to meet 4pm onwards on Fridays, and 2pm onwards on Saturdays (can be online but in-person is preferred). Members should drop in, staying the whole time is not required
-- Discussed and assigned Scrum Roles for the semester, with Chris as scrum master and Alissa as Product Owner
+- Group chose to meet Alex during lab times at 9:30 AM.
+- Alex suggested meeting with SAPAA students from previous 401 semesters to discuss the state of the app and what needs to be worked on.
+- Group agreed to meet 4pm onwards on Fridays, and 2pm onwards on Saturdays (can be online but in-person is preferred). Members should drop in, staying the whole time is not required.
+- Discussed and assigned Scrum Roles for the semester, with Chris as scrum master and Alissa as Product Owner.
 
 #### Action Items
-- Record rotating scrum roles in teamwork doc
+
+- Record rotating scrum roles in the teamwork document.
 - Schedule a call with SAPAA volunteers (Saumya)
 
 ---
@@ -44,9 +52,15 @@ Introduction to Sprint 1 deliverables. Alex went over the course docs, expectati
 |-------|---------|
 | **Company** | SAPAA |
 | **Project** | SAPAA SIR |
+| **Date** | September 18, 2026 |
 | **Time** | 6:30 PM – 7:30 PM MDT |
-| **Mode** | Online |
+| **Location** | Online |
 | **Attendees** | Saumya, Chris, Zanab, Abhinav, Alissa, Aaron, Jayden, plus Alex, our TA for Fall 2026, Vishal, Harveer, Raiyana from the Winter 2026 team and Mehrdad from the Fall 2025 team |
+
+#### Agenda
+
+- Handover from the previous teams: the existing codebase and the repository setup.
+- Frank's expectations before Sprint 1.
 
 #### Summary
 
@@ -82,9 +96,18 @@ Onboarding call with the two previous teams to understand the existing codebase,
 |-------|---------|
 | **Company** | SAPAA |
 | **Project** | SAPAA SIR |
+| **Date** | September 19, 2026 |
 | **Time** | 2:49 PM – 7:27 PM MDT |
-| **Mode** | Online, with some members in person at ETLC |
+| **Location** | Online, with some members in person at ETLC |
 | **Attendees** | Saumya, Abhinav, Alissa, Aaron, Jayden, Chris (joined later). Zanab absent, at work. |
+
+#### Agenda
+
+- Repository setup.
+- First draft of the user stories.
+- Audit of the deployed application.
+- Team canvas.
+- Division of the Sprint 1 documentation work.
 
 #### Summary
 
@@ -140,46 +163,58 @@ Long working session covering repository setup, a first pass at user stories, an
 |-------|---------|
 | **Company** | SAPAA |
 | **Project** | SAPAA SIR |
-| **Time** | 9:30 PM – 10:00 PM MDT |
-| **Mode** | Online |
-| **Attendees** | Chris, Aaron, Saumya, Alissa, Zanab, Abhinav, Jayden, and Alex (TA)| 
+| **Date** | September 23, 2026 |
+| **Time** | 9:30 AM – 10:00 AM MDT |
+| **Location** | Online |
+| **Attendees** | Chris, Aaron, Saumya, Alissa, Zanab, Abhinav, Jayden, and Alex (TA) |
+
+#### Agenda
+
+- Review the draft user stories with the TA and confirm which stories need Frank's input.
 
 #### Summary
+
+Alex reviewed the draft user stories. He advised the team to merge small stories, remove developer stories, and prepare a short presentation of about 15 minutes for Frank on Friday, with the most interesting stories. He also confirmed that the Sprint 1 deadline is Tuesday evening and that it must be a GitHub release.
 
 #### Key Discussions & Decisions
 
 Alex's advice:
 - Frank may want geobounds for sites on a map
-- Want to have user stories that touch his pain points and are very flushed out; don't keep them general, keep them exciting.
-- Group smaller user stories togetehr, have members pick one story each and polish them
-- For gamification, have Frank be explicit in what behaviours he wants to incentivize. If its meant to drive people to do site inspections, we could look into # kms travelled; find the metrics that corresponds with behaviours Frank wants to drive
+- Want to have user stories that touch his pain points and are well developed; don't keep them general, keep them exciting.
+- Group smaller user stories together, have members pick one story each and polish them
+- For gamification, have Frank be explicit in what behaviours he wants to incentivize. If it is meant to drive people to do site inspections, we could look into kilometres travelled; find the metrics that corresponds with behaviours Frank wants to drive
 - When we talk to Frank, don't highlight user stories as written; make them interesting.
 - We can pitch the mobile app as a PWA; need to consider how mobile app would be used offline though. Android does support offline PWA, but iOS needs investigation.
 - Until Friday, don't write anything new; focus on ~15 minute presentation. Get a dialogue going on what Frank thinks is cool; he's the signal for where our focus should be.
 - As product owners, if we have many small user stories, they should be merged; think more high-level, less "technical" or "logical"
-
-- We should use github project board to move filtered issues to
-- Deadline for sprint 1 is Tuesday evening. Must be a Github release.
+- We should use the GitHub project board to move filtered issues to
+- Deadline for sprint 1 is Tuesday evening. Must be a GitHub release.
 - In standups, teammates should know what others are doing. Alex will do exercises with us where we describe what another member is doing
 
 #### Action Items
+
 - Narrow down user stories, grouping ones that are overly specific
 - Write down Top 10 user stories to excite Frank and include in the slides for Friday's meeting
 - Remove "As a Developer" user stories
-- Make Slides for Friday's meeting
+- Make slides for Friday's meeting
 
 ---
 
 ### September 25, 2026 – Meeting #4: Client meeting with Frank
 
-
 | Field | Details |
 |-------|---------|
 | **Company** | SAPAA |
 | **Project** | SAPAA SIR |
+| **Date** | September 25, 2026 |
 | **Time** | 3:35 PM – 5:00 PM MDT |
-| **Mode** | Online |
+| **Location** | Online |
 | **Attendees** | Frank (client), Chris, Aaron, Saumya, Alissa, Zanab, Abhinav, Jayden, Mehrdad from the Fall 2025 team. |
+
+#### Agenda
+
+- Present the user stories and the plan to Frank.
+- Confirm priorities and clarify People and Place management.
 
 #### Summary
 
@@ -190,14 +225,15 @@ The team presented its user stories and plan. Frank asked for every story to be 
 - The charter projects are the spec. Stories must be shown against them. Adding or dropping a deliverable needs a change request.
 - Project 1 comes first. The one thing not yet done is to "evaluate each of the bugs and minor enhancements" on Frank's fix/fault spreadsheet, which must be in GitHub.
 - Google Sheets must not hold primary data: "Google sheets are dead. Do not store data in Google Sheets." Frank endorsed removing the Sheets wiring and one of the two databases.
-- v1.1 fix: rename hyphenated Supabase objects to use underscores ("get rid of those freaking hyphens") so Frank's visualization tool can connect.
+- v1.1 fix: rename hyphenated Supabase objects to use underscores, as Frank asked to remove all hyphens, so Frank's visualization tool can connect.
 - Map: "It doesn't have to be Google Maps inside the application." Website and app must share site geometry ("the underlying shapes, have to come from the same source"); everything else may diverge. The map story must also show where each natural area is and what others have done there.
 - Frank suggested only supporting GPX uploads as a requirement for an early sprint. KML and FIT are left for a later group. No phone-based tracking.
-- Offline: "I definitely need offline capability, but on the web app." It is not in any charter project, therefore is not a priority
+- Offline: "I definitely need offline capability, but on the web app." It is not in any charter project, therefore it is not a priority.
 - Super admin and manager roles: "I would put it on the back burner for this project." Admins assigning stewards to inspections was rejected by Frank, since volunteers go out of goodwill or proximity.
-- Incentivizing is Project 2 and depends on person management. Gamification stays small: "I'd rather be a bear bones gamification". Project 3 is iNaturalist integration.
+- Incentivizing is Project 2 and depends on person management. Gamification stays small: "I'd rather be a bare-bones gamification.". Project 3 is iNaturalist integration.
 - Keep the first sprint simple ("Keep it easy. Keep it stupid, keep it simple."), present in business language. Frank says, "If you guys are off the rails, call me, okay?"
 - Frank's verdict: "I think you guys got some holes, but I think you have a base that's there."
+- Frank reviewed the wireframes and said that they are acceptable. He asked for no changes.
 
 #### Action Items
 
@@ -210,9 +246,6 @@ The team presented its user stories and plan. Frank asked for every story to be 
 #### Next Meeting Agenda
 
 - Field trip to River Lot 56 on September 26. Other SAPAA problems were deferred to it.
-
----
-
 
 ---
 

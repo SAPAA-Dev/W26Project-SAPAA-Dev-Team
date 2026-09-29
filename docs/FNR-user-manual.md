@@ -1,3 +1,7 @@
+# FNR User Manual
+
+*Inherited from the Fall 2025 team. We keep this page for reference only. We do not update it for Fall 2026.*
+
 ## Stewards of Alberta's Protected Areas Association
 
 ### Complete Guide for Mobile and Web Applications

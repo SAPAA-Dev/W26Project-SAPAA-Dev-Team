@@ -1,5 +1,5 @@
 ---
-title: "US 1.0.1, 1.0.3, 1.0.4: View a Steward Profile"
+title: "US 1.0.1, 1.0.3, 1.0.4: Add User Profiles / Show history of Site Inspections on a Steward's Profile / Aggregate User Activity and Contributions on a user's profile"
 config:
   theme: base
   sequence:
@@ -67,7 +67,7 @@ sequenceDiagram
         Actions-->>Profile: Refuse (401)
         Profile-->>Steward: Go to /login
     else Access allowed
-        Actions->>DB: Read name, contact info, skills, focus areas<br/>(profile store not decided)
+        Actions->>DB: Read name, contact info, skills, focus areas<br/>from W26_profiles (proposed)
         activate DB
         DB-->>Actions: Profile row or no row
         deactivate DB
@@ -92,11 +92,12 @@ sequenceDiagram
         Profile->>Pages: Open /detail/[namesite] at that SIR
         Pages->>Actions: getFormResponsesBySite(namesite) (exists)
         activate Actions
+        Actions->>Actions: Same session check as above (Proposed)
         Actions->>DB: Read W26_form_responses and W26_answers
         activate DB
         DB-->>Actions: SIR answers
         deactivate DB
-        Actions->>Actions: Remove answers the steward chose to hide (Proposed)
+        Actions->>Actions: Remove answers listed in<br/>W26_profile_hidden_questions (Proposed)
         Actions-->>Pages: Visible answers only
         deactivate Actions
         Pages-->>Steward: Show the SIR
@@ -108,4 +109,4 @@ sequenceDiagram
     end
     deactivate Profile
 
-    Note over Steward,DB: Open questions: where profile fields are stored, which answers count as "activities",<br/>how a steward marks answers as hidden, and whether legacy (inspectheader) SIRs count.
+    Note over Steward,DB: Open questions: which answers count as "activities",<br/>how a steward marks answers as hidden, and whether legacy (inspectheader) SIRs count.

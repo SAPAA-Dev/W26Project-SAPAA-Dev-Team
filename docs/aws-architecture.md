@@ -1,5 +1,7 @@
 # Media Storage Architecture
 
+*Inherited from the Winter 2026 team. We keep this page for reference only. We do not update it for Fall 2026.*
+
 This document describes how images are uploaded, stored, and retrieved in the SAPAA SIR system.  
 The goal is to help future development teams understand how media files flow through the system and how AWS S3 is used.
 

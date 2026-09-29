@@ -1,5 +1,5 @@
 ---
-title: "US 7.0.3 and 7.0.4 Inspection Summaries"
+title: "US 7.0.3, 7.0.4: See All Inspections in One View / Compare One Question Across Years"
 config:
   theme: base
   sequence:
@@ -48,12 +48,12 @@ sequenceDiagram
     participant Server as Server actions<br/>utils/supabase/queries.ts
     participant DB as Supabase DB
 
-    Note over Admin,DB: Covers US 7.0.3 and US 7.0.4. Both read W26 SIR data through server actions.<br/>"(proposed)" = the step is not in the code today.
+    Note over Admin,DB: Covers US 7.0.3 and US 7.0.4. Both read W26 SIR data through server actions.<br/>US 7.0.4 is in the MoSCoW group Would Like But Won't Get. It stays here for reference.<br/>"(proposed)" = the step is not in the code today.
 
     Note over Admin,DB: US 7.0.3 See all inspections in one view
     Admin->>Dash: Open all-SIR summary. Set a date range (AT 2) (proposed)
     Dash->>Server: getSirSummary(fromDate, toDate) (proposed)
-    Server->>Server: Check caller is Admin<br/>from a trusted role source (proposed)
+    Server->>Server: Check caller is Admin<br/>from a trusted role source, store not decided (proposed)
     alt Caller is not Admin (AT 3)
         Server-->>Dash: Refuse. Return no data
         Dash-->>Admin: Show "not allowed"
@@ -67,6 +67,7 @@ sequenceDiagram
     Note over Admin,DB: US 7.0.4 Compare one question across years
     Steward->>SitePage: Open Compare by question view (exists)
     SitePage->>Server: getFormResponsesBySite(siteName)<br/>(exists, change proposed)
+    Server->>Server: Check session and approved account (proposed)
     Server->>DB: Read active SIRs with answers and the "question key"<br/>of each question (exists today through getReportQuestionKeyMap)
     DB-->>Server: SIRs and answers
     Server-->>SitePage: SIRs and answers, with the question key<br/>of each answer (proposed)

@@ -1,5 +1,5 @@
 ---
-title: "US 2.0.12, 2.0.13 Site To-Visit Priority and Reassessment Reminder"
+title: "US 2.0.12, 2.0.13: Score a Site for To-Visit Priority / Flag Site Points That Are a Year Old"
 config:
   theme: base
   sequence:
@@ -52,24 +52,33 @@ sequenceDiagram
     Note over Admin,DB: Save the three scores (US 2.0.12 AT 1, AT 5, US 2.0.13 AT 3)
     Admin->>Page: Enter points for abuses, biological imperatives<br/>and time since the last visit, then Save
     Page->>Server: updateSitePriorityScores(siteId, scores) (proposed)
-    Server->>Server: Check caller is Admin from a trusted role source
-    alt Caller is not Admin (US 2.0.12 AT 5)
-        Server-->>Page: Refused. Scores stay the same
+    Server->>Server: Check caller is Admin from a trusted role source,<br/>store not decided (see the proposed ER diagram)
+    alt Caller is not Admin, for example a Steward<br/>who sends the request directly (US 2.0.12 AT 5)
+        Server-->>Page: Refuse (403). Scores stay the same
+        Page-->>Steward: Show "Only an Admin can change the scores"
     else Caller is Admin
         Server->>DB: Upsert W26_site_priority row.<br/>Set points_saved_at to now and saved_by to the caller
+        DB-->>Server: Saved row
         Server-->>Page: Saved. The reminder is absent (US 2.0.13 AT 3)
     end
 
     Note over Admin,DB: Show the priority (US 2.0.12 AT 2, AT 3, AT 4, US 2.0.13 AT 1, AT 2, AT 4)
     Steward->>Page: Open a Site page
     Page->>Server: getSitePriority(siteId) (proposed)
-    Server->>DB: Read the W26_site_priority row
-    DB-->>Server: Three scores and points_saved_at
-    Server->>Server: computeVisitPriority(scores). Same scores give the same priority
-    opt Caller is Admin and points_saved_at is more than one year ago
-        Server->>Server: Add needsReassessment = true (US 2.0.13)
+    Server->>Server: Check session and approved account (proposed)
+    alt No valid session or account not approved
+        Server-->>Page: Refuse (401)
+        Page-->>Steward: Go to /login
+    else Access allowed
+        Server->>DB: Read the W26_site_priority row
+        DB-->>Server: Three scores and points_saved_at
+        Server->>Server: computeVisitPriority(scores). Same scores give the same priority
+        opt Caller is Admin and points_saved_at is more than one year ago
+            Server->>Server: Add needsReassessment = true (US 2.0.13)
+        end
+        Server-->>Page: Priority and three scores. needsReassessment only for Admins
+        Page-->>Steward: Show priority and three scores. No reminder (US 2.0.13 AT 4)
+        Note over Admin,Page: For an Admin, the page also shows the reminder when<br/>needsReassessment is true (US 2.0.13 AT 1, AT 2)
     end
-    Server-->>Page: Priority and three scores. needsReassessment only for Admins
-    Page-->>Steward: Show priority and three scores. No reminder (US 2.0.13 AT 4)
 
     Note over Admin,DB: The server calculates the priority and the reminder, so each client shows the same values.<br/>Open questions: the formula of computeVisitPriority, and if "time since the last visit"<br/>is typed by an Admin or calculated from the newest W26_form_responses.inspection_date.

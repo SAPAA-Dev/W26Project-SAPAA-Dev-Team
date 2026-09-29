@@ -1,5 +1,5 @@
 ---
-title: "US 7.0.1 Steward Exports Own SIR as PDF"
+title: "US 7.0.1: Let Stewards Export Their Own Reports"
 config:
   theme: base
   sequence:
@@ -67,6 +67,7 @@ sequenceDiagram
         Job->>Job: Render PDF (lib/pdf/inspectionReport)
         alt Render or upload fails
             Job->>DB: Set job failed with error
+            DB-->>Page: Realtime update (PdfJobWatcher)
             Page-->>Steward: PdfExportsDropdown shows Failed
         else PDF is made
             Job->>S3: Put PDF

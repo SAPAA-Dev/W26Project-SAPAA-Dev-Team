@@ -1,5 +1,5 @@
 ---
-title: "US 3.0.2 Steward Designation"
+title: "US 3.0.2: Steward Designation"
 config:
   theme: base
   sequence:
@@ -48,12 +48,12 @@ sequenceDiagram
     participant Server as Server actions<br/>utils/supabase/queries.ts
     participant DB as Supabase DB
 
-    Note over Admin,DB: Covers US 3.0.2 (MoSCoW: Would Like But Won't Get). "(proposed)" = the step is not in the code today.
+    Note over Admin,DB: Covers US 3.0.2. "(proposed)" = the step is not in the code today.
 
     Admin->>AdminSite: Open site and select Designate steward (proposed)
     Admin->>AdminSite: Type part of a name or email
     AdminSite->>Server: searchStewards(text) (proposed)
-    Server->>Server: Check caller is Admin<br/>from a trusted role source (proposed)
+    Server->>Server: Check caller is Admin<br/>from a trusted role source, store not decided (proposed)
     alt Caller is not Admin
         Server-->>AdminSite: Refuse. Return no data
     else Caller is Admin
@@ -65,12 +65,12 @@ sequenceDiagram
 
     Admin->>AdminSite: Select one steward and Save
     AdminSite->>Server: designateSiteSteward(siteId, stewardId) (proposed)
-    Server->>Server: Check caller is Admin<br/>from a trusted role source (proposed)
+    Server->>Server: Check caller is Admin<br/>from a trusted role source, store not decided (proposed)
     alt Caller is not Admin (AT 4)
         Server-->>AdminSite: Refuse. No designation is written
         AdminSite-->>Admin: Show error
     else Caller is Admin
-        Server->>DB: Replace the designation of the site<br/>with the new steward (proposed)
+        Server->>DB: Set W26_sites-pa.designated_steward_id<br/>to the new steward (proposed)
         DB-->>Server: Saved
         Server-->>AdminSite: Success
         AdminSite-->>Admin: Show new designated steward (AT 2)
@@ -78,9 +78,15 @@ sequenceDiagram
 
     Steward->>Pages: Open site page or steward profile
     Pages->>Server: Get site or profile data
-    Server->>DB: Read designation by site or by steward (proposed)
-    DB-->>Server: Designation
-    Server-->>Pages: Data with designation
-    Pages-->>Steward: Show designated steward on site page<br/>and designated sites on profile (AT 3)
+    Server->>Server: Check session and approved account (proposed)
+    alt No valid session or account not approved
+        Server-->>Pages: Refuse (401)
+        Pages-->>Steward: Go to /login
+    else Access allowed
+        Server->>DB: Read W26_sites-pa.designated_steward_id<br/>by site or by steward (proposed)
+        DB-->>Server: Designation
+        Server-->>Pages: Data with designation
+        Pages-->>Steward: Show designated steward on site page<br/>and designated sites on profile (AT 3)
+    end
 
-    Note over AdminSite,DB: The role check must not use user_metadata. A user can change it (see .agents/rules/security.md).
+    Note over AdminSite,DB: The role check must not use user_metadata. A user can change it (see .agents/rules/security.md).<br/>Open question: the trusted role store is not decided (see the proposed ER diagram).

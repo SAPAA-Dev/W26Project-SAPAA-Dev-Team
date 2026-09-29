@@ -1,5 +1,5 @@
 ---
-title: "US 2.0.3, 2.0.5: Deactivate, Reactivate and Update a Site"
+title: "US 2.0.3, 2.0.5: Deactivate and Reactivate a Site / Update a Site"
 config:
   theme: base
   sequence:
@@ -83,7 +83,7 @@ sequenceDiagram
         Actions-->>SitePage: Refuse (403)
         SitePage-->>Admin: Stay in view mode, show "Admins only"
     else Caller is an Admin
-        Actions->>DB: Read Site page fields and their shown or hidden flags<br/>(store not decided)
+        Actions->>DB: Read W26_site_page_fields rows and their<br/>is_visible flags (proposed)
         activate DB
         DB-->>Actions: Fields
         deactivate DB
@@ -92,7 +92,7 @@ sequenceDiagram
         Admin->>SitePage: Change values, identify the steward who supplied them,<br/>optionally select the source SIR, set shown or hidden, and select Save
         SitePage->>Actions: updateSitePageFields(siteId, fields,<br/>providedByStewardId, sourceResponseId) (Proposed)
         Actions->>Actions: Check Admin role again
-        Actions->>DB: Update Site page fields with provided_by_steward_id<br/>and optional source_response_id
+        Actions->>DB: Update W26_site_page_fields with provided_by_steward_id<br/>and optional source_response_id
         activate DB
         alt Update fails
             DB-->>Actions: Error

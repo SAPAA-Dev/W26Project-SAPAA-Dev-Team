@@ -1,7 +1,7 @@
 # Issues Backlog
 
 Every gap and defect found in the handover audit, written so it can be exported to GitHub
-Issues directly. Evidence for each item is in `docs/investigation/`.
+Issues directly.
 
 **Effort** assumes LLM assistance, so it measures human judgement and review time, not typing.
 S is under a day, M is one to three days, L is three to seven days, XL is over a week.
@@ -85,26 +85,24 @@ Sorted by value. Cut the line wherever your capacity runs out.
 ## Where these items are in the user stories
 
 This backlog uses its own numbers, not story IDs. Story IDs, points and MoSCoW live in
-[Project Requirements](project-overview.md) and are not repeated here, except in the table below. It lists
-only the items that the story set links to by name, by source line, or by a matching title. It
-reflects the story changes after the September 25, 2026 client meeting
-([story changelog](investigation/story-changelog-2026-09-25.md)).
+[User Stories](user-stories.md) and are not repeated here, except in the table below. The table
+uses the current story set (35 stories). "none" means that no current story covers the item.
 
 | # | User story | MoSCoW | Points | Link |
 |---|---|---|---|---|
-| 4, 5 | US 5.0.1, 5.0.2, 5.0.3, 5.0.8 | Must (5.0.1-5.0.3), Should (5.0.8) | 5, 5, 3, 2 | GitHub issue #5 covers all four |
-| 9 | US 9.0.3 Make a Fresh Clone Work | Should | 2 | cited as the source of 9.0.3 |
-| 11 | none | - | - | US 8.0.1 now covers the web app only; its note says this StewardLog defect "is not covered by this story" (open question 9) |
-| 13 | US 6.0.10 Stop Site Links Breaking When a Site Is Renamed | Must | 2 | cited as the source of 6.0.10 |
-| 14 | US 10.0.1 Record the Activity That the Stats Are Made Of | Must | 5 | cited as the source of 10.0.1 |
-| 15 | US 5.0.5 Reset a Forgotten Password | Must | 2 | cited as the source of 5.0.5 |
-| 16 | US 2.0.1 View Sites and Past Visits on an Interactive Map | Must | 8 | title match with 6.0.9 Give Stewards the Map, now merged into 2.0.1 |
-| 18 | US 6.0.8 Store Each Site's Geometry From the Shared Source | Must | 5 | 6.0.13 Cache Location Lookups is merged into 6.0.8; its AT4 caches geocoding under the OpenCage limit |
-| 21 | US 1.0.1 Add User Profiles | Must | 5 | title match with 10.0.3 Build the Profile Page, now merged into 1.0.1 |
-| 24 | US 7.0.7 Delete an Image and Clean Up After It | Should | 5 | title match (2.0.9 is also merged into 7.0.7) |
-| 35 | US 6.0.6 Retire the Google Sheet Pipeline | Must | 2 | decided, see item 35 |
-| 42 | US 7.0.3 Mark Answers as Not for Publication | Could | 5 | same feature (Winter US 1.0.23) |
-| 43 | none | - | - | the 2.0.6 note says this classification scope "is tracked as docs/issues.md item 43" |
+| 4, 5 | none | - | - | The security stories were removed on September 25, 2026. The work is the Sprint 2 task #71 |
+| 9 | none | - | - | - |
+| 11 | none | - | - | - |
+| 13 | none | - | - | - |
+| 14 | US 1.0.4 Aggregate User Activity and Contributions on a user's profile | Must | 2 | The stats need the activity records |
+| 15 | US 5.0.2 Reset a Forgotten Password | Must | 2 | Same feature |
+| 16 | US 2.0.1 View Sites and Past Visits on an Interactive Map | Should | 8 | Same feature |
+| 18 | US 6.0.1 Store Each Site's Geometry From the Shared Source | Must | 5 | Its AT4 caches geocoding under the OpenCage limit |
+| 21 | US 1.0.1 Add User Profiles | Must | 5 | Same feature |
+| 24 | US 7.0.5 Delete an Image and Clean Up After It | Should | 5 | Same feature |
+| 35 | none | - | - | Decided, see item 35 |
+| 42 | US 7.0.7 Hide Fields on a SIR Before Export | Must | 5 | Related: both keep answers out of a published SIR |
+| 43 | none | - | - | - |
 
 ## Do not build these, they already exist
 
@@ -170,9 +168,7 @@ rendering, it is not a gate.
 Fix: read the caller's session at the top of each privileged action, look up their role in the
 database, refuse if they are not permitted, and only then use the service role client.
 Acceptance: calling a privileged action as a steward, outside the UI, is refused. See issue #5,
-these two belong together. Tracked in GitHub issue #5, whose title uses "US 3.0.8", an ID that
-does not exist in [Project Requirements](project-overview.md). The matching stories are US 5.0.1, 5.0.2, 5.0.3
-and 5.0.8.
+these two belong together. No current user story covers this item. The work is the Sprint 2 task #71.
 
 ### 5. Move `role` out of `user_metadata` into a table with RLS
 `Labels: security, data`
@@ -196,7 +192,6 @@ is `luperson`. So a web inspection does not exist for mobile, the question bank 
 This is a one way door and it blocks a large part of the backlog. Fix: write a short architecture
 decision record choosing which schema is canonical and what happens to the other. Acceptance: a
 decision document merged to the repo, with the follow up work broken into issues.
-See `docs/investigation/THE-SCHEMA-SPLIT.md`.
 
 ### 7. Add real coordinates to sites
 `Labels: data, feature`
@@ -358,7 +353,7 @@ It only refreshes the analytics numbers, while the user manual tells people to p
 stale site data. Both documented remedies are false. `Labels: mobile, bug`
 
 ### 35. Decide the fate of the Google Sheets pipeline
-**Decided on September 25, 2026: retire it (US 6.0.6, Must Have).** Frank: "Google the sheets do
+**Decided on September 25, 2026: retire it.** Frank: "Google the sheets do
 not store primary data. Okay. In no way, shape, or form." (D01).
 `googleSheets/code.gs` has production database write access. Its sync deletes any row missing from
 the sheet, it generates primary keys with max id plus one, and it writes in two steps with a best

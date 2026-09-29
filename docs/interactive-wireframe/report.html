@@ -33,9 +33,9 @@
 
     <div class="row" style="margin-bottom:18px;">
       <div class="box" style="flex:1; padding:10px 12px;"><div class="stat-label">County</div><div class="bar w2" style="margin-top:6px;"></div></div>
-      <div class="box" style="flex:1; padding:10px 12px;"><div class="stat-label">Last Inspected</div><div class="bar w3" style="margin-top:6px;"></div></div>
+      <div class="box" style="flex:1; padding:10px 12px;"><div class="stat-label">Last Inspected<span class="us">US 2.0.8</span></div><div class="bar w3" style="margin-top:6px;"></div></div>
       <div class="box" style="flex:1; padding:10px 12px;">
-        <div class="stat-label">Assigned Steward</div>
+        <div class="stat-label">Assigned Steward<span class="us">US 3.0.2</span></div>
         <div style="margin-top:6px; font-size:13px;"><a class="plain" style="text-decoration:underline;" href="profile-view.html?user=morgan-lee">Morgan Lee</a></div>
       </div>
     </div>
@@ -44,7 +44,7 @@
 
     <div class="row" style="margin:14px 0 16px; align-items:center;">
       <div style="flex:1; min-width:220px;">
-        <div class="field-label">Upload GPX Track of this Visit</div>
+        <div class="field-label">Upload GPX Track of this Visit<span class="us">US 2.0.9</span></div>
         <input type="file" id="gpxInput" accept=".gpx" onchange="handleGpx(this)">
         <div id="gpxConfirm" style="font-size:11px; color:var(--ok); margin-top:6px; display:none;">&#10003; <span id="gpxName"></span> uploaded and linked to this site.</div>
       </div>
@@ -62,7 +62,7 @@
       <button class="btn ok" style="margin-top:16px;" onclick="toggleSection('reportForm'); showToast('Inspection report submitted')">Submit</button>
     </div>
 
-    <button class="btn" style="display:block; width:100%; margin:0 0 16px; font-weight:bold;" onclick="toggleSection('compareForm')">Compare Answers Over Time</button>
+    <button class="btn" style="display:block; width:100%; margin:0 0 16px; font-weight:bold;" onclick="toggleSection('compareForm')">Compare Answers Over Time <span class="us">US 7.0.4</span></button>
     <div class="card" id="compareForm" style="display:none; margin-bottom:20px;">
       <div class="field-label">Question</div>
       <select class="field-input" style="margin-bottom:16px;">
@@ -79,7 +79,7 @@
       </table>
     </div>
 
-    <h3 style="margin:0 0 10px;">Past Inspections for this Site</h3>
+    <h3 style="margin:0 0 10px;">Past Inspections for this Site <span class="us">US 1.0.1</span><span class="us">US 4.0.4</span><span class="us">US 7.0.1</span></h3>
     <table class="wf-table" id="inspectionsTable">
       <tr><th>Date</th><th>Steward</th><th>Score</th><th>Actions</th></tr>
       <tr class="clickable" data-steward="Jamie Rivera">

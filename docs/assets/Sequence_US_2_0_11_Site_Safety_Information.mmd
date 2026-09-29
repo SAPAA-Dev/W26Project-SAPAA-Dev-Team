@@ -1,5 +1,5 @@
 ---
-title: "US 2.0.11 Show Safety Information for a Site"
+title: "US 2.0.11: Show Safety Information for a Site"
 config:
   theme: base
   sequence:
@@ -52,19 +52,27 @@ sequenceDiagram
     Note over Steward,DB: Show safety information (AT 1, AT 2)
     Steward->>Page: Open a Site page
     Page->>Server: getSiteSafety(siteId) (proposed)
-    Server->>DB: Read the W26_site_safety row for the Site
-    DB-->>Server: nearest_hospital, hazards, other_info, or no row
-    Server-->>Page: Safety values
-    Page-->>Steward: Show each value. An empty value shows "Not recorded"
+    Server->>Server: Check session and approved account (proposed)
+    alt No valid session or account not approved
+        Server-->>Page: Refuse (401)
+        Page-->>Steward: Go to /login
+    else Access allowed
+        Server->>DB: Read the W26_site_safety row for the Site
+        DB-->>Server: nearest_hospital, hazards, other_info, or no row
+        Server-->>Page: Safety values
+        Page-->>Steward: Show each value. An empty value shows "Not recorded"
+    end
 
     Note over Steward,DB: Change safety information (AT 3, AT 4)
     Admin->>Page: Edit safety information and select Save
     Page->>Server: updateSiteSafety(siteId, fields) (proposed)
-    Server->>Server: Check caller is Admin from a trusted role source
-    alt Caller is not Admin (AT 4)
-        Server-->>Page: Refused. Stored values stay the same
+    Server->>Server: Check caller is Admin from a trusted role source,<br/>store not decided (see the proposed ER diagram)
+    alt Caller is not Admin, for example a Steward<br/>who sends the request directly (AT 4)
+        Server-->>Page: Refuse (403). Stored values stay the same
+        Page-->>Steward: Show "Only an Admin can change safety information"
     else Caller is Admin
         Server->>DB: Upsert W26_site_safety row with updated_by and updated_at
+        DB-->>Server: Saved row
         Server-->>Page: Saved
         Page-->>Admin: A reload shows the new values (AT 3)
     end

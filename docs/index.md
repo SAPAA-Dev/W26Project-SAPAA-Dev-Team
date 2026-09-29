@@ -10,7 +10,7 @@ See [Project Overview](project-overview.md).
 
 Read this for feature requirements, acceptance criteria, and specific user needs driving Sprint 1 development.
 
-See [User Stories](user-stories.md).
+See [User Stories](user-stories.md) and [User Story Summaries](user-stories-summaries.md).
 
 ## High-level software design
 
@@ -22,7 +22,7 @@ See [Software Design](software-design.md).
 
 View this visual mock-up to see intended layout flows and screen layouts before jumping into design or frontend tasks.
 
-See [Wireframe](wireframe-F26.png).
+See [Wireframes](interactive-wireframe/index.md). A static image is also available: [Wireframe image](wireframe-F26.png).
 
 ## Sprint planning
 
@@ -32,6 +32,29 @@ See [Project Management](project-management.md).
 
 ## Teamwork
 
-Refer here to review team roles, communication guidelines, contribution logs, and sprint retrospective reflections.
+Refer here to see the team canvas, the Scrum roles for each sprint, and the Belbin team roles.
 
 See [Teamwork](teamwork.md).
+
+## Meeting minutes
+
+Read the notes from the team meetings and the client meetings.
+
+See [Meeting Minutes](meeting-minutes.md).
+
+## Archive
+
+Pages from the Winter 2026 and Fall 2025 teams are in the "Archive (inherited)" section of the navigation. We keep them for reference only.
+
+## Use of AI
+
+The team members plan, direct, review, and own the work on this site. We use AI tools to check our work, to draft
+text and diagram changes, to make repetitive changes, and to do routine tasks, so that we save time. We do not use AI to
+complete a task without review. A team member reads and checks each AI change before it is
+committed, and each pull request needs the approval of two team members.
+
+| Entity | Resource | Subject | Date |
+|---|---|---|---|
+| Anthropic | Claude (Claude Code), model Claude Opus 5.5 | Checking documents against the course rubric and the user stories, formatting and consistency fixes, diagram edits, and GitHub issue creation for Sprint 1 and Sprint 2 | September 2026 |
+
+Team members add a row for each other AI tool that they use.

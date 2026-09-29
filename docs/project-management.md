@@ -3,8 +3,9 @@
 > **Sprint deadlines are from the CMPUT 401 course calendar.** Each sprint ends with a GitHub
 > release at 20:00: Sprint 1 on September 29, Sprint 2 on October 13, Sprint 3 on October 27,
 > Sprint 4 on November 17 (after reading week) and Sprint 5 on December 1, 2026.
-> From Sprint 2, all work of a sprint is merged two days before its deadline (code freeze), and
-> the release is made after the freeze. The client plans field testing in early December 2026.
+> From Sprint 2, all work of a sprint is merged two days before its deadline (code freeze):
+> October 11, October 25, November 15 and November 29. The release is made after the freeze.
+> The client plans field testing in early December 2026.
 
 ## Teamwork Model
 
@@ -50,17 +51,17 @@ The full story set is in [User Stories](user-stories.md): 35 user stories in sev
 (see [Meeting Minutes](meeting-minutes.md)), plus later additions. Placement follows
 [User Story Summaries](user-stories-summaries.md); numbers are story points.
 
-| Feature area | Sprint 2 | Sprint 3 | Sprint 4 | Sprint 5 | Unscheduled | Won't Have |
-|---|---|---|---|---|---|---|
-| 1 - People Management | 1.0.1 (5), 1.0.2 (3) | 1.0.3 (2), 1.0.4 (2) | 1.0.5 (5) | - | - | - |
-| 2 - Place Management | 2.0.2 (3), 2.0.3 (3), 2.0.4 (8), 2.0.5 (5), 2.0.6 (5), 2.0.10 (1) | 2.0.1 (8), 2.0.8 (3), 2.0.9 (5), 2.0.11 (5) | 2.0.12 (8), 2.0.13 (3) | - | - | - |
-| 3 - Admin Persona | 3.0.2 (5) | - | 3.0.3 (8) | - | - | - |
-| 4 - General Features | 4.0.6 (1) | 4.0.2 (13), 4.0.4 (5), 4.0.5 (5), 4.0.7 (5) | - | - | - | - |
-| 5 - Access and Accounts | 5.0.4 (2) | 5.0.2 (2) | - | - | - | - |
-| 6 - Data and Places | - | 6.0.1 (5) | - | - | - | - |
-| 7 - Inspections and Media | 7.0.1 (2), 7.0.5 (5), 7.0.6 (5), 7.0.7 (5), 7.0.8 (5) | - | 7.0.3 (5) | - | - | 7.0.4 (5), 7.0.9 (5) |
-| **Points** | **63** | **60** | **29** | **0** | **0** | **10** |
-| **Planned velocity** | 63 | 60 | 29 | 32 | - | - |
+| Feature area | Sprint 1 | Sprint 2 | Sprint 3 | Sprint 4 | Sprint 5 | Unscheduled | Won't Have |
+|---|---|---|---|---|---|---|---|
+| 1 - People Management | - | 1.0.1 (5), 1.0.2 (3) | 1.0.3 (2), 1.0.4 (2) | 1.0.5 (5) | - | - | - |
+| 2 - Place Management | - | 2.0.2 (3), 2.0.3 (3), 2.0.4 (8), 2.0.5 (5), 2.0.6 (5), 2.0.10 (1) | 2.0.1 (8), 2.0.8 (3), 2.0.9 (5), 2.0.11 (5) | 2.0.12 (8), 2.0.13 (3) | - | - | - |
+| 3 - Admin Persona | - | 3.0.2 (5) | - | 3.0.3 (8) | - | - | - |
+| 4 - General Features | - | 4.0.6 (1) | 4.0.2 (13), 4.0.4 (5), 4.0.5 (5), 4.0.7 (5) | - | - | - | - |
+| 5 - Access and Accounts | - | 5.0.4 (2) | 5.0.2 (2) | - | - | - | - |
+| 6 - Data and Places | - | - | 6.0.1 (5) | - | - | - | - |
+| 7 - Inspections and Media | - | 7.0.1 (2), 7.0.5 (5), 7.0.6 (5), 7.0.7 (5), 7.0.8 (5) | - | 7.0.3 (5) | - | - | 7.0.4 (5), 7.0.9 (5) |
+| **Points** | **0** | **63** | **60** | **29** | **0** | **0** | **10** |
+| **Planned velocity** | 0 | 63 | 60 | 29 | 0 | - | - |
 
 By MoSCoW:
 
@@ -68,10 +69,12 @@ By MoSCoW:
 |---|---|---|---|
 | Must Have | 15 | 61 | 8 in Sprint 2, 6 in Sprint 3, 3.0.3 in Sprint 4 |
 | Should Have | 12 | 63 | 7 in Sprint 2, 5 in Sprint 3 |
-| Could Have | 6 | 28 | 7.0.1 in Sprint 2. 4.0.7 in Sprint 3. 1.0.5, 2.0.12, 2.0.13 and 7.0.3 in Sprint 4 |
-| Won't Have | 2 | 10 | 7.0.4 and 7.0.9 are not planned |
+| Could Have | 6 | 28 | 7.0.1 in Sprint 2, 4.0.7 in Sprint 3, 4 in Sprint 4 (1.0.5, 2.0.12, 2.0.13, 7.0.3) |
+| Won't Have | 2 | 10 | Not planned (7.0.4, 7.0.9) |
 
-Sprint 1 carries no user stories because it is documentation and discovery.
+Sprint 1 has no user stories because it is documentation and discovery. Sprint 5 has no user
+stories yet, so its planned velocity is 0. The team keeps Sprint 5 free on purpose: the client
+said that more work can come, and the sprint is also for final polish and deployment.
 
 **Open conflicts with the plan.** The team confirms or changes placement at
 Sprint 2 planning:
@@ -79,10 +82,12 @@ Sprint 2 planning:
 - 2.0.6 (map filter, Sprint 2) now comes before the map (2.0.1, Sprint 3).
 - 2.0.4 (Delete a Site, 8 points) is in Sprint 2, but the team has not agreed what happens
   to the inspections and images of a deleted site.
+- 2.0.2 (Add New Sites, Sprint 2) suggests boundaries from the Alberta government KML (AT6), but
+  6.0.1 (site geometry from that source) is in Sprint 3.
 - **Dependencies that still hold.** 2.0.9 (GPX upload) shares Sprint 3 with 2.0.1
   (map with tracks) and still comes first, because Frank asked for GPS files in one of the
-  first sprints. 6.0.1 (site geometry) is in the same sprint as 2.0.1 and 2.0.2, which use
-  it. 2.0.13 builds on the priority points of 2.0.12, so the two stay together in Sprint 4.
+  first sprints. 6.0.1 (site geometry) is in the same sprint as 2.0.1, which uses it.
+  2.0.13 builds on the priority points of 2.0.12, so the two stay together in Sprint 4.
 
 **MoSCoW is provisional.** Frank has not confirmed the priorities yet (issue #23).
 
@@ -99,8 +104,20 @@ Scrum Master and Product Owner rotate each sprint. The full rotation is on the
 
 **Team:** Saumya, Chris, Zanab, Abhinav, Alissa, Aaron, Jayden
 
+### Milestones
+
+All releases are GitHub releases at 20:00 on the due date.
+
+| Sprint | Code freeze | Release | Stories | Planned velocity |
+|---|---|---|---|---|
+| Sprint 1 | - | September 29, 2026 | 0 (documentation and discovery) | 0 |
+| Sprint 2 | October 11, 2026 | October 13, 2026 | 16 | 63 |
+| Sprint 3 | October 25, 2026 | October 27, 2026 | 12 | 60 |
+| Sprint 4 | November 15, 2026 | November 17, 2026 | 5 | 29 |
+| Sprint 5 | November 29, 2026 | December 1, 2026 | 0 (not planned yet) | 0 |
+
 ### Sprint 1
-**Due:** *September 29, 2026*
+**Due:** *September 29, 2026, 20:00 (GitHub release).*
 
 Sprint 1 is documentation and discovery. There is an existing codebase inherited from two previous
 teams, so a large part of this sprint is establishing what actually exists before committing to a
@@ -128,7 +145,7 @@ backlog.
 |Confirm scope and open questions with client|Documentation|Saumya, Alissa|Sep 26th|
 
 ### Sprint 2
-**Due:** *October 13, 2026, 20:00 (GitHub release)*
+**Due:** *October 13, 2026, 20:00 (GitHub release). Code freeze October 11.*
 
 All Sprint 2 work is finished and merged by **October 11** (code freeze), two days before the
 deadline. Gamma makes the release on October 12. October 13 is spare time before the 20:00
@@ -137,7 +154,7 @@ of the work in proportion to its number of members, and the tasks in its ownersh
 divides its tasks between its members.
 
 **Teams:** Alpha (Saumya, Aaron), Beta (Abhinav, Alissa), Gamma (Zanab, Chris, Jayden). See
-[Teamwork Model](#teamwork-model). The teams assign the Sprint 2 stories themselves.
+[Teamwork Model](#teamwork-model).
 
 The security stories were removed from the story list on September 25, so the access control work
 stays in the task list below until the team decides if it returns as stories.
@@ -157,46 +174,46 @@ stays in the task list below until the team decides if it returns as stories.
 |US 3.0.2 - Steward Designation|5|
 |US 4.0.6 - Demote Photo Identifier to optional field|1|
 |US 5.0.4 - Sign Out Properly|2|
+|US 7.0.1 - Let Stewards Export Their Own Reports|2|
 |US 7.0.5 - Delete an Image and Clean Up After It|5|
 |US 7.0.6 - Export More Than 50 Site Inspection Reports|5|
 |US 7.0.7 - Hide Fields on a SIR Before Export|5|
-|US 7.0.1 - Let Stewards Export Their Own Reports|2|
 |US 7.0.8 - Delete a Site Inspection Report|5|
 
 **Sprint Velocity:** 63
 
 #### Tasks
 
-|Task|Related US|Team|Due|
+|Task|Related US|Assignee|Due|
 |:---:|:---:|:---:|:---:|
-|Set up development, release, and feature branches|Dev Task|Gamma|Oct 4th|
-|Improve authentication checks for admin routes|Dev Task|Beta|Oct 4th|
-|Investigate and fix Invalid Identifier Supabase error|Dev Task|Alpha|Oct 4th|
-|Update db names to not include “W26” as prefix|Dev Task|Alpha|Oct 4th|
-|Create user model that supports profiles, steward assignments, and gamified stats|US 1.0.1|Alpha|Oct 4th|
-|Migrate user model|US 1.0.1|Alpha|Oct 5th|
-|Profile page|US 1.0.1|Alpha|Oct 6th|
-|Add Steward to site page and link to their profile|US 3.0.2|Alpha|Oct 7th|
-|Edit profile/user info page % functionality|US 1.0.2|Alpha|Oct 7th|
-|Add new site page & functionality|US 2.0.2|Gamma|Oct 5th|
-|Edit existing site page fields|US 2.0.5|Gamma|Oct 6th|
-|Delete site button & confirmation|US 2.0.4|Gamma|Oct 6th|
-|Deactivate/Activate button & confirmation|US 2.0.3|Beta|Oct 6th|
-|Set up map|US 2.0.6|Beta|Oct 5th|
-|Add sites to the map|US 2.0.6|Beta|Oct 6th|
-|Add Search and Filtering on Map view|US 2.0.6|Beta|Oct 7th|
-|Add links to site page|US 2.0.10|Gamma|Oct 7th|
-|Fix site inspection page resetting current page when app is exited temporarily|US 4.0.6|Beta|Oct 6th|
-|Change Photo Identifier field on SIR to not required|US 4.0.6|Beta|Oct 5th|
-|Add a delete option on images|US 7.0.5|Beta|Oct 7th|
-|Increase export limit to over 50|US 7.0.6|Gamma|Oct 9th|
-|Screen to select hidden fields on SIR before export|US 7.0.7|Beta|Oct 9th|
-|Grant Steward permission to export PDFs|US 7.0.1|Gamma|Oct 7th|
-|Delete site inspection report button & confirmation|US 7.0.8|Gamma|Oct 7th|
-|Fix logging out functionality out the home page|US 5.0.4|Alpha|Oct 5th|
+|Set up development, release, and feature branches|Dev Task|Gamma (Zanab, Chris, Jayden)|Oct 4th|
+|Improve authentication checks for admin routes|Dev Task|Beta (Abhinav, Alissa)|Oct 4th|
+|Investigate and fix Invalid Identifier Supabase error|Dev Task|Alpha (Saumya, Aaron)|Oct 4th|
+|Update db names to not include “W26” as prefix|Dev Task|Alpha (Saumya, Aaron)|Oct 4th|
+|Create user model that supports profiles, steward assignments, and gamified stats|US 1.0.1|Alpha (Saumya, Aaron)|Oct 4th|
+|Migrate user model|US 1.0.1|Alpha (Saumya, Aaron)|Oct 5th|
+|Profile page|US 1.0.1|Alpha (Saumya, Aaron)|Oct 6th|
+|Add Steward to site page and link to their profile|US 3.0.2|Alpha (Saumya, Aaron)|Oct 7th|
+|Edit profile/user info page & functionality|US 1.0.2|Alpha (Saumya, Aaron)|Oct 7th|
+|Add new site page & functionality|US 2.0.2|Gamma (Zanab, Chris, Jayden)|Oct 5th|
+|Edit existing site page fields|US 2.0.5|Gamma (Zanab, Chris, Jayden)|Oct 6th|
+|Delete site button & confirmation|US 2.0.4|Gamma (Zanab, Chris, Jayden)|Oct 6th|
+|Deactivate/Activate button & confirmation|US 2.0.3|Beta (Abhinav, Alissa)|Oct 6th|
+|Set up map|US 2.0.6|Beta (Abhinav, Alissa)|Oct 5th|
+|Add sites to the map|US 2.0.6|Beta (Abhinav, Alissa)|Oct 6th|
+|Add Search and Filtering on Map view|US 2.0.6|Beta (Abhinav, Alissa)|Oct 7th|
+|Add links to site page|US 2.0.10|Gamma (Zanab, Chris, Jayden)|Oct 7th|
+|Fix site inspection page resetting current page when app is exited temporarily|Dev Task|Beta (Abhinav, Alissa)|Oct 6th|
+|Change Photo Identifier field on SIR to not required|US 4.0.6|Beta (Abhinav, Alissa)|Oct 5th|
+|Add a delete option on images|US 7.0.5|Beta (Abhinav, Alissa)|Oct 7th|
+|Increase export limit to over 50|US 7.0.6|Gamma (Zanab, Chris, Jayden)|Oct 9th|
+|Screen to select hidden fields on SIR before export|US 7.0.7|Beta (Abhinav, Alissa)|Oct 9th|
+|Grant Steward permission to export PDFs|US 7.0.1|Gamma (Zanab, Chris, Jayden)|Oct 7th|
+|Delete site inspection report button & confirmation|US 7.0.8|Gamma (Zanab, Chris, Jayden)|Oct 7th|
+|Fix logging out functionality outside the home page|US 5.0.4|Alpha (Saumya, Aaron)|Oct 5th|
 |Open a PR for each task and request 2 reviews|All US|Everyone|Oct 10th|
 |Code freeze: all Sprint 2 PRs reviewed and merged|All US|Everyone|Oct 11th|
-|Write the release notes and make the Sprint 2 release on GitHub|Release|Gamma|Oct 12th|
+|Write the release notes and make the Sprint 2 release on GitHub|Release|Gamma (Zanab, Chris, Jayden)|Oct 12th|
 |Sprint 2 demo, review and retrospective|All US|Everyone|Oct 14th|
 
 #### Sprint 2 task details
@@ -206,98 +223,105 @@ The acceptance tests are in [User Stories](user-stories.md).
 
 **Setup and foundations (due October 4 to 5)**
 
-- **Set up development, release, and feature branches** (Gamma). Make the branch model for
-  the team: a development branch, a release branch, and feature branches from development. Add the
-  branch rules on GitHub and write the model in [Contributing](contributing.md). Done when a
-  feature PR can merge into development and development can merge into the release branch.
-- **Improve authentication checks for admin routes** (Beta). Make sure that each admin
-  page and admin server action checks on the server that the caller is an Admin. Done when a
-  Steward who calls an admin route directly gets a refusal. This supports 2.0.2 AT4, 2.0.5 AT2,
-  3.0.2 AT4, 7.0.5 AT2, 7.0.6 AT3, 7.0.7 AT4 and 7.0.8 AT4.
-- **Investigate and fix Invalid Identifier Supabase error** (Alpha). Find the cause of the
-  error, fix it, and write the cause in the PR. Done when the error does not occur again.
-- **Update db names to not include "W26" as prefix** (Alpha). Rename the database objects
-  with a migration, and change each query that uses the old names. Done when the app works with
-  the new names and no code uses the "W26" names.
-- **Create user model that supports profiles, steward assignments, and gamified stats**
-  (Alpha). Design the user data: name, email, skills, focus areas, contact info,
-  inspection count, the sites that the user stewards, and fields for later activity points.
-  Done when the model is reviewed by the team, because 1.0.1, 1.0.2 and 3.0.2 use it.
-- **Migrate user model** (Alpha). Write the migration for the new user model and move the
-  data of the current users. Done when all current users have a profile record and no data is lost.
+- **Set up development, release, and feature branches**. Assignee: Gamma (Zanab, Chris, Jayden).
+  Make the branch model for the team: a development branch, a release branch, and feature branches
+  from development. Add the branch rules on GitHub and write the model in
+  [Contributing](contributing.md). Done when a feature PR can merge into development and development
+  can merge into the release branch.
+- **Improve authentication checks for admin routes**. Assignee: Beta (Abhinav, Alissa). Make sure
+  that each admin page and admin server action checks on the server that the caller is an Admin.
+  Done when a Steward who calls an admin route directly gets a refusal. This supports 2.0.2 AT4,
+  2.0.5 AT2, 3.0.2 AT4, 7.0.5 AT2, 7.0.6 AT3, 7.0.7 AT4 and 7.0.8 AT4.
+- **Investigate and fix Invalid Identifier Supabase error**. Assignee: Alpha (Saumya, Aaron). Find
+  the cause of the error, fix it, and write the cause in the PR. Done when the error does not occur
+  again.
+- **Update db names to not include "W26" as prefix**. Assignee: Alpha (Saumya, Aaron). Rename the
+  database objects with a migration, and change each query that uses the old names. Done when the
+  app works with the new names and no code uses the "W26" names.
+- **Create user model that supports profiles, steward assignments, and gamified stats**. Assignee:
+  Alpha (Saumya, Aaron). Design the user data: name, email, skills, focus areas, contact info,
+  inspection count, the sites that the user stewards, and fields for later activity points. Done
+  when the model is reviewed by the team, because 1.0.1, 1.0.2 and 3.0.2 use it.
+- **Migrate user model**. Assignee: Alpha (Saumya, Aaron). Write the migration for the new user
+  model and move the data of the current users. Done when all current users have a profile record
+  and no data is lost.
 
 **Profiles (US 1.0.1, 1.0.2, 3.0.2)**
 
-- **Profile page** (Alpha, US 1.0.1). Show name, skills, focus area, contact info and
-  inspection count. Open it from the main menu and from an inspection on a site page, with a way
-  back. Done when 1.0.1 AT1 to AT5 pass.
-- **Edit profile/user info page and functionality** (Alpha, US 1.0.2). A user edits only
-  their own profile. Name and email are required. Skills and focus areas can be added. Done when
-  1.0.2 AT1 to AT6 pass, including the server refusal for another user's profile.
-- **Add Steward to site page and link to their profile** (Alpha, US 3.0.2). An Admin
-  searches for a steward and assigns or replaces the steward of a site. The site page and the
-  steward's profile both show the assignment. Done when 3.0.2 AT1 to AT4 pass.
+- **Profile page** (US 1.0.1). Assignee: Alpha (Saumya, Aaron). Show name, skills, focus area,
+  contact info and inspection count. Open it from the main menu and from an inspection on a site
+  page, with a way back. Done when 1.0.1 AT1 to AT5 pass.
+- **Edit profile/user info page and functionality** (US 1.0.2). Assignee: Alpha (Saumya, Aaron). A
+  user edits only their own profile. Name and email are required. Skills and focus areas can be
+  added. Done when 1.0.2 AT1 to AT6 pass, including the server refusal for another user's profile.
+- **Add Steward to site page and link to their profile** (US 3.0.2). Assignee: Alpha (Saumya,
+  Aaron). An Admin searches for a steward and assigns or replaces the steward of a site. The site
+  page and the steward's profile both show the assignment. Done when 3.0.2 AT1 to AT4 pass.
 
 **Sites (US 2.0.2, 2.0.3, 2.0.4, 2.0.5, 2.0.10)**
 
-- **Add new site page and functionality** (Gamma, US 2.0.2). An Admin makes a site, selects
-  its boundary and gets a warning for a possible duplicate name. Required fields are checked.
-  Done when 2.0.2 AT1 to AT6 pass.
-- **Edit existing site page fields** (Gamma, US 2.0.5). An Admin enters edit mode, sees
-  which fields are shown or hidden, and saves. Other users cannot enter edit mode. Done when
-  2.0.5 AT1 to AT4 pass.
-- **Delete site button and confirmation** (Gamma, US 2.0.4). The Admin confirms the delete
-  and sees how many inspections and images the delete affects. The team must agree on what
-  happens to those records before this task starts. Done when 2.0.4 AT1 to AT4 pass.
-- **Deactivate/Activate button and confirmation** (Beta, US 2.0.3). An inactive site is not
-  in site pickers or search, and its inspections can still be viewed. New sites are active.
-  Done when 2.0.3 AT1 to AT5 pass.
-- **Add links to site page** (Gamma, US 2.0.10). Show short links to the SAPAA website and
-  iNaturalist that open in a new window. Done when 2.0.10 AT1 to AT3 pass.
+- **Add new site page and functionality** (US 2.0.2). Assignee: Gamma (Zanab, Chris, Jayden). An
+  Admin makes a site, selects its boundary and gets a warning for a possible duplicate name.
+  Required fields are checked. Done when 2.0.2 AT1 to AT6 pass.
+- **Edit existing site page fields** (US 2.0.5). Assignee: Gamma (Zanab, Chris, Jayden). An Admin
+  enters edit mode, sees which fields are shown or hidden, and saves. Other users cannot enter edit
+  mode. Done when 2.0.5 AT1 to AT4 pass.
+- **Delete site button and confirmation** (US 2.0.4). Assignee: Gamma (Zanab, Chris, Jayden). The
+  Admin confirms the delete and sees how many inspections and images the delete affects. The team
+  must agree on what happens to those records before this task starts. Done when 2.0.4 AT1 to AT4
+  pass.
+- **Deactivate/Activate button and confirmation** (US 2.0.3). Assignee: Beta (Abhinav, Alissa). An
+  inactive site is not in site pickers or search, and its inspections can still be viewed. New sites
+  are active. Done when 2.0.3 AT1 to AT5 pass.
+- **Add links to site page** (US 2.0.10). Assignee: Gamma (Zanab, Chris, Jayden). Show short links
+  to the SAPAA website and iNaturalist that open in a new window. Done when 2.0.10 AT1 to AT3 pass.
 
 **Map (US 2.0.6)**
 
-- **Set up map** (Beta). Add the map view to the web app. Done when the map loads for a
-  signed-in user.
-- **Add sites to the map** (Beta). Show all active sites on the map. Done when each active
-  site with a location is shown.
-- **Add Search and Filtering on Map view** (Beta). Filter sites by county, clear the
-  filter, and search by name to centre the map on a site. Done when 2.0.6 AT1 to AT3 pass.
+- **Set up map**. Assignee: Beta (Abhinav, Alissa). Add the map view to the web app. Done when the
+  map loads for a signed-in user.
+- **Add sites to the map**. Assignee: Beta (Abhinav, Alissa). Show all active sites on the map. Done
+  when each active site with a location is shown.
+- **Add Search and Filtering on Map view**. Assignee: Beta (Abhinav, Alissa). Filter sites by
+  county, clear the filter, and search by name to centre the map on a site. Done when 2.0.6 AT1 to
+  AT3 pass.
 
-**Site inspection reports (US 4.0.6, 7.0.1, 7.0.5, 7.0.6, 7.0.7, 7.0.8)**
+**Site inspection reports (US 4.0.6, 7.0.1, 7.0.5, 7.0.6, 7.0.7, 7.0.8, and one dev task)**
 
-- **Change Photo Identifier field on SIR to not required** (Beta, US 4.0.6). Remove the
-  required rule and the "required" note. Done when 4.0.6 AT1 and AT2 pass.
-- **Fix site inspection page resetting current page when app is exited temporarily** (Beta,
-  US 4.0.6). Keep the current page of the form when the user leaves the app and comes back.
-  Done when the user returns to the same page with their answers.
-- **Add a delete option on images** (Beta, US 7.0.5). An Admin deletes an image, and the
-  file is removed from S3. Other users see no delete control and the server refuses them.
-  Done when 7.0.5 AT1 to AT5 pass.
-- **Increase export limit to over 50** (Gamma, US 7.0.6). Find the cause of the limit of 50
-  and remove it. Only Admins can export in bulk. Done when 7.0.6 AT1 to AT4 pass.
-- **Screen to select hidden fields on SIR before export** (Beta, US 7.0.7). An Admin selects
-  fields to leave out of the export. The stored answers do not change. Done when 7.0.7 AT1 to
-  AT5 pass.
-- **Grant Steward permission to export PDFs** (Gamma, US 7.0.1). A Steward exports a PDF of
-  their own SIR only. Done when 7.0.1 AT1 to AT3 pass.
-- **Delete site inspection report button and confirmation** (Gamma, US 7.0.8). An Admin
-  confirms, then the SIR and its images are removed from the site and report lists. Stewards are
-  refused. Done when 7.0.8 AT1 to AT5 pass.
+- **Change Photo Identifier field on SIR to not required** (US 4.0.6). Assignee: Beta (Abhinav,
+  Alissa). Remove the required rule and the "required" note. Done when 4.0.6 AT1 and AT2 pass.
+- **Fix site inspection page resetting current page when app is exited temporarily** (dev task).
+  Assignee: Beta (Abhinav, Alissa). Keep the current page of the form when the user leaves the app
+  and comes back. Done when the user returns to the same page with their answers.
+- **Add a delete option on images** (US 7.0.5). Assignee: Beta (Abhinav, Alissa). An Admin deletes
+  an image, and the file is removed from S3. Other users see no delete control and the server
+  refuses them. Done when 7.0.5 AT1 to AT5 pass.
+- **Increase export limit to over 50** (US 7.0.6). Assignee: Gamma (Zanab, Chris, Jayden). Find the
+  cause of the limit of 50 and remove it. Only Admins can export in bulk. Done when 7.0.6 AT1 to AT4
+  pass.
+- **Screen to select hidden fields on SIR before export** (US 7.0.7). Assignee: Beta (Abhinav,
+  Alissa). An Admin selects fields to leave out of the export. The stored answers do not change.
+  Done when 7.0.7 AT1 to AT5 pass.
+- **Grant Steward permission to export PDFs** (US 7.0.1). Assignee: Gamma (Zanab, Chris, Jayden). A
+  Steward exports a PDF of their own SIR only. Done when 7.0.1 AT1 to AT3 pass.
+- **Delete site inspection report button and confirmation** (US 7.0.8). Assignee: Gamma (Zanab,
+  Chris, Jayden). An Admin confirms, then the SIR and its images are removed from the site and
+  report lists. Stewards are refused. Done when 7.0.8 AT1 to AT5 pass.
 
 **Accounts (US 5.0.4)**
 
-- **Fix logging out functionality out the home page** (Alpha, US 5.0.4). Put sign-out on
-  every page. After sign-out, the Back button and a new visit show the sign-in page. Done when
-  5.0.4 AT1 to AT3 pass.
+- **Fix logging out functionality outside the home page** (US 5.0.4). Assignee: Alpha (Saumya,
+  Aaron). Put sign-out on every page. After sign-out, the Back button and a new visit show the
+  sign-in page. Done when 5.0.4 AT1 to AT3 pass.
 
 **Review and release**
 
 - **Open a PR for each task and request 2 reviews** (everyone, October 10).
 - **Code freeze** (everyone, October 11). All Sprint 2 PRs are reviewed and merged. Work that is not
   merged moves to Sprint 3.
-- **Write the release notes and make the Sprint 2 release on GitHub** (Gamma, October 12). The
-  release lists the finished stories and tasks. The deadline is October 13 at 20:00.
+- **Write the release notes and make the Sprint 2 release on GitHub** (October 12). Assignee:
+  Gamma (Zanab, Chris, Jayden). The release lists the finished stories and tasks. The deadline is
+  October 13 at 20:00.
 - **Sprint 2 demo, review and retrospective** (everyone, October 14 lab). The Sprint 2 peer-review
   form is due October 14 at 23:59.
 
@@ -325,6 +349,8 @@ The acceptance tests are in [User Stories](user-stories.md).
 
 #### Tasks
 
+Tasks are planned at the start of the sprint.
+
 ### Sprint 4
 **Due:** *November 17, 2026, 20:00 (GitHub release). Code freeze November 15.*
 
@@ -337,21 +363,28 @@ The acceptance tests are in [User Stories](user-stories.md).
 |US 2.0.13 - Flag Site Points That Are a Year Old|3|
 |US 3.0.3 - Export all digital files from SIR-SAPAA|8|
 |US 7.0.3 - See All Inspections in One View|5|
-|US 7.0.4 - Compare One Question Across Years|5|
 
 **Sprint Velocity:** 29
 
 #### Tasks
 
+Tasks are planned at the start of the sprint.
+
 ### Sprint 5
 **Due:** *December 1, 2026, 20:00 (GitHub release). Code freeze November 29.*
 
+Sprint 5 is kept free on purpose. The client said that more work can come. The sprint is also for
+final polish and deployment before the client field test in early December.
+
 #### User stories
 
-No user stories are placed in Sprint 5. 
+No stories planned yet. New client requests go here.
 
 **Sprint Velocity:** 0
 
+#### Tasks
+
+Tasks are planned at the start of the sprint.
 
 -----
 

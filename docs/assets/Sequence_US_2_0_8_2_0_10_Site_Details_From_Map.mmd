@@ -1,5 +1,5 @@
 ---
-title: "US 2.0.8, 2.0.10: View a Site's Details From the Map"
+title: "US 2.0.8, 2.0.10: View a Site's Details From the Map / Add links to Site Page"
 config:
   theme: base
   sequence:
@@ -77,6 +77,7 @@ sequenceDiagram
         activate Site
         Site->>Actions: getFormResponsesBySite(namesite) (exists)
         activate Actions
+        Actions->>Actions: Same session check as above (Proposed)
         Actions->>DB: Read active W26_form_responses and W26_answers
         activate DB
         DB-->>Actions: Past SIRs

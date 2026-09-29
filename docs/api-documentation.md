@@ -1,16 +1,18 @@
+# API Documentation
+
+*Inherited from the Winter 2026 and Fall 2025 teams. We keep this page for reference only. We do not update it for Fall 2026.*
+
 ## API Documentation From Winter 2026
 
 Interactive API documentation is available through Swagger.
 
-You can view and test all API endpoints here:
-
-[Swagger API Documentation](https://unbribed-veola-quaky.ngrok-free.dev/api-docs)
+*Note (Fall 2026): We removed the link to the hosted Swagger page. It pointed to a temporary personal ngrok address.*
 
 **Swagger (Local)**: http://localhost:3000/api-docs
 
 You can explore the API, view request/response formats, and test endpoints directly from the browser.
 
-##For a detailed explanation of the API endpoints see:
+For a detailed explanation of the API endpoints, see:
 
 [Media Storage Architecture](aws-architecture.md)
 

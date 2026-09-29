@@ -1,5 +1,5 @@
 ---
-title: "US 7.0.8 Delete a Site Inspection Report"
+title: "US 7.0.8: Delete a Site Inspection Report"
 config:
   theme: base
   sequence:
@@ -53,7 +53,7 @@ sequenceDiagram
     Page-->>Admin: Ask to confirm, with the number of answers and images (AT 1)
     Admin->>Page: Confirm
     Page->>Server: deleteFormResponse(responseId) (proposed)
-    Server->>Server: Check caller is Admin from a trusted role source
+    Server->>Server: Check caller is Admin from a trusted role source, store not decided
     alt Caller is not Admin (AT 4)
         Server-->>Page: Refused. The SIR stays unchanged
         Note over Admin,Server: A Steward who sends the request directly is refused the same way

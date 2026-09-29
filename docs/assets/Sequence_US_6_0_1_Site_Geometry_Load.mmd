@@ -1,5 +1,5 @@
 ---
-title: "US 6.0.1 Site Geometry From the Shared Source"
+title: "US 6.0.1: Store Each Site's Geometry From the Shared Source"
 config:
   theme: base
   sequence:
@@ -41,7 +41,8 @@ config:
 ---
 sequenceDiagram
     autonumber off
-    actor Operator as Developer or Admin
+    actor Admin
+    actor Steward
     participant Loader as Geometry load job<br/>loadGeometriesFromKml (proposed)
     participant KML as Alberta government KML<br/>(same source as website)
     participant DB as Supabase DB<br/>W26_sites-pa, W26_kml_sites
@@ -49,42 +50,59 @@ sequenceDiagram
     participant Geo as /api/geocode route
     participant OC as OpenCage API
 
-    Note over Operator,OC: Covers US 6.0.1. W26_sites-pa has no geometry columns today.<br/>"(proposed)" = the step is not in the code today.<br/>Open question: load the KML into a table or read the file each time. W26_kml_sites is the proposed option.
+    Note over Admin,OC: Covers US 6.0.1. W26_sites-pa has no geometry columns today.<br/>"(proposed)" = the step is not in the code today.<br/>Open question: load the KML into a table or read the file each time. W26_kml_sites is the proposed option.
 
-    Operator->>Loader: Start geometry load (proposed)
-    Loader->>KML: Download KML file
-    KML-->>Loader: Placemarks with boundaries
-    Loader->>DB: Store every placemark in W26_kml_sites:<br/>source_feature_id, name, boundary, loaded_at (proposed)
-    Loader->>DB: Read active W26_sites-pa rows
-    DB-->>Loader: Active sites
-    loop Each active site
-        Loader->>Loader: Match site name to a placemark
-        alt Match is found
-            Loader->>DB: Set source_feature_id, boundary as in the KML,<br/>and centre point (lat, lng) on the site (AT 1, AT 2)
-        else No match
-            Loader->>Loader: Leave source_feature_id NULL (AT 3)
+    Admin->>Loader: Start geometry load (proposed)
+    Loader->>Loader: Check caller is Admin from a trusted role source, store not decided (proposed)
+    alt Caller is not Admin
+        Loader-->>Admin: Refuse (403). Nothing is loaded
+    else Caller is Admin
+        Loader->>KML: Download KML file
+        KML-->>Loader: Placemarks with boundaries
+        Loader->>DB: Store every placemark in W26_kml_sites:<br/>source_feature_id, name, boundary, loaded_at (proposed)
+        Loader->>DB: Read active W26_sites-pa rows
+        DB-->>Loader: Active sites
+        loop Each active site
+            Loader->>Loader: Match site name to a placemark
+            alt Match is found
+                Loader->>DB: Set source_feature_id, boundary as in the KML,<br/>and centre point (lat, lng) on the site (AT 1, AT 2)
+            else No match
+                Loader->>Loader: Leave source_feature_id NULL (AT 3)
+            end
         end
+        Loader-->>Admin: Report matched and unmatched counts
     end
-    Loader-->>Operator: Report matched and unmatched counts
-    Operator->>Pages: Open unmatched sites list (proposed)
+    Admin->>Pages: Open unmatched sites list (proposed)
     Pages->>DB: Read active W26_sites-pa rows<br/>where source_feature_id IS NULL
     DB-->>Pages: Unmatched sites (the AT 3 list)
-    Pages-->>Operator: Show sites for an Admin to fix
+    Pages-->>Admin: Show sites for an Admin to fix
 
     opt A site has no point and fallback geocoding is used (AT 4)
         Pages->>Geo: GET /api/geocode?q=site name (exists)
-        Geo->>OC: Geocode request to the external API
-        alt External API returns a result
-            OC-->>Geo: lat, lng
-            Geo-->>Pages: lat, lng
-        else External API refuses the request or its quota is exhausted
-            OC-->>Geo: Error or no result
-            Geo-->>Pages: No result
+        Geo->>Geo: Look for a cached result for this name (proposed)
+        alt Cached result exists
+            Geo-->>Pages: lat, lng from the cache. No OpenCage request
+        else No cached result
+            Geo->>Geo: Read the OpenCage request count for today (proposed)
+            alt Count has reached the daily limit of 2,500
+                Geo-->>Pages: No result. No OpenCage request
+            else Count is less than the limit
+                Geo->>OC: Geocode request. Add 1 to the count for today (proposed)
+                alt External API returns a result
+                    OC-->>Geo: lat, lng
+                    Geo->>Geo: Store the result in the cache (proposed)
+                    Geo-->>Pages: lat, lng
+                else External API refuses the request or its quota is exhausted
+                    OC-->>Geo: Error or no result
+                    Geo-->>Pages: No result
+                end
+            end
         end
     end
 
+    Steward->>Pages: Open the map
     Pages->>DB: Read site boundary and centre point (AT 2)
     DB-->>Pages: Geometry
-    Pages-->>Operator: Draw site on the map
+    Pages-->>Steward: Draw site on the map
 
-    Note over Pages,OC: Decision: fallback geocoding uses the external OpenCage API directly.<br/>There is no application database cache. The OpenCage account quota limits requests.<br/>StewardLog calls OpenCage separately from the phone.
+    Note over Pages,OC: Open question: where the geocode cache and the daily request count are stored,<br/>for example a database table or server memory. The proposed ER diagram does not show them yet.<br/>StewardLog calls OpenCage separately from the phone. If it uses the same key, its requests also count.

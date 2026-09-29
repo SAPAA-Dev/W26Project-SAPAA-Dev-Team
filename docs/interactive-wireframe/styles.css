@@ -158,3 +158,6 @@ table.wf-table tr.clickable:hover td{background:#f0f0f0;}
 .story-item:last-child{margin-bottom:0;}
 .story-id{display:inline-block; font-size:10px; font-weight:bold; color:var(--accent); margin-bottom:3px;}
 .story-item p{font-size:12.5px; line-height:1.5; margin:0; color:#333;}
+
+/* Story label on a screen element, so a reviewer can trace each element to its user story */
+.us{display:inline-block; font-size:9px; font-weight:bold; color:var(--accent); border:1px dashed var(--accent); background:#fff; padding:1px 4px; margin:0 4px; vertical-align:middle; white-space:nowrap;}

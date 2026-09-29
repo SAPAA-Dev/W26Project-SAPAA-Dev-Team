@@ -1,3 +1,7 @@
+# Static Analysis (SonarQube)
+
+*Inherited from the Winter 2026 team. We keep this page for reference only. We do not update it for Fall 2026.*
+
 [View the SonarQube results here](https://docs.google.com/document/d/1Dv6W_VKQBFbD4GxQ4yV4RMGehlkVmxLiNfycjmCnWHo/edit?usp=sharing)
 
 <iframe 

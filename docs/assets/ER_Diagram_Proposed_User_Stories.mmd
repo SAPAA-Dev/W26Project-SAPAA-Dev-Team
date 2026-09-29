@@ -3,7 +3,7 @@ config:
   layout: elk
 ---
 erDiagram
-    %% PROPOSED SCHEMA: WEB APP AFTER THE 34 CURRENT USER STORIES
+    %% PROPOSED SCHEMA: WEB APP AFTER THE 35 CURRENT USER STORIES
     %% Source: docs/user-stories.md (Sep 25 2026 stories and the stories of #42). This is a proposal, not
     %% the database. The current schema is in ER_Diagram.mmd (web app) and
     %% ER_Diagram_Legacy.mmd (mobile app and Google Sheets).
@@ -39,8 +39,10 @@ erDiagram
     %% - US 7.0.5 delete an image: delete the W26_attachments or
     %%   W26_homepage-image-uploads row and the S3 object.
 
-    %% US 6.0.1 uses OpenCage as an external API when fallback geocoding is
-    %% needed. There is no application database cache in this proposal.
+    %% US 6.0.1 AT 4: fallback geocoding results are cached and OpenCage
+    %% requests stay under 2,500 per day. Where the cache and the daily count
+    %% are stored is not decided. See the OPEN QUESTIONS box.
+    %% The role store is not decided. See the OPEN QUESTIONS box.
     %% Open question for US 6.0.1 and 2.0.2: load the KML into a table, or
     %% read the KML file each time. W26_kml_sites is the proposed option.
     %% US 2.0.10: the legacy table sites_report_fnr_test already has sapaaweb
@@ -50,8 +52,14 @@ erDiagram
     auth_users["EXISTING auth.users"] {
         uuid id PK
         text email
-        jsonb raw_user_meta_data "full_name"
-        jsonb raw_app_meta_data "trusted server-managed role"
+        jsonb raw_user_meta_data "full_name, role and authenticated today, the user can change it"
+    }
+
+    OPEN_QUESTIONS["OPEN QUESTIONS: NOT DECIDED"] {
+        text role_store "Where the Admin or Steward role is kept. Today: raw_user_meta_data"
+        text role_store_need "Sequence diagrams need a role that the user cannot change"
+        text geocode_cache "US 6.0.1 AT 4: store for cached OpenCage results"
+        text geocode_daily_count "US 6.0.1 AT 4: store for the daily request count, limit 2,500"
     }
 
     W26_profiles["NEW W26_profiles (US 1.0.1, 1.0.2)"] {
@@ -234,9 +242,11 @@ erDiagram
 
     classDef existing fill:#cfe4ff,stroke:#333,color:#111
     classDef proposed fill:#c9f7d4,stroke:#1a7f37,stroke-width:2px,color:#111
+    classDef question fill:#ffe344,stroke:#d4ba24,stroke-width:2px,color:#111
 
     class auth_users,W26_ab_counties,W26_sites_pa,W26_form_responses,W26_answers,W26_questions,W26_attachments,W26_homepage_image_uploads,S26_pdf_jobs existing
     class W26_profiles,W26_profile_hidden_questions,W26_site_page_fields,W26_gpx_tracks,W26_kml_sites,W26_export_jobs,W26_activity_point_values,W26_activity_points,W26_site_safety,W26_site_priority proposed
+    class OPEN_QUESTIONS question
 
     %% text_array means the PostgreSQL type text[].
     %% Removed from the earlier proposal because their stories are not in

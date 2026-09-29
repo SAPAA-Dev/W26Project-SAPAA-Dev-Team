@@ -1,0 +1,92 @@
+---
+title: "US 4.0.6: Demote Photo Identifier to optional field"
+config:
+  theme: base
+  sequence:
+    actorMargin: 70
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 38
+    noteMargin: 16
+    mirrorActors: true
+    width: 200
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Steward
+    participant Form as New SIR page<br/>new-report/page.tsx,<br/>UploadImages.tsx
+    participant Presign as Presign route<br/>/api/s3/presign
+    participant S3 as AWS S3
+    participant Actions as Server actions<br/>utils/supabase/queries.ts
+    participant DB as Supabase<br/>PostgreSQL
+
+    Note over Steward,DB: Covers US 4.0.6. The photo upload flow exists. Today the Identifier is required in three places:<br/>the "*" mark in UploadImages.tsx, the checks in new-report/page.tsx and the metadata check in /api/s3/presign.<br/>"(proposed)" = the step is not in the code today.
+
+    Steward->>Form: Open a new SIR and add a photo
+    activate Form
+    Form-->>Steward: Show the photo fields. The Identifier label has<br/>no "required" mark (AT 2) (proposed)
+    Steward->>Form: Fill caption, photographer and date. Leave Identifier empty. Select Submit
+    Form->>Form: Check required answers and photo fields.<br/>Identifier is not in the required list (proposed)
+    alt A required field is empty or not in a valid format
+        Form-->>Steward: Block submit. List the missing fields
+    else All required fields are filled in a valid format
+        opt Identifier is given
+            Form->>Form: Check the limit of 20 characters (exists)
+        end
+        Form->>Actions: addSiteInspectionReport (exists)
+        activate Actions
+        Actions->>DB: Insert W26_form_responses row
+        DB-->>Actions: responseId
+        Actions-->>Form: responseId
+        deactivate Actions
+        Form->>Presign: POST file details with an empty identifier (exists)
+        activate Presign
+        Presign->>Presign: getUser() from the session (exists)
+        Presign->>Presign: Check metadata. Identifier is optional (proposed).<br/>generateFilename leaves out the identifier part when it is empty (proposed)
+        Presign-->>Form: Presigned PUT URL and key
+        deactivate Presign
+        Form->>S3: PUT the photo (exists)
+        Form->>Actions: uploadSiteInspectionAnswers, insertInspectionAttachments<br/>with identifier NULL (exists)
+        activate Actions
+        Actions->>DB: Insert W26_answers and W26_attachments rows.<br/>W26_attachments.identifier can be NULL (exists)
+        alt An upload or insert fails
+            Actions-->>Form: Error
+            Form->>Actions: rollbackSiteInspectionSubmission(responseId) (exists)
+            Form-->>Steward: Show error. SIR is not saved
+        else All steps pass
+            Actions-->>Form: OK
+            Form-->>Steward: Go to /sites?submitted=true. The SIR is saved (AT 1)
+        end
+        deactivate Actions
+    end
+    deactivate Form
+
+    Note over Steward,DB: The edit page edit-report/[responseId]/page.tsx has the same Identifier check.<br/>It must change the same way, so that an edit with an empty Identifier is not blocked.

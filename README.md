@@ -1,3 +1,7 @@
-See [Project Requirements Documentation](https://ualberta-cmput401.github.io/W26project-SAPAA/ ) 
+# SAPAA Project (Fall 2026)
 
-https://w26-project-sapaa-dev-team.vercel.app/sites
+This repository contains the Fall 2026 CMPUT 401 project for the Stewards of Alberta's Protected Areas Association (SAPAA).
+
+## Documentation
+
+https://ualberta-cmput401.github.io/F26project-SAPAA/

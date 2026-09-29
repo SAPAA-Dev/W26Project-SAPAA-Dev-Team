@@ -1,6 +1,6 @@
 classDiagram
     direction LR
-    %% CLASS DIAGRAM, PART 1 OF 2: SERVICES FOR THE 34 CURRENT USER STORIES
+    %% CLASS DIAGRAM, PART 1 OF 2: SERVICES FOR THE 35 CURRENT USER STORIES
     %% Part 2 (data models) is UML_Class_Diagram_Models.mmd.
     %% Source: docs/user-stories.md.
     %% How to read this diagram:
@@ -137,7 +137,7 @@ classDiagram
 
         class PresignRoute {
             <<route /api/s3/presign>>
-            +POST(fileInfo) PresignedUrl
+            +POST(fileInfo) PresignedUrl [CHANGE 4.0.6]
         }
 
         class SiteImagesRoute {
@@ -167,7 +167,7 @@ classDiagram
 
         class PdfStatusRoute {
             <<route /api/pdf/status/[jobId]>>
-            +GET(jobId) status, downloadUrl [CHANGE 7.0.1]
+            +GET(jobId) status, downloadUrl [CHANGE 7.0.1, 7.0.6]
         }
 
         class PdfJobProcessor {
@@ -231,13 +231,13 @@ classDiagram
     }
 
     note for InspectionQueries "CHANGE 1.0.3: getFormResponsesBySite removes answers that the steward hides.<br>CHANGE 7.0.4: it also returns the question key of each answer.<br>The site page groups answers by that key. There is no separate query."
-    note for AuthorizationService "Every protected server action gets the caller from the server session.<br>Admin checks use a trusted, server-managed role; browser UI checks are not trusted."
+    note for AuthorizationService "Every protected server action gets the caller from the server session.<br>Admin checks must use a role that the user cannot change. Browser UI checks are not trusted.<br>Open question: the role store is not decided (see the proposed ER diagram)."
     note for SiteQueries "US 2.0.8 uses Site, getSiteByName and getFormResponsesBySite.<br>deleteSite removes the Site's SIRs, answers, attachments, homepage images,<br>GPX tracks and other Site-owned rows; their S3 files are also removed."
-    note for ExportRoutes "POST /api/export calls createExportJob.<br>GET /api/export/status/[jobId] calls getExportJobStatus.<br>The ZIP includes inspection images, homepage images, GPX files and completed PDFs."
+    note for ExportRoutes "POST /api/export calls createExportJob.<br>GET /api/export/status/[jobId] calls getExportJobStatus.<br>getExportJobStatus returns the URL only to an Admin or the job creator.<br>The ZIP includes inspection images, homepage images, GPX files and completed PDFs."
     note for PdfDataFetcher "CHANGE 7.0.7: removes the answers of options.hiddenQuestionIds.<br>CHANGE 7.0.6: processPdfJob reads the SIRs in batches.<br>The cause of the 50 SIR limit is an open question."
     note for ActivityPointsService "awardActivityPoints reads the caller from the session.<br>It checks the source row belongs to the caller and reads site_id from it."
-    note for NewReportPage "NEW 4.0.5: the browser calls iNaturalist. handleSubmit copies<br>each chosen photo to S3 through /api/s3/presign.<br>insertInspectionAttachments writes inat_observation_id.<br>CHANGE 4.0.6: photo identifier is optional and does not block submission."
-    note for GeocodeRoute "US 6.0.1 uses the external OpenCage API directly.<br>No application database cache is proposed."
+    note for NewReportPage "NEW 4.0.5: the browser calls iNaturalist. handleSubmit copies<br>each chosen photo to S3 through /api/s3/presign.<br>insertInspectionAttachments writes inat_observation_id.<br>CHANGE 4.0.6: photo identifier is optional and does not block submission.<br>PresignRoute also accepts an empty identifier."
+    note for GeocodeRoute "US 6.0.1 AT 4: results are cached and requests stay under 2,500 per day.<br>Open question: where the cache and the daily count are stored."
 
     WebAuthService --> SupabaseBackend : Auth
     AuthorizationService --> SupabaseBackend : trusted session and role
@@ -246,10 +246,12 @@ classDiagram
     InspectionQueries --> AuthorizationService : Admin or owner
     ProfileService --> AuthorizationService : signed-in user or owner
     SiteSafetyPriorityActions --> AuthorizationService : Admin for writes
-    GeometryLoadJob --> AuthorizationService : Admin or operator
+    GeometryLoadJob --> AuthorizationService : Admin
     GpxTrackActions --> AuthorizationService : signed-in user
     ImageDeleteRoute --> AuthorizationService : Admin
     PdfRoute --> AuthorizationService : owner or Admin
+    PdfStatusRoute --> AuthorizationService : job creator or Admin
+    SiteSafetyPriorityActions --> AuthorizationService : signed-in user for reads
     ExportRoutes --> AuthorizationService : Admin
     SiteQueries --> SupabaseBackend : W26 tables
     InspectionQueries --> SupabaseBackend : W26 tables

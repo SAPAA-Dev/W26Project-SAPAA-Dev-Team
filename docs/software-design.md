@@ -1,18 +1,30 @@
 # Software Design
 
-This page includes a short description of the overall architecture style of the system, its high-level system components, and their logical (what data they exchange) and control (how they invoke each other) dependencies.
+This page shows the high-level design of the SAPAA system: the architecture, the data, the key interactions, the user interface, and the technologies. Each diagram shows the code as it is today. An item with the label "proposed" does not exist in the code. It is a design proposal for a user story, not a decision.
 
 ---
 
 ## Architecture Diagram
 
-This diagram provides a high-level understanding of the architecture involved in the project.
+The diagram shows all the parts of the system and how they connect. Use it to find which part owns a feature before you change the code. The Winter 2026 diagram (`images/Architecture.png`) is not correct. It shows Prisma, Cybera RAC, and a React server that the mobile app calls. The code does not use them.
 
-![Architecture Diagram](images/Architecture.png)
+[Mermaid source](assets/Architecture.mmd)
+
+![SAPAA architecture diagram](images/Architecture.svg)
+
+The legend in the diagram explains the shapes. A rectangle is a component in this repository. A cylinder is a data store. A hexagon is an external service. A dashed shape or a dashed arrow is proposed. An arrow label tells the data or the call.
+
+The system has five layers:
+
+1. **Client layer.** Admins and stewards use the web app in a browser. Stewards use the StewardLog mobile app (`FNR/`). The mobile app keeps an offline copy of site data in expo-sqlite (`FNR/src/services/database.ts`). The Google Sheets script (`googleSheets/code.gs`) is a client for admins. It reads and writes the legacy tables.
+2. **Application layer.** The Next.js web app (`webapp/`) runs on Vercel. Pages and server actions call Supabase with supabase-js (`webapp/utils/supabase/`). API route handlers (`webapp/app/api/`) make presigned S3 URLs, call the OpenCage API, and start the PDF job (`webapp/lib/pdf/processPdfJob.ts`). The mobile app and the Google Sheets script have no server of their own. They call Supabase directly.
+3. **Data and storage layer.** One Supabase project holds the PostgreSQL database, Supabase Auth, and two Edge Functions (`add-user`, `delete-user`) that the mobile admin screens call (`FNR/src/services/adminAuth.ts`). The source of the Edge Functions is not in this repository. An AWS S3 bucket holds inspection photos and PDF files. The browser uploads a photo directly to S3 with a presigned URL. See [Media Storage Architecture](aws-architecture.md).
+4. **External services.** Supabase Auth signs users in with Google, Microsoft Azure, and GitHub OAuth (`webapp/services/auth.ts`, `webapp/app/login/actions.ts`, `FNR/src/services/auth.ts`). The web app and the mobile app get coordinates from the OpenCage Geocoding API. The web app map uses OpenStreetMap tiles. The mobile map shows a Google My Maps embed. The iNaturalist API is proposed for US 4.0.5 and US 4.0.7.
+5. **Build and documentation tooling.** GitHub Actions runs the Jest tests and the MkDocs build on each push (`.github/workflows/ci.yaml`). On a push to `main`, it publishes this site to GitHub Pages (`.github/workflows/gh-pages.yaml`).
 
 ---
 
-## AWS Architecture 
+## AWS Architecture
 
 For details about how images are stored and retrieved, see the
 [Media Storage Architecture](aws-architecture.md).
@@ -20,6 +32,8 @@ For details about how images are stored and retrieved, see the
 ---
 
 ## Database Schema (ER Diagrams)
+
+The ER diagrams show the tables, the columns, and the relations in the database. They show which data each app owns, and where the two inspection systems do not share data. This is important before a change to a query or to the schema.
 
 One Supabase database holds two inspection systems. The web app uses the `W26_*` and `S26_*` tables. The mobile app (StewardLog) and the Google Apps Script use the legacy tables. The `luperson` table is the only table that both systems use. Data that one system writes does not show in the other system.
 
@@ -49,7 +63,7 @@ This diagram shows the web app tables after the user stories in the [User Storie
 
 ## UML Class Diagram
 
-The class diagram is in two parts. Part 1 shows the services of the web app and the mobile app, and the external systems that they call. Part 2 shows the data models. A class with a `<<new x.y.z>>` stereotype is proposed. A member with the tag `[NEW x.y.z]` or `[CHANGE x.y.z]` is a proposed change for that user story. All other items exist in the code today.
+The class diagrams show the main code modules and data models, and the calls between them. They show where a user story adds a class or a member, before the code exists. The class diagram is in two parts. Part 1 shows the services of the web app and the mobile app, and the external systems that they call. Part 2 shows the data models. A class with a `<<new x.y.z>>` stereotype is proposed. A member with the tag `[NEW x.y.z]` or `[CHANGE x.y.z]` is a proposed change for that user story. All other items exist in the code today.
 
 ### Part 1: Services
 
@@ -67,57 +81,75 @@ The class diagram is in two parts. Part 1 shows the services of the web app and 
 
 ## Sequence Diagrams
 
-Each diagram names the user stories that it covers. A step with "(proposed)" does not exist in the code today. The diagrams show the server-side permission checks that the user stories need. Today most server actions do not do these checks. US 4.0.6 has no diagram, because it changes only one form field.
+The sequence diagrams show the key interaction scenarios: the order of the calls between the user, the apps, Supabase, S3, and the external services. This makes clear which part does each step, and what each story adds to the code. Each diagram names the user stories that it covers. A step with "(proposed)" does not exist in the code today. The diagrams show the server-side permission checks that the user stories need. Some of these checks are not in the code today.
 
-### US 1.0.1, 1.0.3, 1.0.4: View a Steward Profile
+### US 1.0.1, 1.0.3, 1.0.4: Add User Profiles / Show history of Site Inspections on a Steward's Profile / Aggregate User Activity and Contributions on a user's profile
+
+Stories: US 1.0.1 - Add User Profiles, US 1.0.3 - Show history of Site Inspections on a Steward's Profile, US 1.0.4 - Aggregate User Activity and Contributions on a user's profile.
 
 [Mermaid source](assets/Sequence_US_1_0_1_1_0_3_1_0_4_View_Steward_Profile.mmd)
 
-![US 1.0.1, 1.0.3, 1.0.4: View a Steward Profile sequence diagram](images/Sequence_US_1_0_1_1_0_3_1_0_4_View_Steward_Profile.svg)
+![US 1.0.1, 1.0.3, 1.0.4: Add User Profiles / Show history of Site Inspections on a Steward's Profile / Aggregate User Activity and Contributions on a user's profile sequence diagram](images/Sequence_US_1_0_1_1_0_3_1_0_4_View_Steward_Profile.svg)
 
-### US 1.0.2: Edit Own Profile
+### US 1.0.2: Allow Editing Own Profile
+
+Stories: US 1.0.2 - Allow Editing Own Profile.
 
 [Mermaid source](assets/Sequence_US_1_0_2_Edit_Own_Profile.mmd)
 
-![US 1.0.2: Edit Own Profile sequence diagram](images/Sequence_US_1_0_2_Edit_Own_Profile.svg)
+![US 1.0.2: Allow Editing Own Profile sequence diagram](images/Sequence_US_1_0_2_Edit_Own_Profile.svg)
 
 ### US 1.0.5: Earn Points for Inspection Activity
+
+Stories: US 1.0.5 - Earn Points for Inspection Activity.
 
 [Mermaid source](assets/Sequence_US_1_0_5_Activity_Points.mmd)
 
 ![US 1.0.5: Earn Points for Inspection Activity sequence diagram](images/Sequence_US_1_0_5_Activity_Points.svg)
 
-### US 2.0.1, 2.0.6: View Sites on the Map, Search and Filter
+### US 2.0.1, 2.0.6: View Sites and Past Visits on an Interactive Map / Search and Filter Sites by County on the Map
+
+Stories: US 2.0.1 - View Sites and Past Visits on an Interactive Map, US 2.0.6 - Search and Filter Sites by County on the Map.
 
 [Mermaid source](assets/Sequence_US_2_0_1_2_0_6_Site_Map_Search_and_Filter.mmd)
 
-![US 2.0.1, 2.0.6: View Sites on the Map, Search and Filter sequence diagram](images/Sequence_US_2_0_1_2_0_6_Site_Map_Search_and_Filter.svg)
+![US 2.0.1, 2.0.6: View Sites and Past Visits on an Interactive Map / Search and Filter Sites by County on the Map sequence diagram](images/Sequence_US_2_0_1_2_0_6_Site_Map_Search_and_Filter.svg)
 
-### US 2.0.2: Add a New Site
+### US 2.0.2: Allow Admins to Add New Sites
+
+Stories: US 2.0.2 - Allow Admins to Add New Sites.
 
 [Mermaid source](assets/Sequence_US_2_0_2_Add_Site.mmd)
 
-![US 2.0.2: Add a New Site sequence diagram](images/Sequence_US_2_0_2_Add_Site.svg)
+![US 2.0.2: Allow Admins to Add New Sites sequence diagram](images/Sequence_US_2_0_2_Add_Site.svg)
 
-### US 2.0.3, 2.0.5: Deactivate, Reactivate and Update a Site
+### US 2.0.3, 2.0.5: Deactivate and Reactivate a Site / Update a Site
+
+Stories: US 2.0.3 - Deactivate and Reactivate a Site, US 2.0.5 - Update a Site.
 
 [Mermaid source](assets/Sequence_US_2_0_3_2_0_5_Update_and_Deactivate_Site.mmd)
 
-![US 2.0.3, 2.0.5: Deactivate, Reactivate and Update a Site sequence diagram](images/Sequence_US_2_0_3_2_0_5_Update_and_Deactivate_Site.svg)
+![US 2.0.3, 2.0.5: Deactivate and Reactivate a Site / Update a Site sequence diagram](images/Sequence_US_2_0_3_2_0_5_Update_and_Deactivate_Site.svg)
 
 ### US 2.0.4: Delete a Site
+
+Stories: US 2.0.4 - Delete a Site.
 
 [Mermaid source](assets/Sequence_US_2_0_4_Delete_Site.mmd)
 
 ![US 2.0.4: Delete a Site sequence diagram](images/Sequence_US_2_0_4_Delete_Site.svg)
 
-### US 2.0.8, 2.0.10: View a Site's Details From the Map
+### US 2.0.8, 2.0.10: View a Site's Details From the Map / Add links to Site Page
+
+Stories: US 2.0.8 - View a Site's Details From the Map, US 2.0.10 - Add links to Site Page.
 
 [Mermaid source](assets/Sequence_US_2_0_8_2_0_10_Site_Details_From_Map.mmd)
 
-![US 2.0.8, 2.0.10: View a Site's Details From the Map sequence diagram](images/Sequence_US_2_0_8_2_0_10_Site_Details_From_Map.svg)
+![US 2.0.8, 2.0.10: View a Site's Details From the Map / Add links to Site Page sequence diagram](images/Sequence_US_2_0_8_2_0_10_Site_Details_From_Map.svg)
 
 ### US 2.0.9: Upload a GPX Track of a Site Visit
+
+Stories: US 2.0.9 - Upload a GPX Track of a Site Visit.
 
 [Mermaid source](assets/Sequence_US_2_0_9_GPX_Track_Upload.mmd)
 
@@ -125,29 +157,39 @@ Each diagram names the user stories that it covers. A step with "(proposed)" doe
 
 ### US 2.0.11: Show Safety Information for a Site
 
+Stories: US 2.0.11 - Show Safety Information for a Site.
+
 [Mermaid source](assets/Sequence_US_2_0_11_Site_Safety_Information.mmd)
 
 ![US 2.0.11: Show Safety Information for a Site sequence diagram](images/Sequence_US_2_0_11_Site_Safety_Information.svg)
 
-### US 2.0.12, 2.0.13: Site To-Visit Priority and Reassessment Reminder
+### US 2.0.12, 2.0.13: Score a Site for To-Visit Priority / Flag Site Points That Are a Year Old
+
+Stories: US 2.0.12 - Score a Site for To-Visit Priority, US 2.0.13 - Flag Site Points That Are a Year Old.
 
 [Mermaid source](assets/Sequence_US_2_0_12_2_0_13_Site_Priority_Score.mmd)
 
-![US 2.0.12, 2.0.13: Site To-Visit Priority and Reassessment Reminder sequence diagram](images/Sequence_US_2_0_12_2_0_13_Site_Priority_Score.svg)
+![US 2.0.12, 2.0.13: Score a Site for To-Visit Priority / Flag Site Points That Are a Year Old sequence diagram](images/Sequence_US_2_0_12_2_0_13_Site_Priority_Score.svg)
 
 ### US 3.0.2: Steward Designation
+
+Stories: US 3.0.2 - Steward Designation.
 
 [Mermaid source](assets/Sequence_US_3_0_2_Steward_Designation.mmd)
 
 ![US 3.0.2: Steward Designation sequence diagram](images/Sequence_US_3_0_2_Steward_Designation.svg)
 
-### US 3.0.3: Export All Digital Files
+### US 3.0.3: Export all digital files from SIR-SAPAA
+
+Stories: US 3.0.3 - Export all digital files from SIR-SAPAA.
 
 [Mermaid source](assets/Sequence_US_3_0_3_Export_All_Digital_Files.mmd)
 
-![US 3.0.3: Export All Digital Files sequence diagram](images/Sequence_US_3_0_3_Export_All_Digital_Files.svg)
+![US 3.0.3: Export all digital files from SIR-SAPAA sequence diagram](images/Sequence_US_3_0_3_Export_All_Digital_Files.svg)
 
 ### US 4.0.2: Offline and Online Map Layers
+
+Stories: US 4.0.2 - Offline and Online Map Layers.
 
 [Mermaid source](assets/Sequence_US_4_0_2_Offline_and_Online_Map_Layers.mmd)
 
@@ -155,59 +197,87 @@ Each diagram names the user stories that it covers. A step with "(proposed)" doe
 
 ### US 4.0.4: Edit My Previous Inspections
 
+Stories: US 4.0.4 - Edit My Previous Inspections.
+
 [Mermaid source](assets/Sequence_US_4_0_4_Edit_My_Previous_Inspections.mmd)
 
 ![US 4.0.4: Edit My Previous Inspections sequence diagram](images/Sequence_US_4_0_4_Edit_My_Previous_Inspections.svg)
 
-### US 4.0.5: iNaturalist Photo Import
+### US 4.0.5: iNaturalist integration
+
+Stories: US 4.0.5 - iNaturalist integration.
 
 [Mermaid source](assets/Sequence_US_4_0_5_iNaturalist_Photo_Import.mmd)
 
-![US 4.0.5: iNaturalist Photo Import sequence diagram](images/Sequence_US_4_0_5_iNaturalist_Photo_Import.svg)
+![US 4.0.5: iNaturalist integration sequence diagram](images/Sequence_US_4_0_5_iNaturalist_Photo_Import.svg)
+
+### US 4.0.6: Demote Photo Identifier to optional field
+
+Stories: US 4.0.6 - Demote Photo Identifier to optional field.
+
+[Mermaid source](assets/Sequence_US_4_0_6_Photo_Identifier_Optional.mmd)
+
+![US 4.0.6: Demote Photo Identifier to optional field sequence diagram](images/Sequence_US_4_0_6_Photo_Identifier_Optional.svg)
 
 ### US 4.0.7: Show the Top iNaturalist Observations for a Site
+
+Stories: US 4.0.7 - Show the Top iNaturalist Observations for a Site.
 
 [Mermaid source](assets/Sequence_US_4_0_7_Top_iNaturalist_Observations.mmd)
 
 ![US 4.0.7: Show the Top iNaturalist Observations for a Site sequence diagram](images/Sequence_US_4_0_7_Top_iNaturalist_Observations.svg)
 
-### US 5.0.2, 5.0.4: Password Reset and Sign Out
+### US 5.0.2, 5.0.4: Reset a Forgotten Password / Sign Out Properly
+
+Stories: US 5.0.2 - Reset a Forgotten Password, US 5.0.4 - Sign Out Properly.
 
 [Mermaid source](assets/Sequence_US_5_0_2_5_0_4_Password_Reset_and_Sign_Out.mmd)
 
-![US 5.0.2, 5.0.4: Password Reset and Sign Out sequence diagram](images/Sequence_US_5_0_2_5_0_4_Password_Reset_and_Sign_Out.svg)
+![US 5.0.2, 5.0.4: Reset a Forgotten Password / Sign Out Properly sequence diagram](images/Sequence_US_5_0_2_5_0_4_Password_Reset_and_Sign_Out.svg)
 
-### US 6.0.1: Site Geometry From the Shared Source
+### US 6.0.1: Store Each Site's Geometry From the Shared Source
+
+Stories: US 6.0.1 - Store Each Site's Geometry From the Shared Source.
 
 [Mermaid source](assets/Sequence_US_6_0_1_Site_Geometry_Load.mmd)
 
-![US 6.0.1: Site Geometry From the Shared Source sequence diagram](images/Sequence_US_6_0_1_Site_Geometry_Load.svg)
+![US 6.0.1: Store Each Site's Geometry From the Shared Source sequence diagram](images/Sequence_US_6_0_1_Site_Geometry_Load.svg)
 
-### US 7.0.1: Steward Exports Own SIR as PDF
+### US 7.0.1: Let Stewards Export Their Own Reports
+
+Stories: US 7.0.1 - Let Stewards Export Their Own Reports.
 
 [Mermaid source](assets/Sequence_US_7_0_1_Steward_PDF_Export.mmd)
 
-![US 7.0.1: Steward Exports Own SIR as PDF sequence diagram](images/Sequence_US_7_0_1_Steward_PDF_Export.svg)
+![US 7.0.1: Let Stewards Export Their Own Reports sequence diagram](images/Sequence_US_7_0_1_Steward_PDF_Export.svg)
 
-### US 7.0.3, 7.0.4: Inspection Summaries
+### US 7.0.3, 7.0.4: See All Inspections in One View / Compare One Question Across Years
+
+Stories: US 7.0.3 - See All Inspections in One View, US 7.0.4 - Compare One Question Across Years.
 
 [Mermaid source](assets/Sequence_US_7_0_3_7_0_4_Inspection_Summaries.mmd)
 
-![US 7.0.3, 7.0.4: Inspection Summaries sequence diagram](images/Sequence_US_7_0_3_7_0_4_Inspection_Summaries.svg)
+![US 7.0.3, 7.0.4: See All Inspections in One View / Compare One Question Across Years sequence diagram](images/Sequence_US_7_0_3_7_0_4_Inspection_Summaries.svg)
 
 ### US 7.0.5: Delete an Image and Clean Up After It
+
+Stories: US 7.0.5 - Delete an Image and Clean Up After It.
 
 [Mermaid source](assets/Sequence_US_7_0_5_Image_Delete_and_Cleanup.mmd)
 
 ![US 7.0.5: Delete an Image and Clean Up After It sequence diagram](images/Sequence_US_7_0_5_Image_Delete_and_Cleanup.svg)
 
-### US 7.0.6, 7.0.7: Bulk SIR Export With Hidden Fields
+### US 7.0.6, 7.0.7: Export More Than 50 Site Inspection Reports / Hide Fields on a SIR Before Export
+
+Stories: US 7.0.6 - Export More Than 50 Site Inspection Reports, US 7.0.7 - Hide Fields on a SIR Before Export.
 
 [Mermaid source](assets/Sequence_US_7_0_6_7_0_7_Bulk_SIR_Export_With_Hidden_Fields.mmd)
 
-![US 7.0.6, 7.0.7: Bulk SIR Export With Hidden Fields sequence diagram](images/Sequence_US_7_0_6_7_0_7_Bulk_SIR_Export_With_Hidden_Fields.svg)
+![US 7.0.6, 7.0.7: Export More Than 50 Site Inspection Reports / Hide Fields on a SIR Before Export sequence diagram](images/Sequence_US_7_0_6_7_0_7_Bulk_SIR_Export_With_Hidden_Fields.svg)
 
 ### US 7.0.8: Delete a Site Inspection Report
+
+Stories: US 7.0.8 - Delete a Site Inspection Report.
 
 [Mermaid source](assets/Sequence_US_7_0_8_Delete_SIR.mmd)
 
@@ -217,51 +287,108 @@ Each diagram names the user stories that it covers. A step with "(proposed)" doe
 
 ## Low-Fidelity User Interface
 
-This is a low-fidelity projection of the end-product. The final design may take a different direction.
+The wireframes show the Fall 2026 screens and the navigation between them. They let the client check the layout and the flow before we write the code. The final design can change.
 
+### Fall 2026 wireframe
 
-[View them on figma](https://www.figma.com/design/8WLN54CokqHyoJHdGFY6kd/SAPAA-UI?node-id=0-1&p=f&t=dd9Or2IMUNQLwult-0)
+![Fall 2026 low-fidelity wireframe](wireframe-F26.png)
 
-### This is a low-fidelity UI for the web app
+### Interactive wireframe
 
+The [interactive wireframe](interactive-wireframe/index.md) lets you click through the Fall 2026 screens in a browser.
 
-![Low-Fidelity User Interface for web app](images/WEBAPP UI.jpg)
+### Winter 2026 (inherited)
 
-### This is a low-fidelity UI for the mobile app
+The Winter 2026 team made these wireframes. They do not show the Fall 2026 user stories. See them [on Figma](https://www.figma.com/design/8WLN54CokqHyoJHdGFY6kd/SAPAA-UI?node-id=0-1&p=f&t=dd9Or2IMUNQLwult-0).
 
-![Low-Fidelity User Interface for mobile app](images/MOBILEAPP UI.jpg)
+![Winter 2026 (inherited) low-fidelity UI for the web app](<images/WEBAPP UI.jpg>)
+
+![Winter 2026 (inherited) low-fidelity UI for the mobile app](<images/MOBILEAPP UI.jpg>)
 
 ---
 
 ## List of Technologies Used
 
+The versions are the major versions in `webapp/package.json` and `FNR/package.json`.
+
 ### Web app (`webapp/`)
-  * [Next.js 16](https://nextjs.org/docs) with the App Router
-  * [React 19](https://react.dev/) and [TypeScript](https://www.typescriptlang.org/docs/)
-  * [MUI](https://mui.com/material-ui/) and [Tailwind CSS](https://tailwindcss.com/docs) for the user interface
-  * [Leaflet](https://leafletjs.com/) and [React Leaflet](https://react-leaflet.js.org/) for maps
-  * [React-pdf](https://react-pdf.org/) for the PDF export of inspection reports
+
+| Technology | What we use it for | Link |
+| --- | --- | --- |
+| Next.js 16 (App Router) | Web app framework: pages, server actions, API route handlers, middleware | [nextjs.org](https://nextjs.org/docs) |
+| React 19 | User interface components | [react.dev](https://react.dev/) |
+| TypeScript 5 | Typed JavaScript for the web app and the mobile app | [typescriptlang.org](https://www.typescriptlang.org/docs/) |
+| MUI 7 and Emotion | User interface components and styles | [mui.com](https://mui.com/material-ui/) |
+| Tailwind CSS 4 | Utility CSS classes | [tailwindcss.com](https://tailwindcss.com/docs) |
+| Leaflet 1, React Leaflet 5, leaflet.heat | Site map and heat map on the admin dashboard | [leafletjs.com](https://leafletjs.com/), [react-leaflet.js.org](https://react-leaflet.js.org/) |
+| Chart.js 4 and react-chartjs-2 | Charts on the admin dashboard | [chartjs.org](https://www.chartjs.org/docs/) |
+| @react-pdf/renderer 4 | PDF export of site inspection reports | [react-pdf.org](https://react-pdf.org/) |
+| supabase-js 2 and @supabase/ssr | Database queries and sign-in with session cookies | [supabase.com/docs/reference/javascript](https://supabase.com/docs/reference/javascript/introduction) |
+| AWS SDK for JavaScript 3 (client-s3, s3-request-presigner) | Presigned URLs to upload and show photos and PDF files | [AWS SDK v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/) |
+| dnd-kit | Drag and drop to sort items | [dndkit.com](https://dndkit.com/) |
+| React Joyride 2 | Guided tour of the user interface | [react-joyride.com](https://react-joyride.com/) |
+| react-markdown 10, remark-gfm, rehype-raw | Show Markdown text | [react-markdown](https://github.com/remarkjs/react-markdown) |
+| next-swagger-doc and swagger-ui-react 5 | OpenAPI page for the API routes (`/api-docs`) | [swagger.io](https://swagger.io/tools/swagger-ui/) |
+| lucide-react, react-icons | Icons | [lucide.dev](https://lucide.dev/), [react-icons](https://react-icons.github.io/react-icons/) |
 
 ### Mobile app StewardLog (`FNR/`)
+
 The Fall 2025 team built the mobile app. The Winter 2026 team did not change it.
-  * [Expo 54](https://docs.expo.dev/) and [React Native 0.81](https://reactnative.dev/docs/getting-started)
-  * [expo-sqlite](https://docs.expo.dev/versions/latest/sdk/sqlite/) for the offline copy of site data
-  * [PDF.js](https://mozilla.github.io/pdf.js/) to show PDF reports in the app
 
-### Backend: Supabase + PostgreSQL + AWS
-  * [Supabase Documentation](https://supabase.com/docs) for the database and authentication
-  * [PostgreSQL Documentation](https://www.postgresql.org/docs/)
-  * [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) for inspection photos
+| Technology | What we use it for | Link |
+| --- | --- | --- |
+| Expo 54 | Build and run the React Native app | [docs.expo.dev](https://docs.expo.dev/) |
+| React Native 0.81 | Mobile user interface for iOS and Android | [reactnative.dev](https://reactnative.dev/docs/getting-started) |
+| React Navigation 7 | Screen navigation (stack and bottom tabs) | [reactnavigation.org](https://reactnavigation.org/) |
+| React Native Paper 5 | User interface components | [reactnativepaper.com](https://reactnativepaper.com/) |
+| expo-sqlite 16 | Offline copy of site and inspection data | [expo-sqlite](https://docs.expo.dev/versions/latest/sdk/sqlite/) |
+| supabase-js 2 | Database queries and sign-in | [supabase.com/docs](https://supabase.com/docs/reference/javascript/introduction) |
+| expo-auth-session, expo-web-browser | OAuth sign-in in the browser | [expo-auth-session](https://docs.expo.dev/versions/latest/sdk/auth-session/) |
+| expo-secure-store, AsyncStorage | Store the session and settings on the device | [expo-secure-store](https://docs.expo.dev/versions/latest/sdk/securestore/) |
+| @react-native-community/netinfo | Find if the device is online | [netinfo](https://github.com/react-native-netinfo/react-native-netinfo) |
+| react-native-maps | Map of sites on the dashboard | [react-native-maps](https://github.com/react-native-maps/react-native-maps) |
+| react-native-webview 13 | Show the Google My Maps embed and PDF.js | [react-native-webview](https://github.com/react-native-webview/react-native-webview) |
+| PDF.js (from cdnjs) | Show PDF reports in the app | [mozilla.github.io/pdf.js](https://mozilla.github.io/pdf.js/) |
+| expo-print, expo-sharing | Make and share PDF reports | [expo-print](https://docs.expo.dev/versions/latest/sdk/print/) |
+| react-native-chart-kit 6 | Charts on the analytics screen | [react-native-chart-kit](https://github.com/indiespirit/react-native-chart-kit) |
 
-### Cloud Infrastructure & Cost Control
-  * [AWS IAM](https://docs.aws.amazon.com/iam/)
-  * [AWS Budgets & Billing Alerts](https://docs.aws.amazon.com/cost-management/)
+### Backend, data, and hosting
 
-### Deployment: Vercel
-  * [Vercel Documentation](https://vercel.com/docs) hosts the web app. See the [Deployment Manual](Deployment-manual.md).
-  * The team discussed Cybera as an alternative host. It is not in use.
+| Technology | What we use it for | Link |
+| --- | --- | --- |
+| Supabase | Hosted PostgreSQL, Auth, REST API, and Edge Functions | [supabase.com/docs](https://supabase.com/docs) |
+| PostgreSQL | Relational database for all app data | [postgresql.org/docs](https://www.postgresql.org/docs/) |
+| Amazon S3 | Storage for inspection photos and PDF files | [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) |
+| AWS IAM | Access keys and policies for the S3 bucket | [AWS IAM](https://docs.aws.amazon.com/iam/) |
+| AWS Budgets | Cost alerts for the AWS account | [AWS Cost Management](https://docs.aws.amazon.com/cost-management/) |
+| Vercel | Hosts the web app. See the [Deployment Manual](Deployment-manual.md). | [vercel.com/docs](https://vercel.com/docs) |
+| Google Apps Script | Script in Google Sheets that reads and writes the legacy tables | [developers.google.com/apps-script](https://developers.google.com/apps-script) |
 
-### Testing & Tools
-  * [Jest](https://jestjs.io/) for unit tests in the web app and the mobile app
-  * [Cypress](https://docs.cypress.io/) for end-to-end tests of the web app
-  * [GitHub Actions](https://docs.github.com/en/actions) runs the tests on each push
+### External APIs
+
+| Service | What we use it for | Link |
+| --- | --- | --- |
+| OpenCage Geocoding API | Coordinates from an address or a site name | [opencagedata.com/api](https://opencagedata.com/api) |
+| OpenStreetMap tiles | Base map in the web app | [openstreetmap.org](https://www.openstreetmap.org/copyright) |
+| Google My Maps | Map embed in the mobile app | [Google My Maps](https://www.google.com/maps/about/mymaps/) |
+| Supabase Auth OAuth providers | Sign-in with Google, Microsoft Azure, and GitHub | [Supabase social login](https://supabase.com/docs/guides/auth/social-login) |
+| iNaturalist API (proposed) | Photo import and top observations for US 4.0.5 and US 4.0.7. Not in the code today. | [api.inaturalist.org](https://api.inaturalist.org/v1/docs/) |
+
+### Development, testing, and documentation tools
+
+| Tool | What we use it for | Link |
+| --- | --- | --- |
+| Git and GitHub | Source control, pull requests, and issues | [docs.github.com](https://docs.github.com/) |
+| Git hooks (`.githooks/`) | Check commit messages and branch names | [Contributing](contributing.md) |
+| GitHub Actions | Run the Jest tests, the hook tests, and the MkDocs build on each push. Publish the docs from `main`. | [GitHub Actions](https://docs.github.com/en/actions) |
+| GitHub Pages | Hosts this documentation site | [GitHub Pages](https://docs.github.com/en/pages) |
+| Jest 30, Testing Library, jest-expo | Unit and component tests in the web app and the mobile app | [jestjs.io](https://jestjs.io/) |
+| Cypress 15 | End-to-end tests of the web app. CI does not run them, because they use live data. | [docs.cypress.io](https://docs.cypress.io/) |
+| ESLint 9 (eslint-config-next) | Lint the web app | [eslint.org](https://eslint.org/docs/latest/) |
+| Supabase CLI 2 | Run a local Supabase for development (`npm run dev` in `webapp/`) and hold migrations (`webapp/supabase/`) | [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started) |
+| MkDocs with Material for MkDocs | Build this documentation site | [squidfunk.github.io/mkdocs-material](https://squidfunk.github.io/mkdocs-material/) |
+| Mermaid and mermaid-cli | Diagram sources (`docs/assets/*.mmd`) and SVG files | [mermaid.js.org](https://mermaid.js.org/) |
+
+### Not used
+
+The Winter 2026 architecture diagram shows Prisma and Cybera RAC. The code does not use Prisma. The team discussed Cybera as a host, but it is not in use.
