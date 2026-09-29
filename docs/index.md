@@ -112,6 +112,15 @@ editing.
 > 1. Aggregates accurately reflect the user's data (SIR count, Activities reported) 
 > 2. Given that a steward has submitted a new report, their SIR count updates +1. 
 
+#### US 1.0.5 - Earn Points for Inspection Activity | Story Points: 5
+> As a **Steward**, **I want** to earn points for visiting Sites, contributing photos, and other inspection activity, **so that** I have a reason to visit more natural areas
+
+> **Acceptance Tests**
+
+> 1. Given I submit a SIR, When the submission succeeds, Then my activity points increases by the amount of activity-specific points I earend from the site 
+> 2. Given I contribute a photo directly, When the upload succeeds, Then my activity points increase by the amount specified for uploading a photo for that site
+> 3. Given I have activity points, When I open my profile, Then the current total is shown
+
 ---
 ### **2 - Place Management**
 ---
@@ -207,6 +216,37 @@ editing.
 > 2. Given I am on the site page, I should see a clear link (shortened url) to iNaturalist
 > 3. Given I click on a link from the site page, a new window should open to the site instead of using my current window
 
+#### US 2.0.11 - Show Safety Information for a Site | Story Points: 5
+> As a **Steward**, **I want** to know the nearest hospital, the known hazards at a Site, and other safety information, **so that** I can prepare for an emergency
+
+> **Acceptance Tests**
+
+> 1. Given safety information is stored for a Site, When I open the Site page, Then I see the nearest hospital, the known hazards, and the other safety information
+> 2. Given a safety value is empty, When I open the Site page, Then that value is shown as not recorded
+> 3. Given I am an Admin, When I save new safety information for a Site, Then a reload shows the new values
+> 4. Given I am a Steward, When I try to change the safety information, Then the server refuses and the stored values stay unchanged
+
+#### US 2.0.12 - Score a Site for To-Visit Priority | Story Points: 8
+> As an **Admin**, **I want** to give a Site points for abuses, biological imperatives, and time since the last visit, and combine those points into a to-visit priority, **so that** a Steward can see the state of the Site and decide whether to prioritize contributions to it
+
+> **Acceptance Tests**
+
+> 1. Given I am an Admin on a Site, When I enter points for abuses, biological imperatives, and time since the last visit, Then those points are saved
+> 2. Given the three scores are saved, When the Site page loads, Then it shows one to-visit priority calculated from those scores
+> 3. Given two Sites have the same three scores, When both pages load, Then they show the same to-visit priority
+> 4. Given I am a Steward, When I open the Site, Then I can see the to-visit priority and the three scores
+> 5. Given I am a Steward, When I try to change the scores, Then the server refuses and the scores stay unchanged
+
+#### US 2.0.13 - Flag Site Points That Are a Year Old | Story Points: 3
+> As an **Admin**, **I want** to know when a Site's points have not been updated for a year, **so that** I have a reminder to reassess them
+
+> **Acceptance Tests**
+
+> 1. Given a Site's priority points (US 2.0.12) were last saved more than one year ago, When I open that Site as an Admin, Then I see a reminder to reassess the points
+> 2. Given the points were saved less than one year ago, When I open the Site as an Admin, Then the reminder is absent
+> 3. Given the reminder is showing, When I save new points, Then the reminder is absent and the saved date is the new date
+> 4. Given I am a Steward, When I open the Site, Then the Admin reminder is not shown
+
 ---
 ### **3 - Admin Persona**
 ---
@@ -270,6 +310,17 @@ editing.
 
 > 1. Given I leave the Identifier field empty and fill in all required fields in valid format, the report submits successfully
 > 2. Given I am filling out a site inspection report, there is no note beside the identifier field that reads "required"
+
+#### US 4.0.7 - Show the Top iNaturalist Observations for a Site | Story Points: 5
+> As a **Steward**, **I want** to see up to the top 5 iNaturalist observations for a Site, **so that** I can see more information in the app without an iNaturalist account
+
+> **Acceptance Tests**
+
+> 1. Given a Site has iNaturalist observations, When I open the Site page, Then I see at most 5 observations
+> 2. Given a Site has more than 5 observations, When the page loads, Then the 5 shown are the 5 most popular (engagement-wise) observations for that Site
+> 3. Given a Site has no observations, When the page loads, Then the page says that no iNaturalist observations were found
+> 4. Given I am a Steward with no iNaturalist account, When I open the Site page, Then the observations are still shown
+> 5. Given an observation is shown, When I read it, Then it shows the species name from iNaturalist
 
 ---
 ### **5 - Access and Accounts**
@@ -351,6 +402,38 @@ editing.
 > 4. Given an Admin deactivates a SIR, When the S3 bucket is checked, Then the SIR's image files are still there, so reactivating restores its photos
 > 5. Given a SIR submission fails and is rolled back (rollbackSiteInspectionSubmission), When the S3 bucket is checked, Then the files uploaded for that SIR are gone
 
+#### US 7.0.6 - Export More Than 50 Site Inspection Reports | Story Points: 5
+> As an **Admin**, **I want** to export more than 50 Site Inspection Reports at once, **so that** I can back them up for my records faster
+
+> **Acceptance Tests**
+
+> 1. Given more than 50 SIRs exist, When I select more than 50 and export them, Then the export completes and contains each selected SIR
+> 2. Given I export a set of SIRs, When I open the export, Then each SIR has the same answers as its page
+> 3. Given I am a Steward, When I request the bulk export, Then the server refuses and no export is created
+> 4. Given the export fails, When I check the SIRs, Then the stored reports are unchanged
+
+#### US 7.0.7 - Hide Fields on a SIR Before Export | Story Points: 5
+> As an **Admin**, **I want** to select fields to hide on a SIR before export, **so that** confidential or non-public fields stay out of the export
+
+> **Acceptance Tests**
+
+> 1. Given I am an Admin exporting a SIR, When I select fields to hide, Then those fields are marked for the export
+> 2. Given I hid fields, When the export is generated, Then the hidden fields are absent and the other fields are present
+> 3. Given I hid fields for an export, When I open the SIR page, Then the stored answers are still there
+> 4. Given I am a Steward, When I request an export with hidden fields, Then the server refuses
+> 5. Given I select no fields to hide, When I export, Then the export contains the full SIR
+
+#### US 7.0.8 - Delete a Site Inspection Report | Story Points: 5
+> As an **Admin**, **I want** to delete a Site Inspection Report, **so that** I can remove a report that is out of date or inaccurate
+
+> **Acceptance Tests**
+
+> 1. Given I am an Admin deleting a SIR, When I choose delete, Then I must confirm before the report is removed
+> 2. Given I confirm the delete, When it succeeds, Then the report no longer appears on the Site or in report lists
+> 3. Given the report has images, When the delete succeeds, Then those images are no longer shown with that report
+> 4. Given I am a Steward, When I request the delete, Then the server refuses and the report stays unchanged
+> 5. Given the delete cannot complete, an error is shown and the report and its answers stay unchanged
+
 ## MoSCoW
 
 ### Must Have
@@ -372,7 +455,7 @@ editing.
 
 ### Should Have
 
-*10 stories, 40 story points*
+*13 stories, 55 story points.*
 
 | ID | Story | Points |
 |---|---|---|
@@ -380,23 +463,31 @@ editing.
 | US 2.0.5 | Update a Site | 5 |
 | US 2.0.6 | Search and Filter Sites by County on the Map | 5 |
 | US 2.0.10 | Add links to Site Page | 1 |
+| US 2.0.11 | Show Safety Information for a Site | 5 |
 | US 3.0.3 | Export all digital files from SIR-SAPAA | 8 |
 | US 4.0.4 | Edit My Previous Inspections | 5 |
 | US 4.0.5 | iNaturalist integration | 5 |
 | US 4.0.6 | Demote Photo Identifier to optional field | 1 |
 | US 5.0.4 | Sign Out Properly | 2 |
 | US 7.0.5 | Delete an Image and Clean Up After It | 5 |
+| US 7.0.7 | Hide Fields on a SIR Before Export | 5 |
+| US 7.0.8 | Delete a Site Inspection Report | 5 |
 
 ### Could Have
 
-*4 stories, 20 story points.*
+*9 stories, 46 story points.*
 
 | ID | Story | Points |
 |---|---|---|
+| US 1.0.5 | Earn Points for Inspection Activity | 5 |
 | US 2.0.4 | Delete a Site | 8 |
+| US 2.0.12 | Score a Site for To-Visit Priority | 8 |
+| US 2.0.13 | Flag Site Points That Are a Year Old | 3 |
+| US 4.0.7 | Show the Top iNaturalist Observations for a Site | 5 |
 | US 7.0.1 | Let Stewards Export Their Own Reports | 2 |
 | US 7.0.3 | See All Inspections in One View | 5 |
 | US 7.0.4 | Compare One Question Across Years | 5 |
+| US 7.0.6 | Export More Than 50 Site Inspection Reports | 5 |
 
 ### Would Like But Won't Get
 
