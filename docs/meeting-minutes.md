@@ -106,6 +106,46 @@ Long working session covering repository setup, a first pass at user stories, an
 
 ---
 
+### September 25, 2026 – Meeting #3: Client meeting with Frank
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA SIR |
+| **Attendees** | Frank (client), Chris, Aaron, Saumya (uncertain: heard as "Sonya" / "Sonia"), Alissa (uncertain: heard as "Lisa"), Jayden (uncertain: heard as "Jada" / "Jaden"), Mehrdad from the Fall 2025 team (uncertain: heard as "Murder" / "Murdad"). Zanab and Abhinav could not be identified in the transcript. Unresolved names: "Bernard", "Bushaw", "Rochelle", "Javier". |
+
+#### Summary
+
+The team presented its user stories and plan. Frank asked for every story to be mapped to the charter projects on the SAPAA website (1, 2A, 2B, 2C) and ruled on data storage, maps, offline, GPS uploads, mobile and admin roles. Auto-transcript (no speaker labels) in `meetings/week4/meeting_25th_frank_team.txt`. Story changes that follow from this meeting: [story changelog](investigation/story-changelog-2026-09-25.md).
+
+#### Key Discussions & Decisions
+
+- The charter projects are the spec. Stories must be shown against them: "I'm not seeing Project 1, 2A, 2A, 2B, and 2C here." Adding or dropping a deliverable needs a change request: "You don't get to ignore this."
+- Project 1 comes first: "So I need you guys to harden the site, basically." The one thing not yet done is to "evaluate each of the bugs and minor enhancements" on Frank's fix/fault spreadsheet, which must be in GitHub.
+- Google Sheets must not hold primary data: "Google sheets are dead. Do not store data in Google Sheets." Frank endorsed removing the Sheets wiring and one of the two databases.
+- v1.1 fix: rename hyphenated Supabase objects to use underscores ("get rid of those freaking hyphens") so Frank's visualization tool can connect.
+- Map: "It doesn't have to be Google Maps inside the application." Website and app must share site geometry ("the underlying shapes, have to come from the same source"); everything else may diverge. The map story must also show where each natural area is and what others have done there.
+- GPS uploads are a requirement for an early sprint, GPX only: "you can only upload a GPS. That's it. Nothing else." KML and FIT are left for a later group. No phone-based tracking: "I'm really trying to avoid going to the phone, only because it complicates things."
+- Offline: "I definitely need offline capability, but on the web app." It is not in any charter project.
+- Super admin and manager roles: "I would put it on the back burner for this project." Admins assigning stewards to inspections was rejected, since volunteers go out of goodwill or proximity.
+- Incentivizing is Project 2B and depends on person management. Gamification stays small: "I'd rather be a bear bones gamification". Project 2 is iNaturalist integration.
+- Keep the first sprint simple ("Keep it easy. Keep it stupid, keep it simple."), present in business language, and "If you guys are off the rails, call me, okay?"
+- Frank's verdict: "I think you guys got some holes, but I think you have a base that's there."
+
+#### Action Items
+
+- Download and register for iNaturalist before the September 26 field trip (Everyone).
+- On the field trip, submit your own River Lot 56 site inspection report with photos and record your walk with a phone GPS app (Everyone).
+- Send the St. Albert transit station address and trip note; bring a handheld GPS and send the files afterwards (Frank).
+- Drive teammates who need a ride (Chris).
+- Map every story to charter projects 1, 2A, 2B and 2C, rewrite the map story, and bring a revised GPX upload story back to Frank (Team).
+
+#### Next Meeting Agenda
+
+- Field trip to River Lot 56 on September 26. Other SAPAA problems were deferred to it.
+
+---
+
 
 ---
 

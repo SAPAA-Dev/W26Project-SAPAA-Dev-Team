@@ -9,8 +9,55 @@ This page provides an overview of the assigned tasks and roles for the duration 
 
 ## Story Map
 
-_The Fall 2026 story map is in progress. It will be added here as `images/F26-SAPAA-Storymap.png`
-once the user stories in `index.md` are finalised._
+The full story set is in [Project Requirements](index.md), grouped into ten feature areas and
+prioritised with MoSCoW. This is the same set arranged by sprint. It follows the story changes from
+the September 25, 2026 client meeting, recorded in the
+[story changelog](investigation/story-changelog-2026-09-25.md).
+
+| Feature area | Sprint 2 | Sprint 3 | Sprint 4 | Sprint 5 | Unscheduled Must | Unscheduled Should | Won't Have |
+|---|---|---|---|---|---|---|---|
+| People Management | - | - | 1.0.1, 1.0.2 | - | - | - | - |
+| Place Management | 2.0.12 | 2.0.1, 2.0.2 | 2.0.10 | 2.0.3 | 2.0.13, 2.0.14, 2.0.15 | 2.0.6, 2.0.7, 2.0.8 | - |
+| Admin Persona | - | - | - | - | - | 3.0.3, 3.0.6 | 3.0.2 |
+| General Features | - | - | - | - | 4.0.3 | 4.0.4 | 4.0.1, 4.0.2 |
+| Access and Accounts | 5.0.1, 5.0.2, 5.0.3, 5.0.4, 5.0.5 | - | 5.0.6, 5.0.7, 5.0.8 | - | - | - | - |
+| Data and Places | 6.0.1, 6.0.14 | 6.0.8, 6.0.10, 6.0.11 | - | 6.0.5 | 6.0.4, 6.0.6 | 6.0.7, 6.0.12 | 6.0.2 |
+| Inspections and Media | - | - | - | 7.0.1, 7.0.7 | - | - | - |
+| Mobile and Offline | - | - | - | - | 8.0.1 | - | 8.0.2, 8.0.5, 8.0.6 |
+| Engineering and Delivery | 9.0.6 | - | - | 9.0.1, 9.0.2, 9.0.3, 9.0.5 | 9.0.7, 9.0.8 | - | - |
+| Activity and Recognition | - | - | 10.0.1, 10.0.2 | - | - | - | - |
+
+Stories not shown above are Could Have. They are defined and prioritised but not committed to a
+sprint, and will be pulled in as capacity allows. Sprint 1 carries no user stories because it is
+documentation and discovery.
+
+**MoSCoW is provisional.** Frank said priorities come from his fix/fault spreadsheet (D52), which
+the team has not received yet. The buckets are reconciled with it under US 9.0.6.
+
+**Superseded stories** keep their heading in index.md but are not planned on their own:
+6.0.9 is now part of 2.0.1 (so it leaves Sprint 3), 10.0.3 is part of 1.0.1, 2.0.9 is part of
+7.0.7, and 6.0.13 is part of 6.0.8. US 3.0.2 is Won't Have per Frank (D36) and was never
+scheduled.
+
+**Where the new stories go.** A new story is placed in a sprint only where Frank gave timing or
+priority for it:
+
+- **2.0.12, Sprint 2.** Frank: "For one of your first sprints, the requirement would be user
+  uploaded GPS related files" (D14). If it does not fit, Sprint 3 is still one of the first
+  sprints. Drawing the track on the map (2.0.1) waits for Sprint 3.
+- **9.0.6, Sprint 2.** Frank: "So the one critical thing, uh, that you're not doing at the moment,
+  is evaluating the things that are in my go" (D39). It depends on Frank sending the spreadsheet.
+- **6.0.14, Sprint 2, inferred.** Frank listed it among the v1.1 fixes ("get rid of those
+  freaking hyphens", D02) and said "I want you guys to fix, version one point one" (D38). He gave
+  no date. It also needs the US 9.0.1 test environment, which is in Sprint 5, so until then it is
+  a production change with a backup and restore check (6.0.14 AT5).
+- **2.0.13, 2.0.14, 2.0.15, 9.0.7 and 9.0.8** are Must because they are charter deliverables
+  (D06), but Frank gave no timing, so they are unscheduled. 9.0.8 starts after 9.0.6 is agreed
+  with Frank.
+- **4.0.3, 6.0.4, 6.0.6 and 8.0.1** moved up to Must on Frank's ruling about need, not timing, so
+  they are unscheduled. 6.0.4 has to come before 1.0.1 and 10.0.1 in Sprint 4 (Frank: "I need
+  that person management to get to there", D49), and 6.0.6 before 6.0.4, so in practice both
+  need Sprint 3 or earlier.
 
 The ranked backlog the plan below is drawn from lives in [Issues Backlog](issues.md), and the
 evidence behind it is in [Investigation](investigation/README.md).
@@ -62,19 +109,23 @@ enforced on the server, so this sprint clears that first.
 
 #### User stories
 
-|User Story|Story points|
-|:---:|:---:|
-|Stop `/gallery` leaking every user's photos|2|
-|Remove committed secrets from docs and tests|2|
-|Rotate the service role key and remove it from the mobile bundle|2|
-|Enforce caller identity on every server action|5|
-|Move `role` out of `user_metadata` into a table with RLS|5|
-|Log every role change|2|
-|Fix the mobile delete-by-index bug|2|
-|Fix the failing test on main|1|
-|Add `.env.example` and a working setup guide|2|
+|User Story|Story points|Suggested owner|
+|:---:|:---:|:---:|
+|US 5.0.1 - Enforce Permissions on the Server|5|Saumya, Abhinav|
+|US 5.0.2 - Store Roles Where Users Cannot Edit Them|5|Saumya, Abhinav|
+|US 5.0.3 - Separate Joining the App From Administering It|3|Saumya, Abhinav|
+|US 5.0.4 - Keep the Personal Gallery to My Own Uploads|2|Saumya, Abhinav|
+|US 5.0.5 - Reset a Forgotten Password|2|Saumya, Abhinav|
+|US 6.0.1 - Decide Which Schema Is Canonical|2|Saumya, Aaron|
+|US 2.0.12 - Upload a GPX Track of a Site Visit|5|TBD|
+|US 6.0.14 - Rename Hyphenated Database Objects|3|TBD|
+|US 9.0.6 - Evaluate Every Item on the v1.1 Fix List|3|TBD|
 
-**Sprint Velocity:** 23
+**Sprint Velocity:** 30
+
+Sprint 2 is now 30 points against a planned velocity of 23, because of the three new stories
+added after the September 25 client meeting (see [Story Map](#story-map)). The team decides at
+Sprint 2 planning which of them moves to Sprint 3.
 
 #### Tasks
 
@@ -100,18 +151,15 @@ until that is fixed.
 
 #### User stories
 
-|User Story|Story points|
-|:---:|:---:|
-|Decide the canonical database schema (spike)|2|
-|Add real coordinates to sites|5|
-|Show stewards a map|2|
-|Cache geocoding results and bound the quota|2|
-|Key site detail pages by id, not name|2|
-|Make site search work|2|
-|Put the database schema in version control|5|
-|Paginate the sites list|2|
+|User Story|Story points|Suggested owner|
+|:---:|:---:|:---:|
+|US 6.0.8 - Store Each Site's Geometry From the Shared Source (includes former 6.0.13)|5|Saumya, Aaron|
+|US 6.0.10 - Stop Site Links Breaking When a Site Is Renamed|2|Saumya, Aaron|
+|US 6.0.11 - Make Site Search Work|2|Saumya, Aaron|
+|US 2.0.1 - View Sites and Past Visits on an Interactive Map (includes former 6.0.9)|8|Jayden, Aaron|
+|US 2.0.2 - Allow Admins to Add New Sites|3|Jayden, Aaron|
 
-**Sprint Velocity:** 22
+**Sprint Velocity:** 20
 
 #### Tasks
 
@@ -136,17 +184,21 @@ handover call.
 
 #### User stories
 
-|User Story|Story points|
-|:---:|:---:|
-|Instrument the events KPIs are built from|5|
-|Build the user profile page|5|
-|Port the KPIs that already exist in the mobile app|5|
-|Stop mobile silently discarding offline edits|8|
-|Add password reset|2|
-|Send the approval email the app already promises|2|
-|Fix logout|2|
+|User Story|Story points|Suggested owner|
+|:---:|:---:|:---:|
+|US 1.0.1 - Add User Profiles (includes former 10.0.3)|5|Alissa, Zanab|
+|US 1.0.2 - Allow Editing Own Profile|3|Alissa, Zanab|
+|US 2.0.10 - View a Site's Details From the Map|3|Jayden, Aaron|
+|US 10.0.1 - Record the Activity That the Stats Are Made Of|5|Zanab, Alissa|
+|US 10.0.2 - Reuse the Statistics the Mobile App Already Has|5|Zanab, Alissa|
+|US 5.0.6 - Actually Send the Approval Email|2|Saumya, Abhinav|
+|US 5.0.7 - Sign Out Properly|2|Saumya, Abhinav|
+|US 5.0.8 - Keep a Record of Role Changes|2|Saumya, Abhinav|
 
-**Sprint Velocity:** 29
+**Sprint Velocity:** 27
+
+US 1.0.1 and US 10.0.1 depend on US 6.0.4 (the person data structure), which is Must Have but not
+yet in a sprint. It needs to land before this sprint.
 
 #### Tasks
 
@@ -169,20 +221,18 @@ Polish, history and field test readiness. Leaves a buffer before December field 
 
 #### User stories
 
-|User Story|Story points|
-|:---:|:---:|
-|Record inspection edit history|5|
-|Add "Compare by Question" to the web app|5|
-|Add image deletion and clean up orphaned files|5|
-|Stand up a staging environment|5|
-|Fix login and signup accessibility|2|
-|Let stewards export their own PDFs|2|
-|Make CI actually gate merges|2|
-|Prepare for December field testing|2|
-|Fix the mobile "Sync Now" button|2|
-|Write a backup and recovery runbook|2|
+|User Story|Story points|Suggested owner|
+|:---:|:---:|:---:|
+|US 6.0.5 - Put the Schema in Version Control|5|Saumya, Aaron|
+|US 7.0.1 - Keep a History of Inspection Edits|5|Zanab, Alissa|
+|US 7.0.7 - Delete an Image and Clean Up After It (includes former 2.0.9)|5|Zanab, Alissa|
+|US 9.0.1 - Set Up Separate Development, Test and Production Environments|5|Saumya, Abhinav|
+|US 9.0.2 - Make CI Stop Things Breaking|2|Saumya, Abhinav|
+|US 9.0.3 - Make a Fresh Clone Work|2|Saumya, Abhinav|
+|US 9.0.5 - Get Ready for the December Field Test|2|Saumya, Abhinav|
+|US 2.0.3 - Deactivate and Reactivate a Site|3|Jayden, Aaron|
 
-**Sprint Velocity:** 32
+**Sprint Velocity:** 29
 
 #### Tasks
 
@@ -222,7 +272,14 @@ Velocity rises across the sprints (23, 22, 29, 32) on the assumption that the te
 the codebase is familiar and the access control work is behind us. Revisit after Sprint 2 with
 real numbers.
 
-Assignees for Sprints 2 to 5 are marked TBD and will be filled in at each sprint planning session.
+After the September 25 changes the committed points are 30, 20, 27 and 29 (106 in total), so
+Sprint 2 is over its planned velocity. The Must Have set is 105 points plus the unsized US 9.0.8,
+and 34 of those points plus 9.0.8 are not in any sprint yet (see [Story Map](#story-map)). Either
+Frank confirms the charter deliverables, or some Must stories move down.
+
+Owners in the story tables are suggestions based on how Sprint 1 work was split. They are a
+starting point for planning, not a commitment, and the team confirms them at each sprint planning
+session. Task level assignees stay TBD until then.
 
 ---
 

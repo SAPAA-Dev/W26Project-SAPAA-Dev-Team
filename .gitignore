@@ -179,7 +179,15 @@ webapp/cypress/screenshots
 
 # IDE
 .idea/
-ruvector.db
+
+# local AI tooling artifacts, never commit these
 .claude-flow/
+.remember/
+agentdb.rvf
+agentdb.rvf.lock
+ruvector.db
+
+# macOS
+.DS_Store
 .agents/.claude-flow/
 tars.svg

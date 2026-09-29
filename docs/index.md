@@ -1,285 +1,413 @@
 # Project Requirements
+<!--
+Note this is based off: https://ualberta-cmput401.github.io/course-docs/project-expectations/#project-requirements
+
+Fall 2026 checkboxes (2/6):
+- Executive summary ☑
+- Project glossary ☑
+- User stories ☐
+- Similar products ☑
+- Open-source products ☑
+- Technical resources ☑
+-->
 
 
 ## Executive summary
 
-SAPAA currently manages site inspection data through a manual pipeline. Stewards submit observations via Google Forms, Admin converts them in MS Excel, and the results are stored in a local MS Access database. This project replaces that temporary setup with a sustainable, low-cost cloud data infrastructure that automatically ingests inspection data into a PostgreSQL database, enables Admin to manage the data, and generate PDF reports. A major focus of our implementation is scalable and cost-aware image management: inspection images are stored in AWS S3, providing a reliable, secure, and affordable solution for handling large volumes of media.
+SAPAA Stewards manage site inspections and observations in-app using sustainable, low-cost cloud data infrastructure that automatically ingests inspection data into a PostgreSQL database, enables Admin to manage the data, and generate PDF reports. One major focus of the implementation is towards scalable and cost-aware image management: inspection images are stored in AWS S3, providing a reliable, secure, and affordable solution for handling large volumes of media. This projects focuses to enhance overall file management as the app expands to integrate with iNaturalist and offers interactive maps that require storing files containing geographic location data like tracks, routes, and points of interest. 
 
-This work also advances the client's original vision of People and Place Management for v2.0, though with a narrower scope this semester: Admin's new ability to approve and manage user accounts lays the groundwork for People Management, and updated Site profiles are a first step toward Place Management.
+For this semester, we are advancing the client's original vision with a version 1.1 and version 2.0 of the application.
 
-The primary user is the Admin, who needs a reliable, maintainable system that eliminates manual data handling while retaining access to the data, report generation, and distribution. Longer-term, the project aims to extend this to Android and iOS apps so stewards can log observations offline in the field if time permits in the semester.
+Version 1.1 will be about fixing existing bugs pain points in the application, and improving the user experience. Below
+you can find more detailed stories about these pain points, but the general focus is to polish the application for both
+and users to the fullest extent so that it's ready for public release.
+
+Version 2.0 will be about building out more ambitious features, such as the client's vision of People and Place
+Management for v2.0, though with a narrower scope this semester: Admin's new ability to approve and manage user accounts
+lays the groundwork for People Management, and updated Site profiles are a first step toward Place Management.
+Additionally, there will be a focus on gamification throughout the application to enhance steward engagement.
+
+The primary user is the Admin, who needs a reliable, maintainable system that eliminates manual data handling while retaining access to the data, report generation, and distribution. Further enhancements to user experience should motivate stewards to plan more visits and submit reports. Longer-term, the project aims to extend this to Android and iOS apps so stewards can easily log observations offline in the field if time permits in the semester.
 
 
 
 ## Project glossary
 
-- **SAPAA:** Stewards of Alberta’s Protected Areas Association. A volunteer society that supports the stewardship of Alberta’s protected natural areas.
+- **SAPAA:** Stewards of Alberta’s Protected Areas Association. A volunteer society that supports the stewardship of 
+Alberta’s protected natural areas.
 
-- **Natural Area:** A provincially designated protected land, such as a Provincial Park, Wildland Park, Wilderness Area, Ecological Reserve, or Natural Area, managed by Alberta Parks.
+- **Natural Area:** One of the about 260 protected areas under Alberta's Wilderness Areas, Ecological Reserves, Natural
+Areas and Heritage Rangelands (WAERNAHR) Act, which SAPAA primarily stewards. Provincial parks fall under the Parks Act
+and are not SAPAA's focus.
 
 - **Site:** A specific Natural Area monitored and reported on by SAPAA stewards.
 
-- **Site Inspection:** A record of field observations, ecological conditions, safety notes, and steward activities for a given Site.
+- **Site Inspection:** A record of field observations, ecological conditions, safety notes, and steward activities for a
+given Site.
 
 - **Steward** A SAPAA volunteer responsible for visiting Sites and submitting inspection data.
 
-- **Admin:** The SAPAA administrator responsible for managing Site Inspection data, generating official reports, and distributing information to stewards.
+- **Admin:** The SAPAA administrator responsible for managing Site Inspection data, generating official reports, and
+distributing information to stewards.
 
-- **SAPAA Stewards:** The web application that allows stewards to submit Site Inspection data easily and automatically uploads data to the PostgreSQL database.
+- **SAPAA Stewards:** The web application that allows stewards to submit Site Inspection data easily and automatically
+uploads data to the PostgreSQL database.
+
+- **SIR-SAPAA:** same definition as "Sapaa Stewards"
 
 - **SAPAA Stewards Mobile:** The mobile application, usable on both Android and iOS, that stewards can use while offline to submit their Site Inspection data
+
 - **People Management**: A planned v2.0 capability to support and track the community of volunteer stewards, including individual activity history — intended to support future volunteer recognition. Partially addressed this semester via Admin user-approval workflows.
 
--  **Place Management**: A planned v2.0 capability to better display where a Site is and what activity has occurred there, extending the geographic presentation on the SAPAA website. Partially addressed this semester via Site profile editing.
+-  **Place Management**: A planned v2.0 capability to better display where a Site is and what activity has occurred
+there, extending the geographic presentation on the SAPAA website. Partially addressed this semester via Site profile
+editing.
 
 
 
      
 
 ## User Stories
----
+
 ### **1 - People Management**
 ---
 
-#### US 1.0.1 – Add User Profiles | Story Points: x  
-> **As** a User, **I want** to be able to view my profile and profiles of other stewards, **so that** I can see their details and contributions
+#### US 1.0.1 - Add User Profiles | Story Points: 5
+> As a **Steward**, **I want** to view my own profile and the profiles of other stewards, including their skills, focus areas and how many SIRs they have submitted, **so that** I can judge how credible an observer someone is and know whom to ask about a topic
 
 > **Acceptance Tests**
 
-> 1. Should be able to navigate to own profile by clicking "my profile" in the menu under pages
-> 2. Should be able to navigate to a users profile by clicking on their email via their inspection report
-> 3. Profile information matches what is stored in the database
-> 4. Should be able to return to the previous page after navigating to a user's profile
+> 1. Given I am viewing a profile, I am able to see the user's name, skills, focus area, contact info, and inspection count.
+> 2. Given I am currently not viewing my profile, I can navigate to their own profile from the main menu.
+> 3. Given I am on a site page, I can navigate to a profile by clicking on a user's inspection
+> 4. Given I opened a users profile via their site inspection, I can navigate back to my previous page
+> 5. Given the users details are changed in the database, When the profile page is reloaded, it shows the most recent stored value
 
-#### US 1.0.2 - Allow Editing Own Profile | Story Points: x
-> **As** a User, **I want** to be able to edit my own profile information, **so that** I can I can keep my details and interests up-to-date
+#### US 1.0.2 - Allow Editing Own Profile | Story Points: 3
+> As a **Steward**, **I want** to edit my own profile, including my skills and focus areas, **so that** my details stay up to date and other stewards know what I can help with
 
 > **Acceptance Tests**
 
-> 1. Should only be able to edit own profile
-> 2. Required information is removed -> Prevents user from saving updates and required fields are highlighted
-> 3. Valid entries in updated profile fields on save -> UI refreshes with updated information
-> 4. Changes to profile details persist when revisiting page, on log in, etc.
+> 1. The user can only edit their own information. 
+> 2. Requests to edit another users information should fail
+> 3. Given I remove my name or email, When I select Save, Then the save is blocked and the name or email field is highlighted.
+> 4. Given I enter valid values, When I select Save, Then the page shows the new values
+> 5. Given I saved changes, When I sign out and sign in again, Then my profile shows the saved values
+> 6. Given I add skills or focus areas, When I select Save, Then they are shown on my profile
 
-#### TODO: DISCUSS WITH FRANK
-- Remaining user stories are TBD from the following suggestions (Discuss with frank):
-    - If we are introducing an organization structure (i.e manager roles that can assign inspections to stewards under their supervision), what places in the application should this relationship be displayed? (user profile, manager-restricted view, organization page)
-    - Should we allow users to favourite sites? Display the # of favourites on a site in the map or site profile
-    - How do we want to display user activity and contributions:
-        - Top inspector leaderboard (on all or a single site?):
-        - Daily, Weekly streak
-        - Rank user’s top activities
-            - how many activities (top 5)? what date range do we determine this data from?
-            - expand to view timeline of all activities or table of activities and their count
-        - Other stats or badges:
-            - Hours on site (ex. KPI card on user profile or badges for reaching x number of hours)
-            - Sites visited (ex. KPI card on user profile or badges for visiting x number of sites)
-            - Badge for being the first inspector for a site
-            - Badges for visiting sites that “need attention”
-            - Badges for including more information on an inspection report (ex. including an image)
-            - Badges for doing x or more activities at a single site
-            - Badges for inspecting a site x or more times
+#### US 1.0.3 - Show history of Site Inspections on a Steward's Profile | Story Points: 2
+> As a **Steward**, **I want** to view the site inspections a steward has submitted across all sites, **so that** I know their level of contributions and experience
+
+> **Acceptance Tests**
+
+> 1. Given I am viewing a Stewards profile, I see a list of their previous inspections with corresponding site, and date submitted.
+> 2. Given I am viewing a Stewards profile, I can click on a past inspection and view the submitted information
+> 3. Given that a steward has chosen to hide certain fields, I am not able to see their answers when reading through their past SIRs
+
+#### US 1.0.4 - Aggregate User Activity and Contributions on a user's profile | Story Points: 2
+> As a **Steward**, **I want** to see quick stats on a user's activity, **so that** I can get a quick overview of their activity, and common activities
+
+> **Acceptance Tests**
+
+> 1. Aggregates accurately reflect the user's data (SIR count, Activities reported) 
+> 2. Given that a steward has submitted a new report, their SIR count updates +1. 
 
 ---
-### **2 – Place Management**
+### **2 - Place Management**
 ---
-#### US 2.0.1 - View Sites on an Interactive Map | Story Points: x
-> **As** a User, **I want** to view a map with landmarked sites, , **so that** I can easily see where it is located
+
+#### US 2.0.1 - View Sites and Past Visits on an Interactive Map | Story Points: 8
+> As a **Steward**, **I want** a map that shows where a natural area is, if it has been visited and what other stewards have done there, **so that** I can know what to expect and do on my next visit
 
 > **Acceptance Tests**
 
-> 1. Should be able to navigate to a map view through the menu
-> 2. Clicking on location in the site profile -> Should display site on the map in "selected" mode (i.e showing its details)
-> 3. Clicking on a site on the map -> Should show additional information on the site
-> 4. Should highlight the site if it is selected on the map
+> 1. Given the map view is open, When it loads, Then every active Site is drawn with its boundary
+> 2. Given a GPX track was uploaded for a Site, When I zoom to that Site, Then the track is drawn as a line in a style different from the Site boundary
+> 3. Given I am on a Site's page, I can navigate where to view its location on the map
+> 4. Given a Site is selected on the map, When the selection changes, Then only the newly selected Site is highlighted
 
-#### US 2.0.2 - Allow Admins to Add New Sites | Story Points: x
-> **As** an Admin, **I want** to be able to add a new site through the app UI, **so that** I am not limited to direct database inserts.
+#### US 2.0.2 - Allow Admins to Add New Sites | Story Points: 3
+> As an **Admin**, **I want** to be able to add a new Site through the app UI, **so that** I am not limited to direct database inserts.
 
 > **Acceptance Tests**
 
-> 1. Existing site name or existing location is entered -> Warn user of possible duplicate
-> 2. Required Information is missing (name, description, location, etc.) -> Prevents user from adding site and required fields are highlighted 
+> 1. Given I am an Admin creating a site, I can manually select the boundary for a site
+> 2. Given a Site with the same name already exists, When I enter it, Then a possible-duplicate warning is shown before the Site is saved
+> 3. Given a required field (ex. name) is empty, site creation is blocked and the empty fields are highlighted
+> 4. Given I am signed in as a Steward, When I send the create-Site request directly to the server, Then it is refused and no Site is created
+> 5. Given a site was added, it appears in the search results for the site.
+> 6. Given I am selecting a boundary for a site, site suggestions are given taking what already exists in the Alberta government KML but not in SIR-SAPAA
 
-#### US 2.0.3 -  | Story Points: x
-> **As** an Admin, **I want** to deactivate and reactivate a site, **so that** I can toggle its visibility throughout the app
+#### US 2.0.3 - Deactivate and Reactivate a Site | Story Points: 3
+> As an **Admin**, **I want** to deactivate and reactivate a site, **so that** I can toggle its visibility throughout the app
 
-#### US 2.0.4 - | Story Points: x
-> **As** an admin, **I want** to delete a site, **so that** I can remove incorrect or duplicate site information
->  TODO, ADDRESS COMMENTS: How does this cascade, and affect user stats (site visits, their inspection history)?
+> **Acceptance Tests**
 
-#### US 2.0.5 - | Story Points: x
-> TODO: As an admin I just want to be able to edit the sites if a steward was the one who inspected the site, so that _______
+> 1. Should be able to toggle a site between active and inactive
+> 2. Site is deactivated -> Site no longer appears in site pickers, search results
+> 3. Site is reactivated -> Site reappears everywhere it was previously listed
+> 4. Given a site was deactivated, the inspections on the site can still be viewed
+> 5. Given a new site was created, by default it should be active
 
-> Needs clarification on if the admin can edit steward-submitted inspections (limited to certain fields?), or the site’s details?
+#### US 2.0.4 - Delete a Site | Story Points: 8
+> As an **Admin**, **I want** to delete a site, **so that** I can remove incorrect or duplicate site information
 
-#### US 2.0.6 - | Story Points: x
-> As a the admin i want to see sites classified by controlled types, regions, subregions, and counties, so that filtering and reporting remain consistent.
-> TODO, ADDRESS COMMENTS: This is somewhat implemented in the homepage but can also be added to the map. Additional filters can include which sites “Need Attention”.
-> REVISED SUGGESTION: 2.0.6 As a user, I want to be able to search and filter sites on a map by county, so that I can easily find the site I am looking for
+> **Acceptance Tests**
 
-#### US 2.0.7 - | Story Points: x
-> As a user, I want to be able to upload images of a site directly, so that others can see the recent state of the site
+> 1. Given I am an admin deleting a site, I should be asked to confirm the delete before it occurs
+> 2. Site has existing inspection reports or images -> Should show a confirmation naming how many records are affected before the delete proceeds
+> 3. Site is deleted -> The agreed cascade behaviour is applied consistently to its inspections, images, and any user visit counts
+> 4. Cascade cannot complete -> Deletion is rejected with an error and the site and all of its records are left unchanged
 
-#### US 2.0.8 - | Story Points: x
-> As a user, I want a section in the inspection form to upload images, so that I can easily submit images with other inspection details
+#### US 2.0.5 - Update a Site | Story Points: 5
+> As an **Admin**, **I want** to update an existing site page with new fields from a designated steward, **so that** I can direct stewards where to seek out more information
 
-#### US 2.0.9 - | Story Points: x
-> As a user, I want to be able to remove images, so that inaccurate depictions of a site are not shown to others
-> TODO, ADDRES COMMENTS: Allow permission to certain stewards or only admin roles? 
+> **Acceptance Tests**
+ 
+> 1. Given that I am an admin, I can enter 'edit mode' on a site page 
+> 2. Given that I am not an admin, I am prevented from entering edit mode
+> 3. Given that I am on edit mode for a site page, I can easily tell which fields I have selected to be included/excluded from the site page.
+> 4. On saving the update, the site page should have the new fields and remove those that were hidden
 
-#### US 2.0.10 - | Story Points: x
-> As a SAPAA user, I want to view a place’s identity, location, classification, status, assigned people, and related inspections so that I can understand the place before taking action.
-> TODO, ADDRES COMMENTS: This is implemented in the homepage, clicking a site shows its details. Additionally we can add user story:
-> REVISED SUGGESTION: 2.0.10 As a user, I want to be able to see a site’s details by clicking on the site from the map view, so that I can easily gather context on the site while exploring the map
+#### US 2.0.6 - Search and Filter Sites by County on the Map | Story Points: 5
+> As a **Steward**, **I want** to search and filter Sites on the map by county, **so that** I can easily find the Site I am looking for
 
-#### US 2.0.11 - | Story Points: x
-> As an admin I want to view significant changes made to a place so that I can understand how and why its record changed.
-> TODO, ADDRESS COMMENTS: Need clarificarion: Update history? changes to naturalness and other stats overtime?
+> **Acceptance Tests**
+
+> 1. Given the map view is open, When I apply one or more filters, Then only Sites matching those filters stay on the map
+> 2. Given a filter is applied, When I clear it, Then all active Sites reappear
+> 3. Given I type a Site name in the search box, When I select the match, Then the map centres on that Site
+
+#### US 2.0.8 - View a Site's Details From the Map | Story Points: 3
+> As a **Steward**, **I want** to see a Site's details by selecting the Site on the map, **so that** I can gather context on the Site while exploring the map
+
+> **Acceptance Tests**
+
+> 1. Given the map view is open, When I select a Site, Then that Site's detail view opens
+> 2. Given the detail view is open, When it loads, Then it shows the same name, county and last inspection date as the Site page reached from the home page
+> 3. Given the detail view is open, When I select "View SIRs", Then I am directed to the past SIRs
+
+#### US 2.0.9 - Upload a GPX Track of a Site Visit | Story Points: 5
+> As a **Steward**, **I want** to upload the GPX file my GPS device or phone app recorded during a Site visit, **so that** the visit is logged and the next steward can see which part of the Site was already covered
+
+> **Acceptance Tests**
+
+> 1. Given I am a signed-in Steward on a Site's page, When I upload a valid .gpx file, Then the track is saved and linked to that Site and to my account
+> 2. Given I upload a file that does not have a .gpx extension, a message pops up that only GPX files are accepted
+> 3. Given I upload a file named .gpx that is not valid GPX or has no track points, then it is refused with a message and nothing is saved
+> 4. Given I uploaded a track, When the stored track is read back, Then it has the same track points as the uploaded file
+> 5. Given I choose a .gpx file larger than the stated maximum size, When I upload it, Then it is refused with a message that names the limit
+
+#### US 2.0.10 - Add links to Site Page | Story Points: 1
+> As a **Steward**, **I want** to click on a link to the SAPAA Website and iNaturalist from a site page, **so that** I can quickly navigate to learn more about natural areas
+
+> **Acceptance Tests**
+ 
+> 1. Given I am on the site page, I should see a clear link (shortened url) to SAPAA Website 
+> 2. Given I am on the site page, I should see a clear link (shortened url) to iNaturalist
+> 3. Given I click on a link from the site page, a new window should open to the site instead of using my current window
 
 ---
 ### **3 - Admin Persona**
 ---
-#### US 3.0.1 - | Story Points: x
-> As an admin, I want to see what a steward can access and what they cannot and have special permissions set for them
-> TODO, ADDRESS COMMENTS: Viewing permission roles already implemented, possible additions can be:
-> 3.0.x As an admin, I want to switch my view to “as a steward”, so that I can see what the steward role sees
-> 3.0.y As an admin, I want to revoke a users access, so that they can no longer use the app
-    > Acceptance Criteria:
-        > When a user with revoked access attempts to log in, they should see a message that “do not have access”
-        > When a user with revoked access attempts to sign up with the same email,  they should see a message that the email is taken
-        > When a user is revoked access, I should still be able to view their profile and historical contributes with their profile status as “deactivated”
-    > The current workaround to this is to set user access back to “pending”. There should be a separate status to denote if a user was removed. There is a similar story to deactivate a users account, is that satisfied by this?
-> Follow up questions:
-    > Do want to distinguish roles + use cases in the website for different types of stewards? for example, government stewards vs those that are just interested? What entities in the app can a steward edit?
 
-#### US 3.0.2 - | Story Points: x
-> As an admin, I want to assign one or more users to one or more places, so that stewardship responsibility is explicit and maintainable.
-> TODO, ADDRESS COMMENTS: Is assigning a user to inspect a site an intended use case? If so, what are the types of inspections, does the assigner set this type? Should all admins be allowed to assign a user or do we want to differentiate admins (can assign) vs superadmins (developers)?
-> Additional user stories should be made to surface who is assigned where (to the manager), progress of assigned inspections (to the manager), the assignees own progress on assigned inspections
+#### US 3.0.2 - Steward Designation | Story Points: 5
+> As an **Admin**, **I want** to assign an individual for a site, **so that** other stewards can reach out to them for more information
+> **Acceptance Tests**
 
-#### US 3.0.3 - | Story Points: x
-> As an admin, I want to be able to search and filter users, so that ________
-> TODO, ADDRESS COMMENTS:  Search and filters are already implemented in Account management. What additional filters do we want, if any? Is this functionality desired on other pages? fill in reason in “so that …”
+> 1. Given I am an admin, I can search for a steward to assign to a site
+> 2. Given I am an admin, I can assign a new steward, replacing the previous one
+> 3. Given a steward is assigned to a site, The assigned relationship is visible on both the site's page and the steward's profile
+> 4. Given a user who is not permitted to assign attempts to designate a steward, the action is rejected and no assignment is created
 
-#### US 3.0.4 - | Story Points: x
-> As an admin, I want to group steward by permissions and traits, so that _____
-> TODO, ADDRESS COMMENTS: Group where and what traits? Assign then to an organization group, and if so we need to plan that organization in the db? Is this satisfied by the search and filters user story, if we allow filtering on permissions (i.e “Approval Status”)?
+#### US 3.0.3 - Export all digital files from SIR-SAPAA | Story Points: 8
+> As an **Admin**, **I want** to be able to extract all images and other digital files in the app at once, **so that** I can back them up and use them for business processing
 
-#### US 3.0.5 - | Story Points: x
-> As an admin, I want to export stewards names and their positions in bulk so that I can know what is going on with my memberships and whatnot, so we can gamify shit.
-> TODO, ADDRESS COMMENTS: - How does this scale, do we allow export for all stewards?
-> Is this use case geared towards admins who can assign stewards to inspect sites, limiting the export to users they manage? see US 3.0.2
+> **Acceptance Tests**
 
-#### US 3.0.6 - | Story Points: x
-> As an admin, I want to be able to update a person’s information so that member records are up-to-date
-> TODO, ADDRESS COMMENTS: What information?
-
-#### US 3.0.7 - | Story Points: x
-> As an admin, I want to see a history of admin actions I have performed such as role changes, status changes, site assignments, and etc., so that I can keep track of my work and hold myself accountable
+> 1. Extracting files -> Should zip files 
+> 2. Extraction should include all images, at minimum
 
 ---
 ### **4 - General Features**
 ---
-#### US 4.0.1 - | Story Points: x
-> As a user, I want to be able to view site data offline, so that I can read its details during my visit without needing to be online
-#### US 4.0.2 - | Story Points: x
-> As a steward, I want offline/online map layers, so that I can navigate complex areas.
-#### US 4.0.3 - | Story Points: x
-> As a steward, I should be able to see and continue drafts of my site inspections that are autosaved, so that I can resume my progress in the event I lose connection
-#### US 4.0.4 - | Story Points: x
-> As a steward, I want to be able to edit my previous inspections, so that I can easily fix incorrectly submitted entries
-> TODO, ADDRESS COMMENT: Should this go through admin approval?
+
+#### US 4.0.2 - Offline and Online Map Layers | Story Points: 13
+> As a **Steward**, **I want** offline/online map layers, **so that** I can navigate complex areas.
+
+> **Acceptance Tests**
+
+> 1. Should be able to download a map area for offline use and see its download status
+> 2. Device is offline -> Downloaded tiles render and the map stays pannable and zoomable inside the downloaded area
+> 3. Device is offline and the user pans outside the downloaded area -> Missing tiles are indicated rather than failing silently
+> 4. Device is online -> The map uses live tiles and does not fall back to the cached layer
+
+#### US 4.0.4 - Edit My Previous Inspections | Story Points: 5
+> As a **Steward**, **I want** to be able to edit my previous inspections, **so that** I can easily fix incorrectly submitted entries
+
+> **Platform:** Web
+
+> **Acceptance Tests**
+
+> 1. Given I have previously submitted a SIR, I can open it and enter edit mode
+> 2. Given I am viewing another steward's SIR, I am prevented from entering edit mode and making changes
+> 3. A required answer is cleared and submit is attempted -> submission is blocked and the missing questions are listed
+> 4. An edit is saved -> The updated answers are reflected everywhere the report is rendered
+
+#### US 4.0.5 - iNaturalist integration | Story Points: 5
+> As a **Steward**, **I want** to be able to see the photos I took on iNaturalist in the app, **so that** I do not have to upload them a second time in my SIR
+
+> **Acceptance Tests**
+
+> 1. User can upload an image inside their SIR, by selecting imzges from their iNaturalist account
+> 2. Identifier field is autofilled from iNaturalist observation
+
+
+#### US 4.0.6 - Demote Photo Identifier to optional field | Story Points: 1
+> As a **Steward**, **I want** to skip entering a photo Identifier, **so that** I do not have to repeat my description in this field
+
+> **Acceptance Tests**
+
+> 1. Given I leave the Identifier field empty and fill in all required fields in valid format, the report submits successfully
+> 2. Given I am filling out a site inspection report, there is no note beside the identifier field that reads "required"
+
+---
+### **5 - Access and Accounts**
+--- 
+
+#### US 5.0.2 - Reset a Forgotten Password | Story Points: 2
+> As a **User**, **I want** to reset my password myself, **so that** I do not need an Admin to get back in
+
+> **Acceptance Tests**
+
+> 1. Given I am on the sign-in page, When I select "Forgot password" and enter my email, Then a reset link is sent to that email
+> 2. given I requested to reset my password, I am asked to verify with a code before I can proceed to reset my password 
+> 3. Given I received a reset link, When I open it and set a new password, Then I can sign in with the new password and not with the old one
+> 4. No admin intervention is required at any step of resetting my password
+
+
+#### US 5.0.4 - Sign Out Properly | Story Points: 2
+> As a **User**, **I want** signing out to keep me signed out, **so that** the next person on a shared device cannot use my account
+
+> **Acceptance Tests**
+
+> 1. Given I signed out of the web app, When I open the app again in the same browser, Then the sign-in page is shown and I am not signed in
+> 2. Given I signed out of the web app, When I press the browser Back button, Then no signed-in page is shown
+> 3. Given I am on any page of the web app, I can sign out without navigating to a specific page
+
+---
+### **6 - Data and Places**
+---
+
+#### US 6.0.1 - Store Each Site's Geometry From the Shared Source | Story Points: 5
+> As a **Steward**, **I want** each Site stored with its real boundary and location, taken from the same source the SAPAA website uses, **so that** the I can use either maps to tell where a site really is and the website and app never disagree about a Site's shape
+
+> **Acceptance Tests**
+
+> 1. Given a site already exists in the Alberta government KML the website uses, the site geometry the app uses is the exact same
+> 2. Given the geometries are loaded, When a Site is read from the database, Then it has a stored boundary and a centre point (latitude and longitude)
+> 3. Given the list of active Sites, When the load is finished, Then each Site has a geometry or is on a list of unmatched Sites for an Admin to fix
+> 4. Given geocoding is still used for any Site (for example to fill a missing point), When it runs, Then results are cached and requests stay under the OpenCage free tier of 2,500 per day
+
+---
+### **7 - Inspections and Media**
+---
+
+#### US 7.0.1 - Let Stewards Export Their Own Reports | Story Points: 2
+> As a **Steward**, **I want** to export my own SIR as a PDF, **so that** I can keep or share a copy of my report
+
+> **Acceptance Tests**
+
+> 1. Given I submitted a SIR, When I select Export PDF on it, Then a PDF of that SIR is downloaded
+> 2. Given I am a Steward, When I request a PDF of a SIR I did not submit, Then the server refuses
+> 3. Given a PDF of my SIR is generated, When I open it, Then it contains the same answers and photos as the SIR page
+
+#### US 7.0.3 - See All Inspections in One View | Story Points: 5
+> As an **Admin**, **I want** a summary across all SIRs rather than one Site at a time, **so that** I can report on the state of all Sites at once
+
+> **Acceptance Tests**
+
+> 1. Given SIRs exist for many Sites, When I open the all-SIR summary, Then it shows SIR counts per Site, per steward and per reason for the visit (Q42), and the spread of naturalness scores (Q31)
+> 2. Given the summary is open, When I set a date range, Then every figure is recalculated for that range
+> 3. Given I am a Steward, When I request the summary data directly, the request fails
+
+#### US 7.0.4 - Compare One Question Across Years | Story Points: 5
+> As a **Steward**, **I want** to pick one question and see how its answers changed over the years at a Site, **so that** I can see what is getting better or worse
+
+> **Acceptance Tests**
+
+> 1. Given a Site with SIRs from several years, When I choose one question, Then its answers are listed by date, oldest to newest
+> 2. Given I choose Q63 (motorized disturbance), When the list loads, Then answers from every SIR for that Site are shown (SAPAA's own check: "Compare historical motorized disturbances across all inspections (Question 63)")
+> 3. Given a question's wording was changed in the form editor, When I choose it, Then old and new answers stay grouped under the same Q-number
+
+#### US 7.0.5 - Delete an Image and Clean Up After It | Story Points: 5
+> As an **Admin**, **I want** deleting an image to remove it from view and remove the stored file, **so that** inaccurate images are not shown to others and deleted images stop costing storage money
+
+> **Acceptance Tests**
+
+> 1. Given I am an Admin, When I delete an image from a Site, Then it no longer appears in the Site gallery or in any report that shows that gallery
+> 2. Given I am not allowed to delete images, When I view a Site gallery, Then no delete control is shown, and When I send a delete request directly, Then the server refuses
+> 3. Given an image was deleted, When the S3 bucket is checked, Then its file is gone
+> 4. Given an Admin deactivates a SIR, When the S3 bucket is checked, Then the SIR's image files are still there, so reactivating restores its photos
+> 5. Given a SIR submission fails and is rolled back (rollbackSiteInspectionSubmission), When the S3 bucket is checked, Then the files uploaded for that SIR are gone
 
 ## MoSCoW
 
-The **MoSCoW method** is used to prioritize user stories based on their criticality and impact.  
-Each user story is categorized into one of the following priority levels:
-
-- **Must-have**  
-  Essential requirements that are critical for the application to function.
-
-- **Should-have**  
-  Important features that are not strictly essential but add significant value.
-
-- **Could-have**  
-  Desirable features that enhance the application but are not required for core functionality.
-
-- **Would Like But Won’t Get**  
-  Features that are out of scope for the current project or deferred for future consideration.
-
 ### Must Have
-* US 1.0.1 – Access Site Inspection Form on Web Application
-* US 1.0.2 – Add Personal Information to Site Inspection Form (Q11, Q12, Q13, Q14, Q16, Q24)
-* US 1.0.3 – Liability Check (Q2)
-* US 1.0.4 - Have Access to the Terms and Conditions of Inputting Information (Q3) 
-* US 1.0.5 – Add Details Regarding the Overview of my Visit (Q21, Q22, Q23, Q25)
-* US 1.0.6 - Rank the Health of the Site (Q31, Q32, Q33)
-* US 1.0.7 - Add Details Regarding How the Trip Went (Q41, Q41.1, Q42, Q43)
-* US 1.0.8 - Address What Amenities are in the Site (Q51)
-* US 1.0.9 – Designation as a Protected Site (Q55)
-* US 1.0.10 - Indicate submissions to iNaturalist (Q53, Q68)
-* US 1.0.11 - Address details of Landscape changes (Q54)
-* US 1.0.12 - Address any Biological Observations that are in the Site (Q52, Q68)
-* US 1.0.13 - Address Any Human Disturbances  (Q61 - Q66)
-* US 1.0.14 - Add Other Comments (Q56, Q67, Q74, Q82)
-* US 1.0.15 – Inform SAPAA of Any Restorative Work that Needs to be Done / Was Done (Q71, Q72)
-* US 1.0.16 - Add Any Photography Captured During Visit (Q81)
-* TASK 1.0.21 - View and understand the Supabase and decide if it is suitable
-* US 1.0.22 - (User) Edit My Site Inspections Form 
-* US 1.0.23 - Non-Public Information (Q73, Q83)
-* US 1.0.26 – Persist Site Inspection Form Draft
-* US 1.0.27 – Enforce Required Questions on Site Inspection Form
-* US 1.0.28 – Autofill Applicable Form Questions
-* TASK 1.0.29 - Refactor the Database Schema and Produce an Updated ER Diagram
-* US 2.0.1 - Manage the uploading and storing of site inspection images
-* TASK 2.0.5 - Discover other suitable image storage platforms
-* US 2.0.7 - Admin Management of Media Files
-* US 2.0.8 - User Upload of Standalone Site Images
+
+*10 stories, 38 story points.*
+
+| ID | Story | Points |
+|---|---|---|
+| US 1.0.1 | Add User Profiles | 5 |
+| US 1.0.2 | Allow Editing Own Profile | 3 |
+| US 1.0.3 | Show history of Site Inspections on a Steward's Profile | 2 |
+| US 1.0.4 | Aggregate User Activity and Contributions on a user's profile | 2 |
+| US 2.0.1 | View Sites and Past Visits on an Interactive Map | 8 |
+| US 2.0.2 | Allow Admins to Add New Sites | 3 |
+| US 2.0.8 | View a Site's Details From the Map | 3 |
+| US 2.0.9 | Upload a GPX Track of a Site Visit | 5 |
+| US 5.0.2 | Reset a Forgotten Password | 2 |
+| US 6.0.1 | Store Each Site's Geometry From the Shared Source | 5 |
 
 ### Should Have
-* US 1.0.24 – Modify my Site Inspections Form Questions
-* US 1.0.25 – Hide a Site Inspections Form Question
-* US 1.0.30 - Rich Text Editor for Site Inspection Form Description
-* US 2.0.2 – Image Metadata
-* US 2.0.3 - Gallery View
-* TASK 2.0.6 - Refactor Report Rendering to Use Updated Database Schema
-* US 4.0.1 - PDF Generation
-* US 4.0.3 - Update Site Profile of a Particular Site
-* US 4.0.4 - Disable Site Profile of a Particular Site
-* US 5.0.1 - Admin Approval of Users
-* TASK 6.0.1 – Web Application Responsiveness
-* TASK 6.0.2 – Front-End Error Handling & Validation 
-* TASK 6.0.3 – Inspection Fields Integration
+
+*10 stories, 40 story points*
+
+| ID | Story | Points |
+|---|---|---|
+| US 2.0.3 | Deactivate and Reactivate a Site | 3 |
+| US 2.0.5 | Update a Site | 5 |
+| US 2.0.6 | Search and Filter Sites by County on the Map | 5 |
+| US 2.0.10 | Add links to Site Page | 1 |
+| US 3.0.3 | Export all digital files from SIR-SAPAA | 8 |
+| US 4.0.4 | Edit My Previous Inspections | 5 |
+| US 4.0.5 | iNaturalist integration | 5 |
+| US 4.0.6 | Demote Photo Identifier to optional field | 1 |
+| US 5.0.4 | Sign Out Properly | 2 |
+| US 7.0.5 | Delete an Image and Clean Up After It | 5 |
 
 ### Could Have
-* US 1.0.17 - (Admin) Add Questions Site Inspections Form
-* US 1.0.18 - Adding image caption
-* US 1.0.19 - Admin Viewing Images and Metadata
-* US 2.0.9 – Homescreen Gallery View
-* US 5.0.2 - Sign out feature
+
+*4 stories, 20 story points.*
+
+| ID | Story | Points |
+|---|---|---|
+| US 2.0.4 | Delete a Site | 8 |
+| US 7.0.1 | Let Stewards Export Their Own Reports | 2 |
+| US 7.0.3 | See All Inspections in One View | 5 |
+| US 7.0.4 | Compare One Question Across Years | 5 |
 
 ### Would Like But Won't Get
-* US 1.0.20 - Admin Editing Image Metadata
-* US 2.0.4 - Offline Image Viewing
-* US 3.0.1 - Access the mobile version of the Site Inspection Form
-* US 3.0.2 - Offline Data Syncing
 
+*2 stories, 18 story points.*
 
-
+| ID | Story | Points |
+|---|---|---|
+| US 3.0.2 | Steward Designation | 5 |
+| US 4.0.2 | Offline and Online Map Layers | 13 |
 
 ## Open-source Projects
-* [Supabase](https://supabase.com/)
-    - **What it is:** Open-source backend (managed Postgres + Auth + Storage + Edge Functions).
-    - **How we’ll use it (external interface):**  
-      - PostgreSQL as the **system of record** for inspections/sites.  
-      - Storage for **images** and generated **PDF reports**.  
-      - Auth + **Row-Level Security (RLS)** to separate Admin vs Reader access.  
-      - **Edge Functions / cron** to build nightly **offline data bundles** (JSON + thumbnails + PDFs).
-    - **Reference/inspiration:** Supabase’s PostgREST and RLS patterns for secure CRUD without a custom API layer.
-    - **Source of insights:** Example implementations for file storage policies and signed URLs.
-    - **Risks/notes:** Free-tier and pricing limits can change; large media can impact storage/egress. We’ll set a monthly budget cap in the Project Plan and monitor usage.
-
 * [LimeSurvey](https://www.limesurvey.org/)
     - **What it is:** Open-source alternative to survey platforms like Google Forms
     - **How we’ll use it (external interface):**  
@@ -291,19 +419,42 @@ Each user story is categorized into one of the following priority levels:
     - **How we’ll use it (external interface):**  
       - Analyze the way the code handles offline data recording and the cross-platform React Native app structure
 
-## Cloud Services & Infrastructure
-* [AWS S3](https://aws.amazon.com/s3/)
-    - **What it is:** Object storage service for scalable and cost-effective file storage.
-    - **How we’ll use it (external interface):**  
-      - Store all uploaded site inspection images.  
-      - Serve images via signed URLs for secure, time-limited access.  
-      - Separate media storage from the core database to reduce costs.
-    - **Reference/inspiration:** Standard architecture pattern for media-heavy applications.
-    - **Source of insights:** AWS S3 best practices for IAM policies, bucket privacy, and lifecycle rules.
-    - **Risks/notes:** Misconfigured permissions can expose data; billing alerts and access policies will be enforced.
-
 ## Technical Resources
-### Backend: Supabase + PostgreSQL + AWS
+
+Documentation and references the team expects to rely on this term.
+
+**Platform and backend**
+
+* [Supabase documentation](https://supabase.com/docs) - Postgres, Auth, Storage and Row Level Security. The Row Level Security guide matters most to us, since our current authorisation gap is that permissions are not enforced server side.
+* [Supabase Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security) - the mechanism we plan to use to stop users editing their own roles.
+* [PostgREST](https://postgrest.org/) - Supabase's query layer. Worth reading because a Google Apps Script in this repo writes to the database through it directly.
+* [What is Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) - inspection images and generated PDFs are stored here. Presigned URL docs are the relevant part.
+
+**Frontend and mobile**
+
+* [Next.js App Router](https://nextjs.org/docs/app) - the web application is built on this. The Server Actions page is important: every exported function in a `'use server'` file is a public endpoint, which is the root of our authorisation problem.
+* [React documentation](https://react.dev/)
+* [Expo documentation](https://docs.expo.dev/) - the mobile application uses Expo. EAS Build is what we would need for publishing.
+* [Leaflet](https://leafletjs.com/reference.html) - the existing map and heat map.
+
+**Geographic data**
+
+* [OpenStreetMap wiki](https://wiki.openstreetmap.org/) - the tile source the map uses.
+* [OpenCage geocoding API](https://opencagedata.com/api) - currently used to look up site positions from their names. The free tier allows 2,500 requests a day, which is a constraint on any map work.
+
+**Testing and delivery**
+
+* [Jest](https://jestjs.io/docs/getting-started) and [Cypress](https://docs.cypress.io/) - the test frameworks already in the repository.
+* [GitHub Actions](https://docs.github.com/en/actions) - including self hosted runners, which the Sprint 3 rubric requires.
+* [Vercel documentation](https://vercel.com/docs) - the deployment platform.
+
+**Process**
+
+* [Belbin team roles](https://www.belbin.com/about/belbin-team-roles)
+* [Nielsen's ten usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/) - required by the Sprint 3 user interface rubric.
+* [WCAG contrast checker](https://accessibilityaid.com/free-tools/colour-contrast-checker) - also Sprint 3.
+
+## Backend: Supabase + PostgreSQL + AWS
   * [Supabase Documentation](https://supabase.com/docs)  
   * [PostgreSQL Documentation](https://www.postgresql.org/docs/) 
   * [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) 

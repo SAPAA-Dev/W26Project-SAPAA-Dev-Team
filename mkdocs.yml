@@ -1,4 +1,4 @@
-site_name: Winter 2026 SAPAA Project
+site_name: Fall 2026 SAPAA Project
 theme:
   name: material 
   features: 
@@ -19,6 +19,7 @@ theme:
 nav:
   - Project Documentation: 'index.md'
   - Project Management: 'project-management.md'
+  - Issues Backlog: 'issues.md'
   - Software Design: 'software-design.md'
   - Media Storage Architecture: 'aws-architecture.md'
   - Teamwork: 'teamwork.md'
@@ -32,4 +33,8 @@ nav:
   - Job Documentation: 'job-documentation.md'
   - Deployment Instructions: 'Deployment-manual.md'
   - Static Analysis: 'sonar-qube.md'
+  - FNR User Manual: 'FNR-user-manual.md'
+  - Handover Investigation: 'investigation/README.md'
+  - SAPAA Website Inventory: 'investigation/sapaastewards-site-inventory.md'
+  - Story Changelog (Sept 25): 'investigation/story-changelog-2026-09-25.md'
   

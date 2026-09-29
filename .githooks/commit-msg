@@ -9,9 +9,10 @@ TYPES='feat|fix|docs|chore|refactor|style|perf|build|ci|test|del'
 msg=$(head -n 1 "$1")
 
 # Let git's own generated messages through (merge, revert, autosquash).
-case "$msg" in
-  Merge\ *|Revert\ *|fixup!\ *|squash!\ *) exit 0 ;;
-esac
+# Use grep for more robust matching since case patterns can be finicky
+if echo "$msg" | grep -qE '^(Merge|Revert|fixup!|squash!)'; then
+  exit 0
+fi
 
 if ! printf '%s' "$msg" | grep -Eq "^\(($TYPES)\): ?.*[^[:space:]]"; then
   echo "commit rejected: message must be \"(<type>): <description>\"" >&2
