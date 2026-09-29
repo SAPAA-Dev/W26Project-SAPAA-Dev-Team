@@ -1,0 +1,18 @@
+name: Task
+description: Docs, setup, research or anything that isn't a user story or a bug
+projects: ["UAlberta-CMPUT401/168"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What needs doing
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: How the person reviewing it knows it's finished.
+      placeholder: "- [ ] ..."
+    validations:
+      required: true

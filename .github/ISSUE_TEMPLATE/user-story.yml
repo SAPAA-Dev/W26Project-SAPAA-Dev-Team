@@ -1,0 +1,53 @@
+name: User story
+description: A user story from docs/index.md, with points and acceptance tests
+title: "US x.y.z - "
+labels: ["feature"]
+projects: ["UAlberta-CMPUT401/168"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use the same US number as `docs/index.md`. After creating the issue, set the **milestone** (Sprint 1-5) in the sidebar.
+  - type: textarea
+    id: story
+    attributes:
+      label: Story
+      description: As a ..., I want ..., so that ...
+      placeholder: As a steward, I want to ..., so that ...
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance tests
+      description: One per line. Each one should be something a reviewer can actually check.
+      placeholder: |
+        1. Should be able to ...
+        2. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: points
+    attributes:
+      label: Story points
+      options: ["1", "2", "3", "5", "8", "13"]
+    validations:
+      required: true
+  - type: dropdown
+    id: moscow
+    attributes:
+      label: MoSCoW
+      options: ["Must", "Should", "Could", "Won't"]
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options: ["webapp", "mobile (FNR)", "database", "docs"]
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Dependencies, open questions, links to wireframes or client notes.

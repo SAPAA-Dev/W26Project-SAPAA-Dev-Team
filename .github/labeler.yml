@@ -1,0 +1,13 @@
+# Labels PRs by the folders they touch. Used by .github/workflows/pr-labels.yaml.
+webapp:
+  - changed-files:
+      - any-glob-to-any-file: webapp/**
+mobile:
+  - changed-files:
+      - any-glob-to-any-file: FNR/**
+docs:
+  - changed-files:
+      - any-glob-to-any-file: [docs/**, mkdocs.yml, README.md]
+infra:
+  - changed-files:
+      - any-glob-to-any-file: [.github/**, .githooks/**]

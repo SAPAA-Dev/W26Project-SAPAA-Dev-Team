@@ -1,0 +1,41 @@
+name: Bug
+description: Something in the webapp or mobile app is broken
+title: "Bug: "
+labels: ["bug"]
+projects: ["UAlberta-CMPUT401/168"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where
+      options: ["webapp", "mobile (FNR)", "both", "not sure"]
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Log in as a steward
+        2. Go to ...
+        3. Click ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happens instead
+      description: Paste error messages or add screenshots.
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Browser / device
+      placeholder: Chrome 140 on macOS, iPhone 15 on iOS 26, Android emulator ...

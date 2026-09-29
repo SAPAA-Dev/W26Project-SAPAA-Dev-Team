@@ -116,3 +116,13 @@ never blocks the merge.
 
 **Code owners.** `.github/CODEOWNERS` auto-requests reviewers based on the files a PR
 touches. An owner's approval isn't required beyond the normal 2.
+
+## Issues and the project board
+
+New issues go through a template (user story, bug or task). Each one lands on the
+[SAPAA project board](https://github.com/orgs/UAlberta-CMPUT401/projects/168) automatically.
+Set the milestone in the sidebar, then set **Sprint** and **MoSCoW** on the board. Status
+moves Todo → In progress → In review (PR open) → Done.
+
+PRs are labelled by the folders they touch (`webapp`, `mobile`, `docs`, `infra`), so you can
+filter the PR list down to your area.
