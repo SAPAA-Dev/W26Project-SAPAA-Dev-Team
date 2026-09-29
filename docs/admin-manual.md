@@ -1,8 +1,5 @@
-<div style="width: 100%; max-width: 900px; margin: 2rem auto; border: 1px solid #444; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-    <embed 
-        src="../assets/SAPAA SIR Admin User Manual.pdf" 
-        type="application/pdf" 
-        width="100%" 
-        height="1150px" 
-    />
-</div>
+# Admin Manual
+
+The Winter 2026 admin manual (PDF) is not published on this site, because its screenshots show
+real user email addresses. The file is in the repository at
+`internal/SAPAA SIR Admin User Manual.pdf`.

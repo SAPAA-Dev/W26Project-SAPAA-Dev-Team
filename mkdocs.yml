@@ -17,8 +17,10 @@ theme:
         icon: material/weather-sunny
         name: Switch to light mode
 nav:
+  - Home: 'index.md'
   - Project Documentation: 'project-overview.md'
   - User Stories: 'user-stories.md'
+  - User Story Summaries: 'user-stories-summaries.md'
   - Project Management: 'project-management.md'
   - Issues Backlog: 'issues.md'
   - Software Design: 'software-design.md'
@@ -35,7 +37,4 @@ nav:
   - Deployment Instructions: 'Deployment-manual.md'
   - Static Analysis: 'sonar-qube.md'
   - FNR User Manual: 'FNR-user-manual.md'
-  - Handover Investigation: 'investigation/README.md'
-  - SAPAA Website Inventory: 'investigation/sapaastewards-site-inventory.md'
-  - Story Changelog (Sept 25): 'investigation/story-changelog-2026-09-25.md'
   

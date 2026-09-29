@@ -365,66 +365,75 @@
 > 4. Given I am a Steward, When I request the delete, Then the server refuses and the report stays unchanged
 > 5. Given the delete cannot complete, an error is shown and the report and its answers stay unchanged
 
+#### US 7.0.9 - Record Audio During a Site Inspection | Story Points: 5
+> As a **Steward**, **I want** to record audio during a site inspection, **so that** I can capture observations without typing in the field
+
+> **Acceptance Tests**
+
+> 1. Given I am filling out a SIR, When I start an audio recording, Then the recording is saved and linked to that SIR
+> 2. Given a recording is saved, When I open the SIR, Then I can play back the recording
+> 3. Given I am a Steward, When I request a recording from a SIR I did not submit, Then the server refuses
+> 4. Given the recording fails to save, When I check the SIR, Then the stored report is unchanged and an error is shown
+
 ## MoSCoW
 
 ### Must Have
 
-*10 stories, 38 story points.*
+*15 stories, 61 story points.*
 
 | ID | Story | Points |
 |---|---|---|
 | US 1.0.1 | Add User Profiles | 5 |
 | US 1.0.2 | Allow Editing Own Profile | 3 |
-| US 1.0.3 | Show history of Site Inspections on a Steward's Profile | 2 |
 | US 1.0.4 | Aggregate User Activity and Contributions on a user's profile | 2 |
-| US 2.0.1 | View Sites and Past Visits on an Interactive Map | 8 |
 | US 2.0.2 | Allow Admins to Add New Sites | 3 |
+| US 2.0.4 | Delete a Site | 8 | *
+| US 2.0.5 | Update a Site | 5 | *
 | US 2.0.8 | View a Site's Details From the Map | 3 |
 | US 2.0.9 | Upload a GPX Track of a Site Visit | 5 |
-| US 5.0.2 | Reset a Forgotten Password | 2 |
-| US 6.0.1 | Store Each Site's Geometry From the Shared Source | 5 |
-
-### Should Have
-
-*13 stories, 55 story points.*
-
-| ID | Story | Points |
-|---|---|---|
-| US 2.0.3 | Deactivate and Reactivate a Site | 3 |
-| US 2.0.5 | Update a Site | 5 |
-| US 2.0.6 | Search and Filter Sites by County on the Map | 5 |
 | US 2.0.10 | Add links to Site Page | 1 |
 | US 2.0.11 | Show Safety Information for a Site | 5 |
 | US 3.0.3 | Export all digital files from SIR-SAPAA | 8 |
+| US 4.0.6 | Demote Photo Identifier to optional field | 1 |
+| US 5.0.2 | Reset a Forgotten Password | 2 |
+| US 6.0.1 | Store Each Site's Geometry From the Shared Source | 5 |
+| US 7.0.7 | Hide Fields on a SIR Before Export | 5 |
+
+### Should Have
+
+*12 stories, 63 story points.*
+
+| ID | Story | Points |
+|---|---|---|
+| US 1.0.3 | Show history of Site Inspections on a Steward's Profile | 2 |
+| US 2.0.1 | View Sites and Past Visits on an Interactive Map | 8 |
+| US 2.0.3 | Deactivate and Reactivate a Site | 3 |
+| US 2.0.6 | Search and Filter Sites by County on the Map | 5 |
+| US 3.0.2 | Steward Designation | 5 |
 | US 4.0.4 | Edit My Previous Inspections | 5 |
 | US 4.0.5 | iNaturalist integration | 5 |
-| US 4.0.6 | Demote Photo Identifier to optional field | 1 |
 | US 5.0.4 | Sign Out Properly | 2 |
 | US 7.0.5 | Delete an Image and Clean Up After It | 5 |
-| US 7.0.7 | Hide Fields on a SIR Before Export | 5 |
+| US 7.0.6 | Export More Than 50 Site Inspection Reports | 5 |
 | US 7.0.8 | Delete a Site Inspection Report | 5 |
+| US 4.0.2 | Offline and Online Map Layers | 13 |
 
 ### Could Have
 
-*9 stories, 46 story points.*
+*6 stories, 28 story points.*
 
 | ID | Story | Points |
 |---|---|---|
 | US 1.0.5 | Earn Points for Inspection Activity | 5 |
-| US 2.0.4 | Delete a Site | 8 |
 | US 2.0.12 | Score a Site for To-Visit Priority | 8 |
 | US 2.0.13 | Flag Site Points That Are a Year Old | 3 |
 | US 4.0.7 | Show the Top iNaturalist Observations for a Site | 5 |
 | US 7.0.1 | Let Stewards Export Their Own Reports | 2 |
 | US 7.0.3 | See All Inspections in One View | 5 |
-| US 7.0.4 | Compare One Question Across Years | 5 |
-| US 7.0.6 | Export More Than 50 Site Inspection Reports | 5 |
+
 
 ### Would Like But Won't Get
 
-*2 stories, 18 story points.*
-
-| ID | Story | Points |
-|---|---|---|
-| US 3.0.2 | Steward Designation | 5 |
-| US 4.0.2 | Offline and Online Map Layers | 13 |
+*2 stories, 10 story points.*
+| US 7.0.4 | Compare One Question Across Years | 5 |
+| US 7.0.9 | Record Audio During a Site Inspection | 5 |
