@@ -1,0 +1,95 @@
+/*
+ * Lucidchart-style theme for SAPAA Mermaid ER diagrams.
+ *
+ * Mermaid's ER classDef applies a fill to alternating attribute rows as well
+ * as the entity header. This stylesheet targets the generated SVG structure so
+ * domain colors remain in the header while attribute rows alternate between
+ * white and light grey.
+ */
+
+body {
+  background: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+svg.erDiagram {
+  background-color: #ffffff;
+}
+
+.node .outer-path > path:first-child {
+  fill: #ffffff !important;
+}
+
+.node.auth .outer-path > path:first-child {
+  fill: #bff3c9 !important;
+}
+
+.node.access .outer-path > path:first-child {
+  fill: #b9eee7 !important;
+}
+
+.node.inspection .outer-path > path:first-child {
+  fill: #cfe4ff !important;
+}
+
+.node.form .outer-path > path:first-child {
+  fill: #8f87f5 !important;
+}
+
+.node.place .outer-path > path:first-child {
+  fill: #ff9638 !important;
+}
+
+.node.history .outer-path > path:first-child {
+  fill: #e2e2e2 !important;
+}
+
+.node .row-rect-odd > path:first-child {
+  fill: #ffffff !important;
+}
+
+.node .row-rect-even > path:first-child {
+  fill: #f0f1f2 !important;
+}
+
+.node .outer-path > path:last-child,
+.node .row-rect-odd > path:last-child,
+.node .row-rect-even > path:last-child {
+  stroke: #4a4a4a !important;
+  stroke-width: 1px !important;
+}
+
+.node .label {
+  color: #111111 !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 12px !important;
+}
+
+.node .label.name {
+  font-weight: 600 !important;
+  text-align: center !important;
+}
+
+.relationshipLine {
+  fill: none !important;
+  stroke: #777777 !important;
+  stroke-width: 1px !important;
+}
+
+.marker {
+  fill: #ffffff !important;
+  stroke: #777777 !important;
+  stroke-width: 1px !important;
+}
+
+.edgeLabel {
+  background-color: #ffffff !important;
+  color: #555555 !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 10px !important;
+}
+
+.relationshipLabelBox {
+  fill: #ffffff !important;
+  opacity: 0.92 !important;
+}

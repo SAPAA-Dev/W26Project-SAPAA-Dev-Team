@@ -1,0 +1,289 @@
+classDiagram
+    direction LR
+    %% CLASS DIAGRAM, PART 1 OF 2: SERVICES FOR THE 34 CURRENT USER STORIES
+    %% Part 2 (data models) is UML_Class_Diagram_Models.mmd.
+    %% Source: docs/user-stories.md.
+    %% How to read this diagram:
+    %% - A class with the stereotype <<new ...>> is proposed. It shows the stories.
+    %% - In an existing class, an operation that ends with [NEW x.y.z] is
+    %%   proposed, and [CHANGE x.y.z] is an existing operation that a story
+    %%   changes. All other operations exist in the code with the same name.
+    %% - A route class is one route.ts file. The stereotype gives the path.
+    %%   The operations are the HTTP handlers (GET, POST) in that file.
+    %% - Proposed operation names are the same as in the Sequence_US_*.mmd files.
+    %% - Only the classes that a story touches are shown. Existing code that
+    %%   no story touches is not shown: webapp/utils/form-actions.ts,
+    %%   webapp/utils/admin-actions.ts, the heatmap route, /api/gallery,
+    %%   /api/homepage-images, /api/user-gallery/*, FNR/src/services/database.ts,
+    %%   FNR/src/services/pdfGenerator.ts, FNR/src/services/adminAuth.ts.
+    %% - The web app uses the W26_* tables. The mobile app uses the legacy
+    %%   tables. See ER_Diagram.mmd and ER_Diagram_Legacy.mmd.
+
+    namespace WebApp {
+        class WebAuthService {
+            <<webapp/services/auth.ts>>
+            +login(email, password) success, error
+            +signup(email, password) success, error, needsConfirmation
+            +signInWithGoogle() success, error
+            +signInWithMicrosoft() success, error
+            +logout() void [CHANGE 5.0.4]
+            +requestPasswordReset(email) void [NEW 5.0.2]
+            +verifyResetCode(email, code) Session [NEW 5.0.2]
+            +updatePassword(newPassword) void [NEW 5.0.2]
+        }
+
+        class AuthorizationService {
+            <<new: server-side access control>>
+            +getCurrentUser() AuthenticatedUser
+            +requireAuthenticatedUser() AuthenticatedUser
+            +requireAdmin() AuthenticatedUser
+            +requireOwner(ownerId) AuthenticatedUser
+        }
+
+        class AuthenticatedUser {
+            <<trusted server session value>>
+            +id: string
+            +role: Admin or Steward
+        }
+
+        class SiteQueries {
+            <<webapp/utils/supabase/queries.ts>>
+            +getSitesOnline() SiteSummary[]
+            +getSiteByName(namesite) SiteSummary[] [CHANGE 2.0.3, USED 2.0.8]
+            +getCounties() County[]
+            +updateSite(id, namesite, ab_county) void [CHANGE 2.0.3]
+            +toggleSiteActive(id, is_active) void [CHANGE 2.0.3]
+            +getSiteMapData() Site[] [NEW 2.0.1]
+            +createSite(name, county, boundary) Site [NEW 2.0.2]
+            +findSitesWithName(name) Site[] [NEW 2.0.2]
+            +getUnmatchedKmlSites() KmlSite[] [NEW 2.0.2]
+            +getSiteDeleteImpact(siteId) record counts [NEW 2.0.4]
+            +deleteSite(siteId) void [NEW 2.0.4]
+            +getSitePageFields(siteId) SitePageField[] [NEW 2.0.5]
+            +updateSitePageFields(siteId, fields, providedByStewardId, sourceResponseId) void [NEW 2.0.5]
+            +designateSiteSteward(siteId, stewardId) void [NEW 3.0.2]
+        }
+
+        class InspectionQueries {
+            <<webapp/utils/supabase/queries.ts>>
+            +addSiteInspectionReport(siteId, userId, inspectionDate) number
+            +uploadSiteInspectionAnswers(batchArray) void
+            +insertInspectionAttachments(rows) void [CHANGE 4.0.5]
+            +rollbackSiteInspectionSubmission(responseId) void [CHANGE 7.0.5]
+            +setFormResponseActive(responseId, isActive) void
+            +deleteFormResponse(responseId) void [NEW 7.0.8]
+            +getFormResponsesBySite(siteName) FormResponse[] [CHANGE 1.0.3, 7.0.4]
+            +getFormResponseById(responseId) answers
+            +updateSiteInspectionAnswers(responseId, batchArray, inspectionDate) void [CHANGE 4.0.4]
+            +getResponseOwnerId(responseId) string or null
+            +getSirSummary(fromDate, toDate) SirSummary [NEW 7.0.3]
+        }
+
+        class ProfileService {
+            <<new 1.0.1 1.0.2 1.0.3 3.0.2 4.0.5: server actions>>
+            +getStewardProfile(userId) Profile, ActivityStats, SIR list
+            +updateOwnProfile(fields) Profile
+            +setHiddenQuestions(questionIds) void
+            +searchStewards(text) Profile[]
+        }
+
+        class ActivityPointsService {
+            <<new 1.0.5: server actions>>
+            +awardActivityPoints(activity, sourceId) void
+            +getActivityPointsTotal(userId) number
+        }
+
+        class SiteSafetyPriorityActions {
+            <<new 2.0.11 2.0.12 2.0.13: server actions>>
+            +getSiteSafety(siteId) SiteSafety
+            +updateSiteSafety(siteId, fields) void
+            +getSitePriority(siteId) SitePriority, needsReassessment
+            +updateSitePriorityScores(siteId, scores) void
+            +computeVisitPriority(scores) number
+        }
+
+        class SiteObservationsPanel {
+            <<new 4.0.7: site page component>>
+            +getTopObservations(siteBoundary) INatObservation[]
+        }
+
+        class HomepageImageActions {
+            <<webapp/utils/supabase/queries.ts>>
+            +insertHomepageImageUpload(rows) void [CHANGE 1.0.5]
+        }
+
+        class GeometryLoadJob {
+            <<new 6.0.1>>
+            +loadGeometriesFromKml() matched and unmatched counts
+        }
+
+        class GpxTrackActions {
+            <<new 2.0.9 2.0.1: server actions>>
+            +saveGpxTrack(siteId, storageKey) GpxTrack
+            +getSiteTracks(siteId) presigned GET URLs
+        }
+
+        class GpxPresignRoute {
+            <<new 2.0.9: GPX presign route, path not decided>>
+            +POST(siteId, fileName, fileSize) upload URL, key
+        }
+
+        class NewReportPage {
+            <<webapp/app/detail/[namesite]/new-report/page.tsx>>
+            +handleSubmit() void [CHANGE 4.0.5, 1.0.5]
+            +uploadFileToS3(uploadUrl, file) void
+            +selectINaturalistPhotos(inatUsername) photos [NEW 4.0.5]
+        }
+
+        class PresignRoute {
+            <<route /api/s3/presign>>
+            +POST(fileInfo) PresignedUrl
+        }
+
+        class SiteImagesRoute {
+            <<route /api/site-images>>
+            +GET(siteid, responseid) attachment images
+        }
+
+        class SiteGalleryRoute {
+            <<route /api/sites/[siteId]/gallery>>
+            +GET(siteId) attachment images
+        }
+
+        class HomepageImagesRoute {
+            <<route /api/homepage-images/[siteId]>>
+            +GET(siteId) homepage upload images
+        }
+
+        class ImageDeleteRoute {
+            <<new 7.0.5: image delete route>>
+            +DELETE(imageKind, imageId) void
+        }
+
+        class PdfRoute {
+            <<route /api/pdf>>
+            +POST(PdfRequest) jobId [CHANGE 7.0.1, 7.0.6, 7.0.7]
+        }
+
+        class PdfStatusRoute {
+            <<route /api/pdf/status/[jobId]>>
+            +GET(jobId) status, downloadUrl [CHANGE 7.0.1]
+        }
+
+        class PdfJobProcessor {
+            <<webapp/lib/pdf/processPdfJob.ts>>
+            +processPdfJob(jobId) void [CHANGE 7.0.6]
+        }
+
+        class PdfDataFetcher {
+            <<webapp/lib/pdf/pdfDataFetcher.ts>>
+            +fetchReportData(PdfRequest) PdfReportData [CHANGE 7.0.7]
+        }
+
+        class ExportRoutes {
+            <<new 3.0.3: proposed routes>>
+            +createExportJob() jobId [NEW 3.0.3]
+            +getExportJobStatus(jobId) ExportJob [NEW 3.0.3]
+        }
+
+        class GeocodeRoute {
+            <<route /api/geocode>>
+            +GET(q) latitude, longitude [CHANGE 6.0.1]
+        }
+
+        class OfflineMapService {
+            <<new 4.0.2: browser tile cache>>
+            +downloadArea(bounds, minZoom, maxZoom) OfflineMapArea
+            +getDownloadStatus(areaId) string
+            +isInsideDownloadedArea(point) boolean
+        }
+    }
+
+    namespace MobileApp {
+        class StewardLogGeocoder {
+            <<FNR/src/services/openCage.ts>>
+            +getCoordinatesFromName(namesite) lat, lng
+        }
+    }
+
+    class SupabaseBackend {
+        <<external>>
+        PostgreSQL and Auth
+    }
+
+    class AwsS3 {
+        <<external>>
+        Images, PDFs, GPX files, export zips
+    }
+
+    class INaturalistApi {
+        <<external, new 4.0.5 4.0.7>>
+        api.inaturalist.org
+    }
+
+    class OpenCageApi {
+        <<external>>
+    }
+
+    class MapTileServer {
+        <<external>>
+        OpenStreetMap tiles
+    }
+
+    note for InspectionQueries "CHANGE 1.0.3: getFormResponsesBySite removes answers that the steward hides.<br>CHANGE 7.0.4: it also returns the question key of each answer.<br>The site page groups answers by that key. There is no separate query."
+    note for AuthorizationService "Every protected server action gets the caller from the server session.<br>Admin checks use a trusted, server-managed role; browser UI checks are not trusted."
+    note for SiteQueries "US 2.0.8 uses Site, getSiteByName and getFormResponsesBySite.<br>deleteSite removes the Site's SIRs, answers, attachments, homepage images,<br>GPX tracks and other Site-owned rows; their S3 files are also removed."
+    note for ExportRoutes "POST /api/export calls createExportJob.<br>GET /api/export/status/[jobId] calls getExportJobStatus.<br>The ZIP includes inspection images, homepage images, GPX files and completed PDFs."
+    note for PdfDataFetcher "CHANGE 7.0.7: removes the answers of options.hiddenQuestionIds.<br>CHANGE 7.0.6: processPdfJob reads the SIRs in batches.<br>The cause of the 50 SIR limit is an open question."
+    note for ActivityPointsService "awardActivityPoints reads the caller from the session.<br>It checks the source row belongs to the caller and reads site_id from it."
+    note for NewReportPage "NEW 4.0.5: the browser calls iNaturalist. handleSubmit copies<br>each chosen photo to S3 through /api/s3/presign.<br>insertInspectionAttachments writes inat_observation_id.<br>CHANGE 4.0.6: photo identifier is optional and does not block submission."
+    note for GeocodeRoute "US 6.0.1 uses the external OpenCage API directly.<br>No application database cache is proposed."
+
+    WebAuthService --> SupabaseBackend : Auth
+    AuthorizationService --> SupabaseBackend : trusted session and role
+    AuthorizationService --> AuthenticatedUser : returns trusted caller
+    SiteQueries --> AuthorizationService : Admin for writes
+    InspectionQueries --> AuthorizationService : Admin or owner
+    ProfileService --> AuthorizationService : signed-in user or owner
+    SiteSafetyPriorityActions --> AuthorizationService : Admin for writes
+    GeometryLoadJob --> AuthorizationService : Admin or operator
+    GpxTrackActions --> AuthorizationService : signed-in user
+    ImageDeleteRoute --> AuthorizationService : Admin
+    PdfRoute --> AuthorizationService : owner or Admin
+    ExportRoutes --> AuthorizationService : Admin
+    SiteQueries --> SupabaseBackend : W26 tables
+    InspectionQueries --> SupabaseBackend : W26 tables
+    ProfileService --> SupabaseBackend : W26 tables
+    GeometryLoadJob --> SupabaseBackend : W26_kml_sites, W26_sites-pa
+    GpxTrackActions --> SupabaseBackend : W26_gpx_tracks
+    GpxTrackActions --> AwsS3 : reads and deletes GPX files
+    GpxPresignRoute --> AwsS3 : presigned PUT
+    NewReportPage --> INaturalistApi : reads observations and photos
+    NewReportPage --> ProfileService : reads and saves inat_username
+    NewReportPage --> PresignRoute : POST file details
+    NewReportPage --> AwsS3 : PUT image
+    NewReportPage --> InspectionQueries : saves the SIR
+    PresignRoute --> AwsS3 : presigned PUT
+    SiteImagesRoute --> AwsS3 : presigned GET
+    SiteGalleryRoute --> AwsS3 : presigned GET
+    HomepageImagesRoute --> AwsS3 : presigned GET
+    ImageDeleteRoute --> SupabaseBackend : W26_attachments, W26_homepage-image-uploads
+    ImageDeleteRoute --> AwsS3 : DeleteObject
+    PdfRoute --> SupabaseBackend : S26_pdf_jobs
+    PdfRoute ..> PdfJobProcessor : after()
+    PdfJobProcessor --> AwsS3 : stores PDF
+    PdfStatusRoute --> AwsS3 : presigned GET
+    ExportRoutes --> SupabaseBackend : W26_export_jobs
+    ExportRoutes --> AwsS3 : reads images, GPX and PDFs and stores zip
+    GeocodeRoute --> OpenCageApi : geocodes
+    StewardLogGeocoder --> OpenCageApi : geocodes from the phone
+    OfflineMapService --> MapTileServer : downloads tiles
+    NewReportPage --> ActivityPointsService : after a successful submit
+    HomepageImageActions --> ActivityPointsService : after a successful insert
+    HomepageImageActions --> SupabaseBackend : W26_homepage-image-uploads
+    ActivityPointsService --> SupabaseBackend : W26_activity_points
+    ProfileService --> ActivityPointsService : points total
+    SiteSafetyPriorityActions --> SupabaseBackend : W26_site_safety, W26_site_priority
+    SiteObservationsPanel --> INaturalistApi : top 5 observations
+    PdfJobProcessor --> PdfDataFetcher : reads SIRs
+    InspectionQueries --> AwsS3 : deletes files [NEW 7.0.8]

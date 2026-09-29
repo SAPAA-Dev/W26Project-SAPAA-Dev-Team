@@ -1,0 +1,112 @@
+---
+title: "US 2.0.9: Upload a GPX Track of a Site Visit"
+config:
+  theme: base
+  sequence:
+    actorMargin: 60
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 38
+    noteMargin: 16
+    mirrorActors: true
+    width: 190
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Steward
+    participant Site as Site page<br/>/detail/[namesite]
+    participant Presign as GPX presign route<br/>(Proposed)
+    participant S3 as AWS S3
+    participant Save as Server action<br/>saveGpxTrack<br/>(Proposed)
+    participant DB as Supabase<br/>PostgreSQL
+
+    Note over Steward,DB: Covers US 2.0.9. No GPX upload exists in the code. All steps are Proposed. The flow copies the image upload<br/>pattern: /api/s3/presign-homepage-images, a direct PUT to S3, then a database row (insertHomepageImageUpload).<br/>Storage is not decided. This diagram shows the minimal option: the GPX file in S3 and one track row in the database.
+
+    Steward->>Site: Choose a file and select Upload
+    activate Site
+    Site->>Site: Check the file extension and size
+    alt Extension is not .gpx (AT2)
+        Site-->>Steward: Show "Only GPX files are accepted"
+    else File is larger than the maximum (AT5)
+        Site-->>Steward: Show a refusal that names the size limit
+    else Extension and size are correct
+        Site->>Presign: POST siteId, file name, file size
+        activate Presign
+        Presign->>Presign: getUser() and check approved account on server
+        alt No session or account not approved
+            Presign-->>Site: Refuse (401)
+            Site-->>Steward: Go to /login
+        else Extension or size is wrong (server check)
+            Presign-->>Site: Refuse (400) with the size limit
+            Site-->>Steward: Show the refusal
+        else Request is correct
+            Presign->>S3: Create a presigned PUT URL for a new key
+            S3-->>Presign: Upload URL
+            Presign-->>Site: Upload URL and storage key
+            deactivate Presign
+            Site->>S3: PUT the GPX file
+            alt Upload fails
+                S3-->>Site: Error
+                Site-->>Steward: Show "Upload failed, try again". Nothing is saved.
+            else Upload done
+                S3-->>Site: OK
+                Site->>Save: saveGpxTrack(siteId, storageKey)
+                activate Save
+                Save->>Save: Check session. Take the user id from the session, not from the client.
+                Save->>S3: Get the uploaded file
+                S3-->>Save: GPX file
+                Save->>Save: Parse the GPX and count the track points (AT3)
+                alt Not valid GPX or no track points
+                    Save->>S3: Delete the uploaded file
+                    Save-->>Site: Refuse (422)
+                    Site-->>Steward: Show "Not a valid GPX track". Nothing is saved.
+                else Valid track
+                    Save->>DB: Insert W26_gpx_tracks row: site_id, user_id,<br/>storage key, point count (AT1)
+                    activate DB
+                    alt Insert fails
+                        DB-->>Save: Error
+                        Save->>S3: Delete the uploaded file
+                        Save-->>Site: Error (500)
+                        Site-->>Steward: Show the error. Nothing is saved.
+                    else Insert done
+                        DB-->>Save: Track id
+                        Save-->>Site: Track saved
+                        Site-->>Steward: Show "Track saved". The map can draw it (US 2.0.1 AT2).
+                    end
+                    deactivate DB
+                end
+                deactivate Save
+            end
+        end
+    end
+    deactivate Site
+
+    Note over Steward,DB: The file is stored without change, so a read-back gives the same track points (AT4).<br/>Open questions: where tracks are stored (S3 file or points in the database), the maximum file size,<br/>and whether a Steward can also upload from inside a SIR.<br/>Open question: if the delete of an invalid or unsaved file fails, the file stays in S3. AT 3 says nothing is saved.

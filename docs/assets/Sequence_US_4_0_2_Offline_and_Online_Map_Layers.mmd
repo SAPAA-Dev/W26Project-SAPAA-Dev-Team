@@ -1,0 +1,81 @@
+---
+title: "US 4.0.2 Offline and Online Map Layers"
+config:
+  theme: base
+  sequence:
+    actorMargin: 75
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 40
+    noteMargin: 16
+    mirrorActors: false
+    width: 190
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Steward
+    participant Map as Web map page<br/>Leaflet (react-leaflet)
+    participant Cache as Browser tile cache<br/>(proposed)
+    participant Tiles as Tile server<br/>OpenStreetMap today
+
+    Note over Steward,Tiles: Covers US 4.0.2 (MoSCoW: Would Like But Won't Get). Platform: web,<br/>as the client said on Sep 25. "(proposed)" = the step is not in the code today.
+
+    Steward->>Map: Select an area and Download for offline use (proposed)
+    Map->>Map: List tiles for the area and zoom levels (proposed)
+    loop Each tile in the area
+        Map->>Tiles: GET tile
+        alt Tile is received
+            Tiles-->>Map: Tile image
+            Map->>Cache: Store tile with area name (proposed)
+        else Request fails
+            Map->>Map: Count failed tile
+        end
+    end
+    Map-->>Steward: Show download status: complete,<br/>or partial with number of failed tiles (AT 1)
+
+    alt Device is online (AT 4)
+        Steward->>Map: Pan or zoom
+        Map->>Tiles: GET live tiles
+        Tiles-->>Map: Tiles
+        Map-->>Steward: Show live map. The cache is not used
+    else Device is offline (AT 2, AT 3)
+        Steward->>Map: Pan or zoom
+        Map->>Cache: Get tiles (proposed)
+        alt Tiles are inside a downloaded area
+            Cache-->>Map: Cached tiles
+            Map-->>Steward: Show map. Pan and zoom work
+        else Tiles are outside all downloaded areas
+            Cache-->>Map: No tile
+            Map-->>Steward: Show a "not downloaded" mark<br/>on each missing tile
+        end
+    end
+
+    Note over Map,Tiles: The web page must also open with no network.<br/>Today middleware.ts calls Supabase Auth on each request.

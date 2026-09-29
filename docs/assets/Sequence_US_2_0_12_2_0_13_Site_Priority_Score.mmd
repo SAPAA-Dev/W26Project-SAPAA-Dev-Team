@@ -1,0 +1,75 @@
+---
+title: "US 2.0.12, 2.0.13 Site To-Visit Priority and Reassessment Reminder"
+config:
+  theme: base
+  sequence:
+    actorMargin: 75
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 40
+    noteMargin: 16
+    mirrorActors: false
+    width: 190
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Admin
+    actor Steward
+    participant Page as Site page<br/>app/detail/[namesite]
+    participant Server as Server actions<br/>SiteSafetyPriorityActions (proposed)
+    participant DB as Supabase DB<br/>W26_site_priority (proposed)
+
+    Note over Admin,DB: Covers US 2.0.12 and 2.0.13. No priority scores exist in the code today.<br/>"(proposed)" = the step is not in the code today.
+
+    Note over Admin,DB: Save the three scores (US 2.0.12 AT 1, AT 5, US 2.0.13 AT 3)
+    Admin->>Page: Enter points for abuses, biological imperatives<br/>and time since the last visit, then Save
+    Page->>Server: updateSitePriorityScores(siteId, scores) (proposed)
+    Server->>Server: Check caller is Admin from a trusted role source
+    alt Caller is not Admin (US 2.0.12 AT 5)
+        Server-->>Page: Refused. Scores stay the same
+    else Caller is Admin
+        Server->>DB: Upsert W26_site_priority row.<br/>Set points_saved_at to now and saved_by to the caller
+        Server-->>Page: Saved. The reminder is absent (US 2.0.13 AT 3)
+    end
+
+    Note over Admin,DB: Show the priority (US 2.0.12 AT 2, AT 3, AT 4, US 2.0.13 AT 1, AT 2, AT 4)
+    Steward->>Page: Open a Site page
+    Page->>Server: getSitePriority(siteId) (proposed)
+    Server->>DB: Read the W26_site_priority row
+    DB-->>Server: Three scores and points_saved_at
+    Server->>Server: computeVisitPriority(scores). Same scores give the same priority
+    opt Caller is Admin and points_saved_at is more than one year ago
+        Server->>Server: Add needsReassessment = true (US 2.0.13)
+    end
+    Server-->>Page: Priority and three scores. needsReassessment only for Admins
+    Page-->>Steward: Show priority and three scores. No reminder (US 2.0.13 AT 4)
+
+    Note over Admin,DB: The server calculates the priority and the reminder, so each client shows the same values.<br/>Open questions: the formula of computeVisitPriority, and if "time since the last visit"<br/>is typed by an Admin or calculated from the newest W26_form_responses.inspection_date.

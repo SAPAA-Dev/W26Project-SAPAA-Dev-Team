@@ -1,0 +1,247 @@
+---
+config:
+  layout: elk
+---
+erDiagram
+    %% PROPOSED SCHEMA: WEB APP AFTER THE 34 CURRENT USER STORIES
+    %% Source: docs/user-stories.md (Sep 25 2026 stories and the stories of #42). This is a proposal, not
+    %% the database. The current schema is in ER_Diagram.mmd (web app) and
+    %% ER_Diagram_Legacy.mmd (mobile app and Google Sheets).
+
+    %% How to read this diagram:
+    %% - A table name that starts with EXISTING is in the database now.
+    %% - A table name that starts with NEW is proposed. It shows the stories.
+    %% - In an EXISTING table, a column with "NEW US x.y.z" is proposed.
+    %%   Other columns exist now. Existing tables show only the key columns
+    %%   and the columns that a story uses.
+    %% - All proposed items are in the web app system (W26_*). No story
+    %%   needs a change to luperson or to the legacy tables.
+
+    %% Stories that need no new table or column:
+    %% - US 1.0.4 activity stats: count W26_form_responses and W26_answers.
+    %% - US 2.0.3 deactivate and reactivate: W26_sites-pa.is_active exists.
+    %% - US 2.0.4 delete a site: delete all Site-owned rows and their S3 files.
+    %%   Preserve the shared KML source and user profiles.
+    %% - US 2.0.6 filter by county, US 2.0.8 site details from the map.
+    %% - US 4.0.2 offline map layers: tiles stay in browser storage only.
+    %% - US 4.0.4 edit own SIR: the edit page exists; ownership is user_id.
+    %% - US 4.0.6 optional identifier: W26_attachments.identifier can be NULL.
+    %% - US 5.0.2 password reset, US 5.0.4 sign out: Supabase Auth.
+    %% - US 7.0.1 steward PDF export: S26_pdf_jobs exists; the access rule
+    %%   changes.
+    %% - US 7.0.3 all-SIR summary, US 7.0.4 one question across years:
+    %%   queries on W26_answers, grouped by the question key (Q-number).
+    %% - US 4.0.7 top iNaturalist observations: live call to iNaturalist.
+    %% - US 7.0.6 export more than 50 SIRs, US 7.0.7 hide fields: S26_pdf_jobs
+    %%   request_payload keeps selectedResponseIds and hiddenQuestionIds.
+    %% - US 7.0.8 delete a SIR: delete the W26_form_responses row with its
+    %%   W26_answers and W26_attachments rows in one transaction.
+    %% - US 7.0.5 delete an image: delete the W26_attachments or
+    %%   W26_homepage-image-uploads row and the S3 object.
+
+    %% US 6.0.1 uses OpenCage as an external API when fallback geocoding is
+    %% needed. There is no application database cache in this proposal.
+    %% Open question for US 6.0.1 and 2.0.2: load the KML into a table, or
+    %% read the KML file each time. W26_kml_sites is the proposed option.
+    %% US 2.0.10: the legacy table sites_report_fnr_test already has sapaaweb
+    %% and inatmap (FNR/src/services/database.ts:503). It is a possible source
+    %% for the new links.
+
+    auth_users["EXISTING auth.users"] {
+        uuid id PK
+        text email
+        jsonb raw_user_meta_data "full_name"
+        jsonb raw_app_meta_data "trusted server-managed role"
+    }
+
+    W26_profiles["NEW W26_profiles (US 1.0.1, 1.0.2)"] {
+        uuid user_id PK, FK "auth.users.id"
+        text display_name "required, US 1.0.2"
+        text contact_email "required, US 1.0.2"
+        text_array skills "US 1.0.1, 1.0.2"
+        text_array focus_areas "US 1.0.1, 1.0.2"
+        text inat_username "US 4.0.5"
+    }
+
+    W26_profile_hidden_questions["NEW W26_profile_hidden_questions (US 1.0.3)"] {
+        uuid user_id PK, FK "W26_profiles.user_id"
+        bigint question_id PK, FK "answers others cannot see"
+    }
+
+    W26_ab_counties["EXISTING W26_ab_counties"] {
+        bigint id PK
+        text county
+    }
+
+    W26_sites_pa["EXISTING W26_sites-pa"] {
+        bigint id PK
+        text namesite "US 2.0.2 duplicate warning"
+        bigint ab_county FK "US 2.0.6"
+        boolean is_active "US 2.0.3"
+        geometry boundary "NEW US 6.0.1, 2.0.1, 2.0.2: polygon, SRID 4326"
+        numeric latitude "NEW US 6.0.1: centre point"
+        numeric longitude "NEW US 6.0.1: centre point"
+        text source_feature_id FK "NEW US 6.0.1: NULL = unmatched (AT 3)"
+        text sapaaweb "NEW US 2.0.10: legacy sites_report_fnr_test has it"
+        text inatmap "NEW US 2.0.10: legacy sites_report_fnr_test has it"
+        uuid designated_steward_id FK "NEW US 3.0.2"
+    }
+
+    W26_kml_sites["NEW W26_kml_sites (US 6.0.1, 2.0.2): proposed option"] {
+        text source_feature_id PK "ID of the placemark in the Alberta KML"
+        text name
+        geometry boundary "as in the KML, SRID 4326"
+        timestamptz loaded_at
+    }
+
+    W26_site_page_fields["NEW W26_site_page_fields (US 2.0.5)"] {
+        bigint id PK
+        bigint site_id FK
+        text label
+        text value
+        boolean is_visible "include or exclude on the site page"
+        integer position
+        uuid provided_by_steward_id FK "NEW US 2.0.5: W26_profiles.user_id"
+        bigint source_response_id FK "NEW US 2.0.5: optional source SIR"
+    }
+
+    W26_gpx_tracks["NEW W26_gpx_tracks (US 2.0.9, 2.0.1)"] {
+        bigint id PK
+        bigint site_id FK
+        uuid user_id FK
+        text storage_key "S3 key of the .gpx file"
+        text filename
+        bigint file_size_bytes "limit is checked"
+        integer point_count "more than 0"
+        timestamptz created_at
+    }
+
+    W26_activity_point_values["NEW W26_activity_point_values (US 1.0.5)"] {
+        bigint site_id PK, FK
+        text activity PK "sir_submitted, photo_uploaded"
+        integer points
+    }
+
+    W26_activity_points["NEW W26_activity_points (US 1.0.5)"] {
+        bigint id PK
+        uuid user_id FK "auth.users.id"
+        bigint site_id FK
+        text activity
+        bigint source_id "response or upload id, unique with activity"
+        integer points
+        timestamptz created_at
+    }
+
+    W26_site_safety["NEW W26_site_safety (US 2.0.11)"] {
+        bigint site_id PK, FK
+        text nearest_hospital "NULL = not recorded"
+        text hazards "NULL = not recorded"
+        text other_info "NULL = not recorded"
+        uuid updated_by FK "auth.users.id"
+        timestamptz updated_at
+    }
+
+    W26_site_priority["NEW W26_site_priority (US 2.0.12, 2.0.13)"] {
+        bigint site_id PK, FK
+        integer abuse_points
+        integer biological_points
+        integer time_since_visit_points
+        timestamptz points_saved_at "US 2.0.13: reminder after one year"
+        uuid saved_by FK "auth.users.id"
+    }
+
+    W26_form_responses["EXISTING W26_form_responses"] {
+        bigint id PK
+        bigint site_id FK
+        uuid user_id FK "US 1.0.3, 4.0.4, 7.0.1"
+        date inspection_date "US 7.0.3, 7.0.4"
+        boolean is_active "US 7.0.5: files stay when false"
+    }
+
+    W26_answers["EXISTING W26_answers"] {
+        bigint id PK
+        bigint response_id FK
+        bigint question_id FK
+        text obs_value
+        text obs_comm
+    }
+
+    W26_questions["EXISTING W26_questions"] {
+        bigint id PK
+        text question_key "question key, holds the Q-number"
+        text form_question
+    }
+
+    W26_attachments["EXISTING W26_attachments"] {
+        bigint id PK
+        bigint response_id FK
+        bigint site_id FK
+        text storage_key "US 3.0.3, 7.0.5"
+        text identifier "US 4.0.6: optional"
+        bigint inat_observation_id "NEW US 4.0.5: photo is copied to S3"
+    }
+
+    W26_homepage_image_uploads["EXISTING W26_homepage-image-uploads"] {
+        bigint id PK
+        bigint site_id FK
+        uuid user_id FK
+        text storage_key "US 3.0.3, 7.0.5"
+    }
+
+    S26_pdf_jobs["EXISTING S26_pdf_jobs"] {
+        uuid id PK
+        uuid created_by FK "US 7.0.1"
+        jsonb request_payload
+        text status
+        text storage_path
+    }
+
+    W26_export_jobs["NEW W26_export_jobs (US 3.0.3)"] {
+        uuid id PK
+        uuid created_by FK "auth.users.id"
+        text status "pending, processing, complete, failed"
+        text storage_path "S3 key of the zip"
+        text error
+        timestamptz created_at
+    }
+
+    auth_users ||--o| W26_profiles : "user_id"
+    W26_profiles ||--o{ W26_profile_hidden_questions : "user_id"
+    W26_questions ||--o{ W26_profile_hidden_questions : "question_id"
+    W26_profiles |o--o{ W26_sites_pa : "designated_steward_id"
+    W26_ab_counties |o--o{ W26_sites_pa : "ab_county"
+    W26_kml_sites |o--o{ W26_sites_pa : "source_feature_id"
+    W26_sites_pa ||--o{ W26_site_page_fields : "site_id"
+    W26_profiles |o--o{ W26_site_page_fields : "provided_by_steward_id"
+    W26_form_responses |o--o{ W26_site_page_fields : "source_response_id"
+    W26_sites_pa ||--o{ W26_gpx_tracks : "site_id"
+    auth_users ||--o{ W26_gpx_tracks : "user_id"
+    W26_sites_pa ||--o{ W26_form_responses : "site_id"
+    auth_users |o--o{ W26_form_responses : "user_id"
+    W26_form_responses ||--o{ W26_answers : "response_id"
+    W26_questions ||--o{ W26_answers : "question_id"
+    W26_form_responses |o--o{ W26_attachments : "response_id"
+    W26_sites_pa |o--o{ W26_attachments : "site_id"
+    W26_sites_pa ||--o{ W26_homepage_image_uploads : "site_id"
+    auth_users |o--o{ W26_homepage_image_uploads : "user_id"
+    auth_users ||--o{ S26_pdf_jobs : "created_by"
+    auth_users ||--o{ W26_export_jobs : "created_by"
+    W26_sites_pa ||--o{ W26_activity_point_values : "site_id"
+    W26_sites_pa ||--o{ W26_activity_points : "site_id"
+    auth_users ||--o{ W26_activity_points : "user_id"
+    W26_sites_pa ||--o| W26_site_safety : "site_id"
+    W26_sites_pa ||--o| W26_site_priority : "site_id"
+
+    classDef existing fill:#cfe4ff,stroke:#333,color:#111
+    classDef proposed fill:#c9f7d4,stroke:#1a7f37,stroke-width:2px,color:#111
+
+    class auth_users,W26_ab_counties,W26_sites_pa,W26_form_responses,W26_answers,W26_questions,W26_attachments,W26_homepage_image_uploads,S26_pdf_jobs existing
+    class W26_profiles,W26_profile_hidden_questions,W26_site_page_fields,W26_gpx_tracks,W26_kml_sites,W26_export_jobs,W26_activity_point_values,W26_activity_points,W26_site_safety,W26_site_priority proposed
+
+    %% text_array means the PostgreSQL type text[].
+    %% Removed from the earlier proposal because their stories are not in
+    %% docs/user-stories.md: roles, permissions, role_permissions, person_roles,
+    %% person_place_assignments, responsibility_types, interests,
+    %% person_interests, inspection_revisions, media_files, legal_documents,
+    %% legal_acceptances, audit_log, and the draft, review, merge and
+    %% lifecycle columns.

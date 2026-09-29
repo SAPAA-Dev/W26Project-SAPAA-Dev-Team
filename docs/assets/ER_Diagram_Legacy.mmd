@@ -1,0 +1,120 @@
+---
+config:
+  layout: elk
+---
+erDiagram
+    %% CURRENT SCHEMA: LEGACY SYSTEM (verified against the code on 2026-09-28)
+    %% The mobile app (FNR/, StewardLog) and the Google Apps Script
+    %% (googleSheets/code.gs) use these tables. The web app does not use them,
+    %% except the read model sites_report_fnr_test (heatmap) and luperson.
+    %% The web app tables are in ER_Diagram.mmd.
+
+    %% Rules for this diagram:
+    %% - A column is shown only if the code reads or writes it. Evidence:
+    %%   FNR/src/services/database.ts, FNR/src/screens/, googleSheets/code.gs,
+    %%   webapp/utils/supabase/queries.ts, webapp/app/api/heatmap/route.ts.
+    %% - "unknown" means the code does not show the data type.
+    %% - code.gs copies all columns between the Google Sheet and the table.
+    %%   The column list is in the Sheet, not in the code. For inspectqcategory,
+    %%   questionmapping and lumembertype only the id is verified.
+    %% - Mermaid does not allow spaces or hyphens in names. The quoted comment
+    %%   gives the real column name when it is different.
+    %% - The three read models have no foreign keys in the code. The database
+    %%   builds them from the legacy tables (view or table is not verified).
+    %%   Their names end in _fnr or _fnr_test, but production code reads them.
+    %% - inspectheader_fnr_test, inspectdetails_fnr_test and luperson_fnr_test
+    %%   are only in commented-out code (database.ts:210, 311, 329). Not shown.
+    direction LR
+
+    luperson["SHARED luperson"] {
+        bigint id PK
+        text email "web app reads"
+        unknown displayname "mobile app writes"
+    }
+
+    lumembertype["LEGACY lumembertype"] {
+        unknown id PK
+    }
+
+    inspectheader["LEGACY inspectheader"] {
+        unknown id PK
+        unknown inspectno "Sheets checks it is unique"
+        unknown inspectdate
+        unknown steward FK "luperson.id"
+        unknown steward_guest "steward-guest"
+        unknown q22_pasitename "q22-pasitename, site name as text, no FK"
+    }
+
+    inspectdetails["LEGACY inspectdetails"] {
+        unknown id PK
+        unknown inspection FK "inspectheader.id"
+        unknown observation FK "inspectquestions.id"
+        unknown obs_value
+        unknown obs_comm
+    }
+
+    inspectquestions["LEGACY inspectquestions"] {
+        unknown id PK
+        unknown observation "question code, for example Q31_Naturalness"
+    }
+
+    inspectqcategory["LEGACY inspectqcategory"] {
+        unknown id PK
+    }
+
+    questionmapping["LEGACY questionmapping"] {
+        unknown id PK
+    }
+
+    sites_list_fnr["LEGACY READ MODEL sites_list_fnr"] {
+        bigint id PK
+        text namesite
+        unknown county
+        text inspectno
+        date inspectdate
+        text naturalness_score
+        text naturalness_details
+    }
+
+    sites_report_fnr_test["LEGACY READ MODEL sites_report_fnr_test"] {
+        text namesite
+        unknown county
+        unknown inspectno
+        unknown inspectdate
+        unknown steward
+        unknown naturalness_score
+        unknown other_columns "15 more, see FNR/src/services/database.ts:503"
+    }
+
+    sites_detail_fnr_test["LEGACY READ MODEL sites_detail_fnr_test"] {
+        text namesite
+        text _type
+        text county
+        text _naregion
+        date inspectdate
+        text naturalness_score
+        text naturalness_details
+        text notes
+    }
+
+    luperson ||--o{ inspectheader : "steward"
+    inspectheader ||--o{ inspectdetails : "inspection"
+    inspectquestions ||--o{ inspectdetails : "observation"
+
+    classDef shared fill:#c9f7d4,stroke:#333,color:#111
+    classDef legacy fill:#ffd8b0,stroke:#333,color:#111
+    classDef readmodel fill:#fff3c4,stroke:#333,color:#111
+
+    class luperson shared
+    class lumembertype,inspectheader,inspectdetails,inspectquestions,inspectqcategory,questionmapping legacy
+    class sites_list_fnr,sites_report_fnr_test,sites_detail_fnr_test readmodel
+
+    %% Who uses what:
+    %% - Mobile app: inspectheader, inspectdetails, inspectquestions,
+    %%   luperson, sites_list_fnr, sites_report_fnr_test, and the RPC
+    %%   functions get_heatmap_data, get_naturalness_distribution,
+    %%   get_top_sites_distribution (FNR/src/screens/DashboardScreen.tsx).
+    %% - Google Apps Script: inspectheader, inspectdetails, inspectquestions,
+    %%   inspectqcategory, questionmapping, luperson, lumembertype.
+    %% - Web app: sites_report_fnr_test (heatmap route). queries.ts also has
+    %%   code for sites_list_fnr and sites_detail_fnr_test, but no page calls it.

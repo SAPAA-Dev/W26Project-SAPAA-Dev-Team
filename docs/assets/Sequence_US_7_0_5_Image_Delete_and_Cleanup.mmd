@@ -1,0 +1,92 @@
+---
+title: "US 7.0.5 Delete an Image and Clean Up After It"
+config:
+  theme: base
+  sequence:
+    actorMargin: 75
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 40
+    noteMargin: 16
+    mirrorActors: false
+    width: 190
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Admin
+    actor Steward
+    participant Page as Web pages<br/>site page, admin site page,<br/>new-report
+    participant Api as Image delete route<br/>(proposed)
+    participant Server as Server actions<br/>utils/supabase/queries.ts
+    participant DB as Supabase DB<br/>W26_attachments,<br/>W26_homepage-image-uploads
+    participant S3 as AWS S3
+
+    Note over Admin,S3: Covers US 7.0.5. No image delete exists today, and no code deletes S3 objects.<br/>"(proposed)" = the step is not in the code today.
+
+    Note over Admin,S3: Delete an image (AT 1, AT 2, AT 3)
+    Admin->>Page: Open a site gallery. It shows W26_attachments images (/api/sites/[siteId]/gallery)<br/>and W26_homepage-image-uploads images (/api/homepage-images/[siteId]). Both exist.
+    Page->>Page: Show Delete only to Admins (AT 2) (proposed)
+    Admin->>Page: Select Delete on an image and confirm (proposed)
+    Page->>Api: DELETE with image kind (inspection attachment<br/>or homepage upload) and image id (proposed)
+    Api->>Api: Check caller is Admin from a trusted role source
+    alt Caller is not Admin (AT 2)
+        Api-->>Page: 403. Nothing is deleted
+    else Caller is Admin
+        Api->>DB: Read storage_key from the table of that image kind:<br/>W26_attachments or W26_homepage-image-uploads
+        DB-->>Api: storage_key
+        Api->>S3: DeleteObject(storage_key) (AT 3)
+        alt S3 delete fails
+            S3-->>Api: Error
+            Api-->>Page: Error. Row is kept
+        else File is deleted
+            S3-->>Api: OK
+            Api->>DB: Delete that row from the same table
+            Api-->>Page: Success
+            Page-->>Admin: Image is gone from gallery and reports (AT 1)
+        end
+    end
+    Note over Api,S3: Open questions: the order (S3 object first, then the row, as shown)<br/>and a retry when one of the two deletes fails.
+
+    Note over Admin,S3: Deactivate a SIR (AT 4): this exists and keeps the files
+    Admin->>Page: Deactivate a SIR on the admin site page
+    Page->>Server: setFormResponseActive(responseId, false)
+    Server->>DB: Set is_active false on W26_form_responses
+    Note over Server,S3: Attachment rows and S3 files stay, so reactivation restores the photos.
+
+    Note over Admin,S3: Failed SIR submission (AT 5)
+    Steward->>Page: Submit new SIR with photos
+    Page->>S3: PUT photos to inspections/{siteId}/{responseId}/ (exists)
+    Page->>Server: uploadSiteInspectionAnswers or<br/>insertInspectionAttachments fails
+    Page->>Server: rollbackSiteInspectionSubmission(responseId) (exists)
+    Server->>DB: Delete attachment, answer and response rows (exists)
+    Server->>S3: Delete all objects under inspections/{siteId}/{responseId}/ (proposed)
+    Page-->>Steward: Show error. SIR is not saved
+    Note over Server,S3: Today rollback deletes only database rows. The uploaded files stay in S3.

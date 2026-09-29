@@ -1,0 +1,84 @@
+---
+title: "US 3.0.3 Export All Digital Files"
+config:
+  theme: base
+  sequence:
+    actorMargin: 75
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 40
+    noteMargin: 16
+    mirrorActors: false
+    width: 190
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Admin
+    participant Page as Admin page
+    participant Api as Export routes (proposed)<br/>/api/export<br/>/api/export/status/[jobId]
+    participant Job as Background job<br/>zip export
+    participant DB as Supabase DB
+    participant S3 as AWS S3
+
+    Note over Admin,S3: Covers US 3.0.3. All steps are proposed. The flow copies<br/>the PDF job pattern (S26_pdf_jobs, after(), presigned URL).<br/>W26_export_jobs is like S26_pdf_jobs, without mode and request_payload.
+
+    Admin->>Page: Select Export all files
+    Page->>Api: POST /api/export: createExportJob()
+    Api->>Api: Check caller is Admin<br/>from a trusted role source
+    alt Caller is not Admin
+        Api-->>Page: 403. No job is made
+        Page-->>Admin: Show "not allowed"
+    else Caller is Admin
+        Api->>DB: Insert W26_export_jobs row,<br/>status pending, created_by = caller
+        Api-->>Page: 202 with jobId
+        Api->>Job: after(): run zip job
+        Job->>DB: Read storage keys from W26_attachments,<br/>W26_homepage-image-uploads, W26_gpx_tracks<br/>and completed S26_pdf_jobs
+        DB-->>Job: Storage keys
+        loop Each stored file
+            Job->>S3: Get file
+            S3-->>Job: File
+            Job->>Job: Add file to zip
+        end
+        alt A file is missing or the job fails
+            Job->>DB: Update W26_export_jobs row: status failed,<br/>error with file names
+            Page-->>Admin: Show Failed with reason
+        else Zip is made (AT 1, AT 2)
+            Job->>S3: Put zip file
+            Job->>DB: Update W26_export_jobs row: status complete,<br/>storage_path of the zip
+            Page->>Api: GET /api/export/status/[jobId]:<br/>getExportJobStatus(jobId)
+            Api->>DB: Read W26_export_jobs row
+            DB-->>Api: storage_path
+            Api-->>Page: Presigned download URL
+            Page-->>Admin: Download ZIP with all images, GPX files and completed PDFs
+        end
+    end
+
+    Note over Job,S3: Zip size and job run time can be large.<br/>The limits are an open question for the team.

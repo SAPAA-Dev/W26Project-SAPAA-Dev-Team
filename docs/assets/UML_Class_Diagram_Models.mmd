@@ -1,0 +1,270 @@
+classDiagram
+    direction TB
+    %% CLASS DIAGRAM, PART 2 OF 2: DATA MODELS FOR THE 34 CURRENT USER STORIES
+    %% Source: docs/user-stories.md.
+    %% Part 1 (services) is UML_Class_Diagram.mmd.
+    %% How to read this diagram:
+    %% - Each model is one database table. The stereotype gives the table name.
+    %%   The field names are the column names of that table.
+    %% - Existing tables and columns: webapp/supabase/migrations/
+    %%   20260925000000_local_app_schema.sql. Proposed tables and columns:
+    %%   ER_Diagram_Proposed_User_Stories.mmd.
+    %% - A class with the stereotype <<new ...>> is proposed. In an existing
+    %%   table, a field that ends with [NEW x.y.z] is a proposed column.
+    %% - ActivityStats and SirSummary have no table. The server calculates them.
+    %% - INatObservation has no table. It comes from the iNaturalist API.
+    %% - PdfOptions has no table. It is kept in S26_pdf_jobs.request_payload.
+    %% - OfflineMapArea has no table. It is in the web app, in browser storage.
+    %% - The FormResponse type in queries.ts also has naturalness_score,
+    %%   naturalness_details and steward. They are not columns of
+    %%   W26_form_responses. getFormResponsesBySite reads them from the
+    %%   W26_answers of Q31, Q32 and Q13.
+
+    class Site {
+        <<table W26_sites-pa>>
+        +id: number
+        +namesite: string
+        +ab_county: number
+        +is_active: boolean
+        +boundary: polygon [NEW 6.0.1]
+        +latitude: number [NEW 6.0.1]
+        +longitude: number [NEW 6.0.1]
+        +source_feature_id: string [NEW 6.0.1]
+        +sapaaweb: string [NEW 2.0.10]
+        +inatmap: string [NEW 2.0.10]
+        +designated_steward_id: string [NEW 3.0.2]
+    }
+
+    class County {
+        <<table W26_ab_counties>>
+        +id: number
+        +county: string
+    }
+
+    class KmlSite {
+        <<new table W26_kml_sites, 6.0.1 2.0.2>>
+        +source_feature_id: string
+        +name: string
+        +boundary: polygon
+        +loaded_at: timestamp
+    }
+
+    class SitePageField {
+        <<new table W26_site_page_fields, 2.0.5>>
+        +id: number
+        +site_id: number
+        +label: string
+        +value: string
+        +is_visible: boolean
+        +position: number
+        +provided_by_steward_id: string? [NEW 2.0.5]
+        +source_response_id: number? [NEW 2.0.5]
+    }
+
+    class GpxTrack {
+        <<new table W26_gpx_tracks, 2.0.9>>
+        +id: number
+        +site_id: number
+        +user_id: string
+        +storage_key: string
+        +filename: string
+        +file_size_bytes: number
+        +point_count: number
+        +created_at: timestamp
+    }
+
+    class Profile {
+        <<new table W26_profiles, 1.0.1 1.0.2 4.0.5>>
+        +user_id: string
+        +display_name: string
+        +contact_email: string
+        +skills: string[]
+        +focus_areas: string[]
+        +inat_username: string
+    }
+
+    class ProfileHiddenQuestion {
+        <<new table W26_profile_hidden_questions, 1.0.3>>
+        +user_id: string
+        +question_id: number
+    }
+
+    class ActivityStats {
+        <<new 1.0.4, no table>>
+        +sir_count: number
+        +activity_counts: Map
+    }
+
+    class SirSummary {
+        <<new 7.0.3, no table>>
+        +count_by_site: Map
+        +count_by_steward: Map
+        +count_by_visit_reason_q42: Map
+        +naturalness_spread_q31: Map
+    }
+
+    class FormResponse {
+        <<table W26_form_responses>>
+        +id: number
+        +site_id: number
+        +user_id: string
+        +inspection_no: string
+        +inspection_date: date
+        +is_active: boolean
+        +created_at: timestamp
+    }
+
+    class Answer {
+        <<table W26_answers>>
+        +id: number
+        +response_id: number
+        +question_id: number
+        +obs_value: string
+        +obs_comm: string
+    }
+
+    class Question {
+        <<table W26_questions>>
+        +id: number
+        +question key: string
+        +form_question: string
+    }
+
+    class Attachment {
+        <<table W26_attachments>>
+        +id: number
+        +response_id: number
+        +question_id: number
+        +site_id: number
+        +storage_key: string
+        +identifier: string? [CHANGE 4.0.6]
+        +inat_observation_id: number [NEW 4.0.5]
+    }
+
+    class HomepageImageUpload {
+        <<table W26_homepage-image-uploads>>
+        +id: number
+        +site_id: number
+        +user_id: string
+        +storage_key: string
+        +identifier: string
+    }
+
+    class PdfJob {
+        <<table S26_pdf_jobs>>
+        +id: string
+        +created_by: string
+        +mode: string
+        +status: string
+        +storage_path: string
+        +error: string
+    }
+
+    class ExportJob {
+        <<new table W26_export_jobs, 3.0.3>>
+        +id: string
+        +created_by: string
+        +status: string
+        +storage_path: string
+        +error: string
+        +created_at: timestamp
+    }
+
+    class ActivityPointValue {
+        <<new table W26_activity_point_values, 1.0.5>>
+        +site_id: number
+        +activity: string
+        +points: number
+    }
+
+    class ActivityPointEntry {
+        <<new table W26_activity_points, 1.0.5>>
+        +id: number
+        +user_id: string
+        +site_id: number
+        +activity: string
+        +source_id: number
+        +points: number
+        +created_at: timestamp
+    }
+
+    class SiteSafety {
+        <<new table W26_site_safety, 2.0.11>>
+        +site_id: number
+        +nearest_hospital: string
+        +hazards: string
+        +other_info: string
+        +updated_by: string
+        +updated_at: timestamp
+    }
+
+    class SitePriority {
+        <<new table W26_site_priority, 2.0.12 2.0.13>>
+        +site_id: number
+        +abuse_points: number
+        +biological_points: number
+        +time_since_visit_points: number
+        +points_saved_at: timestamp
+        +saved_by: string
+    }
+
+    class INatObservation {
+        <<new 4.0.7, no table>>
+        +id: number
+        +species_name: string
+        +photo_url: string
+        +votes: number
+        +url: string
+    }
+
+    class PdfOptions {
+        <<type in webapp/lib/pdf/types.ts>>
+        +selectedResponseIds: number[]
+        +selectedSections: string[]
+        +hiddenQuestionIds: number[] [NEW 7.0.7]
+    }
+
+    class OfflineMapArea {
+        <<new 4.0.2, web app browser storage>>
+        +id: string
+        +bounds: string
+        +min_zoom: number
+        +max_zoom: number
+        +status: string
+    }
+
+    County "0..1" <-- "0..*" Site : ab_county
+    Site "1" *-- "0..*" SitePageField : site_id
+    Site "0..*" --> "0..1" KmlSite : source_feature_id
+    Site "1" *-- "0..*" GpxTrack : site_id
+    Site "0..*" --> "0..1" Profile : designated_steward_id
+    Site "1" *-- "0..*" FormResponse : site_id
+    Site "1" *-- "0..*" HomepageImageUpload : site_id
+    Site "1" --> "0..*" Attachment : site_id
+    SitePageField "0..*" --> "0..1" Profile : provided_by_steward_id
+    SitePageField "0..*" --> "0..1" FormResponse : source_response_id
+    Profile "1" --> "0..*" ProfileHiddenQuestion : user_id
+    ProfileHiddenQuestion "0..*" --> "1" Question : question_id
+    Profile "1" --> "0..*" GpxTrack : user_id
+    Profile "1" --> "0..*" FormResponse : user_id
+    FormResponse "1" *-- "0..*" Answer : response_id
+    Question "1" --> "0..*" Answer : question_id
+    FormResponse "0..1" *-- "0..*" Attachment : response_id
+    ActivityStats ..> FormResponse : counts
+    SirSummary ..> Answer : counts
+    PdfJob ..> FormResponse : exports
+    ExportJob ..> Attachment : zips files
+    ExportJob ..> HomepageImageUpload : zips files
+    ExportJob ..> GpxTrack : zips files
+    ExportJob ..> PdfJob : zips completed PDFs
+    Site "1" --> "0..*" ActivityPointValue : site_id
+    Profile "1" --> "0..*" ActivityPointEntry : user_id
+    Site "1" --> "0..*" ActivityPointEntry : site_id
+    Site "1" --> "0..1" SiteSafety : site_id
+    Site "1" --> "0..1" SitePriority : site_id
+    PdfJob ..> PdfOptions : request_payload
+    INatObservation ..> Site : found in the boundary
+
+    note for Site "US 2.0.4: deleting a Site deletes its SIRs, answers, attachments,<br>homepage images, GPX tracks, Site fields, point records, safety and priority rows.<br>Related S3 files are deleted; the shared KML source and user Profiles are preserved."
+    note for SitePageField "US 2.0.5: provided_by_steward_id records the steward who supplied the value.<br>source_response_id optionally records the SIR from which it came."
+    note for Attachment "US 4.0.6: identifier is optional.<br>US 7.0.8: an Attachment with response_id is owned by that SIR and is deleted with it."

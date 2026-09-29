@@ -1,0 +1,91 @@
+---
+title: "US 4.0.4 Edit My Previous Inspections"
+config:
+  theme: base
+  sequence:
+    actorMargin: 75
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 40
+    noteMargin: 16
+    mirrorActors: false
+    width: 190
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Steward
+    participant Edit as Edit page<br/>edit-report/[responseId]
+    participant Auth as Supabase Auth
+    participant Server as Server actions<br/>utils/supabase/queries.ts
+    participant DB as Supabase DB
+
+    Note over Steward,DB: Covers US 4.0.4. Platform: web. The edit page exists.<br/>"(proposed)" = the step is not in the code today.
+
+    Steward->>Edit: Open own SIR from the site page and select Edit
+    Edit->>Server: getResponseOwnerId(responseId)
+    Server->>DB: Read user_id of W26_form_responses row
+    DB-->>Server: Owner id
+    Server-->>Edit: Owner id
+    Edit->>Auth: getUser()
+    Auth-->>Edit: Current user
+    Edit->>Edit: isOwner or role admin<br/>(client check only)
+    alt Caller is not the owner (AT 2)
+        Edit-->>Steward: Show "not allowed". No edit mode
+    else Caller is the owner
+        Edit->>Server: getFormResponseById(responseId)
+        Server->>DB: Read W26_answers
+        DB-->>Server: Answers
+        Server-->>Edit: Answers
+        Edit-->>Steward: Show SIR in edit mode (AT 1)
+        Steward->>Edit: Change answers and select Save
+        Edit->>Edit: Check required questions<br/>and image metadata
+        alt A required answer is empty (AT 3)
+            Edit-->>Steward: Block save. List missing questions
+        else All required answers are present
+            Edit->>Server: updateSiteInspectionAnswers(responseId, answers, date)
+            Server->>Auth: Get caller from session (proposed)
+            Server->>DB: Read owner of SIR (proposed)
+            alt Caller does not own the SIR (direct request)
+                Server-->>Edit: Refuse. No change (proposed)
+            else Caller owns the SIR
+                Server->>DB: Update inspection_date
+                Server->>DB: Delete old W26_answers
+                Server->>DB: Insert new W26_answers
+                DB-->>Server: Saved
+                Server-->>Edit: Success
+                Edit-->>Steward: Go to /sites?edited=true
+            end
+        end
+    end
+
+    Note over Edit,DB: Today the server action has no ownership check. It uses createServerSupabase,<br/>which bypasses RLS. Delete and insert are not in one transaction:<br/>a failed insert leaves the SIR with no answers.
+    Note over Edit,DB: AT 4: the site page, admin site page and PDF export read W26_answers,<br/>so they show the new answers. New photos use the new-report upload flow (not shown).
+    Note over Steward,DB: Open question: can an Admin edit any SIR? The page allows it today (client check).<br/>The proposed server check allows the owner only, unless the team decides otherwise.

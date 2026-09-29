@@ -1,0 +1,100 @@
+---
+title: "US 1.0.2: Edit Own Profile"
+config:
+  theme: base
+  sequence:
+    actorMargin: 70
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 38
+    noteMargin: 16
+    mirrorActors: true
+    width: 200
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Steward
+    participant Profile as Profile page<br/>(Proposed)
+    participant Action as Server action<br/>updateOwnProfile<br/>(Proposed)
+    participant Auth as Supabase Auth
+    participant DB as Supabase<br/>PostgreSQL
+
+    Note over Steward,DB: Covers US 1.0.2. No profile edit exists in the code. All steps are Proposed.
+
+    Steward->>Profile: Open own profile and select Edit
+    activate Profile
+    Note right of Profile: The Edit control shows only on the<br/>profile of the signed-in user (AT1).
+    Steward->>Profile: Change name, email, skills or focus areas
+    Steward->>Profile: Select Save
+    Profile->>Profile: Check that name and email are not empty (AT3)
+
+    alt Name or email is empty
+        Profile-->>Steward: Block save and highlight the empty field (AT3)
+    else Fields are filled
+        Profile->>Action: updateOwnProfile(fields)
+        activate Action
+        Action->>Auth: getUser() from the session cookie
+        activate Auth
+        Auth-->>Action: Signed-in user id or no user
+        deactivate Auth
+        Note right of Action: The action edits only the session user.<br/>A user id from the client is not trusted.
+
+        alt No session
+            Action-->>Profile: Refuse (401)
+            Profile-->>Steward: Go to /login
+        else Request names another user (AT1, AT2)
+            Action-->>Profile: Refuse (403), no write
+            Profile-->>Steward: Show "You can edit only your own profile"
+        else Own profile
+            Action->>Action: Check name and email again on server (AT3)
+            alt Name or email not valid
+                Action-->>Profile: Field errors (422)
+                Profile-->>Steward: Highlight the fields with errors
+            else Values are valid
+                Action->>DB: Update profile of session user<br/>(profile store not decided)
+                activate DB
+                alt Database error
+                    DB-->>Action: Error
+                    Action-->>Profile: Save failed (500)
+                    Profile-->>Steward: Show error and keep the typed values
+                else Update done
+                    DB-->>Action: Saved profile
+                    Action-->>Profile: Saved profile
+                    Profile-->>Steward: Show new values, skills and focus areas (AT4, AT6)
+                end
+                deactivate DB
+            end
+        end
+        deactivate Action
+    end
+    deactivate Profile
+
+    Note over Steward,DB: Values are read from the database on each load. After sign out and sign in,<br/>the profile shows the saved values (AT5). If the email is also the sign-in email,<br/>a change must go through Supabase Auth (open question).

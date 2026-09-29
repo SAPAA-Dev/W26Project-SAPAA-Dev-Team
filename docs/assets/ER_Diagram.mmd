@@ -1,0 +1,187 @@
+---
+config:
+  layout: elk
+---
+erDiagram
+    %% CURRENT SCHEMA: WEB APP (verified against the code on 2026-09-28)
+    %% One Supabase database holds two inspection systems:
+    %%   WEB    = W26_* and S26_* tables. Used only by webapp/.
+    %%   LEGACY = inspectheader, inspectdetails, and others. Used by FNR/ and
+    %%            googleSheets/code.gs. See ER_Diagram_Legacy.mmd.
+    %%   SHARED = luperson. The only table that all three clients use.
+    %% Data in one system is not visible in the other system.
+
+    %% Rules for this diagram:
+    %% - A column is shown only if the code reads or writes it. Evidence:
+    %%   webapp/utils/supabase/queries.ts, webapp/utils/form-actions.ts,
+    %%   webapp/app/api/, webapp/lib/pdf/, and the local schema
+    %%   webapp/supabase/migrations/20260925000000_local_app_schema.sql.
+    %% - The production database can have more columns. They are not shown.
+    %% - Mermaid does not allow spaces or hyphens in names. The quoted comment
+    %%   gives the real column name when it is different.
+    %% - The web app keys users by auth.users.id. It uses luperson only to check
+    %%   if an email belongs to a steward (queries.ts:349-359). There is no
+    %%   foreign key between auth.users and luperson.
+
+    %% Tables that the earlier diagram showed but the code does not use:
+    %% W26_luperson, W26_lumembertype, W26_types, W26_typessub,
+    %% W26_naturalregion, W26_naturalregionsub, W26_questions_category,
+    %% W26_recreational_activities and their join tables. They can exist in
+    %% the database. They are not shown because no code uses them.
+    direction LR
+
+    auth_users["AUTH auth.users"] {
+        uuid id PK
+        text email
+        text phone
+        jsonb raw_user_meta_data "role, authenticated, full_name, avatar_url"
+    }
+
+    luperson["SHARED luperson"] {
+        bigint id PK
+        text email "web app reads"
+    }
+
+    W26_sites_pa["WEB W26_sites-pa"] {
+        bigint id PK
+        text namesite
+        bigint ab_county FK
+        boolean is_active
+    }
+
+    W26_ab_counties["WEB W26_ab_counties"] {
+        bigint id PK
+        text county
+    }
+
+    W26_form_responses["WEB W26_form_responses"] {
+        bigint id PK
+        bigint site_id FK
+        uuid user_id FK
+        text inspection_no
+        date inspection_date
+        boolean is_active
+        timestamptz created_at
+    }
+
+    W26_answers["WEB W26_answers"] {
+        bigint id PK
+        bigint response_id FK
+        bigint question_id FK
+        text obs_value
+        text obs_comm
+    }
+
+    W26_questions["WEB W26_questions"] {
+        bigint id PK
+        text question_key "question key"
+        bigint question_key_id FK
+        bigint section_id FK
+        text form_question
+        text subtext
+        text question_type
+        boolean is_required
+        boolean is_active
+        text autofill_key
+        integer formorder
+        boolean obs_value
+        boolean obs_comm
+    }
+
+    W26_question_keys["WEB W26_question_keys"] {
+        bigint id PK
+        text question_key "question key"
+        text category "one character, no FK in code"
+        boolean comment
+        text definition
+    }
+
+    W26_question_options["WEB W26_question_options"] {
+        bigint id PK
+        bigint question_id FK
+        text option_text
+        boolean is_active
+        integer position
+    }
+
+    W26_form_sections["WEB W26_form_sections"] {
+        bigint id PK
+        text title
+        text description
+        text header
+    }
+
+    W26_attachments["WEB W26_attachments"] {
+        bigint id PK
+        bigint response_id FK
+        bigint question_id FK
+        bigint site_id FK
+        text storage_key "S3 object key"
+        text filename
+        text content_type
+        bigint file_size_bytes
+        text caption
+        text description
+        text photographer
+        text identifier
+        date date
+        timestamptz created_at
+    }
+
+    W26_homepage_image_uploads["WEB W26_homepage-image-uploads"] {
+        bigint id PK
+        bigint site_id FK
+        uuid user_id FK
+        text storage_key "S3 object key"
+        text filename
+        text content_type
+        bigint file_size_bytes
+        text caption
+        text photographer
+        text identifier
+        date date
+        timestamptz created_at
+    }
+
+    S26_pdf_jobs["WEB S26_pdf_jobs"] {
+        uuid id PK
+        uuid created_by FK
+        text mode
+        jsonb request_payload
+        text status "pending, processing, complete, failed"
+        text storage_path "S3 key of the PDF"
+        text error
+        timestamptz created_at
+    }
+
+    W26_ab_counties |o--o{ W26_sites_pa : "ab_county"
+    W26_sites_pa ||--o{ W26_form_responses : "site_id"
+    auth_users |o--o{ W26_form_responses : "user_id"
+    W26_form_responses ||--o{ W26_answers : "response_id"
+    W26_questions ||--o{ W26_answers : "question_id"
+    W26_form_sections ||--o{ W26_questions : "section_id"
+    W26_question_keys |o--o{ W26_questions : "question_key_id"
+    W26_questions ||--o{ W26_question_options : "question_id"
+    W26_form_responses |o--o{ W26_attachments : "response_id"
+    W26_questions |o--o{ W26_attachments : "question_id"
+    W26_sites_pa |o--o{ W26_attachments : "site_id"
+    W26_sites_pa ||--o{ W26_homepage_image_uploads : "site_id"
+    auth_users |o--o{ W26_homepage_image_uploads : "user_id"
+    auth_users ||--o{ S26_pdf_jobs : "created_by"
+
+    classDef auth fill:#e8e8e8,stroke:#333,color:#111
+    classDef shared fill:#c9f7d4,stroke:#333,color:#111
+    classDef web fill:#cfe4ff,stroke:#333,color:#111
+
+    class auth_users auth
+    class luperson shared
+    class W26_sites_pa,W26_ab_counties,W26_form_responses,W26_answers,W26_questions,W26_question_keys,W26_question_options,W26_form_sections,W26_attachments,W26_homepage_image_uploads,S26_pdf_jobs web
+
+    %% Other data that the web app reads, not shown as tables:
+    %% - Legacy read models sites_report_fnr_test (webapp/app/api/heatmap/route.ts)
+    %%   and sites_list_fnr, sites_detail_fnr_test (queries.ts:260, 520). The
+    %%   two functions in queries.ts have no caller in webapp/app or
+    %%   webapp/components. See ER_Diagram_Legacy.mmd.
+    %% - RPC functions get_naturalness_distribution and
+    %%   get_top_sites_distribution (queries.ts:940, 950).
+    %% - Image and PDF files are in AWS S3, not in Supabase Storage.

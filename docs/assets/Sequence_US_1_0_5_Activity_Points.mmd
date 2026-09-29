@@ -1,0 +1,86 @@
+---
+title: "US 1.0.5 Earn Points for Inspection Activity"
+config:
+  theme: base
+  sequence:
+    actorMargin: 75
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 40
+    noteMargin: 16
+    mirrorActors: false
+    width: 190
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Steward
+    participant Page as Web pages<br/>new-report, UploadImages,<br/>profile
+    participant Server as Server actions<br/>utils/supabase/queries.ts
+    participant Points as ActivityPointsService<br/>(proposed)
+    participant Profile as ProfileService<br/>(proposed)
+    participant DB as Supabase DB<br/>W26_activity_points,<br/>W26_activity_point_values (proposed)
+
+    Note over Steward,DB: Covers US 1.0.5. No points exist in the code today.<br/>"(proposed)" = the step is not in the code today.
+
+    Note over Steward,DB: Points for a SIR (AT 1)
+    Steward->>Page: Submit a new SIR for a Site
+    Page->>Server: addSiteInspectionReport, uploadSiteInspectionAnswers,<br/>insertInspectionAttachments (exist)
+    alt Submission fails
+        Page->>Server: rollbackSiteInspectionSubmission(responseId) (exists)
+        Page-->>Steward: Show error. No points are given
+    else Submission succeeds
+        Page->>Points: awardActivityPoints('sir_submitted', responseId) (proposed)
+        Points->>Points: Read the caller from the session
+        Points->>DB: Read W26_form_responses row. Check user_id is the caller. Get site_id
+        Points->>DB: Read points for this Site and activity from W26_activity_point_values
+        Points->>DB: Insert one row in W26_activity_points<br/>(unique on activity and source id, so a retry does not add twice)
+        Page-->>Steward: SIR saved
+    end
+
+    Note over Steward,DB: Points for a photo (AT 2)
+    Steward->>Page: Choose a photo for a Site in UploadImages
+    Page->>Page: POST /api/s3/presign-homepage-images, then PUT the file to S3 (exists)
+    Page->>Server: insertHomepageImageUpload(rows) (exists)
+    Server->>DB: Insert W26_homepage-image-uploads row (exists)
+    Server->>Points: awardActivityPoints('photo_uploaded', uploadId) (proposed)
+    Points->>DB: Check the upload row belongs to the caller, then insert one row in W26_activity_points
+
+    Note over Steward,DB: Show the total (AT 3)
+    Steward->>Page: Open my profile
+    Page->>Profile: getStewardProfile(userId) (proposed)
+    Profile->>Points: getActivityPointsTotal(userId) (proposed)
+    Points->>DB: Sum points in W26_activity_points for the user
+    DB-->>Points: Total
+    Points-->>Profile: Total
+    Profile-->>Page: Profile with the total
+    Page-->>Steward: Show the current total
+
+    Note over Steward,DB: The server reads the user id from the session and the site and points from the database.<br/>The browser does not send a user id or a points value.<br/>Open questions: who sets the points for each Site and activity, the default when<br/>a Site has no value, and if points are removed when a SIR or photo is deleted (US 7.0.5, 7.0.8).

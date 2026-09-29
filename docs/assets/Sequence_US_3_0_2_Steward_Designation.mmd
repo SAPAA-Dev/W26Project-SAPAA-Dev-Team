@@ -1,0 +1,86 @@
+---
+title: "US 3.0.2 Steward Designation"
+config:
+  theme: base
+  sequence:
+    actorMargin: 75
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 40
+    noteMargin: 16
+    mirrorActors: false
+    width: 190
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Admin
+    actor Steward
+    participant AdminSite as Admin site page<br/>admin/sites/[id]
+    participant Pages as Site page and<br/>profile page
+    participant Server as Server actions<br/>utils/supabase/queries.ts
+    participant DB as Supabase DB
+
+    Note over Admin,DB: Covers US 3.0.2 (MoSCoW: Would Like But Won't Get). "(proposed)" = the step is not in the code today.
+
+    Admin->>AdminSite: Open site and select Designate steward (proposed)
+    Admin->>AdminSite: Type part of a name or email
+    AdminSite->>Server: searchStewards(text) (proposed)
+    Server->>Server: Check caller is Admin<br/>from a trusted role source (proposed)
+    alt Caller is not Admin
+        Server-->>AdminSite: Refuse. Return no data
+    else Caller is Admin
+        Server->>DB: Find stewards by name or email
+        DB-->>Server: Matching stewards
+        Server-->>AdminSite: Steward list
+        AdminSite-->>Admin: Show matches (AT 1)
+    end
+
+    Admin->>AdminSite: Select one steward and Save
+    AdminSite->>Server: designateSiteSteward(siteId, stewardId) (proposed)
+    Server->>Server: Check caller is Admin<br/>from a trusted role source (proposed)
+    alt Caller is not Admin (AT 4)
+        Server-->>AdminSite: Refuse. No designation is written
+        AdminSite-->>Admin: Show error
+    else Caller is Admin
+        Server->>DB: Replace the designation of the site<br/>with the new steward (proposed)
+        DB-->>Server: Saved
+        Server-->>AdminSite: Success
+        AdminSite-->>Admin: Show new designated steward (AT 2)
+    end
+
+    Steward->>Pages: Open site page or steward profile
+    Pages->>Server: Get site or profile data
+    Server->>DB: Read designation by site or by steward (proposed)
+    DB-->>Server: Designation
+    Server-->>Pages: Data with designation
+    Pages-->>Steward: Show designated steward on site page<br/>and designated sites on profile (AT 3)
+
+    Note over AdminSite,DB: The role check must not use user_metadata. A user can change it (see .agents/rules/security.md).

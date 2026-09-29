@@ -1,0 +1,107 @@
+---
+title: "US 2.0.2: Add a New Site"
+config:
+  theme: base
+  sequence:
+    actorMargin: 70
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 38
+    noteMargin: 16
+    mirrorActors: true
+    width: 200
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Admin
+    participant Page as Admin sites page<br/>/admin/sites
+    participant Actions as Server actions<br/>utils/supabase/queries.ts
+    participant DB as Supabase<br/>PostgreSQL
+
+    Note over Admin,DB: Covers US 2.0.2. /admin/sites exists but has no Add Site flow. All add steps are Proposed.<br/>ProtectedRoute requireAdmin hides the page in the browser only. It reads user_metadata, so it is not a security check.
+
+    Admin->>Page: Select "Add Site" (Proposed)
+    activate Page
+    Page->>Actions: getUnmatchedKmlSites() (Proposed, AT6)
+    activate Actions
+    Actions->>Actions: Check session and Admin role on server (Proposed)
+    Actions->>DB: Read W26_kml_sites rows (loaded by US 6.0.1)<br/>that no W26_sites-pa.source_feature_id references
+    activate DB
+    DB-->>Actions: Suggested Sites with boundaries
+    deactivate DB
+    Actions-->>Page: Suggestions
+    deactivate Actions
+    Page-->>Admin: Show suggestions on a map
+
+    Admin->>Page: Select a boundary (AT1), enter name and county
+    Page->>Actions: findSitesWithName(name) (Proposed)
+    activate Actions
+    Actions->>DB: Read W26_sites-pa rows with the same name,<br/>active and inactive
+    activate DB
+    DB-->>Actions: Matching Sites
+    deactivate DB
+    Actions-->>Page: Matching Sites
+    deactivate Actions
+    opt A Site with the same name exists (AT2)
+        Page-->>Admin: Show a possible-duplicate warning before save
+    end
+
+    Admin->>Page: Select Save
+    Page->>Page: Check required fields, for example name
+    alt A required field is empty (AT3)
+        Page-->>Admin: Block creation and highlight the empty fields
+    else Required fields are filled
+        Page->>Actions: createSite(name, county, boundary) (Proposed)
+        activate Actions
+        Actions->>Actions: Check session and Admin role on server
+        alt Caller is not an Admin, for example a Steward<br/>who sends the request directly (AT4)
+            Actions-->>Page: Refuse (403), no Site created
+            Page-->>Admin: Show "Only an Admin can add a Site"
+        else Caller is an Admin
+            Actions->>Actions: Check required fields again (AT3)
+            Actions->>DB: Insert W26_sites-pa row (is_active = true) with the boundary.<br/>If it is a suggestion, also set source_feature_id
+            activate DB
+            alt Insert fails
+                DB-->>Actions: Error
+                Actions-->>Page: Error, nothing saved
+                Page-->>Admin: Show the error and keep the form
+            else Insert done
+                DB-->>Actions: New Site id
+                Actions-->>Page: New Site
+                Page-->>Admin: Show the new Site in the list
+            end
+            deactivate DB
+        end
+        deactivate Actions
+    end
+    deactivate Page
+
+    Note over Admin,DB: A new Site is active by default (US 2.0.3 AT5). getSitesOnline reads active Sites, so the new Site<br/>shows in Site search (AT5). Open question: can the Admin save after the duplicate warning?<br/>namesite is UNIQUE in the local schema copy (webapp/supabase/migrations).<br/>Open question: load the KML into a table or read the file each time. W26_kml_sites is the proposed option (see US 6.0.1).

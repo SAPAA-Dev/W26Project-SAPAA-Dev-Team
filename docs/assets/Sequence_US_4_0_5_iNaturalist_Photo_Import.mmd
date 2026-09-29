@@ -1,0 +1,94 @@
+---
+title: "US 4.0.5 iNaturalist Photo Import"
+config:
+  theme: base
+  sequence:
+    actorMargin: 75
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 40
+    noteMargin: 16
+    mirrorActors: false
+    width: 190
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Steward
+    participant Form as New SIR page<br/>new-report/page.tsx
+    participant Actions as Server actions<br/>ProfileService, queries.ts
+    participant INat as iNaturalist API<br/>api.inaturalist.org
+    participant Presign as Presign route<br/>/api/s3/presign
+    participant S3 as AWS S3
+
+    Note over Steward,S3: Covers US 4.0.5. All iNaturalist steps are proposed. The browser calls iNaturalist.<br/>The upload steps after "Submit SIR" exist today for photos from the device.
+
+    Steward->>Form: Select Add photos from iNaturalist (proposed)
+    Form->>Actions: getStewardProfile(own user id): read inat_username (proposed)
+    Actions-->>Form: Profile
+    alt Profile has inat_username
+        Form->>Form: Use the saved user name
+    else No saved user name
+        Form-->>Steward: Ask for iNaturalist user name (proposed)
+        Steward->>Form: Enter user name
+        opt Steward accepts the offer to save it (proposed)
+            Form->>Actions: updateOwnProfile(fields with inat_username) (proposed)
+        end
+    end
+    Form->>INat: selectINaturalistPhotos(user name):<br/>GET /v1/observations?user_login=name&photos=true (proposed)
+    alt User not found, no photos, or API error
+        INat-->>Form: Error or empty list
+        Form-->>Steward: Show message. Upload from device still works
+    else Observations are found
+        INat-->>Form: Observations with photo URLs and taxon names
+        Form-->>Steward: Show photos
+        Steward->>Form: Select photos (AT 1)
+        Form->>Form: Add photos to the SIR. Keep each observation id.<br/>Fill Identifier from the observation taxon name (AT 2)
+    end
+
+    Steward->>Form: Submit SIR
+    Form->>Actions: addSiteInspectionReport (exists)
+    Actions-->>Form: responseId
+    loop Each selected iNaturalist photo (copy, not link)
+        Form->>INat: GET photo file (proposed)
+        INat-->>Form: Image file
+        Form->>Presign: POST file name, type, size, responseId,<br/>identifier (exists)
+        Presign-->>Form: Presigned PUT URL and key
+        Form->>S3: PUT copy of the image (exists)
+    end
+    Form->>Actions: uploadSiteInspectionAnswers (exists),<br/>insertInspectionAttachments with inat_observation_id<br/>(exists, new column is proposed)
+    alt An upload or insert fails
+        Form->>Actions: rollbackSiteInspectionSubmission(responseId) (exists)
+        Form-->>Steward: Show error. SIR is not saved
+    else All steps pass
+        Form-->>Steward: Go to /sites?submitted=true
+    end
+
+    Note over Steward,S3: Open questions: copy the photo to S3 or link to it (this diagram shows the proposed copy),<br/>iNaturalist OAuth or user name only, the photo licence, and if the photo host lets the browser read the file (CORS).

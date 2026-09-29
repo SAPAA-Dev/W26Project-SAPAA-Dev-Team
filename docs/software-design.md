@@ -19,47 +19,199 @@ For details about how images are stored and retrieved, see the
 
 ---
 
-## ER Diagram for the database schema
+## Database Schema (ER Diagrams)
 
-[View it on Lucidchart](https://lucid.app/lucidchart/931f3cc9-cd72-4e46-9774-e4711ff0f562/edit?viewport_loc=-1219%2C-2790%2C4401%2C2199%2C0_0&invitationId=inv_aa3bd897-4385-4a31-a50a-6a9642316355)
+One Supabase database holds two inspection systems. The web app uses the `W26_*` and `S26_*` tables. The mobile app (StewardLog) and the Google Apps Script use the legacy tables. The `luperson` table is the only table that both systems use. Data that one system writes does not show in the other system.
 
-![ER Diagram](images/ER_Diagram.png)
+The current-schema diagrams show only the tables and columns that the code reads or writes, or that `webapp/supabase/migrations/` defines. A column type is "unknown" when the code does not show it.
+
+### Current schema: web app
+
+[Mermaid source](assets/ER_Diagram.mmd)
+
+![Current schema, web app](images/ER_Diagram_mermaid.svg)
+
+### Current schema: mobile app and Google Sheets (legacy)
+
+[Mermaid source](assets/ER_Diagram_Legacy.mmd)
+
+![Current schema, legacy](images/ER_Diagram_Legacy_mermaid.svg)
+
+### Proposed schema for the user stories
+
+This diagram shows the web app tables after the user stories in the [User Stories](user-stories.md). Each table is marked EXISTING or NEW. Each new table and column names the user story that needs it. The proposed items are a design proposal, not a decision. The open questions are in the comments of the Mermaid source.
+
+[Mermaid source](assets/ER_Diagram_Proposed_User_Stories.mmd)
+
+![Proposed schema](images/ER_Diagram_Proposed_User_Stories.svg)
 
 ---
 
 ## UML Class Diagram
 
-This diagram is a description of logical entities of the domain through a UML diagram.
+The class diagram is in two parts. Part 1 shows the services of the web app and the mobile app, and the external systems that they call. Part 2 shows the data models. A class with a `<<new x.y.z>>` stereotype is proposed. A member with the tag `[NEW x.y.z]` or `[CHANGE x.y.z]` is a proposed change for that user story. All other items exist in the code today.
 
-[View it on mermaid](https://mermaid.live/edit#pako:eNrlWv9v1DYU_1esSJOO7Vo6aEsbAVXHAUPiS-FASKPTyZf47jwSO9hOyw343_ccJ5fEsX0HY9K09Yf2Lv685_f9-Tn9FCU8JVEcJRmWckLxUuD8kqHq54cf0MOPigiGMzRdS0Vy2SxVcPSWzM-LAn1qnuqfu3dJTXP_fvf5c3i8_4dEPx-jm-gVwYlCP582gC-XrM_5GZ_TjOzM3PB7jhW9IsD-4ceCe1lPywLPsSS_4OQ9YeluG1xwqZaCTF8-RT-h81KtvOyf8gRngKOK7MaagLB78kMGBA6m4ANjCzQl4oomxHKBlqVe6W_305KoalFhRUY3UIw233owWc5lIuicvOYaMALpszmYRlO8YZvVHk3Gl5SNSI5pFiOpBGXLMSpAnGsu0uaJZjAlUlLO-hvSJSuLb6Wutn5L1eox58vMKBbEPaOJ4JIvVAjKS7N8xWnq9ewEqypwvOaeggvlC5ZRVssF36dlnmOxfvfj7zb6CZMFSRRIMyEKbNFQSqB6jnPStYSN7fEqixSc2kJqPnTzYEhv61rxSUlGQGDY_hUpuFABeQa0jfYbvYMKG1j73QXO8bJmV310QC7ShQHAh87ywG8vFgutiNttKb9mGceplvmXkqXZ7gpPalKStqr3n9lCJxnBEPtQnqhoqN4TUkzwWp7FiJX5nAjndjnQ4Wyy8ZDcSCkbMd_97qSk3Yicc65F8JrqPM0pC5eULHsjiTDa6k-2jjhN9eNt-T1GAkTpmtiSrROSFb8Sfj1JtxGYXHAQjFEl0NlQorO-SGeBLQb2upg88lmKEYGNrwA0Squ0GybiGCWcLegy1qweUZKlD6rvenMjRo9tIcgVJdffmatcYVHxW0CfucBq5Yv8gf5VarotUBY6DypAxTdGj-D3GLVlSTunDfkK6akCQRo7AE3MmI2p_r09aqrqtWQkfSMyF03fZv3uDGcgDMcUd3fWB6T_WYPW1E_sDj2oSi2q358HwF2bM1j6ZUnE-js156odrHV9HTGrFUypIv9YLwdeoIasmmRH2OaZo9hqcVqWzh1Nwjiys097zuS1ruzY_I03J2Wz4OkvAxHM4WEkiCxACdJm7Bhp4foZ7OqrD0ohCFO6iL-h6chTtKicKnKNRdoP1F2qts5K3ej-g03OLIHv-PwPcEfYGlC9zi-eoFeQYHbheky4Hgz1sjXECI3uTzCPH75GN3FBby4N1dmHe00Yen3wK8Eqx8VXbrAyVGfvyVrb-R7MU7lbsaniAuo4ZBtgFhi8PCoyzKDG37DGQQO8EPyKpkTY0tCGvi9RnUC9zlZYndMRtM1pc2RjNQdHUAxwnu6l-1Z4--FR7-20sVFP5b15CXOx6taQ_4ri1SwN_K1Y14lk1QCaOrXopXtvpZvnfpM3_d3eTeoVKHk0gcXUk_QgpSlG6DMU0CzzX3C0nc2hlqMZ6A6nE9apWcJLptbNkrW34WpKvy48Htjw3Gj1wN3kbI-Bs2_RZKbWBQkpMoPD1DbMdnPMGJyml9XY_XdsVuujSoEzBuesmUy42BlsJgMZhHNFggCaNvOFHwOq4tkKb4XgJCx7bQ_GQyBpGv4OkE58hFBLfawKehv8s-RiHWKWkgVlVPkdPrxI6l0S_Ety1Jy2sVTnCYwxkgzEcA9_3ytzdT9hjp4zHLnTxW57amt97W692T2ddc0VugPojNiWbO1x3FXTG7-51lqTTSopXJjmPO1aM4XMtdJUJ9eaTlYfFaQw1vLg7BzkuoKQ1_XDhe1UoqmpWltQk6ZcObVs0t61yOfQEa8quXzkuMD4KWXvPXZ-bsR4hovtk0Mzh-0Ygc31q794KKqyYEYq8jFYoT7UEm1tblTOBPlQ6ovHjZ7Oct1Mf82togu04CKH87c-kQSqrFH_dUBF78sZM3JaZm5GSl9Wb2zhWYdYmV3hrAzaSYMSnufbJW5fzej3VK9IZqJwRYvNAbN9jbW3d7_3riZGcKDz4OwXDSGsdbkdgg4ud0Pgzs1mCNa7AGyA_dsxv3Xq14eaj3VR1t-yj-td84SAvRnfC3RqMEB15mEvpjPSOizRDFvNGIr20PQ24ixbbwbSniiaoz2b9re2V-9-3t_vjnUxonmRkRwGC0uUegvFUf0StFns-qASwHpXGiPcefdpx6mbArJS0FbqQRR69tEwxNtgsQLdTSXXLOnoakXVdo3s8NpJIzvUdlSoEy5btum4rrZC4_uAcbrvoWOUY6Zv0kOe6xNAr0_lcHR2J7Jt5HbQ1YygvTIvtBpoB_I5HBfg6UDbbIMh25mXB7xdBIPpdTeq3CTlBhoMupBMLoLtMrmoNueZndBWc4Z0K-c57RYXRxxaw47DJ51W49WkCkYn3Dp-x_WrrxLOOWi-9hHBEBGj5qDfkcVZnfwxaqe9L-y67vTouMIbzoPVbviAevCsddTGhU4PmdNcxxTROFoKmkaxEiUZRzkROdZfo-qodRmpFTSMyyiGjzDY4jJTl9El-wJkBWa_cZ43lIKXy1UUL3Am4Zu5d67_f2gDgTpGxAM95ETxUcUhij9FH6P4zvH-wenp6cnx8fHJ0e2TQ1hcR_Gtg-P9w-M7JyeHhwe3jo-OTm9_GUd_Vnse7J8c3bl1eHrr6PT08OTO7QOgICmFKvis_v8l_efLX0d3X0w
-)
+### Part 1: Services
 
-![UML Class Diagram](images/UML Diagram.png)
+[Mermaid source](assets/UML_Class_Diagram.mmd)
+
+![UML class diagram, services](images/UML_Class_Diagram.svg)
+
+### Part 2: Data models
+
+[Mermaid source](assets/UML_Class_Diagram_Models.mmd)
+
+![UML class diagram, data models](images/UML_Class_Diagram_Models.svg)
 
 ---
 
 ## Sequence Diagrams
 
-[View them on Lucidchart](https://lucid.app/lucidchart/97b40fe8-0ea1-4e2c-9118-472d71b630ff/edit?invitationId=inv_d023aae0-265e-478f-a9a1-b356599b6444&page=0_0#)
+Each diagram names the user stories that it covers. A step with "(proposed)" does not exist in the code today. The diagrams show the server-side permission checks that the user stories need. Today most server actions do not do these checks. US 4.0.6 has no diagram, because it changes only one form field.
 
-### Authentication
-![Sequence Diagram](images/Winter 401 SAPAA Sequence Diagram - Authentication.svg)
+### US 1.0.1, 1.0.3, 1.0.4: View a Steward Profile
 
-### Site Inspection Form
-![Sequence Diagram](images/Winter 401 SAPAA Sequence Diagram - Site Inspection Form.svg)
+[Mermaid source](assets/Sequence_US_1_0_1_1_0_3_1_0_4_View_Steward_Profile.mmd)
 
-### Update Form
-![Sequence Diagram](images/Winter 401 SAPAA Sequence Diagram - Update Form.svg)
+![US 1.0.1, 1.0.3, 1.0.4: View a Steward Profile sequence diagram](images/Sequence_US_1_0_1_1_0_3_1_0_4_View_Steward_Profile.svg)
 
-### Image Upload
-![Sequence Diagram](images/Winter 401 SAPAA Sequence Diagram - Image Upload.svg)
+### US 1.0.2: Edit Own Profile
 
-### Gallery View
-![Sequence Diagram](images/Winter 401 SAPAA Sequence Diagram - Gallery View.svg)
+[Mermaid source](assets/Sequence_US_1_0_2_Edit_Own_Profile.mmd)
 
-### Site Profiles
-![Sequence Diagram](images/Winter 401 SAPAA Sequence Diagram - Site Profiles.svg)
+![US 1.0.2: Edit Own Profile sequence diagram](images/Sequence_US_1_0_2_Edit_Own_Profile.svg)
 
+### US 1.0.5: Earn Points for Inspection Activity
+
+[Mermaid source](assets/Sequence_US_1_0_5_Activity_Points.mmd)
+
+![US 1.0.5: Earn Points for Inspection Activity sequence diagram](images/Sequence_US_1_0_5_Activity_Points.svg)
+
+### US 2.0.1, 2.0.6: View Sites on the Map, Search and Filter
+
+[Mermaid source](assets/Sequence_US_2_0_1_2_0_6_Site_Map_Search_and_Filter.mmd)
+
+![US 2.0.1, 2.0.6: View Sites on the Map, Search and Filter sequence diagram](images/Sequence_US_2_0_1_2_0_6_Site_Map_Search_and_Filter.svg)
+
+### US 2.0.2: Add a New Site
+
+[Mermaid source](assets/Sequence_US_2_0_2_Add_Site.mmd)
+
+![US 2.0.2: Add a New Site sequence diagram](images/Sequence_US_2_0_2_Add_Site.svg)
+
+### US 2.0.3, 2.0.5: Deactivate, Reactivate and Update a Site
+
+[Mermaid source](assets/Sequence_US_2_0_3_2_0_5_Update_and_Deactivate_Site.mmd)
+
+![US 2.0.3, 2.0.5: Deactivate, Reactivate and Update a Site sequence diagram](images/Sequence_US_2_0_3_2_0_5_Update_and_Deactivate_Site.svg)
+
+### US 2.0.4: Delete a Site
+
+[Mermaid source](assets/Sequence_US_2_0_4_Delete_Site.mmd)
+
+![US 2.0.4: Delete a Site sequence diagram](images/Sequence_US_2_0_4_Delete_Site.svg)
+
+### US 2.0.8, 2.0.10: View a Site's Details From the Map
+
+[Mermaid source](assets/Sequence_US_2_0_8_2_0_10_Site_Details_From_Map.mmd)
+
+![US 2.0.8, 2.0.10: View a Site's Details From the Map sequence diagram](images/Sequence_US_2_0_8_2_0_10_Site_Details_From_Map.svg)
+
+### US 2.0.9: Upload a GPX Track of a Site Visit
+
+[Mermaid source](assets/Sequence_US_2_0_9_GPX_Track_Upload.mmd)
+
+![US 2.0.9: Upload a GPX Track of a Site Visit sequence diagram](images/Sequence_US_2_0_9_GPX_Track_Upload.svg)
+
+### US 2.0.11: Show Safety Information for a Site
+
+[Mermaid source](assets/Sequence_US_2_0_11_Site_Safety_Information.mmd)
+
+![US 2.0.11: Show Safety Information for a Site sequence diagram](images/Sequence_US_2_0_11_Site_Safety_Information.svg)
+
+### US 2.0.12, 2.0.13: Site To-Visit Priority and Reassessment Reminder
+
+[Mermaid source](assets/Sequence_US_2_0_12_2_0_13_Site_Priority_Score.mmd)
+
+![US 2.0.12, 2.0.13: Site To-Visit Priority and Reassessment Reminder sequence diagram](images/Sequence_US_2_0_12_2_0_13_Site_Priority_Score.svg)
+
+### US 3.0.2: Steward Designation
+
+[Mermaid source](assets/Sequence_US_3_0_2_Steward_Designation.mmd)
+
+![US 3.0.2: Steward Designation sequence diagram](images/Sequence_US_3_0_2_Steward_Designation.svg)
+
+### US 3.0.3: Export All Digital Files
+
+[Mermaid source](assets/Sequence_US_3_0_3_Export_All_Digital_Files.mmd)
+
+![US 3.0.3: Export All Digital Files sequence diagram](images/Sequence_US_3_0_3_Export_All_Digital_Files.svg)
+
+### US 4.0.2: Offline and Online Map Layers
+
+[Mermaid source](assets/Sequence_US_4_0_2_Offline_and_Online_Map_Layers.mmd)
+
+![US 4.0.2: Offline and Online Map Layers sequence diagram](images/Sequence_US_4_0_2_Offline_and_Online_Map_Layers.svg)
+
+### US 4.0.4: Edit My Previous Inspections
+
+[Mermaid source](assets/Sequence_US_4_0_4_Edit_My_Previous_Inspections.mmd)
+
+![US 4.0.4: Edit My Previous Inspections sequence diagram](images/Sequence_US_4_0_4_Edit_My_Previous_Inspections.svg)
+
+### US 4.0.5: iNaturalist Photo Import
+
+[Mermaid source](assets/Sequence_US_4_0_5_iNaturalist_Photo_Import.mmd)
+
+![US 4.0.5: iNaturalist Photo Import sequence diagram](images/Sequence_US_4_0_5_iNaturalist_Photo_Import.svg)
+
+### US 4.0.7: Show the Top iNaturalist Observations for a Site
+
+[Mermaid source](assets/Sequence_US_4_0_7_Top_iNaturalist_Observations.mmd)
+
+![US 4.0.7: Show the Top iNaturalist Observations for a Site sequence diagram](images/Sequence_US_4_0_7_Top_iNaturalist_Observations.svg)
+
+### US 5.0.2, 5.0.4: Password Reset and Sign Out
+
+[Mermaid source](assets/Sequence_US_5_0_2_5_0_4_Password_Reset_and_Sign_Out.mmd)
+
+![US 5.0.2, 5.0.4: Password Reset and Sign Out sequence diagram](images/Sequence_US_5_0_2_5_0_4_Password_Reset_and_Sign_Out.svg)
+
+### US 6.0.1: Site Geometry From the Shared Source
+
+[Mermaid source](assets/Sequence_US_6_0_1_Site_Geometry_Load.mmd)
+
+![US 6.0.1: Site Geometry From the Shared Source sequence diagram](images/Sequence_US_6_0_1_Site_Geometry_Load.svg)
+
+### US 7.0.1: Steward Exports Own SIR as PDF
+
+[Mermaid source](assets/Sequence_US_7_0_1_Steward_PDF_Export.mmd)
+
+![US 7.0.1: Steward Exports Own SIR as PDF sequence diagram](images/Sequence_US_7_0_1_Steward_PDF_Export.svg)
+
+### US 7.0.3, 7.0.4: Inspection Summaries
+
+[Mermaid source](assets/Sequence_US_7_0_3_7_0_4_Inspection_Summaries.mmd)
+
+![US 7.0.3, 7.0.4: Inspection Summaries sequence diagram](images/Sequence_US_7_0_3_7_0_4_Inspection_Summaries.svg)
+
+### US 7.0.5: Delete an Image and Clean Up After It
+
+[Mermaid source](assets/Sequence_US_7_0_5_Image_Delete_and_Cleanup.mmd)
+
+![US 7.0.5: Delete an Image and Clean Up After It sequence diagram](images/Sequence_US_7_0_5_Image_Delete_and_Cleanup.svg)
+
+### US 7.0.6, 7.0.7: Bulk SIR Export With Hidden Fields
+
+[Mermaid source](assets/Sequence_US_7_0_6_7_0_7_Bulk_SIR_Export_With_Hidden_Fields.mmd)
+
+![US 7.0.6, 7.0.7: Bulk SIR Export With Hidden Fields sequence diagram](images/Sequence_US_7_0_6_7_0_7_Bulk_SIR_Export_With_Hidden_Fields.svg)
+
+### US 7.0.8: Delete a Site Inspection Report
+
+[Mermaid source](assets/Sequence_US_7_0_8_Delete_SIR.mmd)
+
+![US 7.0.8: Delete a Site Inspection Report sequence diagram](images/Sequence_US_7_0_8_Delete_SIR.svg)
 
 ---
 
@@ -82,23 +234,34 @@ This is a low-fidelity projection of the end-product. The final design may take 
 ---
 
 ## List of Technologies Used
-### Backend: Supabase + PostgreSQL + AWS
-  * [Supabase Documentation](https://supabase.com/docs)  
-  * [PostgreSQL Documentation](https://www.postgresql.org/docs/) 
-  * [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) 
 
+### Web app (`webapp/`)
+  * [Next.js 16](https://nextjs.org/docs) with the App Router
+  * [React 19](https://react.dev/) and [TypeScript](https://www.typescriptlang.org/docs/)
+  * [MUI](https://mui.com/material-ui/) and [Tailwind CSS](https://tailwindcss.com/docs) for the user interface
+  * [Leaflet](https://leafletjs.com/) and [React Leaflet](https://react-leaflet.js.org/) for maps
+  * [React-pdf](https://react-pdf.org/) for the PDF export of inspection reports
+
+### Mobile app StewardLog (`FNR/`)
+The Fall 2025 team built the mobile app. The Winter 2026 team did not change it.
+  * [Expo 54](https://docs.expo.dev/) and [React Native 0.81](https://reactnative.dev/docs/getting-started)
+  * [expo-sqlite](https://docs.expo.dev/versions/latest/sdk/sqlite/) for the offline copy of site data
+  * [PDF.js](https://mozilla.github.io/pdf.js/) to show PDF reports in the app
+
+### Backend: Supabase + PostgreSQL + AWS
+  * [Supabase Documentation](https://supabase.com/docs) for the database and authentication
+  * [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+  * [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) for inspection photos
 
 ### Cloud Infrastructure & Cost Control
   * [AWS IAM](https://docs.aws.amazon.com/iam/)
   * [AWS Budgets & Billing Alerts](https://docs.aws.amazon.com/cost-management/)
 
-### Deployment: Cybera
-  * [Cybera Documentation](https://wiki.cybera.ca/spaces/RAC/pages/8880558/Rapid+Access+Cloud)
-
-### Mobile: React Native
-  * [React Native Documentation](https://reactnative.dev/docs/getting-started)
-  * [PDF.js Documentation](https://mozilla.github.io/pdf.js/)  
+### Deployment: Vercel
+  * [Vercel Documentation](https://vercel.com/docs) hosts the web app. See the [Deployment Manual](Deployment-manual.md).
+  * The team discussed Cybera as an alternative host. It is not in use.
 
 ### Testing & Tools
-  * [Jest Testing Framework](https://jestjs.io/)
-  * [Postman](https://www.postman.com/) for API testing  
+  * [Jest](https://jestjs.io/) for unit tests in the web app and the mobile app
+  * [Cypress](https://docs.cypress.io/) for end-to-end tests of the web app
+  * [GitHub Actions](https://docs.github.com/en/actions) runs the tests on each push

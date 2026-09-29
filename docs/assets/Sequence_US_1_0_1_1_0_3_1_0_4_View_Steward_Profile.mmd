@@ -1,0 +1,111 @@
+---
+title: "US 1.0.1, 1.0.3, 1.0.4: View a Steward Profile"
+config:
+  theme: base
+  sequence:
+    actorMargin: 70
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 38
+    noteMargin: 16
+    mirrorActors: true
+    width: 200
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Steward
+    participant Pages as Web pages<br/>HeaderDropdown menu,<br/>/detail/[namesite]
+    participant Profile as Profile page<br/>(Proposed)
+    participant Actions as Server actions<br/>utils/supabase/queries.ts
+    participant DB as Supabase<br/>PostgreSQL
+
+    Note over Steward,DB: Covers US 1.0.1, 1.0.3 and 1.0.4. No profile page exists in the code. All Profile page steps are Proposed.
+
+    alt Open own profile (1.0.1 AT2)
+        Steward->>Pages: Select "My Profile" in HeaderDropdown (Proposed)
+        Pages->>Profile: Open profile of signed-in user
+    else Open profile from a Site page (1.0.1 AT3)
+        Steward->>Pages: Select the steward on a SIR on /detail/[namesite]
+        Pages->>Profile: Open profile of the SIR user_id (Proposed)
+    end
+    activate Profile
+
+    Profile->>Actions: getStewardProfile(userId) (Proposed)
+    activate Actions
+    Actions->>Actions: Check session and approved account on server (Proposed)
+    Note right of Actions: Missing today: server actions use<br/>createServerSupabase, which bypasses RLS,<br/>and do no access check.
+
+    alt No valid session or account not approved
+        Actions-->>Profile: Refuse (401)
+        Profile-->>Steward: Go to /login
+    else Access allowed
+        Actions->>DB: Read name, contact info, skills, focus areas<br/>(profile store not decided)
+        activate DB
+        DB-->>Actions: Profile row or no row
+        deactivate DB
+        alt No profile for this user
+            Actions-->>Profile: Not found (404)
+            Profile-->>Steward: Show "Profile not found"
+        else Profile found
+            Actions->>DB: Read active W26_form_responses of user_id<br/>with W26_sites-pa name and inspection_date
+            activate DB
+            DB-->>Actions: SIR list (1.0.3 AT1)
+            deactivate DB
+            Actions->>Actions: Calculate SIR count and activity totals (1.0.4)
+            Actions-->>Profile: Profile, stats and SIR list
+            Profile-->>Steward: Show profile, quick stats and SIR history
+        end
+    end
+    deactivate Actions
+    Note over Profile,DB: Data is read again on each load, with no cache (1.0.1 AT5).<br/>A new SIR adds 1 to the count on next load (1.0.4 AT2).
+
+    opt Open a past SIR (1.0.3 AT2, AT3)
+        Steward->>Profile: Select a SIR in the history
+        Profile->>Pages: Open /detail/[namesite] at that SIR
+        Pages->>Actions: getFormResponsesBySite(namesite) (exists)
+        activate Actions
+        Actions->>DB: Read W26_form_responses and W26_answers
+        activate DB
+        DB-->>Actions: SIR answers
+        deactivate DB
+        Actions->>Actions: Remove answers the steward chose to hide (Proposed)
+        Actions-->>Pages: Visible answers only
+        deactivate Actions
+        Pages-->>Steward: Show the SIR
+    end
+
+    opt Go back (1.0.1 AT4)
+        Steward->>Profile: Select Back
+        Profile-->>Steward: Open previous page from navStack<br/>(handleBack pattern, NavigationTracker)
+    end
+    deactivate Profile
+
+    Note over Steward,DB: Open questions: where profile fields are stored, which answers count as "activities",<br/>how a steward marks answers as hidden, and whether legacy (inspectheader) SIRs count.

@@ -1,0 +1,95 @@
+---
+title: "US 2.0.8, 2.0.10: View a Site's Details From the Map"
+config:
+  theme: base
+  sequence:
+    actorMargin: 70
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 38
+    noteMargin: 16
+    mirrorActors: true
+    width: 200
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Steward
+    participant Map as Steward map page<br/>(Proposed)
+    participant Actions as Server actions<br/>utils/supabase/queries.ts
+    participant DB as Supabase<br/>PostgreSQL
+    participant Site as Site page<br/>/detail/[namesite]
+
+    Note over Steward,Site: Covers US 2.0.8, and US 2.0.10 on the Site page. The map page is Proposed (see US 2.0.1).<br/>getSiteByName and getFormResponsesBySite exist. The Site page uses the same functions.
+
+    Steward->>Map: Select a Site on the map
+    activate Map
+    Map-->>Steward: Highlight only the new selection (2.0.1 AT4)
+    Map->>Actions: getSiteByName(namesite) (exists)
+    activate Actions
+    Actions->>Actions: Check session and approved account (Proposed)
+    Note right of Actions: Missing today: no access check.<br/>createServerSupabase bypasses RLS.
+    Actions->>DB: Read W26_sites-pa where is_active,<br/>with W26_ab_counties and W26_form_responses dates
+    activate DB
+    DB-->>Actions: Site row or no row
+    deactivate DB
+
+    alt Site not found or inactive
+        Actions-->>Map: Empty list
+        Map-->>Steward: Show "Site not available"
+    else Site found
+        Actions-->>Map: Name, county, last inspection date
+        Map-->>Steward: Open the detail view (AT1)
+        Note right of Map: Same values as the Site page, because<br/>both use getSiteByName (AT2).
+    end
+    deactivate Actions
+
+    opt Select "View SIRs" (AT3)
+        Steward->>Map: Select "View SIRs"
+        Map->>Site: Open /detail/[namesite]
+        activate Site
+        Site->>Actions: getFormResponsesBySite(namesite) (exists)
+        activate Actions
+        Actions->>DB: Read active W26_form_responses and W26_answers
+        activate DB
+        DB-->>Actions: Past SIRs
+        deactivate DB
+        Actions-->>Site: Past SIRs
+        deactivate Actions
+        Site-->>Steward: Show past SIRs of the Site
+        deactivate Site
+    end
+    deactivate Map
+
+    opt Open an external link (US 2.0.10, UI only)
+        Steward->>Site: Select the SAPAA website link or the iNaturalist link (Proposed)
+        Site-->>Steward: Open the link in a new browser tab (target="_blank")
+        Note right of Site: No server call. The link text is a short URL.<br/>Link source per Site is an open question.<br/>A possible source: legacy<br/>sites_report_fnr_test has sapaaweb<br/>and inatmap (FNR/src/services/<br/>database.ts:503).
+    end

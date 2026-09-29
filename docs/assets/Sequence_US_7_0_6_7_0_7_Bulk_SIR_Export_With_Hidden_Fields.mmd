@@ -1,0 +1,81 @@
+---
+title: "US 7.0.6, 7.0.7 Bulk SIR Export With Hidden Fields"
+config:
+  theme: base
+  sequence:
+    actorMargin: 75
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 40
+    noteMargin: 16
+    mirrorActors: false
+    width: 190
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Admin
+    participant Page as Admin reports page<br/>PdfExportModal
+    participant Api as API route<br/>/api/pdf
+    participant Job as Background job<br/>processPdfJob, fetchReportData
+    participant DB as Supabase DB<br/>S26_pdf_jobs, W26_answers
+    participant S3 as AWS S3
+
+    Note over Admin,S3: Covers US 7.0.6 and 7.0.7. The PDF job flow exists. The code has no fixed limit of 50 SIRs.<br/>"(proposed)" = the step is not in the code today.
+
+    Admin->>Page: Select more than 50 SIRs (US 7.0.6)
+    Admin->>Page: Select questions to hide (US 7.0.7) (proposed)
+    Page->>Api: POST /api/pdf {mode: site or multi-site, siteNames,<br/>options: {selectedResponseIds, hiddenQuestionIds (proposed)}}
+    Api->>Api: Check caller is Admin (exists: user_metadata.role,<br/>proposed: trusted role source)
+    alt Caller is not Admin (7.0.6 AT 3, 7.0.7 AT 4)
+        Api-->>Page: 403. No job is made
+        Note over Admin,Api: A Steward who sends the same request directly is refused the same way
+    else Caller is Admin
+        Api->>DB: Insert S26_pdf_jobs row, status pending.<br/>request_payload keeps the options
+        Api-->>Page: 202 with jobId
+        Api->>Job: after(): processPdfJob(jobId)
+        loop Each batch of SIRs (proposed, batch size not decided)
+            Job->>DB: Read answers and attachments (read only).<br/>Today fetchReportData loads all SIRs of the sites, then filters by selectedResponseIds
+            Job->>Job: Remove answers of hiddenQuestionIds (proposed, 7.0.7 AT 2)
+            Job->>Job: Render pages. Same answers as the SIR page (7.0.6 AT 2)
+        end
+        alt Render or upload fails
+            Job->>DB: Set job failed with error
+            Note over Job,S3: The job only reads SIRs, so the stored reports stay unchanged (7.0.6 AT 4, 7.0.7 AT 3).
+        else All batches done
+            Job->>S3: Put the export file
+            Job->>DB: Set job complete with storage_path
+            Page->>Api: GET /api/pdf/status/{jobId}
+            Api-->>Page: Presigned download URL
+            Page-->>Admin: Export has each selected SIR (7.0.6 AT 1).<br/>With no hidden questions it has the full SIR (7.0.7 AT 5)
+        end
+    end
+
+    Note over Admin,S3: Open questions: the cause of the 50 SIR limit (the time limit of after(), memory,<br/>or the size of the request), one PDF or a zip of several PDFs, and if hidden fields<br/>are per question or per form section (selectedSections exists and filters by section).

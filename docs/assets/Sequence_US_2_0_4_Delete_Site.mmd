@@ -1,0 +1,95 @@
+---
+title: "US 2.0.4: Delete a Site"
+config:
+  theme: base
+  sequence:
+    actorMargin: 70
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 38
+    noteMargin: 16
+    mirrorActors: true
+    width: 200
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Admin
+    participant Page as Admin sites page<br/>/admin/sites
+    participant Actions as Server actions<br/>utils/supabase/queries.ts
+    participant DB as Supabase<br/>PostgreSQL
+    participant S3 as AWS S3
+
+    Note over Admin,S3: Covers US 2.0.4. No delete exists in the code. All steps are Proposed.<br/>Decision: delete all Site-owned data and files. Preserve user Profiles and the shared KML source.
+
+    Admin->>Page: Select "Delete Site"
+    activate Page
+    Page->>Actions: getSiteDeleteImpact(siteId)
+    activate Actions
+    Actions->>Actions: Check session and Admin role on server
+    Actions->>DB: Count the Site's SIRs, answers, attachments, homepage images,<br/>GPX tracks, Site fields, point records, safety and priority rows
+    activate DB
+    DB-->>Actions: Counts
+    deactivate DB
+    Actions-->>Page: Counts
+    deactivate Actions
+    Page-->>Admin: Ask to confirm. Name the number of affected records (AT1, AT2)
+
+    alt Admin cancels
+        Admin->>Page: Select Cancel
+        Page-->>Admin: Close the dialog. Nothing changes.
+    else Admin confirms
+        Admin->>Page: Select Confirm
+        Page->>Actions: deleteSite(siteId)
+        activate Actions
+        Actions->>Actions: Check session and Admin role on server
+        alt Caller is not an Admin
+            Actions-->>Page: Refuse (403), nothing deleted
+            Page-->>Admin: Show the error
+        else Caller is an Admin
+            Actions->>DB: Begin one transaction. Delete Site page fields, safety, priority,<br/>activity-point rows, GPX rows, homepage-image rows, attachments,<br/>SIR answers and SIRs, then delete W26_sites-pa (AT3).
+            alt Any step fails (AT4)
+                DB-->>Actions: Error. Roll back all steps.
+                Actions-->>Page: Deletion rejected
+                Page-->>Admin: Show the error. The Site and all records are unchanged.
+            else All steps done
+                DB-->>Actions: Commit
+                Actions->>S3: Delete the removed images and GPX files
+                S3-->>Actions: Done or error
+                Note right of Actions: S3 is outside the database transaction.<br/>A failed object deletion is logged for retry.<br/>It does not restore deleted database rows.
+                Actions-->>Page: Site deleted
+                Page-->>Admin: Remove the Site from the list
+            end
+        end
+        deactivate Actions
+    end
+    deactivate Page
+
+    Note over Admin,S3: In the local schema copy, W26_form_responses.site_id is ON DELETE RESTRICT, so deleteSite must perform<br/>the ordered transaction above. Profile SIR counts come from W26_form_responses and therefore follow the cascade.

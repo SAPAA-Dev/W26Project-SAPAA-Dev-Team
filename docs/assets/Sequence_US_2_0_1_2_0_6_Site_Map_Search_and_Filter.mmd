@@ -1,0 +1,117 @@
+---
+title: "US 2.0.1, 2.0.6: View Sites on the Map, Search and Filter"
+config:
+  theme: base
+  sequence:
+    actorMargin: 60
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 38
+    noteMargin: 16
+    mirrorActors: true
+    width: 190
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Steward
+    participant Map as Steward map page<br/>Leaflet (Proposed)
+    participant Tiles as OpenStreetMap<br/>tile server
+    participant Server as Server actions<br/>(Proposed)
+    participant DB as Supabase<br/>PostgreSQL
+    participant S3 as AWS S3
+
+    Note over Steward,S3: Covers US 2.0.1 and 2.0.6. Today the only map is the admin heat map in<br/>/admin/dashboard (components/Map.tsx). It geocodes Site names through /api/geocode<br/>(OpenCage). This flow replaces geocoding with stored geometry (US 6.0.1).
+
+    alt Open from the menu
+        Steward->>Map: Select Map in HeaderDropdown (Proposed)
+    else Open from a Site page (2.0.1 AT3)
+        Steward->>Map: Select "View on map" on /detail/[namesite] (Proposed)
+    end
+    activate Map
+    Map->>Tiles: Get base tiles
+    Tiles-->>Map: Tiles
+
+    Map->>Server: getSiteMapData()
+    activate Server
+    Server->>Server: Check session and approved account (Proposed)
+    alt No valid session or account not approved
+        Server-->>Map: Refuse (401)
+        Map-->>Steward: Go to /login
+    else Access allowed
+        Server->>DB: Read active W26_sites-pa rows, W26_ab_counties<br/>and Site geometry (US 6.0.1)
+        activate DB
+        DB-->>Server: Sites with boundary, centre point and county
+        deactivate DB
+        Server-->>Map: Site list
+        Map-->>Steward: Draw the boundary of each active Site (AT1)
+        Note right of Map: A Site with no geometry is not drawn.<br/>US 6.0.1 lists it for an Admin to fix.
+    end
+    deactivate Server
+
+    opt Map opened from a Site page
+        Map-->>Steward: Highlight that Site and zoom to it
+    end
+
+    opt Zoom to a Site that has GPX tracks (2.0.1 AT2)
+        Map->>Server: getSiteTracks(siteId)
+        activate Server
+        Server->>Server: Same session check as above
+        Server->>DB: Read W26_gpx_tracks rows of the Site (US 2.0.9)
+        activate DB
+        DB-->>Server: Track storage keys
+        deactivate DB
+        Server-->>Map: Short-lived presigned GET URLs
+        deactivate Server
+        Map->>S3: Get each GPX file
+        S3-->>Map: GPX files
+        Map-->>Steward: Draw tracks as lines in a style<br/>different from the boundary
+    end
+
+    opt Filter by county (2.0.6 AT1, AT2)
+        Steward->>Map: Select one or more counties
+        Map->>Map: Keep only Sites in those counties, in the browser (proposed).<br/>The /sites page has no county filter today.
+        Map-->>Steward: Show only matching Sites
+        Steward->>Map: Clear the filter
+        Map-->>Steward: Show all active Sites again
+    end
+
+    opt Search by name (2.0.6 AT3)
+        Steward->>Map: Type a Site name
+        Map-->>Steward: Show matching names. Same text match as<br/>the free-text search on the /sites page (exists there)
+        alt No match
+            Map-->>Steward: Show "No Sites found"
+        else Steward selects a match
+            Map-->>Steward: Centre the map on that Site
+        end
+    end
+    deactivate Map
+
+    Note over Steward,S3: Filter and search use the Site list that is already loaded. They make no server call.<br/>Open questions: GPX storage (see US 2.0.9) and the time window of tracks to show.
