@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAPAA - All Inspections</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="admin-inspections">
+<div class="stage">
+<div class="app">
+  <div id="accountBar"></div>
+  <header>
+    <div class="brand"><div class="logo"></div><div class="title">All Inspections</div></div>
+    <div class="navbtns" style="position:relative;">
+      <a class="navbtn" href="home.html">Home</a>
+      <button class="navbtn" onclick="toggleMenu(event)">Menu</button>
+      <div class="dropdown" id="navMenu">
+        <button class="dd-close" onclick="closeMenus()">Close</button>
+        <div class="dd-section">Admin</div>
+        <a class="dd-item" href="admin-dashboard.html">Dashboard<span class="dd-sub">View analytics and stats</span></a>
+        <a class="dd-item" onclick="showToast('Account Management (not built yet)')">Account Management<span class="dd-sub">Manage user accounts</span></a>
+        <a class="dd-item" href="admin-sites.html">Sites<span class="dd-sub">View and edit all sites</span></a>
+        <a class="dd-item" href="admin-inspections.html">All Inspections<span class="dd-sub">See all submitted SIRs</span></a>
+        <a class="dd-item" onclick="showToast('Form Editor (not built yet)')">Form Editor<span class="dd-sub">Edit inspection forms</span></a>
+      </div>
+    </div>
+  </header>
+  <div class="body-pad">
+    <div class="row" style="margin-bottom:16px; align-items:flex-end;">
+      <div><div class="field-label">From</div><input class="field-input" type="date" value="2026-01-01"></div>
+      <div><div class="field-label">To</div><input class="field-input" type="date" value="2026-09-28"></div>
+      <button class="btn" style="height:30px;">Apply</button>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-label">Total SIRs</div><div class="stat-value">312</div></div>
+      <div class="stat-card"><div class="stat-label">Sites Inspected</div><div class="stat-value">180</div></div>
+      <div class="stat-card"><div class="stat-label">Most Common Reason</div><div class="stat-value" style="font-size:15px;">Routine Visit</div></div>
+      <div class="stat-card"><div class="stat-label">Avg. Naturalness</div><div class="stat-value">7.1</div></div>
+    </div>
+
+    <table class="wf-table">
+      <tr><th>Site</th><th>Steward</th><th>Date</th><th>Score</th></tr>
+      <tr class="clickable" onclick="location.href='report.html?site=beaver-hills'"><td>Beaver Hills Site</td><td>Jamie Rivera</td><td>2026-08-14</td><td>7.2</td></tr>
+      <tr class="clickable" onclick="location.href='report.html?site=blackfoot'"><td>Blackfoot Site</td><td>Priya Nandan</td><td>2026-05-02</td><td>6.8</td></tr>
+      <tr class="clickable" onclick="location.href='report.html?site=gooseberry'"><td>Gooseberry Site</td><td>Morgan Lee</td><td>2025-11-20</td><td>7.5</td></tr>
+      <tr class="clickable" onclick="location.href='report.html'"><td>Elk Ridge Site</td><td>Jamie Rivera</td><td>2025-09-10</td><td>6.0</td></tr>
+      <tr class="clickable" onclick="location.href='report.html'"><td>Cold Lake Site</td><td>Morgan Lee</td><td>2025-07-03</td><td>8.1</td></tr>
+    </table>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

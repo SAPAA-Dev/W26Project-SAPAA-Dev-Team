@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAPAA - Site Map</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="map">
+<div class="stage">
+<div class="app">
+  <div id="accountBar"></div>
+  <header>
+    <div class="brand"><div class="logo"></div><div class="title">Protected Areas</div></div>
+    <div class="navbtns" style="position:relative;">
+      <a class="navbtn" href="home.html">Home</a>
+      <button class="navbtn" onclick="toggleMenu(event)">Menu</button>
+      <div class="dropdown" id="navMenu">
+        <button class="dd-close" onclick="closeMenus()">Close</button>
+        <div class="dd-section">Admin</div>
+        <a class="dd-item" href="admin-dashboard.html">Admin<span class="dd-sub">Go to admin dashboard</span></a>
+        <div class="dd-section">Pages</div>
+        <a class="dd-item" href="home.html">Home<span class="dd-sub">Go to Homepage</span></a>
+        <a class="dd-item" href="gallery.html">Image Gallery<span class="dd-sub">Go to gallery</span></a>
+        <div class="dd-section">Help</div>
+        <a class="dd-item" onclick="showToast('Tutorial coming soon')">App tutorial<span class="dd-sub">Replay the walkthrough</span></a>
+        <a class="dd-item" onclick="showToast('Reach us at sapaa@example.org')">Contact us<span class="dd-sub">Send us a message</span></a>
+        <a class="dd-item danger" onclick="signOut()">Logout</a>
+      </div>
+    </div>
+  </header>
+  <div class="body-pad">
+    <h3 style="margin:0 0 10px;">Site Map</h3>
+
+    <div class="layer-toggle">
+      <span>Map Layer:</span>
+      <button id="btnOnline" class="active" onclick="setLayer('online')">Online</button>
+      <button id="btnOffline" onclick="setLayer('offline')">Offline</button>
+      <span id="layerStatus" style="color:#555;">Live tiles</span>
+    </div>
+    <div class="banner offline" id="offlineBanner" style="display:none;">You're viewing offline data — 3 areas downloaded for offline use. Tiles outside those areas won't load.</div>
+
+    <div class="row" style="align-items:center; margin-bottom:6px;">
+      <input class="searchbar" style="flex:1; margin-bottom:0;" placeholder="Search by site name...">
+      <div class="map-wrap">
+        <button class="btn" onclick="toggleFilter(event)">Filter</button>
+        <div class="filter-dd" id="filterDD">
+          <div style="margin-bottom:6px;">Filter by County:</div>
+          <label><input type="checkbox" checked onchange="applyCountyFilter()" value="Leduc"> Leduc County</label>
+          <label><input type="checkbox" checked onchange="applyCountyFilter()" value="Parkland"> Parkland County</label>
+          <label><input type="checkbox" checked onchange="applyCountyFilter()" value="Strathcona"> Strathcona County</label>
+          <label><input type="checkbox" checked onchange="applyCountyFilter()" value="Brazeau"> Brazeau County</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-wrap">
+      <div class="map-area" id="mapArea">
+        <div class="boundary" data-county="Leduc" style="left:35px; top:150px; width:70px; height:70px;"></div>
+        <div class="pin" data-county="Leduc" style="left:60px; top:170px;" onclick="location.href='report.html?site=beaver-hills'"><svg viewBox="0 0 24 32"><path d="M12 0C5 0 0 5 0 12c0 9 12 20 12 20s12-11 12-20c0-7-5-12-12-12z" fill="#111"/><circle cx="12" cy="12" r="4" fill="#fff"/></svg></div>
+
+        <svg class="gpx-track" style="left:220px; top:90px;" width="120" height="90" viewBox="0 0 120 90">
+          <path d="M5,80 Q30,20 60,45 T115,10" fill="none" stroke="#3d5a80" stroke-width="2" stroke-dasharray="5,4"/>
+        </svg>
+        <div class="pin" data-county="Parkland" style="left:260px; top:130px;" onclick="location.href='report.html?site=blackfoot'"><svg viewBox="0 0 24 32"><path d="M12 0C5 0 0 5 0 12c0 9 12 20 12 20s12-11 12-20c0-7-5-12-12-12z" fill="#111"/><circle cx="12" cy="12" r="4" fill="#fff"/></svg></div>
+
+        <div class="pin" data-county="Strathcona" style="left:460px; top:170px;" onclick="location.href='report.html?site=gooseberry'"><svg viewBox="0 0 24 32"><path d="M12 0C5 0 0 5 0 12c0 9 12 20 12 20s12-11 12-20c0-7-5-12-12-12z" fill="#111"/><circle cx="12" cy="12" r="4" fill="#fff"/></svg></div>
+      </div>
+    </div>
+    <div class="map-legend">
+      <span>&#9679; Site (click to open details)</span>
+      <span style="border:2px dashed #777; padding:0 6px;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span>Site boundary</span>
+      <span style="color:#3d5a80;">- - -</span><span>GPX track from a past visit</span>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+</div>
+<script src="app.js"></script>
+<script>
+function setLayer(mode){
+  document.getElementById('btnOnline').classList.toggle('active', mode==='online');
+  document.getElementById('btnOffline').classList.toggle('active', mode==='offline');
+  document.getElementById('layerStatus').textContent = mode==='online' ? 'Live tiles' : 'Cached tiles (3 areas downloaded)';
+  document.getElementById('offlineBanner').style.display = mode==='offline' ? 'block' : 'none';
+}
+function toggleFilter(e){ e.stopPropagation(); document.getElementById('filterDD').classList.toggle('show'); }
+function applyCountyFilter(){
+  var checked = Array.from(document.querySelectorAll('#filterDD input:checked')).map(function(c){return c.value;});
+  document.querySelectorAll('#mapArea .pin, #mapArea .boundary').forEach(function(p){
+    p.classList.toggle('dim', checked.indexOf(p.dataset.county) === -1);
+  });
+}
+</script>
+</body>
+</html>

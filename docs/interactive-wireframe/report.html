@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAPAA - Site Report</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="report">
+<div class="stage">
+<div class="app">
+  <div id="accountBar"></div>
+  <header>
+    <div class="brand"><div class="logo"></div><div class="title">Site Name</div></div>
+    <div class="navbtns" style="position:relative;">
+      <a class="navbtn" href="home.html">Home</a>
+      <button class="navbtn" onclick="toggleMenu(event)">Menu</button>
+      <div class="dropdown" id="navMenu">
+        <button class="dd-close" onclick="closeMenus()">Close</button>
+        <div class="dd-section">Admin</div>
+        <a class="dd-item" href="admin-dashboard.html">Admin<span class="dd-sub">Go to admin dashboard</span></a>
+        <div class="dd-section">Pages</div>
+        <a class="dd-item" href="home.html">Home<span class="dd-sub">Go to Homepage</span></a>
+        <a class="dd-item" href="gallery.html">Image Gallery<span class="dd-sub">Go to gallery</span></a>
+        <div class="dd-section">Help</div>
+        <a class="dd-item" onclick="showToast('Tutorial coming soon')">App tutorial<span class="dd-sub">Replay the walkthrough</span></a>
+        <a class="dd-item" onclick="showToast('Reach us at sapaa@example.org')">Contact us<span class="dd-sub">Send us a message</span></a>
+        <a class="dd-item danger" onclick="signOut()">Logout</a>
+      </div>
+    </div>
+  </header>
+  <div class="body-pad">
+
+    <div class="row" style="margin-bottom:18px;">
+      <div class="box" style="flex:1; padding:10px 12px;"><div class="stat-label">County</div><div class="bar w2" style="margin-top:6px;"></div></div>
+      <div class="box" style="flex:1; padding:10px 12px;"><div class="stat-label">Last Inspected</div><div class="bar w3" style="margin-top:6px;"></div></div>
+      <div class="box" style="flex:1; padding:10px 12px;">
+        <div class="stat-label">Assigned Steward</div>
+        <div style="margin-top:6px; font-size:13px;"><a class="plain" style="text-decoration:underline;" href="profile-view.html?user=morgan-lee">Morgan Lee</a></div>
+      </div>
+    </div>
+
+    <div class="searchbar" style="text-align:center; font-weight:bold;">Naturalness Score: 7.2 / 10</div>
+
+    <div class="row" style="margin:14px 0 16px; align-items:center;">
+      <div style="flex:1; min-width:220px;">
+        <div class="field-label">Upload GPX Track of this Visit</div>
+        <input type="file" id="gpxInput" accept=".gpx" onchange="handleGpx(this)">
+        <div id="gpxConfirm" style="font-size:11px; color:var(--ok); margin-top:6px; display:none;">&#10003; <span id="gpxName"></span> uploaded and linked to this site.</div>
+      </div>
+    </div>
+
+    <button class="btn" style="display:block; width:100%; margin:0 0 16px; font-weight:bold;" onclick="toggleSection('reportForm')">New Inspection Report</button>
+    <div class="card" id="reportForm" style="display:none; margin-bottom:20px;">
+      <h3 style="margin-top:0;">Inspection Report</h3>
+      <div class="bar w1"></div><div class="bar w4"></div>
+      <p style="font-weight:bold; margin-top:18px;">Pictures from the site</p>
+      <div style="display:flex; gap:14px;">
+        <div class="ph-img" style="width:110px; height:110px;"></div>
+        <div class="ph-img" style="width:110px; height:110px;"></div>
+      </div>
+      <button class="btn ok" style="margin-top:16px;" onclick="toggleSection('reportForm'); showToast('Inspection report submitted')">Submit</button>
+    </div>
+
+    <button class="btn" style="display:block; width:100%; margin:0 0 16px; font-weight:bold;" onclick="toggleSection('compareForm')">Compare Answers Over Time</button>
+    <div class="card" id="compareForm" style="display:none; margin-bottom:20px;">
+      <div class="field-label">Question</div>
+      <select class="field-input" style="margin-bottom:16px;">
+        <option>Q63 - Motorized Disturbance</option>
+        <option>Q31 - Naturalness Score</option>
+        <option>Q42 - Reason for Visit</option>
+      </select>
+      <table class="wf-table">
+        <tr><th>Year</th><th>Answer</th></tr>
+        <tr><td>2026</td><td>None observed</td></tr>
+        <tr><td>2025</td><td>Minor — 1 ATV track</td></tr>
+        <tr><td>2024</td><td>None observed</td></tr>
+        <tr><td>2023</td><td>Moderate — 2 vehicles</td></tr>
+      </table>
+    </div>
+
+    <h3 style="margin:0 0 10px;">Past Inspections for this Site</h3>
+    <table class="wf-table" id="inspectionsTable">
+      <tr><th>Date</th><th>Steward</th><th>Score</th><th>Actions</th></tr>
+      <tr class="clickable" data-steward="Jamie Rivera">
+        <td>2026-08-14</td>
+        <td><a class="plain" style="text-decoration:underline;" href="profile-view.html?user=jamie-rivera">Jamie Rivera</a><span class="mine-badge you-badge" style="display:none;">You</span></td>
+        <td>7.2</td>
+        <td>
+          <button class="btn white" style="font-size:11px; padding:4px 8px;" onclick="showToast('Opening submitted report')">View</button>
+          <button class="btn mine-only" style="display:none; font-size:11px; padding:4px 8px;" onclick="toggleSection('editRow1')">Edit</button>
+          <button class="btn mine-only" style="display:none; font-size:11px; padding:4px 8px;" onclick="showToast('PDF exported')">Export PDF</button>
+        </td>
+      </tr>
+      <tr><td colspan="4" style="padding:0; border:none;">
+        <div class="card" id="editRow1" style="display:none; margin:8px 0;">
+          <div class="field-label">Naturalness Score</div>
+          <input class="field-input" value="7.2">
+          <div class="field-label">Notes</div>
+          <input class="field-input" value="Trail conditions good, minor erosion near creek crossing.">
+          <button class="btn ok" onclick="toggleSection('editRow1'); showToast('Inspection updated')">Save</button>
+          <button class="btn white" onclick="toggleSection('editRow1')">Cancel</button>
+        </div>
+      </td></tr>
+      <tr data-steward="Priya Nandan">
+        <td>2026-05-02</td>
+        <td><a class="plain" style="text-decoration:underline;" href="profile-view.html?user=priya-nandan">Priya Nandan</a></td>
+        <td>6.8</td>
+        <td><button class="btn white" style="font-size:11px; padding:4px 8px;" onclick="showToast('Opening submitted report')">View</button></td>
+      </tr>
+      <tr data-steward="Morgan Lee">
+        <td>2025-11-20</td>
+        <td><a class="plain" style="text-decoration:underline;" href="profile-view.html?user=morgan-lee">Morgan Lee</a></td>
+        <td>7.5</td>
+        <td><button class="btn white" style="font-size:11px; padding:4px 8px;" onclick="showToast('Opening submitted report')">View</button></td>
+      </tr>
+    </table>
+
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+</div>
+<script src="app.js"></script>
+<script>
+function toggleSection(id){ var f=document.getElementById(id); f.style.display = f.style.display==='none' ? 'block' : 'none'; }
+function handleGpx(input){
+  if(input.files && input.files[0]){
+    document.getElementById('gpxName').textContent = input.files[0].name;
+    document.getElementById('gpxConfirm').style.display = 'block';
+  }
+}
+document.addEventListener('DOMContentLoaded', function(){
+  if(getRole()==='steward' && getSignedIn()){
+    document.querySelectorAll('.mine-only, .mine-badge').forEach(function(el){ el.style.display = ''; });
+  }
+});
+</script>
+</body>
+</html>

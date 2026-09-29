@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAPAA - Admin: Sites</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="admin-sites">
+<div class="stage">
+<div class="app">
+  <div id="accountBar"></div>
+  <header>
+    <div class="brand"><div class="logo"></div><div class="title">Admin:Protected Areas</div></div>
+    <div class="navbtns" style="position:relative;">
+      <a class="navbtn" href="home.html">Home</a>
+      <button class="navbtn" onclick="toggleMenu(event)">Menu</button>
+      <div class="dropdown" id="navMenu">
+        <button class="dd-close" onclick="closeMenus()">Close</button>
+        <div class="dd-section">Admin</div>
+        <a class="dd-item" href="admin-dashboard.html">Dashboard<span class="dd-sub">View analytics and stats</span></a>
+        <a class="dd-item" onclick="showToast('Account Management (not built yet)')">Account Management<span class="dd-sub">Manage user accounts</span></a>
+        <a class="dd-item" href="admin-sites.html">Sites<span class="dd-sub">View and edit all sites</span></a>
+        <a class="dd-item" href="admin-inspections.html">All Inspections<span class="dd-sub">See all submitted SIRs</span></a>
+        <a class="dd-item" onclick="showToast('Form Editor (not built yet)')">Form Editor<span class="dd-sub">Edit inspection forms</span></a>
+      </div>
+    </div>
+  </header>
+  <div class="body-pad">
+    <div class="row" style="margin-bottom:16px;">
+      <div class="box chip"></div><div class="box chip"></div><div class="box chip"></div><div class="box chip"></div><div class="box chip"></div>
+    </div>
+    <input class="searchbar" placeholder="Search by site name or county">
+
+    <div class="banner warn" id="geomBanner">
+      <span>&#9888; 3 sites are missing matched geometry from the shared government source.</span>
+      <button class="btn warn" onclick="showToast('Opens geometry-matching tool')">Review</button>
+    </div>
+
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-bottom:18px;">
+      <button class="btn" onclick="toggleAddSite(true)">Add Site</button>
+      <button class="btn">Bulk PDF</button>
+      <button class="btn">Export</button>
+      <button class="btn">Sort</button>
+    </div>
+
+    <!-- Add Site form -->
+    <div class="modal" id="addSiteForm" style="display:none; width:100%; max-width:420px;">
+      <h3>Add Site</h3>
+      <div class="field-label">Site Name</div>
+      <input class="field-input" id="newSiteName">
+      <div class="field-error-text">Site name is required.</div>
+      <div class="warning-box">&#9888; A site with a similar name already exists: "Beaver Hills Site". Check before saving to avoid a duplicate.</div>
+
+      <div class="field-label">County</div>
+      <select class="field-input" id="newSiteCounty">
+        <option value="">Select a county...</option>
+        <option>Leduc County</option>
+        <option>Parkland County</option>
+        <option>Strathcona County</option>
+        <option>Brazeau County</option>
+      </select>
+      <div class="field-error-text">County is required.</div>
+
+      <div class="field-label">Site Visibility</div>
+      <select class="field-input"><option>Public</option><option>Stewards Only</option></select>
+
+      <div class="field-label">Boundary</div>
+      <button class="btn white" style="width:100%; margin-bottom:14px;" onclick="showToast('Opens map in boundary-drawing mode')">Select Boundary on Map</button>
+
+      <div class="modal-actions">
+        <button class="btn" onclick="submitAddSite()">Add</button>
+        <button class="btn white" onclick="toggleAddSite(false)">Cancel</button>
+      </div>
+    </div>
+
+    <div class="row" id="sitesGrid">
+      <div class="card site-card" style="width:200px;" id="siteCardA">
+        <div class="bar w2"></div><div class="bar w2"></div>
+        <div class="card-actions">
+          <button class="btn white" onclick="location.href='report.html?site=beaver-hills'">View</button>
+          <button class="btn" onclick="toggleEdit('siteCardA')">Update</button>
+          <button class="btn warn" onclick="toggleDeactivate('siteCardA')">Deactivate</button>
+          <button class="btn danger" onclick="deleteSite('siteCardA')">Delete</button>
+        </div>
+        <div class="edit-panel" id="siteCardA_edit" style="display:none; margin-top:10px;">
+          <input class="field-input" placeholder="Site name" value="Beaver Hills Site">
+          <input class="field-input" placeholder="County" value="Leduc County">
+          <label style="font-size:11px; display:block; margin-bottom:6px;"><input type="checkbox" checked> Show naturalness score on public page</label>
+          <label style="font-size:11px; display:block; margin-bottom:10px;"><input type="checkbox" checked> Show assigned steward</label>
+          <button class="btn ok" onclick="toggleEdit('siteCardA'); showToast('Site updated')">Save</button>
+          <button class="btn white" onclick="toggleEdit('siteCardA')">Cancel</button>
+        </div>
+      </div>
+      <div class="card site-card" style="width:200px;" id="siteCardB">
+        <div class="bar w2"></div><div class="bar w2"></div>
+        <div class="card-actions">
+          <button class="btn white" onclick="location.href='report.html?site=blackfoot'">View</button>
+          <button class="btn" onclick="toggleEdit('siteCardB')">Update</button>
+          <button class="btn warn" onclick="toggleDeactivate('siteCardB')">Deactivate</button>
+          <button class="btn danger" onclick="deleteSite('siteCardB')">Delete</button>
+        </div>
+        <div class="edit-panel" id="siteCardB_edit" style="display:none; margin-top:10px;">
+          <input class="field-input" placeholder="Site name" value="Blackfoot Site">
+          <input class="field-input" placeholder="County" value="Parkland County">
+          <button class="btn ok" onclick="toggleEdit('siteCardB'); showToast('Site updated')">Save</button>
+          <button class="btn white" onclick="toggleEdit('siteCardB')">Cancel</button>
+        </div>
+      </div>
+      <div class="card site-card" style="width:200px;" id="siteCardC">
+        <div class="bar w1"></div>
+        <div class="card-actions">
+          <button class="btn white" onclick="location.href='report.html?site=gooseberry'">View</button>
+          <button class="btn" onclick="toggleEdit('siteCardC')">Update</button>
+          <button class="btn warn" onclick="toggleDeactivate('siteCardC')">Deactivate</button>
+          <button class="btn danger" onclick="deleteSite('siteCardC')">Delete</button>
+        </div>
+        <div class="edit-panel" id="siteCardC_edit" style="display:none; margin-top:10px;">
+          <input class="field-input" placeholder="Site name" value="Gooseberry Site">
+          <input class="field-input" placeholder="County" value="Strathcona County">
+          <button class="btn ok" onclick="toggleEdit('siteCardC'); showToast('Site updated')">Save</button>
+          <button class="btn white" onclick="toggleEdit('siteCardC')">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="confirmOverlay">
+    <div class="modal">
+      <h3>Delete Site</h3>
+      <p id="confirmMessage" style="font-size:12px;"></p>
+      <div class="modal-actions">
+        <button class="btn danger" onclick="confirmYes()">Delete</button>
+        <button class="btn white" onclick="closeConfirm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+</div>
+<script src="app.js"></script>
+<script>
+function toggleAddSite(show){
+  document.getElementById('addSiteForm').style.display = show ? 'block' : 'none';
+  document.getElementById('sitesGrid').style.display = show ? 'none' : 'flex';
+}
+function submitAddSite(){
+  if(validateRequired(['newSiteName','newSiteCounty'])){
+    toggleAddSite(false);
+    showToast('Site added');
+  }
+}
+function toggleEdit(id){
+  var card = document.getElementById(id);
+  card.querySelector('.card-actions').style.display = card.querySelector('.card-actions').style.display==='none' ? 'flex' : 'none';
+  var panel = document.getElementById(id+'_edit');
+  panel.style.display = panel.style.display==='none' ? 'block' : 'none';
+}
+function toggleDeactivate(id){
+  var card = document.getElementById(id);
+  var isInactive = card.classList.toggle('inactive');
+  var btn = card.querySelector('.btn.warn');
+  var existingTag = card.querySelector('.tag.inactive-tag');
+  if(isInactive){
+    btn.textContent = 'Reactivate';
+    if(!existingTag){
+      var tag = document.createElement('div');
+      tag.className = 'tag inactive-tag';
+      tag.textContent = 'Inactive';
+      card.insertBefore(tag, card.querySelector('.card-actions'));
+    }
+    showToast('Site deactivated — hidden from search and pickers');
+  } else {
+    btn.textContent = 'Deactivate';
+    if(existingTag) existingTag.remove();
+    showToast('Site reactivated');
+  }
+}
+function deleteSite(id){
+  openConfirm('This site has 4 inspection reports and 9 images linked to it. Deleting it will remove all of them permanently. This cannot be undone.', function(){
+    document.getElementById(id).remove();
+    showToast('Site deleted');
+  });
+}
+</script>
+</body>
+</html>

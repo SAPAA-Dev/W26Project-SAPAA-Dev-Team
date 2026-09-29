@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAPAA - Sign In</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="signin">
+<div class="stage">
+<div class="app">
+  <header><div class="brand"><div class="logo"></div><div class="title">Protected Areas</div></div></header>
+  <div class="center-page">
+    <div class="auth-box">
+      <h2>Sign In</h2>
+      <p class="subtitle" style="margin-bottom:18px;">This is a wireframe — one sign-in flow for everyone, no role picker. <em>Prototype note:</em> signing in gives you full Admin access so every feature is reachable right away. Once you're in, use "Switch to Steward view" in the top bar to preview the restricted steward experience.</p>
+
+      <div class="field-label">Email</div>
+      <input class="field-input" placeholder="you@example.com">
+      <div class="field-label">Password</div>
+      <input class="field-input" type="password" placeholder="••••••••">
+
+      <button class="btn" style="width:100%; margin-top:4px;" onclick="signIn('admin'); location.href='home.html';">Sign In</button>
+
+      <div class="link-line"><a onclick="location.href='reset-password.html'">Forgot password?</a></div>
+      <div class="link-line"><a onclick="location.href='home.html'">Skip sign-in &rarr; browse as guest</a></div>
+    </div>
+  </div>
+</div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

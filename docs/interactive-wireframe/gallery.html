@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAPAA - Image Gallery</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="gallery">
+<div class="stage">
+<div class="app">
+  <div id="accountBar"></div>
+  <header>
+    <div class="brand"><div class="logo"></div><div class="title">Image Gallery</div></div>
+    <div class="navbtns" style="position:relative;">
+      <a class="navbtn" href="home.html">Home</a>
+      <button class="navbtn" onclick="toggleMenu(event)">Menu</button>
+      <div class="dropdown" id="navMenu">
+        <button class="dd-close" onclick="closeMenus()">Close</button>
+        <div class="dd-section">Admin</div>
+        <a class="dd-item" href="admin-dashboard.html">Admin<span class="dd-sub">Go to admin dashboard</span></a>
+        <div class="dd-section">Pages</div>
+        <a class="dd-item" href="home.html">Home<span class="dd-sub">Go to Homepage</span></a>
+        <a class="dd-item" href="gallery.html">Image Gallery<span class="dd-sub">Go to gallery</span></a>
+        <div class="dd-section">Help</div>
+        <a class="dd-item" onclick="showToast('Tutorial coming soon')">App tutorial<span class="dd-sub">Replay the walkthrough</span></a>
+        <a class="dd-item" onclick="showToast('Reach us at sapaa@example.org')">Contact us<span class="dd-sub">Send us a message</span></a>
+        <a class="dd-item danger" onclick="signOut()">Logout</a>
+      </div>
+    </div>
+  </header>
+  <div class="body-pad">
+    <input class="searchbar" placeholder="Search">
+    <div class="gallery-row" id="galleryItem">
+      <div class="ph-img" style="width:160px; height:220px;"></div>
+      <div style="flex:1;">
+        <p style="font-weight:bold; margin:0 0 8px;">Beaver Hills Site</p>
+        <div class="bar w1"></div><div class="bar w2"></div><div class="bar w2"></div>
+        <div class="gallery-actions">
+          <button class="btn" onclick="window.open('about:blank','_blank')">Open image in new tab</button>
+          <button class="btn danger admin-only" style="display:none;" onclick="confirmDelete()">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="confirmOverlay">
+    <div class="modal">
+      <h3>Delete Image</h3>
+      <p id="confirmMessage" style="font-size:12px;"></p>
+      <div class="modal-actions">
+        <button class="btn danger" onclick="confirmYes()">Delete</button>
+        <button class="btn white" onclick="closeConfirm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+</div>
+<script src="app.js"></script>
+<script>
+function confirmDelete(){
+  openConfirm('Delete this image? It will be removed from the site gallery and permanently deleted from storage. This cannot be undone.', function(){
+    document.getElementById('galleryItem').style.opacity = '0.25';
+    showToast('Image deleted');
+  });
+}
+</script>
+</body>
+</html>

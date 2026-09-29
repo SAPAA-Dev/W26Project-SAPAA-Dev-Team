@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAPAA - Admin Dashboard</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="admin-dashboard">
+<div class="stage">
+<div class="app">
+  <div id="accountBar"></div>
+  <header>
+    <div class="brand"><div class="logo"></div><div class="title">Admin Dashboard</div></div>
+    <div class="navbtns" style="position:relative;">
+      <a class="navbtn" href="home.html">Home</a>
+      <button class="navbtn" onclick="toggleMenu(event)">Menu</button>
+      <div class="dropdown" id="navMenu">
+        <button class="dd-close" onclick="closeMenus()">Close</button>
+        <div class="dd-section">Admin</div>
+        <a class="dd-item" href="admin-dashboard.html">Dashboard<span class="dd-sub">View analytics and stats</span></a>
+        <a class="dd-item" onclick="showToast('Account Management (not built yet)')">Account Management<span class="dd-sub">Manage user accounts</span></a>
+        <a class="dd-item" href="admin-sites.html">Sites<span class="dd-sub">View and edit all sites</span></a>
+        <a class="dd-item" href="admin-inspections.html">All Inspections<span class="dd-sub">See all submitted SIRs</span></a>
+        <a class="dd-item" onclick="showToast('Form Editor (not built yet)')">Form Editor<span class="dd-sub">Edit inspection forms</span></a>
+      </div>
+    </div>
+  </header>
+  <div class="body-pad">
+    <div class="row" style="margin-bottom:16px;">
+      <div class="card" style="flex:1;">Total Records</div>
+      <a class="plain" style="flex:1;" href="gallery.html"><div class="card clickable">Image Gallery</div></a>
+      <a class="plain" style="flex:1;" href="report.html"><div class="card clickable">Last Record</div></a>
+      <a class="plain" style="flex:1;" href="admin-inspections.html"><div class="card clickable">All Inspections</div></a>
+    </div>
+    <div class="row">
+      <div class="box" style="flex:1; height:150px;"></div>
+      <div class="box" style="flex:1; height:150px;"></div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

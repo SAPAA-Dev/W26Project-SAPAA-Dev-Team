@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAPAA - Home</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="home">
+<div class="stage">
+<div class="app">
+  <div id="accountBar"></div>
+  <header>
+    <div class="brand"><div class="logo"></div><div>
+      <div class="title">Protected Areas</div>
+      <div class="subtitle">Monitor and track site inspections across Alberta</div>
+    </div></div>
+    <div class="navbtns" style="position:relative;">
+      <a class="navbtn" href="home.html">Home</a>
+      <button class="navbtn" onclick="toggleMenu(event)">Menu</button>
+      <div class="dropdown" id="navMenu">
+        <button class="dd-close" onclick="closeMenus()">Close</button>
+        <div class="dd-section">Admin</div>
+        <a class="dd-item" href="admin-dashboard.html">Admin<span class="dd-sub">Go to admin dashboard</span></a>
+        <div class="dd-section">Pages</div>
+        <a class="dd-item" href="home.html">Home<span class="dd-sub">Go to Homepage</span></a>
+        <a class="dd-item" href="gallery.html">Image Gallery<span class="dd-sub">Go to gallery</span></a>
+        <div class="dd-section">Help</div>
+        <a class="dd-item" onclick="showToast('Tutorial coming soon')">App tutorial<span class="dd-sub">Replay the walkthrough</span></a>
+        <a class="dd-item" onclick="showToast('Reach us at sapaa@example.org')">Contact us<span class="dd-sub">Send us a message</span></a>
+        <a class="dd-item danger" onclick="signOut()">Logout</a>
+      </div>
+    </div>
+  </header>
+  <div class="body-pad">
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-label">Total Sites</div><div class="stat-value">270</div></div>
+      <div class="stat-card"><div class="stat-label">Total Inspected Sites</div><div class="stat-value">180</div></div>
+      <div class="stat-card"><div class="stat-label">Total Responses</div><div class="stat-value">3159</div></div>
+      <div class="stat-card"><div class="stat-label">Needs Attention</div><div class="stat-value">117</div></div>
+    </div>
+
+    <input class="searchbar" style="margin-bottom:0;" placeholder="Search by site name or county...">
+    <div class="results-row">
+      <div class="results-count">270 sites found</div>
+      <button class="btn">&#8593;&#8595; Sort</button>
+    </div>
+
+    <div class="sites-list">
+      <a class="plain" href="report.html?site=beaver-hills"><div class="card clickable site-card">
+        <div class="site-card-top"><div class="bar w3" style="margin:0;"></div><span class="chevron">&rsaquo;</span></div>
+        <div class="meta-line"><span class="meta-dot"></span><div class="bar w4" style="margin:0;"></div></div>
+        <div class="meta-line"><span class="meta-dot"></span><div class="bar w5" style="margin:0;"></div></div>
+        <div class="tag">Past Year</div>
+      </div></a>
+      <a class="plain" href="report.html?site=blackfoot"><div class="card clickable site-card">
+        <div class="site-card-top"><div class="bar w3" style="margin:0;"></div><span class="chevron">&rsaquo;</span></div>
+        <div class="meta-line"><span class="meta-dot"></span><div class="bar w4" style="margin:0;"></div></div>
+        <div class="meta-line"><span class="meta-dot"></span><div class="bar w5" style="margin:0;"></div></div>
+        <div class="tag">Past Year</div>
+      </div></a>
+      <a class="plain" href="report.html?site=gooseberry"><div class="card clickable site-card">
+        <div class="site-card-top"><div class="bar w2" style="margin:0;"></div><span class="chevron">&rsaquo;</span></div>
+        <div class="meta-line"><span class="meta-dot"></span><div class="bar w3" style="margin:0;"></div></div>
+        <div class="meta-line"><span class="meta-dot"></span><div class="bar w5" style="margin:0;"></div></div>
+        <div class="tag">Past Year</div>
+      </div></a>
+      <a class="plain" href="report.html"><div class="card clickable site-card">
+        <div class="site-card-top"><div class="bar w3" style="margin:0;"></div><span class="chevron">&rsaquo;</span></div>
+        <div class="meta-line"><span class="meta-dot"></span><div class="bar w4" style="margin:0;"></div></div>
+      </div></a>
+      <a class="plain" href="report.html"><div class="card clickable site-card">
+        <div class="site-card-top"><div class="bar w2" style="margin:0;"></div><span class="chevron">&rsaquo;</span></div>
+        <div class="meta-line"><span class="meta-dot"></span><div class="bar w4" style="margin:0;"></div></div>
+      </div></a>
+      <a class="plain" href="report.html"><div class="card clickable site-card">
+        <div class="site-card-top"><div class="bar w3" style="margin:0;"></div><span class="chevron">&rsaquo;</span></div>
+        <div class="meta-line"><span class="meta-dot"></span><div class="bar w5" style="margin:0;"></div></div>
+      </div></a>
+    </div>
+
+    <a class="btn view-map-btn" href="map.html">View Map</a>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

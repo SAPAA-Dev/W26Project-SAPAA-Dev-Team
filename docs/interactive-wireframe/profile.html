@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAPAA - Profile</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="profile">
+<div class="stage">
+<div class="app">
+  <div id="accountBar"></div>
+  <header>
+    <div class="brand"><div class="logo"></div><div class="title" id="pageTitle">Profile Page</div></div>
+    <div class="navbtns" style="position:relative;">
+      <a class="navbtn" href="home.html">Home</a>
+      <button class="navbtn" onclick="toggleMenu(event)">Menu</button>
+      <div class="dropdown" id="navMenu">
+        <button class="dd-close" onclick="closeMenus()">Close</button>
+        <div class="dd-section">Admin</div>
+        <a class="dd-item" href="admin-dashboard.html">Admin<span class="dd-sub">Go to admin dashboard</span></a>
+        <div class="dd-section">Pages</div>
+        <a class="dd-item" href="home.html">Home<span class="dd-sub">Go to Homepage</span></a>
+        <a class="dd-item" href="gallery.html">Image Gallery<span class="dd-sub">Go to gallery</span></a>
+        <div class="dd-section">Help</div>
+        <a class="dd-item" onclick="showToast('Tutorial coming soon')">App tutorial<span class="dd-sub">Replay the walkthrough</span></a>
+        <a class="dd-item" onclick="showToast('Reach us at sapaa@example.org')">Contact us<span class="dd-sub">Send us a message</span></a>
+        <a class="dd-item danger" onclick="signOut()">Logout</a>
+      </div>
+    </div>
+  </header>
+  <div class="body-pad">
+    <div class="profile-cols">
+      <div class="profile-side">
+        <div class="ph-img" style="width:160px; height:160px; margin-bottom:14px;"></div>
+        <div class="edit-only">
+          <button class="btn" style="display:block; width:100%; margin-bottom:10px;" onclick="showToast('Password change form would open here')">Change Password</button>
+          <button class="btn" style="display:block; width:100%;" onclick="signOut()">Logout</button>
+        </div>
+      </div>
+      <div style="flex:1; min-width:280px;">
+        <div class="card">
+          <div class="field-label" style="margin-top:0;">Name:</div><input class="field-input" id="fName" value="Jamie Rivera">
+          <div class="field-label">Email:</div><input class="field-input" id="fEmail" value="jamie.rivera@example.com">
+          <div class="field-label">Role: Steward/Admin</div><input class="field-input" value="Steward" readonly>
+          <div class="field-label">Assigned Site (Steward Designation)</div>
+          <div style="font-size:13px;">— <span id="assignedSite">none assigned</span></div>
+        </div>
+        <div class="edit-only">
+          <button class="btn" style="margin:14px 0;" onclick="showToast('Changes saved')">Save Changes</button>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <p style="font-weight:bold; margin-top:0;">Skills / Focus Areas</p>
+          <div id="tagBox">
+            <div class="tag-input-row edit-only">
+              <input class="field-input" id="tagBox_input" placeholder="Add a skill or focus area...">
+              <button class="btn" onclick="addTag_tagBox()">Add</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-row" style="margin-top:16px;">
+          <div class="stat-card"><div class="stat-label">SIRs Submitted</div><div class="stat-value">12</div></div>
+          <div class="stat-card"><div class="stat-label">Sites Inspected</div><div class="stat-value">7</div></div>
+        </div>
+
+        <div class="card" style="margin-top:0;">
+          <p style="font-weight:bold; margin-top:0;">Site Inspection History</p>
+          <table class="wf-table">
+            <tr><th>Date</th><th>Site</th><th>Score</th></tr>
+            <tr class="clickable" onclick="location.href='report.html?site=beaver-hills'"><td>2026-08-14</td><td>Beaver Hills Site</td><td>7.2</td></tr>
+            <tr class="clickable" onclick="location.href='report.html?site=blackfoot'"><td>2026-06-01</td><td>Blackfoot Site</td><td>6.4</td></tr>
+            <tr class="clickable" onclick="location.href='report.html?site=gooseberry'"><td>2026-03-22</td><td>Gooseberry Site</td><td>8.0</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+</div>
+<script src="app.js"></script>
+<script>
+initTagInput('tagBox', ['Bird ID','Trail Maintenance','Invasive Species']);
+
+var params = new URLSearchParams(location.search);
+var viewUser = params.get('user'); // e.g. "morgan-lee" -> viewing someone else's read-only profile
+
+var people = {
+  'morgan-lee': {name:'Morgan Lee', email:'morgan.lee@example.com', site:'Beaver Hills Site', sirs:9, sites:5, tags:['Wetlands','GPS Mapping']},
+  'jamie-rivera': {name:'Jamie Rivera', email:'jamie.rivera@example.com', site:'none assigned', sirs:12, sites:7, tags:['Bird ID','Trail Maintenance','Invasive Species']},
+  'priya-nandan': {name:'Priya Nandan', email:'priya.nandan@example.com', site:'Gooseberry Site', sirs:5, sites:3, tags:['Photography','Botany']}
+};
+
+if(viewUser){
+  document.getElementById('pageTitle').textContent = "Steward Profile";
+  document.querySelectorAll('.edit-only').forEach(function(el){ el.style.display = 'none'; });
+  document.getElementById('fEmail').setAttribute('readonly','true');
+  document.getElementById('fName').setAttribute('readonly','true');
+  var p = people[viewUser];
+  if(p){
+    document.getElementById('fName').value = p.name;
+    document.getElementById('fEmail').value = p.email;
+    document.getElementById('assignedSite').textContent = p.site;
+    document.querySelector('.stat-row .stat-value').textContent = p.sirs;
+    document.querySelectorAll('.stat-row .stat-value')[1].textContent = p.sites;
+    initTagInput('tagBox', p.tags);
+  }
+} else {
+  document.getElementById('assignedSite').textContent = 'none assigned';
+}
+</script>
+</body>
+</html>
