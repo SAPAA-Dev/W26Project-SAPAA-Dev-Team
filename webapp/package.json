@@ -65,6 +65,7 @@
     "jest-environment-jsdom": "^30.3.0",
     "node-fetch": "^2.7.0",
     "postcss": "^8.5.6",
+    "supabase": "^2.118.0",
     "tailwindcss": "^4.1.18",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
