@@ -85,7 +85,7 @@ Sorted by value. Cut the line wherever your capacity runs out.
 ## Where these items are in the user stories
 
 This backlog uses its own numbers, not story IDs. Story IDs, points and MoSCoW live in
-[Project Requirements](index.md) and are not repeated here, except in the table below. It lists
+[Project Requirements](project-overview.md) and are not repeated here, except in the table below. It lists
 only the items that the story set links to by name, by source line, or by a matching title. It
 reflects the story changes after the September 25, 2026 client meeting
 ([story changelog](investigation/story-changelog-2026-09-25.md)).
@@ -171,7 +171,7 @@ Fix: read the caller's session at the top of each privileged action, look up the
 database, refuse if they are not permitted, and only then use the service role client.
 Acceptance: calling a privileged action as a steward, outside the UI, is refused. See issue #5,
 these two belong together. Tracked in GitHub issue #5, whose title uses "US 3.0.8", an ID that
-does not exist in [Project Requirements](index.md). The matching stories are US 5.0.1, 5.0.2, 5.0.3
+does not exist in [Project Requirements](project-overview.md). The matching stories are US 5.0.1, 5.0.2, 5.0.3
 and 5.0.8.
 
 ### 5. Move `role` out of `user_metadata` into a table with RLS

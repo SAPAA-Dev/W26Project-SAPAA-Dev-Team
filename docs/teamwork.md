@@ -102,7 +102,7 @@ Source: [https://www.belbin.com/about/belbin-team-roles](https://www.belbin.com/
 #### RI (Resource Investigator)
 > This role is comfortable with reaching out to outside sources to help the team in getting clarification, gathering information needed to support their team's work, and unblock tasks.
 
-- No members currently assigned
+- Alissa
 
 #### TW (Teamworker)
 > This role helps create an encouraging atmosphere and positive work relationships. They make sure everyone feels heard and comfortable to give their own input, working alongside other members where needed.

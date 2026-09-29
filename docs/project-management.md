@@ -9,7 +9,7 @@ This page provides an overview of the assigned tasks and roles for the duration 
 
 ## Story Map
 
-The full story set is in [Project Requirements](index.md), grouped into ten feature areas and
+The full story set is in [Project Requirements](project-overview.md), grouped into ten feature areas and
 prioritised with MoSCoW. This is the same set arranged by sprint. It follows the story changes from
 the September 25, 2026 client meeting, recorded in the
 [story changelog](investigation/story-changelog-2026-09-25.md).

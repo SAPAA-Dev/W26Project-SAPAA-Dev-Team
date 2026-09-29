@@ -109,7 +109,7 @@ function initTagInput(containerId, initialTags){
 // =====================================================================================
 // USER STORIES — this is the ONE place to edit. The panel beside the screen on every
 // page is built from this object. Keys must match each page's <body data-page="..."> —
-// see the list of pages at the bottom of this section. Sourced from index.md.
+// see the list of pages at the bottom of this section. Sourced from readme.md.
 // Set `id`/`pts` to null for anything that isn't a numbered project story yet.
 // =====================================================================================
 var STORIES = {
@@ -197,7 +197,7 @@ function renderStories(){
   if(!stage || document.getElementById('storiesPanel')) return;
   var current = document.body.getAttribute('data-page');
   var html = '<h2>User Stories</h2>'
-    + '<p class="hint">From the project\u2019s user stories (index.md). Edit the <code>STORIES</code> object at the top of app.js to change this panel \u2014 the block for the page you\u2019re on highlights automatically.</p>';
+    + '<p class="hint">From the project\u2019s user stories (readme.md). Edit the <code>STORIES</code> object at the top of app.js to change this panel \u2014 the block for the page you\u2019re on highlights automatically.</p>';
   Object.keys(STORIES).forEach(function(key){
     var group = STORIES[key];
     var isCurrent = key === current;

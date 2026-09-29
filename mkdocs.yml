@@ -17,7 +17,8 @@ theme:
         icon: material/weather-sunny
         name: Switch to light mode
 nav:
-  - Project Documentation: 'index.md'
+  - Project Documentation: 'project-overview.md'
+  - User Stories: 'user-stories.md'
   - Project Management: 'project-management.md'
   - Issues Backlog: 'issues.md'
   - Software Design: 'software-design.md'
