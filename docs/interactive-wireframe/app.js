@@ -113,12 +113,6 @@ function initTagInput(containerId, initialTags){
 // Set `id`/`pts` to null for anything that isn't a numbered project story yet.
 // =====================================================================================
 var STORIES = {
-  home: {
-    label: 'Home',
-    items: [
-      { id:null, pts:null, text:"As a user, I want a home dashboard with key site counts and a searchable, browsable site list, so that I can quickly find a Site and jump into its report or the map." }
-    ]
-  },
   map: {
     label: 'Site Map',
     items: [
@@ -180,7 +174,6 @@ var STORIES = {
   signin: {
     label:'Sign In',
     items:[
-      { id:null, pts:null, text:"v1.1 UX polish: sign-in is the same single flow for everyone, no matter their role. Role only changes what shows up once you're inside the app (the Admin section of the menu, edit permissions, etc.) — never a separate login page." },
       { id:'US 5.0.4', pts:2, text:"As a User, I want signing out to keep me signed out, so the next person on a shared device can't use my account." }
     ]
   },
