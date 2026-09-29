@@ -186,6 +186,7 @@ webapp/cypress/screenshots
 agentdb.rvf
 agentdb.rvf.lock
 ruvector.db
+.swarm/
 
 # macOS
 .DS_Store
