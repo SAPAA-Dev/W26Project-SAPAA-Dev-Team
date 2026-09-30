@@ -114,13 +114,13 @@ Scrum Master and Product Owner rotate each sprint. The full rotation is on the
 
 All releases are GitHub releases at 20:00 on the due date.
 
-| Sprint | Code freeze | Release | Stories | Planned velocity |
-|---|---|---|---|---|
-| Sprint 1 | - | September 29, 2026 | 0 (documentation and discovery) | 0 |
-| Sprint 2 | October 11, 2026 | October 13, 2026 | 16 | 63 |
-| Sprint 3 | October 25, 2026 | October 27, 2026 | 12 | 60 |
-| Sprint 4 | November 15, 2026 | November 17, 2026 | 5 | 29 |
-| Sprint 5 | November 29, 2026 | December 1, 2026 | 0 (not planned yet) | 30 (estimated) |
+| Sprint | Sprint goal | Code freeze | Release | Stories | Planned velocity |
+|---|---|---|---|---|---|
+| Sprint 1 | Documentation and discovery: requirements, design, plan and teamwork | - | September 29, 2026 | 0 (documentation and discovery) | 0 |
+| Sprint 2 | Steward profiles, site administration, and SIR export and delete | October 11, 2026 | October 13, 2026 | 16 | 63 |
+| Sprint 3 | Interactive map with site geometry and GPX tracks, inspection history, iNaturalist and password reset | October 25, 2026 | October 27, 2026 | 12 | 60 |
+| Sprint 4 | Activity points, to-visit priority, export of all files and the all-SIR summary | November 15, 2026 | November 17, 2026 | 5 | 29 |
+| Sprint 5 | New client requests, final polish, deployment and field-test fixes | November 29, 2026 | December 1, 2026 | 0 (not planned yet) | 30 (estimated) |
 
 ### Sprint 1
 **Due:** *September 29, 2026, 20:00 (GitHub release).*

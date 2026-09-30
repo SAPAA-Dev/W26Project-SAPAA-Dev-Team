@@ -285,7 +285,7 @@ having.
 #### 19. Fix logout
 Both apps already expose logout controls beyond the home page and call Supabase `signOut`. If a
 defect remains it is session restoration or reaching pages with the back button after logging out.
-Specify and test that behaviour rather than treating logout as missing. `Labels: bug`
+Specify and test that behaviour rather than treating logout as missing. US 5.0.4 (Sprint 2, issue #94) now covers this. `Labels: bug`
 
 #### 20. Paginate the sites list
 `/sites` fetches every site and filters and sorts client side in a `useMemo`. `Labels: bug`
@@ -333,7 +333,7 @@ case insensitive match in a database function. Every statistic built on it inher
 
 #### 30. Add "Compare by Question" to the web app
 The mobile app lets you pick one question and see its answers across years. Nothing equivalent
-exists on the web. High client value and nobody has written it down. `Labels: feature`
+exists on the web. The team wrote it as US 7.0.4, which is Won't Have for Fall 2026. `Labels: feature`
 
 #### 31. Fix login and signup accessibility
 Observed on the live site: no `<form>` element despite submit buttons, so Enter does not submit

@@ -36,13 +36,16 @@ for this term.
 
 ## Project glossary
 
+- **Abuses:** Human activity that damages a Site, for example motorized disturbance. The SIR records human disturbance in Section 8 (Q61 to Q66). It is one of the three inputs to the to-visit priority (US 2.0.12).
 - **Admin:** The SAPAA administrator. The Admin manages Site Inspection data, approves user accounts, makes official
 reports and sends information to stewards.
 
+- **Biological imperatives:** Ecological reasons that a Site needs a visit, as the Admin judges them. It is one of the three inputs to the to-visit priority (US 2.0.12).
 - **Charter project:** One of the client's numbered project descriptions on the
 [SAPAA website](https://sapaastewards.com/2026/06/03/student-opportunities-2026-to-2027/). Each user story maps to a
 charter project: Project 1, 2a, 2b, 2c, 3a or 3b.
 
+- **Designated steward:** The Steward that an Admin assigns to a Site (US 3.0.2). The Site page and the Steward's profile show the assignment.
 - **GPX (GPS Exchange Format):** A standard file format for GPS data, for example the track of a walk through a site.
 A steward records a track with a phone or a handheld GPS and uploads the GPX file to the application.
 
@@ -64,12 +67,14 @@ including the activity history of each steward, for future volunteer recognition
 (US 1.0.1 to US 1.0.5) are the first part of it: steward profiles, editing of a steward's own profile, inspection
 history, activity statistics and points.
 
+- **Photo Identifier:** A text field on each photo in a SIR that identifies the photo. It is required today. US 4.0.6 makes it optional.
 - **Place Management:** A planned client capability to show where a Site is and what activity occurred there, as an
 extension of the maps on the SAPAA website. This term, site profile editing and the site map are the first part of it.
 
 - **Protected Area:** An area of land that Alberta law protects to conserve nature. SAPAA stewards the protected areas
 under the WAERNAHR Act, for example Natural Areas and Ecological Reserves.
 
+- **Q-numbers:** The question numbers of the SIR form, for example Q31 (naturalness), Q42 (reason for the visit) and Q63 (motorized disturbance). They stay the same so that new reports can be compared with more than 40 years of past reports.
 - **SAPAA:** Stewards of Alberta's Protected Areas Association. A volunteer society that supports the stewardship of
 the protected natural areas of Alberta.
 
@@ -85,7 +90,7 @@ observations, ecological conditions, safety notes and steward activities.
 
 - **StewardLog:** The mobile application for Android and iOS. Its code is in the `FNR/` folder of the repository. It shows
 site data and inspection history and keeps an offline copy of site data.
-
+- **To-visit priority:** One value for a Site that the app calculates from the points that an Admin gives for abuses, biological imperatives and time since the last visit. Stewards see it on the Site page and use it to decide whether to prioritize the Site (US 2.0.12).
 
 ## Similar products
 

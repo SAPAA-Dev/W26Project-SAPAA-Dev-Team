@@ -60,7 +60,6 @@ The diagram shows the navigation paths between the screens. It comes from the li
 | Admin: Sites | ![Admin: Sites](screenshots/admin-sites/01-default.png) |
 | Admin: All Inspections | ![Admin: All Inspections](screenshots/admin-inspections/01-default.png) |
 
-The screenshots were made before the story labels were added to the screens. The `screenshots/` folder has more states of each screen.
 
 ## User story coverage
 
