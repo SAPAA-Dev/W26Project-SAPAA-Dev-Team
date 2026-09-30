@@ -7,13 +7,12 @@
 > October 11, October 25, November 15 and November 29. The release is made after the freeze.
 > The client plans field testing in early December 2026.
 
-## Teamwork Model
+## Teamwork model
 
 From Sprint 2, the team works in **rotating full-stack mini-teams**. Each mini-team also owns one
 technical area.
 
-- **Full stack.** Each mini-team does frontend and backend work. LLM tools do most of the frontend
-  work, so most of the effort is in the backend.
+- **Full stack.** Each mini-team does frontend and backend work.
 - **One ownership area for each team.** A team that owns an area makes sure that the area stays
   organised and that the other teams know about changes to it. The owner team does not do every
   task in that area.
@@ -24,7 +23,7 @@ technical area.
 - **Keep your team informed.** If a member does not know what the team is doing, the other members
   of that team tell them about the work of (a) their mini-team and (b) the other teams.
 - **Rotation.** The teams and the ownership areas change after each sprint, so each member works in
-  all three areas. Tell Saumya if you have a problem with the arrangement.
+  all three areas.
 
 ### Ownership areas
 
@@ -44,24 +43,31 @@ These teams are for Sprint 2 only. The ownership areas were assigned at random.
 | Beta | Abhinav, Alissa | Quality / reliability / dev experience |
 | Gamma | Zanab, Chris, Jayden | Platform / CI/CD / releases |
 
-## Story Map
+## Story map
 
 The full story set is in [User Stories](user-stories.md): 35 user stories in seven feature areas,
 162 story points, prioritised with MoSCoW. The set follows the September 25, 2026 client meeting
 (see [Meeting Minutes](meeting-minutes.md)), plus later additions. Placement follows
-[User Story Summaries](user-stories-summaries.md); numbers are story points.
+[User Story Summaries](user-stories-summaries.md).
 
 | Feature area | Sprint 1 | Sprint 2 | Sprint 3 | Sprint 4 | Sprint 5 | Unscheduled | Won't Have |
 |---|---|---|---|---|---|---|---|
-| 1 - People Management | - | 1.0.1 (5), 1.0.2 (3) | 1.0.3 (2), 1.0.4 (2) | 1.0.5 (5) | - | - | - |
-| 2 - Place Management | - | 2.0.2 (3), 2.0.3 (3), 2.0.4 (8), 2.0.5 (5), 2.0.6 (5), 2.0.10 (1) | 2.0.1 (8), 2.0.8 (3), 2.0.9 (5), 2.0.11 (5) | 2.0.12 (8), 2.0.13 (3) | - | - | - |
-| 3 - Admin Persona | - | 3.0.2 (5) | - | 3.0.3 (8) | - | - | - |
-| 4 - General Features | - | 4.0.6 (1) | 4.0.2 (13), 4.0.4 (5), 4.0.5 (5), 4.0.7 (5) | - | - | - | - |
-| 5 - Access and Accounts | - | 5.0.4 (2) | 5.0.2 (2) | - | - | - | - |
-| 6 - Data and Places | - | - | 6.0.1 (5) | - | - | - | - |
-| 7 - Inspections and Media | - | 7.0.1 (2), 7.0.5 (5), 7.0.6 (5), 7.0.7 (5), 7.0.8 (5) | - | 7.0.3 (5) | - | - | 7.0.4 (5), 7.0.9 (5) |
+| 1 - People Management | - | 1.0.1 (5, M), 1.0.2 (3, M) | 1.0.3 (2, S), 1.0.4 (2, M) | 1.0.5 (5, C) | - | - | - |
+| 2 - Place Management | - | 2.0.2 (3, M), 2.0.3 (3, S), 2.0.4 (8, M), 2.0.5 (5, M), 2.0.6 (5, S), 2.0.10 (1, M) | 2.0.1 (8, S), 2.0.8 (3, M), 2.0.9 (5, M), 2.0.11 (5, M) | 2.0.12 (8, C), 2.0.13 (3, C) | - | - | - |
+| 3 - Admin Persona | - | 3.0.2 (5, S) | - | 3.0.3 (8, M) | - | - | - |
+| 4 - General Features | - | 4.0.6 (1, M) | 4.0.2 (13, S), 4.0.4 (5, S), 4.0.5 (5, S), 4.0.7 (5, C) | - | - | - | - |
+| 5 - Access and Accounts | - | 5.0.4 (2, S) | 5.0.2 (2, M) | - | - | - | - |
+| 6 - Data and Places | - | - | 6.0.1 (5, M) | - | - | - | - |
+| 7 - Inspections and Media | - | 7.0.1 (2, C), 7.0.5 (5, S), 7.0.6 (5, S), 7.0.7 (5, M), 7.0.8 (5, S) | - | 7.0.3 (5, C) | - | - | 7.0.4 (5, W), 7.0.9 (5, W) |
 | **Points** | **0** | **63** | **60** | **29** | **0** | **0** | **10** |
-| **Planned velocity** | 0 | 63 | 60 | 29 | 0 | - | - |
+| **Planned velocity** | 0 | 63 | 60 | 29 | 30 (estimated) | - | - |
+
+Numbers in brackets: story points and MoSCoW priority (M = Must Have, S = Should Have, C = Could Have, W = Won't Have).
+
+The **Points** row gives the total story points that the team committed to each sprint. The
+**Planned velocity** row gives the story points that the team plans to finish in each sprint. For
+Sprints 1 to 4, the two values are the same. Sprint 5 has no committed stories yet, so its points
+are 0 and its planned velocity is an estimate of 30 points.
 
 By MoSCoW:
 
@@ -72,9 +78,9 @@ By MoSCoW:
 | Could Have | 6 | 28 | 7.0.1 in Sprint 2, 4.0.7 in Sprint 3, 4 in Sprint 4 (1.0.5, 2.0.12, 2.0.13, 7.0.3) |
 | Won't Have | 2 | 10 | Not planned (7.0.4, 7.0.9) |
 
-Sprint 1 has no user stories because it is documentation and discovery. Sprint 5 has no user
-stories yet, so its planned velocity is 0. The team keeps Sprint 5 free on purpose: the client
-said that more work can come, and the sprint is also for final polish and deployment.
+Sprint 1 has no user stories because it is documentation and discovery. The team keeps Sprint 5
+free on purpose: the client said that more work can come, and the sprint is also for final
+polish, deployment and field-test fixes.
 
 **Open conflicts with the plan.** The team confirms or changes placement at
 Sprint 2 planning:
@@ -93,7 +99,7 @@ Sprint 2 planning:
 
 The ranked backlog of defects and tasks is in [Issues Backlog](issues.md).
 
-## Project Plan
+## Project plan
 
 Scrum Master and Product Owner rotate each sprint. The full rotation is on the
 [Teamwork](teamwork.md) page.
@@ -114,7 +120,7 @@ All releases are GitHub releases at 20:00 on the due date.
 | Sprint 2 | October 11, 2026 | October 13, 2026 | 16 | 63 |
 | Sprint 3 | October 25, 2026 | October 27, 2026 | 12 | 60 |
 | Sprint 4 | November 15, 2026 | November 17, 2026 | 5 | 29 |
-| Sprint 5 | November 29, 2026 | December 1, 2026 | 0 (not planned yet) | 0 |
+| Sprint 5 | November 29, 2026 | December 1, 2026 | 0 (not planned yet) | 30 (estimated) |
 
 ### Sprint 1
 **Due:** *September 29, 2026, 20:00 (GitHub release).*
@@ -141,7 +147,7 @@ backlog.
 |Issues backlog and prioritisation|Documentation|Saumya|Sep 21st (done)|
 |Meeting minutes for Fall 2026 to date|Documentation|Chris|Sep 26th|
 |UI audit of the deployed application|Documentation|Aaron|Sep 22nd (done)|
-|Mobile application user stories|Documentation|Chris|Sep 27th|
+|Mobile application user stories|Documentation|Chris|Sep 27th (dropped, not needed)|
 |Confirm scope and open questions with client|Documentation|Saumya, Alissa|Sep 26th|
 
 ### Sprint 2
@@ -154,7 +160,7 @@ of the work in proportion to its number of members, and the tasks in its ownersh
 divides its tasks between its members.
 
 **Teams:** Alpha (Saumya, Aaron), Beta (Abhinav, Alissa), Gamma (Zanab, Chris, Jayden). See
-[Teamwork Model](#teamwork-model).
+[Teamwork model](#teamwork-model).
 
 The security stories were removed from the story list on September 25, so the access control work
 stays in the task list below until the team decides if it returns as stories.
@@ -189,16 +195,16 @@ stays in the task list below until the team decides if it returns as stories.
 |Set up development, release, and feature branches|Dev Task|Gamma (Zanab, Chris, Jayden)|Oct 4th|
 |Improve authentication checks for admin routes|Dev Task|Beta (Abhinav, Alissa)|Oct 4th|
 |Investigate and fix Invalid Identifier Supabase error|Dev Task|Alpha (Saumya, Aaron)|Oct 4th|
-|Update db names to not include “W26” as prefix|Dev Task|Alpha (Saumya, Aaron)|Oct 4th|
+|Update db names to not include "W26" as prefix|Dev Task|Alpha (Saumya, Aaron)|Oct 4th|
 |Create user model that supports profiles, steward assignments, and gamified stats|US 1.0.1|Alpha (Saumya, Aaron)|Oct 4th|
 |Migrate user model|US 1.0.1|Alpha (Saumya, Aaron)|Oct 5th|
 |Profile page|US 1.0.1|Alpha (Saumya, Aaron)|Oct 6th|
 |Add Steward to site page and link to their profile|US 3.0.2|Alpha (Saumya, Aaron)|Oct 7th|
-|Edit profile/user info page & functionality|US 1.0.2|Alpha (Saumya, Aaron)|Oct 7th|
-|Add new site page & functionality|US 2.0.2|Gamma (Zanab, Chris, Jayden)|Oct 5th|
+|Edit profile/user info page and functionality|US 1.0.2|Alpha (Saumya, Aaron)|Oct 7th|
+|Add new site page and functionality|US 2.0.2|Gamma (Zanab, Chris, Jayden)|Oct 5th|
 |Edit existing site page fields|US 2.0.5|Gamma (Zanab, Chris, Jayden)|Oct 6th|
-|Delete site button & confirmation|US 2.0.4|Gamma (Zanab, Chris, Jayden)|Oct 6th|
-|Deactivate/Activate button & confirmation|US 2.0.3|Beta (Abhinav, Alissa)|Oct 6th|
+|Delete site button and confirmation|US 2.0.4|Gamma (Zanab, Chris, Jayden)|Oct 6th|
+|Deactivate/Activate button and confirmation|US 2.0.3|Beta (Abhinav, Alissa)|Oct 6th|
 |Set up map|US 2.0.6|Beta (Abhinav, Alissa)|Oct 5th|
 |Add sites to the map|US 2.0.6|Beta (Abhinav, Alissa)|Oct 6th|
 |Add Search and Filtering on Map view|US 2.0.6|Beta (Abhinav, Alissa)|Oct 7th|
@@ -209,7 +215,7 @@ stays in the task list below until the team decides if it returns as stories.
 |Increase export limit to over 50|US 7.0.6|Gamma (Zanab, Chris, Jayden)|Oct 9th|
 |Screen to select hidden fields on SIR before export|US 7.0.7|Beta (Abhinav, Alissa)|Oct 9th|
 |Grant Steward permission to export PDFs|US 7.0.1|Gamma (Zanab, Chris, Jayden)|Oct 7th|
-|Delete site inspection report button & confirmation|US 7.0.8|Gamma (Zanab, Chris, Jayden)|Oct 7th|
+|Delete site inspection report button and confirmation|US 7.0.8|Gamma (Zanab, Chris, Jayden)|Oct 7th|
 |Fix logging out functionality outside the home page|US 5.0.4|Alpha (Saumya, Aaron)|Oct 5th|
 |Open a PR for each task and request 2 reviews|All US|Everyone|Oct 10th|
 |Code freeze: all Sprint 2 PRs reviewed and merged|All US|Everyone|Oct 11th|
@@ -374,13 +380,16 @@ Tasks are planned at the start of the sprint.
 **Due:** *December 1, 2026, 20:00 (GitHub release). Code freeze November 29.*
 
 Sprint 5 is kept free on purpose. The client said that more work can come. The sprint is also for
-final polish and deployment before the client field test in early December.
+final polish, deployment and fixes for the client field test in early December.
 
 #### User stories
 
 No stories planned yet. New client requests go here.
 
-**Sprint Velocity:** 0
+**Sprint Velocity:** 30 (estimated)
+
+Estimated velocity: 30 points. No stories are committed yet. The capacity is reserved for new
+client requests, carry-over from Sprint 4, deployment and field-test fixes.
 
 #### Tasks
 
@@ -388,7 +397,7 @@ Tasks are planned at the start of the sprint.
 
 -----
 
-## Archive: Winter 2026 Project Plan (previous team)
+## Archive: Winter 2026 project plan (previous team)
 
 The plan below belongs to the **Winter 2026** team (Jason Liang, Raiyana Rahman, Vishal Sivakumar,
 Harveer Deol, Braden Woods, Akib Zaman Choudhury, Zoe Prefontaine). It is kept as the delivery

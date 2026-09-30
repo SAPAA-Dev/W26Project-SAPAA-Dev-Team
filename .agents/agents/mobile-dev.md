@@ -15,7 +15,7 @@ Expo 54, React Native 0.81, React 19, TypeScript (strict), expo-sqlite, NetInfo.
 
 1. Read `AGENTS.md` and all files in `.agents/rules/`.
 2. The mobile app uses the legacy tables, not the `W26_*` tables of the web app. Read `.agents/rules/database.md`.
-3. For offline work, read `docs/investigation/mobile-fnr-audit.md` first. Offline edits are lost now.
+3. For offline work, read `FNR/src/services/database.ts` first. Offline edits are lost now.
 
 ## Rules
 

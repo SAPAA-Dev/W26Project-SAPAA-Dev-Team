@@ -11,7 +11,7 @@
 <div class="app">
   <div id="accountBar"></div>
   <header>
-    <div class="brand"><div class="logo"></div><div class="title">Admin:Protected Areas</div></div>
+    <div class="brand"><div class="logo"></div><div class="title">Admin: Protected Areas</div></div>
     <div class="navbtns" style="position:relative;">
       <a class="navbtn" href="home.html">Home</a>
       <button class="navbtn" onclick="toggleMenu(event)">Menu</button>
@@ -37,10 +37,10 @@
       <button class="btn warn" onclick="showToast('Opens geometry-matching tool')">Review</button>
     </div>
 
-    <div style="display:flex; gap:10px; justify-content:flex-end; margin-bottom:18px;">
-      <span class="us">US 2.0.2</span><button class="btn" onclick="toggleAddSite(true)">Add Site</button>
-      <button class="btn">Bulk PDF</button>
-      <button class="btn">Export</button>
+    <div style="display:flex; gap:10px; justify-content:flex-end; align-items:center; flex-wrap:wrap; margin-bottom:18px;">
+      <span class="us">US 2.0.2</span><button class="btn" onclick="toggleForm('addSiteForm', true)">Add Site</button>
+      <span class="us">US 7.0.6</span><button class="btn" onclick="toggleForm('bulkPdfForm', true)">Bulk PDF</button>
+      <span class="us">US 3.0.3</span><button class="btn" onclick="document.getElementById('exportOverlay').classList.add('show')">Export</button>
       <button class="btn">Sort</button>
     </div>
 
@@ -70,19 +70,48 @@
 
       <div class="modal-actions">
         <button class="btn" onclick="submitAddSite()">Add</button>
-        <button class="btn white" onclick="toggleAddSite(false)">Cancel</button>
+        <button class="btn white" onclick="toggleForm('addSiteForm', false)">Cancel</button>
       </div>
     </div>
 
-    <div style="margin-bottom:8px; font-size:11px;">Update <span class="us">US 2.0.5</span> Deactivate / Reactivate <span class="us">US 2.0.3</span> Delete <span class="us">US 2.0.4</span></div>
+    <!-- Bulk PDF export -->
+    <div class="modal" id="bulkPdfForm" style="display:none; width:100%; max-width:420px;">
+      <h3>Bulk PDF Export <span class="us">US 7.0.6</span></h3>
+      <div class="field-label">1. Select reports</div>
+      <label style="font-size:12px; display:block; margin-bottom:6px;"><input type="checkbox" checked> Select all SIRs (312)</label>
+      <div style="font-size:11px; color:#555; margin-bottom:14px;">312 selected. There is no limit of 50 reports.</div>
+      <div class="field-label">2. Fields to hide in the export <span class="us">US 7.0.7</span></div>
+      <label style="font-size:12px; display:block; margin-bottom:4px;"><input type="checkbox"> Steward name</label>
+      <label style="font-size:12px; display:block; margin-bottom:4px;"><input type="checkbox"> Q31 - Naturalness Score</label>
+      <label style="font-size:12px; display:block; margin-bottom:4px;"><input type="checkbox"> Q42 - Reason for Visit</label>
+      <label style="font-size:12px; display:block; margin-bottom:4px;"><input type="checkbox"> Q63 - Motorized Disturbance</label>
+      <label style="font-size:12px; display:block; margin-bottom:4px;"><input type="checkbox"> Notes</label>
+      <div style="font-size:11px; color:#555; margin:6px 0 14px;">If you select no fields, the export has the full SIR. The stored reports do not change.</div>
+      <div class="modal-actions">
+        <button class="btn" onclick="toggleForm('bulkPdfForm', false); showToast('Export started: 312 SIRs')">Export PDF</button>
+        <button class="btn white" onclick="toggleForm('bulkPdfForm', false)">Cancel</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:8px; font-size:11px;">Update <span class="us">US 2.0.5</span> Deactivate / Reactivate <span class="us">US 2.0.3</span> Delete <span class="us">US 2.0.4</span> Priority <span class="us">US 2.0.12</span></div>
     <div class="row" id="sitesGrid">
       <div class="card site-card" style="width:200px;" id="siteCardA">
         <div class="bar w2"></div><div class="bar w2"></div>
+        <div class="warning-box" id="siteCardA_reminder" style="margin:10px 0 0;">&#9888; Priority points last saved 2025-08-02, more than one year ago. Reassess them.<span class="us">US 2.0.13</span></div>
         <div class="card-actions">
           <button class="btn white" onclick="location.href='report.html?site=beaver-hills'">View</button>
           <button class="btn" onclick="toggleEdit('siteCardA')">Update</button>
           <button class="btn warn" onclick="toggleDeactivate('siteCardA')">Deactivate</button>
           <button class="btn danger" onclick="deleteSite('siteCardA')">Delete</button>
+          <button class="btn" onclick="toggleSection('siteCardA_priority')">Priority</button>
+        </div>
+        <div id="siteCardA_priority" style="display:none; margin-top:10px;">
+          <div class="field-label">Abuses (points)</div><input class="field-input" type="number" value="3">
+          <div class="field-label">Biological imperatives (points)</div><input class="field-input" type="number" value="2">
+          <div class="field-label">Time since last visit (points)</div><input class="field-input" type="number" value="4">
+          <div style="font-size:11px; margin-bottom:10px;">The app calculates the to-visit priority from the three scores.</div>
+          <button class="btn ok" onclick="toggleSection('siteCardA_priority'); document.getElementById('siteCardA_reminder').style.display='none'; showToast('Priority points saved')">Save</button>
+          <button class="btn white" onclick="toggleSection('siteCardA_priority')">Cancel</button>
         </div>
         <div class="edit-panel" id="siteCardA_edit" style="display:none; margin-top:10px;">
           <input class="field-input" placeholder="Site name" value="Beaver Hills Site">
@@ -136,18 +165,29 @@
       </div>
     </div>
   </div>
+  <div class="modal-overlay" id="exportOverlay">
+    <div class="modal">
+      <h3>Export All Files <span class="us">US 3.0.3</span></h3>
+      <p style="font-size:12px;">Export all images and other digital files in the app as one .zip file?</p>
+      <div class="modal-actions">
+        <button class="btn" onclick="document.getElementById('exportOverlay').classList.remove('show'); showToast('Export started. The .zip file downloads when it is ready.')">Export</button>
+        <button class="btn white" onclick="document.getElementById('exportOverlay').classList.remove('show')">Cancel</button>
+      </div>
+    </div>
+  </div>
   <div class="toast" id="toast"></div>
 </div>
 </div>
 <script src="app.js"></script>
 <script>
-function toggleAddSite(show){
-  document.getElementById('addSiteForm').style.display = show ? 'block' : 'none';
+function toggleForm(id, show){
+  ['addSiteForm','bulkPdfForm'].forEach(function(formId){ document.getElementById(formId).style.display = 'none'; });
+  if(show){ document.getElementById(id).style.display = 'block'; }
   document.getElementById('sitesGrid').style.display = show ? 'none' : 'flex';
 }
 function submitAddSite(){
   if(validateRequired(['newSiteName','newSiteCounty'])){
-    toggleAddSite(false);
+    toggleForm('addSiteForm', false);
     showToast('Site added');
   }
 }

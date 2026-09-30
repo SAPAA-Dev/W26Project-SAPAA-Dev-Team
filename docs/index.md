@@ -1,4 +1,4 @@
-# Documentation (Sprint 1) - Fall 2026
+# Documentation (Sprint 1), Fall 2026
 
 ## Project overview
 
@@ -20,7 +20,8 @@ See [Software Design](software-design.md).
 
 ## Low-fidelity user interface
 
-View this visual mock-up to see intended layout flows and screen layouts before jumping into design or frontend tasks.
+View this visual mock-up to see the intended screen layouts and the navigation between the screens before you start
+design or frontend tasks.
 
 See [Wireframes](interactive-wireframe/index.md). A static image is also available: [Wireframe image](wireframe-F26.png).
 

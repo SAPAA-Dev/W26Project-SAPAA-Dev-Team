@@ -13,4 +13,4 @@ SAPAA is the Stewards of Alberta's Protected Areas Association. Volunteer stewar
 | Attachment | A photo for a SIR. Files go to AWS S3 through presigned URLs, not to Supabase Storage. | `W26_attachments`; `webapp/app/api/s3/`, `webapp/utils/media/` |
 | PDF export | A printable SIR. | `webapp/lib/pdf/`, `webapp/app/api/pdf/`, `S26_pdf_jobs`; `FNR/src/services/pdfGenerator.ts` |
 | StewardLog | The real name of the mobile app in `FNR/`. | `FNR/` |
-| Offline mode | The mobile app keeps a read-only SQLite copy for each site. Offline edits are lost now, and "Sync Now" does not sync. | `FNR/src/services/database.ts`; see `docs/investigation/mobile-fnr-audit.md` |
+| Offline mode | The mobile app keeps a read-only SQLite copy for each site. Offline edits are lost now, and "Sync Now" does not sync. | `FNR/src/services/database.ts` |

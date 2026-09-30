@@ -10,12 +10,12 @@ The wireframes use three personas from the [user stories](../user-stories.md): U
 
 Each screen is a static HTML page. Use the links and buttons to move between the screens.
 
-* The prototype has one sign-in flow. When you sign in, you get Admin access. To see the Steward view, select "Switch to Steward view" in the top bar.
+* The prototype has one sign-in flow. When you sign in, you get Admin access. To see the Steward view, select "Switch to Steward view" in the top bar. Admin-only elements, for example the "Admin" item in the Menu, show only in the Admin view.
 * A dashed label, for example `US 2.0.2`, is on each element that a user story needs. The label gives the story number.
-* The "User Stories" panel on the right of each screen shows the stories for all screens. The panel highlights the stories for the current screen. The last group in the panel lists the stories that have no screen yet.
+* The "User Stories" panel on the right of each screen shows the stories for all screens. The panel highlights the stories for the current screen. The last group in the panel lists the story that has no screen (US 7.0.9, Won't Have).
 * The prototype keeps the sign-in state in the local storage of your browser. It does not send data to a server.
 
-A static image of all screens is also available: [wireframe-F26.png](../wireframe-F26.png).
+A static image of all screens is also available: [wireframe-F26.png](../wireframe-F26.png). The team made this image before the story labels were added. It does not show the story labels or the elements that were added for them.
 
 ## UI flow
 
@@ -43,7 +43,7 @@ The diagram shows the navigation paths between the screens. It comes from the li
 | Any page with a top bar | Profile | Select your name (signed in) or "Profile" (signed out) |
 | Any page with a top bar | Sign In | Select "Sign In" (signed out only) |
 | Home, Site Map, Site Report, Profile, Image Gallery | Image Gallery | Select Menu, then "Image Gallery" |
-| Home, Site Map, Site Report, Profile, Image Gallery | Admin Dashboard | Select Menu, then "Admin" |
+| Home, Site Map, Site Report, Profile, Image Gallery | Admin Dashboard | Select Menu, then "Admin" (Admin view only) |
 
 ## Screens
 
@@ -55,7 +55,7 @@ The diagram shows the navigation paths between the screens. It comes from the li
 | Site Map | ![Site Map](screenshots/map/01-default-online.png) |
 | Site Report | ![Site Report](screenshots/report/01-default-guest.png) |
 | Profile | ![Profile](screenshots/profile/01-own-editable.png) |
-| Image Gallery | ![Image Gallery, Admin view](screenshots/gallery/03-admin-delete-visible.png) |
+| Image Gallery | ![Image Gallery, Admin view with the delete confirmation](screenshots/gallery/04-delete-modal.png) |
 | Admin Dashboard | ![Admin Dashboard](screenshots/admin-dashboard/01-default.png) |
 | Admin: Sites | ![Admin: Sites](screenshots/admin-sites/01-default.png) |
 | Admin: All Inspections | ![Admin: All Inspections](screenshots/admin-inspections/01-default.png) |
@@ -64,7 +64,7 @@ The screenshots were made before the story labels were added to the screens. The
 
 ## User story coverage
 
-This table lists all 35 stories in [User Stories](../user-stories.md). 22 stories have a screen. 13 stories have no screen yet.
+This table lists all 35 stories in [User Stories](../user-stories.md). 34 stories have a screen. US 7.0.9 has no screen because it is a Won't Have story. US 7.0.4 is also a Won't Have story, but the wireframe keeps its screen element.
 
 | Story | Title | Wireframe screen(s) |
 |---|---|---|
@@ -72,7 +72,7 @@ This table lists all 35 stories in [User Stories](../user-stories.md). 22 storie
 | US 1.0.2 | Allow Editing Own Profile | Profile (own profile, "Save Changes", skills and focus areas) |
 | US 1.0.3 | Show history of Site Inspections on a Steward's Profile | Profile ("Site Inspection History") |
 | US 1.0.4 | Aggregate User Activity and Contributions on a user's profile | Profile ("SIRs Submitted", "Sites Inspected") |
-| US 1.0.5 | Earn Points for Inspection Activity | No screen yet |
+| US 1.0.5 | Earn Points for Inspection Activity | Profile ("Activity Points" next to the SIR stats, on your own profile only) |
 | US 2.0.1 | View Sites and Past Visits on an Interactive Map | Site Map (boundaries, pins, GPX track) |
 | US 2.0.2 | Allow Admins to Add New Sites | Admin: Sites ("Add Site" form, duplicate warning, required fields, "Select Boundary on Map") |
 | US 2.0.3 | Deactivate and Reactivate a Site | Admin: Sites ("Deactivate" and "Reactivate") |
@@ -81,28 +81,28 @@ This table lists all 35 stories in [User Stories](../user-stories.md). 22 storie
 | US 2.0.6 | Search and Filter Sites by County on the Map | Site Map (search box, county filter) |
 | US 2.0.8 | View a Site's Details From the Map | Site Map (site pin); Site Report (county, last inspected); Home (site cards) |
 | US 2.0.9 | Upload a GPX Track of a Site Visit | Site Report ("Upload GPX Track of this Visit") |
-| US 2.0.10 | Add links to Site Page | No screen yet |
-| US 2.0.11 | Show Safety Information for a Site | No screen yet |
-| US 2.0.12 | Score a Site for To-Visit Priority | No screen yet |
-| US 2.0.13 | Flag Site Points That Are a Year Old | No screen yet |
+| US 2.0.10 | Add links to Site Page | Site Report ("Learn more" links to sapaa.org and inaturalist.org. Each link opens in a new window.) |
+| US 2.0.11 | Show Safety Information for a Site | Site Report ("Safety Information": nearest hospital, known hazards, other safety information. An empty value shows "Not recorded". "Edit" shows for Admin only.) |
+| US 2.0.12 | Score a Site for To-Visit Priority | Admin: Sites ("Priority" form with the three scores); Site Report ("To-Visit Priority" and the three scores, for all users) |
+| US 2.0.13 | Flag Site Points That Are a Year Old | Admin: Sites (reminder on a site card when the points are more than one year old. "Save" in the "Priority" form removes the reminder.) |
 | US 3.0.2 | Steward Designation | Site Report ("Assigned Steward"); Profile ("Assigned Site"). Partial: the screens show the assignment only. The Admin control to search for and assign a steward is not drawn. |
-| US 3.0.3 | Export all digital files from SIR-SAPAA | No screen yet. Admin: Sites has an "Export" button with no story label. The team must confirm its purpose. |
+| US 3.0.3 | Export all digital files from SIR-SAPAA | Admin: Sites ("Export", with an "Export All Files" confirmation for one .zip file) |
 | US 4.0.2 | Offline and Online Map Layers | Site Map ("Online" and "Offline" layer switch, offline banner) |
 | US 4.0.4 | Edit My Previous Inspections | Site Report ("Edit" on your own inspection, Steward view only) |
-| US 4.0.5 | iNaturalist integration | No screen yet |
-| US 4.0.6 | Demote Photo Identifier to optional field | No screen yet |
-| US 4.0.7 | Show the Top iNaturalist Observations for a Site | No screen yet |
+| US 4.0.5 | iNaturalist integration | Site Report, "New Inspection Report" form ("Add Photo from iNaturalist", which fills in the Photo Identifier) |
+| US 4.0.6 | Demote Photo Identifier to optional field | Site Report, "New Inspection Report" form ("Photo Identifier (optional)", with no "required" note) |
+| US 4.0.7 | Show the Top iNaturalist Observations for a Site | Site Report ("Top iNaturalist Observations", up to 5, most engagement first) |
 | US 5.0.2 | Reset a Forgotten Password | Sign In ("Forgot password?"); Reset Password (email, code, new password, done) |
 | US 5.0.4 | Sign Out Properly | Top bar "Sign Out" and Menu "Logout" on each signed-in screen |
 | US 6.0.1 | Store Each Site's Geometry From the Shared Source | Admin: Sites (banner for sites with no matched geometry) |
 | US 7.0.1 | Let Stewards Export Their Own Reports | Site Report ("Export PDF" on your own inspection, Steward view only) |
 | US 7.0.3 | See All Inspections in One View | Admin: All Inspections (date range, summary figures); Admin Dashboard ("All Inspections" card) |
-| US 7.0.4 | Compare One Question Across Years | Site Report ("Compare Answers Over Time") |
+| US 7.0.4 | Compare One Question Across Years | Site Report ("Compare Answers Over Time"). Won't Have: the team does not plan to build this story. |
 | US 7.0.5 | Delete an Image and Clean Up After It | Image Gallery ("Delete" for Admin only, with confirmation) |
-| US 7.0.6 | Export More Than 50 Site Inspection Reports | No screen yet. Admin: Sites has a "Bulk PDF" button with no story label. The team must confirm its purpose. |
-| US 7.0.7 | Hide Fields on a SIR Before Export | No screen yet |
-| US 7.0.8 | Delete a Site Inspection Report | No screen yet |
-| US 7.0.9 | Record Audio During a Site Inspection | No screen yet |
+| US 7.0.6 | Export More Than 50 Site Inspection Reports | Admin: Sites ("Bulk PDF", step 1: "Select all SIRs (312)", with no limit of 50) |
+| US 7.0.7 | Hide Fields on a SIR Before Export | Admin: Sites ("Bulk PDF", step 2: SIR fields with check boxes to hide) |
+| US 7.0.8 | Delete a Site Inspection Report | Admin: All Inspections ("Delete" on each row, with a confirmation) |
+| US 7.0.9 | Record Audio During a Site Inspection | No screen. Won't Have: the team does not plan to build this story. |
 
 ### Differences between the wireframe and the stories
 
@@ -112,6 +112,7 @@ The team must decide how to fix these differences. This page does not change the
 * US 5.0.2: the story says that a reset link goes to the email of the user. The Reset Password screen sends a 6-digit code and does not use a link.
 * US 2.0.5: the story says that the Admin uses "edit mode" on a site page. The wireframe puts "Update" on the Admin: Sites list, not on the Site Report.
 * Admin: Sites has a "Site Visibility" field (Public or Stewards Only) in the "Add Site" form. No story asks for this field.
+* US 2.0.12 and US 2.0.13: the stories say that the Admin enters the points and sees the reminder on the Site. The wireframe puts the "Priority" form and the reminder on the Admin: Sites list, the same as "Update" for US 2.0.5. The stories do not give the calculation of the to-visit priority, so the Site Report shows the priority as a placeholder bar.
 
 ## Client feedback
 

@@ -18,8 +18,10 @@ Version 1.1 fixes the bugs and pain points in the application and improves the u
 so that the application is ready for public release. The [user stories](user-stories.md) give the details.
 
 Version 2.0 starts the client's vision of People Management and Place Management, with a smaller scope this term. The
-new Admin tools to approve and manage user accounts are the base for People Management. The new site profiles and the
-site map are a first step toward Place Management. Simple gamification increases steward engagement.
+steward profile stories (US 1.0.1 to US 1.0.5) are the base for People Management. With these stories, stewards can see
+steward profiles and edit their own profile. A profile shows the inspection history, the activity statistics and the
+points of the steward. The new site profiles and the site map are a first step toward Place Management. Simple
+gamification increases steward engagement.
 
 The primary user is the Admin, who needs a reliable system that does not need manual data handling and that still gives
 access to the data, the reports and their distribution. The stewards are the second group of users. The StewardLog
@@ -28,7 +30,7 @@ data. The client said that offline capability on the web application is necessar
 for this term.
 
 
-## User Stories
+## User stories
 [Click to go to the user stories.](user-stories.md)
 
 
@@ -36,6 +38,10 @@ for this term.
 
 - **Admin:** The SAPAA administrator. The Admin manages Site Inspection data, approves user accounts, makes official
 reports and sends information to stewards.
+
+- **Charter project:** One of the client's numbered project descriptions on the
+[SAPAA website](https://sapaastewards.com/2026/06/03/student-opportunities-2026-to-2027/). Each user story maps to a
+charter project: Project 1, 2a, 2b, 2c, 3a or 3b.
 
 - **GPX (GPS Exchange Format):** A standard file format for GPS data, for example the track of a walk through a site.
 A steward records a track with a phone or a handheld GPS and uploads the GPX file to the application.
@@ -54,8 +60,9 @@ focus of SAPAA.
 - **Naturalness score:** A score in the Site Inspection Report that tells the condition of the site.
 
 - **People Management:** A planned client capability to support and track the community of volunteer stewards,
-including the activity history of each steward, for future volunteer recognition. This term, the Admin user approval
-tools are the first part of it.
+including the activity history of each steward, for future volunteer recognition. This term, the steward profile stories
+(US 1.0.1 to US 1.0.5) are the first part of it: steward profiles, editing of a steward's own profile, inspection
+history, activity statistics and points.
 
 - **Place Management:** A planned client capability to show where a Site is and what activity occurred there, as an
 extension of the maps on the SAPAA website. This term, site profile editing and the site map are the first part of it.
@@ -80,7 +87,7 @@ observations, ecological conditions, safety notes and steward activities.
 site data and inspection history and keeps an offline copy of site data.
 
 
-## Similar Products
+## Similar products
 
 * [Park Protector](https://playgroundguardian.com/solutions/playground-inspection-software/)
     - **Function:** Inspection software for parks and playgrounds. It schedules frequent and infrequent inspections,
@@ -108,7 +115,7 @@ site data and inspection history and keeps an offline copy of site data.
     - **How we may use it:** Inspiration for the GPX track upload and for the display of a track on the site map.
 
 
-## Open-source Projects
+## Open-source projects
 
 * [LimeSurvey](https://www.limesurvey.org/)
     - **Function:** An open-source survey platform, an alternative to Google Forms.
@@ -130,7 +137,7 @@ site data and inspection history and keeps an offline copy of site data.
       GPX upload and for form questions that change over time.
 
 
-## Technical Resources
+## Technical resources
 
 Documentation and references that the team uses this term.
 
@@ -145,8 +152,7 @@ Documentation and references that the team uses this term.
   the database through it directly.
 * [What is Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) - inspection photos and
   PDF reports are stored here. The presigned URL pages are the relevant part.
-* [AWS IAM](https://docs.aws.amazon.com/iam/) and [AWS Budgets and billing alerts](https://docs.aws.amazon.com/cost-management/)
-  - access to the S3 bucket and control of cloud cost.
+* [AWS IAM](https://docs.aws.amazon.com/iam/) and [AWS Budgets and billing alerts](https://docs.aws.amazon.com/cost-management/) - access to the S3 bucket and control of cloud cost.
 
 **Frontend and mobile**
 

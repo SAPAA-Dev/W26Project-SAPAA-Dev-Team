@@ -76,7 +76,6 @@ Never run Cypress, native mobile builds, `webapp/temp-supabase.py`, or `googleSh
 * `.agents/rules/database.md`: the schema split and schema changes. Read it before you change a query.
 * `.agents/rules/domain-glossary.md`: SAPAA terms and where they are in the code.
 * `docs/contributing.md`: commit, branch, and review rules. The `commit-msg` hook in `.githooks/` enforces them.
-* `docs/investigation/`: the audit of the code from the previous team. Use it to find known problems before you start.
 * `docs/issues.md`: the backlog.
 
 # Agent roles

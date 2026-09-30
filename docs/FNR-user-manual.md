@@ -11,45 +11,45 @@
 ## Table of Contents
 
 1. [Introduction](#introduction)
-   - [About SAPAA](#about-sapaa)
-   - [Who Should Use This Manual](#who-should-use-this-manual)
-   - [System Requirements](#system-requirements)
+    - [About SAPAA](#about-sapaa)
+    - [Who Should Use This Manual](#who-should-use-this-manual)
+    - [System Requirements](#system-requirements)
 
 2. [Getting Started](#getting-started)
-   - [Creating Your Account](#creating-your-account)
-   - [Logging In](#logging-in)
-   - [Understanding User Roles](#understanding-user-roles)
+    - [Creating Your Account](#creating-your-account)
+    - [Logging In](#logging-in)
+    - [Understanding User Roles](#understanding-user-roles)
 
 3. [Mobile Application Guide](#mobile-application-guide)
-   - [Installing the App](#installing-the-app)
-   - [Navigating the Mobile App](#navigating-the-mobile-app)
-   - [Viewing Site Analytics](#viewing-site-analytics)
-   - [Browsing and Searching Sites](#browsing-and-searching-sites)
-   - [Working Offline](#working-offline)
-   - [Viewing Site Details](#viewing-site-details-mobile)
-   - [Using the Map](#using-the-map)
-   - [Generating Reports](#generating-reports)
-   - [Managing Your Profile](#managing-your-profile-mobile)
+    - [Installing the App](#installing-the-app)
+    - [Navigating the Mobile App](#navigating-the-mobile-app)
+    - [Viewing Site Analytics](#viewing-site-analytics)
+    - [Browsing and Searching Sites](#browsing-and-searching-sites)
+    - [Working Offline](#working-offline)
+    - [Viewing Site Details](#viewing-site-details-mobile)
+    - [Using the Map](#using-the-map)
+    - [Generating Reports](#generating-reports)
+    - [Managing Your Profile](#managing-your-profile-mobile)
 
 4. [Web Application Guide](#web-application-guide)
-   - [Accessing the Web App](#accessing-the-web-app)
-   - [Viewing Protected Areas](#viewing-protected-areas)
-   - [Exploring Site Details](#exploring-site-details-web)
-   - [Comparing Inspection Data](#comparing-inspection-data)
-   - [Using the Admin Dashboard](#using-the-admin-dashboard)
-   - [Managing User Accounts](#managing-user-accounts)
+    - [Accessing the Web App](#accessing-the-web-app)
+    - [Viewing Protected Areas](#viewing-protected-areas)
+    - [Exploring Site Details](#exploring-site-details-web)
+    - [Comparing Inspection Data](#comparing-inspection-data)
+    - [Using the Admin Dashboard](#using-the-admin-dashboard)
+    - [Managing User Accounts](#managing-user-accounts)
 
 5. [Common Tasks](#common-tasks)
-   - [Finding a Specific Site](#finding-a-specific-site)
-   - [Checking When a Site Was Last Inspected](#checking-when-a-site-was-last-inspected)
-   - [Reviewing Inspection History](#reviewing-inspection-history)
-   - [Identifying Sites That Need Attention](#identifying-sites-that-need-attention)
-   - [Understanding Naturalness Scores](#understanding-naturalness-scores)
+    - [Finding a Specific Site](#finding-a-specific-site)
+    - [Checking When a Site Was Last Inspected](#checking-when-a-site-was-last-inspected)
+    - [Reviewing Inspection History](#reviewing-inspection-history)
+    - [Identifying Sites That Need Attention](#identifying-sites-that-need-attention)
+    - [Understanding Naturalness Scores](#understanding-naturalness-scores)
 
 6. [Troubleshooting](#troubleshooting)
-   - [Mobile App Issues](#mobile-app-issues)
-   - [Web App Issues](#web-app-issues)
-   - [Data Sync Problems](#data-sync-problems)
+    - [Mobile App Issues](#mobile-app-issues)
+    - [Web App Issues](#web-app-issues)
+    - [Data Sync Problems](#data-sync-problems)
 
 7. [Frequently Asked Questions](#frequently-asked-questions)
 
@@ -107,9 +107,9 @@ You can create your own SAPAA account or, in some deployments, have one created 
 1. Open the SAPAA **mobile app** or **web app**.  
 2. On the login screen in the Web, under **“Don’t have an account?”**, click the **“Create one”** button. On the mobile App, click "Sign Up".  
 3. Choose how you want to create your account:  
-   - **Continue with Google** – sign up using your Google account.  
-   - **Continue with Microsoft** – sign up using your Microsoft / organization account.  
-   - **Email and Password** – enter your email address and choose a secure password.  
+    - **Continue with Google** – sign up using your Google account.  
+    - **Continue with Microsoft** – sign up using your Microsoft / organization account.  
+    - **Email and Password** – enter your email address and choose a secure password.  
 4. Follow the on-screen prompts to complete the sign-up process.  
 5. After successful sign-up, you will be logged in or redirected to the login screen.
 
@@ -247,14 +247,14 @@ The app has three main sections, accessible via tabs at the bottom of the screen
 
 - Scroll through the list to see all available sites
 - Each site card shows:
-  - Site name (bold)
-  - Location/county
-  - Last inspection date (or "No inspection date")
-  - Status badge (color-coded):
-    - 🟢 Recently Visited
-    - 🟡 Visited This Year
-    - 🟠 Visited Recently
-    - 🔴 Needs Review
+    - Site name (bold)
+    - Location/county
+    - Last inspection date (or "No inspection date")
+    - Status badge (color-coded):
+        - 🟢 Recently Visited
+        - 🟡 Visited This Year
+        - 🟠 Visited Recently
+        - 🔴 Needs Review
 
 **Searching for a Site:**
 
@@ -277,7 +277,7 @@ The app has three main sections, accessible via tabs at the bottom of the screen
 
 - Look for the badge at the top of the Sites tab:
     - **🟢 Online**: Connected to the internet, showing all sites
-     - **🔴 Offline**: No internet, showing only downloaded sites
+    - **🔴 Offline**: No internet, showing only downloaded sites
 
 ### Working Offline
 
@@ -782,7 +782,7 @@ Each user appears as a card showing:
 2. Fill in the required fields:
     - **Email**: User's email address
     - **Role**: Select "Admin" or "Steward"
-     - **Password**: Set an initial password (if required)
+    - **Password**: Set an initial password (if required)
 3. Click **"Save"**
 4. The new user appears in the list
 5. **Important**: Share login credentials with the new user securely
@@ -1107,7 +1107,7 @@ The Naturalness Score is an average value (typically 1.0 to 4.0) that summarizes
 3. **Try a different browser**
 4. **Contact your administrator** for password reset
 
-### Problem: Admin Dashboard Shows "No Data Available"
+#### Problem: Admin Dashboard Shows "No Data Available"
 
 **Possible Causes:**
 
@@ -1119,15 +1119,15 @@ The Naturalness Score is an average value (typically 1.0 to 4.0) that summarizes
 
 - Refresh the page
 - Check other admin features:
-  - If **Account Management** works, it's likely a data issue
+    - If **Account Management** works, it's likely a data issue
 - Try the heatmap search:
-  - Search for a known site
-  - If it works, the database is accessible
+    - Search for a known site
+    - If it works, the database is accessible
 - Contact your administrator if charts remain empty
 
 ---
 
-### Problem: Heatmap Returns "No Sites Found"
+#### Problem: Heatmap Returns "No Sites Found"
 
 **Possible Causes:**
 
@@ -1146,7 +1146,7 @@ The Naturalness Score is an average value (typically 1.0 to 4.0) that summarizes
 
 ---
 
-### Problem: I Don't See the "Admin" Button
+#### Problem: I Don't See the "Admin" Button
 
 **Cause:** Your account has the **steward** role, not **admin**.
 
@@ -1158,9 +1158,9 @@ The Naturalness Score is an average value (typically 1.0 to 4.0) that summarizes
 
 ---
 
-## Data Sync Problems
+### Data Sync Problems
 
-### Problem: Mobile App Shows Old Data
+#### Problem: Mobile App Shows Old Data
 
 **Cause:** Data hasn't synced recently.
 
@@ -1173,7 +1173,7 @@ The Naturalness Score is an average value (typically 1.0 to 4.0) that summarizes
 
 ---
 
-### Problem: Changes in Web App Don't Appear in Mobile App
+#### Problem: Changes in Web App Don't Appear in Mobile App
 
 **Cause:** Mobile app data is cached and needs to be refreshed.
 
@@ -1185,7 +1185,7 @@ The Naturalness Score is an average value (typically 1.0 to 4.0) that summarizes
 
 ---
 
-### Problem: Offline Data is Outdated
+#### Problem: Offline Data is Outdated
 
 **Cause:** Downloaded sites were cached before recent updates.
 

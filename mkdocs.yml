@@ -1,7 +1,7 @@
 site_name: Fall 2026 SAPAA Project
+site_url: https://ualberta-cmput401.github.io/F26project-SAPAA/
 theme:
-  name: material 
-  features: 
+  name: material
   language: en
   palette:
     - scheme: default

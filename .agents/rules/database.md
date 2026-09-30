@@ -1,6 +1,6 @@
 # Database rules
 
-Read `docs/investigation/THE-SCHEMA-SPLIT.md` before you change a query.
+Read `docs/software-design.md` (the ER diagrams) before you change a query.
 
 ## The schema split
 

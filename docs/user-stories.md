@@ -1,9 +1,26 @@
 # User Stories
 
-## **1 - People Management**
+## Charter Projects
+
+The client's project charters are on the SAPAA page [Student Opportunities – 2026 to 2027](https://sapaastewards.com/2026/06/03/student-opportunities-2026-to-2027/). The charter projects are:
+
+- 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements
+- 2 – SIR-SAPAA v2.0: 2a – Development Environment, 2b – Person Management, 2c – Map Management
+- 3 – SAPAA and iNaturalist: 3a – iNaturalist Internal Improvements, 3b – iNaturalist for non-Naturalist
+
+The line below each story title names the one charter project that is the best match for the story. If the line says "none (team request)", the story is not in a charter project.
+
+## Unused Story Numbers
+
+Some numbers are not used: 2.0.7, 3.0.1, 4.0.1, 4.0.3, 5.0.1, 5.0.3 and 7.0.2. This is because the team removed these stories after the September 25, 2026 client meeting, in the review of pull request #31. The review gives these reasons. Stories 2.0.7 (site image upload), 4.0.1 (offline site data) and 4.0.3 (autosaved drafts) repeat features that already exist. The client does not want 3.0.1 (steward permissions). There is no need for 5.0.1 (private gallery). Story 5.0.3 (approval email) is out of scope. The review gives no reason for 7.0.2 (answers not for publication).
+
+---
+## 1 - People Management
 ---
 
 ### US 1.0.1 - Add User Profiles | Story Points: 5
+*Charter project: 2b – Person Management*
+
 > As a **Steward**, **I want** to view my own profile and the profiles of other stewards, including their skills, focus areas and how many SIRs they have submitted, **so that** I can judge how credible an observer someone is and know whom to ask about a topic
 
 > **Acceptance Tests**
@@ -11,39 +28,47 @@
 > 1. Given I am viewing a profile, I am able to see the user's name, skills, focus area, contact info, and inspection count.
 > 2. Given I am currently not viewing my profile, I can navigate to my own profile from the main menu.
 > 3. Given I am on a site page, I can navigate to a profile by clicking on a user's inspection
-> 4. Given I opened a users profile via their site inspection, I can navigate back to my previous page
-> 5. Given the users details are changed in the database, When the profile page is reloaded, it shows the most recent stored value
+> 4. Given I opened a user's profile via their site inspection, I can navigate back to my previous page
+> 5. Given the user's details are changed in the database, When the profile page is reloaded, Then it shows the most recent stored values
 
 ### US 1.0.2 - Allow Editing Own Profile | Story Points: 3
+*Charter project: 2b – Person Management*
+
 > As a **Steward**, **I want** to edit my own profile, including my skills and focus areas, **so that** my details stay up to date and other stewards know what I can help with
 
 > **Acceptance Tests**
 
 > 1. The user can only edit their own information.
-> 2. Requests to edit another users information should fail
+> 2. Requests to edit another user's information should fail
 > 3. Given I remove my name or email, When I select Save, Then the save is blocked and the name or email field is highlighted.
 > 4. Given I enter valid values, When I select Save, Then the page shows the new values
 > 5. Given I saved changes, When I sign out and sign in again, Then my profile shows the saved values
 > 6. Given I add skills or focus areas, When I select Save, Then they are shown on my profile
 
 ### US 1.0.3 - Show history of Site Inspections on a Steward's Profile | Story Points: 2
+*Charter project: 2b – Person Management*
+
 > As a **Steward**, **I want** to view the site inspections a steward has submitted across all sites, **so that** I know their level of contributions and experience
 
 > **Acceptance Tests**
 
-> 1. Given I am viewing a Stewards profile, I see a list of their previous inspections with corresponding site, and date submitted.
-> 2. Given I am viewing a Stewards profile, I can click on a past inspection and view the submitted information
+> 1. Given I am viewing a Steward's profile, I see a list of their previous inspections with the corresponding site and date submitted.
+> 2. Given I am viewing a Steward's profile, I can click on a past inspection and view the submitted information
 > 3. Given that a steward has chosen to hide certain fields, I am not able to see their answers when reading through their past SIRs
 
 ### US 1.0.4 - Aggregate User Activity and Contributions on a user's profile | Story Points: 2
-> As a **Steward**, **I want** to see quick stats on a user's activity, **so that** I can get a quick overview of their activity, and common activities
+*Charter project: 2b – Person Management*
+
+> As a **Steward**, **I want** to see quick stats on a user's activity, **so that** I can get a quick overview of their activity and common activities
 
 > **Acceptance Tests**
 
-> 1. Aggregates accurately reflect the user's data (SIR count, Activities reported)
+> 1. Aggregates accurately reflect the user's data (SIR count, activities reported)
 > 2. Given that a steward has submitted a new report, their SIR count updates +1.
 
 ### US 1.0.5 - Earn Points for Inspection Activity | Story Points: 5
+*Charter project: 2b – Person Management*
+
 > As a **Steward**, **I want** to earn points for visiting Sites, contributing photos, and other inspection activity, **so that** I have a reason to visit more natural areas
 
 > **Acceptance Tests**
@@ -53,20 +78,24 @@
 > 3. Given I have activity points, When I open my profile, Then the current total is shown
 
 ---
-## **2 - Place Management**
+## 2 - Place Management
 ---
 
 ### US 2.0.1 - View Sites and Past Visits on an Interactive Map | Story Points: 8
+*Charter project: 2c – Map Management*
+
 > As a **Steward**, **I want** a map that shows where a natural area is, if it has been visited and what other stewards have done there, **so that** I can know what to expect and do on my next visit
 
 > **Acceptance Tests**
 
 > 1. Given the map view is open, When it loads, Then every active Site is drawn with its boundary
 > 2. Given a GPX track was uploaded for a Site, When I zoom to that Site, Then the track is drawn as a line in a style different from the Site boundary
-> 3. Given I am on a Site's page, I can navigate where to view its location on the map
+> 3. Given I am on a Site's page, I can navigate to view its location on the map
 > 4. Given a Site is selected on the map, When the selection changes, Then only the newly selected Site is highlighted
 
 ### US 2.0.2 - Allow Admins to Add New Sites | Story Points: 3
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As an **Admin**, **I want** to be able to add a new Site through the app UI, **so that** I am not limited to direct database inserts.
 
 > **Acceptance Tests**
@@ -76,20 +105,24 @@
 > 3. Given a required field (ex. name) is empty, site creation is blocked and the empty fields are highlighted
 > 4. Given I am signed in as a Steward, When I send the create-Site request directly to the server, Then it is refused and no Site is created
 > 5. Given a site was added, it appears in the search results for the site.
-> 6. Given I am selecting a boundary for a site, site suggestions are given taking what already exists in the Alberta government KML but not in SIR-SAPAA
+> 6. Given I am selecting a boundary for a site, site suggestions are given based on what already exists in the Alberta government KML but not in SIR-SAPAA
 
 ### US 2.0.3 - Deactivate and Reactivate a Site | Story Points: 3
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As an **Admin**, **I want** to deactivate and reactivate a site, **so that** I can toggle its visibility throughout the app
 
 > **Acceptance Tests**
 
 > 1. Should be able to toggle a site between active and inactive
-> 2. Site is deactivated -> Site no longer appears in site pickers, search results
+> 2. Site is deactivated -> Site no longer appears in site pickers or search results
 > 3. Site is reactivated -> Site reappears everywhere it was previously listed
 > 4. Given a site was deactivated, the inspections on the site can still be viewed
 > 5. Given a new site was created, by default it should be active
 
 ### US 2.0.4 - Delete a Site | Story Points: 8
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As an **Admin**, **I want** to delete a site, **so that** I can remove incorrect or duplicate site information
 
 > **Acceptance Tests**
@@ -100,16 +133,20 @@
 > 4. Cascade cannot complete -> Deletion is rejected with an error and the site and all of its records are left unchanged
 
 ### US 2.0.5 - Update a Site | Story Points: 5
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As an **Admin**, **I want** to update an existing site page with new fields from a designated steward, **so that** I can direct stewards where to seek out more information
 
 > **Acceptance Tests**
 
 > 1. Given that I am an admin, I can enter 'edit mode' on a site page
 > 2. Given that I am not an admin, I am prevented from entering edit mode
-> 3. Given that I am on edit mode for a site page, I can easily tell which fields I have selected to be included/excluded from the site page.
+> 3. Given that I am in edit mode for a site page, I can easily tell which fields I have selected to be included/excluded from the site page.
 > 4. On saving the update, the site page should have the new fields and remove those that were hidden
 
 ### US 2.0.6 - Search and Filter Sites by County on the Map | Story Points: 5
+*Charter project: 2c – Map Management*
+
 > As a **Steward**, **I want** to search and filter Sites on the map by county, **so that** I can easily find the Site I am looking for
 
 > **Acceptance Tests**
@@ -119,6 +156,8 @@
 > 3. Given I type a Site name in the search box, When I select the match, Then the map centres on that Site
 
 ### US 2.0.8 - View a Site's Details From the Map | Story Points: 3
+*Charter project: 2c – Map Management*
+
 > As a **Steward**, **I want** to see a Site's details by selecting the Site on the map, **so that** I can gather context on the Site while exploring the map
 
 > **Acceptance Tests**
@@ -128,26 +167,32 @@
 > 3. Given the detail view is open, When I select "View SIRs", Then I am directed to the past SIRs
 
 ### US 2.0.9 - Upload a GPX Track of a Site Visit | Story Points: 5
+*Charter project: 2c – Map Management*
+
 > As a **Steward**, **I want** to upload the GPX file my GPS device or phone app recorded during a Site visit, **so that** the visit is logged and the next steward can see which part of the Site was already covered
 
 > **Acceptance Tests**
 
 > 1. Given I am a signed-in Steward on a Site's page, When I upload a valid .gpx file, Then the track is saved and linked to that Site and to my account
 > 2. Given I upload a file that does not have a .gpx extension, a message pops up that only GPX files are accepted
-> 3. Given I upload a file named .gpx that is not valid GPX or has no track points, then it is refused with a message and nothing is saved
+> 3. Given I upload a file named .gpx that is not valid GPX or has no track points, Then it is refused with a message and nothing is saved
 > 4. Given I uploaded a track, When the stored track is read back, Then it has the same track points as the uploaded file
 > 5. Given I choose a .gpx file larger than the stated maximum size, When I upload it, Then it is refused with a message that names the limit
 
 ### US 2.0.10 - Add links to Site Page | Story Points: 1
-> As a **Steward**, **I want** to click on a link to the SAPAA Website and iNaturalist from a site page, **so that** I can quickly navigate to learn more about natural areas
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
+> As a **Steward**, **I want** to click on a link to the SAPAA website and iNaturalist from a site page, **so that** I can quickly navigate to learn more about natural areas
 
 > **Acceptance Tests**
 
-> 1. Given I am on the site page, I should see a clear link (shortened url) to SAPAA Website
-> 2. Given I am on the site page, I should see a clear link (shortened url) to iNaturalist
+> 1. Given I am on the site page, I should see a clear link (shortened URL) to the SAPAA website
+> 2. Given I am on the site page, I should see a clear link (shortened URL) to iNaturalist
 > 3. Given I click on a link from the site page, a new window should open to the site instead of using my current window
 
 ### US 2.0.11 - Show Safety Information for a Site | Story Points: 5
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As a **Steward**, **I want** to know the nearest hospital, the known hazards at a Site, and other safety information, **so that** I can prepare for an emergency
 
 > **Acceptance Tests**
@@ -158,6 +203,8 @@
 > 4. Given I am a Steward, When I try to change the safety information, Then the server refuses and the stored values stay unchanged
 
 ### US 2.0.12 - Score a Site for To-Visit Priority | Story Points: 8
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As an **Admin**, **I want** to give a Site points for abuses, biological imperatives, and time since the last visit, and combine those points into a to-visit priority, **so that** a Steward can see the state of the Site and decide whether to prioritize contributions to it
 
 > **Acceptance Tests**
@@ -169,6 +216,8 @@
 > 5. Given I am a Steward, When I try to change the scores, Then the server refuses and the scores stay unchanged
 
 ### US 2.0.13 - Flag Site Points That Are a Year Old | Story Points: 3
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As an **Admin**, **I want** to know when a Site's points have not been updated for a year, **so that** I have a reminder to reassess them
 
 > **Acceptance Tests**
@@ -179,20 +228,24 @@
 > 4. Given I am a Steward, When I open the Site, Then the Admin reminder is not shown
 
 ---
-## **3 - Admin Persona**
+## 3 - Admin Persona
 ---
 
 ### US 3.0.2 - Steward Designation | Story Points: 5
-> As an **Admin**, **I want** to assign an individual for a site, **so that** other stewards can reach out to them for more information
+*Charter project: 2b – Person Management*
+
+> As an **Admin**, **I want** to assign an individual to a site, **so that** other stewards can reach out to them for more information
 
 > **Acceptance Tests**
 
 > 1. Given I am an admin, I can search for a steward to assign to a site
 > 2. Given I am an admin, I can assign a new steward, replacing the previous one
-> 3. Given a steward is assigned to a site, The assigned relationship is visible on both the site's page and the steward's profile
+> 3. Given a steward is assigned to a site, the assigned relationship is visible on both the site's page and the steward's profile
 > 4. Given a user who is not permitted to assign attempts to designate a steward, the action is rejected and no assignment is created
 
 ### US 3.0.3 - Export all digital files from SIR-SAPAA | Story Points: 8
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As an **Admin**, **I want** to be able to extract all images and other digital files in the app at once, **so that** I can back them up and use them for business processing
 
 > **Acceptance Tests**
@@ -201,10 +254,12 @@
 > 2. Extraction should include all images, at minimum
 
 ---
-## **4 - General Features**
+## 4 - General Features
 ---
 
 ### US 4.0.2 - Offline and Online Map Layers | Story Points: 13
+*Charter project: none (team request)*
+
 > As a **Steward**, **I want** offline/online map layers, **so that** I can navigate complex areas.
 
 > **Acceptance Tests**
@@ -215,6 +270,8 @@
 > 4. Device is online -> The map uses live tiles and does not fall back to the cached layer
 
 ### US 4.0.4 - Edit My Previous Inspections | Story Points: 5
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As a **Steward**, **I want** to be able to edit my previous inspections, **so that** I can easily fix incorrectly submitted entries
 
 > **Platform:** Web
@@ -227,14 +284,18 @@
 > 4. An edit is saved -> The updated answers are reflected everywhere the report is rendered
 
 ### US 4.0.5 - iNaturalist integration | Story Points: 5
+*Charter project: 3a – iNaturalist Internal Improvements*
+
 > As a **Steward**, **I want** to be able to see the photos I took on iNaturalist in the app, **so that** I do not have to upload them a second time in my SIR
 
 > **Acceptance Tests**
 
-> 1. User can upload an image inside their SIR, by selecting images from their iNaturalist account
-> 2. Identifier field is autofilled from iNaturalist observation
+> 1. User can upload an image inside their SIR by selecting images from their iNaturalist account
+> 2. Identifier field is autofilled from the iNaturalist observation
 
 ### US 4.0.6 - Demote Photo Identifier to optional field | Story Points: 1
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As a **Steward**, **I want** to skip entering a photo Identifier, **so that** I do not have to repeat my description in this field
 
 > **Acceptance Tests**
@@ -243,6 +304,8 @@
 > 2. Given I am filling out a site inspection report, there is no note beside the identifier field that reads "required"
 
 ### US 4.0.7 - Show the Top iNaturalist Observations for a Site | Story Points: 5
+*Charter project: 3a – iNaturalist Internal Improvements*
+
 > As a **Steward**, **I want** to see up to the top 5 iNaturalist observations for a Site, **so that** I can see more information in the app without an iNaturalist account
 
 > **Acceptance Tests**
@@ -254,20 +317,24 @@
 > 5. Given an observation is shown, When I read it, Then it shows the species name from iNaturalist
 
 ---
-## **5 - Access and Accounts**
+## 5 - Access and Accounts
 ---
 
 ### US 5.0.2 - Reset a Forgotten Password | Story Points: 2
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As a **User**, **I want** to reset my password myself, **so that** I do not need an Admin to get back in
 
 > **Acceptance Tests**
 
 > 1. Given I am on the sign-in page, When I select "Forgot password" and enter my email, Then a reset link is sent to that email
-> 2. given I requested to reset my password, I am asked to verify with a code before I can proceed to reset my password
+> 2. Given I requested to reset my password, I am asked to verify with a code before I can proceed to reset my password
 > 3. Given I received a reset link, When I open it and set a new password, Then I can sign in with the new password and not with the old one
 > 4. No admin intervention is required at any step of resetting my password
 
 ### US 5.0.4 - Sign Out Properly | Story Points: 2
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As a **User**, **I want** signing out to keep me signed out, **so that** the next person on a shared device cannot use my account
 
 > **Acceptance Tests**
@@ -277,24 +344,28 @@
 > 3. Given I am on any page of the web app, I can sign out without navigating to a specific page
 
 ---
-## **6 - Data and Places**
+## 6 - Data and Places
 ---
 
 ### US 6.0.1 - Store Each Site's Geometry From the Shared Source | Story Points: 5
+*Charter project: 2c – Map Management*
+
 > As a **Steward**, **I want** each Site stored with its real boundary and location, taken from the same source the SAPAA website uses, **so that** I can use either map to tell where a site really is and the website and app never disagree about a Site's shape
 
 > **Acceptance Tests**
 
-> 1. Given a site already exists in the Alberta government KML the website uses, the site geometry the app uses is the exact same
+> 1. Given a site already exists in the Alberta government KML the website uses, the site geometry the app uses is exactly the same
 > 2. Given the geometries are loaded, When a Site is read from the database, Then it has a stored boundary and a centre point (latitude and longitude)
 > 3. Given the list of active Sites, When the load is finished, Then each Site has a geometry or is on a list of unmatched Sites for an Admin to fix
 > 4. Given geocoding is still used for any Site (for example to fill a missing point), When it runs, Then results are cached and requests stay under the OpenCage free tier of 2,500 per day
 
 ---
-## **7 - Inspections and Media**
+## 7 - Inspections and Media
 ---
 
 ### US 7.0.1 - Let Stewards Export Their Own Reports | Story Points: 2
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As a **Steward**, **I want** to export my own SIR as a PDF, **so that** I can keep or share a copy of my report
 
 > **Acceptance Tests**
@@ -304,15 +375,19 @@
 > 3. Given a PDF of my SIR is generated, When I open it, Then it contains the same answers and photos as the SIR page
 
 ### US 7.0.3 - See All Inspections in One View | Story Points: 5
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As an **Admin**, **I want** a summary across all SIRs rather than one Site at a time, **so that** I can report on the state of all Sites at once
 
 > **Acceptance Tests**
 
 > 1. Given SIRs exist for many Sites, When I open the all-SIR summary, Then it shows SIR counts per Site, per steward and per reason for the visit (Q42), and the spread of naturalness scores (Q31)
 > 2. Given the summary is open, When I set a date range, Then every figure is recalculated for that range
-> 3. Given I am a Steward, When I request the summary data directly, the request fails
+> 3. Given I am a Steward, When I request the summary data directly, Then the request fails
 
 ### US 7.0.4 - Compare One Question Across Years | Story Points: 5
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As a **Steward**, **I want** to pick one question and see how its answers changed over the years at a Site, **so that** I can see what is getting better or worse
 
 > **Acceptance Tests**
@@ -322,6 +397,8 @@
 > 3. Given a question's wording was changed in the form editor, When I choose it, Then old and new answers stay grouped under the same Q-number
 
 ### US 7.0.5 - Delete an Image and Clean Up After It | Story Points: 5
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As an **Admin**, **I want** deleting an image to remove it from view and remove the stored file, **so that** inaccurate images are not shown to others and deleted images stop costing storage money
 
 > **Acceptance Tests**
@@ -333,6 +410,8 @@
 > 5. Given a SIR submission fails and is rolled back (rollbackSiteInspectionSubmission), When the S3 bucket is checked, Then the files uploaded for that SIR are gone
 
 ### US 7.0.6 - Export More Than 50 Site Inspection Reports | Story Points: 5
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As an **Admin**, **I want** to export more than 50 Site Inspection Reports at once, **so that** I can back them up for my records faster
 
 > **Acceptance Tests**
@@ -343,6 +422,8 @@
 > 4. Given the export fails, When I check the SIRs, Then the stored reports are unchanged
 
 ### US 7.0.7 - Hide Fields on a SIR Before Export | Story Points: 5
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As an **Admin**, **I want** to select fields to hide on a SIR before export, **so that** confidential or non-public fields stay out of the export
 
 > **Acceptance Tests**
@@ -354,6 +435,8 @@
 > 5. Given I select no fields to hide, When I export, Then the export contains the full SIR
 
 ### US 7.0.8 - Delete a Site Inspection Report | Story Points: 5
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As an **Admin**, **I want** to delete a Site Inspection Report, **so that** I can remove a report that is out of date or inaccurate
 
 > **Acceptance Tests**
@@ -365,6 +448,8 @@
 > 5. Given the delete cannot complete, an error is shown and the report and its answers stay unchanged
 
 ### US 7.0.9 - Record Audio During a Site Inspection | Story Points: 5
+*Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
+
 > As a **Steward**, **I want** to record audio during a site inspection, **so that** I can capture observations without typing in the field
 
 > **Acceptance Tests**
@@ -430,7 +515,7 @@
 | US 7.0.1 | Let Stewards Export Their Own Reports | 2 |
 | US 7.0.3 | See All Inspections in One View | 5 |
 
-### Would Like But Won't Get
+### Won't Have
 
 *2 stories, 10 story points.*
 

@@ -87,9 +87,9 @@ rebase, then force-push your branch.
 These are enforced on GitHub itself, not just locally.
 
 **Branches.** GitHub rejects any new branch whose name doesn't start with one of the types
-above followed by `/`. `main` and `gh-pages` are the only exceptions. So `feat/site-search`
-works, but `saumya/test` or `Zanab-Akbar-patch-1` won't push. When you edit a file in the
-GitHub web editor, rename its suggested `patch-1` branch before you commit.
+above followed by `/`. `main`, `gh-pages` and `dependabot/**` are the only exceptions. So
+`feat/site-search` works, but `saumya/test` or `username-patch-1` won't push. When you edit a
+file in the GitHub web editor, rename its suggested `patch-1` branch before you commit.
 
 **`main` is PR-only.** Nobody can push, force-push or delete `main` directly. Everything
 goes through a pull request, and a PR needs all of these before it can merge:
@@ -111,11 +111,14 @@ no unresolved comments. GitHub logs every one of those bypasses, so use it spari
 why in the PR.
 
 **Large PRs.** When a PR changes more than 500 lines, it gets a `large-pr` label and a
-comment suggesting you split it. `docs/` and lockfiles don't count. It's only a nudge and
-never blocks the merge.
+comment suggesting you split it. The number of lines does not include changes in `docs/`,
+`webapp/package-lock.json` or `FNR/package-lock.json`. The number includes changes in all
+other lockfiles, for example the root `package-lock.json` and `deno.lock`. It's only a nudge
+and never blocks the merge.
 
 **Code owners.** `.github/CODEOWNERS` auto-requests reviewers based on the files a PR
-touches. An owner's approval isn't required beyond the normal 2.
+touches. At this time, it covers only `.github/` and `.githooks/`. An owner's approval isn't
+required beyond the normal 2.
 
 ## Issues and the project board
 

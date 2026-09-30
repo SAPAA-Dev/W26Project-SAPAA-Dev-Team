@@ -41,17 +41,35 @@
     </div>
 
     <table class="wf-table">
-      <tr><th>Site</th><th>Steward</th><th>Date</th><th>Score</th></tr>
-      <tr class="clickable" onclick="location.href='report.html?site=beaver-hills'"><td>Beaver Hills Site</td><td>Jamie Rivera</td><td>2026-08-14</td><td>7.2</td></tr>
-      <tr class="clickable" onclick="location.href='report.html?site=blackfoot'"><td>Blackfoot Site</td><td>Priya Nandan</td><td>2026-05-02</td><td>6.8</td></tr>
-      <tr class="clickable" onclick="location.href='report.html?site=gooseberry'"><td>Gooseberry Site</td><td>Morgan Lee</td><td>2025-11-20</td><td>7.5</td></tr>
-      <tr class="clickable" onclick="location.href='report.html'"><td>Elk Ridge Site</td><td>Jamie Rivera</td><td>2025-09-10</td><td>6.0</td></tr>
-      <tr class="clickable" onclick="location.href='report.html'"><td>Cold Lake Site</td><td>Morgan Lee</td><td>2025-07-03</td><td>8.1</td></tr>
+      <tr><th>Site</th><th>Steward</th><th>Date</th><th>Score</th><th>Actions<span class="us">US 7.0.8</span></th></tr>
+      <tr class="clickable" onclick="location.href='report.html?site=beaver-hills'"><td>Beaver Hills Site</td><td>Jamie Rivera</td><td>2026-08-14</td><td>7.2</td><td><button class="btn danger" style="font-size:11px; padding:4px 8px;" onclick="event.stopPropagation(); deleteReport(this)">Delete</button></td></tr>
+      <tr class="clickable" onclick="location.href='report.html?site=blackfoot'"><td>Blackfoot Site</td><td>Priya Nandan</td><td>2026-05-02</td><td>6.8</td><td><button class="btn danger" style="font-size:11px; padding:4px 8px;" onclick="event.stopPropagation(); deleteReport(this)">Delete</button></td></tr>
+      <tr class="clickable" onclick="location.href='report.html?site=gooseberry'"><td>Gooseberry Site</td><td>Morgan Lee</td><td>2025-11-20</td><td>7.5</td><td><button class="btn danger" style="font-size:11px; padding:4px 8px;" onclick="event.stopPropagation(); deleteReport(this)">Delete</button></td></tr>
+      <tr class="clickable" onclick="location.href='report.html'"><td>Elk Ridge Site</td><td>Jamie Rivera</td><td>2025-09-10</td><td>6.0</td><td><button class="btn danger" style="font-size:11px; padding:4px 8px;" onclick="event.stopPropagation(); deleteReport(this)">Delete</button></td></tr>
+      <tr class="clickable" onclick="location.href='report.html'"><td>Cold Lake Site</td><td>Morgan Lee</td><td>2025-07-03</td><td>8.1</td><td><button class="btn danger" style="font-size:11px; padding:4px 8px;" onclick="event.stopPropagation(); deleteReport(this)">Delete</button></td></tr>
     </table>
+  </div>
+  <div class="modal-overlay" id="confirmOverlay">
+    <div class="modal">
+      <h3>Delete Inspection Report</h3>
+      <p id="confirmMessage" style="font-size:12px;"></p>
+      <div class="modal-actions">
+        <button class="btn danger" onclick="confirmYes()">Delete</button>
+        <button class="btn white" onclick="closeConfirm()">Cancel</button>
+      </div>
+    </div>
   </div>
   <div class="toast" id="toast"></div>
 </div>
 </div>
 <script src="app.js"></script>
+<script>
+function deleteReport(button){
+  openConfirm('Delete this inspection report? It will be removed from the site and from all report lists, and its images will no longer show with it. This cannot be undone.', function(){
+    button.closest('tr').remove();
+    showToast('Inspection report deleted');
+  });
+}
+</script>
 </body>
 </html>

@@ -29,6 +29,7 @@ The web application exposes the following API endpoints:
 **Description:** Geocodes a location name to coordinates using OpenCage API.
 
 **Query Parameters:**
+
 - `q` (required): Location name to geocode
 
 **Example Request:**
@@ -53,6 +54,7 @@ GET /api/geocode?q=Elk Island Provincial Park
 Status: 400
 
 **Rate Limits:**
+
 - Limited by OpenCage API quota (2,500 requests/day on free tier)
 
 ---
@@ -64,6 +66,7 @@ Status: 400
 **Description:** Searches for sites matching a keyword and returns counts for heatmap visualization.
 
 **Query Parameters:**
+
 - `keyword` (optional): Search term to match against site names
 
 **Example Request:**
@@ -104,6 +107,7 @@ GET /api/heatmap?keyword=park
 Status: 400 or 500
 
 **Authentication:**
+
 - Requires authenticated user session (handled by middleware)
 
 ---

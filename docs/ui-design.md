@@ -1,4 +1,4 @@
-# SAPAA
+# UI/UX Design (Winter 2026)
 
 *Inherited from the Winter 2026 team. We keep this page for reference only. We do not update it for Fall 2026.*
 
@@ -447,6 +447,7 @@ When a page needs a primary action button in the header, it is grouped together 
 ### 8.5 Back Button
 
 Back navigation exists on detail/report pages but currently has two variants:
+
 - Text + icon (`"Back to Sites"`) on Site Detail.
 - Icon-only circular button (`ArrowLeft`) on New/Edit Report pages.
 
@@ -1251,7 +1252,7 @@ When editing an existing report, previously uploaded images are shown with a loc
 | Layout | Full-screen modal with carousel | Inline two-column grid |
 | Site selection | Searchable dropdown | Inherited from current site |
 | S3 route | `/api/s3/presign-homepage-images` | `/api/s3/presign` |
-| DB table | `insertHomepageImageUpload` | `W26_attachments` |
+| DB write | `insertHomepageImageUpload` (function) | `W26_attachments` (table) |
 | Edit behaviour | N/A (upload only) | Locked previous + new uploads |
 | File types | JPEG, PNG, HEIC | PNG, JPG, WEBP (10MB limit) |
 
@@ -1466,7 +1467,7 @@ Padding and gap values increase at breakpoints:
 
 ### 22.8 Responsive Modals
 
-Image preview modals adapt from stacked to side-by-side layout. To capture a good screenshot, navigate to Riverlot 56 and search "Site Trails" in the gallery for a representative image with metadata.
+Image preview modals adapt from stacked to side-by-side layout.
 
 ```tsx
 {/* Modal overlay — responsive padding */}

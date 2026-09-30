@@ -2,6 +2,8 @@
 
 *Inherited from the Winter 2026 team. We keep this page for reference only. We do not update it for Fall 2026.*
 
+*Story IDs on this page are Winter 2026 IDs. They are not the Fall 2026 IDs in [User Stories](user-stories.md).*
+
 ## Executive summary
 
 SAPAA currently manages site inspection data through a manual pipeline. Stewards submit observations via Google Forms, Admin converts them in MS Excel, and the results are stored in a local MS Access database. This project replaces that temporary setup with a sustainable, low-cost cloud data infrastructure that automatically ingests inspection data into a PostgreSQL database, enables Admin to manage the data and generate PDF reports. A major focus of our implementation is scalable and cost-aware image management. Inspection images are stored in AWS S3, providing a reliable, secure, and affordable solution for handling large volumes of media. The primary user is the Admin, who needs a reliable, maintainable system that eliminates manual data handling, while keeping his access to the data as well as report generation and distribution. This project also hopes to create Android and iOS versions of the web application for stewards to bring out into the field and be able to log their observations while offline.
@@ -18,7 +20,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 - **Site Inspection:** A record of field observations, ecological conditions, safety notes, and steward activities for a given Site.
 
-- **Steward** A SAPAA volunteer responsible for visiting Sites and submitting inspection data.
+- **Steward:** A SAPAA volunteer responsible for visiting Sites and submitting inspection data.
 
 - **Admin:** The SAPAA administrator responsible for managing Site Inspection data, generating official reports, and distributing information to stewards.
 
@@ -248,7 +250,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 5. Removing image clears uploaded entry and revokes object URL
 
 #### US 1.0.19 - Admin Viewing Images and Metadata | Story Points: 2
-> **As** an Admin. **I want** to be able to view the images uploaded by the users, **so that** I can keep track of site inspection and monitor site well-being.
+> **As** an Admin, **I want** to be able to view the images uploaded by the users, **so that** I can keep track of site inspection and monitor site well-being.
 
 > **Acceptance Tests**
 
@@ -260,7 +262,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 
 #### US 1.0.20 – Admin Editing Image Metadata | Story Points: 3 
 
-> **As** an Admin. **I want** to be able to edit image metadata **so that** I can make sure that the image data is accurate for the report's compliance.
+> **As** an Admin, **I want** to be able to edit image metadata **so that** I can make sure that the image data is accurate for the report's compliance.
 
 > **Acceptance Tests**  
 
@@ -286,7 +288,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 5. If user changes a required question, submission is changed
 
 #### US 1.0.23 – Non-Public Information | Story Points: 2
-> **As** a User. **I want** to have somewhere to write information that won’t be published publicly **so that** sensitive information / information for SAPAA only isn’t leaked
+> **As** a User, **I want** to have somewhere to write information that won’t be published publicly **so that** sensitive information / information for SAPAA only isn’t leaked
 
 > **Acceptance Tests**
 
@@ -352,7 +354,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 3. User's email is auto-filled 
 > 4. User's phone number is auto-filled 
 > 5. Date of visit is auto-filled with the current date
-> 6. Information is only auto-filled when it exists for the given user (not all user's have all of this information saved on their account)
+> 6. Information is only auto-filled when it exists for the given user (not all users have all of this information saved on their account)
 > 7. Auto-filled information can be manually edited afterwards
 
 #### TASK 1.0.29 - Refactor the Database Schema and Produce an Updated ER Diagram 
@@ -364,10 +366,10 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > **Acceptance Tests**
 
 > 1. Toolbar available: When editing a question's subtext or a section's description, a formatting toolbar with B, U, I, and link buttons is displayed above the text input.
-> 2. Bold formatting: Selecting text and clicking B (or pressing Ctrl+B / Cmd+B) wraps the selection in .... Clicking again removes the markers.
-> 3. Underline formatting: Selecting text and clicking U (or pressing Ctrl+U / Cmd+U) wraps the selection in .... Clicking again removes the markers.
-> 4. Italic formatting: Selecting text and clicking I (or pressing Ctrl+I / Cmd+I) wraps the selection in .... Clicking again removes the markers.
-> 5. Link embedding: Selecting text and clicking the link button converts it to selected text with url pre-selected for immediate replacement. With no selection, link text is inserted with link text pre-selected.
+> 2. Bold formatting: Selecting text and clicking B (or pressing Ctrl+B / Cmd+B) wraps the selection in `**...**`. Clicking again removes the markers.
+> 3. Underline formatting: Selecting text and clicking U (or pressing Ctrl+U / Cmd+U) wraps the selection in `<u>...</u>`. Clicking again removes the markers.
+> 4. Italic formatting: Selecting text and clicking I (or pressing Ctrl+I / Cmd+I) wraps the selection in `*...*`. Clicking again removes the markers.
+> 5. Link embedding: Selecting text and clicking the link button converts it to `[selected text](url)` with url pre-selected for immediate replacement. With no selection, `[link text](url)` is inserted with link text pre-selected.
 > 6. Live preview: The right-side preview panel in the form editor reflects all formatting changes in real time, for both the "Add Question" and "Edit Question" workflows.
 > 7. Consumer form rendering: Bold, underline, italic, and links in question subtext and section descriptions render correctly for inspectors on the New Report and Edit Report pages. Links open in a new tab.
 > 8. Backward compatibility: Existing plain-text descriptions and subtext display identically to before; no data migration is required.
@@ -386,7 +388,7 @@ SAPAA currently manages site inspection data through a manual pipeline. Stewards
 > 2. Image metadata is stored in the database (metadata consistency across AWS and Supabase)
 > 3. Uploaded images are accessible through the application
 
-#### US 2.0.2 – Image Metadata| Story Points: 2
+#### US 2.0.2 – Image Metadata | Story Points: 2
 > **As** a User, **I want** the image I upload to retain its metadata, such as descriptions, **so that** I do not have to retype previous descriptions.
 
 > **Acceptance Tests**
@@ -673,10 +675,10 @@ Each user story is categorized into one of the following priority levels:
 * [Supabase](https://supabase.com/)
     - **What it is:** Open-source backend (managed Postgres + Auth + Storage + Edge Functions).
     - **How we’ll use it (external interface):**  
-      - PostgreSQL as the **system of record** for inspections/sites.  
-      - Storage for **images** and generated **PDF reports**.  
-      - Auth + **Row-Level Security (RLS)** to separate Admin vs Reader access.  
-      - **Edge Functions / cron** to build nightly **offline data bundles** (JSON + thumbnails + PDFs).
+        - PostgreSQL as the **system of record** for inspections/sites.  
+        - Storage for **images** and generated **PDF reports**.  
+        - Auth + **Row-Level Security (RLS)** to separate Admin vs Reader access.  
+        - **Edge Functions / cron** to build nightly **offline data bundles** (JSON + thumbnails + PDFs).
     - **Reference/inspiration:** Supabase’s PostgREST and RLS patterns for secure CRUD without a custom API layer.
     - **Source of insights:** Example implementations for file storage policies and signed URLs.
     - **Risks/notes:** Free-tier and pricing limits can change; large media can impact storage/egress. We’ll set a monthly budget cap in the Project Plan and monitor usage.
@@ -684,21 +686,21 @@ Each user story is categorized into one of the following priority levels:
 * [LimeSurvey](https://www.limesurvey.org/)
     - **What it is:** Open-source alternative to survey platforms like Google Forms
     - **How we’ll use it (external interface):**  
-      - Get ideas from the code about how we can structure our web application to handle the Site Inspection form
+        - Get ideas from the code about how we can structure our web application to handle the Site Inspection form
      
 
 * [Ecorismap](https://ecorismap-pro.web.app/)
     - **What it is:** Open-source offline application for recording and checking location information during field surveys
     - **How we’ll use it (external interface):**  
-      - Analyze the way the code handles offline data recording and the cross-platform React Native app structure
+        - Analyze the way the code handles offline data recording and the cross-platform React Native app structure
 
 ## Cloud Services & Infrastructure
 * [AWS S3](https://aws.amazon.com/s3/)
     - **What it is:** Object storage service for scalable and cost-effective file storage.
     - **How we’ll use it (external interface):**  
-      - Store all uploaded site inspection images.  
-      - Serve images via signed URLs for secure, time-limited access.  
-      - Separate media storage from the core database to reduce costs.
+        - Store all uploaded site inspection images.  
+        - Serve images via signed URLs for secure, time-limited access.  
+        - Separate media storage from the core database to reduce costs.
     - **Reference/inspiration:** Standard architecture pattern for media-heavy applications.
     - **Source of insights:** AWS S3 best practices for IAM policies, bucket privacy, and lifecycle rules.
     - **Risks/notes:** Misconfigured permissions can expose data; billing alerts and access policies will be enforced.

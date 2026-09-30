@@ -38,24 +38,24 @@ The SAPAA Web Application is a Next.js application that provides a web interface
 Before deploying the application, ensure you have:
 
 1. **Node.js** (version 20.x or higher)
-   - Download from [nodejs.org](https://nodejs.org/)
-   - Verify installation: `node --version`
+    - Download from [nodejs.org](https://nodejs.org/)
+    - Verify installation: `node --version`
 
 2. **npm** (comes with Node.js)
-   - Verify installation: `npm --version`
+    - Verify installation: `npm --version`
 
 3. **Git** (for cloning the repository)
-   - Download from [git-scm.com](https://git-scm.com/)
-   - Verify installation: `git --version`
+    - Download from [git-scm.com](https://git-scm.com/)
+    - Verify installation: `git --version`
 
 4. **Vercel Account** (free tier available)
-   - Sign up at [vercel.com](https://vercel.com)
+    - Sign up at [vercel.com](https://vercel.com)
 
 5. **Supabase Account** (free tier available)
-   - Sign up at [supabase.com](https://supabase.com)
+    - Sign up at [supabase.com](https://supabase.com)
 
 6. **AWS Account** (for S3 image storage)
-   - Sign up at [aws.amazon.com](https://aws.amazon.com)
+    - Sign up at [aws.amazon.com](https://aws.amazon.com)
 
 
 ---
@@ -71,9 +71,9 @@ The application requires a Supabase project for authentication and database acce
 1. Go to [supabase.com](https://supabase.com) and sign in
 2. Click **"New Project"**
 3. Fill in:
-   - **Project Name**: `sapaa-webapp` (or your preferred name)
-   - **Database Password**: Choose a strong password (save this securely)
-   - **Region**: Select the closest region to your users
+    - **Project Name**: `sapaa-webapp` (or your preferred name)
+    - **Database Password**: Choose a strong password (save this securely)
+    - **Region**: Select the closest region to your users
 4. Click **"Create new project"**
 5. Wait for the project to be provisioned (2–3 minutes)
 
@@ -81,9 +81,9 @@ The application requires a Supabase project for authentication and database acce
 
 1. In your Supabase project dashboard, go to **Settings** → **API**
 2. You will need the following values:
-   - **Project URL**: found under "Project URL"
-   - **anon/public key**: found under "Project API keys" → `anon public`
-   - **service_role key**: found under "Project API keys" → `service_role` — **KEEP THIS SECRET**
+    - **Project URL**: found under "Project URL"
+    - **anon/public key**: found under "Project API keys" → `anon public`
+    - **service_role key**: found under "Project API keys" → `service_role` — **KEEP THIS SECRET**
 
 #### Required Database Tables
 
@@ -91,7 +91,7 @@ The application expects the following tables/views in your Supabase database:
 
 - `W26_sites-pa` — Main list of protected sites
 - `W26_answers` — Answers to inspection reports questions
-- `W26_attachments` — holds links to external content types (like Images or Inaturalist)
+- `W26_attachments` — holds links to external content types (like Images or iNaturalist)
 - `W26_form_sections` — Inspection section records
 - `W26_form_responses` — Inspection detail records
 - `W26_questions` — Inspection question definitions
@@ -107,9 +107,9 @@ The application uses AWS S3 for storing and serving images uploaded through the 
 1. Log in to the [AWS Management Console](https://console.aws.amazon.com)
 2. Navigate to **S3** and click **"Create bucket"**
 3. Configure the bucket:
-   - **Bucket name**: Choose a globally unique name (e.g., `sapaa-inspection-images`)
-   - **Region**: Select the closest region to your users
-   - **Block Public Access**: Configure according to your access requirements (see CORS below)
+    - **Bucket name**: Choose a globally unique name (e.g., `sapaa-inspection-images`)
+    - **Region**: Select the closest region to your users
+    - **Block Public Access**: Configure according to your access requirements (see CORS below)
 4. Click **"Create bucket"**
 
 #### Configuring CORS
@@ -132,18 +132,16 @@ In your S3 bucket settings, go to **Permissions** → **CORS** and add:
 1. Navigate to **IAM** → **Users** → **Create user**
 2. Attach a policy granting access to your S3 bucket. Example policy:
 
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
-      "Resource": "arn:aws:s3:::your-bucket-name/*"
-    }
-  ]
-}
-```
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+              "Resource": "arn:aws:s3:::your-bucket-name/*"
+            }
+          ]
+        }
 
 3. Go to the user's **Security credentials** tab and click **"Create access key"**
 4. Save the **Access Key ID** and **Secret Access Key** securely
@@ -184,6 +182,7 @@ AWS_S3_BUCKET=your_bucket_name
 ```
 
 **Important:**
+
 - Never commit `.env.local` to version control
 - The `.env.local` file is already in `.gitignore`
 - `SUPABASE_SECRET` and all `AWS_*` keys are server-side only — never prefix them with `NEXT_PUBLIC_`
@@ -197,7 +196,7 @@ AWS_S3_BUCKET=your_bucket_name
 
 ```bash
 git clone https://github.com/SAPAA-Dev/W26Project-SAPAA-Dev-Team.git
-cd webapp
+cd W26Project-SAPAA-Dev-Team/webapp
 ```
 
 ### Step 2: Install Dependencies
@@ -212,13 +211,11 @@ This will install all required packages listed in `package.json`.
 
 1. Create a `.env.local` file in the `webapp` directory:
 
-```bash
-# On Mac/Linux
-touch .env.local
+        # On Mac/Linux
+        touch .env.local
 
-# On Windows (PowerShell)
-New-Item -Path .env.local -ItemType File
-```
+        # On Windows (PowerShell)
+        New-Item -Path .env.local -ItemType File
 
 2. Add your environment variables to `.env.local` using the format from the [Environment Variables](#environment-variables) section above.
 
@@ -235,10 +232,10 @@ The application will start on [http://localhost:3000](http://localhost:3000).
 1. Open [http://localhost:3000](http://localhost:3000) in your browser
 2. You should see the login page
 3. If you see errors, check:
-   - All environment variables are set correctly
-   - Supabase project is active
-   - Database tables are created
-   - AWS S3 bucket exists and IAM credentials are valid
+    - All environment variables are set correctly
+    - Supabase project is active
+    - Database tables are created
+    - AWS S3 bucket exists and IAM credentials are valid
 
 ### Available Scripts
 
@@ -305,10 +302,10 @@ git push origin main
 1. Go to [vercel.com/new](https://vercel.com/new)
 2. Import your Git repository: `W26Project-SAPAA-Dev-Team`
 3. Configure the project:
-   - **Framework Preset**: Next.js (auto-detected)
-   - **Root Directory**: `webapp`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `.next`
+    - **Framework Preset**: Next.js (auto-detected)
+    - **Root Directory**: `webapp`
+    - **Build Command**: `npm run build`
+    - **Output Directory**: `.next`
 4. Add all environment variables from the [Environment Variables](#environment-variables) section
 5. Click **Deploy**
 
@@ -338,7 +335,7 @@ After deployment, your app will be available at `https://your-project-name.verce
 1. Log into your Supabase Dashboard
 2. Go to **SQL Editor**
 3. Run the SQL scripts provided by your development team to create the required tables and views:
-   - Tables: - `W26_sites-pa`, `W26_answers`, `W26_attachments`, `W26_form_sections`, `W26_form_responses`, `W26_questions`
+    - Tables: `W26_sites-pa`, `W26_answers`, `W26_attachments`, `W26_form_sections`, `W26_form_responses`, `W26_questions`
 
 **Note:** Contact your development team for the complete SQL schema.
 
@@ -346,8 +343,8 @@ After deployment, your app will be available at `https://your-project-name.verce
 
 1. Go to **Authentication** → **Policies** in Supabase
 2. Create policies for each table to allow:
-   - Authenticated users to read data
-   - Admins to read/write data
+    - Authenticated users to read data
+    - Admins to read/write data
 
 **Example Policy:**
 
@@ -365,6 +362,7 @@ USING (true);
 The application uses Supabase Auth `user_metadata` to store user roles in the `user_metadata.role` field.
 
 **How Roles Work:**
+
 - Default role: `steward` (assigned automatically if no role is set)
 - Admin role: `admin` (must be set manually)
 
@@ -373,11 +371,11 @@ The application uses Supabase Auth `user_metadata` to store user roles in the `u
 1. Go to Supabase Dashboard → **Authentication** → **Users**
 2. Click the user you want to make an admin
 3. In the **Raw User Meta Data** section, add or update:
-   ```json
-   {
-     "role": "admin"
-   }
-   ```
+
+        {
+          "role": "admin"
+        }
+
 4. Click **Save**
 
 **Note:** New users created through the signup page default to `steward`. Only admins can change user roles through the Account Management interface.
@@ -386,15 +384,16 @@ The application uses Supabase Auth `user_metadata` to store user roles in the `u
 
 ### User Authorization
 
-The application uses Supabase Auth `user_metadata` to also store user authorization status in the `user_metadata.authenicated` field.
+The application uses Supabase Auth `user_metadata` to also store user authorization status in the `user_metadata.authenticated` field.
 
 **How Authorization Works:**
-- Upon account creation authorization is set to: `False` (assigned automatically as admin aproval is required for application access)
-- Upon admin aproval of account the value is then set to: `True` (Indicating an admin has allowed you access to the application)
+
+- Upon account creation authorization is set to: `False` (assigned automatically as admin approval is required for application access)
+- Upon admin approval of account the value is then set to: `True` (Indicating an admin has allowed you access to the application)
 
 **Setting Authorization Status:**
 
-1. Go to Admin Dashbaord
+1. Go to Admin Dashboard
 2. Proceed to Account Management
 3. Click the user you want to Authorize
 4. Toggle their approval status to: **Approved**
@@ -415,8 +414,8 @@ The application uses Supabase Auth `user_metadata` to also store user authorizat
 
 1. Go to Supabase Dashboard → **Authentication** → **URL Configuration**
 2. Add your Vercel URL to **Redirect URLs**:
-   - `https://your-project-name.vercel.app/auth/callback`
-   - `https://your-project-name.vercel.app/auth/confirm`
+    - `https://your-project-name.vercel.app/auth/callback`
+    - `https://your-project-name.vercel.app/auth/confirm`
 3. Set **Site URL** to: `https://your-project-name.vercel.app`
 
 ### 3. Test Authentication
@@ -478,6 +477,7 @@ Before going to production, ensure:
 **Symptoms:** Login fails, sites don't load, Supabase connection errors.
 
 **Solutions:**
+
 1. Verify `NEXT_PUBLIC_SUPABASE_URL` is correct
 2. Check Supabase project is active (not paused)
 3. Check [status.supabase.com](https://status.supabase.com)
@@ -487,6 +487,7 @@ Before going to production, ensure:
 **Symptoms:** Users can't log in, redirect loops, "Invalid credentials" errors.
 
 **Solutions:**
+
 1. Verify Supabase redirect URLs are configured (see Post-Deployment Configuration)
 2. Check `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` is correct
 3. Verify Supabase Auth is enabled in your project
@@ -496,6 +497,7 @@ Before going to production, ensure:
 **Symptoms:** Protected Areas page shows no sites, dashboard shows zero statistics.
 
 **Solutions:**
+
 1. Verify database tables exist and contain data
 2. Check RLS policies allow read access for authenticated users
 3. Verify `SUPABASE_SECRET` is set correctly for server-side queries
@@ -505,6 +507,7 @@ Before going to production, ensure:
 **Symptoms:** Image uploads fail or images don't appear after upload.
 
 **Solutions:**
+
 1. Verify all four `AWS_*` environment variables are set correctly in Vercel
 2. Check IAM policy grants `s3:PutObject`, `s3:GetObject`, and `s3:DeleteObject` on your bucket
 3. Verify the bucket CORS configuration allows requests from your Vercel domain
@@ -515,6 +518,7 @@ Before going to production, ensure:
 **Symptoms:** Deployment fails during build, build logs show errors.
 
 **Solutions:**
+
 1. Check build logs in the Vercel dashboard
 2. Verify all dependencies are listed in `package.json`
 3. Run `npm run build` locally first to reproduce and debug the error
@@ -524,6 +528,7 @@ Before going to production, ensure:
 **Symptoms:** Blank page, runtime errors in browser console.
 
 **Solutions:**
+
 1. Check environment variables are set in Vercel (not just `.env.local`)
 2. Ensure variables are enabled for the Production environment
 3. Redeploy after adding or changing variables

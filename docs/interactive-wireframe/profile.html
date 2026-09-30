@@ -17,8 +17,8 @@
       <button class="navbtn" onclick="toggleMenu(event)">Menu</button>
       <div class="dropdown" id="navMenu">
         <button class="dd-close" onclick="closeMenus()">Close</button>
-        <div class="dd-section">Admin</div>
-        <a class="dd-item" href="admin-dashboard.html">Admin<span class="dd-sub">Go to admin dashboard</span></a>
+        <div class="dd-section admin-only">Admin</div>
+        <a class="dd-item admin-only" href="admin-dashboard.html">Admin<span class="dd-sub">Go to admin dashboard</span></a>
         <div class="dd-section">Pages</div>
         <a class="dd-item" href="home.html">Home<span class="dd-sub">Go to Homepage</span></a>
         <a class="dd-item" href="gallery.html">Image Gallery<span class="dd-sub">Go to gallery</span></a>
@@ -43,7 +43,7 @@
           <div><span class="us">US 1.0.1</span><span class="us">US 1.0.2</span></div>
           <div class="field-label" style="margin-top:0;">Name:</div><input class="field-input" id="fName" value="Jamie Rivera">
           <div class="field-label">Email:</div><input class="field-input" id="fEmail" value="jamie.rivera@example.com">
-          <div class="field-label">Role: Steward/Admin</div><input class="field-input" value="Steward" readonly>
+          <div class="field-label">Role:</div><input class="field-input" value="Steward" readonly>
           <div class="field-label">Assigned Site (Steward Designation)<span class="us">US 3.0.2</span></div>
           <div style="font-size:13px;">— <span id="assignedSite">none assigned</span></div>
         </div>
@@ -65,6 +65,7 @@
         <div class="stat-row" style="margin-top:16px;">
           <div class="stat-card"><div class="stat-label">SIRs Submitted</div><div class="stat-value">12</div></div>
           <div class="stat-card"><div class="stat-label">Sites Inspected</div><div class="stat-value">7</div></div>
+          <div class="stat-card edit-only"><div class="stat-label">Activity Points<span class="us">US 1.0.5</span></div><div class="stat-value">340</div></div>
         </div>
 
         <div class="card" style="margin-top:0;">
@@ -107,7 +108,7 @@ if(viewUser){
     document.getElementById('assignedSite').textContent = p.site;
     document.querySelector('.stat-row .stat-value').textContent = p.sirs;
     document.querySelectorAll('.stat-row .stat-value')[1].textContent = p.sites;
-    initTagInput('tagBox', p.tags);
+    initTagInput('tagBox', p.tags, true);
   }
 } else {
   document.getElementById('assignedSite').textContent = 'none assigned';
