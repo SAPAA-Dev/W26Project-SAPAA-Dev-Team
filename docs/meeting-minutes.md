@@ -1,8 +1,7 @@
 # Meeting Minutes
 
 Minutes for the current Fall 2026 team are in the first section. The Winter 2026 sections below
-are the previous team's records. We keep them for reference. We changed only their heading levels and corrected some
-typing errors.
+are the previous team's records. We keep them for reference.
 
 ---
 

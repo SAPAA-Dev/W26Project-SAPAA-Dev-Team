@@ -3,8 +3,7 @@
 Every gap and defect found in the handover audit, written so it can be exported to GitHub
 Issues directly.
 
-**Effort** assumes LLM assistance, so it measures human judgement and review time, not typing.
-S is under a day, M is one to three days, L is three to seven days, XL is over a week.
+**Effort**: S is under a day, M is one to three days, L is three to seven days, XL is over a week.
 
 **Impact** is 1 to 5, where 5 means the project is meaningfully worse without it.
 

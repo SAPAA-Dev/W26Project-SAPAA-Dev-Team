@@ -10,10 +10,6 @@ The client's project charters are on the SAPAA page [Student Opportunities – 2
 
 The line below each story title names the one charter project that is the best match for the story. If the line says "none (team request)", the story is not in a charter project.
 
-## Unused Story Numbers
-
-Some numbers are not used: 2.0.7, 3.0.1, 4.0.1, 4.0.3, 5.0.1, 5.0.3 and 7.0.2. This is because the team removed these stories after the September 25, 2026 client meeting, in the review of pull request #31. The review gives these reasons. Stories 2.0.7 (site image upload), 4.0.1 (offline site data) and 4.0.3 (autosaved drafts) repeat features that already exist. The client does not want 3.0.1 (steward permissions). There is no need for 5.0.1 (private gallery). Story 5.0.3 (approval email) is out of scope. The review gives no reason for 7.0.2 (answers not for publication).
-
 ---
 ## 1 - People Management
 ---

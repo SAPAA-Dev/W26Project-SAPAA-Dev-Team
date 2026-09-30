@@ -6,8 +6,6 @@
 
 Interactive API documentation is available through Swagger.
 
-*Note (Fall 2026): We removed the link to the hosted Swagger page. It pointed to a temporary personal ngrok address.*
-
 **Swagger (Local)**: http://localhost:3000/api-docs
 
 You can explore the API, view request/response formats, and test endpoints directly from the browser.
