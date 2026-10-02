@@ -33,7 +33,7 @@ function runSupabaseCommand(args, options = {}) {
   }
 }
 
-runSupabaseCommand(['start'], { stdio: 'inherit' });
+runSupabaseCommand(['start', '--exclude', 'postgres-meta,studio,edge-runtime'], { stdio: 'inherit' });
 runSupabaseCommand(['migration', 'up', '--local'], { stdio: 'inherit' });
 runSupabaseCommand(['db', 'query', '--local', '--file', seedFile], { stdio: 'inherit' });
 

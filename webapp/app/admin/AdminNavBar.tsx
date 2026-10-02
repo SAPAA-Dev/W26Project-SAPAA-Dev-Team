@@ -3,7 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, LayoutDashboard, Users, MapPin, FileEdit } from "lucide-react";
+import { Home, LayoutDashboard, Users, MapPin, FileEdit, LogOut } from "lucide-react";
+import { logout } from "@/services/auth";
+import { navigate } from "@/components/HeaderDropdown";
 
 export default function AdminNavBar() {
   const pathname = usePathname();
@@ -83,6 +85,22 @@ export default function AdminNavBar() {
                   </div>
                 </Link>
               ))}
+            </div>
+
+            <div className="py-1.5 border-t border-black/[0.07]">
+              <button
+                onClick={async () => {
+                  setMenuOpen(false);
+                  await logout();
+                  navigate("/login");
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#fdf0f0] transition-colors"
+              >
+                <span className="w-8 h-8 rounded-lg bg-[#fdf0f0] flex items-center justify-center flex-shrink-0">
+                  <LogOut className="w-4 h-4 text-[#c0392b]" />
+                </span>
+                <span className="text-sm font-medium text-[#c0392b]">Logout</span>
+              </button>
             </div>
 
           </div>

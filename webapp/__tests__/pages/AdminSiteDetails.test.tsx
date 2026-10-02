@@ -47,6 +47,14 @@ jest.mock('@/utils/supabase/queries', () => ({
 // Mock PdfExportModal
 jest.mock('@/components/PdfExportModal', () => () => null);
 
+jest.mock('@/app/admin/AdminNavBar', () => {
+  function AdminNavBarMock() {
+    return <div>AdminNavBarMock</div>;
+  }
+
+  return AdminNavBarMock;
+});
+
 // Now import the component after all mocks are set up
 import AdminSiteDetails from '../../app/admin/sites/[id]/page';
 
@@ -248,6 +256,14 @@ describe('AdminSiteDetails', () => {
   });
 
   describe('Navigation', () => {
+    it('should render the admin navigation menu', async () => {
+      render(<AdminSiteDetails />);
+
+      await waitFor(() => {
+        expect(screen.getByText('AdminNavBarMock')).toBeInTheDocument();
+      });
+    });
+
     it('should have back to admin sites button in header', async () => {
       render(<AdminSiteDetails />);
 

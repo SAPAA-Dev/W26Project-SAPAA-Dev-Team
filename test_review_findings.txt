@@ -1,0 +1,519 @@
+============================================================
+SAPAA TEST REVIEW FINDINGS
+Date reviewed : 2026-10-02 (first review was 2026-09-24)
+Branch        : testcase-change
+Base          : origin/main pulled in (4 new docs commits: #111, #112,
+                #115, #116). All 4 are docs only. No app code changed.
+Machine       : macOS (darwin), Node v20.19.2, npm 11.7.0.
+                CI uses Node 22.
+Commands run  : webapp: npm test, npx tsc --noEmit, npm run lint,
+                npm run build, npx next dev + curl of every route,
+                npx jest --coverage
+                FNR:    npm ci --ignore-scripts, npm test,
+                npx tsc --noEmit
+                root:   mkdocs build --clean, sh .githooks/test-hooks.sh
+NOT run       : Cypress e2e (AGENTS.md forbids it: it writes to a live
+                database). 20 specs / 226 it() blocks exist.
+============================================================
+
+------------------------------------------------------------
+PART 0 - WHAT CHANGED SINCE 2026-09-24
+------------------------------------------------------------
+
+GOOD NEWS (the app launches now, and these checks pass):
+  1. `npm run build` now SUCCEEDS. It failed on 2026-09-24 only because
+     webapp/.env.local did not exist. It now builds all 29 routes.
+  2. `npx tsc --noEmit` now reports 0 errors in webapp. The 5 errors from
+     the first review are fixed by the uncommitted change on this branch.
+  3. Cypress count is unchanged. Jest counts are unchanged.
+
+BAD NEWS (new findings, in order of importance):
+  F-1  CI DOES NOT RUN THE TYPE CHECK OR THE LINT.  See detail in Part 1.
+  F-2  Middleware sends a 307 redirect to /login for every /api/* call
+       instead of a 401 JSON error.
+  F-3  /terms is behind the login wall.
+  F-4  webapp/private/page.tsx is dead code. It is not inside app/.
+  F-5  Two test files have wrong names and are near copies of each other.
+  F-6  Jest prints a haste module naming collision after you run a build.
+  F-7  ESLint reads the webapp/coverage/ folder. It is not in the ignore
+       list, so generated files get linted.
+  F-8  Next.js 16 says middleware.ts is deprecated. Rename to proxy.ts.
+  F-9  Next.js cannot work out the workspace root. 3 lockfiles exist.
+  F-10 Node 20 is used here. CI uses Node 22. supabase-js warns on Node 20.
+  F-11 docs/user-model.md is not in the mkdocs nav.
+  F-12 The env var names in docs/Deployment-manual.md do not match the code.
+
+------------------------------------------------------------
+PART 1 - DOES THE TEST SUITE STILL WORK?
+------------------------------------------------------------
+
+F-1  CI DOES NOT RUN THE TYPE CHECK OR THE LINT.  (new, important)
+
+  .github/workflows/ci.yaml runs only these four jobs:
+      webapp-tests : npm ci --ignore-scripts  ->  npm test -- --forceExit
+      mobile-tests: npm ci --ignore-scripts  ->  npm test -- --forceExit
+      docs-build   : pip install mkdocs-material -> mkdocs build --clean
+      hook-tests   : sh .githooks/test-hooks.sh
+
+  It does NOT run `npx tsc --noEmit`, `npm run lint`, or `npm run build`
+  for webapp. It does NOT run `npx tsc --noEmit` for FNR.
+
+  Consequence: the 5 type errors from the first review stayed on main for
+  weeks. Nothing in CI can see them. The first review said the errors
+  "will show up in CI". That was wrong. Only the code editor shows them.
+
+  Suggestion for the team: add a `webapp-typecheck` job that runs
+  `npx tsc --noEmit`, and add `npx next build` to catch build breaks.
+  Do not try to fix all 347 lint errors first. Fail on new errors only.
+
+RESULT (Jest, webapp):
+  npm test  ->  TEST SUITES: 54 passed / 54 total
+                TESTS      : 747 passed / 747 total
+                Time      : about 12 s
+  Same count as 2026-09-24. All green.
+
+  F-6  NEW WARNING. Jest prints this after you run a build:
+        jest-haste-map: Haste module naming collision: webapp
+        The following files share their name:
+          * <rootDir>/package.json
+          * <rootDir>/.next/standalone/Documents/cmput 401/F26project-SAPAA/webapp/package.json
+      Cause: next.config.ts sets `output: 'standalone'`. A build copies
+      package.json into .next/standalone/. jest.config.ts has
+      testPathIgnorePatterns: ['/node_modules/', '/.next/'] but it has no
+      modulePathIgnorePatterns, so the haste map still walks .next.
+      Confirmed: on a clean copy of HEAD with no .next folder, the warning
+      is gone and the count is still 747/747.
+      CI never builds, so CI never sees this. Local developers see it.
+      Fix: add `modulePathIgnorePatterns: ['<rootDir>/.next/']` to
+      jest.config.ts.
+
+RESULT (TypeScript, webapp):
+  npx tsc --noEmit  ->  0 errors.  (was 5 errors)
+
+  The 5 errors are fixed by the uncommitted change on this branch. It adds
+  the missing field to the 5 mock objects:
+
+    webapp/__tests__/components/PdfExportModal.test.tsx
+        line 28 : mock inspection 1  + inspection_date: '2024-06-15'
+        line 56 : mock inspection 2  + inspection_date: '2023-12-01'
+    webapp/__tests__/lib/pdfDataFetcher.test.ts
+        line 57 : mock response 1    + inspection_date: '2024-01-15'
+        line 85 : mock response 2    + inspection_date: '2024-06-15'
+        line 113: mock response 3    + inspection_date: '2023-06-01'
+
+  Verified: a clean copy of HEAD (git archive, no working changes) gives
+  exactly the 5 old errors with code TS2741. The branch gives 0.
+
+  These changes are NOT committed yet. AGENTS.md lists the 5 errors as a
+  known failure on main, so you may prefer to fix them on main first.
+
+RESULT (ESLint, webapp):
+  On a clean copy of HEAD:
+      504 problems = 347 errors + 157 warnings
+  With the uncommitted branch changes:
+      505 problems = 347 errors + 158 warnings
+  The extra 1 warning is a line number shift in
+  PdfExportModal.test.tsx, not a new problem. The error count is the same.
+
+  The first review said 499 problems (342 errors + 157 warnings). The clean
+  HEAD of this branch gives 504 (347 errors + 157 warnings). The 5 extra
+  errors and the rule set changed between the two reviews. I could not
+  measure the cause, because the pulled commits are docs only. Treat the
+  first review count as stale. The current measured number is 504.
+
+  These 13 errors come from new react-hooks rules in the React Compiler rule
+  set that eslint-config-next now ships. They are all real code smells:
+
+    9 errors  react-hooks/set-state-in-effect
+      app/admin/account-management/components/AccountDetailsModal.tsx:30
+      app/admin/account-management/page.tsx:31
+      app/admin/dashboard/page.tsx:210
+      app/admin/sites/components/EditSiteModal.tsx:32
+      app/detail/[namesite]/new-report/MainContent.tsx:194
+      app/detail/[namesite]/new-report/page.tsx:222
+      app/sites/SubmissionToast.tsx:16
+      components/PdfExportModal.tsx:80
+      components/TutorialOverlay.tsx:185
+    2 errors  react-hooks/static-components
+      app/admin/dashboard/components/Map.tsx:85
+      app/admin/form-editor/page.tsx:697
+    2 errors  react-hooks/refs
+      app/detail/[namesite]/new-report/MainContent.tsx:197, 202
+    1 error   @typescript-eslint/no-namespace
+      cypress/support/commands.ts:39
+
+  F-7  NEW. ESLint reads webapp/coverage/. eslint.config.mjs globalIgnores
+      lists .next/**, out/**, build/** and next-env.d.ts. It does not list
+      coverage/**. So if a developer runs coverage once, the generated
+      lcov-report/*.js files get linted. Fix: add "coverage/**" to
+      globalIgnores.
+
+  Count by rule, split by area (clean HEAD, 504 problems total):
+
+    app code      87 files   149 errors   101 warnings
+        112 E  @typescript-eslint/no-explicit-any
+         73 W  @typescript-eslint/no-unused-vars
+         17 E  react/no-unescaped-entities
+         11 W  @next/next/no-img-element
+         10 W  react-hooks/exhaustive-deps
+          9 E  react-hooks/set-state-in-effect
+          5 E  @typescript-eslint/no-require-imports
+          4 W  @typescript-eslint/no-unused-expressions
+          3 W  jsx-a11y/alt-text
+          2 E  react-hooks/static-components
+          2 E  react-hooks/refs
+          2 E  prefer-const
+
+    __tests__      54 files   194 errors    54 warnings
+        148 E  @typescript-eslint/no-explicit-any
+         37 E  react/display-name
+         30 W  @typescript-eslint/no-unused-vars
+         19 W  @next/next/no-img-element
+          9 E  @typescript-eslint/no-require-imports
+          5 W  jsx-a11y/alt-text
+
+    cypress        22 files     4 errors     2 warnings
+          3 E  @typescript-eslint/no-explicit-any
+          1 E  @typescript-eslint/no-namespace
+          1 W  @typescript-eslint/no-unused-vars
+          1 W  @typescript-eslint/no-unused-expressions
+
+    .next/ and coverage/   0 files   0 errors   0 warnings
+        (ESLint already ignores .next. It does NOT ignore coverage. F-7.)
+
+    SUM:  347 errors + 157 warnings = 504
+
+  Error count by folder (clean HEAD, app code only, top 10):
+       40 E  21 W  app/admin
+       34 E  31 W  app/detail
+       28 E   2 W  utils/supabase
+        6 E   2 W  app/signup
+        5 E   4 W  lib/pdf
+        5 E   0 W  scripts/local_supabase.js
+        4 E   6 W  app/api
+        4 E   2 W  services/auth.ts
+        4 E   1 W  utils/admin-actions.ts
+        3 E   4 W  utils/form-actions.ts
+
+  Unused imports and variables inside __tests__ (clean-up candidates):
+    __tests__/components/HeaderDropdown.test.tsx       5:22
+    __tests__/components/UserApprovalWorkflow.test.tsx 3:8 8:13 10:13 38:65 40:63
+    __tests__/components/forms-actions.test.tsx        6:26 6:46
+    __tests__/components/terms-actions.test.tsx        2:46
+    __tests__/pages/AdminAccountManagement.test.tsx    3:8 6:10 26:65 27:89 27:113
+    __tests__/pages/AdminSiteDetails.test.tsx          2:26 2:46
+    __tests__/pages/AdminSites.test.tsx                3:37 3:53 6:8 7:8 113:13
+    __tests__/pages/Imageuploadintegration.test.tsx    1:10
+    __tests__/pages/SiteDetails.test.tsx               3:8 7:13
+    __tests__/pages/SiteDetailsImageGallery.test.tsx   68:7 72:7
+    __tests__/pages/SiteInspectionReport.test.tsx      239:10
+    __tests__/pages/Sites.test.tsx                     2:26 88:7
+    __tests__/pages/UserEditSiteInspectionForm.test.tsx 5:10
+
+RESULT (Production build, webapp):
+  npm run build  ->  PASSES. 29 routes. This is a change. It failed on
+  2026-09-24 with "@supabase/ssr: Your project's URL and API key are
+  required" because webapp/.env.local did not exist.
+
+  Routes the build reports (o = static, f = dynamic on demand):
+    o /                      f /api/gallery
+    o /_not-found            f /api/geocode
+    o /admin/account-management   f /api/heatmap
+    o /admin/dashboard       f /api/homepage-images
+    o /admin/form-editor     f /api/homepage-images/[siteId]
+    o /admin/gallery         f /api/openapi
+    o /admin/sites           f /api/pdf
+    f /admin/sites/[id]      f /api/pdf/status/[jobId]
+    o /api-docs              f /api/s3/presign
+    f /auth/callback         f /api/s3/presign-homepage-images
+    f /auth/confirm          f /api/site-images
+    f /detail/[namesite]     f /api/sites/[siteId]/gallery
+    f /detail/[namesite]/edit-report/[responseId]
+    f /detail/[namesite]/new-report
+    o /error                 f /api/user-gallery/homepage-upload
+    o /gallery               f /api/user-gallery/sir-upload
+    o /login                 o /auth/auth-code-error
+    o /signup                o /sites
+    o /terms
+
+  F-10 The build prints this on Node 20:
+      "Node.js 20 and below are deprecated and will no longer be supported
+       in future versions of @supabase/supabase-js. Please upgrade to
+       Node.js 22 or later."
+      CI uses Node 22. Use Node 22 locally too, or the warning stays.
+
+RESULT (Dev server, webapp):
+  npx next dev -p 3010  ->  Ready in 316 ms. Server starts and serves.
+
+  F-8  NEW. The server prints:
+        "The 'middleware' file convention is deprecated. Please use
+         'proxy' instead."
+      webapp/middleware.ts must be renamed to webapp/proxy.ts.
+
+  F-9  NEW. The server prints:
+        "Next.js inferred your workspace root, but it may not be correct.
+         We detected multiple lockfiles and selected the directory of
+         /Users/aaronchiu/package-lock.json as the root directory."
+      Three lockfiles exist:
+        /Users/aaronchiu/package-lock.json          <- picked as root
+        webapp/package-lock.json
+        F26project-SAPAA/package-lock.json
+      This one is outside the repo. Fix: set `turbopack: { root: __dirname }`
+      in next.config.ts, or remove the stray lockfile at your home folder.
+
+RESULT (Cypress e2e, webapp):
+  NOT RUN. AGENTS.md forbids it. 20 spec files and 226 it() blocks exist
+  under webapp/cypress/e2e/.
+
+RESULT (Jest, FNR mobile app):
+  npm ci --ignore-scripts   ->  the folder had no node_modules before this
+  npm test  ->  TEST SUITES: 19 passed / 19 total
+                TESTS      : 252 passed / 252 total
+                Time      : about 19 s
+
+  NEW: 3 console warnings, all from one file:
+    src/__tests__/ui-tests/HomeScreen.test.tsx
+      "An update to VirtualizedList inside a test was not wrapped in act(...)"
+      It is noise, not a failure. A list state update happens after the
+      test ends. Wrap the update in act() to make the log clean.
+
+RESULT (TypeScript, FNR mobile app):
+  npx tsc --noEmit  ->  50 errors. Same number as AGENTS.md says.
+  Most are `string | null` passed to Date or string functions. CI does not
+  run this check, so nobody sees them.
+
+RESULT (Docs build):
+  mkdocs build --clean  ->  SUCCEEDS in about 1 s.
+  F-11 NEW. One INFO line:
+      "The following pages exist in the docs directory, but are not
+       included in the 'nav' configuration:
+         - user-model.md"
+    docs/user-model.md was added by main commit 15b1174 (#116). Nobody
+    added it to the nav in mkdocs.yml. The page will not appear on the
+    site. Fix: add it to nav.
+
+RESULT (Hook tests):
+  sh .githooks/test-hooks.sh  ->  all checks passed (17 cases).
+  The script prints "ok fail:" lines on purpose. Those are cases that must
+  be rejected.
+
+------------------------------------------------------------
+PART 2 - MISSED TEST COVERAGE
+------------------------------------------------------------
+
+Measured coverage, whole webapp (app, components, hooks, lib, utils,
+services, private). 74 files measured.
+
+  Statements : 65.27%  (3019 / 4625)
+  Branches   : 56.39%
+  Functions  : 60.09%
+  Lines      : 67.43%
+
+  Read this number with care. A module that a test replaces with jest.mock
+  shows 0% even when the behaviour is tested. So 0% means "no test runs
+  this code", not always "this code is wrong". Both matter.
+
+A. FILES WITH 0% STATEMENT COVERAGE (30 files). No test runs this code.
+   A1. API routes with no unit test
+       app/api/geocode/route.ts      OpenCage lookup
+       app/api/heatmap/route.ts      map heat points
+       app/api/openapi/route.ts      the spec itself
+       app/auth/callback/route.ts    cookie refresh after sign in
+       app/auth/confirm/route.ts     e-mail confirmation
+       (the other 9 API routes DO have tests in __tests__/app/api/)
+   A2. Pages with no render test
+       app/page.tsx                  the / -> /login redirect
+       app/layout.tsx                root layout, fonts and nav
+       app/terms/page.tsx            standalone terms page
+       app/terms/TermsContent.tsx    the terms text and scroll box
+       app/api-docs/page.tsx         Swagger page
+       app/api-docs/SwaggerPageClient.tsx
+       app/error/page.tsx            error page and retry button
+       app/auth/auth-code-error/page.tsx
+       app/UserNavBar.tsx            user menu in the header
+       app/login/actions.ts          server action for sign in
+   A3. Components with no test
+       app/admin/AdminNavBar.tsx                     (only mocked)
+       app/admin/account-management/components/AccountDetailsModal.tsx
+       app/admin/dashboard/components/Map.tsx        (Leaflet map)
+       app/admin/sites/components/ui/button.tsx
+       app/admin/sites/components/ui/card.tsx
+       components/HelpMenu.tsx
+       components/NavigationTracker.tsx
+       components/PdfJobWatcher.tsx                  job poll + states
+   A4. Code with no test
+       lib/pdf/inspectionReport.tsx   the PDF page layout
+       lib/pdf/styles.ts              PDF styles
+       lib/swagger.ts                 the OpenAPI object
+       utils/form-actions.ts          server actions for form answers
+       utils/admin-actions.ts         admin server actions
+       utils/supabase/admin.ts        admin Supabase client
+       F-4  private/page.tsx          DEAD CODE, see below
+
+B. PARTLY COVERED. Look at these next.
+   B1. components/PdfExportsDropdown.tsx   19.04% statements, 0% branches
+       No test drives the menu. The PDF job state machine is untested.
+   B2. utils/supabase/queries.ts           25.13% statements
+       This is the main query module. The tests replace only the Supabase
+       server client, so the real query code runs. 25% is low for the
+       most important module in the app.
+   B3. components/PdfExportModal.tsx       57.69% statements, 36% functions
+   B4. components/TutorialOverlay.tsx      62.50% statements, 24% branches
+
+C. F-4  webapp/private/page.tsx IS DEAD CODE.  (new)
+   The file sits at webapp/private/page.tsx, not webapp/app/private/page.tsx.
+   Next.js only routes files inside app/. The build output does not list
+   /private. No test and no user can reach it. It also calls
+   redirect('/login') twice. Suggest: delete it, or move it into app/ if
+   the route is wanted. Ask the team first.
+
+D. F-5  TWO TEST FILES HAVE THE WRONG NAME.  (new)
+   webapp/__tests__/components/forms-actions.test.tsx
+   webapp/__tests__/components/terms-actions.test.tsx
+
+   Both files import the SAME module:
+       import NewReportPage from "../../app/detail/[namesite]/new-report/page";
+   Both mock next/navigation the same way. They are copies of each other
+   with a different file name. Neither file tests utils/form-actions.ts,
+   and neither tests a terms action. utils/form-actions.ts has 0% coverage
+   because of this.
+   Suggest: merge them into one new-report test file, and write a real test
+   for utils/form-actions.ts. Do not keep a file name that lies.
+
+E. F-2  API CALLS GET A REDIRECT, NOT AN ERROR.  (new)
+   webapp/middleware.ts line 45 returns NextResponse.redirect(url) for any
+   path that is not /login, /signup, /auth or /error. The matcher on line
+   59 includes /api/*. Measured with curl on a running dev server:
+
+     GET /api/openapi   -> 307, Location: /login
+     GET /api/geocode   -> 307, Location: /login
+     GET /api/heatmap   -> 307, Location: /login
+     GET /api/homepage-images -> 307, Location: /login
+
+   An API client cannot use this. It expects 401 with a JSON body, not a
+   307 to an HTML page. This also hides the real status code from fetch.
+   Suggest: exclude /api from the matcher, and let each route return 401
+   JSON. Ask the team first; it changes the API contract.
+
+F. F-3  /terms IS BEHIND THE LOGIN WALL.  (new)
+   Measured with curl, no session cookie:
+     200  /login
+     200  /signup
+     200  /error
+     200  /auth/auth-code-error
+     307  /            -> /login
+     307  /terms        -> /login
+     307  /sites        -> /login
+     307  /gallery      -> /login
+     307  /api-docs     -> /login
+     307  /admin/dashboard -> /login
+     307  /detail/sylvan-lake -> /login
+
+   /terms is a legal page. A visitor who reads it must be signed in. If a
+   visitor must accept the terms, that is a product decision. Ask the team.
+
+G. ENVIRONMENT DOC MISMATCH. (still open from 2026-09-24)
+   F-12 The code reads AWS_S3_BUCKET_NAME in 13 places:
+       app/api/s3/presign/route.ts:9
+       app/api/s3/presign-homepage-images/route.ts:10
+       app/api/user-gallery/homepage-upload/route.ts:7
+       app/api/user-gallery/sir-upload/route.ts:27
+       app/api/gallery/route.ts:27
+       app/api/pdf/status/[jobId]/route.ts:7
+       app/api/sites/[siteId]/gallery/route.ts:23
+       app/api/site-images/route.ts:7
+       app/api/homepage-images/route.ts:7
+       app/api/homepage-images/[siteId]/route.ts:7
+       lib/pdf/processPdfJob.ts:10
+       lib/pdf/pdfDataFetcher.ts:17
+     docs/Deployment-manual.md:166 and :180 document AWS_S3_BUCKET.
+
+   Also missing from the docs table: OPENCAGE_API_KEY, which is read at
+   app/api/geocode/route.ts:4. NODE_ENV is not needed.
+
+   NEW: there is no webapp/.env.example file. Add one with empty values so
+   a new developer does not have to read the code to find the names.
+
+------------------------------------------------------------
+PART 3 - HOW TO LAUNCH THE WEBSITE (VERIFIED 2026-10-02)
+------------------------------------------------------------
+
+The app launches. These steps were run today and worked.
+
+What you need:
+  1. Docker Desktop running (local Supabase runs in Docker).
+  2. Node 22. Node 20 works but prints a deprecation warning from
+     supabase-js. CI uses Node 22.
+  3. webapp/.env.local. This file exists on this machine. A new developer
+     must create it.
+
+Step 1 - Install dependencies (one time):
+     cd webapp
+     npm install
+
+Step 2 - Local Supabase (one time, then it stays up):
+     cd webapp
+     npm run dev
+     This runs scripts/local_supabase.js. It starts Supabase, runs the
+     migrations, then loads the seed file. After it starts, Docker shows
+     listeners on:
+       54321  Supabase API (auth, rest, functions)
+       54322  Postgres
+       54324  Storage
+     The uncommitted change on this branch adds
+       --exclude postgres-meta,studio,edge-runtime
+     to `supabase start`. That cuts the containers that SAPAA does not use.
+
+Step 3 - Start the web server:
+     cd webapp
+     npx next dev
+     (Use npx next dev on its own. npm run dev also starts Supabase again.)
+
+Step 4 - Open the app:
+     http://localhost:3000
+     You land on the login page. The build lists 29 routes. On the running
+     server today, /login, /signup, /error and /auth/auth-code-error gave
+     200. Every other route gave a 307 to /login because no session cookie
+     was sent. See finding F-2 and F-3.
+
+Other useful commands:
+     npm test                       54 suites / 747 tests
+     npm run build                  29 routes (needs .env.local)
+     npm run start                  serve the production build
+     npm run lint                   504 problems (347 E + 157 W)
+     npx tsc --noEmit               0 errors on this branch, 5 on main
+     npx jest --coverage            prints the coverage table
+     npx cypress run --e2e          20 specs, 226 it(). Needs a seeded DB.
+                                    AGENTS.md forbids an agent from running it.
+
+In FNR/ (mobile app):
+     npm ci --ignore-scripts
+     npm test                       19 suites / 252 tests
+     npx tsc --noEmit               50 errors
+
+In the repo root:
+     pip install mkdocs-material
+     mkdocs build --clean
+     sh .githooks/test-hooks.sh
+
+------------------------------------------------------------
+PART 4 - SUGGESTED ORDER OF WORK
+------------------------------------------------------------
+  1. Commit the 5-line tsc fix on main. It is 5 lines and it removes the
+     only known type errors.
+  2. Add a webapp-typecheck job to ci.yaml. Without it, the next type
+     error will also sit on main for weeks.
+  3. Fix F-5 (two test files with the wrong name). It is cheap and it
+     makes the names honest.
+  4. Fix F-6 (jest modulePathIgnorePatterns) and F-7 (coverage in
+     globalIgnores). Two lines each.
+  5. Ask the team about F-2 and F-3. Both change behaviour that a user or
+     a client sees. They are not my decision.
+  6. Fix F-8 (middleware.ts -> proxy.ts) and F-9 (turbopack.root). Both are
+     Next.js 16 deprecations.
+  7. Add tests for A1 first (5 API routes), then A2 (pages), then A3.
+  8. Fix F-11 (mkdocs nav) and F-12 (env docs + .env.example).
+
+============================================================
+END OF REPORT
+============================================================

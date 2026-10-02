@@ -12,6 +12,7 @@ import {
   updateSiteInspectionAnswers,
 } from "@/utils/supabase/queries";
 import { daysSince } from "@/app/sites/page";
+import AdminNavBar from "@/app/admin/AdminNavBar";
 import PdfExportModal from '@/components/PdfExportModal';
 import Image from 'next/image';
 import {
@@ -664,6 +665,9 @@ export default function AdminSiteDetails() {
               <div className="bg-white/10 px-4 sm:px-6 py-2 rounded-2xl sm:rounded-full border border-white/20 text-center w-full sm:w-auto">
                 <div className="text-sm text-[#E4EBE4]">Last Visit</div>
                 <div className="text-lg font-bold">{ageText}</div>
+              </div>
+              <div className="w-full sm:w-auto [&>nav]:bg-none [&>nav]:bg-transparent [&>nav]:shadow-none [&>nav]:px-0 [&>nav]:py-0">
+                <AdminNavBar />
               </div>
             </div>
           </div>
