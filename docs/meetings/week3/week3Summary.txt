@@ -5,7 +5,7 @@ Purpose
 
 Repo & Access
 - Use Frank's repository, NOT the previous team's personal copy — Frank's has the latest/most up-to-date code.
-- Access details sent via a shared "dev team" email in the team chat — covers GitHub, Supabase, and Vercel logins (watch the password format: capital "E" + space).
+- Access details sent via a shared "dev team" email in the team chat — covers GitHub, Supabase, and Vercel logins.
 - The email also includes a link to the repo and to the old team's GitHub Pages documentation — described as very helpful for getting oriented.
 - Two deployments exist in parallel:
   - Course requirement: deploy via Vercel + Supabase (this is the graded repo — treat as top priority).
