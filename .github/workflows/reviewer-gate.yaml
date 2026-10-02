@@ -1,0 +1,67 @@
+name: Reviewer gate
+
+# With 2+ assignees, only they review and all of them must approve. With none, any 2
+# people can approve. Exactly 1 assignee fails. Add `reviewers` as a required check in
+# the main ruleset. Approvals only count on the current head commit.
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, assigned, unassigned, ready_for_review]
+  pull_request_review:
+    types: [submitted, dismissed]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  reviewers:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Self-test the gate
+        run: sh .github/scripts/test-reviewer-gate.sh
+      - name: Check reviewers
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          pr=$(gh api "repos/$REPO/pulls/$PR")
+          export AUTHOR=$(echo "$pr" | jq -r .user.login)
+          export ASSIGNEES=$(echo "$pr" | jq -r '.assignees[].login')
+          head=$(echo "$pr" | jq -r .head.sha)
+          export APPROVED=$(gh api --paginate "repos/$REPO/pulls/$PR/reviews" | jq -s -r --arg head "$head" '
+            add | map(select(.state | IN("APPROVED", "CHANGES_REQUESTED", "DISMISSED")))
+            | group_by(.user.login) | map(sort_by(.submitted_at) | last)
+            | map(select(.state == "APPROVED" and .commit_id == $head)) | .[].user.login')
+          rc=0
+          msg=$(sh .github/scripts/reviewer-gate.sh) || rc=$?
+          echo "$msg"
+          echo "$msg" >> "$GITHUB_STEP_SUMMARY"
+          [ "$rc" -eq 0 ] || echo "::error::$msg"
+          echo "RC=$rc" >> "$GITHUB_ENV"
+          echo "REQ=$(echo "$ASSIGNEES" | grep -vxF "$AUTHOR" | tr '\n' ' ')" >> "$GITHUB_ENV"
+      - name: Remind assigned reviewers to read everything
+        if: github.event_name == 'pull_request' && env.REQ != ''
+        run: |
+          new=""
+          for u in $REQ; do
+            gh api --paginate "repos/$REPO/issues/$PR/comments" --jq '.[].body' \
+              | grep -qF "<!-- reviewer-notice:$u -->" || new="$new @$u"
+          done
+          [ -n "$new" ] || exit 0
+          marks=""
+          for u in $new; do marks="$marks<!-- reviewer-notice:${u#@} -->"; done
+          gh pr comment "$PR" --body "$marks
+          Assigned reviewer(s):$new. Your approval is **required** to merge. Read every changed file from top to bottom before approving. Do not skim the diff or approve on trust. Check the logic, the edge cases, the tests and the security of anything touching auth or user input, and leave comments where something is unclear."
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+      - name: Fail if reviewers are not satisfied
+        if: env.RC != '0'
+        run: exit 1
