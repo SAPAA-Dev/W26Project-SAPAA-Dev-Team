@@ -53,6 +53,32 @@ refactor/payment-validation
 docs/local-setup
 ```
 
+## Branch model
+
+Three kinds of branch, and `main` keeps its name:
+
+```text
+feature branch ──PR──> main ──PR──> release
+```
+
+| Branch | Role | How it changes |
+| --- | --- | --- |
+| `<type>/<short-description>` | Feature branch. Always created from `main`. | You push to it. |
+| `main` | Development branch: all finished work lands here. Docs are deployed from it. | PR from a feature branch, squash merge. |
+| `release` | What gets released. It only ever holds code that was ready on `main`. | PR from `main`, merge commit. |
+
+Gamma makes each release (see [Project management](project-management.md)):
+
+1. Open a PR with base `release` and head `main`. Use a title like `(chore): release sprint 2`.
+2. Get the normal 2 approvals and green checks.
+3. Merge with a **merge commit**, so `release` and `main` stay in step and the next release PR
+   has no conflicts.
+4. Publish the GitHub release from `release`.
+
+Never commit to `release` directly and never open a PR into it from any branch other than
+`main`. The `conventions` check fails the PR if you do. Hotfixes go through `main` like
+everything else.
+
 ## How this is enforced
 
 A local `commit-msg` hook in `.githooks/` checks both the message and the current branch
@@ -66,7 +92,7 @@ If you cloned before the hook existed, or you skipped `npm install`, wire it up 
 git config core.hooksPath .githooks
 ```
 
-`main` and `master` are exempt from the branch check, and git's own merge, revert, and
+`main`, `master` and `release` are exempt from the branch check, and git's own merge, revert, and
 autosquash messages are left alone.
 
 After editing the hook, check it still behaves:
@@ -87,11 +113,11 @@ rebase, then force-push your branch.
 These are enforced on GitHub itself, not just locally.
 
 **Branches.** GitHub rejects any new branch whose name doesn't start with one of the types
-above followed by `/`. `main`, `gh-pages` and `dependabot/**` are the only exceptions. So
+above followed by `/`. `main`, `release`, `gh-pages` and `dependabot/**` are the only exceptions. So
 `feat/site-search` works, but `saumya/test` or `username-patch-1` won't push. When you edit a
 file in the GitHub web editor, rename its suggested `patch-1` branch before you commit.
 
-**`main` is PR-only.** Nobody can push, force-push or delete `main` directly. Everything
+**`main` and `release` are PR-only.** The rules below apply to both. Nobody can push, force-push or delete either one directly. Everything
 goes through a pull request, and a PR needs all of these before it can merge:
 
 - **2 approvals from teammates.** Pushing a new commit dismisses earlier approvals, and the
@@ -104,7 +130,7 @@ goes through a pull request, and a PR needs all of these before it can merge:
 - **Green checks:** `webapp-tests`, `mobile-tests`, `docs-build`, `hook-tests`,
   `conventions` and `reviewers` (branch name, PR title and every commit message).
 
-**Squash merge only.** Each PR lands on `main` as one commit, and the PR title is its
+**Squash merge only on `main`** (`release` takes merge commits only, see Branch model). Each PR lands on `main` as one commit, and the PR title is its
 message. That's why the PR title has to follow the `(<type>): <description>` format too.
 Branches are deleted automatically after merge.
 

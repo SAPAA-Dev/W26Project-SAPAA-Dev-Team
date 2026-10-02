@@ -5,7 +5,7 @@ name: Reviewer gate
 # the main ruleset. Approvals only count on the current head commit.
 on:
   pull_request:
-    branches: [main]
+    branches: [main, release]
     types: [opened, reopened, synchronize, assigned, unassigned, ready_for_review]
   pull_request_review:
     types: [submitted, dismissed]
