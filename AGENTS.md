@@ -42,7 +42,6 @@ Use one of these types for commit messages and branch names: feat, fix, docs, ch
 * * You are not allowed to make git worktrees, unless specified by the user. 
 * Format commit messages as `({type}): {description}`.
 * Format branch names as `{type}/{description}`. Use lowercase words separated by hyphens in the description.
-* When you create a commit for work you contributed to, add a Co-authored-by trailer for tars-bot. For the email address, use `tars-bot@example.com`. Do not co-author any other agents.
 
 # Repository map
 | Directory | What it is | Stack |
