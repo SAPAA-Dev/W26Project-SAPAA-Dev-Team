@@ -102,10 +102,10 @@ create trigger on_auth_user_created
   for each row execute function public.create_person_for_new_user();
 ```
 
-The update policy lets a user change every column of their own row, including
-`activity_points` and `auth_user_id`. Before 1.0.5 uses `activity_points`, restrict the columns
-that users can update (for example with a column-level `grant update`), or make the edit go
-through a server action only.
+The update policy limits a user to their own row. Column grants in the migration (#75) limit
+them to `display_name`, `skills` and `focus_areas`, so a user cannot change `activity_points`,
+`id`, `auth_user_id` or the timestamps. The migration also keeps `updated_at` current with a
+trigger, and names the sign-up trigger `create_person_on_signup`.
 
 The inspection count is calculated, not stored, so that it cannot become incorrect:
 
