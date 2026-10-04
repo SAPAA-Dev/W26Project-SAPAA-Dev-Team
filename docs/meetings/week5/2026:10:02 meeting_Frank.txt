@@ -1,0 +1,1074 @@
+Oh, yeah.
+You know, we'll, we'll construct something.
+And and this, uh, I'm not being disingenious to Mark.
+I mean, Mark and I work together for a few years, and I think there's a lot of mutual respect
+there.
+You know, the reality is Mark needs Mark needs to mark.
+Yeah, you know, that he needs to fit everything into a marking rubric. fair enough.
+You know, that's his, that's his reality.
+Um, I am happy, if you need something, if you need to do something to pick a box in the sprint, and
+you want to rearrange it, talk to me, okay?
+And we'll, we'll do it, whether it's out of scope of the church charter, whether we have to move
+things forward, you know, let's make Mark Pollock's life easy.
+Okay.
+And by making his life easy, you will get high workers.
+Yep.
+Okay.
+The next part was person management, and as a part of that, we have steward profiles, which we have
+prepared the basic UI wire frames for, and Abina was responsible for doing that.
+Um, and uh, we've sort of designed the uh, profile page.
+We just have to start implementing it.
+And by UI UI wireframes.
+We mean like a simple hand-drawn version of what our page would look like.
+And you want a bear's, like bare bones gamification, which we're going to be working towards.
+A lot of it is not prioritized right now for sprint uh for sprint 2, but we're going to be moving
+towards it for sprint 3.
+And the last thing that we decided, I mean, what your charter says, of course, is that a low, like
+you need to have a low cost map that is sort of, obviously, open source.
+And we need to have a sort of way to geobound it.
+And by geobounding, we mean whatever your sites are, it has to be geobounded.
+And I know it does exist right now in your in your app.
+But we're going to be working towards it and also with the GPX thing that you just mentioned.
+So we'll try to integrate that as well.
+And hopefully if there is a scope in the very, very late future for a mobile app, we have to be
+prepared for that as well.
+So we're going to be setting up setting it up in such a way that it's easily routable to the mobile
+app as well.
+Yeah.
+And you saw in the field that, you know, the whereabout kind of works, works okay.
+Yeah, yeah.
+Other than other than the page nation issue that I think, Chris, you were sort of honing in on.
+Um, So, you know, the, uh, the, uh, if, if you guys have capacity, trust me, I got a lot, you know,
+I have a, uh, and whether I managed to get them into my VFE or not, um, I actually was just parking
+to more public at one o'clock today.
+And I told him, okay, I have a map to version nine.
+You guys have no shortage of work.
+Um, you know, don't uh, don't stretch anything out, but once again, I will take less with high
+quality, then more with poor quality.
+Carry on.
+Okay, perfect.
+Um, And with the data with the map data, the GIS information, don't please and don't create
+anything.
+I have I have the data and a subset of the data is available right now on the government's open
+data website.
+The problem is it's not a complete data set.
+They've taken something.
+They have taken a grouping out.
+So when you get to that point that you're looking for the polygons.
+Um, I would initially go to the Alberta government, open data, um, um, open data website.
+But then plan to refresh those, okay?
+Okay.
+Perfect.
+So, the ones that you send, which is?
+GPX files, right?
+There were only GPS files.
+I think there are also such a fit worm as well.
+Okay, okay, perfect.
+So we'll take a look at that as well.
+Okay.
+Yeah, and in your mind, I make sure that when it comes to the GIS stuff.
+You really have good clarity about what we're talking about.
+Okay, so we have the basement.
+On the website I'm currently using Google Maps.
+Don't have to use Google Maps.
+It's just free and easy and it's in industry standard.
+One of the problems I have with Google Maps, to be honest with you on the website is I've maxed out
+Google Maps.
+I can't add any more data elements to it, without paying them a bag of money and doing things like
+getting a key.
+Okay.
+Um, so I'm, uh, you know, that's a limitation.
+So that's the base map.
+You guys are probably not gonna use gold map on one of the map, but I'm happy to hear your
+recommendation.
+It wouldn't surprise me if he was open street view.
+Oh, yeah.
+I think we're planning to do that.
+Yeah.
+So open, we're planning to use open street by someone.
+Okay.
+Yeah.
+Yeah.
+You guys need to tell me why you have selected that, though.
+Like, you can't make that design decision without telling me the rationale for it.
+Oh.
+Okay.
+Yeah.
+So, um, it wouldn't surprise me if you use it.
+I think it's probably good rationale.
+I will have some questions on it, although you get to that point, okay?
+Of course.
+Yep.
+Okay, so that's the base map.
+Yeah.
+Then there is the static layer.
+And the static layer are the polygons.
+They won't change.
+Okay.
+And then there's a dynamic layer, or a dynamic, I'm going to reserve that word.
+Then there is a, um, a, uh, GIS history layer, and that's where, Chris, you remember you were
+carrying that little device around?
+Uh, yeah, we turn it off.
+You know, that's that history layer.
+Then there's almost another layer which could potentially be used for other purposes.
+Like, um, if, you know, it's none of the above is used for data visualization type stuff or
+communication.
+So make sure it's really clear in your mind, what are you working on?
+Are you working on that base layer?
+Are you working on the data layer?
+Are you working on the historical layer?
+Are you working on the data visualization layer?
+Does that structure make sense on you?
+Yeah, it does, it does.
+Yeah, so the files I sent you have to do with the 3rd layer.
+Yeah, the data visualization.
+No, no, that's the 4th layer.
+That's true.
+History?
+Okay.
+Okay.
+Uh, so the, uh, the 1st layer, you guys are gonna select a tech, and you're gonna tell me why you
+selected that tech, and you're gonna, and you're gonna get it back, and um, and then we'll move
+forward.
+Likely it will be open street view.
+But you, you, I want to make sure you guys know why you're stuck.
+The 2nd layer in terms of the polygons.
+Right now, one of you can go to Alberta open data, and you can go download the poly box right now.
+Recognize that they're an they're an incomplete data set.
+Yeah.
+Yeah, I can I can see that he's opened it.
+Yeah.
+So that's the 2nd layer, which is the static layer.
+The files I've given you, um, you know, of all those different GPS GIS files.
+I have given you both clean and dirty files.
+Yep, yeah, you mentioned that.
+So, yeah.
+So for example, the one that came off that device that was in Chris's pocket, that's a really clean
+file.
+The one that came off my handheld GPS.
+That's a slightly dirty file.
+Why is it slightly dirty?
+Because I purposely didn't turn it off till I got to Dairy Queen?
+Yeah, yeah.
+So, it has the data from Riverlog 56, but then it shows me going 30, running 30 kilometres an hour
+to Dairy Queen.
+So, how are you guys gonna deal with that?
+Well, it's just a bounding issue.
+We'll figure it out, yeah.
+Yeah, yeah.
+And I'm not asking you the question right now.
+Okay, okay.
+I'm just telling you, that's the data problem.
+Yeah, yeah.
+And then there's a bunch of other formats, and I purposely downloaded them into a bunch of other
+formats, so you likely will get like an FIT format, a GPX format.
+Um, I'm okay in this version.
+If you tell me, no, no, we can only deal with one format.
+It has to be GPS.
+And GPX would be the default because it's the oldest format.
+You know, it's a 30 year old format.
+And everything can produce GPX.
+Yep.
+Okay.
+Whereas I think FIT, FIT.
+I don't know if it's industry standard or if it's proprietary to government.
+Um, you know, I don't know.
+But, you know, there's, you know, that's where you get that.
+And then for your information, I gave, by the way, who's on the map team?
+Which pair?
+Okay.
+So Alisa and Abby.
+I also gave you a really, really crap file.
+And that was on my phone funny enough, with rivalry GPS.
+I don't know what the phone was thinking, but it was on crack or something because it was all over
+the place.
+So what are you so what are you going to do with that?
+Now, Abby and Lisa, start with, start with the simple. every GPX file is going to be perfect and
+easy.
+And then start to deal with the, with the ugly ear and uglier.
+So, uh, Abby and uh, Lisa, did that help?
+Did that explanation help?
+Yeah, that helps.
+Yeah.
+Do you want the contact, who is the GIS guy?
+Or is it too early?
+I feel like most of our maps is towards sprint three.
+Yeah, but to add sites, do we need the polio?
+Do we need?
+I think for sprint one, we have the base layer and the static liquor.
+Do we do we need like...
+I think it's... too early to need any special help.
+When we run into issues, then we can come, but I think to start, we should be okay.
+No, be careful, though.
+Because remember, you still need to make contact with them.
+Oh, yeah.
+Okay.
+And build that relationship.
+So, don't, don't say, well, okay, now we have an urgent problem.
+Is he available in the next 15 minutes?
+Yeah, you don't want to do that.
+You know, please don't do that to my guys.
+You know, you need to already build that relationship.
+So, um, how are you going to manage that?
+And Sonia, I'm going to actually turn that one over to you.
+I am offering you a gift of access to someone who is in industry.
+That is a gift.
+Be careful of the gifts that are given to you.
+Okay, carry on, sir.
+Sorry.
+Okay.
+Um, I think by the end of the meeting, if you can send the, like, contact to the person would be
+good.
+And I think I can just like make contact.
+Okay, um, and my preferred method, uh, with John, probably will be through LinkedIn, so make sure
+you're on LinkedIn with me.
+All right.
+Is everyone in this room on LinkedIn?
+Yeah.
+Yes.
+Okay.
+Okay.
+I think I've only gotten one LinkedIn connection request.
+So, yeah, there you go.
+And remember, LinkedIn is not Instagram.
+It's not TikTok.
+You know, it is as boring as heck, and it will, there is no guarantee it's going to get you a job.
+Like it, uh, there's no guarantee it won't get, it will get you a job.
+But by having it, it might do something for you.
+If nothing else starting to build out your brand.
+Okay, so carry on.
+Perfect.
+Okay.
+So this, like, small section is basically what we did this week, and I feel like it's important
+because it basically builds the foundation for the next week.
+Okay.
+So every item that we have listed for your for the project charter is now scoped.
+So we went through all the 20 items on your sort of faulty list and we have like a bunch of guitar
+issues already now.
+So we have it, so we have everything scope.
+And so we build a practical copy of the app that can build and run on local hosts.
+So on the local server.
+And we set up this super base instance.
+So Chris was one of the people who helped us set up the Superbase instance.
+And we can sort of, like, it's in the testing environment now, so we can build and test it.
+So that's a good thing.
+So what are you calling these environments?
+I want to hear your naming conventions?
+Building and testing environments?
+Yeah, I'd call it our development environment.
+Yeah.
+We were mainly just trying to keep it disconnected from any production systems.
+So, I mean, we have our own artificial data we're able to use to kind of look for edge cases in the
+software.
+So in the past, I've done things, um, I worked on projects where, um, different versions because
+sometimes these words, um, are loaded, you know, sometimes there's there, uh, you know, the dev
+test is both a verb and a noun, right?
+You know, it's a depth test environment now, you need to depth test verb.
+And sometimes there's can be confusion.
+So as a result, some companies will do things like they will call their, um, their sand, they'll
+have a sandbox.
+Just, it's where you go break things.
+Then, um, you know, they'll they'll have the equivalent of the depth test, they might actually call
+that the bronze environment.
+Why do they call it bronze? once again, just to separate it.
+Silver would be the, um, uh, you tested is the pre-production environment.
+Gold is for, you know, it's pre-production, and it's the final validation, so it really is the
+last, last, last chance, and then there's pride.
+Now, you may, probably in our circumstances, we don't need silver and gold.
+You know, we we just need, you know, one of those.
+But, but, uh, the reason why I'm asking you, what did you call them? is so that you're aware when
+you actually are working in an environment, they may not be called those.
+Like, those are pretty standard names, but there's actually value in sometimes calling them
+something different, though.
+Okay, are you, did you test it in silver?
+Yes, I did.
+When will we refresh silver?
+You know, that type of thing?
+So sorry for the interruption.
+I just wanted to give you that as a piece of awareness.
+Okay.
+Okay.
+So, okay.
+Yeah, as a part of 2B, we designed a user model, which means that what we have on the database
+right now, we'll have to extend it.
+And so we've made a model of the, like basically of what an, of what a user would look like, what
+attributes they'll have.
+Because as a part of your gimifications, we might need to add more attributes to the user.
+So, and we have sort of scoped the issue for that.
+And again, with the maps, I think we already talked about the map and we sort of replanned the map
+on based on what you said last time and based on what you said on the river lot.
+So, yeah.
+Um, Perfect.
+Um.
+Right.
+Essentially, as a part of designing the steward profile.
+Uh, what we did was, again, we designed the user model and what it basically means that it's sort
+of a table now, and we plan to have one rope or person with or without a login, right?
+And we have our profile fields, which are the name, contacts, skills, focus areas, and activity
+points.
+Now, the last 3 that you see, the skills, focus, and activity points are part of the gamification.
+And we can hopefully nail it down by the end of spin three.
+And the last thing that we have is we have a stewards table, which means that every, any steward
+that has visited a specific site, is going to be exactly routed to that table.
+And uh, I think that one's fine.
+Okay, and we sort of, whatever every, whatever exists right now is like kept safe and it's copied
+so that in case we mess up anything, we can bring it back.
+So it's so that's there.
+And uh, Okay.
+Um, the next thing is that what you said exactly was, it does not have to be Google Maps.
+We'll find, we'll recommend you a low cost open map, which is probably going to be open street
+maps, but we're still going to keep our options open.
+And make sure you have answered the following question.
+Why have you eliminated Google Maps?
+It's, 1st of all, it's paid because you don't want to, like, you just describe the issue right now,
+right?
+And you describe the issue last meeting.
+But have you validated that?
+Have you factored it?
+Yeah, well, yeah, I mean, about like you need to you need to pay for Google Maps, like above a
+certain amount of requests and like data that you want to do.
+So yeah, great.
+And and I hit those requests.
+So, like, that's what I'm looking for in your in your analysis.
+And, you know, what I'm what I'm trying to do here is, um, um, prevent you guys from developing
+cowboy itis, okay?
+Hey, well, Frank doesn't want Google Maps, uh, we'll go open street maps.
+Oh, done.
+Okay?
+Someone in your group should be saying, okay, I will be the wide person.
+Okay, um, why are we, we doing this?
+Well, because Frank said, well, what the fuck does Frank know?
+Have we actually validated this?
+Have we gone to the sites?
+Because Google is too expensive.
+How do we know Google is super expensive?
+Well, because we went to the retail page and we looked.
+Do they not have nonprofit pricing?
+So you need to come to me with a recommendation, and you better have done that research.
+Okay.
+Okay.
+And, um, At the end of the day, whether it's open street map or Google or whatever, it's not going
+to matter in this little application, but if Murdoch was here, he would probably be saying, I don't
+talk to the CEO, you know, if I'm meeting with the CEO, I better have, I better anticipate the
+questions she's going to be asking, and I bloody well better have the answers to him.
+That's the difference between you guys being a student and being on the other side.
+That's the difference between being stuck as a junior programmer and being the product owner.
+Okay.
+Do that help, Sonya?
+Does that make sense?
+Oh, yeah, yeah, yeah.
+Well, we'll make sure for the next meeting that we have everything like prepared and well
+researched so that you can, we can provide you like reasons for what we did and why we did it.
+Yep.
+Right.
+And, um, if you guys go open street maps, it's not that big of a deal.
+But I'm trying to give you guys the opportunity.
+The other thing you, you, with that recommendation.
+So you're going to say, okay, well, we went out there, you know, we, uh, we did a uh, internet
+search and we ask, you know, what are free mapping softwares like Google Maps that are available
+and which one should we use for a nonprofit implementation?
+We got 5 results or whatever the number was, 7 or three.
+And we compared them.
+And we haven't done an extensive survey, but we have a high confidence level, an 80% better
+confidence level, that this is the best solution.
+And therefore, we're recommending this.
+Okay, um, And so you've written that up.
+You need to keep one of your team members or 2 of your team members out of that discussion, and
+those 2 team members, then have the job of being, what does Franklin ask, that we haven't thought
+of?
+You want to do that?
+Yeah, true.
+Because you're doing the math?
+Yeah, and you guys take that away and figure it out.
+This is what is known as being a designated asshole.
+You need to pick your designated asshole. up front.
+That person can't be involved in any of the research or any of the analysis.
+And that person needs to be frank, and what are the questions Frank's gonna ask?
+Right.
+And, um, if, Abby, if you're the guy, don't be nice to your teammates.
+I don't think I should be the one 'cause I'm Easy to go to do nice.
+Oh, I mean, I'm I'm implementing the match.
+Oh okay.
+You know what, we'll decide on that.
+You guys figured out.
+You know, you have to be respectful, but don't be nice.
+Because what's the point of being nice?
+Oh, we were so nice to the team.
+Okay, then Frank asked you 3 Zinger questions.
+Oh, we didn't think of that because we were so busy being nice.
+Well, if you're a consulting company and you're coming to the client and the client asked 3 obvious
+questions and you and you fail, is your trust level up with the client or is your trust level down?
+Done.
+Okay, carry on.
+Okay.
+Again, the next thing that we're, like, that we decided is, uh, based on your feedback was, uh, the
+shapes must come from the same source as the website that we have. right?
+And all the boundaries must come up from that source.
+And again, you said you explicitly stated that the boundaries in the app, sorry, the web and the
+app must share the same geometry and everything else might devote.
+So like you talked about having a common point and then things sort of might be diverging from
+there if if we start building up to that level.
+And this is part of sprint three.
+So this is something that we have left, after we've sort of prepared like the basic version of the
+open street maps or whatever map services that we're using.
+And this is like sort of an advanced use a story that builds up on the basic ones.
+So yeah.
+Yeah, yeah.
+And and for Abby and Alyssa, I will tell you right now, the backstory is, um, there's a 2021 and a
+2023 open data set.
+The 2023, they have removed one type of natural area called a protective notation.
+And so and so when I say it's incomplete.
+That's what I mean by being incomplete.
+You can no longer get from the Alberta government, the 2021 version.
+When you guys are ready to a whole lot, like go and get the 2023 version is fine. you know, for
+testing and and development.
+But for gold eye, you need to have the 2021 version, I have the 2021 version.
+Um, so that's kind of the backstory of it.
+Okay.
+And by the way, if you're, um, you're you're saying in an interview and uh, this is an example of,
+you know, can you tell us when you have to use a wide variety of data sources, you can actually use
+this as an example.
+You know, in building it, we used a the Alberta government open data set.
+Um, the Alberta government open data set is not all that different from the federal government or
+Saskatchewan or anybody else.
+And a startup might be using an open data set to to get bus route information or to get demographic
+information or what's the age profile in this part of Victoria?
+Right?
+And so you can now, you now have this, you will have this as a story in the back of your head, for
+when you're in that interview, and they say, tell us when you have used multiple sources of data,
+and what happens when that data, when the data wasn't available, how did you accommodate that?
+Well, let me tell you the story about Sopah and you know, the 2023 data set, you know, was the
+current one, but it was incomplete because of something, details are important.
+Fortunately, the client had the 2021 version and we're able to use it.
+That's an example of dirty data.
+It's not dirty data.
+It's a complete data. as an example.
+Um, and the person on the other side knows that you understand data. or you have that level of
+understanding of data.
+Sorry, carry on.
+Right.
+Um, Okay, um, as another uh, as another thing that you said, uh, was that you would want to know
+what everyone else did, which means that every, like every site should show all the past visits and
+GPS tracks and GP with, with the GPS tracks, I think the GPS file is the best way to go, because as
+you said, uh, it's been, it's been used for like, I mean, a 1000000000 years.
+So I think we will start building with GPX 1st and then if we find the need to build on the other
+like versions, like other extensions, we might do that as well.
+Um, like KML and uh, fit FID.
+Yes.
+Okay.
+And yes, obviously.
+So GPS GPX approach 1st and no phone tracking.
+And that's all in sprint 3, by the way.
+Yeah, and it's quite legitimate to say inversion 2 of this application, we can only accept GPX.
+Yep.
+So Sonya, what you need to do then is immediately go to my BFE file.
+Yep. and immediately put in there an enhancement that says allow for the use of non-GPX, um, uh,
+data activities.
+Okay, okay.
+Or or allow for the the conversion of non-GPX files to GPX. according to this set.
+So if it's FIT, if it's KML, if it's whatever, there's a, there's probably going to be a tool out
+there already.
+Yeah, that does that version, you know, that does that conversion.
+Um, I don't need that, like, uh, once again, start with terrible work to great.
+So terrible is we impose upon the user, you must give us a GPS.
+That's a terrible thing.
+Because most people don't even know what that means.
+Okay?
+And you're forcing onto the user the fact that they now need to figure out how to convert it.
+Yes.
+Okay.
+And then you have those enhancements.
+Yep.
+Perfect.
+Um, the next thing that we looked at is that we need offline map players, but only in the web app.
+And I mean, you sort of...
+Sorry, say that again.
+I didn't quite hear.
+So we need offline map players, but only on the web app.
+Mobile app is like obviously different.
+So you said that it's not on any of your charter projects.
+So, I mean, I still, I personally still feel like it's a priority that we might, we can still do
+because cashing, as you said, some sort of cashing does exist with the, with the web app, so might
+as well do it with the map layers as well.
+And this is something that we've assigned most of our like, this is probably our biggest user
+story.
+And we would like to finish it, even though it's not on your charter, but we like we've planned for
+it anyways.
+And then, sorry, just one thing with the mapping.
+So the reason another reason that we're kind of leaning towards the open street map is because it's
+actually against Google's terms of service to use their mapping software in a 3rd party application
+offline.
+So, I mean, like, well, I'm sure Google wouldn't be hunting for SAPA to find if we violate it, it
+is against their terms.
+Yep, write it down.
+Perfect.
+You know, Chris, that is a really good point.
+Like, that is something I was probably unaware of.
+That is a really good reason to not use Google Maps.
+But you need to write that down and you need to tell me why.
+Sounds good.
+Right.
+And as a part of the map issues, we've as a part of the map, functionality, we've set up 3 issues.
+So, namely, you set up the map, you add sides to the map, and then you can filter by county and
+search up by name.
+So these are the 3 things that you've planned for the sprint.
+And we try to nail it down within this week, hopefully.
+And whatever is left, we move it down to the next point.
+And uh, And so you had 20 items on your list and uh, could you share my list?
+I just...
+Oh yeah, just give me a second.
+I have only...
+Uh, So, so while, um, so anyway, is doing that, uh, my conversation with Mark, uh, just for your
+guys' information is, uh, as much filler as anything else, is I had 2 questions for her.
+Number one, does he track the status of previous projects?
+So, you know, last semester, you would have had 13 projects and um, how many of those apps that
+were built are still running?
+You know, from 2 years ago how many are still running?
+And then if they are still running, what do those little organizations use? to track things like
+bugs, fixes, and enhancements.
+So the BFE?
+Uh, because, uh, I was bringing up, you know, I was formalizing the methodology, but uh, always do
+other people's um, efforts, if if you can.
+So, um, One of the reasons I'm doing this is Think about how you will articulate this on your
+resume.
+Think about how you're going to articulate how you use this list. in an interview question.
+Um, so obviously list is important to me because, you know, it means we don't forget things.
+But, um, you're applying for a job for a little uh, company and they're, you know, they're they're
+looking for a junior developer, but there really is only like 2 developers.
+And, um, you know, uh, they either explicitly say you need to be part of the product team.
+Or they explicitly say you are, you know, it's a dev ops environment, right?
+Um, You should be referencing in your application, uh, you working with Sopa as a client, we, uh,
+we used a BFE bug fix enhancements, well, that sort of in brackets, and we were able to normally
+enter, not only provide it as a value add to the business and the board, but we also integrated it
+into GitHub.
+So that, um, you know, it neither impeded the use of advanced tools like GitHub for the development
+team, nor did it force the business users to go into an advanced tool like GitHub.
+They provided an interface between them.
+So, do you, do you see why I'm trying to make you guys think that way?
+Then the interview question would be something like this.
+Tell us of an example where you were working with a business client, and you had to describe the
+status of a technical development in business speak.
+So I'm going to pause here.
+Do you guys think that's a legitimate interview question?
+Yeah.
+Okay.
+One of the ways you can describe that is, amongst other things, we use the tool called the BSV, bug
+fix enhancement, raw, in which we integrated it into GitHub, so that, you know, we could use the
+power of GitHub, but we work with the client to make sure that the rooms on the BFE were business
+focussed, and therefore met their requirements, we constantly reviewed them, and we constantly
+refinement, you know, because we knew that the client may or may not actually understand what they
+wanted or even understood the problem.
+And that's why we constantly reviewed and refined the enhancements, including having a
+prioritization schedule.
+What do you guys think?
+Is that a reasonable answer to that question?
+Yeah, yeah.
+And do you see how it helps you jump out of being the student to murder its world?
+Okay, sorry, carry on second.
+Okay.
+Perfect.
+I'm gonna go back to sharing that one.
+And is there anything that we have to discuss?
+Wasn't he gonna tell us something on the...
+Were you gonna tell us something about the BFE?
+Uh, carry all the way through your deck and then I'll finish off when we have a little bit of time.
+I have a nasty habit of burning off your time.
+Oh, no, no, it's okay.
+Okay.
+Okay, so finish your deck then.
+Okay, so 20 items were on your list and we plan to finish 10 of them by sprint too.
+You might be thinking, why not the other 10?
+I mean, 2 of them are already done, right?
+Which is photos in the reports and removing the test reports, that's almost sort of like it's
+technically done, right?
+And 6 of them are bigger ones and these essentially consist of GPS traces and safety information
+and that's basically in sprint 3 and Stuart gamification lies in sprint 4 because we want to leave
+gamification towards the end because we want to nail down everything, like everything 1st and we're
+going in terms of your project charter.
+And user management, side points, and image extraction is also in sprint food.
+So we plan to finish the rest of the 10, 10.
+And we still need, like, your BFE, like, has like one or 2 things that is kind of, like, that I
+found weird and I don't know what this means, like, edit report bug fix and see her view's
+description.
+I don't know, I don't, I can't, I can't seem to find it for some reason.
+Yeah, yeah.
+Yeah, and I left you a couple of those to frustrate you.
+Okay.
+Because, um, uh, because you needed, because I didn't want to give you perfect data.
+Yeah.
+Yeah, because your because your future clients aren't going to give you perfect good.
+Oh, yeah. yeah.
+So that's something I'm gonna have to, like, nag her view for, but I think we'll get it out of him.
+Yeah, and before you nag Javier, you know, we'll we'll do a quick walkthrough here.
+Finish your deck there.
+Oh, the entire deck?
+Yeah, just like your slack.
+Okay, okay, I'm gonna finish, okay.
+Perfect.
+The next thing, yep. all done.
+Okay, the next thing that we I want to discuss or we want to discuss is something that we saw like
+ourselves in the site.
+And this was one of the problems, right?
+You're filling the form, you put your phone away. you open again, you're back to you're back to
+square one.
+And that's again, that's an issue, right?
+And that's something that we want to be like picking up from, right?
+And we plan to finish this by October 6th, right?
+Uh, we have assigned.
+I don't know which team we've assigned it to, but we've assigned it to a group of people that like
+plan to finish it by October 6th.
+So hopefully by the next week, next meeting, you should be able to like see like an actual change
+at least in the development environment.
+Um, okay, moving on.
+So that was, again, a part of what we're going to be doing next week.
+Um, Again, the 1st thing is our 1st priority, that is our authentication checks, and we'll sort of
+review them across the entire app.
+Sign out because sign out does not really work right now.
+It's sort of weird sometimes because you cannot sign out from certain like admin dashboats.
+And that's what Aaron was working on fixing right now before the meeting.
+And he has almost nailed it down.
+So I think that should be good.
+And the form page, we'll have to look at the form page as well.
+And every change that we make has to be reviewed and tested before release.
+And I had a question regarding the testing.
+Do you want constant release like in this semester or do you want everything to be like done like
+by the end of the semester, like everything to be like bulk release?
+I'm going to turn the question on and we actually talked about this earlier.
+You guys, as IT professionals have an opportunity here. that you will not get, again, for probably
+20 or 30 years.
+And that opportunity is this, is to build a release management methodology.
+Yep, yep.
+Very.
+Um, and so, uh, you have the Murdads of the world, uh, and the vishals of the world, who are living
+and breathing in a release management.
+You know, they live in that release management process, and their company would have already
+articulated.
+What does that release management process look like?
+Is that, you know, are they on an auto release platform?
+You know, you know, once the testing is done, both, you know, midnight, it goes up.
+You know, are they on a major version process?
+No, we only released 3 times a year, and if you don't get it in 2 months in advance, and you better
+hope for the next one. you know, um, are they, uh, and then there's lots of variations in between.
+There is, this is how you guys will get a job.
+Showing already to your future employers, you understand release management.
+Because your employer doesn't want to hire cowboys.
+They want to hire someone who who is brilliant, creative, all those things, but is not going to
+stuff in a release and bring the whole system down for 2 weeks.
+So, um, to some extent, take this as an opportunity, uh, what, how do you do release management?
+Go back to, talk to your, to your other props or crack open your, uh, you know, your books so you
+haven't sold them yet and those kind of things?
+Come back to me with recommendation.
+Yeah, and that's something that's something you, like, when I had the 1st call with you, that's
+something that you, like, mentioned that, like, you wanted to be done, like, constant release
+management.
+Uh, but when we were talking with uh, the mentors, like Vishal and Medar, uh, they did like say
+that we routed everything towards the Versal app at the end of the semester, so like I was kind of
+thinking on how we would be like doing it.
+Yeah, but remember, Vishal, for example, uh, Vishal, when they did the release, they released
+version one.
+Okay, of course, yeah.
+Yeah, they went from a non-proad to a prod.
+Okay, yeah.
+Makes sense.
+You guys, you guys are now updating a prod.
+So it isn't, isn't directly comparable.
+Yeah, course.
+But most of the employment that you'll be have is going to be in a product.
+There aren't a lot of apps that get released, right?
+You know, there's a lot more apps that get maintained.
+And so if, you know, most of your future employers are saying, we have, we use periodic release, we
+don't use an auto release, uh, then come back to me and say, you know what, Frank, here's what
+we're thinking.
+Uh, weekly release.
+A monthly release.
+I don't really like a semester release, because then you guys disappear on me and it doesn't work.
+Then I have to hunt you down and kill you.
+Yeah.
+So, so, so I would rather have it, um, you know, uh, even though we'll go through the testing
+process, it's better to have it in the release, and then I can also build buzz as well with
+potential volunteers.
+But you guys will talk amongst yourself and go talk to your props and the Murdas and the the
+shelves and people, you know, your brother, your sister, who's working, and see what people do.
+And come back to me with the recommendation, if most organizations are doing this, we get to build
+a release management methodology from the, you know, from the ground up.
+Let's do this so that we can tell that story in our resume.
+And a follow up question to that, uh, Frank, is, do we need to, uh, sort of demo every, like, new
+feature that we're releasing to you before we release it?
+Because I don't know, I mean, you'd want to see it or not?
+I don't know.
+There's a host training, and there's a trust element to this.
+Yeah.
+Initially, I like to see demos. is my trust level of your team increases.
+If you're saying, you know what, we have this back end thing, you know, we test it 6 ways a Sunday,
+and we think we should release it next, you know, next Sunday or next Saturday in the normal cycle.
+If my trust level is up, I'm gonna say, make it happen.
+I don't need to see it.
+Okay, so, I mean, what we're gonna do is, like, for now, obviously, we're gonna hold off the, like,
+at least what I'm thinking right now at the spot I have to discuss with everyone, but what I was
+thinking is we hold up on the, like, auto release and we sort of show you the product before we
+release until, like, like you get the, you get our style of working and you get familiar with how
+we work.
+So, yeah.
+Okay.
+Yeah, I mean, I have a good feeling, but I have no data to prove that I should trust you guys.
+Of course.
+Okay, and um, another thing that you want to talk about is sort of technical, but uh, again, all of
+our, like, features are reviewed by 2 members of the team, at least 2 members, right?
+So there's like we have a scrum master, which take care of like, which takes care of everything
+from like feature branches, getting pushed into like our main like branch that we want to see, like
+our stable branch.
+And so we are sort of like rotating our scrum masters and we have product owners.
+So product owners like keep track of the entire repository, any code changes in detail, they keep
+track of that.
+And our plan is to sort of rotate our scrummasters and product owners so that they get, like, all
+of us can get the best experience of of how like a software engineering, like environment works.
+And what do you plan to do?
+I mean, We hopefully plan to have code freezes.
+And what I mean by code freezes is that we have sprint deadlines.
+We would like to freeze our code and not do anything. 2 days before the sprint deadline, right?
+So that if anything comes up, if anything urgent comes up with you, we can hop on in and we have 2
+like we have that sort of breathing window for 2 days to sort of fix it.
+And yeah.
+Okay.
+Perfect.
+And uh... and what you're describing is pretty standard.
+Yeah.
+And by the way, back to release management.
+If you guys want to run the releases according to Mark Sprint blog, I'm okay with that.
+Yep.
+I just really don't like the waiting till the end of semester.
+Surprise, here it is.
+Oh, yeah, yeah, it sort of doesn't really work, but we graduated goodbye.
+Yeah.
+Obviously, like we'll have to discuss on how we're going to be releasing because I feel like
+everyone's opinion matters on this.
+So yeah, we'll we'll discuss it and hopefully I'll get back to you on call sometime earlier this
+week before Aaron next week.
+Put it on next week's agenda.
+Okay.
+And then, um, you know, uh, then put into the folder, you know, what what the release is or into
+your deck to say, um, you know, we're coming to Mark's Sprint 3.
+These are the things that will that are in the release.
+Right.
+All right.
+Cool.
+And uh, again.
+Uh, I can't stop talking about the maps, but again, uh, well, we have a lot of our boundaries, our
+past visits and GPX moved to sprint 3, and sprint 2 is pretty basic.
+So again, that's done.
+Um, what you can expect next Friday is we basically have all our authentication checks for every
+user.
+We plan to finish that.
+Our Superview, which is it's basically we plan to fix it.
+And the next thing is that we also plan to finish the signout, which I think Aaron has already
+done.
+Add a site, map set up, everything that we discussed right now.
+On October 6th, hopefully we, we have stored profiles, basic stored profiles, and we sort of
+discuss on what we might need more.
+So that when one team implements like the student, like the steward profile, other team members,
+other the other teams might have any like suggestions that they might want to add or remove, et
+cetera.
+And the next thing is, is we want to be able to search for counties.
+We want to be able to edit the profile and we have links to all these sites.
+Delete photos and reports and stewards can successfully export their reports.
+And, uh, We, we are hopefully like, there's something called as a bulk export.
+So we hope to do that as well.
+And private fields should be hopefully hidden on export.
+So that's our plan.
+And finally, I mean, we obviously code freeze.
+And uh, talking about our future sprints, here's what we have planned.
+We finished our sprint one, which was discovery and planning.
+October 13.
+We get 2 version one. one, right?
+That's our plan.
+Or at least a big chunk of version one. one.
+Sprint three, we get 2 maps and side history and steward history.
+Sprint 4 is, so what we were discussing amongst ourselves is that Sprint 4 and Sprint 5, we've kept
+relatively like, Sprint 2 and 3 has a chunk of our work that you want to be like that we want to be
+doing for like corresponding to the project charter.
+So, one. one to 2C.
+We want to do all of that, right?
+Sprint 4 and sprint 5 is for you to sort of dump your ideas onto us and we have hopefully enough
+time to get to like part 3 as well.
+And this is where sprint 4 and sprint 5 is where you essentially nitpick every single thing that
+we're doing.
+You're gonna be obviously helping us with sprint 2 and 3 by looking at what we've developed, but
+sprint 4 and sprint 5, you just start dumping ideas on us.
+But again, Project Charter does have all these ideas, but we will still need some more input from
+you from on Sprint 4 and five.
+And so story, our user story points are mostly classified mostly concentrated to sprint 2 and
+three.
+Sprint Ford does not have a lot of user story points.
+So 675 for sprint 2, 79 for sprint 3, 29 to 30 something, something around, along that range for
+sprint 4 and sprint 5 is completely empty.
+So we want to.
+We just wanna, we plan to work that way.
+And uh, yeah.
+Okay, so uh, yeah, November 17th and December 1st. what I'll do what I will commit to in October is
+to better flesh out in my mind's eye version three.
+Yep.
+It is on the student site.
+I wasn't sure how far people are going to get, so I didn't put a whole lot of time into it.
+I can flesh that out.
+So you can, you can get a bit of a taste of it.
+In my mind's eye, I have optive version 9 built.
+Okay, perfect.
+Okay.
+Okay.
+So, um, I will start questioning Ozelle, trust me, if you guys got capacity, I got cool stuff.
+We try to get there.
+Yeah.
+Yeah.
+And okay, excellent.
+Uh, so we're 2 minutes over.
+How is your time, Jen? folks.
+We go our time?
+Yeah, we good on time?
+Yes. you good?
+So when we when we do the round table, then we'll just chat about the VIP real quick.
+Okay, yeah, no worries.
+I'm gonna just, yeah, I think it's the same.
+It's all of in detailed stuff.
+Um, sprint three.
+Yeah.
+Yeah, exactly. sprint 4 and 5 hour room for you.
+Yeah.
+Perfect.
+We sort of nailed it up.
+Okay, do you guys have any questions?
+Anything important, Chris, Alyssa?
+I don't have any questions, but I just have stuff to add, which I can say.
+Oh, yeah.
+Can Alyssa add to the, like, can Alyssa add her points right now?
+Or do you want to finish the BFE 1st?
+Okay, okay, perfect.
+Okay.
+Cool.
+So I'm just gonna quickly sum up.
+So we finished, like, we planned what we're going to do for the rest of the sprints.
+We have our practical copy of the app, store profile, the bare, like Barebones UI is already
+designed.
+We, uh, our maps are replanned, and we sort of, we're going to research on where we're going to
+take our, like maps, uh, functionality too.
+So like what platform you're going to use.
+Um, next week, authentication checks, sign out basic map functionalities, admin managing sites, and
+superview, hopefully working.
+And, um, and yeah, actually, we're moving to the round table, though.
+Awesome.
+Yeah, sure, I can.
+If you can speak a bit loud. sorry.
+Yeah.
+Um, I know one slide there, like, showed the deadlines for having, like, what's important, like,
+for the math stuff, having adding a site, and the math set up done by October 5th, which is this
+Monday.
+Would you be okay with us, like, sending you like that dock of, like, our proposal for using open
+street maps or like an alternative over the weekend?
+Or, like, early next year?
+I have no idea where October 5 is, but it probably was a placeholder at some point.
+Maybe Sunday, I think Sunday.
+So, October?
+It's on like next month. is a Monday?
+Yeah, it's a Monday.
+Yeah, just so we don't have to wait for like next Friday's meeting to get started on the maps if
+you can.
+Yeah, work with Sonya, like, uh, don't, um, it's now Sonya and I who can really control those
+dates.
+Any date that you see that is out there, forget about it, you know, Sonia and I will negotiate
+between Mark Sprints, and the end state.
+So if you're seeing a date, don't sweat it.
+Okay.
+Yeah, these were kind of dates like we set for our team just so we could like finish early ahead of
+the deadline.
+So they're definitely flexible, but yeah, I just wanted to ask if that was okay with you for us to
+reach out early.
+And then for the, like, game of vacation, um, prior to sprint 3, like once we have all the pre-rex
+set up for, like, steward profiles, um, so that we can, like, continue on with adding those, like,
+site, like, points to sites and then letting stewards earn points by visiting sites, which you had
+on your BFE there.
+We were hoping to talk to you and like really solidify like what kind of actions that you wanted to
+award points for.
+So that'll be like in one of our upcoming meetings, either next Friday or the Friday after that.
+Yeah, and to some extent, I would say if you can get me the container gamification, um, for your
+project, and, you know, even a very simple gamification, uh, the more detailed stuff will probably
+be a future project.
+You know, so, um, uh, and so what's an example of simple gamification.
+Simple gamification is, how many sites have you, you know, how many site inspections have you put
+in?
+Um, you know, uh, how many different counties has a person, you know, uh, visit it?
+Did that help, Alyssa? are we on the same page or are you thinking something a little different?
+Yeah, that helped.
+Like you said last meeting, you kind of wanted your baseline to be similar to a naturalist.
+So we kept that in mind and then for Sprint 4, It says room for requests there since we've assigned
+less story points for it, but part of Sprint 4 was to like flesh out the idea of like awarding
+points.
+Like if you wanted to go ahead with it.
+Because I saw like in the BFE right now, the priority is like it's unprioritized.
+So if you want to go ahead with that, like we can, like, talk about that after adding, like, those
+simple gamifications.
+Yeah, and remember, we always use the power of terrible, right?
+Right now, I have no gamification whatsoever.
+If the gamification that you guys are able to deliver within your capacity is based on existing
+data, That's already, you know, fantastically more than what I have now.
+You know, so, uh, that's uh, look at it that way.
+I really believe in the agile process, you know, which is get me something.
+Uh, so I can start to use it.
+And so that the larger community can start to use it.
+Um, because the problem with the waterfall approach is it assumes I have, I'm all knowing, and I
+can anticipate how how the introduction of this one thing is going to change people's behaviour.
+I can.
+So I would rather have something in gamification.
+And then improve the quality.
+Then, um, then trying to come up with the perfect gamification.
+Does that help, at least?
+Yeah, for sure.
+Yeah, that's a really good idea.
+And I think that's why the goal is for like the ad sprint.
+Sprint 3 just to have like the simple stuff dying.
+Yeah, so I mean, what I'd yearly love to see next Friday is this.
+Um, we are going to deliver you guaranteed the following gamification.
+Uh, you know, people can go into a, by the way, this, these aren't suggestions.
+These are just the what ifs, right?
+They can go into the user page and they can see who is the top contributor.
+Who is the contributor who has the most number of counties?
+Who is the contributor who has visited the greatest variety of sites?
+Who was the 1st contributor?
+Now, all that data exists in the database.
+And it's probably relatively static, but will evolve over time as people contribute more.
+You know, give me that.
+Because that then is some sort of gamification that I can then point to, you know, into for the
+next team to say, do you see where we're going?
+Did that help?
+Yeah, that helped.
+Yeah.
+So, uh, give me a mockup for next next week and start up with a mockup of, you already have the
+data, you know, is just visualization.
+You know, it's just, is just a your, you're giving it to me pretty. you know, uh, give me that.
+Okay, sounds good.
+Thanks, Brian.
+I Perfect.
+Does anyone have anything to add on to?
+Okay, round table.
+Okay, let's start with Abino.
+Let's just show your ideas. ideas.
+Yeah, what do you think about today and what do you think about Frank?
+So today's meeting?
+I think the main thing that I got from it was how you broke down the, how you broke down the maps
+into layers, like basic layers, historical layers. static.
+Sorry, the 2nd one is static there, sorry.
+Yeah.
+So I think that's the main thing that I got from it.
+So now I see the features in like broken down bits and maybe I could work on it a bit by bit, I
+think.
+That's what I got from this..
+From this video, we haven't talked about much of what our team is kind of, you're working on, but
+for the user stories, I have a question.
+So, would it be working on, like, delete the, like, sites, like, duplications that, uh, site
+inspection reports?
+So would you want that like completely erased from the database or like just marked as deleted?
+We can like recover it later.
+That was the question that I missed on you.
+Okay, I couldn't quite hear you.
+It's a little the sound is a little rough.
+So, or Sonia, if you want to just...
+Yeah, he's gonna he's just gonna, yeah.
+So whatever the user stories that YT is like working on is like deleting the sites and site
+inspection reports from the website, so if this water, if you want it like completely erased from
+the database or if you want to make it marked as deleted so that later on, you can like restore it
+if you want to take a look at it again.
+Um, one draw from you both.
+Okay.
+Sounds okay.
+Like 2 levels, you know, uh, uh, and there may even be 3 levels.
+Suppress archive nuke.
+Yeah, okay.
+Thank you.
+Perfect.
+Zanup?
+Yeah, I'm really sorry I was late.
+I couldn't I wasn't here for the 1st few minutes.
+I was gonna ask what Jaden was gonna ask because that was one of the things that we discussed with
+our key as well.
+Other than that, I think one thing that we should all work on is giving you explanations as to why
+we're going with what we're going or whatever we're not including, because for us, that's an area
+where obviously we can research, and for you, we're going to give you a plotable answer that this
+is what we think that should be done.
+Okay, uh, what's good, uh, sound was a little rough, but I think what I heard was, you're going to
+do the confirmation, or it's important for you to confirm why you made a decision and uh, and stand
+behind that.
+Okay, yeah.
+And in particular, and I know we're over time here, but in particular, you're working on a
+healthcare app.
+You've decided to build it this way.
+And not do something else. directly related to that or completely unrelated to it, someone dies,
+because as a result of a troll to the app.
+Um, a lawyer comes in, runs a discovery process, puts a legal hold on on everything, and they go
+through the development process for the fine tooth comb.
+And they come to your little piece of the puzzle and they say, well, why did you decide to go with
+X rather than why?
+If you are saying, ah, you know, pizza one night and I, it seems to be the easiest and, you know,
+that's what we went with.
+Yeah, I don't really remember.
+Versus, you know, we don't have extensive documentation, but we seem to have an option.
+We had 3 options.
+We evaluated it, we set up our rubric, and we looked at it, and option 2 was the best, uh, was the
+best or the worst or was the best fit.
+Um, which one do you think is, um, is going to help the plaintiff more in a court of law?
+The 1st one of the pizza party or the 2nd one of we went through at least some process.
+The 2nd one.
+Yeah.
+So, I, so this is part of comparing you guys for the real world, right?
+You guys are students.
+What does it matter? as well just bullshit anyway.
+So we'll just get the assignment done.
+Okay?
+That world stops real fast, guys.
+Did I answer your question?
+Yeah, yeah, yeah.
+Thank you.
+Hang on, listen, I already added.
+You have anything else to, like, I don't do?
+Um, no, not right now.
+Christopher.
+Yeah, I mean, the, uh, the meat, so I'm actually, my team is on the continuous integration side,
+which is basically deploying the development builds for uh, release.
+So I mean, I don't much of that other than the meeting kind of, well, I mean, hopefully understand
+what you're looking for in the release.
+And then for the next meeting on Friday, we'll definitely have a proposal for you on the type of
+release schedule that we're looking for to get the development builds out to the public.
+Yeah, and have fun with that analysis, Chris.
+Don't look at it as a burden.
+Look at it as an opportunity to really sort of do a survey of how do companies do this?
+That makes sense.
+Sorry?
+Okay.
+Um, I appreciate with all the insight that you give us for the, like, for and, like, examples that,
+uh, what an interviewer asks you and how we, um, should, or, like, a good way to answer the
+question, because I think, like, throughout the meeting, that's, like, the most exciting part out
+of all of it.
+Um, but I also appreciate that you, you giving us like small details here and there of how we
+should like, um, do better on our uh, app and work for you and all that stuff.
+So yeah.
+Okay I expect great things for you guys, and that's my, that's my contribution in exchange for
+great things.
+How did we do, Chris, with the presentation?
+Did we sort of improve from last week?
+Yes, hopefully.
+And it was a much better present.
+Sorry, I'm sorry, yeah.
+Yeah.
+Okay.
+We're a little late.
+Let me let's do the BFE later on.
+You guys kind of have it, so I'm not all that concerned about it.
+It was more value add anyway, so.
+You guys are doing great.
+I don't have any concerns or risks.
+I'm looking forward to the 1st release. and starting to see some products for you guys then.
+Perfect.
+Frank, thank you so much.
+Thank you, thank you.
+All right.
+You guys have a great weekend.
+Talk to you.
+Got it.
+Bye, bye.
