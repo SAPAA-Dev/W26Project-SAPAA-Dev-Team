@@ -49,6 +49,16 @@ erDiagram
         boolean is_active
     }
 
+    protected_areas["WEB protected_areas"] {
+        bigint id PK
+        text global_id UK "import match key"
+        bigint site_id FK "null until matched"
+        text name
+        text area_type
+        jsonb geometry "GeoJSON MultiPolygon"
+        jsonb label_point "GeoJSON Point"
+    }
+
     ab_counties["WEB ab_counties"] {
         bigint id PK
         text county
@@ -155,6 +165,7 @@ erDiagram
     }
 
     ab_counties |o--o{ sites_pa : "ab_county"
+    sites_pa |o--o{ protected_areas : "site_id"
     sites_pa ||--o{ form_responses : "site_id"
     auth_users |o--o{ form_responses : "user_id"
     form_responses ||--o{ answers : "response_id"
@@ -175,7 +186,7 @@ erDiagram
 
     class auth_users auth
     class luperson shared
-    class sites_pa,ab_counties,form_responses,answers,questions,question_keys,question_options,form_sections,attachments,homepage_image_uploads,S26_pdf_jobs web
+    class sites_pa,protected_areas,ab_counties,form_responses,answers,questions,question_keys,question_options,form_sections,attachments,homepage_image_uploads,S26_pdf_jobs web
 
     %% Other data that the web app reads, not shown as tables:
     %% - Legacy read models sites_report_fnr_test (webapp/app/api/heatmap/route.ts)

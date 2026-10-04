@@ -1280,6 +1280,7 @@ When editing an existing report, previously uploaded images are shown with a loc
 | `attachments` | Photos attached to form responses |
 | `form_sections` | Form section metadata |
 | `ab_counties` | County/region lookup |
+| `protected_areas` | Alberta protected area boundaries from Alberta Open Data (`global_id`, `site_id`, `geometry`, `label_point`). An import script fills it. Signed-in users can only read it |
 
 ### 20.2 Postgres RPC Functions
 

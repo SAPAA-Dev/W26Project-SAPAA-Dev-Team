@@ -90,6 +90,7 @@ The application requires a Supabase project for authentication and database acce
 The application expects the following tables/views in your Supabase database:
 
 - `sites_pa` — Main list of protected sites
+- `protected_areas` — Alberta protected area boundaries and map pins. An import script fills it from Alberta Open Data
 - `answers` — Answers to inspection reports questions
 - `attachments` — holds links to external content types (like Images or iNaturalist)
 - `form_sections` — Inspection section records
