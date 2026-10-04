@@ -23,16 +23,16 @@ describe("Supabase site functions", () => {
           namesite: "Alpha",
           ab_county: 10,
           is_active: true,
-          W26_ab_counties: { county: "County1" },
-          W26_form_responses: [{ created_at: "2025-11-30" }],
+          ab_counties: { county: "County1" },
+          form_responses: [{ created_at: "2025-11-30" }],
         },
         {
           id: 2,
           namesite: "Beta",
           ab_county: null,
           is_active: true,
-          W26_ab_counties: null,
-          W26_form_responses: [],
+          ab_counties: null,
+          form_responses: [],
         },
       ];
 
@@ -69,8 +69,8 @@ describe("Supabase site functions", () => {
           namesite: "Alpha",
           ab_county: 10,
           is_active: true,
-          W26_ab_counties: { county: "County1" },
-          W26_form_responses: [{ created_at: "2025-11-30" }],
+          ab_counties: { county: "County1" },
+          form_responses: [{ created_at: "2025-11-30" }],
         },
       ];
 
@@ -154,9 +154,9 @@ describe("Supabase site functions", () => {
           is_required: true,
           section_id: 6,
           form_question: "Question 1",
-          W26_question_options: [{ option_text: "A" }],
-          W26_question_keys: { formorder: 1 },
-          W26_form_sections: { title: "S1", description: "D1", header: "H1" },
+          question_options: [{ option_text: "A" }],
+          question_keys: { formorder: 1 },
+          form_sections: { title: "S1", description: "D1", header: "H1" },
         },
         {
           id: 2,
@@ -165,9 +165,9 @@ describe("Supabase site functions", () => {
           is_required: false,
           section_id: 6,
           form_question: "Question 2",
-          W26_question_options: [{ option_text: "B" }],
-          W26_question_keys: { formorder: 2 },
-          W26_form_sections: { title: "S1", description: "D1", header: "H1" },
+          question_options: [{ option_text: "B" }],
+          question_keys: { formorder: 2 },
+          form_sections: { title: "S1", description: "D1", header: "H1" },
         },
         {
           id: 3,
@@ -176,9 +176,9 @@ describe("Supabase site functions", () => {
           is_required: null,
           section_id: 7,
           form_question: "Question 3",
-          W26_question_options: [{ option_text: "C" }],
-          W26_question_keys: { formorder: 3 },
-          W26_form_sections: { title: "S2", description: "D2", header: "H2" },
+          question_options: [{ option_text: "C" }],
+          question_keys: { formorder: 3 },
+          form_sections: { title: "S2", description: "D2", header: "H2" },
         },
       ];
 
@@ -192,8 +192,8 @@ describe("Supabase site functions", () => {
       const result = await queries.getQuestionsOnline();
 
       expect(eqFirst).toHaveBeenCalledWith("is_active", true);
-      expect(eqSecond).toHaveBeenCalledWith("W26_question_options.is_active", true);
-      expect(orderMock).toHaveBeenCalledWith("position", { referencedTable: "W26_question_options", ascending: true });
+      expect(eqSecond).toHaveBeenCalledWith("question_options.is_active", true);
+      expect(orderMock).toHaveBeenCalledWith("position", { referencedTable: "question_options", ascending: true });
       expect(result.map((question) => question.is_required)).toEqual([true, false, null]);
     });
 

@@ -52,9 +52,9 @@ interface MainContentProps {
   onExistingAttachmentsChange?: (attachments: ExistingAttachment[]) => void;
 }
 
-// An image already persisted in AWS + W26_attachments
+// An image already persisted in AWS + attachments
 export interface ExistingAttachment {
-  id: number;           // W26_attachments.id - used for metadata updates
+  id: number;           // attachments.id - used for metadata updates
   question_id: number;
   storage_key: string;
   filename: string | null;

@@ -99,7 +99,7 @@ function getLatestInspectionDate(
 export async function uploadSiteInspectionAnswers(batchArray: SupabaseAnswer[]) {
   const supabase = createServerSupabase();
   const { data, error } = await supabase
-    .from('W26_answers')
+    .from('answers')
     .insert(batchArray);
 
   if (error) {
@@ -112,7 +112,7 @@ export async function getQuestionResponseType() {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
-    .from('W26_questions')
+    .from('questions')
     .select('id, obs_value, obs_comm')
     .eq('is_active', true);
 
@@ -131,7 +131,7 @@ export async function getNextFormInspectionNumber() {
   const supabase = createServerSupabase();
   const currentYear = new Date().getFullYear();
   const { data, error } = await supabase
-    .from('W26_form_responses')
+    .from('form_responses')
     .select('inspection_no')
     .like('inspection_no', `${currentYear}-%`)
     .order('inspection_no', { ascending: false })
@@ -168,7 +168,7 @@ export async function addSiteInspectionReport(siteId: number, userId: any, inspe
   const newInspectNo = await getNextFormInspectionNumber();
 
   const { data, error } = await supabase
-    .from('W26_form_responses')
+    .from('form_responses')
     .insert({
       site_id: siteId,
       user_id: userId,
@@ -188,7 +188,7 @@ export async function rollbackSiteInspectionSubmission(responseId: number) {
   const supabase = createServerSupabase();
 
   const { error: attachmentsError } = await supabase
-    .from('W26_attachments')
+    .from('attachments')
     .delete()
     .eq('response_id', responseId);
 
@@ -197,7 +197,7 @@ export async function rollbackSiteInspectionSubmission(responseId: number) {
   }
 
   const { error: answersError } = await supabase
-    .from('W26_answers')
+    .from('answers')
     .delete()
     .eq('response_id', responseId);
 
@@ -206,7 +206,7 @@ export async function rollbackSiteInspectionSubmission(responseId: number) {
   }
 
   const { error: responseError } = await supabase
-    .from('W26_form_responses')
+    .from('form_responses')
     .delete()
     .eq('id', responseId);
 
@@ -219,7 +219,7 @@ export async function setFormResponseActive(responseId: number, isActive: boolea
   const supabase = createServerSupabase();
 
   const { error } = await supabase
-    .from('W26_form_responses')
+    .from('form_responses')
     .update({ is_active: isActive })
     .eq('id', responseId);
 
@@ -239,7 +239,7 @@ export async function getCurrentSiteId(siteName: string) {
   const supabase = await createServerSupabase();
 
   const { data, error } = await supabase
-    .from('W26_sites-pa')
+    .from('sites_pa')
     .select('id')
     .eq('namesite', siteName)
     .single();
@@ -303,7 +303,7 @@ export async function getQuestionsOnline(): Promise<question[]> {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
-    .from('W26_questions')
+    .from('questions')
     .select(`
       id,
       subtext,
@@ -312,19 +312,19 @@ export async function getQuestionsOnline(): Promise<question[]> {
       section_id,
       form_question,
       autofill_key,
-      W26_question_options (
+      question_options (
         option_text
       ),
       formorder,
-      W26_form_sections!W26_questions_section_id_fkey (
+      form_sections!questions_section_id_fkey (
         title,
         description,
         header
       )
     `)
     .eq('is_active', true)
-    .eq('W26_question_options.is_active', true)
-    .order('position', { referencedTable: 'W26_question_options', ascending: true });
+    .eq('question_options.is_active', true)
+    .order('position', { referencedTable: 'question_options', ascending: true });
 
   if (error) {
     throw new Error(error.message || 'Failed to fetch questions');
@@ -338,11 +338,11 @@ export async function getQuestionsOnline(): Promise<question[]> {
     is_required: q.is_required ?? null,
     section: q.section_id,
     autofill_key: q.autofill_key ?? null,
-    answers: q.W26_question_options?.map((opt: any) => opt.option_text) ?? null,
+    answers: q.question_options?.map((opt: any) => opt.option_text) ?? null,
     formorder: q.formorder ?? null,
-    sectionTitle: q.W26_form_sections?.title ?? null,
-    sectionDescription: q.W26_form_sections?.description ?? null,
-    sectionHeader: q.W26_form_sections?.header ?? null,
+    sectionTitle: q.form_sections?.title ?? null,
+    sectionDescription: q.form_sections?.description ?? null,
+    sectionHeader: q.form_sections?.header ?? null,
   }));
 }
 
@@ -362,16 +362,16 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
-    .from('W26_sites-pa')
+    .from('sites_pa')
     .select(`
       id,
       namesite,
       ab_county,
       is_active,
-      W26_ab_counties (
+      ab_counties (
         county
       ),
-      W26_form_responses (
+      form_responses (
         inspection_date,
         created_at
       )
@@ -382,13 +382,13 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
   if (error) throw new Error(error.message || 'Failed to fetch sites');
 
   return (data ?? []).map((site: any, i: number) => {
-    const responses = site.W26_form_responses ?? [];
+    const responses = site.form_responses ?? [];
     const latestDate = getLatestInspectionDate(responses);
 
     return {
       id: site.id,
       namesite: site.namesite,
-      county: site.W26_ab_counties?.county ?? null,
+      county: site.ab_counties?.county ?? null,
       ab_county: site.ab_county ?? null,
       inspectdate: latestDate,
       is_active: site.is_active ?? true,
@@ -400,16 +400,16 @@ export async function getAllSites(): Promise<SiteSummary[]> {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
-    .from('W26_sites-pa')
+    .from('sites_pa')
     .select(`
       id,
       namesite,
       ab_county,
       is_active,
-      W26_ab_counties (
+      ab_counties (
         county
       ),
-      W26_form_responses (
+      form_responses (
         inspection_date,
         created_at
       )
@@ -419,13 +419,13 @@ export async function getAllSites(): Promise<SiteSummary[]> {
   if (error) throw new Error(error.message || 'Failed to fetch sites');
 
   return (data ?? []).map((site: any) => {
-    const responses = site.W26_form_responses ?? [];
+    const responses = site.form_responses ?? [];
     const latestDate = getLatestInspectionDate(responses);
 
     return {
       id: site.id,
       namesite: site.namesite,
-      county: site.W26_ab_counties?.county ?? null,
+      county: site.ab_counties?.county ?? null,
       ab_county: site.ab_county ?? null,
       inspectdate: latestDate,
       is_active: site.is_active ?? true,
@@ -437,7 +437,7 @@ export async function getCounties(): Promise<County[]> {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
-    .from('W26_ab_counties')
+    .from('ab_counties')
     .select('id, county')
     .order('county', { ascending: true });
 
@@ -453,7 +453,7 @@ export async function updateSite(
   const supabase = createServerSupabase();
 
   const { error } = await supabase
-    .from('W26_sites-pa')
+    .from('sites_pa')
     .update({ namesite, ab_county })
     .eq('id', id);
 
@@ -467,7 +467,7 @@ export async function toggleSiteActive(
   const supabase = createServerSupabase();
 
   const { error } = await supabase
-    .from('W26_sites-pa')
+    .from('sites_pa')
     .update({ is_active })
     .eq('id', id);
 
@@ -478,16 +478,16 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
-    .from('W26_sites-pa')
+    .from('sites_pa')
     .select(`
       id,
       namesite,
       ab_county,
       is_active,
-      W26_ab_counties (
+      ab_counties (
         county
       ),
-      W26_form_responses (
+      form_responses (
         inspection_date,
         created_at
       )
@@ -499,13 +499,13 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
   if (error) throw new Error(error.message || 'Failed to fetch site');
 
   return (data ?? []).map((site: any) => {
-    const responses = site.W26_form_responses ?? [];
+    const responses = site.form_responses ?? [];
     const latestDate = getLatestInspectionDate(responses);
 
     return {
       id: site.id,
       namesite: site.namesite,
-      county: site.W26_ab_counties?.county ?? null,
+      county: site.ab_counties?.county ?? null,
       ab_county: site.ab_county ?? null,
       inspectdate: latestDate,
       is_active: site.is_active ?? true,
@@ -556,7 +556,7 @@ export async function insertInspectionAttachments(rows: Array<{
   const supabase = createServerSupabase();  
 
   const { data, error } = await supabase
-    .from('W26_attachments')
+    .from('attachments')
     .insert(rows);
 
   if (error) {
@@ -582,7 +582,7 @@ export async function insertHomepageImageUpload(rows: Array<{
   const supabase = createServerSupabase();  
 
   const { data, error } = await supabase
-    .from('W26_homepage-image-uploads')
+    .from('homepage_image_uploads')
     .insert(rows);
 
   if (error) {
@@ -597,7 +597,7 @@ export async function getReportQuestionKeyMap() {
     keyMapPromise = (async () => {
       const supabase = createServerSupabase();
       const { data, error } = await supabase
-        .from('W26_questions')
+        .from('questions')
         .select('id, "question key"')
         .in('"question key"', ['Q31_Naturalness', 'Q32_Natural_Comm', 'Q13_FirstandLastNameForGuests']);
       if (error) throw new Error(error.message);
@@ -618,11 +618,11 @@ function reduceAnswers(
       if (!acc[qid]) {
         acc[qid] = {
           question_id: qid,
-          question_text: a.W26_questions?.form_question ?? `Question ${qid}`,
+          question_text: a.questions?.form_question ?? `Question ${qid}`,
           obs_value: [],
           obs_comm: null,
-          section_id: a.W26_questions?.section_id ?? null,
-          section_title: a.W26_questions?.W26_form_sections?.title ?? null,
+          section_id: a.questions?.section_id ?? null,
+          section_title: a.questions?.form_sections?.title ?? null,
         };
       }
       if (a.obs_value === 'Other' && a.obs_comm) {
@@ -658,7 +658,7 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
   const supabase = createServerSupabase();
 
   const { data: siteData, error: siteError } = await supabase
-    .from('W26_sites-pa')
+    .from('sites_pa')
     .select('id')
     .eq('namesite', siteName)
     .single();
@@ -673,13 +673,13 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
   };
 
   const { data, error } = await supabase
-    .from('W26_form_responses')
+    .from('form_responses')
     .select(`
       id, user_id, created_at, inspection_date, inspection_no, is_active,
-      W26_answers (
+      answers (
         question_id, obs_value, obs_comm,
-        W26_questions ( id, form_question, section_id,
-          W26_form_sections!W26_questions_section_id_fkey ( id, title ) )
+        questions ( id, form_question, section_id,
+          form_sections!questions_section_id_fkey ( id, title ) )
       )
     `)
     .eq('site_id', siteData.id)
@@ -689,7 +689,7 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
   if (error) throw new Error(error.message || 'Failed to fetch form responses');
 
   return (data ?? []).map((r: any) => {
-    const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.W26_answers, ids);
+    const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.answers, ids);
     return {
       id: r.id,
       user_id: r.user_id ?? null,
@@ -710,7 +710,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
   const supabase = createServerSupabase();
 
   const { data: siteData, error: siteError } = await supabase
-    .from('W26_sites-pa')
+    .from('sites_pa')
     .select('id')
     .eq('namesite', siteName)
     .single();
@@ -725,13 +725,13 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
   };
 
   const { data, error } = await supabase
-    .from('W26_form_responses')
+    .from('form_responses')
     .select(`
       id, user_id, created_at, inspection_date, inspection_no,
-      W26_answers (
+      answers (
         question_id, obs_value, obs_comm,
-        W26_questions ( id, form_question, section_id,
-          W26_form_sections!W26_questions_section_id_fkey ( id, title ) )
+        questions ( id, form_question, section_id,
+          form_sections!questions_section_id_fkey ( id, title ) )
       )
     `)
     .eq('site_id', siteData.id)
@@ -742,7 +742,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
   if (error) throw new Error(error.message || 'Failed to fetch form responses');
 
   return (data ?? []).map((r: any) => {
-    const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.W26_answers, ids);
+    const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.answers, ids);
     return {
       id: r.id,
       user_id: r.user_id ?? null,
@@ -763,12 +763,12 @@ export async function getFormResponseById(responseId: number): Promise<Record<st
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
-    .from('W26_answers')
+    .from('answers')
     .select(`
       question_id,
       obs_value,
       obs_comm,
-      W26_questions (
+      questions (
         question_type
       )
     `)
@@ -780,7 +780,7 @@ export async function getFormResponseById(responseId: number): Promise<Record<st
 
   for (const row of data ?? []) {
     const qid: number = row.question_id;
-    const questionType: string = (row as any).W26_questions?.question_type ?? '';
+    const questionType: string = (row as any).questions?.question_type ?? '';
 
     if (row.obs_value === 'Other' && row.obs_comm) {
       if (!map[qid]) map[qid] = [];
@@ -806,7 +806,7 @@ export async function getFormResponseById(responseId: number): Promise<Record<st
 }
 
 
-// Fetches all W26_attachments rows for a given response_id
+// Fetches all attachments rows for a given response_id
 export async function getAttachmentsByResponseId(responseId: number): Promise<Array<{
   id: number;
   question_id: number | null;
@@ -821,7 +821,7 @@ export async function getAttachmentsByResponseId(responseId: number): Promise<Ar
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
-    .from('W26_attachments')
+    .from('attachments')
     .select('id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier, site_id')
     .eq('response_id', responseId);
 
@@ -829,7 +829,7 @@ export async function getAttachmentsByResponseId(responseId: number): Promise<Ar
   return data ?? [];
 }
 
-// Updates caption and identifier for an existing W26_attachments row
+// Updates caption and identifier for an existing attachments row
 export async function updateAttachmentMetadata(
   attachmentId: number,
   fields: { caption?: string | null; identifier?: string | null }
@@ -837,7 +837,7 @@ export async function updateAttachmentMetadata(
   const supabase = createServerSupabase();
 
   const { error } = await supabase
-    .from('W26_attachments')
+    .from('attachments')
     .update(fields)
     .eq('id', attachmentId);
 
@@ -853,7 +853,7 @@ export async function updateSiteInspectionAnswers(
   const supabase = createServerSupabase();
 
   const { error: updateDateError } = await supabase
-    .from('W26_form_responses')
+    .from('form_responses')
     .update({
       inspection_date: inspectionDate,
     })
@@ -864,7 +864,7 @@ export async function updateSiteInspectionAnswers(
   if (updateDateError) throw new Error(updateDateError.message || 'Failed to clear existing answers');
 
   const { error: deleteError } = await supabase
-    .from('W26_answers')
+    .from('answers')
     .delete()
     .eq('response_id', responseId);
 
@@ -872,7 +872,7 @@ export async function updateSiteInspectionAnswers(
 
   const rows = batchArray.map(a => ({ ...a, response_id: responseId }));
   const { data, error: insertError } = await supabase
-    .from('W26_answers')
+    .from('answers')
     .insert(rows);
 
   if (insertError) throw new Error(insertError.message || 'Failed to reinsert updated answers');
@@ -884,7 +884,7 @@ export async function getResponseOwnerId(responseId: number): Promise<string | n
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
-    .from('W26_form_responses')
+    .from('form_responses')
     .select('user_id')
     .eq('id', responseId)
     .single();
@@ -896,7 +896,7 @@ export async function getResponseOwnerId(responseId: number): Promise<string | n
 export async function getSiteIdForResponse(responseId: number): Promise<number | null> {
   const supabase = createServerSupabase();
   const { data, error } = await supabase
-    .from('W26_form_responses')
+    .from('form_responses')
     .select('site_id')
     .eq('id', responseId)
     .single();
@@ -907,7 +907,7 @@ export async function getSiteIdForResponse(responseId: number): Promise<number |
 export async function getTotalInspectionCount(): Promise<number> {
   const supabase = createServerSupabase();
   const { count, error } = await supabase
-    .from('W26_form_responses')
+    .from('form_responses')
     .select('*', { count: 'exact', head: true });
   if (error) throw new Error(error.message);
   return count ?? 0;
@@ -916,7 +916,7 @@ export async function getTotalInspectionCount(): Promise<number> {
 export async function getLastInspectionDate(): Promise<string | null> {
   const supabase = createServerSupabase();
   const { data, error } = await supabase
-    .from('W26_form_responses')
+    .from('form_responses')
     .select('created_at')
     .order('created_at', { ascending: false })
     .limit(1)
@@ -928,7 +928,7 @@ export async function getLastInspectionDate(): Promise<string | null> {
 export async function getDateOfVisitQuestionId() {
   const supabase = createServerSupabase();
   const { data, error } = await supabase
-    .from('W26_questions')
+    .from('questions')
     .select('id')
     .eq('question key', "Q21_Date_Of_Visit")
     .single();
@@ -959,12 +959,12 @@ export async function getSitesByNames(siteNames: string[]): Promise<Array<{
   id: number;
   namesite: string;
   ab_county: number | null;
-  W26_ab_counties: { county: string } | null;
+  ab_counties: { county: string } | null;
 }>> {
   const supabase = createServerSupabase();
   const { data, error } = await supabase
-    .from('W26_sites-pa')
-    .select('id, namesite, ab_county, W26_ab_counties(county)')
+    .from('sites_pa')
+    .select('id, namesite, ab_county, ab_counties(county)')
     .in('namesite', siteNames)
     .order('namesite', { ascending: true }); 
   if (error) throw new Error(error.message || 'Failed to fetch sites');
@@ -985,13 +985,13 @@ export async function getFormResponsesForSiteIds(
     const to = from + PAGE_SIZE - 1;
     console.log(from, to);
     const { data, error } = await supabase
-      .from('W26_form_responses')
+      .from('form_responses')
       .select(`
         id, site_id, user_id, created_at, inspection_date, inspection_no,
-        W26_answers (
+        answers (
           question_id, obs_value, obs_comm,
-          W26_questions ( id, form_question, section_id,
-            W26_form_sections!W26_questions_section_id_fkey ( id, title ) )
+          questions ( id, form_question, section_id,
+            form_sections!questions_section_id_fkey ( id, title ) )
         )
       `)
       .in('site_id', siteIds)
@@ -1016,7 +1016,7 @@ export async function getFormResponsesForSiteIds(
 
   const bySite = new Map<number, FormResponse[]>();
   for (const r of allRows) {
-    const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.W26_answers, ids);
+    const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.answers, ids);
     const formResponse: FormResponse = {
       id: r.id,
       user_id: r.user_id ?? null,
@@ -1053,7 +1053,7 @@ export async function getAttachmentsForResponseIds(responseIds: number[]): Promi
   for (let i = 0; i < responseIds.length; i += CHUNK) {
     const chunk = responseIds.slice(i, i + CHUNK);
     const { data, error } = await supabase
-      .from('W26_attachments')
+      .from('attachments')
       .select('id, response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier')
       .in('response_id', chunk);
     if (error) throw new Error(error.message || 'Failed to fetch attachments');

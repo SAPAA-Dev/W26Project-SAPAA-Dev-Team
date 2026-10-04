@@ -8,7 +8,7 @@ One Supabase database holds two different inspection systems:
 
 | Client | Tables | Where the code is |
 | --- | --- | --- |
-| Web app | `W26_*` (for example `W26_form_responses`, `W26_answers`, `W26_questions`) | `webapp/utils/supabase/queries.ts` |
+| Web app | `form_responses`, `answers`, `questions`, and the other tables in `webapp/supabase/migrations/` | `webapp/utils/supabase/queries.ts` |
 | Mobile app (StewardLog) | Legacy: `inspectheader`, `inspectdetails`, `inspectquestions`, and `*_fnr_test` tables | `FNR/src/services/` |
 | Google Apps Script | Legacy: `inspectheader`, `inspectdetails`, `inspectquestions`, `inspectqcategory`, `questionmapping` | `googleSheets/code.gs` |
 

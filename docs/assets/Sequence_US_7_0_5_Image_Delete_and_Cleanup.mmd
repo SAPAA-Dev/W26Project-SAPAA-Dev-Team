@@ -46,13 +46,13 @@ sequenceDiagram
     participant Page as Web pages<br/>site page, admin site page,<br/>new-report
     participant Api as Image delete route<br/>(proposed)
     participant Server as Server actions<br/>utils/supabase/queries.ts
-    participant DB as Supabase DB<br/>W26_attachments,<br/>W26_homepage-image-uploads
+    participant DB as Supabase DB<br/>attachments,<br/>homepage_image_uploads
     participant S3 as AWS S3
 
     Note over Admin,S3: Covers US 7.0.5. No image delete exists today, and no code deletes S3 objects.<br/>"(proposed)" = the step is not in the code today.
 
     Note over Admin,S3: Delete an image (AT 1, AT 2, AT 3)
-    Admin->>Page: Open a site gallery. It shows W26_attachments images (/api/sites/[siteId]/gallery)<br/>and W26_homepage-image-uploads images (/api/homepage-images/[siteId]). Both exist.
+    Admin->>Page: Open a site gallery. It shows attachments images (/api/sites/[siteId]/gallery)<br/>and homepage_image_uploads images (/api/homepage-images/[siteId]). Both exist.
     Page->>Page: Show Delete only to Admins (AT 2) (proposed)
     Admin->>Page: Select Delete on an image and confirm (proposed)
     Page->>Api: DELETE with image kind (inspection attachment<br/>or homepage upload) and image id (proposed)
@@ -60,7 +60,7 @@ sequenceDiagram
     alt Caller is not Admin (AT 2)
         Api-->>Page: 403. Nothing is deleted
     else Caller is Admin
-        Api->>DB: Read storage_key from the table of that image kind:<br/>W26_attachments or W26_homepage-image-uploads
+        Api->>DB: Read storage_key from the table of that image kind:<br/>attachments or homepage_image_uploads
         DB-->>Api: storage_key
         Api->>S3: DeleteObject(storage_key) (AT 3)
         alt S3 delete fails
@@ -78,7 +78,7 @@ sequenceDiagram
     Note over Admin,S3: Deactivate a SIR (AT 4): this exists and keeps the files
     Admin->>Page: Deactivate a SIR on the admin site page
     Page->>Server: setFormResponseActive(responseId, false)
-    Server->>DB: Set is_active false on W26_form_responses
+    Server->>DB: Set is_active false on form_responses
     Note over Server,S3: Attachment rows and S3 files stay, so reactivation restores the photos.
 
     Note over Admin,S3: Failed SIR submission (AT 5)

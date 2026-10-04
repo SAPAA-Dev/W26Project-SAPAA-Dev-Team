@@ -52,7 +52,7 @@ sequenceDiagram
     Steward->>Edit: Open own SIR from the site page and select Edit
     Edit->>Server: getResponseOwnerId(responseId)
     Server->>Server: Check session and approved account (proposed)
-    Server->>DB: Read user_id of W26_form_responses row
+    Server->>DB: Read user_id of form_responses row
     DB-->>Server: Owner id
     Server-->>Edit: Owner id
     Edit->>Auth: getUser()
@@ -63,7 +63,7 @@ sequenceDiagram
     else Caller is the owner
         Edit->>Server: getFormResponseById(responseId)
         Server->>Server: Same session check (proposed)
-        Server->>DB: Read W26_answers
+        Server->>DB: Read answers
         DB-->>Server: Answers
         Server-->>Edit: Answers
         Edit-->>Steward: Show SIR in edit mode (AT 1)
@@ -79,8 +79,8 @@ sequenceDiagram
                 Server-->>Edit: Refuse. No change (proposed)
             else Caller owns the SIR
                 Server->>DB: Update inspection_date
-                Server->>DB: Delete old W26_answers
-                Server->>DB: Insert new W26_answers
+                Server->>DB: Delete old answers
+                Server->>DB: Insert new answers
                 DB-->>Server: Saved
                 Server-->>Edit: Success
                 Edit-->>Steward: Go to /sites?edited=true
@@ -89,5 +89,5 @@ sequenceDiagram
     end
 
     Note over Edit,DB: Today the server action has no ownership check. It uses createServerSupabase,<br/>which bypasses RLS. Delete and insert are not in one transaction:<br/>a failed insert leaves the SIR with no answers.
-    Note over Edit,DB: AT 4: the site page, admin site page and PDF export read W26_answers,<br/>so they show the new answers. New photos use the new-report upload flow (not shown).
+    Note over Edit,DB: AT 4: the site page, admin site page and PDF export read answers,<br/>so they show the new answers. New photos use the new-report upload flow (not shown).
     Note over Steward,DB: Open question: can an Admin edit any SIR? The page allows it today (client check).<br/>The proposed server check allows the owner only, unless the team decides otherwise.

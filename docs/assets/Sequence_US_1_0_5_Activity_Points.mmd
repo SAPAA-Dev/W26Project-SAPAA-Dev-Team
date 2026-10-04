@@ -46,7 +46,7 @@ sequenceDiagram
     participant Server as Server actions<br/>utils/supabase/queries.ts
     participant Points as ActivityPointsService<br/>(proposed)
     participant Profile as ProfileService<br/>(proposed)
-    participant DB as Supabase DB<br/>W26_activity_points,<br/>W26_activity_point_values (proposed)
+    participant DB as Supabase DB<br/>activity_points,<br/>activity_point_values (proposed)
 
     Note over Steward,DB: Covers US 1.0.5. No points exist in the code today.<br/>"(proposed)" = the step is not in the code today.
 
@@ -59,9 +59,9 @@ sequenceDiagram
     else Submission succeeds
         Page->>Points: awardActivityPoints('sir_submitted', responseId) (proposed)
         Points->>Points: Read the caller from the session
-        Points->>DB: Read W26_form_responses row. Check user_id is the caller. Get site_id
-        Points->>DB: Read points for this Site and activity from W26_activity_point_values
-        Points->>DB: Insert one row in W26_activity_points<br/>(unique on activity and source id, so a retry does not add twice)
+        Points->>DB: Read form_responses row. Check user_id is the caller. Get site_id
+        Points->>DB: Read points for this Site and activity from activity_point_values
+        Points->>DB: Insert one row in activity_points<br/>(unique on activity and source id, so a retry does not add twice)
         Page-->>Steward: SIR saved
     end
 
@@ -69,15 +69,15 @@ sequenceDiagram
     Steward->>Page: Choose a photo for a Site in UploadImages
     Page->>Page: POST /api/s3/presign-homepage-images, then PUT the file to S3 (exists)
     Page->>Server: insertHomepageImageUpload(rows) (exists)
-    Server->>DB: Insert W26_homepage-image-uploads row (exists)
+    Server->>DB: Insert homepage_image_uploads row (exists)
     Server->>Points: awardActivityPoints('photo_uploaded', uploadId) (proposed)
-    Points->>DB: Check the upload row belongs to the caller, then insert one row in W26_activity_points
+    Points->>DB: Check the upload row belongs to the caller, then insert one row in activity_points
 
     Note over Steward,DB: Show the total (AT 3)
     Steward->>Page: Open my profile
     Page->>Profile: getStewardProfile(userId) (proposed)
     Profile->>Points: getActivityPointsTotal(userId) (proposed)
-    Points->>DB: Sum points in W26_activity_points for the user
+    Points->>DB: Sum points in activity_points for the user
     DB-->>Points: Total
     Points-->>Profile: Total
     Profile-->>Page: Profile with the total

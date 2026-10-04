@@ -306,7 +306,7 @@ export default function EditReportPage() {
   const getSiteId = async (): Promise<number | null> => {
     const supabase = createClient();
     const { data, error } = await supabase
-      .from('W26_form_responses')
+      .from('form_responses')
       .select('site_id')
       .eq('id', responseId)
       .single();
@@ -396,7 +396,7 @@ export default function EditReportPage() {
       for (const [questionId, answer] of Object.entries(responses)) {
         if (questionId.includes('_comm')) continue;
 
-        // Skip image question responses - those are handled separately via W26_attachments
+        // Skip image question responses - those are handled separately via attachments
         const question = questions.find((q) => q.id === Number(questionId));
         if (question?.question_type.trim() === 'image') continue;
 

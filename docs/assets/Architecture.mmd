@@ -29,7 +29,7 @@ flowchart TB
     subgraph DataLayer["3. Data and storage layer"]
         subgraph Supabase["Supabase"]
             Auth["Supabase Auth<br/>sessions and OAuth sign-in"]
-            Database[("PostgreSQL<br/>W26_* and S26_* tables: web app<br/>legacy tables: mobile app and Sheets")]
+            Database[("PostgreSQL<br/>web app tables<br/>legacy tables: mobile app and Sheets")]
             Edge["Edge Functions add-user, delete-user<br/>source is not in this repository"]
         end
         S3[("AWS S3 bucket, ca-central-1<br/>inspection photos and PDF files")]

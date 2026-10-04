@@ -329,8 +329,8 @@ describe('fetchReportData', () => {
   
   it('fetches multiple sites for multi-site mode', async () => {
     mockGetSitesByNames.mockResolvedValue([
-      { id: 1, namesite: 'Site A', ab_county: null, W26_ab_counties: { county: 'County 1' } },
-      { id: 2, namesite: 'Site B', ab_county: null, W26_ab_counties: { county: 'County 2' } },
+      { id: 1, namesite: 'Site A', ab_county: null, ab_counties: { county: 'County 1' } },
+      { id: 2, namesite: 'Site B', ab_county: null, ab_counties: { county: 'County 2' } },
     ]);
 
     const bySite = new Map();
@@ -386,7 +386,7 @@ describe('fetchReportData', () => {
       })
       // Second call: get site info
       .mockResolvedValueOnce({
-        data: { namesite: 'Elk Island', W26_ab_counties: { county: 'Strathcona' } },
+        data: { namesite: 'Elk Island', ab_counties: { county: 'Strathcona' } },
         error: null,
       });
 

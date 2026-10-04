@@ -166,13 +166,13 @@ describe("GET /api/sites/[siteId]/gallery", () => {
     });
 
     mockFrom.mockImplementation((table: string) => {
-      if (table === "W26_attachments") {
+      if (table === "attachments") {
         return {
           select: attachmentsSelectMock,
         };
       }
 
-      if (table === "W26_sites-pa") {
+      if (table === "sites_pa") {
         return {
           select: siteSelectMock,
         };
@@ -193,8 +193,8 @@ describe("GET /api/sites/[siteId]/gallery", () => {
 
     expect(response.status).toBe(200);
 
-    expect(mockFrom).toHaveBeenCalledWith("W26_attachments");
-    expect(mockFrom).toHaveBeenCalledWith("W26_sites-pa");
+    expect(mockFrom).toHaveBeenCalledWith("attachments");
+    expect(mockFrom).toHaveBeenCalledWith("sites_pa");
 
     expect(attachmentsEqMock).toHaveBeenCalledWith("site_id", 207);
     expect(attachmentsInMock).toHaveBeenCalledWith("content_type", [
@@ -297,13 +297,13 @@ describe("GET /api/sites/[siteId]/gallery", () => {
     });
 
     mockFrom.mockImplementation((table: string) => {
-      if (table === "W26_attachments") {
+      if (table === "attachments") {
         return {
           select: attachmentsSelectMock,
         };
       }
 
-      if (table === "W26_sites-pa") {
+      if (table === "sites_pa") {
         return {
           select: siteSelectMock,
         };
@@ -364,7 +364,7 @@ describe("GET /api/sites/[siteId]/gallery", () => {
     });
 
     mockFrom.mockImplementation((table: string) => {
-      if (table === "W26_attachments") {
+      if (table === "attachments") {
         return {
           select: attachmentsSelectMock,
         };
@@ -438,13 +438,13 @@ describe("GET /api/sites/[siteId]/gallery", () => {
     });
 
     mockFrom.mockImplementation((table: string) => {
-      if (table === "W26_attachments") {
+      if (table === "attachments") {
         return {
           select: attachmentsSelectMock,
         };
       }
 
-      if (table === "W26_sites-pa") {
+      if (table === "sites_pa") {
         return {
           select: siteSelectMock,
         };

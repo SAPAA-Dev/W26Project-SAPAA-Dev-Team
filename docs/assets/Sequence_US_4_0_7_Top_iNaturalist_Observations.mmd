@@ -44,7 +44,7 @@ sequenceDiagram
     actor Steward
     participant Page as Site page<br/>app/detail/[namesite],<br/>SiteObservationsPanel (proposed)
     participant Server as Server actions<br/>SiteQueries
-    participant DB as Supabase DB<br/>W26_sites-pa
+    participant DB as Supabase DB<br/>sites_pa
     participant INat as iNaturalist API<br/>api.inaturalist.org
 
     Note over Steward,INat: Covers US 4.0.7. No iNaturalist call exists in the code today.<br/>"(proposed)" = the step is not in the code today.
@@ -56,7 +56,7 @@ sequenceDiagram
         Server-->>Page: Refuse (401)
         Page-->>Steward: Go to /login
     else Access allowed
-        Server->>DB: Read W26_sites-pa row
+        Server->>DB: Read sites_pa row
         DB-->>Server: Site row with boundary
         Server-->>Page: Site with boundary
         Page->>INat: GET /v1/observations with the bounding box of the boundary,<br/>order_by=(popularity measure), per_page=5 (proposed)

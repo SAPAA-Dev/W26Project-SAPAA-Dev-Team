@@ -67,7 +67,7 @@ sequenceDiagram
         Actions-->>Profile: Refuse (401)
         Profile-->>Steward: Go to /login
     else Access allowed
-        Actions->>DB: Read name, contact info, skills, focus areas<br/>from W26_profiles (proposed)
+        Actions->>DB: Read name, contact info, skills, focus areas<br/>from profiles (proposed)
         activate DB
         DB-->>Actions: Profile row or no row
         deactivate DB
@@ -75,7 +75,7 @@ sequenceDiagram
             Actions-->>Profile: Not found (404)
             Profile-->>Steward: Show "Profile not found"
         else Profile found
-            Actions->>DB: Read active W26_form_responses of user_id<br/>with W26_sites-pa name and inspection_date
+            Actions->>DB: Read active form_responses of user_id<br/>with sites_pa name and inspection_date
             activate DB
             DB-->>Actions: SIR list (1.0.3 AT1)
             deactivate DB
@@ -93,11 +93,11 @@ sequenceDiagram
         Pages->>Actions: getFormResponsesBySite(namesite) (exists)
         activate Actions
         Actions->>Actions: Same session check as above (Proposed)
-        Actions->>DB: Read W26_form_responses and W26_answers
+        Actions->>DB: Read form_responses and answers
         activate DB
         DB-->>Actions: SIR answers
         deactivate DB
-        Actions->>Actions: Remove answers listed in<br/>W26_profile_hidden_questions (Proposed)
+        Actions->>Actions: Remove answers listed in<br/>profile_hidden_questions (Proposed)
         Actions-->>Pages: Visible answers only
         deactivate Actions
         Pages-->>Steward: Show the SIR

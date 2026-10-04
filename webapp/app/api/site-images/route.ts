@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 
     // Build Supabase query - filter by whichever params were provided
     let query = supabase
-      .from("W26_attachments")
+      .from("attachments")
       .select(
         "id, response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier, site_id"
       );

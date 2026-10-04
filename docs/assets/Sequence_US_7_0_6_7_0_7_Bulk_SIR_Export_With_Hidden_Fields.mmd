@@ -45,7 +45,7 @@ sequenceDiagram
     participant Page as Admin reports page<br/>PdfExportModal
     participant Api as API route<br/>/api/pdf
     participant Job as Background job<br/>processPdfJob, fetchReportData
-    participant DB as Supabase DB<br/>S26_pdf_jobs, W26_answers
+    participant DB as Supabase DB<br/>S26_pdf_jobs, answers
     participant S3 as AWS S3
 
     Note over Admin,S3: Covers US 7.0.6 and 7.0.7. The PDF job flow exists. The code has no fixed limit of 50 SIRs.<br/>"(proposed)" = the step is not in the code today.

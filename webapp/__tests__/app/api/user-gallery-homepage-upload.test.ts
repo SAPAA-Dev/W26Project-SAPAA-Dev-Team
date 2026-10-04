@@ -81,7 +81,7 @@ jest.mock("next/server", () => ({
       });
   
       mockFrom.mockImplementation((table: string) => {
-        if (table === "W26_homepage-image-uploads") {
+        if (table === "homepage_image_uploads") {
           return {
             select: uploadsSelectMock,
           };
@@ -121,12 +121,12 @@ jest.mock("next/server", () => ({
       });
   
       mockFrom.mockImplementation((table: string) => {
-        if (table === "W26_homepage-image-uploads") {
+        if (table === "homepage_image_uploads") {
           return {
             select: uploadsSelectMock,
           };
         }
-        if (table === "W26_sites-pa") {
+        if (table === "sites_pa") {
           return {
             select: sitesSelectMock,
           };
@@ -181,12 +181,12 @@ jest.mock("next/server", () => ({
       });
   
       mockFrom.mockImplementation((table: string) => {
-        if (table === "W26_homepage-image-uploads") {
+        if (table === "homepage_image_uploads") {
           return {
             select: uploadsSelectMock,
           };
         }
-        if (table === "W26_sites-pa") {
+        if (table === "sites_pa") {
           return {
             select: sitesSelectMock,
           };
@@ -271,12 +271,12 @@ jest.mock("next/server", () => ({
       });
   
       mockFrom.mockImplementation((table: string) => {
-        if (table === "W26_homepage-image-uploads") {
+        if (table === "homepage_image_uploads") {
           return {
             select: uploadsSelectMock,
           };
         }
-        if (table === "W26_sites-pa") {
+        if (table === "sites_pa") {
           return {
             select: sitesSelectMock,
           };

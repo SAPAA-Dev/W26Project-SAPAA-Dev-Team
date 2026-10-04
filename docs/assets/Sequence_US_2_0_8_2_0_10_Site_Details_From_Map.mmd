@@ -56,7 +56,7 @@ sequenceDiagram
     activate Actions
     Actions->>Actions: Check session and approved account (Proposed)
     Note right of Actions: Missing today: no access check.<br/>createServerSupabase bypasses RLS.
-    Actions->>DB: Read W26_sites-pa where is_active,<br/>with W26_ab_counties and W26_form_responses dates
+    Actions->>DB: Read sites_pa where is_active,<br/>with ab_counties and form_responses dates
     activate DB
     DB-->>Actions: Site row or no row
     deactivate DB
@@ -78,7 +78,7 @@ sequenceDiagram
         Site->>Actions: getFormResponsesBySite(namesite) (exists)
         activate Actions
         Actions->>Actions: Same session check as above (Proposed)
-        Actions->>DB: Read active W26_form_responses and W26_answers
+        Actions->>DB: Read active form_responses and answers
         activate DB
         DB-->>Actions: Past SIRs
         deactivate DB

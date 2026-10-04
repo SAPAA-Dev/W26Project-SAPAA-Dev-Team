@@ -44,7 +44,7 @@ sequenceDiagram
     actor Admin
     participant Page as Admin site page<br/>SIR list
     participant Server as Server actions<br/>InspectionQueries
-    participant DB as Supabase DB<br/>W26_form_responses, W26_answers,<br/>W26_attachments
+    participant DB as Supabase DB<br/>form_responses, answers,<br/>attachments
     participant S3 as AWS S3
 
     Note over Admin,S3: Covers US 7.0.8. Deactivate exists (setFormResponseActive). Delete does not.<br/>"(proposed)" = the step is not in the code today.
@@ -58,7 +58,7 @@ sequenceDiagram
         Server-->>Page: Refused. The SIR stays unchanged
         Note over Admin,Server: A Steward who sends the request directly is refused the same way
     else Caller is Admin
-        Server->>DB: Read storage_key of each W26_attachments row of the SIR
+        Server->>DB: Read storage_key of each attachments row of the SIR
         Server->>DB: One transaction (database function, proposed):<br/>delete attachments, answers, then the response
         alt Transaction fails (AT 5)
             DB-->>Server: Error. Rollback

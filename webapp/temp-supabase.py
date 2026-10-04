@@ -69,7 +69,7 @@ for i in rows:
         naturalness_details = i['naturalness_details']
         naturalness_score = i['naturalness_score']
 
-        match_sitename = supabase.table("W26_sites-pa").select("*").eq("namesite", sitename).execute()
+        match_sitename = supabase.table("sites_pa").select("*").eq("namesite", sitename).execute()
         if not match_sitename.data:
             print(f"No site found for: {sitename}, skipping.")
             continue
@@ -81,9 +81,9 @@ for i in rows:
         print(site_id)
         print("Date: ", inspectdate)
 
-        # --- Insert into W26_form_responses (upsert to avoid duplicates on re-run) ---
+        # --- Insert into form_responses (upsert to avoid duplicates on re-run) ---
         
-        response_insert = supabase.table("W26_form_responses").upsert({
+        response_insert = supabase.table("form_responses").upsert({
             "site_id": site_id,
             "user_id": None,
             "inspection_no": inspectno,
@@ -98,7 +98,7 @@ for i in rows:
         
         if match_other_stuff:
             if match_other_stuff["email-inspect"]: 
-                supabase.table("W26_answers").insert({
+                supabase.table("answers").insert({
                     "response_id": response_id,
                     "question_id": 32,
                     "obs_value": None,
@@ -106,7 +106,7 @@ for i in rows:
                 }).execute()
             
             if match_other_stuff["steward"]:
-                supabase.table("W26_answers").insert({
+                supabase.table("answers").insert({
                     "response_id": response_id,
                     "question_id": 33,
                     "obs_value": match_other_stuff["steward"],
@@ -114,7 +114,7 @@ for i in rows:
                 }).execute()
             
             if match_other_stuff["steward-guest"]: 
-                supabase.table("W26_answers").insert({
+                supabase.table("answers").insert({
                     "response_id": response_id,
                     "question_id": 34,
                     "obs_value": None,
@@ -122,7 +122,7 @@ for i in rows:
                 }).execute()
                 
             if match_other_stuff["steward-phone"]:
-                supabase.table("W26_answers").insert({
+                supabase.table("answers").insert({
                     "response_id": response_id,
                     "question_id": 35,
                     "obs_value": None,
@@ -130,7 +130,7 @@ for i in rows:
                 }).execute()
             
             if match_other_stuff["q16-sapaa-member"]:
-                supabase.table("W26_answers").insert({
+                supabase.table("answers").insert({
                     "response_id": response_id,
                     "question_id": 36,
                     "obs_value": match_other_stuff["q16-sapaa-member"],
@@ -138,7 +138,7 @@ for i in rows:
                 }).execute()
             
             if match_other_stuff["q22-pasitename"]:
-                supabase.table("W26_answers").insert({
+                supabase.table("answers").insert({
                     "response_id": response_id,
                     "question_id": 38,
                     "obs_value": match_other_stuff["q22-pasitename"],
@@ -146,7 +146,7 @@ for i in rows:
                 }).execute()
             
             if match_other_stuff["q23-pasite-parcel"]:
-                supabase.table("W26_answers").insert({
+                supabase.table("answers").insert({
                     "response_id": response_id,
                     "question_id": 47,
                     "obs_value": None,
@@ -154,7 +154,7 @@ for i in rows:
                 }).execute()
                 
             if match_other_stuff["steward-type"]:
-                supabase.table("W26_answers").insert({
+                supabase.table("answers").insert({
                     "response_id": response_id,
                     "question_id": 39,
                     "obs_value": match_other_stuff["steward-type"],
@@ -162,7 +162,7 @@ for i in rows:
                 }).execute()
         
         if naturalness_score:
-            supabase.table("W26_answers").insert({
+            supabase.table("answers").insert({
                 "response_id": response_id,
                 "question_id": 1,
                 "obs_value": naturalness_score,
@@ -170,7 +170,7 @@ for i in rows:
             }).execute()
 
             if naturalness_details:
-                supabase.table("W26_answers").insert({
+                supabase.table("answers").insert({
                     "response_id": response_id,
                     "question_id": 2,
                     "obs_value": None,
@@ -191,7 +191,7 @@ for i in rows:
             question_code = question_code.strip()
             answer = answer.strip().strip(';').strip()
 
-            match = supabase.table("W26_questions").select("*").eq("question key", question_code).execute()
+            match = supabase.table("questions").select("*").eq("question key", question_code).execute()
 
             if not match.data:
                 print(f"NO MATCH for: {question_code}")
@@ -210,7 +210,7 @@ for i in rows:
 
             if q['obs_value'] and answer:
                 # Fetch known valid options for this question
-                options_match = supabase.table("W26_question_options")\
+                options_match = supabase.table("question_options")\
                     .select("option_text")\
                     .eq("question_id", question_id)\
                     .execute()
@@ -251,11 +251,11 @@ for i in rows:
                 print(f"Comment: {answer}")
             print()
 
-            # --- Insert into W26_answers ---
+            # --- Insert into answers ---
             if obs_value_out:
                 if selected_options:
                     for option in selected_options:
-                        supabase.table("W26_answers").insert({
+                        supabase.table("answers").insert({
                             "response_id": response_id,
                             "question_id": question_id,
                             "obs_value": option,
@@ -264,14 +264,14 @@ for i in rows:
             
             if obs_comm_out:
                 if other_text: 
-                    supabase.table("W26_answers").insert({
+                    supabase.table("answers").insert({
                         "response_id": response_id,
                         "question_id": question_id,
                         "obs_value": "Other",
                         "obs_comm": obs_comm_out,  
                     }).execute()
                 else:
-                    supabase.table("W26_answers").insert({
+                    supabase.table("answers").insert({
                         "response_id": response_id,
                         "question_id": question_id,
                         "obs_value": obs_value_out,
@@ -279,7 +279,7 @@ for i in rows:
                     }).execute()
             
             if obs_value_out is None and obs_comm_out is None:
-                supabase.table("W26_answers").insert({
+                supabase.table("answers").insert({
                     "response_id": response_id,
                     "question_id": question_id,
                     "obs_value": obs_value_out,

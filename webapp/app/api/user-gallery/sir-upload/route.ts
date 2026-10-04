@@ -52,7 +52,7 @@ export async function GET() {
     const role = user.user_metadata?.role;
     
   const { data: attachments, error: attachmentsError } = await supabase
-    .from("W26_attachments")
+    .from("attachments")
     .select(`
       id,
       response_id,
@@ -83,7 +83,7 @@ export async function GET() {
     ];
 
     const { data: sites, error: sitesError } = await supabase
-      .from("W26_sites-pa")
+      .from("sites_pa")
       .select("id, namesite")
       .in("id", siteIds);
 

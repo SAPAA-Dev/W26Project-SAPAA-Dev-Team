@@ -23,7 +23,7 @@ Consistency is critical. Every page must follow the patterns described here so t
 |---|---|
 | Framework | Next.js (App Router, TypeScript) |
 | Styling | Tailwind CSS - utility-first, inline class names only |
-| Database | Supabase (PostgreSQL) - tables prefixed `W26_` |
+| Database | Supabase (PostgreSQL) |
 | Auth | Supabase Auth with `ProtectedRoute` wrapper |
 | Drag and Drop | `@dnd-kit/core` + `@dnd-kit/sortable` |
 | Maps | Leaflet (SSR-guarded with mounted state) |
@@ -1240,7 +1240,7 @@ When editing an existing report, previously uploaded images are shown with a loc
 2. `LocalImageEntry` objects created with preview URLs
 3. User fills caption, identifier, photographer, date per image
 4. On form submission, presigned URLs fetched from `/api/s3/presign` (SIR route)
-5. Files PUT to S3, then metadata saved to `W26_attachments` table
+5. Files PUT to S3, then metadata saved to `attachments` table
 6. In edit mode, existing attachments shown as locked alongside new uploads
 
 ### 19.3 Key Differences Between Upload Contexts
@@ -1252,7 +1252,7 @@ When editing an existing report, previously uploaded images are shown with a loc
 | Layout | Full-screen modal with carousel | Inline two-column grid |
 | Site selection | Searchable dropdown | Inherited from current site |
 | S3 route | `/api/s3/presign-homepage-images` | `/api/s3/presign` |
-| DB write | `insertHomepageImageUpload` (function) | `W26_attachments` (table) |
+| DB write | `insertHomepageImageUpload` (function) | `attachments` (table) |
 | Edit behaviour | N/A (upload only) | Locked previous + new uploads |
 | File types | JPEG, PNG, HEIC | PNG, JPG, WEBP (10MB limit) |
 
@@ -1268,18 +1268,18 @@ When editing an existing report, previously uploaded images are shown with a loc
 
 ## 20. Database and Data Layer
 
-### 20.1 Active Tables (W26_ prefix)
+### 20.1 Active Tables
 
 | Table | Purpose |
 |---|---|
-| `W26_form_responses` | Inspection form submissions - primary data table |
-| `W26_answers` | Individual question answers (`obs_value`, `question_id`, `response_id`) |
-| `W26_questions` | Form question definitions (`form_question`, `question key`, `question_type`) |
-| `W26_question_options` | Answer options for radio/checkbox questions |
-| `W26_sites-pa` | Protected area site records (`namesite`, `is_active`, `id`) |
-| `W26_attachments` | Photos attached to form responses |
-| `W26_form_sections` | Form section metadata |
-| `W26_ab_counties` | County/region lookup |
+| `form_responses` | Inspection form submissions - primary data table |
+| `answers` | Individual question answers (`obs_value`, `question_id`, `response_id`) |
+| `questions` | Form question definitions (`form_question`, `question key`, `question_type`) |
+| `question_options` | Answer options for radio/checkbox questions |
+| `sites_pa` | Protected area site records (`namesite`, `is_active`, `id`) |
+| `attachments` | Photos attached to form responses |
+| `form_sections` | Form section metadata |
+| `ab_counties` | County/region lookup |
 
 ### 20.2 Postgres RPC Functions
 
@@ -1287,8 +1287,8 @@ Aggregate queries are implemented as Supabase RPC functions to avoid complex cli
 
 | Function | Description |
 |---|---|
-| `get_naturalness_distribution()` | Returns normalised naturalness score buckets with counts from `W26_answers` |
-| `get_top_sites_distribution()` | Returns top 5 active sites by inspection count from `W26_form_responses` and `W26_sites-pa` |
+| `get_naturalness_distribution()` | Returns normalised naturalness score buckets with counts from `answers` |
+| `get_top_sites_distribution()` | Returns top 5 active sites by inspection count from `form_responses` and `sites_pa` |
 
 ### 20.3 Naturalness Score Normalisation
 
@@ -1600,7 +1600,7 @@ The following files contain significant responsive design implementation:
 - Build the header using a green-banner pattern with page-appropriate variant (standard site-detail header, admin header with `AdminNavBar`, or compact report header).
 - Close the header `div` before opening the main content `div`.
 - Use the large icon stats card style (Section 9.1) for all new admin stats.
-- Prefer `W26_` tables for new work; do not add new dependencies on legacy `sites_*` tables.
+- Prefer the web app tables in Section 20.1 for new work; do not add new dependencies on legacy `sites_*` tables.
 - Add `data-testid` to all interactive elements.
 - Do not use `hidden md:flex` on text that tests must find.
 - Wrap Leaflet maps in a mounted guard (Section 15.3).

@@ -23,16 +23,16 @@ describe("Supabase disable site functions", () => {
           namesite: "Active Site",
           ab_county: 10,
           is_active: true,
-          W26_ab_counties: { county: "County1" },
-          W26_form_responses: [{ created_at: "2025-11-30" }],
+          ab_counties: { county: "County1" },
+          form_responses: [{ created_at: "2025-11-30" }],
         },
         {
           id: 2,
           namesite: "Inactive Site",
           ab_county: null,
           is_active: false,
-          W26_ab_counties: null,
-          W26_form_responses: [],
+          ab_counties: null,
+          form_responses: [],
         },
       ];
 
@@ -66,7 +66,7 @@ describe("Supabase disable site functions", () => {
       mockFrom.mockReturnValueOnce({ update: mockUpdate });
 
       await expect(queries.toggleSiteActive(1, false)).resolves.toBeUndefined();
-      expect(mockFrom).toHaveBeenCalledWith("W26_sites-pa");
+      expect(mockFrom).toHaveBeenCalledWith("sites_pa");
       expect(mockUpdate).toHaveBeenCalledWith({ is_active: false });
       expect(mockEq).toHaveBeenCalledWith("id", 1);
     });

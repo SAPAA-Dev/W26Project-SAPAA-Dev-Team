@@ -45,12 +45,12 @@ sequenceDiagram
     actor Steward
     participant Loader as Geometry load job<br/>loadGeometriesFromKml (proposed)
     participant KML as Alberta government KML<br/>(same source as website)
-    participant DB as Supabase DB<br/>W26_sites-pa, W26_kml_sites
+    participant DB as Supabase DB<br/>sites_pa, kml_sites
     participant Pages as Map and admin pages
     participant Geo as /api/geocode route
     participant OC as OpenCage API
 
-    Note over Admin,OC: Covers US 6.0.1. W26_sites-pa has no geometry columns today.<br/>"(proposed)" = the step is not in the code today.<br/>Open question: load the KML into a table or read the file each time. W26_kml_sites is the proposed option.
+    Note over Admin,OC: Covers US 6.0.1. sites_pa has no geometry columns today.<br/>"(proposed)" = the step is not in the code today.<br/>Open question: load the KML into a table or read the file each time. kml_sites is the proposed option.
 
     Admin->>Loader: Start geometry load (proposed)
     Loader->>Loader: Check caller is Admin from a trusted role source, store not decided (proposed)
@@ -59,8 +59,8 @@ sequenceDiagram
     else Caller is Admin
         Loader->>KML: Download KML file
         KML-->>Loader: Placemarks with boundaries
-        Loader->>DB: Store every placemark in W26_kml_sites:<br/>source_feature_id, name, boundary, loaded_at (proposed)
-        Loader->>DB: Read active W26_sites-pa rows
+        Loader->>DB: Store every placemark in kml_sites:<br/>source_feature_id, name, boundary, loaded_at (proposed)
+        Loader->>DB: Read active sites_pa rows
         DB-->>Loader: Active sites
         loop Each active site
             Loader->>Loader: Match site name to a placemark
@@ -73,7 +73,7 @@ sequenceDiagram
         Loader-->>Admin: Report matched and unmatched counts
     end
     Admin->>Pages: Open unmatched sites list (proposed)
-    Pages->>DB: Read active W26_sites-pa rows<br/>where source_feature_id IS NULL
+    Pages->>DB: Read active sites_pa rows<br/>where source_feature_id IS NULL
     DB-->>Pages: Unmatched sites (the AT 3 list)
     Pages-->>Admin: Show sites for an Admin to fix
 

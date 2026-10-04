@@ -66,7 +66,7 @@ describe("Supabase edit site functions", () => {
       mockUpdate.mockReturnValue({ eq: mockEq });
 
       await expect(queries.updateSite(1, "New Name", 5)).resolves.toBeUndefined();
-      expect(mockFrom).toHaveBeenCalledWith("W26_sites-pa");
+      expect(mockFrom).toHaveBeenCalledWith("sites_pa");
       expect(mockUpdate).toHaveBeenCalledWith({ namesite: "New Name", ab_county: 5 });
       expect(mockEq).toHaveBeenCalledWith("id", 1);
     });

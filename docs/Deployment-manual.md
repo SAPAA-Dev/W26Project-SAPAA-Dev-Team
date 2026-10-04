@@ -89,12 +89,12 @@ The application requires a Supabase project for authentication and database acce
 
 The application expects the following tables/views in your Supabase database:
 
-- `W26_sites-pa` — Main list of protected sites
-- `W26_answers` — Answers to inspection reports questions
-- `W26_attachments` — holds links to external content types (like Images or iNaturalist)
-- `W26_form_sections` — Inspection section records
-- `W26_form_responses` — Inspection detail records
-- `W26_questions` — Inspection question definitions
+- `sites_pa` — Main list of protected sites
+- `answers` — Answers to inspection reports questions
+- `attachments` — holds links to external content types (like Images or iNaturalist)
+- `form_sections` — Inspection section records
+- `form_responses` — Inspection detail records
+- `questions` — Inspection question definitions
 
 ---
 
@@ -335,7 +335,7 @@ After deployment, your app will be available at `https://your-project-name.verce
 1. Log into your Supabase Dashboard
 2. Go to **SQL Editor**
 3. Run the SQL scripts provided by your development team to create the required tables and views:
-    - Tables: `W26_sites-pa`, `W26_answers`, `W26_attachments`, `W26_form_sections`, `W26_form_responses`, `W26_questions`
+    - Tables: `sites_pa`, `answers`, `attachments`, `form_sections`, `form_responses`, `questions`
 
 **Note:** Contact your development team for the complete SQL schema.
 

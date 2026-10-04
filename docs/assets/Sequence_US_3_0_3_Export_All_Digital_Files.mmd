@@ -48,7 +48,7 @@ sequenceDiagram
     participant DB as Supabase DB
     participant S3 as AWS S3
 
-    Note over Admin,S3: Covers US 3.0.3. All steps are proposed. The flow copies<br/>the PDF job pattern (S26_pdf_jobs, after(), presigned URL).<br/>W26_export_jobs is like S26_pdf_jobs, without mode and request_payload.
+    Note over Admin,S3: Covers US 3.0.3. All steps are proposed. The flow copies<br/>the PDF job pattern (S26_pdf_jobs, after(), presigned URL).<br/>export_jobs is like S26_pdf_jobs, without mode and request_payload.
 
     Admin->>Page: Select Export all files
     Page->>Api: POST /api/export: createExportJob()
@@ -57,10 +57,10 @@ sequenceDiagram
         Api-->>Page: 403. No job is made
         Page-->>Admin: Show "not allowed"
     else Caller is Admin
-        Api->>DB: Insert W26_export_jobs row,<br/>status pending, created_by = caller
+        Api->>DB: Insert export_jobs row,<br/>status pending, created_by = caller
         Api-->>Page: 202 with jobId
         Api->>Job: after(): run zip job
-        Job->>DB: Read storage keys from W26_attachments,<br/>W26_homepage-image-uploads, W26_gpx_tracks<br/>and completed S26_pdf_jobs
+        Job->>DB: Read storage keys from attachments,<br/>homepage_image_uploads, gpx_tracks<br/>and completed S26_pdf_jobs
         DB-->>Job: Storage keys
         loop Each stored file
             Job->>S3: Get file
@@ -68,17 +68,17 @@ sequenceDiagram
             Job->>Job: Add file to zip
         end
         alt A file is missing or the job fails
-            Job->>DB: Update W26_export_jobs row: status failed,<br/>error with file names
+            Job->>DB: Update export_jobs row: status failed,<br/>error with file names
         else Zip is made (AT 1, AT 2)
             Job->>S3: Put zip file
-            Job->>DB: Update W26_export_jobs row: status complete,<br/>storage_path of the zip
+            Job->>DB: Update export_jobs row: status complete,<br/>storage_path of the zip
         end
         Page->>Api: GET /api/export/status/[jobId]:<br/>getExportJobStatus(jobId)
         Api->>Api: Check session. Check caller is Admin or job creator
         alt Caller is not Admin and not the job creator
             Api-->>Page: 403. No status and no URL
         else Caller is allowed
-            Api->>DB: Read W26_export_jobs row
+            Api->>DB: Read export_jobs row
             DB-->>Api: status, error, storage_path
             alt Status is failed
                 Api-->>Page: Failed with error

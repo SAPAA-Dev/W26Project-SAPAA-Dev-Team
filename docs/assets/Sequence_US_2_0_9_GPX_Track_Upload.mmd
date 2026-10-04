@@ -89,7 +89,7 @@ sequenceDiagram
                     Save-->>Site: Refuse (422)
                     Site-->>Steward: Show "Not a valid GPX track". Nothing is saved.
                 else Valid track
-                    Save->>DB: Insert W26_gpx_tracks row: site_id, user_id,<br/>storage key, point count (AT1)
+                    Save->>DB: Insert gpx_tracks row: site_id, user_id,<br/>storage key, point count (AT1)
                     activate DB
                     alt Insert fails
                         DB-->>Save: Error

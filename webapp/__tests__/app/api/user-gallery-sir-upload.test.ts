@@ -137,13 +137,13 @@ jest.mock("next/server", () => ({
       });
   
       mockFrom.mockImplementation((table: string) => {
-        if (table === "W26_attachments") {
+        if (table === "attachments") {
           return {
             select: attachmentsSelectMock,
           };
         }
   
-        if (table === "W26_sites-pa") {
+        if (table === "sites_pa") {
           return {
             select: sitesSelectMock,
           };
@@ -161,8 +161,8 @@ jest.mock("next/server", () => ({
   
       expect(response.status).toBe(200);
   
-      expect(mockFrom).toHaveBeenCalledWith("W26_attachments");
-      expect(mockFrom).toHaveBeenCalledWith("W26_sites-pa");
+      expect(mockFrom).toHaveBeenCalledWith("attachments");
+      expect(mockFrom).toHaveBeenCalledWith("sites_pa");
   
       expect(attachmentsInMock).toHaveBeenCalledWith("content_type", [
         "image/jpeg",
@@ -272,13 +272,13 @@ jest.mock("next/server", () => ({
       });
   
       mockFrom.mockImplementation((table: string) => {
-        if (table === "W26_attachments") {
+        if (table === "attachments") {
           return {
             select: attachmentsSelectMock,
           };
         }
   
-        if (table === "W26_sites-pa") {
+        if (table === "sites_pa") {
           return {
             select: sitesSelectMock,
           };
@@ -324,7 +324,7 @@ jest.mock("next/server", () => ({
       });
   
       mockFrom.mockImplementation((table: string) => {
-        if (table === "W26_attachments") {
+        if (table === "attachments") {
           return {
             select: attachmentsSelectMock,
           };
@@ -389,13 +389,13 @@ jest.mock("next/server", () => ({
       });
   
       mockFrom.mockImplementation((table: string) => {
-        if (table === "W26_attachments") {
+        if (table === "attachments") {
           return {
             select: attachmentsSelectMock,
           };
         }
   
-        if (table === "W26_sites-pa") {
+        if (table === "sites_pa") {
           return {
             select: sitesSelectMock,
           };

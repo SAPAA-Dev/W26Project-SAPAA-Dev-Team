@@ -45,7 +45,7 @@ sequenceDiagram
     actor Steward
     participant Page as Site page<br/>app/detail/[namesite]
     participant Server as Server actions<br/>SiteSafetyPriorityActions (proposed)
-    participant DB as Supabase DB<br/>W26_site_priority (proposed)
+    participant DB as Supabase DB<br/>site_priority (proposed)
 
     Note over Admin,DB: Covers US 2.0.12 and 2.0.13. No priority scores exist in the code today.<br/>"(proposed)" = the step is not in the code today.
 
@@ -57,7 +57,7 @@ sequenceDiagram
         Server-->>Page: Refuse (403). Scores stay the same
         Page-->>Steward: Show "Only an Admin can change the scores"
     else Caller is Admin
-        Server->>DB: Upsert W26_site_priority row.<br/>Set points_saved_at to now and saved_by to the caller
+        Server->>DB: Upsert site_priority row.<br/>Set points_saved_at to now and saved_by to the caller
         DB-->>Server: Saved row
         Server-->>Page: Saved. The reminder is absent (US 2.0.13 AT 3)
     end
@@ -70,7 +70,7 @@ sequenceDiagram
         Server-->>Page: Refuse (401)
         Page-->>Steward: Go to /login
     else Access allowed
-        Server->>DB: Read the W26_site_priority row
+        Server->>DB: Read the site_priority row
         DB-->>Server: Three scores and points_saved_at
         Server->>Server: computeVisitPriority(scores). Same scores give the same priority
         opt Caller is Admin and points_saved_at is more than one year ago
@@ -81,4 +81,4 @@ sequenceDiagram
         Note over Admin,Page: For an Admin, the page also shows the reminder when<br/>needsReassessment is true (US 2.0.13 AT 1, AT 2)
     end
 
-    Note over Admin,DB: The server calculates the priority and the reminder, so each client shows the same values.<br/>Open questions: the formula of computeVisitPriority, and if "time since the last visit"<br/>is typed by an Admin or calculated from the newest W26_form_responses.inspection_date.
+    Note over Admin,DB: The server calculates the priority and the reminder, so each client shows the same values.<br/>Open questions: the formula of computeVisitPriority, and if "time since the last visit"<br/>is typed by an Admin or calculated from the newest form_responses.inspection_date.

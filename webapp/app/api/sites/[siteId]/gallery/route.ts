@@ -59,7 +59,7 @@ export async function GET(
     }
 
     const { data: attachments, error: attachmentsError } = await supabase
-      .from("W26_attachments")
+      .from("attachments")
       .select(`
         id,
         caption,
@@ -83,7 +83,7 @@ export async function GET(
     }
 
     const { data: site } = await supabase
-      .from("W26_sites-pa")
+      .from("sites_pa")
       .select("namesite")
       .eq("id", siteId)
       .single();

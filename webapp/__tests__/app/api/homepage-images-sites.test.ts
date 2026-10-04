@@ -104,7 +104,7 @@ describe("GET /api/homepage-images/[siteId]", () => {
     });
 
     mockFrom.mockImplementation((table: string) => {
-      if (table === "W26_homepage-image-uploads") {
+      if (table === "homepage_image_uploads") {
         return {
           select: uploadsSelectMock,
         };
@@ -153,12 +153,12 @@ describe("GET /api/homepage-images/[siteId]", () => {
     });
 
     mockFrom.mockImplementation((table: string) => {
-      if (table === "W26_homepage-image-uploads") {
+      if (table === "homepage_image_uploads") {
         return {
           select: uploadsSelectMock,
         };
       }
-      if (table === "W26_sites-pa") {
+      if (table === "sites_pa") {
         return {
           select: siteSelectMock,
         };
@@ -222,12 +222,12 @@ describe("GET /api/homepage-images/[siteId]", () => {
     });
 
     mockFrom.mockImplementation((table: string) => {
-      if (table === "W26_homepage-image-uploads") {
+      if (table === "homepage_image_uploads") {
         return {
           select: uploadsSelectMock,
         };
       }
-      if (table === "W26_sites-pa") {
+      if (table === "sites_pa") {
         return {
           select: siteSelectMock,
         };
@@ -321,12 +321,12 @@ describe("GET /api/homepage-images/[siteId]", () => {
     });
 
     mockFrom.mockImplementation((table: string) => {
-      if (table === "W26_homepage-image-uploads") {
+      if (table === "homepage_image_uploads") {
         return {
           select: uploadsSelectMock,
         };
       }
-      if (table === "W26_sites-pa") {
+      if (table === "sites_pa") {
         return {
           select: siteSelectMock,
         };
@@ -405,12 +405,12 @@ describe("GET /api/homepage-images/[siteId]", () => {
     });
 
     mockFrom.mockImplementation((table: string) => {
-      if (table === "W26_homepage-image-uploads") {
+      if (table === "homepage_image_uploads") {
         return {
           select: uploadsSelectMock,
         };
       }
-      if (table === "W26_sites-pa") {
+      if (table === "sites_pa") {
         return {
           select: siteSelectMock,
         };

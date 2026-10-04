@@ -74,7 +74,7 @@ sequenceDiagram
             Actions-->>Page: Refuse (403), nothing deleted
             Page-->>Admin: Show the error
         else Caller is an Admin
-            Actions->>DB: Begin one transaction. Delete Site page fields, safety, priority,<br/>activity-point rows, GPX rows, homepage-image rows, attachments,<br/>SIR answers and SIRs, then delete W26_sites-pa (AT3).
+            Actions->>DB: Begin one transaction. Delete Site page fields, safety, priority,<br/>activity-point rows, GPX rows, homepage-image rows, attachments,<br/>SIR answers and SIRs, then delete sites_pa (AT3).
             alt Any step fails (AT4)
                 DB-->>Actions: Error. Roll back all steps.
                 Actions-->>Page: Deletion rejected
@@ -92,4 +92,4 @@ sequenceDiagram
     end
     deactivate Page
 
-    Note over Admin,S3: In the local schema copy, W26_form_responses.site_id is ON DELETE RESTRICT, so deleteSite must perform<br/>the ordered transaction above. Profile SIR counts come from W26_form_responses and therefore follow the cascade.
+    Note over Admin,S3: In the local schema copy, form_responses.site_id is ON DELETE RESTRICT, so deleteSite must perform<br/>the ordered transaction above. Profile SIR counts come from form_responses and therefore follow the cascade.

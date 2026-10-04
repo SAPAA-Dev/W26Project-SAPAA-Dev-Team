@@ -128,7 +128,7 @@ describe("GET /api/site-images", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(mockFrom).toHaveBeenCalledWith("W26_attachments");
+    expect(mockFrom).toHaveBeenCalledWith("attachments");
     expect(queryBuilder.eq).toHaveBeenCalledWith("site_id", 207);
 
     expect(body).toEqual({

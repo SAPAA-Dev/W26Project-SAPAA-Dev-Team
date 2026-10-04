@@ -45,7 +45,7 @@ sequenceDiagram
     actor Admin
     participant Page as Site page<br/>app/detail/[namesite]
     participant Server as Server actions<br/>SiteSafetyPriorityActions (proposed)
-    participant DB as Supabase DB<br/>W26_site_safety (proposed)
+    participant DB as Supabase DB<br/>site_safety (proposed)
 
     Note over Steward,DB: Covers US 2.0.11. No safety information exists in the code today.<br/>"(proposed)" = the step is not in the code today.
 
@@ -57,7 +57,7 @@ sequenceDiagram
         Server-->>Page: Refuse (401)
         Page-->>Steward: Go to /login
     else Access allowed
-        Server->>DB: Read the W26_site_safety row for the Site
+        Server->>DB: Read the site_safety row for the Site
         DB-->>Server: nearest_hospital, hazards, other_info, or no row
         Server-->>Page: Safety values
         Page-->>Steward: Show each value. An empty value shows "Not recorded"
@@ -71,7 +71,7 @@ sequenceDiagram
         Server-->>Page: Refuse (403). Stored values stay the same
         Page-->>Steward: Show "Only an Admin can change safety information"
     else Caller is Admin
-        Server->>DB: Upsert W26_site_safety row with updated_by and updated_at
+        Server->>DB: Upsert site_safety row with updated_by and updated_at
         DB-->>Server: Saved row
         Server-->>Page: Saved
         Page-->>Admin: A reload shows the new values (AT 3)

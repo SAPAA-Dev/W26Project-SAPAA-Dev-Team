@@ -79,7 +79,7 @@ sequenceDiagram
                 Action-->>Profile: Field errors (422)
                 Profile-->>Steward: Highlight the fields with errors
             else Values are valid
-                Action->>DB: Update W26_profiles row of session user<br/>(proposed)
+                Action->>DB: Update profiles row of session user<br/>(proposed)
                 activate DB
                 alt Database error
                     DB-->>Action: Error

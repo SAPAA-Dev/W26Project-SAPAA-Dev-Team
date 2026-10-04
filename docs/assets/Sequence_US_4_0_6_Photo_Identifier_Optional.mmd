@@ -63,7 +63,7 @@ sequenceDiagram
         end
         Form->>Actions: addSiteInspectionReport (exists)
         activate Actions
-        Actions->>DB: Insert W26_form_responses row
+        Actions->>DB: Insert form_responses row
         DB-->>Actions: responseId
         Actions-->>Form: responseId
         deactivate Actions
@@ -76,7 +76,7 @@ sequenceDiagram
         Form->>S3: PUT the photo (exists)
         Form->>Actions: uploadSiteInspectionAnswers, insertInspectionAttachments<br/>with identifier NULL (exists)
         activate Actions
-        Actions->>DB: Insert W26_answers and W26_attachments rows.<br/>W26_attachments.identifier can be NULL (exists)
+        Actions->>DB: Insert answers and attachments rows.<br/>attachments.identifier can be NULL (exists)
         alt An upload or insert fails
             Actions-->>Form: Error
             Form->>Actions: rollbackSiteInspectionSubmission(responseId) (exists)

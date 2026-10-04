@@ -102,7 +102,7 @@ function makeGalleryFrom(options?: {
   sitesError?: { message: string } | null;
 }) {
   return (table: string) => {
-    if (table === "W26_attachments") {
+    if (table === "attachments") {
       return {
         select: jest.fn().mockReturnThis(),
         in: jest.fn().mockReturnThis(),
@@ -113,7 +113,7 @@ function makeGalleryFrom(options?: {
       };
     }
 
-    if (table === "W26_sites-pa") {
+    if (table === "sites_pa") {
       return {
         select: jest.fn().mockReturnThis(),
         in: jest.fn().mockResolvedValue({

@@ -126,7 +126,7 @@ This ensures files are **not overwritten** while still preserving human-readable
 ## Database Metadata Storage
 
 ### SIR image metadata table
-Image metadata for SIR uploads is stored in `W26_attachments`.
+Image metadata for SIR uploads is stored in `attachments`.
 
 | Field | Description |
 |-----|-----|
@@ -142,7 +142,7 @@ Image metadata for SIR uploads is stored in `W26_attachments`.
 | content_type | MIME type |
 
 ### Standalone homepage image metadata table
-Image metadata for standalone homepage uploads is stored in `W26_homepage-image-uploads`.
+Image metadata for standalone homepage uploads is stored in `homepage_image_uploads`.
 
 | Field | Description |
 |-----|-----|

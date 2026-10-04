@@ -154,7 +154,7 @@ async function fetchMultiSiteData(siteNames: string[], options: PdfOptions): Pro
     const responses = filterResponsesByOptions(raw, options);
     return {
       siteName: site.namesite,
-      county: site.W26_ab_counties?.county ?? null,
+      county: site.ab_counties?.county ?? null,
       responses,
       attachmentsByResponse: undefined,
     };
@@ -221,7 +221,7 @@ async function fetchSingleResponse(responseId: number, options: PdfOptions): Pro
   const supabase = createServerSupabase();
 
   const { data: responseData, error } = await supabase
-    .from('W26_form_responses')
+    .from('form_responses')
     .select('site_id')
     .eq('id', responseId)
     .single();
@@ -229,15 +229,15 @@ async function fetchSingleResponse(responseId: number, options: PdfOptions): Pro
   if (error || !responseData) throw new Error('Response not found');
 
   const { data: siteData, error: siteError } = await supabase
-    .from('W26_sites-pa')
-    .select(`namesite, W26_ab_counties (county)`)
+    .from('sites_pa')
+    .select(`namesite, ab_counties (county)`)
     .eq('id', (responseData as any).site_id)
     .single();
 
   if (siteError || !siteData) throw new Error('Site not found for response');
 
   const siteName = (siteData as any).namesite;
-  const county = (siteData as any).W26_ab_counties?.county ?? null;
+  const county = (siteData as any).ab_counties?.county ?? null;
 
   const allResponses = await getFormResponsesBySite(siteName);
   const singleOnly = allResponses.filter((r) => r.id === responseId);

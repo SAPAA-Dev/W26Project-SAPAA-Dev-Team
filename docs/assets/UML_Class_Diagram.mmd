@@ -16,7 +16,7 @@ classDiagram
     %%   webapp/utils/admin-actions.ts, the heatmap route, /api/gallery,
     %%   /api/homepage-images, /api/user-gallery/*, FNR/src/services/database.ts,
     %%   FNR/src/services/pdfGenerator.ts, FNR/src/services/adminAuth.ts.
-    %% - The web app uses the W26_* tables. The mobile app uses the legacy
+    %% - The web app uses its own tables. The mobile app uses the legacy
     %%   tables. See ER_Diagram.mmd and ER_Diagram_Legacy.mmd.
 
     namespace WebApp {
@@ -253,11 +253,11 @@ classDiagram
     PdfStatusRoute --> AuthorizationService : job creator or Admin
     SiteSafetyPriorityActions --> AuthorizationService : signed-in user for reads
     ExportRoutes --> AuthorizationService : Admin
-    SiteQueries --> SupabaseBackend : W26 tables
-    InspectionQueries --> SupabaseBackend : W26 tables
-    ProfileService --> SupabaseBackend : W26 tables
-    GeometryLoadJob --> SupabaseBackend : W26_kml_sites, W26_sites-pa
-    GpxTrackActions --> SupabaseBackend : W26_gpx_tracks
+    SiteQueries --> SupabaseBackend : web app tables
+    InspectionQueries --> SupabaseBackend : web app tables
+    ProfileService --> SupabaseBackend : web app tables
+    GeometryLoadJob --> SupabaseBackend : kml_sites, sites_pa
+    GpxTrackActions --> SupabaseBackend : gpx_tracks
     GpxTrackActions --> AwsS3 : reads and deletes GPX files
     GpxPresignRoute --> AwsS3 : presigned PUT
     NewReportPage --> INaturalistApi : reads observations and photos
@@ -269,23 +269,23 @@ classDiagram
     SiteImagesRoute --> AwsS3 : presigned GET
     SiteGalleryRoute --> AwsS3 : presigned GET
     HomepageImagesRoute --> AwsS3 : presigned GET
-    ImageDeleteRoute --> SupabaseBackend : W26_attachments, W26_homepage-image-uploads
+    ImageDeleteRoute --> SupabaseBackend : attachments, homepage_image_uploads
     ImageDeleteRoute --> AwsS3 : DeleteObject
     PdfRoute --> SupabaseBackend : S26_pdf_jobs
     PdfRoute ..> PdfJobProcessor : after()
     PdfJobProcessor --> AwsS3 : stores PDF
     PdfStatusRoute --> AwsS3 : presigned GET
-    ExportRoutes --> SupabaseBackend : W26_export_jobs
+    ExportRoutes --> SupabaseBackend : export_jobs
     ExportRoutes --> AwsS3 : reads images, GPX and PDFs and stores zip
     GeocodeRoute --> OpenCageApi : geocodes
     StewardLogGeocoder --> OpenCageApi : geocodes from the phone
     OfflineMapService --> MapTileServer : downloads tiles
     NewReportPage --> ActivityPointsService : after a successful submit
     HomepageImageActions --> ActivityPointsService : after a successful insert
-    HomepageImageActions --> SupabaseBackend : W26_homepage-image-uploads
-    ActivityPointsService --> SupabaseBackend : W26_activity_points
+    HomepageImageActions --> SupabaseBackend : homepage_image_uploads
+    ActivityPointsService --> SupabaseBackend : activity_points
     ProfileService --> ActivityPointsService : points total
-    SiteSafetyPriorityActions --> SupabaseBackend : W26_site_safety, W26_site_priority
+    SiteSafetyPriorityActions --> SupabaseBackend : site_safety, site_priority
     SiteObservationsPanel --> INaturalistApi : top 5 observations
     PdfJobProcessor --> PdfDataFetcher : reads SIRs
     InspectionQueries --> AwsS3 : deletes files [NEW 7.0.8]

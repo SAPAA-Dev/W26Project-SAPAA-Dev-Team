@@ -17,11 +17,11 @@ classDiagram
     %% - OfflineMapArea has no table. It is in the web app, in browser storage.
     %% - The FormResponse type in queries.ts also has naturalness_score,
     %%   naturalness_details and steward. They are not columns of
-    %%   W26_form_responses. getFormResponsesBySite reads them from the
-    %%   W26_answers of Q31, Q32 and Q13.
+    %%   form_responses. getFormResponsesBySite reads them from the
+    %%   answers of Q31, Q32 and Q13.
 
     class Site {
-        <<table W26_sites-pa>>
+        <<table sites_pa>>
         +id: number
         +namesite: string
         +ab_county: number
@@ -36,13 +36,13 @@ classDiagram
     }
 
     class County {
-        <<table W26_ab_counties>>
+        <<table ab_counties>>
         +id: number
         +county: string
     }
 
     class KmlSite {
-        <<new table W26_kml_sites, 6.0.1 2.0.2>>
+        <<new table kml_sites, 6.0.1 2.0.2>>
         +source_feature_id: string
         +name: string
         +boundary: polygon
@@ -50,7 +50,7 @@ classDiagram
     }
 
     class SitePageField {
-        <<new table W26_site_page_fields, 2.0.5>>
+        <<new table site_page_fields, 2.0.5>>
         +id: number
         +site_id: number
         +label: string
@@ -62,7 +62,7 @@ classDiagram
     }
 
     class GpxTrack {
-        <<new table W26_gpx_tracks, 2.0.9>>
+        <<new table gpx_tracks, 2.0.9>>
         +id: number
         +site_id: number
         +user_id: string
@@ -74,7 +74,7 @@ classDiagram
     }
 
     class Profile {
-        <<new table W26_profiles, 1.0.1 1.0.2 4.0.5>>
+        <<new table profiles, 1.0.1 1.0.2 4.0.5>>
         +user_id: string
         +display_name: string
         +contact_email: string
@@ -84,7 +84,7 @@ classDiagram
     }
 
     class ProfileHiddenQuestion {
-        <<new table W26_profile_hidden_questions, 1.0.3>>
+        <<new table profile_hidden_questions, 1.0.3>>
         +user_id: string
         +question_id: number
     }
@@ -104,7 +104,7 @@ classDiagram
     }
 
     class FormResponse {
-        <<table W26_form_responses>>
+        <<table form_responses>>
         +id: number
         +site_id: number
         +user_id: string
@@ -115,7 +115,7 @@ classDiagram
     }
 
     class Answer {
-        <<table W26_answers>>
+        <<table answers>>
         +id: number
         +response_id: number
         +question_id: number
@@ -124,14 +124,14 @@ classDiagram
     }
 
     class Question {
-        <<table W26_questions>>
+        <<table questions>>
         +id: number
         +question key: string
         +form_question: string
     }
 
     class Attachment {
-        <<table W26_attachments>>
+        <<table attachments>>
         +id: number
         +response_id: number
         +question_id: number
@@ -142,7 +142,7 @@ classDiagram
     }
 
     class HomepageImageUpload {
-        <<table W26_homepage-image-uploads>>
+        <<table homepage_image_uploads>>
         +id: number
         +site_id: number
         +user_id: string
@@ -161,7 +161,7 @@ classDiagram
     }
 
     class ExportJob {
-        <<new table W26_export_jobs, 3.0.3>>
+        <<new table export_jobs, 3.0.3>>
         +id: string
         +created_by: string
         +status: string
@@ -171,14 +171,14 @@ classDiagram
     }
 
     class ActivityPointValue {
-        <<new table W26_activity_point_values, 1.0.5>>
+        <<new table activity_point_values, 1.0.5>>
         +site_id: number
         +activity: string
         +points: number
     }
 
     class ActivityPointEntry {
-        <<new table W26_activity_points, 1.0.5>>
+        <<new table activity_points, 1.0.5>>
         +id: number
         +user_id: string
         +site_id: number
@@ -189,7 +189,7 @@ classDiagram
     }
 
     class SiteSafety {
-        <<new table W26_site_safety, 2.0.11>>
+        <<new table site_safety, 2.0.11>>
         +site_id: number
         +nearest_hospital: string
         +hazards: string
@@ -199,7 +199,7 @@ classDiagram
     }
 
     class SitePriority {
-        <<new table W26_site_priority, 2.0.12 2.0.13>>
+        <<new table site_priority, 2.0.12 2.0.13>>
         +site_id: number
         +abuse_points: number
         +biological_points: number

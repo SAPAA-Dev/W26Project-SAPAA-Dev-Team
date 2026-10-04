@@ -441,12 +441,12 @@ export default function NewReportPage() {
         ])
       );
 
-      // Initialize an array to hold all the objects/dictionaries that represent each row in the W26_answers table
-      //what goes into W26_answers table: response_id, question_id, obs_value, obs_comm
+      // Initialize an array to hold all the objects/dictionaries that represent each row in the answers table
+      //what goes into answers table: response_id, question_id, obs_value, obs_comm
       let answersArray: SupabaseAnswer[] = [];  
 
 
-      //what goes into W26_attachments table: response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier
+      //what goes into attachments table: response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier
       // We also need to prepare the data for the attachments table, which means we need to generate the S3 keys for each uploaded file and store those in an array of objects/dictionaries as well
       const attachmentsRows: Array<{
         response_id: number | null;
@@ -529,7 +529,7 @@ export default function NewReportPage() {
                   });
               }
 
-              // Do NOT put image data into W26_answers
+              // Do NOT put image data into answers
               continue;
             }
 

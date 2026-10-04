@@ -66,7 +66,7 @@ sequenceDiagram
         Server-->>Map: Refuse (401)
         Map-->>Steward: Go to /login
     else Access allowed
-        Server->>DB: Read active W26_sites-pa rows, W26_ab_counties<br/>and Site geometry (US 6.0.1)
+        Server->>DB: Read active sites_pa rows, ab_counties<br/>and Site geometry (US 6.0.1)
         activate DB
         DB-->>Server: Sites with boundary, centre point and county
         deactivate DB
@@ -84,7 +84,7 @@ sequenceDiagram
         Map->>Server: getSiteTracks(siteId)
         activate Server
         Server->>Server: Same session check as above
-        Server->>DB: Read W26_gpx_tracks rows of the Site (US 2.0.9)
+        Server->>DB: Read gpx_tracks rows of the Site (US 2.0.9)
         activate DB
         DB-->>Server: Track storage keys
         deactivate DB

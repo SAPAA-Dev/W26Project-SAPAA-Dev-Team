@@ -70,7 +70,7 @@ sequenceDiagram
         Server-->>AdminSite: Refuse. No designation is written
         AdminSite-->>Admin: Show error
     else Caller is Admin
-        Server->>DB: Set W26_sites-pa.designated_steward_id<br/>to the new steward (proposed)
+        Server->>DB: Set sites_pa.designated_steward_id<br/>to the new steward (proposed)
         DB-->>Server: Saved
         Server-->>AdminSite: Success
         AdminSite-->>Admin: Show new designated steward (AT 2)
@@ -83,7 +83,7 @@ sequenceDiagram
         Server-->>Pages: Refuse (401)
         Pages-->>Steward: Go to /login
     else Access allowed
-        Server->>DB: Read W26_sites-pa.designated_steward_id<br/>by site or by steward (proposed)
+        Server->>DB: Read sites_pa.designated_steward_id<br/>by site or by steward (proposed)
         DB-->>Server: Designation
         Server-->>Pages: Data with designation
         Pages-->>Steward: Show designated steward on site page<br/>and designated sites on profile (AT 3)

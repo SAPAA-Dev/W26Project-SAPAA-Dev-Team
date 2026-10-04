@@ -31,7 +31,7 @@ export async function GET(
     }
 
     const { data: uploads, error } = await supabase
-      .from("W26_homepage-image-uploads")
+      .from("homepage_image_uploads")
       .select("id, site_id, user_id, date, photographer, identifier, caption, storage_key, filename, content_type, file_size_bytes")
       .eq("site_id", numericSiteId)
       .order("date", { ascending: false });
@@ -39,7 +39,7 @@ export async function GET(
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     const { data: site } = await supabase
-      .from("W26_sites-pa")
+      .from("sites_pa")
       .select("namesite")
       .eq("id", numericSiteId)
       .single();
