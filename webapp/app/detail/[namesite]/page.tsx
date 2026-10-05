@@ -36,6 +36,7 @@ import dynamic from 'next/dynamic';
 import { siteDetailSteps } from '@/components/TutorialOverlay';
 import { createClient } from '@/utils/supabase/client';
 import UserNavBar from "@/components/HeaderDropdown";
+import SiteSteward from "./SiteSteward";
 
 const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
@@ -505,6 +506,7 @@ export default function SiteDetailScreen() {
               <span className="text-base">{site.county}</span>
             </div>
           )}
+          <SiteSteward siteId={site.id} isAdmin={currentUser?.role === "admin"} />
         </div>
       </div>
 

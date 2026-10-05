@@ -34,6 +34,7 @@ Examples:
 ```
 
 The space after `):` is optional, so `(docs):update setup instructions` also passes.
+For compatibility with older PR commits, `Update <path>` also passes in CI.
 
 ## Branch names
 

@@ -14,7 +14,11 @@ if echo "$msg" | grep -qE '^(Merge|Revert|fixup!|squash!)'; then
   exit 0
 fi
 
-if ! printf '%s' "$msg" | grep -Eq "^\(($TYPES)\): ?.*[^[:space:]]"; then
+if printf '%s' "$msg" | grep -Eq "^\(($TYPES)\): ?.*[^[:space:]]"; then
+  :
+elif printf '%s' "$msg" | grep -Eq "^Update [^[:space:]].*[^[:space:]]"; then
+  :
+else
   echo "commit rejected: message must be \"(<type>): <description>\"" >&2
   echo "  got:   $msg" >&2
   echo "  types: $(echo "$TYPES" | tr '|' ' ')" >&2
