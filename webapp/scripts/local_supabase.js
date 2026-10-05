@@ -78,6 +78,7 @@ async function startDevServer() {
   const child = spawn('next', ['dev'], {
     cwd: webappDir,
     stdio: 'inherit',
+    shell: true,
     env: {
       ...process.env,
       NEXT_PUBLIC_SUPABASE_URL: url,
