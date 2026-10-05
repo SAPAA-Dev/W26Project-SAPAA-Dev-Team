@@ -5,3 +5,5 @@ security-sensitive information. Only `docs/` is published.
 
 `unused-images/` holds images that no docs page uses. They were moved out of `docs/` so that the
 published site stays small.
+
+`test-review-findings-2026-10-02.txt` is the test and build review of the webapp from October 2, 2026.
