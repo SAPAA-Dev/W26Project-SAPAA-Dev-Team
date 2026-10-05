@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createServerSupabase } from '@/utils/supabase/server';
+import { normaliseSocials, Socials, toSocials } from '@/lib/socials';
 
 const PROFILE_SELECT = 'id, auth_user_id, display_name, skills, focus_areas';
+// socials.person_id is the primary key, so PostgREST embeds one object (or null), not a list.
+const PROFILE_WITH_SOCIALS_SELECT = `${PROFILE_SELECT}, socials(email, phone, website, instagram, facebook, x, linkedin)`;
 const PAGE_SIZE = 10;
 const MAX_TAGS = 12;
 const MAX_TAG_LENGTH = 40;
@@ -13,6 +16,7 @@ type ProfileRow = {
   display_name: string;
   skills: string[] | null;
   focus_areas: string[] | null;
+  socials?: Partial<Socials> | null;
 };
 
 type InspectionRow = {
@@ -71,7 +75,7 @@ export async function GET(request: NextRequest) {
   const pageValue = Number.parseInt(request.nextUrl.searchParams.get('page') ?? '1', 10);
   const page = Number.isFinite(pageValue) && pageValue > 0 ? pageValue : 1;
   const admin = createServerSupabase();
-  const profileQuery = admin.from('people').select(PROFILE_SELECT);
+  const profileQuery = admin.from('people').select(PROFILE_WITH_SOCIALS_SELECT);
   const { data, error } = requestedId
     ? await profileQuery.eq('id', requestedId).maybeSingle()
     : await profileQuery.eq('auth_user_id', viewer.id).maybeSingle();
@@ -87,6 +91,7 @@ export async function GET(request: NextRequest) {
     displayName: profile.display_name,
     skills: profile.skills ?? [],
     focusAreas: profile.focus_areas ?? [],
+    socials: toSocials(profile.socials),
   };
 
   // A person with no linked login cannot own inspections, and user_id is a uuid, so the
@@ -170,6 +175,8 @@ export async function PATCH(request: NextRequest) {
       skills: normaliseTags(body.skills, 'Skills'),
       focus_areas: normaliseTags(body.focusAreas, 'Focus areas'),
     };
+    // Older clients send no socials. Then they are left as they are.
+    const socials = body.socials === undefined ? null : normaliseSocials(body.socials);
     const { data, error } = await sessionClient
       .from('people')
       .update(update)
@@ -181,12 +188,20 @@ export async function PATCH(request: NextRequest) {
     if (error) return NextResponse.json({ error: 'Unable to save your profile.' }, { status: 500 });
     if (!data) return NextResponse.json({ error: 'Profile not found.' }, { status: 404 });
 
+    if (socials) {
+      const { error: socialsError } = await sessionClient
+        .from('socials')
+        .upsert({ person_id: (data as ProfileRow).id, ...socials }, { onConflict: 'person_id' });
+      if (socialsError) return NextResponse.json({ error: 'Unable to save your contact details.' }, { status: 500 });
+    }
+
     return NextResponse.json({
       profile: {
         id: (data as ProfileRow).id,
         displayName: (data as ProfileRow).display_name,
         skills: (data as ProfileRow).skills ?? [],
         focusAreas: (data as ProfileRow).focus_areas ?? [],
+        ...(socials ? { socials } : {}),
       },
     });
   } catch (error) {

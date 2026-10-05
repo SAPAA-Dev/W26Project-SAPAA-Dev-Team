@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import ProfilePage from '@/components/ProfilePage';
 
 const routerMock = { back: jest.fn(), push: jest.fn() };
@@ -48,6 +48,30 @@ describe('ProfilePage', () => {
     expect(screen.getByText('Web inspection records only.')).toBeInTheDocument();
   });
 
+  it('shows only the contact details the person filled in (1.0.1 AT1)', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ...profilePayload,
+        profile: { ...profilePayload.profile, socials: { email: 'jamie@example.com', phone: null, website: null, instagram: 'https://instagram.com/jamie', facebook: null, x: null, linkedin: null } },
+      }),
+    });
+    render(<ProfilePage />);
+
+    const contact = await screen.findByTestId('profile-contact');
+    expect(within(contact).getByRole('link', { name: 'jamie@example.com' })).toHaveAttribute('href', 'mailto:jamie@example.com');
+    const instagram = within(contact).getByRole('link', { name: 'https://instagram.com/jamie' });
+    expect(instagram).toHaveAttribute('target', '_blank');
+    expect(instagram).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(within(contact).queryByText(/Phone/)).not.toBeInTheDocument();
+  });
+
+  it('hides the contact section when nothing is filled in', async () => {
+    render(<ProfilePage />);
+    await screen.findByRole('heading', { name: 'Jamie Rivera' });
+    expect(screen.queryByTestId('profile-contact')).not.toBeInTheDocument();
+  });
+
   it('shows skills and focus areas without opening the edit form', async () => {
     render(<ProfilePage />);
 
@@ -78,11 +102,17 @@ describe('ProfilePage', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }));
     fireEvent.change(screen.getByLabelText('Display name'), { target: { value: 'Jamie R.' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'jamie@example.com' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenLastCalledWith('/api/profile', expect.objectContaining({ method: 'PATCH' })));
     const body = JSON.parse(fetchMock.mock.calls[1][1].body);
-    expect(body).toEqual({ displayName: 'Jamie R.', skills: ['Bird ID'], focusAreas: ['Wetlands'] });
+    expect(body).toEqual({
+      displayName: 'Jamie R.',
+      skills: ['Bird ID'],
+      focusAreas: ['Wetlands'],
+      socials: { email: 'jamie@example.com', phone: '', website: '', instagram: '', facebook: '', x: '', linkedin: '' },
+    });
     expect(body).not.toHaveProperty('role');
   });
 });

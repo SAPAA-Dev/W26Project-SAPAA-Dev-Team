@@ -130,6 +130,18 @@ describe('/api/profile', () => {
       expect(mockAdminFrom).toHaveBeenCalledWith('form_responses');
     });
 
+    it('returns the person\'s contact details, with blanks as null (1.0.1 AT1)', async () => {
+      mockAdminFrom.mockReturnValue(
+        makeQuery({ data: { ...PERSON, socials: { email: 'jamie@example.com', x: null } }, error: null }),
+      );
+
+      const response = await GET(makeRequest({ personId: '42' }) as never);
+      const body = await response.json();
+
+      expect(body.profile.socials.email).toBe('jamie@example.com');
+      expect(body.profile.socials.linkedin).toBeNull();
+    });
+
     it('answers 401 when nobody is signed in', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
 
@@ -159,6 +171,45 @@ describe('/api/profile', () => {
       });
       expect(body.profile.displayName).toBe('Jamie R.');
       expect(createServerSupabase).not.toHaveBeenCalled();
+    });
+
+    it('saves contact details for the signed-in person only', async () => {
+      const updateQuery = makeQuery({ data: PERSON, error: null });
+      const socialsQuery = { upsert: jest.fn().mockResolvedValue({ error: null }) };
+      const sessionFrom = jest.fn((table: string) => (table === 'socials' ? socialsQuery : updateQuery));
+      (createClient as jest.Mock).mockResolvedValue({ auth: { getUser: mockGetUser }, from: sessionFrom });
+
+      const response = await PATCH(
+        makeRequest({}, { ...validBody, socials: { email: 'jamie@example.com', website: '' } }) as never,
+      );
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(socialsQuery.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({ person_id: 42, email: 'jamie@example.com', website: null }),
+        { onConflict: 'person_id' },
+      );
+      expect(body.profile.socials.email).toBe('jamie@example.com');
+    });
+
+    it('rejects a non-https link and writes nothing', async () => {
+      const sessionFrom = jest.fn();
+      (createClient as jest.Mock).mockResolvedValue({ auth: { getUser: mockGetUser }, from: sessionFrom });
+
+      const response = await PATCH(makeRequest({}, { ...validBody, socials: { x: 'javascript:alert(1)' } }) as never);
+
+      expect(response.status).toBe(400);
+      expect(sessionFrom).not.toHaveBeenCalled();
+    });
+
+    it('leaves contact details alone when the request has none', async () => {
+      const updateQuery = makeQuery({ data: PERSON, error: null });
+      const sessionFrom = jest.fn().mockReturnValue(updateQuery);
+      (createClient as jest.Mock).mockResolvedValue({ auth: { getUser: mockGetUser }, from: sessionFrom });
+
+      await PATCH(makeRequest({}, validBody) as never);
+
+      expect(sessionFrom).not.toHaveBeenCalledWith('socials');
     });
 
     it('answers 401 when nobody is signed in', async () => {

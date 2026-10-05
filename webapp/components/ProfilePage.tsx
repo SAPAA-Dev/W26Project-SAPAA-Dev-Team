@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { Check, ClipboardList, Leaf, Loader2, MapPin, Pencil, Save, UserRound } from 'lucide-react';
+import { SOCIAL_FIELDS, SocialKey, Socials, socialHref } from '@/lib/socials';
 
 type ProfileData = {
   profile: {
@@ -12,6 +13,7 @@ type ProfileData = {
     skills: string[];
     focusAreas: string[];
     role: string;
+    socials?: Socials;
   };
   isOwner: boolean;
   stats: { inspectionCount: number; distinctSiteCount: number };
@@ -32,6 +34,10 @@ function formatDate(value: string | null) {
   // inspection_date is a date column, so PostgREST sends "2026-09-12". Without timeZone: 'UTC'
   // the browser reads that as midnight UTC and prints the day before in Alberta.
   return new Intl.DateTimeFormat('en-CA', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(value));
+}
+
+function socialsForm(socials: Socials | undefined) {
+  return Object.fromEntries(SOCIAL_FIELDS.map(({ key }) => [key, socials?.[key] ?? ''])) as Record<SocialKey, string>;
 }
 
 function TagList({ label, tags }: { label: string; tags: string[] }) {
@@ -55,7 +61,7 @@ export default function ProfilePage({ personId }: { personId?: string }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const router = useRouter();
-  const [form, setForm] = useState({ displayName: '', skills: '', focusAreas: '' });
+  const [form, setForm] = useState({ displayName: '', skills: '', focusAreas: '', socials: socialsForm(undefined) });
 
   const loadProfile = useCallback(async () => {
     setLoading(true);
@@ -70,6 +76,7 @@ export default function ProfilePage({ personId }: { personId?: string }) {
         displayName: payload.profile.displayName,
         skills: tagText(payload.profile.skills),
         focusAreas: tagText(payload.profile.focusAreas),
+        socials: socialsForm(payload.profile.socials),
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to load profile.');
@@ -95,6 +102,7 @@ export default function ProfilePage({ personId }: { personId?: string }) {
           displayName: form.displayName,
           skills: splitTags(form.skills),
           focusAreas: splitTags(form.focusAreas),
+          socials: form.socials,
         }),
       });
       const payload = await response.json();
@@ -131,10 +139,11 @@ export default function ProfilePage({ personId }: { personId?: string }) {
             {profile.skills.length > 0 && <TagList label="Skills" tags={profile.skills} />}
             {profile.focusAreas.length > 0 && <TagList label="Focus areas" tags={profile.focusAreas} />}
           </div>}
+          {SOCIAL_FIELDS.some(({ key }) => profile.socials?.[key]) && <div className="mt-6 border-t border-[#E4EBE4] pt-5" data-testid="profile-contact"><p className="text-sm font-medium text-[#5B655D]">Contact</p><ul className="mt-2 flex flex-wrap gap-x-5 gap-y-2">{SOCIAL_FIELDS.map(({ key, label, kind }) => { const value = profile.socials?.[key]; return value ? <li key={key} className="text-sm"><span className="font-semibold text-[#254431]">{label}: </span><a href={socialHref(kind, value)} {...(kind === 'link' ? { target: '_blank', rel: 'noopener noreferrer' } : {})} className="text-[#356B43] underline break-all">{value}</a></li> : null; })}</ul></div>}
           {saved && <p role="status" className="mt-5 flex items-center gap-2 text-sm font-medium text-[#17633B]"><Check className="h-4 w-4" />Profile saved.</p>}
         </section>
 
-        {editing && data.isOwner && <form onSubmit={saveProfile} className="mt-6 rounded-2xl bg-white p-6 shadow-sm"><h2 className="text-xl font-bold text-[#254431]">Edit profile</h2><p className="mt-1 text-sm text-[#5B655D]">Your role and account credentials are managed separately.</p><div className="mt-5 grid gap-4 sm:grid-cols-2"><label className="text-sm font-semibold text-[#254431]">Display name<input value={form.displayName} maxLength={29} onChange={(event) => setForm({ ...form, displayName: event.target.value })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2" required /></label><label className="text-sm font-semibold text-[#254431]">Skills <span className="font-normal">(comma-separated)</span><input value={form.skills} onChange={(event) => setForm({ ...form, skills: event.target.value })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2" /></label><label className="text-sm font-semibold text-[#254431]">Focus areas <span className="font-normal">(comma-separated)</span><input value={form.focusAreas} onChange={(event) => setForm({ ...form, focusAreas: event.target.value })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2" /></label></div><div className="mt-6 flex gap-3"><button disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-[#356B43] px-4 py-2.5 font-semibold text-white disabled:opacity-60"><Save className="h-4 w-4" />{saving ? 'Saving…' : 'Save changes'}</button><button type="button" onClick={() => setEditing(false)} className="rounded-xl px-4 py-2.5 font-semibold text-[#254431]">Cancel</button></div></form>}
+        {editing && data.isOwner && <form onSubmit={saveProfile} className="mt-6 rounded-2xl bg-white p-6 shadow-sm"><h2 className="text-xl font-bold text-[#254431]">Edit profile</h2><p className="mt-1 text-sm text-[#5B655D]">Your role and account credentials are managed separately.</p><div className="mt-5 grid gap-4 sm:grid-cols-2"><label className="text-sm font-semibold text-[#254431]">Display name<input value={form.displayName} maxLength={29} onChange={(event) => setForm({ ...form, displayName: event.target.value })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2" required /></label><label className="text-sm font-semibold text-[#254431]">Skills <span className="font-normal">(comma-separated)</span><input value={form.skills} onChange={(event) => setForm({ ...form, skills: event.target.value })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2" /></label><label className="text-sm font-semibold text-[#254431]">Focus areas <span className="font-normal">(comma-separated)</span><input value={form.focusAreas} onChange={(event) => setForm({ ...form, focusAreas: event.target.value })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2" /></label></div><h3 className="mt-6 text-base font-bold text-[#254431]">Contact <span className="text-sm font-normal text-[#5B655D]">(all optional, visible to signed-in members)</span></h3><div className="mt-3 grid gap-4 sm:grid-cols-2">{SOCIAL_FIELDS.map(({ key, label, kind }) => <label key={key} className="text-sm font-semibold text-[#254431]">{label}<input type={kind === 'email' ? 'email' : kind === 'phone' ? 'tel' : 'url'} value={form.socials[key]} placeholder={kind === 'link' ? 'https://' : undefined} onChange={(event) => setForm({ ...form, socials: { ...form.socials, [key]: event.target.value } })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2" /></label>)}</div><div className="mt-6 flex gap-3"><button disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-[#356B43] px-4 py-2.5 font-semibold text-white disabled:opacity-60"><Save className="h-4 w-4" />{saving ? 'Saving…' : 'Save changes'}</button><button type="button" onClick={() => setEditing(false)} className="rounded-xl px-4 py-2.5 font-semibold text-[#254431]">Cancel</button></div></form>}
 
         <section className="mt-6 grid gap-4 sm:grid-cols-2"><div className="rounded-2xl bg-white p-5 shadow-sm"><ClipboardList className="h-5 w-5 text-[#356B43]" /><p className="mt-3 text-sm font-medium text-[#5B655D]">Inspection reports submitted</p><p className="text-3xl font-bold text-[#254431]">{stats.inspectionCount}</p></div><div className="rounded-2xl bg-white p-5 shadow-sm"><MapPin className="h-5 w-5 text-[#356B43]" /><p className="mt-3 text-sm font-medium text-[#5B655D]">Distinct sites inspected</p><p className="text-3xl font-bold text-[#254431]">{stats.distinctSiteCount}</p></div></section>
 
