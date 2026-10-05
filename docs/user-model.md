@@ -77,6 +77,10 @@ create policy "users update only their own person record"
   on public.people for update to authenticated
   using (auth_user_id = auth.uid()) with check (auth_user_id = auth.uid());
 
+-- RLS limits which rows a user can change. These grants limit the columns: a user can edit
+-- only their profile fields, not activity_points (1.0.5), id, auth_user_id or the timestamps.
+-- The profile edit endpoint uses the signed-in client, so these two rules are what stop a write.
+
 create policy "site stewards are visible to signed-in users"
   on public.site_stewards for select to authenticated using (true);
 -- No insert, update or delete policy: only admin server actions write site_stewards (see decision 3).
@@ -141,3 +145,4 @@ No existing table is changed, so no data can be lost.
 | 4 | Separate profile email? | No. Email and phone come from `auth.users`. | lamersc's review of PR #116. |
 | 5 | How many stewards per site? | One. A new assignment replaces the old one (`site_id` is the primary key). | US 3.0.2 AT2 (#62). If the client wants more, change the key to `(site_id, steward_id)`. |
 | 6 | Table names? | No `W26_` prefix. | #73. |
+| 7 | Can a profile use the current role? | It may display the role from `user_metadata`, but only as information; it must never authorize any action. | Issue #5 remains open. |
