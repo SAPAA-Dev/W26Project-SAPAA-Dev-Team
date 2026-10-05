@@ -37,6 +37,7 @@ import { siteDetailSteps } from '@/components/TutorialOverlay';
 import { createClient } from '@/utils/supabase/client';
 import UserNavBar from "@/components/HeaderDropdown";
 import SiteSteward from "./SiteSteward";
+import SubmittedBy from "./SubmittedBy";
 
 const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
@@ -698,6 +699,7 @@ export default function SiteDetailScreen() {
 
                   {isExpanded && (
                     <div className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-4 border-t-2 border-[#E4EBE4] pt-4">
+                      <SubmittedBy userId={response.user_id} />
                       {response.steward && (
                         <div>
                           <p className="text-sm font-semibold text-[#7A8075] mb-1">Steward</p>

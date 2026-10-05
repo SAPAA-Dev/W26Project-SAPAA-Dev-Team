@@ -87,3 +87,16 @@ export async function getSitesForSteward(personId: number): Promise<StewardedSit
     namesite: (row.sites_pa as unknown as { namesite: string } | null)?.namesite ?? '',
   }));
 }
+
+// 1.0.1 AT3: the person who submitted an inspection, so the site page can link to their profile.
+export async function getPersonByAuthUserId(authUserId: string): Promise<StewardOption | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('people')
+    .select('id, display_name')
+    .eq('auth_user_id', authUserId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data ? { id: data.id, displayName: data.display_name } : null;
+}

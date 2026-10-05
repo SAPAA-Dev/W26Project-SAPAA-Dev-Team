@@ -3,6 +3,7 @@ import {
   assignSiteSteward,
   getSiteSteward,
   getSitesForSteward,
+  getPersonByAuthUserId,
 } from "../../utils/steward-actions";
 import { createClient, createServerSupabase } from "../../utils/supabase/server";
 
@@ -129,6 +130,21 @@ describe("steward-actions", () => {
       setup("steward");
       userFrom.mockReturnValue(builder({ data: [{ site_id: 7, sites_pa: { namesite: "Elk Island" } }], error: null }));
       expect(await getSitesForSteward(3)).toEqual([{ siteId: 7, namesite: "Elk Island" }]);
+    });
+  });
+
+  describe("getPersonByAuthUserId", () => {
+    it("returns the person who submitted an inspection (1.0.1 AT3)", async () => {
+      setup("steward");
+      userFrom.mockReturnValue(builder({ data: { id: 3, display_name: "Ann Lee" }, error: null }));
+      expect(await getPersonByAuthUserId("user-uuid")).toEqual({ id: 3, displayName: "Ann Lee" });
+      expect(userFrom).toHaveBeenCalledWith("people");
+    });
+
+    it("returns null when the user has no person record", async () => {
+      setup("steward");
+      userFrom.mockReturnValue(builder({ data: null, error: null }));
+      expect(await getPersonByAuthUserId("user-uuid")).toBeNull();
     });
   });
 });

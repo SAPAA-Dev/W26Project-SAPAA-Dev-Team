@@ -1,6 +1,9 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import ProfilePage from '@/components/ProfilePage';
 
+const routerMock = { back: jest.fn(), push: jest.fn() };
+jest.mock('next/navigation', () => ({ useRouter: () => routerMock }));
+
 const profilePayload = {
   profile: {
     id: 42,
@@ -22,6 +25,17 @@ describe('ProfilePage', () => {
     fetchMock.mockReset();
     fetchMock.mockResolvedValue({ ok: true, json: async () => profilePayload });
     global.fetch = fetchMock;
+    routerMock.back.mockReset();
+    routerMock.push.mockReset();
+  });
+
+  // 1.0.1 AT4: a profile opened from a site page goes back to that page.
+  it('goes back to the previous page', async () => {
+    window.history.pushState({}, '', '/detail/Beaver%20Hills');
+    render(<ProfilePage personId="42" />);
+
+    fireEvent.click(await screen.findByRole('button', { name: '← Back' }));
+    expect(routerMock.back).toHaveBeenCalled();
   });
 
   it('shows profile data and derived inspection summaries', async () => {
