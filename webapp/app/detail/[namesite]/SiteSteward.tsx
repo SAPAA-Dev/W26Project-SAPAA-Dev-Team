@@ -49,7 +49,7 @@ export default function SiteSteward({ siteId, isAdmin }: { siteId: number; isAdm
         {steward ? (
           <span>
             Steward:{" "}
-            <Link href={`/profile/${steward.id}`} className="underline font-semibold" data-testid="site-steward-link">
+            <Link href={`/people/${steward.id}`} className="underline font-semibold" data-testid="site-steward-link">
               {steward.displayName}
             </Link>
           </span>

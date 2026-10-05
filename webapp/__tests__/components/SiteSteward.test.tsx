@@ -18,7 +18,7 @@ describe("SiteSteward", () => {
 
     const link = await screen.findByTestId("site-steward-link");
     expect(link).toHaveTextContent("Ann Lee");
-    expect(link).toHaveAttribute("href", "/profile/3");
+    expect(link).toHaveAttribute("href", "/people/3");
     expect(screen.queryByTestId("site-steward-edit")).not.toBeInTheDocument();
   });
 
