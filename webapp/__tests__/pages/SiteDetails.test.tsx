@@ -12,10 +12,10 @@ jest.mock('@/utils/supabase/queries');
 jest.mock('@/utils/supabase/client', () => ({
   createClient: () => ({
     auth: {
-      getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'user-123', user_metadata: { authenticated: true } } } }),
+      getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'user-123', app_metadata: { authenticated: true } } } }),
       onAuthStateChange: jest.fn((callback) => {
         // Immediately call with authenticated user
-        callback('SIGNED_IN', { user: { id: 'user-123', user_metadata: { authenticated: true } } });
+        callback('SIGNED_IN', { user: { id: 'user-123', app_metadata: { authenticated: true } } });
         return { data: { subscription: { unsubscribe: jest.fn() } } };
       }),
     },

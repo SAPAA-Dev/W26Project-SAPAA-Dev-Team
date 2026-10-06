@@ -74,7 +74,7 @@ jest.mock("next/server", () => ({
         data: {
             user: {
             id: "user-1",
-            user_metadata: { role: "user" },
+            app_metadata: { role: "user" },
             },
         },
         error: null,
@@ -211,7 +211,7 @@ jest.mock("next/server", () => ({
             data: {
                 user: {
                 id: "user-1",
-                user_metadata: { role: "user" },
+                app_metadata: { role: "user" },
                 },
             },
             error: null,
@@ -304,7 +304,7 @@ jest.mock("next/server", () => ({
         data: {
             user: {
             id: "user-1",
-            user_metadata: { role: "user" },
+            app_metadata: { role: "user" },
             },
         },
         error: null,
@@ -345,7 +345,7 @@ jest.mock("next/server", () => ({
         data: {
             user: {
             id: "user-1",
-            user_metadata: { role: "user" },
+            app_metadata: { role: "user" },
             },
         },
         error: null,

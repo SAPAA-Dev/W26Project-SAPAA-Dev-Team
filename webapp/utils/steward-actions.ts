@@ -18,7 +18,9 @@ async function getAdminUserId(): Promise<string | null> {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) return null;
-  return data.user.user_metadata?.role === 'admin' ? data.user.id : null;
+  const approvedAdmin = data.user.app_metadata?.role === 'admin'
+    && data.user.app_metadata?.authenticated === true;
+  return approvedAdmin ? data.user.id : null;
 }
 
 // 3.0.2 AT1: admins search people by name.

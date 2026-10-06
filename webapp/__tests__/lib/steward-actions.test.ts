@@ -22,8 +22,8 @@ function builder(result: unknown) {
   return b;
 }
 
-function mockUser(role: string | null) {
-  const user = role === null ? null : { id: "admin-uuid", user_metadata: { role } };
+function mockUser(role: string | null, approved: boolean) {
+  const user = role === null ? null : { id: "admin-uuid", app_metadata: { role, authenticated: approved } };
   return { data: { user }, error: null };
 }
 
@@ -31,11 +31,11 @@ describe("steward-actions", () => {
   let userFrom: jest.Mock;
   let serviceFrom: jest.Mock;
 
-  function setup(role: string | null) {
+  function setup(role: string | null, approved = true) {
     userFrom = jest.fn();
     serviceFrom = jest.fn();
     (createClient as jest.Mock).mockResolvedValue({
-      auth: { getUser: jest.fn().mockResolvedValue(mockUser(role)) },
+      auth: { getUser: jest.fn().mockResolvedValue(mockUser(role, approved)) },
       from: userFrom,
     });
     (createServerSupabase as jest.Mock).mockReturnValue({ from: serviceFrom });
@@ -55,6 +55,13 @@ describe("steward-actions", () => {
       setup(null);
       const result = await assignSiteSteward(1, 2);
       expect(result.success).toBe(false);
+      expect(serviceFrom).not.toHaveBeenCalled();
+    });
+
+    it("rejects an admin whose approval was revoked", async () => {
+      setup("admin", false);
+      const result = await assignSiteSteward(1, 2);
+      expect(result).toEqual({ success: false, error: "Only admins can assign a steward." });
       expect(serviceFrom).not.toHaveBeenCalled();
     });
 
@@ -90,6 +97,12 @@ describe("steward-actions", () => {
   describe("searchStewards", () => {
     it("returns nothing for non-admins (AT1)", async () => {
       setup("steward");
+      expect(await searchStewards("ann")).toEqual([]);
+      expect(userFrom).not.toHaveBeenCalled();
+    });
+
+    it("returns nothing for an admin whose approval was revoked", async () => {
+      setup("admin", false);
       expect(await searchStewards("ann")).toEqual([]);
       expect(userFrom).not.toHaveBeenCalled();
     });

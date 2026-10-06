@@ -50,16 +50,6 @@ if (!url || !publishableKey || !secretKey) {
 async function startDevServer() {
   const supabaseAdmin = createClient(url, secretKey);
   const adminEmail = 'admin@example.com';
-  const adminAttributes = {
-    email: adminEmail,
-    password: 's&&uper$#sec&&ure',
-    email_confirm: true,
-    user_metadata: {
-      username: 'admin',
-      role: 'admin',
-      authenticated: true,
-    },
-  };
 
   const { data: userList, error: listError } = await supabaseAdmin.auth.admin.listUsers({
     page: 1,
@@ -70,6 +60,19 @@ async function startDevServer() {
   const existingAdmin = userList.users.find(
     (user) => user.email === adminEmail || user.email === 'admin@local.test'
   );
+  const adminAttributes = {
+    email: adminEmail,
+    password: 's&&uper$#sec&&ure',
+    email_confirm: true,
+    user_metadata: {
+      username: 'admin',
+    },
+    app_metadata: {
+      ...(existingAdmin?.app_metadata ?? {}),
+      role: 'admin',
+      authenticated: true,
+    },
+  };
   const { error: adminError } = existingAdmin
     ? await supabaseAdmin.auth.admin.updateUserById(existingAdmin.id, adminAttributes)
     : await supabaseAdmin.auth.admin.createUser(adminAttributes);

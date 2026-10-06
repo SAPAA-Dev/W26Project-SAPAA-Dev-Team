@@ -1,8 +1,19 @@
 'use server';
 
 import { createClient } from '@supabase/supabase-js';
-import { createServerSupabase } from './supabase/server';
+import { createServerSupabase, createClient as createUserClient } from './supabase/server';
 import { Truck } from 'lucide-react';
+
+// Every write below runs with the service role, so each one checks the caller
+// first. The check reads the signed-in session, never a value the caller sends.
+async function requireApprovedAdmin(): Promise<void> {
+  const supabase = await createUserClient();
+  const { data, error } = await supabase.auth.getUser();
+  const approved = !error
+    && data.user?.app_metadata?.role === 'admin'
+    && data.user?.app_metadata?.authenticated === true;
+  if (!approved) throw new Error('Only admins can edit the form.');
+}
 
 // ─── Types ───────────────────────────────────────────────────────────
 export interface FormSection {
@@ -42,6 +53,7 @@ interface questionOptions {
 // ─── Form Editor Queries ─────────────────────────────────────────────
 
 export async function fetchFormSections(): Promise<FormSection[]> {
+  await requireApprovedAdmin();
   const supabase = createServerSupabase();
   const { data, error } = await supabase
     .from("form_sections")
@@ -54,6 +66,7 @@ export async function fetchFormSections(): Promise<FormSection[]> {
 
 
 export async function fetchFormQuestions(): Promise<FormQuestion[]> {
+  await requireApprovedAdmin();
   const supabase = createServerSupabase();
   const { data, error } = await supabase
     .from("questions")
@@ -95,6 +108,7 @@ export async function fetchFormQuestions(): Promise<FormQuestion[]> {
 }
 
 export async function getMaxFormOrder(): Promise<number> {
+  await requireApprovedAdmin();
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
@@ -109,6 +123,7 @@ export async function getMaxFormOrder(): Promise<number> {
 
 
 export async function saveQuestion(question: FormQuestion): Promise<void> {
+  await requireApprovedAdmin();
   const supabase = createServerSupabase();
 
   const { error: editingError } = await supabase
@@ -171,6 +186,7 @@ export async function saveQuestion(question: FormQuestion): Promise<void> {
 
 // Admin should only be able to toggle question visibility and never delete questions (request from client)
 export async function toggleQuestionActive(questionId: number, currentState: boolean) {
+  await requireApprovedAdmin();
   const supabase = createServerSupabase();
   const { error } = await supabase
     .from("questions")
@@ -191,6 +207,7 @@ export async function addQuestion(
     question_key: string;
   }
 ): Promise<void> {
+  await requireApprovedAdmin();
   const supabase = createServerSupabase();
 
   // create query to insert a row into question_keys
@@ -311,6 +328,7 @@ export async function addQuestion(
 export async function reorderQuestions(
   updates: { questionId: number; questionName: string; newOrder: number }[]
 ) {
+  await requireApprovedAdmin();
   const supabase = createServerSupabase();
 
   for (const update of updates) {

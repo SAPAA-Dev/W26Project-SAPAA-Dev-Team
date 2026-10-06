@@ -28,7 +28,7 @@ export async function getCurrentUser() {
   return {
     id: user.id,
     email: user.email ?? '',
-    role: user.user_metadata?.role ?? 'steward',
+    role: user.app_metadata?.role ?? 'steward',
     name: user.user_metadata?.full_name ?? '',
     avatar: user.user_metadata?.avatar_url ?? '',
     phone: user.user_metadata?.phone ?? user.phone ?? undefined,

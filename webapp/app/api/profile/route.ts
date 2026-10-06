@@ -106,10 +106,10 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // Role is display-only until issue #5 moves it out of auth metadata. It is never used here
-  // (or anywhere in this route) to authorize a request.
+  // Role is display-only. It is never used here (or anywhere in this route) to
+  // authorize a request.
   const { data: roleData } = await admin.auth.admin.getUserById(profile.auth_user_id);
-  const role = roleData.user?.user_metadata?.role === 'admin' ? 'Admin' : 'Steward';
+  const role = roleData.user?.app_metadata?.role === 'admin' ? 'Admin' : 'Steward';
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 

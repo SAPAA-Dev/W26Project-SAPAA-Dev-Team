@@ -360,7 +360,7 @@ USING (true);
 
 ### User Roles Setup
 
-The application uses Supabase Auth `user_metadata` to store user roles in the `user_metadata.role` field.
+The application uses Supabase Auth `app_metadata` to store user roles in the `app_metadata.role` field. Only the server can write `app_metadata`, so a user cannot raise their own role.
 
 **How Roles Work:**
 
@@ -371,10 +371,11 @@ The application uses Supabase Auth `user_metadata` to store user roles in the `u
 
 1. Go to Supabase Dashboard → **Authentication** → **Users**
 2. Click the user you want to make an admin
-3. In the **Raw User Meta Data** section, add or update:
+3. In the **App Metadata** section, add or update:
 
         {
-          "role": "admin"
+          "role": "admin",
+          "authenticated": true
         }
 
 4. Click **Save**
@@ -385,7 +386,7 @@ The application uses Supabase Auth `user_metadata` to store user roles in the `u
 
 ### User Authorization
 
-The application uses Supabase Auth `user_metadata` to also store user authorization status in the `user_metadata.authenticated` field.
+The application uses Supabase Auth `app_metadata` to also store user authorization status in the `app_metadata.authenticated` field.
 
 **How Authorization Works:**
 

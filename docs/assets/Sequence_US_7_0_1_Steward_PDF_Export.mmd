@@ -54,7 +54,7 @@ sequenceDiagram
     Page->>Api: POST /api/pdf {mode single, responseId,<br/>includeImages true}
     Api->>DB: getResponseOwnerId(responseId) (proposed)
     DB-->>Api: Owner user_id
-    Api->>Api: Allow owner or Admin (proposed)<br/>Today: only role admin from user_metadata
+    Api->>Api: Allow owner or Admin (proposed)<br/>Today: only role admin from app_metadata
     alt Caller did not submit the SIR (AT 2)
         Api-->>Page: 403. No job is made
         Page-->>Steward: Show "not allowed"
@@ -80,4 +80,4 @@ sequenceDiagram
         end
     end
 
-    Note over Page,Job: includeImages is false by default today.<br/>AT 3 needs photos, so the request must set it.<br/>Today /api/pdf/route.ts does not read the owner. It checks only user_metadata.role === 'admin'.
+    Note over Page,Job: includeImages is false by default today.<br/>AT 3 needs photos, so the request must set it.<br/>Today /api/pdf/route.ts does not read the owner. It checks only app_metadata.role === 'admin'.

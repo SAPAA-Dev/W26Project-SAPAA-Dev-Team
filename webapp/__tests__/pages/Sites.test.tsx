@@ -88,14 +88,14 @@ const mockSites = [
 const mockAdminUser = {
   user: {
     email: 'admin@example.com',
-    user_metadata: { role: 'admin', authenticated: true  },
+    app_metadata: { role: 'admin', authenticated: true  },
   },
 };
 
 const mockStewardUser = {
   user: {
     email: 'steward@example.com',
-    user_metadata: { role: 'steward', authenticated: true  },
+    app_metadata: { role: 'steward', authenticated: true  },
   },
 };
 

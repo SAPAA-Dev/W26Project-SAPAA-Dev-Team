@@ -112,11 +112,13 @@ export async function signup(email: string, password: string): Promise<{ success
   }
 
   try {
+    // The role and the approval flag live in app_metadata, which only the server can
+    // write. They are not set here, so a new user reads as steward and unapproved
+    // until an admin approves the account.
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password: password,
       options: {
-        data: { role: 'steward', authenticated: false },
         emailRedirectTo: `${window.location.origin}/auth/confirm`,
       }
     });

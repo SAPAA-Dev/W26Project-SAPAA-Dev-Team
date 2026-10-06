@@ -62,7 +62,7 @@ describe('/api/profile', () => {
     mockGetUser.mockResolvedValue({ data: { user: VIEWER }, error: null });
     mockAdminFrom.mockReturnValue(makeQuery({ data: PERSON, error: null }));
     mockRpc.mockResolvedValue({ data: 2, error: null });
-    mockGetUserById.mockResolvedValue({ data: { user: { user_metadata: { role: 'admin' } } } });
+    mockGetUserById.mockResolvedValue({ data: { user: { app_metadata: { role: 'admin' } } } });
   });
 
   describe('GET', () => {

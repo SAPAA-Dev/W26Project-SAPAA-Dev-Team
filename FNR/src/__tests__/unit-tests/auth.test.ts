@@ -56,7 +56,7 @@ describe('Auth module full', () => {
   describe('login', () => {
     // TC60, TC69
     it('successfully logs in and notifies listeners', async () => {
-      const user = { id: '1', email: 'a@b.com', user_metadata: { role: 'admin' } };
+      const user = { id: '1', email: 'a@b.com', app_metadata: { role: 'admin' } };
       (supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({ data: { user }, error: null });
 
       const result = await login('a@b.com', '123456');
@@ -118,7 +118,7 @@ describe('Auth module full', () => {
 
     // TC30, TC93
     it('successfully signs up confirmed user', async () => {
-      const user = { id: '1', email: 'a@b.com', confirmed_at: new Date(), user_metadata: { role: 'steward' } };
+      const user = { id: '1', email: 'a@b.com', confirmed_at: new Date(), app_metadata: { role: 'steward' } };
       (supabase.auth.signUp as jest.Mock).mockResolvedValue({ data: { user }, error: null });
       const result = await signup('a@b.com', '123456');
       expect(result).toEqual({ success: true, needsConfirmation: false });
@@ -126,7 +126,7 @@ describe('Auth module full', () => {
 
     // TC30, TC93
     it('returns needsConfirmation true for unconfirmed user', async () => {
-      const user = { id: '1', email: 'a@b.com', confirmed_at: null, user_metadata: { role: 'steward' } };
+      const user = { id: '1', email: 'a@b.com', confirmed_at: null, app_metadata: { role: 'steward' } };
       (supabase.auth.signUp as jest.Mock).mockResolvedValue({ data: { user }, error: null });
       const result = await signup('a@b.com', '123456');
       expect(result).toEqual({ success: true, needsConfirmation: true });
@@ -165,7 +165,7 @@ describe('Auth module full', () => {
   describe('subscribeToAuth', () => {
     // TC61, TC95
     it('calls callback immediately with current auth state', async () => {
-      const user = { id: '1', email: 'a@b.com', user_metadata: { role: 'steward' } };
+      const user = { id: '1', email: 'a@b.com', app_metadata: { role: 'steward' } };
       (supabase.auth.getSession as jest.Mock).mockResolvedValue({ data: { session: { user } } });
 
       const callback = jest.fn();
@@ -235,7 +235,7 @@ describe('Auth module full', () => {
 
   describe('getAuthState', () => {
     it('returns authenticated user', async () => {
-      (supabase.auth.getSession as jest.Mock).mockResolvedValue({ data: { session: { user: { id: '1', email: 'a@b.com', user_metadata: { role: 'admin' } } } } });
+      (supabase.auth.getSession as jest.Mock).mockResolvedValue({ data: { session: { user: { id: '1', email: 'a@b.com', app_metadata: { role: 'admin' } } } } });
 
       const state = await getAuthState();
       expect(state.isAuthenticated).toBe(true);

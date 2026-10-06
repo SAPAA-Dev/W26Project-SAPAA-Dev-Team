@@ -32,7 +32,7 @@ Sorted by value. Cut the line wherever your capacity runs out.
 | 2 | Remove committed secrets from docs and tests | security | 4 | S | ★★★ | |
 | 3 | Rotate service role key and remove it from the mobile bundle | security | 5 | S | ★★★ | |
 | 4 | Enforce caller identity on every server action | security | 5 | M | ★★★ | |
-| 5 | Move `role` out of `user_metadata` into a table with RLS | security | 5 | M | ★★★ | |
+| 5 | Move `role` out of `user_metadata` into `app_metadata` | security | 5 | M | ★★★ | |
 | 6 | Decide the canonical database schema (spike) | data | 5 | S | ★★★ | |
 | 7 | Add real coordinates to sites | data | 5 | M | ★★★ | |
 | 8 | Fix the failing test on main | infra | 2 | S | ★★★ | |
@@ -169,16 +169,16 @@ database, refuse if they are not permitted, and only then use the service role c
 Acceptance: calling a privileged action as a steward, outside the UI, is refused. See issue #5,
 these two belong together. No current user story covers this item. The work is the Sprint 2 task #71.
 
-#### 5. Move `role` out of `user_metadata` into a table with RLS
+#### 5. Move `role` out of `user_metadata` into `app_metadata`
 `Labels: security, data`
 
 A user is allowed to edit their own `user_metadata`, so storing the role there means any
 permission check is asking the user what their own permissions are. Nothing prevents
 `auth.updateUser({data: {role: 'admin'}})`.
 
-Fix: create a roles table, protect it with row level security so only admins can write to it, and
-seed the first admin as a database record. Acceptance: a user cannot change their own role by any
-route, including the auth API directly.
+Fix: store the role and the approval flag in `app_metadata`, which only the service role can
+write, and read them from `app_metadata` in every permission check. Acceptance: a user cannot
+change their own role by any route, including the auth API directly.
 
 #### 6. Decide the canonical database schema
 `Labels: spike, data`

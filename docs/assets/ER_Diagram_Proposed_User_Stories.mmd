@@ -42,7 +42,7 @@ erDiagram
     %% US 6.0.1 AT 4: fallback geocoding results are cached and OpenCage
     %% requests stay under 2,500 per day. Where the cache and the daily count
     %% are stored is not decided. See the OPEN QUESTIONS box.
-    %% The role store is not decided. See the OPEN QUESTIONS box.
+    %% The role store is raw_app_meta_data. See the OPEN QUESTIONS box.
     %% Open question for US 6.0.1 and 2.0.2: load the KML into a table, or
     %% read the KML file each time. kml_sites is the proposed option.
     %% US 2.0.10: the legacy table sites_report_fnr_test already has sapaaweb
@@ -52,11 +52,12 @@ erDiagram
     auth_users["EXISTING auth.users"] {
         uuid id PK
         text email
-        jsonb raw_user_meta_data "full_name, role and authenticated today, the user can change it"
+        jsonb raw_user_meta_data "full_name today, the user can change it"
+        jsonb raw_app_meta_data "role and authenticated, only the server can write it"
     }
 
     OPEN_QUESTIONS["OPEN QUESTIONS: NOT DECIDED"] {
-        text role_store "Where the Admin or Steward role is kept. Today: raw_user_meta_data"
+        text role_store "Where the Admin or Steward role is kept: raw_app_meta_data"
         text role_store_need "Sequence diagrams need a role that the user cannot change"
         text geocode_cache "US 6.0.1 AT 4: store for cached OpenCage results"
         text geocode_daily_count "US 6.0.1 AT 4: store for the daily request count, limit 2,500"

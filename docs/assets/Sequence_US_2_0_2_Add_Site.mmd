@@ -46,7 +46,7 @@ sequenceDiagram
     participant Actions as Server actions<br/>utils/supabase/queries.ts
     participant DB as Supabase<br/>PostgreSQL
 
-    Note over Admin,DB: Covers US 2.0.2. /admin/sites exists but has no Add Site flow. All add steps are Proposed.<br/>ProtectedRoute requireAdmin hides the page in the browser only. It reads user_metadata, so it is not a security check.
+    Note over Admin,DB: Covers US 2.0.2. /admin/sites exists but has no Add Site flow. All add steps are Proposed.<br/>ProtectedRoute requireAdmin hides the page in the browser only. It reads app_metadata in the browser, so it is not a security check.
 
     Admin->>Page: Select "Add Site" (Proposed)
     activate Page

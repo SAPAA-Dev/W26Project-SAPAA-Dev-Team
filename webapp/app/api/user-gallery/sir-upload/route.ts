@@ -49,7 +49,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const role = user.user_metadata?.role;
+    const role = user.app_metadata?.role;
     
   const { data: attachments, error: attachmentsError } = await supabase
     .from("attachments")

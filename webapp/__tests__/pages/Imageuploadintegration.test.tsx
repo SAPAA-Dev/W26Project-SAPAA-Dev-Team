@@ -160,8 +160,7 @@ function mockAdminUser() {
           user: {
             id: "admin-123",
             email: "admin@example.com",
-            app_metadata: { role: "admin" },
-            user_metadata: { role: "admin" },
+            app_metadata: { role: "admin", authenticated: true },
           },
         },
         error: null,
@@ -180,7 +179,6 @@ function mockNonAdminUser() {
             id: "user-123",
             email: "user@example.com",
             app_metadata: { role: "user" },
-            user_metadata: { role: "user" },
           },
         },
         error: null,
@@ -503,8 +501,7 @@ describe("Acceptance Test 3 – Uploaded images are accessible through the appli
             user: {
               id: "admin-123",
               email: "admin@example.com",
-              app_metadata: { role: "admin" },
-              user_metadata: { role: "admin" },
+              app_metadata: { role: "admin", authenticated: true },
             },
           },
           error: null,

@@ -10,7 +10,8 @@ designation). It also keeps a field for US 1.0.5 (activity points, Sprint 4).
 | Data | Where it is now | Problem |
 |---|---|---|
 | Login identity | `auth.users` | None. |
-| Name, phone, avatar, role | `auth.users.user_metadata` | A user can change their own `user_metadata`, which includes `role` (issue #5). A user cannot read the `user_metadata` of another user without the service-role key, so US 1.0.1 cannot show other profiles from it. |
+| Name, phone, avatar | `auth.users.user_metadata` | A user cannot read the `user_metadata` of another user without the service-role key, so US 1.0.1 cannot show other profiles from it. |
+| Role, approval flag | `auth.users.app_metadata` | Only the server can write `app_metadata`, so a user cannot change their own role or approval flag (issue #5). |
 | Legacy people | `luperson` | Mobile app writes `displayname` (`FNR/src/services/database.ts:312`). Google Sheets syncs the full table by `id` (`googleSheets/code.gs:368`). Web app only checks that an email exists (`webapp/utils/supabase/queries.ts:352`). The production columns are not in the repository. It has no link to `auth.users` (issue #38). |
 | Inspections of a user | `form_responses.user_id` references `auth.users.id` | None. The inspection count can be calculated from this. |
 | Steward of a site | Nothing | US 3.0.2 needs it. |
@@ -141,8 +142,8 @@ No existing table is changed, so no data can be lost.
 |---|---|---|---|
 | 1 | Which model? | Option D: a `people` table with its own id. | Approved by Aaron and lamersc in PR #116. |
 | 2 | Can other users see contact info? | Contact info is not in `people`, so `people` RLS does not expose it. Issue #76 chooses the fields that other users see. | Moved to #76. |
-| 3 | Where is `role` stored? | Not moved this sprint (issue #5). Only admin server actions write `site_stewards`, with the same admin check as Beta's admin route task. If `role` moves into a table later, users must not be able to edit that table. | Approved in PR #116. |
+| 3 | Where is `role` stored? | In `app_metadata`, which only the server can write (issue #5). Only admin server actions write `site_stewards`, with the same admin check as Beta's admin route task. | Approved in PR #116, store decided by the move to `app_metadata`. |
 | 4 | Separate profile email? | No. Email and phone come from `auth.users`. | lamersc's review of PR #116. |
 | 5 | How many stewards per site? | One. A new assignment replaces the old one (`site_id` is the primary key). | US 3.0.2 AT2 (#62). If the client wants more, change the key to `(site_id, steward_id)`. |
 | 6 | Table names? | No `W26_` prefix. | #73. |
-| 7 | Can a profile use the current role? | It may display the role from `user_metadata`, but only as information; it must never authorize any action. | Issue #5 remains open. |
+| 7 | Can a profile use the current role? | It may display the role from `app_metadata`, but only as information; it must never authorize any action. | Fixed by the move to `app_metadata` (issue #5). |

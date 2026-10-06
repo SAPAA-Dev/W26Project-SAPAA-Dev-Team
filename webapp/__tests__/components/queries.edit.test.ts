@@ -1,15 +1,24 @@
 import * as queries from "../../utils/supabase/queries";
-import { createServerSupabase } from "../../utils/supabase/server";
+import { createServerSupabase, createClient } from "../../utils/supabase/server";
 
 jest.mock("../../utils/supabase/server", () => ({
   createServerSupabase: jest.fn(),
+  createClient: jest.fn(),
 }));
+
+function mockCaller(role: string | null, approved = true) {
+  const user = role === null ? null : { id: "admin-uuid", app_metadata: { role, authenticated: approved } };
+  (createClient as jest.Mock).mockResolvedValue({
+    auth: { getUser: jest.fn().mockResolvedValue({ data: { user }, error: null }) },
+  });
+}
 
 describe("Supabase edit site functions", () => {
   const mockFrom = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockCaller("admin");
     (createServerSupabase as jest.Mock).mockReturnValue({
       from: mockFrom,
     });
@@ -52,6 +61,20 @@ describe("Supabase edit site functions", () => {
 
       await expect(queries.getCounties()).rejects.toThrow("Failed counties");
     });
+
+    it("rejects a steward and reads nothing", async () => {
+      mockCaller("steward");
+
+      await expect(queries.getCounties()).rejects.toThrow("Only admins can edit sites.");
+      expect(mockFrom).not.toHaveBeenCalled();
+    });
+
+    it("rejects an admin whose approval was revoked", async () => {
+      mockCaller("admin", false);
+
+      await expect(queries.getCounties()).rejects.toThrow("Only admins can edit sites.");
+      expect(mockFrom).not.toHaveBeenCalled();
+    });
   });
 
   describe("updateSite", () => {
@@ -86,6 +109,20 @@ describe("Supabase edit site functions", () => {
       mockFrom.mockReturnValueOnce({ update: mockUpdate });
 
       await expect(queries.updateSite(1, "Name", 5)).rejects.toThrow("Update failed");
+    });
+
+    it("rejects a steward and writes nothing", async () => {
+      mockCaller("steward");
+
+      await expect(queries.updateSite(1, "Name", 5)).rejects.toThrow("Only admins can edit sites.");
+      expect(mockFrom).not.toHaveBeenCalled();
+    });
+
+    it("rejects an admin whose approval was revoked", async () => {
+      mockCaller("admin", false);
+
+      await expect(queries.updateSite(1, "Name", 5)).rejects.toThrow("Only admins can edit sites.");
+      expect(mockFrom).not.toHaveBeenCalled();
     });
   });
 });

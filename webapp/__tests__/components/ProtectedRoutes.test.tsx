@@ -31,7 +31,7 @@ describe('ProtectedRoute Component', () => {
   const mockSupabaseSession = (role: string | null = 'steward', authenticated: boolean | null = true) => {
     const mockAuth = {
       getSession: jest.fn().mockResolvedValue({
-        data: { session: role ? { user: { id: '1', email: 'a@b.com', user_metadata: { role, authenticated: authenticated ?? true } } } : null },
+        data: { session: role ? { user: { id: '1', email: 'a@b.com', app_metadata: { role, authenticated: authenticated ?? true } } } : null },
       }),
     };
     (supabaseClient.createClient as jest.Mock).mockReturnValue({ auth: mockAuth });

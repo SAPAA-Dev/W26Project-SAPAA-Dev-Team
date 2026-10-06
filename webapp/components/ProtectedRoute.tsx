@@ -16,7 +16,7 @@ async function getCurrentUserRole(): Promise<string | null> {
       return null;
     }
     
-    return session.user.user_metadata?.role ?? 'steward';
+    return session.user.app_metadata?.role ?? 'steward';
   } catch (error) {
     console.error('Error getting user role:', error);
     return null;
@@ -32,7 +32,7 @@ async function getCurrentUserAuthenicationStatus(): Promise<boolean | null> {
       return null;
     }
     
-    return session.user.user_metadata?.authenticated ?? false;
+    return session.user.app_metadata?.authenticated ?? false;
   } catch (error) {
     console.error('Error getting user authentication:', error);
     return null;

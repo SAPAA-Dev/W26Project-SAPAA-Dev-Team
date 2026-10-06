@@ -20,7 +20,7 @@ export async function GET() {
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    if (user.user_metadata?.role !== "admin") {
+    if (user.app_metadata?.role !== "admin" || user.app_metadata?.authenticated !== true) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

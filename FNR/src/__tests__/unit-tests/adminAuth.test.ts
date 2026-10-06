@@ -27,6 +27,7 @@ const mockSignOut = jest.fn();
 const mockGetSession = jest.fn();
 const mockOnAuthStateChange = jest.fn();
 const mockAdminUpdateUser = jest.fn();
+const mockAdminGetUserById = jest.fn();
 
 jest.mock('../../services/supabase', () => {
   return {
@@ -64,6 +65,7 @@ jest.mock('@supabase/supabase-js', () => ({
     auth: {
       admin: {
         updateUserById: (...args) => mockAdminUpdateUser(...args),
+        getUserById: (...args) => mockAdminGetUserById(...args),
       },
     },
   }),
@@ -73,7 +75,7 @@ jest.mock('@supabase/supabase-js', () => ({
 const fakeUser = {
   id: '123',
   email: 'test@example.com',
-  user_metadata: { role: 'steward' },
+  app_metadata: { role: 'steward' },
 };
 
 // ======================================================
@@ -233,7 +235,7 @@ describe('Auth Service', () => {
     (supabase.functions.invoke as jest.Mock).mockResolvedValue({
       data: {
         users: [
-          { id: '1', email: 'u1@test.com', user_metadata: { role: 'admin' } },
+          { id: '1', email: 'u1@test.com', app_metadata: { role: 'admin' } },
           { id: '2', email: 'u2@test.com' },
         ],
       },
@@ -336,6 +338,10 @@ describe('Auth Service', () => {
   // updateUser()
   // ------------------------------
   it('updateUser → success', async () => {
+    mockAdminGetUserById.mockResolvedValue({
+      data: { user: { id: '123', app_metadata: { provider: 'email', providers: ['email'], role: 'steward' } } },
+      error: null,
+    });
     mockAdminUpdateUser.mockResolvedValue({
       data: { id: '123' },
       error: null,
@@ -351,11 +357,42 @@ describe('Auth Service', () => {
       success: true,
       data: { id: '123' },
     });
+    expect(mockAdminUpdateUser).toHaveBeenCalledWith('123', {
+      email: 'new@test.com',
+      app_metadata: { provider: 'email', providers: ['email'], role: 'admin' },
+    });
+  });
+
+  it('updateUser → fails without writing when the user lookup fails', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    mockAdminGetUserById.mockResolvedValue({
+      data: { user: null },
+      error: { message: 'not found' },
+    });
+
+    const result = await updateUser({
+      id: '123',
+      email: 'x@test.com',
+      role: 'admin',
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: 'not found',
+    });
+    expect(mockAdminUpdateUser).not.toHaveBeenCalled();
+
+    consoleSpy.mockRestore();
   });
 
   it('updateUser → fails with error', async () => {
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
+    mockAdminGetUserById.mockResolvedValue({
+      data: { user: { id: '123', app_metadata: { role: 'admin' } } },
+      error: null,
+    });
     mockAdminUpdateUser.mockResolvedValue({
         error: { message: 'Cannot update' },
     });

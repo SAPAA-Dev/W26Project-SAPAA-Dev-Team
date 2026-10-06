@@ -69,13 +69,15 @@ beforeEach(() => {
 const stewardUser = {
   id: 'user-1',
   email: 'steward@sapaa.org',
-  user_metadata: { full_name: 'Jane Steward', role: 'steward', avatar_url: '' },
+  app_metadata: { role: 'steward' },
+  user_metadata: { full_name: 'Jane Steward', avatar_url: '' },
 };
 
 const guestUser = {
   id: 'user-2',
   email: 'guest@example.com',
-  user_metadata: { full_name: 'John Guest', role: 'guest', avatar_url: '' },
+  app_metadata: { role: 'guest' },
+  user_metadata: { full_name: 'John Guest', avatar_url: '' },
 };
 
 const personalInfoQuestions = [

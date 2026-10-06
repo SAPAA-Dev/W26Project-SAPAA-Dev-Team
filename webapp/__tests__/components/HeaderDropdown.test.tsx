@@ -23,7 +23,8 @@ jest.mock('@/utils/supabase/client', () => ({
           session: {
             user: {
               email: 'test@example.com',
-              user_metadata: { role: 'steward', full_name: 'Test User', avatar_url: '' },
+              app_metadata: { role: 'steward' },
+              user_metadata: { full_name: 'Test User', avatar_url: '' },
             },
           },
         },

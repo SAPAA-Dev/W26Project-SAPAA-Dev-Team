@@ -34,7 +34,8 @@ erDiagram
         uuid id PK
         text email
         text phone
-        jsonb raw_user_meta_data "role, authenticated, full_name, avatar_url"
+        jsonb raw_user_meta_data "full_name, avatar_url"
+        jsonb raw_app_meta_data "role, authenticated, only the server can write it"
     }
 
     luperson["SHARED luperson"] {

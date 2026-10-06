@@ -49,9 +49,10 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const role = user.user_metadata?.role;
+    const role = user.app_metadata?.role;
+    const approved = user.app_metadata?.authenticated === true;
 
-    if (role !== "admin") {
+    if (role !== "admin" || !approved) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

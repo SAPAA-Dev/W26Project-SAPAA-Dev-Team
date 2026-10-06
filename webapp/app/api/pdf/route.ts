@@ -71,8 +71,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const role = user.user_metadata?.role;
-    if (role !== 'admin') {
+    const role = user.app_metadata?.role;
+    const approved = user.app_metadata?.authenticated === true;
+    if (role !== 'admin' || !approved) {
       return NextResponse.json({ error: 'Forbidden - admin access required' }, { status: 403 });
     }
 

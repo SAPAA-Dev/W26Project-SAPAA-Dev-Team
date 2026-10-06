@@ -32,7 +32,7 @@ async function getCurrentUser(): Promise<{ email: string; role: string; name: st
     }
     
     const email = session.user.email ?? '';
-    const role = session.user.user_metadata?.role ?? 'steward';
+    const role = session.user.app_metadata?.role ?? 'steward';
     const name  = session.user.user_metadata?.full_name ?? '';
     const avatar = session.user.user_metadata?.avatar_url ?? '';
     

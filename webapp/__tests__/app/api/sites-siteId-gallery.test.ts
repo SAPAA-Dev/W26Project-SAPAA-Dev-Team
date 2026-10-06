@@ -104,7 +104,7 @@ describe("GET /api/sites/[siteId]/gallery", () => {
       data: {
         user: {
           id: "user-1",
-          user_metadata: { role: "steward" },
+          app_metadata: { role: "steward" },
         },
       },
       error: null,

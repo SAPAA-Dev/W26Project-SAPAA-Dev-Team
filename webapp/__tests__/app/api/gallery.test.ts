@@ -75,7 +75,45 @@ describe("GET /api/gallery", () => {
       data: {
         user: {
           id: "user-1",
-          user_metadata: { role: "user" },
+          app_metadata: { role: "user" },
+        },
+      },
+      error: null,
+    });
+
+    const response = await GET();
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body).toEqual({ error: "Forbidden" });
+  });
+
+  it("returns 403 for an admin whose approval was revoked", async () => {
+    mockGetUser.mockResolvedValue({
+      data: {
+        user: {
+          id: "admin-1",
+          app_metadata: { role: "admin", authenticated: false },
+        },
+      },
+      error: null,
+    });
+
+    const response = await GET();
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body).toEqual({ error: "Forbidden" });
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it("ignores a role the user set in user_metadata", async () => {
+    mockGetUser.mockResolvedValue({
+      data: {
+        user: {
+          id: "user-1",
+          app_metadata: { role: "user" },
+          user_metadata: { role: "admin" },
         },
       },
       error: null,
@@ -93,7 +131,7 @@ describe("GET /api/gallery", () => {
       data: {
         user: {
           id: "admin-1",
-          user_metadata: { role: "admin" },
+          app_metadata: { role: "admin", authenticated: true },
         },
       },
       error: null,
@@ -232,7 +270,7 @@ describe("GET /api/gallery", () => {
       data: {
         user: {
           id: "admin-1",
-          user_metadata: { role: "admin" },
+          app_metadata: { role: "admin", authenticated: true },
         },
       },
       error: null,
@@ -325,7 +363,7 @@ describe("GET /api/gallery", () => {
       data: {
         user: {
           id: "admin-1",
-          user_metadata: { role: "admin" },
+          app_metadata: { role: "admin", authenticated: true },
         },
       },
       error: null,
@@ -366,7 +404,7 @@ describe("GET /api/gallery", () => {
       data: {
         user: {
           id: "admin-1",
-          user_metadata: { role: "admin" },
+          app_metadata: { role: "admin", authenticated: true },
         },
       },
       error: null,

@@ -75,7 +75,7 @@ describe("Supabase Auth Module", () => {
 
     it("signs up successfully with authenticated: false and needs confirmation", async () => {
       mockSignUp.mockResolvedValue({
-        data: { user: { id: "1", email: "a@b.com", confirmed_at: null, user_metadata: { role: 'steward', authenticated: false } } },
+        data: { user: { id: "1", email: "a@b.com", confirmed_at: null, app_metadata: { role: 'steward', authenticated: false } } },
         error: null,
       });
 
@@ -85,12 +85,24 @@ describe("Supabase Auth Module", () => {
 
     it("signs up successfully with authenticated: false and already confirmed", async () => {
       mockSignUp.mockResolvedValue({
-        data: { user: { id: "1", email: "a@b.com", confirmed_at: "2025-11-30", user_metadata: { role: 'steward', authenticated: false } } },
+        data: { user: { id: "1", email: "a@b.com", confirmed_at: "2025-11-30", app_metadata: { role: 'steward', authenticated: false } } },
         error: null,
       });
 
       const result = await authModule.signup("a@b.com", "123456");
       expect(result).toEqual({ success: true, needsConfirmation: false });
+    });
+
+    it("does not write the role or the approval flag at signup", async () => {
+      mockSignUp.mockResolvedValue({
+        data: { user: { id: "1", email: "a@b.com", confirmed_at: null } },
+        error: null,
+      });
+
+      await authModule.signup("a@b.com", "123456");
+      expect(mockSignUp).toHaveBeenCalledWith(
+        expect.objectContaining({ options: expect.not.objectContaining({ data: expect.anything() }) })
+      );
     });
 
     it("returns error if Supabase fails", async () => {

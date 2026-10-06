@@ -53,7 +53,7 @@ sequenceDiagram
     Admin->>Page: Select more than 50 SIRs (US 7.0.6)
     Admin->>Page: Select questions to hide (US 7.0.7) (proposed)
     Page->>Api: POST /api/pdf {mode: site or multi-site, siteNames,<br/>options: {selectedResponseIds, hiddenQuestionIds (proposed)}}
-    Api->>Api: Check caller is Admin (exists: user_metadata.role,<br/>proposed: trusted role source, store not decided)
+    Api->>Api: Check caller is Admin (exists: app_metadata.role,<br/>the trusted role source)
     alt Caller is not Admin (7.0.6 AT 3, 7.0.7 AT 4)
         Api-->>Page: 403. No job is made
         Note over Admin,Api: A Steward who sends the same request directly is refused the same way

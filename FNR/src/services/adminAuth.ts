@@ -30,7 +30,7 @@ async function getAuthState(): Promise<AuthState> {
       const user: User = {
         id: session.user.id,
         email: session.user.email || '',
-        role: session.user.user_metadata?.role || 'steward',
+        role: session.user.app_metadata?.role || 'steward',
       };
       return { isAuthenticated: true, user };
     }
@@ -55,7 +55,7 @@ export function subscribeToAuth(callback: (state: AuthState) => void): () => voi
       const user: User = {
         id: session.user.id,
         email: session.user.email || '',
-        role: session.user.user_metadata?.role || 'steward',
+        role: session.user.app_metadata?.role || 'steward',
       };
       callback({ isAuthenticated: true, user });
     } else {
@@ -79,7 +79,7 @@ export async function login(email: string, password: string) {
       const user: User = {
         id: data.user.id,
         email: data.user.email || '',
-        role: data.user.user_metadata?.role || 'steward',
+        role: data.user.app_metadata?.role || 'steward',
       };
       notifyListeners({ isAuthenticated: true, user });
       return { success: true };
@@ -104,7 +104,7 @@ export async function signup(email: string, password: string) {
         const user: User = {
           id: data.user.id,
           email: data.user.email || '',
-          role: data.user.user_metadata?.role || 'steward',
+          role: data.user.app_metadata?.role || 'steward',
         };
         notifyListeners({ isAuthenticated: true, user });
         return { success: true, needsConfirmation: false };
@@ -139,7 +139,7 @@ export async function getAllUsers(): Promise<User[]> {
     return (data.users ?? []).map((u: any) => ({
       id: u.id,
       email: u.email ?? '',
-      role: u.user_metadata?.role ?? 'steward',
+      role: u.app_metadata?.role ?? 'steward',
     }));
   } catch (e: any) {
     console.error('Failed to get users', e);
@@ -191,7 +191,11 @@ export async function deleteUser(userId: string) {
 export async function updateUser(data: { id: string; email: string; password?: string; role: string }) {
   try {
     const { id, email, password, role } = data;
-    const updateData: any = { email, user_metadata: { role } };
+    const { data: existing, error: lookupError } = await supabaseAdmin.auth.admin.getUserById(id);
+    if (lookupError || !existing?.user) throw new Error(lookupError?.message ?? 'User not found.');
+    // The admin update replaces app_metadata, so keep the existing keys (such as the
+    // provider entries) and only change the role.
+    const updateData: any = { email, app_metadata: { ...existing.user.app_metadata, role } };
     if (password) updateData.password = password;
 
     const { data: updatedUser, error } = await supabaseAdmin.auth.admin.updateUserById(id, updateData);

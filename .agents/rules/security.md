@@ -15,7 +15,7 @@ These rules apply to all code in this repository. Read them before you change au
 ## Authorization
 
 * Check the role and the ownership on the server in every server action and every API route. Do not trust the client.
-* The role (`steward` or `admin`) and the approval flag (`authenticated`) are in Supabase `user_metadata`. A user can change their own `user_metadata`. Thus it is not a safe source for authorization.
+* The role (`steward` or `admin`) and the approval flag (`authenticated`) are in Supabase `app_metadata`. Only the service role can write `app_metadata`, so it is a safe source for authorization. Never read the role or the approval flag from `user_metadata`: a user can change their own `user_metadata`.
 * `webapp/utils/supabase/server.ts` (`createServerSupabase`) and `webapp/utils/supabase/admin.ts` bypass RLS. When you call them, you must do the authorization check yourself, before the call.
 * `webapp/utils/admin-actions.ts` and `webapp/utils/form-actions.ts` do not check authorization now. If your change touches them, tell the user.
 

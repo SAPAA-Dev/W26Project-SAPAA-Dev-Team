@@ -56,7 +56,8 @@ jest.mock('@/utils/supabase/client', () => ({
 const stewardUser = {
   id: 'user-1',
   email: 'steward@sapaa.org',
-  user_metadata: { full_name: 'Jane Steward', role: 'steward', avatar_url: '' },
+  app_metadata: { role: 'steward' },
+  user_metadata: { full_name: 'Jane Steward', avatar_url: '' },
 };
 
 const mockQuestion = [

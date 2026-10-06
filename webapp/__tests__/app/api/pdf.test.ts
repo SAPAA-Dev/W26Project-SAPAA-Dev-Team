@@ -77,7 +77,7 @@ describe('POST /api/pdf', () => {
 
   it('returns 403 if user is not admin', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'user' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'user' } } },
       error: null,
     });
 
@@ -88,11 +88,25 @@ describe('POST /api/pdf', () => {
     expect(body.error).toMatch(/admin/i);
   });
 
+  it('returns 403 for an admin whose approval was revoked', async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: false } } },
+      error: null,
+    });
+
+    const res = await POST(makeRequest({ mode: 'site', siteName: 'Test' }));
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body.error).toMatch(/admin/i);
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
   // ── Request Validation Tests (unchanged — parseRequest logic didn't change) ──
 
   it('returns 500 if request body has no mode', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
 
@@ -105,7 +119,7 @@ describe('POST /api/pdf', () => {
 
   it('returns 500 for single mode without responseId', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
 
@@ -118,7 +132,7 @@ describe('POST /api/pdf', () => {
 
   it('returns 500 for site mode without siteName', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
 
@@ -131,7 +145,7 @@ describe('POST /api/pdf', () => {
 
   it('returns 500 for multi-site mode without siteNames', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
 
@@ -144,7 +158,7 @@ describe('POST /api/pdf', () => {
 
   it('returns 500 for multi-site mode with empty siteNames array', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
 
@@ -157,7 +171,7 @@ describe('POST /api/pdf', () => {
 
   it('returns 500 for invalid mode', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
 
@@ -172,7 +186,7 @@ describe('POST /api/pdf', () => {
 
   it('creates a job and returns 202 with jobId for valid single mode request', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
 
@@ -194,7 +208,7 @@ describe('POST /api/pdf', () => {
 
   it('creates a job for valid site mode request', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
 
@@ -213,7 +227,7 @@ describe('POST /api/pdf', () => {
 
   it('creates a job for valid multi-site mode request', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
 
@@ -234,7 +248,7 @@ describe('POST /api/pdf', () => {
 
   it('kicks off processPdfJob with the created jobId', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
 
@@ -247,7 +261,7 @@ describe('POST /api/pdf', () => {
 
   it('applies default options when none provided', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
 
@@ -271,7 +285,7 @@ describe('POST /api/pdf', () => {
 
   it('clamps invalid maxImagesPerInspection to default', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
 
@@ -294,7 +308,7 @@ describe('POST /api/pdf', () => {
 
   it('resets invalid pageSize to LETTER', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
 
@@ -317,7 +331,7 @@ describe('POST /api/pdf', () => {
 
   it('resets invalid sortOrder to newest', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
 
@@ -340,7 +354,7 @@ describe('POST /api/pdf', () => {
 
   it('merges user options with defaults', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
 
@@ -377,7 +391,7 @@ describe('POST /api/pdf', () => {
 
   it('returns 500 when job insert fails', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
     mockSingle.mockResolvedValue({ data: null, error: { message: 'Insert failed' } });

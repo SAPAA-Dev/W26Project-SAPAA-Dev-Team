@@ -216,6 +216,7 @@ export async function rollbackSiteInspectionSubmission(responseId: number) {
 }
 
 export async function setFormResponseActive(responseId: number, isActive: boolean) {
+  await requireApprovedAdmin();
   const supabase = createServerSupabase();
 
   const { error } = await supabase
@@ -397,6 +398,7 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
 }
 
 export async function getAllSites(): Promise<SiteSummary[]> {
+  await requireApprovedAdmin();
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
@@ -434,6 +436,7 @@ export async function getAllSites(): Promise<SiteSummary[]> {
 }
 
 export async function getCounties(): Promise<County[]> {
+  await requireApprovedAdmin();
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
@@ -445,11 +448,23 @@ export async function getCounties(): Promise<County[]> {
   return data ?? [];
 }
 
+// Site edits run with the service role, so each one checks the caller first.
+// The check reads the signed-in session, never a value the caller sends.
+async function requireApprovedAdmin(): Promise<void> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+  const approved = !error
+    && data.user?.app_metadata?.role === 'admin'
+    && data.user?.app_metadata?.authenticated === true;
+  if (!approved) throw new Error('Only admins can edit sites.');
+}
+
 export async function updateSite(
   id: number,
   namesite: string,
   ab_county: number | null
 ): Promise<void> {
+  await requireApprovedAdmin();
   const supabase = createServerSupabase();
 
   const { error } = await supabase
@@ -464,6 +479,7 @@ export async function toggleSiteActive(
   id: number,
   is_active: boolean
 ): Promise<void> {
+  await requireApprovedAdmin();
   const supabase = createServerSupabase();
 
   const { error } = await supabase
@@ -655,6 +671,7 @@ function reduceAnswers(
 
 // Admin viewing for sites, difference is the is_active flag so that admin can see all reports
 export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(FormResponse & { is_active: boolean })[]> {
+  await requireApprovedAdmin();
   const supabase = createServerSupabase();
 
   const { data: siteData, error: siteError } = await supabase
@@ -936,6 +953,7 @@ export async function getDateOfVisitQuestionId() {
   return data.id;
 }
 export async function getNaturalnessDistribution(): Promise<{ naturalness_score: string; count: number }[]> {
+  await requireApprovedAdmin();
   const supabase = createServerSupabase();
   const { data, error } = await supabase.rpc('get_naturalness_distribution');
   if (error) throw new Error(error.message);
@@ -946,6 +964,7 @@ export async function getNaturalnessDistribution(): Promise<{ naturalness_score:
 }
 
 export async function getTopSitesDistribution(): Promise<{ namesite: string; count: number }[]> {
+  await requireApprovedAdmin();
   const supabase = createServerSupabase();
   const { data, error } = await supabase.rpc('get_top_sites_distribution');
   if (error) throw new Error(error.message);

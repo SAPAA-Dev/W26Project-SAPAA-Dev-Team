@@ -27,7 +27,7 @@ jest.mock("@/utils/supabase/client", () => ({
           user: {
             id: "user-1",
             email: "test@test.com",
-            user_metadata: { role: "steward" },
+            app_metadata: { role: "steward" },
           },
         },
         error: null,

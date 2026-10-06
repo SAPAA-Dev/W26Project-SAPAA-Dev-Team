@@ -6,7 +6,7 @@ import * as WebBrowser from 'expo-web-browser';
 export interface User {
   id: string;
   email: string;
-  role: string; // role stored in user_metadata
+  role: string; // role stored in app_metadata, which only the server can write
   authenticated: boolean; // for the purpose of admin being able to approve users
 }
 
@@ -29,9 +29,9 @@ export async function getAuthState(): Promise<AuthState> {
       const user: User = {
         id: session.user.id,
         email: session.user.email || '',
-        // Read role from user_metadata; default to 'steward'
-        role: session.user.user_metadata?.role || 'steward',
-        authenticated: session.user.user_metadata?.authenticated || false,
+        // Read role from app_metadata; default to 'steward'
+        role: session.user.app_metadata?.role || 'steward',
+        authenticated: session.user.app_metadata?.authenticated || false,
       };
       return { isAuthenticated: true, user };
     }
@@ -57,8 +57,8 @@ export function subscribeToAuth(callback: (state: AuthState) => void): () => voi
       const user: User = {
         id: session.user.id,
         email: session.user.email || '',
-        role: session.user.user_metadata?.role || 'steward',
-        authenticated: session.user.user_metadata?.authenticated || false
+        role: session.user.app_metadata?.role || 'steward',
+        authenticated: session.user.app_metadata?.authenticated || false
       };
       callback({ isAuthenticated: true, user });
     } else {
@@ -88,8 +88,8 @@ export async function login(email: string, password: string): Promise<{ success:
       const user: User = {
         id: data.user.id,
         email: data.user.email || '',
-        role: data.user.user_metadata?.role || 'steward',
-        authenticated: data.user.user_metadata?.authenticated || false
+        role: data.user.app_metadata?.role || 'steward',
+        authenticated: data.user.app_metadata?.authenticated || false
       };
       notifyListeners({ isAuthenticated: true, user });
       return { success: true };
@@ -178,8 +178,8 @@ export async function loginWithGoogle(): Promise<{ success: boolean; error?: str
         const user: User = {
           id: sessionData.session.user.id,
           email: sessionData.session.user.email || '',
-          role: sessionData.session.user.user_metadata?.role || 'steward',
-          authenticated: sessionData.session.user.user_metadata?.authenticated || false
+          role: sessionData.session.user.app_metadata?.role || 'steward',
+          authenticated: sessionData.session.user.app_metadata?.authenticated || false
         };
         notifyListeners({ isAuthenticated: true, user });
         return { success: true };
@@ -290,8 +290,8 @@ export async function loginWithMicrosoft(): Promise<{ success: boolean; error?: 
             const user: User = {
               id: session.user.id,
               email: session.user.email || '',
-              role: session.user.user_metadata?.role || 'steward',
-              authenticated: session.user.user_metadata?.authenticated || false
+              role: session.user.app_metadata?.role || 'steward',
+              authenticated: session.user.app_metadata?.authenticated || false
             };
             notifyListeners({ isAuthenticated: true, user });
             return { success: true };
@@ -347,8 +347,8 @@ export async function loginWithMicrosoft(): Promise<{ success: boolean; error?: 
         const user: User = {
           id: sessionData.session.user.id,
           email: sessionData.session.user.email || '',
-          role: sessionData.session.user.user_metadata?.role || 'steward',
-          authenticated: sessionData.session.user.user_metadata?.authenticated || false
+          role: sessionData.session.user.app_metadata?.role || 'steward',
+          authenticated: sessionData.session.user.app_metadata?.authenticated || false
         };
         notifyListeners({ isAuthenticated: true, user });
         return { success: true };
@@ -379,12 +379,12 @@ export async function signup(email: string, password: string): Promise<{ success
   }
 
   try {
+    // The role and the approval flag live in app_metadata, which only the server can
+    // write, so sign-up sets no defaults here. A new user reads as steward and
+    // unapproved until an admin approves the account.
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password: password,
-      options: {
-        data: { role: 'steward', authenticated: false }, // default role when signing up & the admin approval state
-      },
     });
 
     if (error) {
@@ -396,8 +396,8 @@ export async function signup(email: string, password: string): Promise<{ success
         const user: User = {
           id: data.user.id,
           email: data.user.email || '',
-          role: data.user.user_metadata?.role || 'steward',
-          authenticated: data.user.user_metadata?.authenticated || false
+          role: data.user.app_metadata?.role || 'steward',
+          authenticated: data.user.app_metadata?.authenticated || false
         };
         notifyListeners({ isAuthenticated: true, user });
         return { success: true, needsConfirmation: false };

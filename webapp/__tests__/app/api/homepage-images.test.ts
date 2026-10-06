@@ -67,7 +67,7 @@ describe("GET /api/homepage-images", () => {
 
   it("returns 403 when user is not admin", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1", user_metadata: { role: "user" } } },
+      data: { user: { id: "user-1", app_metadata: { role: "user" } } },
       error: null,
     });
 
@@ -78,9 +78,23 @@ describe("GET /api/homepage-images", () => {
     expect(body).toEqual({ error: "Forbidden" });
   });
 
+  it("returns 403 for an admin whose approval was revoked", async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: "admin-1", app_metadata: { role: "admin", authenticated: false } } },
+      error: null,
+    });
+
+    const response = await GET();
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body).toEqual({ error: "Forbidden" });
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
   it("returns 500 when uploads query fails", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "admin-1", user_metadata: { role: "admin" } } },
+      data: { user: { id: "admin-1", app_metadata: { role: "admin", authenticated: true } } },
       error: null,
     });
 
@@ -111,7 +125,7 @@ describe("GET /api/homepage-images", () => {
 
   it("returns empty items when no uploads exist", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "admin-1", user_metadata: { role: "admin" } } },
+      data: { user: { id: "admin-1", app_metadata: { role: "admin", authenticated: true } } },
       error: null,
     });
 
@@ -157,7 +171,7 @@ describe("GET /api/homepage-images", () => {
 
   it("returns items with signed URLs and correct fields", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "admin-1", user_metadata: { role: "admin" } } },
+      data: { user: { id: "admin-1", app_metadata: { role: "admin", authenticated: true } } },
       error: null,
     });
 
@@ -233,7 +247,7 @@ describe("GET /api/homepage-images", () => {
 
   it("filters out items where signed URL generation fails", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "admin-1", user_metadata: { role: "admin" } } },
+      data: { user: { id: "admin-1", app_metadata: { role: "admin", authenticated: true } } },
       error: null,
     });
 

@@ -36,18 +36,19 @@ export async function GET(request: NextRequest) {
       const userCreatedAt = new Date(session.user.created_at);
       const isNewUser = new Date().getTime() - userCreatedAt.getTime() < 10000; // 10 seconds
 
-      // Set authenticated: false for new OAuth users
-      if (isNewUser && (!session.user.user_metadata?.authenticated === undefined)) {
+      // Set authenticated: false for new OAuth users. Only the service role can write
+      // app_metadata, so a user cannot change their own role or approval flag.
+      if (isNewUser && session.user.app_metadata?.authenticated === undefined) {
         const adminClient = createAdminClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           process.env.SUPABASE_SECRET!
         );
 
         await adminClient.auth.admin.updateUserById(session.user.id, {
-          user_metadata: {
-            ...session.user.user_metadata,
+          app_metadata: {
+            ...session.user.app_metadata,
             authenticated: false,
-            role: session.user.user_metadata?.role || 'steward'
+            role: session.user.app_metadata?.role || 'steward'
           }
         });
       }

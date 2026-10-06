@@ -11,7 +11,7 @@ export default async function PrivatePage() {
   }
 
   // Check if user is authenticated (approved)
-  if (data.user.user_metadata?.authenticated !== true) {
+  if (data.user.app_metadata?.authenticated !== true) {
     // For now, redirect to login, but ideally show approval screen
     redirect('/login')
   }

@@ -352,22 +352,23 @@ USING (true);
 
 ### User Roles Setup
 
-The application uses Supabase Auth `user_metadata` to store user roles. Roles are stored in the `user_metadata.role` field of each user.
+The application uses Supabase Auth `app_metadata` to store user roles. Roles are stored in the `app_metadata.role` field of each user. Only the server can write `app_metadata`, so a user cannot raise their own role.
 
 **How Roles Work:**
 - Default role: `steward` (assigned automatically if no role is set)
 - Admin role: `admin` (must be set manually)
-- Roles are stored in: `user.user_metadata.role`
+- Roles are stored in: `user.app_metadata.role`
 
 **Setting Admin Role:**
 
 1. Go to Supabase Dashboard → Authentication → Users
 2. Find the user you want to make an admin
 3. Click on the user to edit
-4. In the **Raw User Meta Data** section, add or update:
+4. In the **App Metadata** section, add or update:
    ```json
    {
-     "role": "admin"
+     "role": "admin",
+     "authenticated": true
    }
    ```
 5. Click **Save**

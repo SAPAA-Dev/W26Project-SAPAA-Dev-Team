@@ -67,7 +67,7 @@ jest.mock("next/server", () => ({
   
     it("returns 500 when uploads query fails", async () => {
       mockGetUser.mockResolvedValue({
-        data: { user: { id: "user-1", user_metadata: { role: "user" } } },
+        data: { user: { id: "user-1", app_metadata: { role: "user" } } },
         error: null,
       });
   
@@ -98,7 +98,7 @@ jest.mock("next/server", () => ({
   
     it("returns empty items when no uploads exist", async () => {
       mockGetUser.mockResolvedValue({
-        data: { user: { id: "user-1", user_metadata: { role: "user" } } },
+        data: { user: { id: "user-1", app_metadata: { role: "user" } } },
         error: null,
       });
   
@@ -144,7 +144,7 @@ jest.mock("next/server", () => ({
   
     it("returns items with signed URLs and correct fields", async () => {
       mockGetUser.mockResolvedValue({
-        data: { user: { id: "user-1", user_metadata: { role: "user" } } },
+        data: { user: { id: "user-1", app_metadata: { role: "user" } } },
         error: null,
       });
   
@@ -219,7 +219,7 @@ jest.mock("next/server", () => ({
   
     it("filters out items where signed URL generation fails", async () => {
       mockGetUser.mockResolvedValue({
-        data: { user: { id: "user-1", user_metadata: { role: "user" } } },
+        data: { user: { id: "user-1", app_metadata: { role: "user" } } },
         error: null,
       });
   
