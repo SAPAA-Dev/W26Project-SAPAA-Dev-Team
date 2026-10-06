@@ -529,6 +529,21 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
   });
 }
 
+export interface SiteLinks {
+  sapaaWebsiteUrl: string | null;
+  iNaturalistUrl: string | null;
+}
+
+export async function getSiteLinks(siteId: number): Promise<SiteLinks> {
+  // Temporary values. The team has not decided where each site's links are stored (US 2.0.10, #61).
+  // When that is decided, read the links for siteId here. The site page does not need to change.
+  void siteId;
+  return {
+    sapaaWebsiteUrl: 'https://sapaastewards.com/',
+    iNaturalistUrl: 'https://www.inaturalist.org/',
+  };
+}
+
 export async function getInspectionDetailsOnline(namesite: string): Promise<InspectionDetail[]> {
   const supabase = createServerSupabase();
 

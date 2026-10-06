@@ -49,6 +49,7 @@ jest.mock("@/utils/supabase/queries", () => ({
   ]),
   getFormResponsesBySite: jest.fn().mockResolvedValue([]),
   getCurrentUserUid: jest.fn().mockResolvedValue("user-1"),
+  getSiteLinks: jest.fn().mockResolvedValue({ sapaaWebsiteUrl: null, iNaturalistUrl: null }),
   daysSince: jest.fn().mockReturnValue(10),
 }));
 

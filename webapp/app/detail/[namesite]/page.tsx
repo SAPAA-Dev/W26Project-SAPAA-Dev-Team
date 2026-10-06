@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import {
   getFormResponsesBySite,
   getSiteByName,
+  getSiteLinks,
+  SiteLinks as SiteLinksData,
   SiteSummary,
   FormResponse,
   FormAnswer,
@@ -36,6 +38,7 @@ import dynamic from 'next/dynamic';
 import { siteDetailSteps } from '@/components/TutorialOverlay';
 import { createClient } from '@/utils/supabase/client';
 import UserNavBar from "@/components/HeaderDropdown";
+import SiteLinks from "@/components/SiteLinks";
 import SiteSteward from "./SiteSteward";
 import SubmittedBy from "./SubmittedBy";
 
@@ -162,6 +165,7 @@ export default function SiteDetailScreen() {
 
   const [inspections, setInspections] = useState<FormResponse[]>([]);
   const [site, setSite] = useState<SiteSummary | null>(null);
+  const [siteLinks, setSiteLinks] = useState<SiteLinksData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedInspections, setExpandedInspections] = useState<Set<number>>(new Set());
@@ -244,6 +248,13 @@ export default function SiteDetailScreen() {
     };
     load();
   }, [namesite]);
+
+  useEffect(() => {
+    if (!site?.id) return;
+    getSiteLinks(site.id)
+      .then(setSiteLinks)
+      .catch(() => setSiteLinks(null));
+  }, [site?.id]);
 
   useEffect(() => {
     const fetchGalleryForSite = async () => {
@@ -508,6 +519,11 @@ export default function SiteDetailScreen() {
             </div>
           )}
           <SiteSteward siteId={site.id} isAdmin={currentUser?.role === "admin"} />
+          {siteLinks && (
+            <div className="mt-1">
+              <SiteLinks {...siteLinks} />
+            </div>
+          )}
         </div>
       </div>
 
