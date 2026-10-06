@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { Check, ClipboardList, Leaf, Loader2, MapPin, Pencil, Save, UserRound } from 'lucide-react';
+import { Check, ClipboardList, Leaf, Loader2, MapPin, Pencil, Save, UserCheck, UserRound } from 'lucide-react';
+import { getSitesForSteward, StewardedSite } from '@/utils/steward-actions';
 import { SOCIAL_FIELDS, SocialKey, Socials, socialHref } from '@/lib/socials';
 
 type ProfileData = {
@@ -62,6 +63,7 @@ export default function ProfilePage({ personId }: { personId?: string }) {
   const [saved, setSaved] = useState(false);
   const router = useRouter();
   const [form, setForm] = useState({ displayName: '', skills: '', focusAreas: '', socials: socialsForm(undefined) });
+  const [stewardedSites, setStewardedSites] = useState<StewardedSite[]>([]);
 
   const loadProfile = useCallback(async () => {
     setLoading(true);
@@ -88,6 +90,13 @@ export default function ProfilePage({ personId }: { personId?: string }) {
   useEffect(() => {
     queueMicrotask(() => { void loadProfile(); });
   }, [loadProfile]);
+
+  // 3.0.2 AT3: the sites this person looks after. A failure here only hides the list.
+  const profileId = data?.profile.id;
+  useEffect(() => {
+    if (!profileId) return;
+    getSitesForSteward(profileId).then(setStewardedSites).catch(() => setStewardedSites([]));
+  }, [profileId]);
 
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -144,6 +153,8 @@ export default function ProfilePage({ personId }: { personId?: string }) {
         </section>
 
         {editing && data.isOwner && <form onSubmit={saveProfile} className="mt-6 rounded-2xl bg-white p-6 shadow-sm"><h2 className="text-xl font-bold text-[#254431]">Edit profile</h2><p className="mt-1 text-sm text-[#5B655D]">Your role and account credentials are managed separately.</p><div className="mt-5 grid gap-4 sm:grid-cols-2"><label className="text-sm font-semibold text-[#254431]">Display name<input value={form.displayName} maxLength={29} onChange={(event) => setForm({ ...form, displayName: event.target.value })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2" required /></label><label className="text-sm font-semibold text-[#254431]">Skills <span className="font-normal">(comma-separated)</span><input value={form.skills} onChange={(event) => setForm({ ...form, skills: event.target.value })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2" /></label><label className="text-sm font-semibold text-[#254431]">Focus areas <span className="font-normal">(comma-separated)</span><input value={form.focusAreas} onChange={(event) => setForm({ ...form, focusAreas: event.target.value })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2" /></label></div><h3 className="mt-6 text-base font-bold text-[#254431]">Contact <span className="text-sm font-normal text-[#5B655D]">(all optional, visible to signed-in members)</span></h3><div className="mt-3 grid gap-4 sm:grid-cols-2">{SOCIAL_FIELDS.map(({ key, label, kind }) => <label key={key} className="text-sm font-semibold text-[#254431]">{label}<input type={kind === 'email' ? 'email' : kind === 'phone' ? 'tel' : 'url'} value={form.socials[key]} placeholder={kind === 'link' ? 'https://' : undefined} onChange={(event) => setForm({ ...form, socials: { ...form.socials, [key]: event.target.value } })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2" /></label>)}</div><div className="mt-6 flex gap-3"><button disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-[#356B43] px-4 py-2.5 font-semibold text-white disabled:opacity-60"><Save className="h-4 w-4" />{saving ? 'Saving…' : 'Save changes'}</button><button type="button" onClick={() => setEditing(false)} className="rounded-xl px-4 py-2.5 font-semibold text-[#254431]">Cancel</button></div></form>}
+
+        {stewardedSites.length > 0 && <section className="mt-6 rounded-2xl bg-white p-6 shadow-sm" data-testid="stewarded-sites"><div className="flex items-center gap-2"><UserCheck className="h-5 w-5 text-[#356B43]" /><h2 className="text-xl font-bold text-[#254431]">Steward of</h2></div><ul className="mt-4 flex flex-wrap gap-2">{stewardedSites.map((site) => <li key={site.siteId}><Link href={`/detail/${encodeURIComponent(site.namesite)}`} className="inline-block rounded-lg bg-[#E4EBE4] px-3 py-1.5 text-sm font-semibold text-[#254431] hover:underline">{site.namesite}</Link></li>)}</ul></section>}
 
         <section className="mt-6 grid gap-4 sm:grid-cols-2"><div className="rounded-2xl bg-white p-5 shadow-sm"><ClipboardList className="h-5 w-5 text-[#356B43]" /><p className="mt-3 text-sm font-medium text-[#5B655D]">Inspection reports submitted</p><p className="text-3xl font-bold text-[#254431]">{stats.inspectionCount}</p></div><div className="rounded-2xl bg-white p-5 shadow-sm"><MapPin className="h-5 w-5 text-[#356B43]" /><p className="mt-3 text-sm font-medium text-[#5B655D]">Distinct sites inspected</p><p className="text-3xl font-bold text-[#254431]">{stats.distinctSiteCount}</p></div></section>
 

@@ -1,5 +1,9 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import ProfilePage from '@/components/ProfilePage';
+import { getSitesForSteward } from '@/utils/steward-actions';
+
+jest.mock('@/utils/steward-actions', () => ({ getSitesForSteward: jest.fn() }));
+const getSitesForStewardMock = getSitesForSteward as jest.Mock;
 
 const routerMock = { back: jest.fn(), push: jest.fn() };
 jest.mock('next/navigation', () => ({ useRouter: () => routerMock }));
@@ -25,8 +29,28 @@ describe('ProfilePage', () => {
     fetchMock.mockReset();
     fetchMock.mockResolvedValue({ ok: true, json: async () => profilePayload });
     global.fetch = fetchMock;
+    getSitesForStewardMock.mockReset();
+    getSitesForStewardMock.mockResolvedValue([]);
     routerMock.back.mockReset();
     routerMock.push.mockReset();
+  });
+
+  it('lists the sites this person is steward of, linked to each site page', async () => {
+    getSitesForStewardMock.mockResolvedValue([{ siteId: 5, namesite: 'Beaver Hills' }]);
+    render(<ProfilePage personId="42" />);
+
+    const section = await screen.findByTestId('stewarded-sites');
+    expect(getSitesForStewardMock).toHaveBeenCalledWith(42);
+    expect(section).toHaveTextContent('Steward of');
+    expect(within(section).getByRole('link', { name: 'Beaver Hills' })).toHaveAttribute('href', '/detail/Beaver%20Hills');
+  });
+
+  it('hides the steward section when the person looks after no sites', async () => {
+    render(<ProfilePage />);
+
+    await screen.findByRole('heading', { name: 'Jamie Rivera' });
+    await waitFor(() => expect(getSitesForStewardMock).toHaveBeenCalled());
+    expect(screen.queryByTestId('stewarded-sites')).not.toBeInTheDocument();
   });
 
   // 1.0.1 AT4: a profile opened from a site page goes back to that page.
