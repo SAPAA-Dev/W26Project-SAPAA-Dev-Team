@@ -419,7 +419,7 @@ describe('Prevent Multiple Form Submissions', () => {
       expect(screen.getByText(/Required Questions Missing/i)).toBeInTheDocument();
       expect(screen.getByText(/Missing required image fields:/i)).toBeInTheDocument();
       expect(
-        screen.getByText(/Q81\.1 image: Caption, Identifier, Photographer, Date/i)
+        screen.getByText(/Q81\.1 image: Caption, Photographer, Date/i)
       ).toBeInTheDocument();
     });
 

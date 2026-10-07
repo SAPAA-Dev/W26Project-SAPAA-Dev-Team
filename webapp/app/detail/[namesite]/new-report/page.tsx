@@ -296,7 +296,6 @@ export default function NewReportPage() {
         const missingFields: string[] = [];
 
         if (!image.caption?.trim()) missingFields.push('Caption');
-        if (!image.identifier?.trim()) missingFields.push('Identifier');
         if (!image.photographer?.trim()) missingFields.push('Photographer');
         if (!image.date?.trim()) missingFields.push('Date');
 
@@ -479,11 +478,8 @@ export default function NewReportPage() {
                 if (!image.date?.trim()) {
                   throw new Error("Each uploaded image must have a date.");
                 }    
-                if (!image.identifier.trim()) {
-                  throw new Error("Each uploaded image must have an identifier.");
-                }
                 
-                if (image.identifier.replace(/\s/g, '').length > 20) {
+                if (image.identifier && image.identifier.replace(/\s/g, '').length > 20) {
                   throw new Error("Identifier must be 20 characters or fewer (excluding spaces).");
                 }
 

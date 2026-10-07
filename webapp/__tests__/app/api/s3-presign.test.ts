@@ -176,7 +176,7 @@ describe("POST /api/s3/presign", () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...validBody,
-        identifier: "",
+        date: "",
       }),
     });
 

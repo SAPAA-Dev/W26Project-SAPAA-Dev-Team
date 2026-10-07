@@ -285,7 +285,6 @@ export default function EditReportPage() {
         const missingFields: string[] = [];
 
         if (!image.caption?.trim()) missingFields.push('Caption');
-        if (!image.identifier?.trim()) missingFields.push('Identifier');
         if (!image.photographer?.trim()) missingFields.push('Photographer');
         if (!image.date?.trim()) missingFields.push('Date');
 

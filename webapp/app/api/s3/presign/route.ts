@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
     const date = body.date;
     const photographer = body.photographer;
-    const identifier = body.identifier;
+    const identifier = body.identifier ? body.identifier.trim() : "";
     const siteName = body.siteName;
 
     if (!filename || !contentType) {
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing ids" }, { status: 400 });
     }
 
-    if (!siteName || !date || !identifier) {
+    if (!siteName || !date) {
       return NextResponse.json({ error: "Missing image metadata" }, { status: 400 });
     }
 

@@ -765,7 +765,7 @@ describe('US 1.0.22 – (User) Edit My Site Inspections Form', () => {
           expect(screen.getByText('Required Questions Missing')).toBeInTheDocument();
           expect(screen.getByText(/Missing required image fields:/i)).toBeInTheDocument();
           expect(
-            screen.getByText(/Q81\.1 image: Caption, Identifier, Photographer, Date/i)
+            screen.getByText(/Q81\.1 image: Caption, Photographer, Date/i)
           ).toBeInTheDocument();
         });
 

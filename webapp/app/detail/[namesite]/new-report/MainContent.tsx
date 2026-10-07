@@ -683,7 +683,7 @@ export default function MainContent({
 
                     <div>
                       <label className="block text-sm font-medium text-[#254431] mb-1">
-                        Identifier <span className="text-[#B91C1C]">*</span>
+                        Identifier
                       </label>
                       <input
                         type="text"
