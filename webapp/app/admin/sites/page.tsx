@@ -3,7 +3,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAllSites, getCounties, updateSite, toggleSiteActive, createSite, getTotalInspectionCount, SiteSummary, County } from '@/utils/supabase/queries';
-import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, Pencil, ArrowLeft, Download, Plus } from 'lucide-react';
+import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, Pencil, ArrowLeft, Download, Plus, Upload } from 'lucide-react';
 import EditSiteModal from './components/EditSiteModal';
 import AddSiteModal from './components/AddSiteModal';
 import Image from 'next/image';
@@ -11,6 +11,7 @@ import AdminNavBar from '../AdminNavBar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PdfExportModal from '@/components/PdfExportModal';
 import PdfExportsDropdown from '@/components/PdfExportsDropdown';
+import KmlImportModal from '@/components/KmlImportModal';
 
 type UnifiedSite = SiteSummary;
 
@@ -60,6 +61,7 @@ export default function AdminSitesPage() {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [totalResponses, setTotalResponses] = useState<number>(0);
   const [showPdfModal, setShowPdfModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState<number | null>(null);
   const [showExportsDropdown, setShowExportsDropdown] = useState(false);
 
@@ -389,6 +391,14 @@ export default function AdminSitesPage() {
                   <Plus className="w-4 h-4" />
                   Add Site
                 </button>
+                {/* Outside the count guard below, so an admin can import into an empty list. */}
+                <button
+                  onClick={() => setShowImportModal(true)}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm"
+                >
+                  <Upload className="w-4 h-4" />
+                  Upload Site Data
+                </button>
                 {filteredSites.length > 0 && (
                   <button
                     onClick={() => setShowPdfModal(true)}
@@ -581,6 +591,12 @@ export default function AdminSitesPage() {
         onClose={() => setShowPdfModal(false)}
         mode="multi-site"
         siteNames={filteredSites.filter(s => s.is_active).map(s => s.namesite)}
+      />
+
+      {/* KML / KMZ Import Modal */}
+      <KmlImportModal
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
       />
 
       <EditSiteModal
