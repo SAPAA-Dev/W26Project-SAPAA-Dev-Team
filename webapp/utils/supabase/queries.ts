@@ -475,6 +475,46 @@ export async function updateSite(
   if (error) throw new Error(error.message || 'Failed to update site');
 }
 
+export async function createSite(
+  namesite: string,
+  ab_county: number | null
+): Promise<void> {
+  await requireApprovedAdmin();
+
+  const name = namesite.trim();
+  if (!name) throw new Error('Site name is required.');
+
+  const supabase = createServerSupabase();
+  const { error } = await supabase
+    .from('sites_pa')
+    .insert({ namesite: name, ab_county, is_active: true });
+
+  if (error) {
+    // 23505 is the Postgres code for a unique-constraint violation: namesite is UNIQUE.
+    if (error.code === '23505') throw new Error('A site with this name already exists.');
+    throw new Error(error.message || 'Failed to create site');
+  }
+}
+
+export async function findSitesWithName(namesite: string): Promise<string[]> {
+  await requireApprovedAdmin();
+
+  const name = namesite.trim();
+  if (!name) return [];
+
+  // ilike ignores case. Escape its wildcards so a "%" or "_" in a site name matches only itself.
+  const pattern = name.replace(/[\\%_]/g, (character) => `\\${character}`);
+
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from('sites_pa')
+    .select('namesite')
+    .ilike('namesite', pattern);
+
+  if (error) throw new Error(error.message || 'Failed to check for duplicate sites');
+  return (data ?? []).map((site) => site.namesite);
+}
+
 export async function toggleSiteActive(
   id: number,
   is_active: boolean

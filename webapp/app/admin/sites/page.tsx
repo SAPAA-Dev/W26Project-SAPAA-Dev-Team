@@ -2,9 +2,10 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAllSites, getCounties, updateSite, toggleSiteActive, getTotalInspectionCount, SiteSummary, County } from '@/utils/supabase/queries';
-import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, Pencil, ArrowLeft, Download } from 'lucide-react';
+import { getAllSites, getCounties, updateSite, toggleSiteActive, createSite, getTotalInspectionCount, SiteSummary, County } from '@/utils/supabase/queries';
+import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, Pencil, ArrowLeft, Download, Plus } from 'lucide-react';
 import EditSiteModal from './components/EditSiteModal';
+import AddSiteModal from './components/AddSiteModal';
 import Image from 'next/image';
 import AdminNavBar from '../AdminNavBar';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -66,6 +67,7 @@ export default function AdminSitesPage() {
     getTotalInspectionCount().then(setTotalResponses).catch(() => {});
   }, []);
   const [editSite, setEditSite] = useState<SiteSummary | null>(null);
+  const [showAddSite, setShowAddSite] = useState(false);
   const [counties, setCounties] = useState<County[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -180,6 +182,21 @@ export default function AdminSitesPage() {
       setEditSite(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to update site');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCreateSite = async (data: { namesite: string; ab_county: number | null }): Promise<boolean> => {
+    setSaving(true);
+    try {
+      await createSite(data.namesite, data.ab_county);
+      setSites(await getAllSites());
+      setShowAddSite(false);
+      return true;
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to create site');
+      return false;
     } finally {
       setSaving(false);
     }
@@ -364,6 +381,14 @@ export default function AdminSitesPage() {
                   {filteredSites.length} {filteredSites.length === 1 ? 'site' : 'sites'} found
                 </p>
                 <div className="flex items-center gap-2">
+                <button
+                  data-testid="add-site-button"
+                  onClick={() => setShowAddSite(true)}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#356B43] to-[#254431] text-white rounded-xl font-medium hover:shadow-lg transition-all shadow-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Site
+                </button>
                 {filteredSites.length > 0 && (
                   <button
                     onClick={() => setShowPdfModal(true)}
@@ -564,6 +589,13 @@ export default function AdminSitesPage() {
         counties={counties}
         onClose={() => setEditSite(null)}
         onSave={handleSaveSite}
+        saving={saving}
+      />
+      <AddSiteModal
+        visible={showAddSite}
+        counties={counties}
+        onClose={() => setShowAddSite(false)}
+        onSave={handleCreateSite}
         saving={saving}
       />
     </ProtectedRoute>
