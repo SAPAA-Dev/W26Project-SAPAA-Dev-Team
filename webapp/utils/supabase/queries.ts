@@ -2,6 +2,7 @@
 
 import { UniqueIdentifier } from '@dnd-kit/core';
 import { createServerSupabase, createClient } from './server';
+import { deleteObjectsByKeys } from '../media/s3Delete';
 
 export interface SiteSummary {
   id: number;
@@ -187,6 +188,9 @@ export async function addSiteInspectionReport(siteId: number, userId: any, inspe
 export async function rollbackSiteInspectionSubmission(responseId: number) {
   const supabase = createServerSupabase();
 
+  const attachments = await getAttachmentsByResponseId(responseId);
+  const storageKeys = attachments.map((attachment) => attachment.storage_key);
+
   const { error: attachmentsError } = await supabase
     .from('attachments')
     .delete()
@@ -213,6 +217,8 @@ export async function rollbackSiteInspectionSubmission(responseId: number) {
   if (responseError) {
     throw new Error(responseError.message || 'Failed to remove site inspection report');
   }
+
+  await deleteObjectsByKeys(storageKeys);
 }
 
 export async function setFormResponseActive(responseId: number, isActive: boolean) {

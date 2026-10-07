@@ -4,12 +4,15 @@
 import { useEffect, useState, useMemo } from "react";
 import AdminNavBar from "../AdminNavBar";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import DeleteImageButton from "@/components/DeleteImageButton";
+import type { ImageKind } from "@/components/DeleteImageButton";
 import Image from "next/image";
 import { Loader2, MapPin, FileText, ImageIcon, X, Maximize2, Search, ArrowLeft, Calendar } from "lucide-react";
 import { useRouter } from 'next/navigation';
 
 type GalleryItem = {
   id: string;
+  kind: ImageKind;
   response_id?: string | null;
   question_id?: string | null;
   caption?: string | null;
@@ -68,10 +71,12 @@ export default function GalleryPage() {
         const allItems = [
           ...(data.items || []).map((item: any) => ({
             ...item,
+            kind: "attachments",
             _sortDate: item.created_at ?? item.date ?? "",
           })),
           ...(data1.items || []).map((item: any) => ({
             ...item,
+            kind: "homepage_image_uploads",
             _sortDate: item.date ?? item.created_at ?? "",
           })),
         ].sort((a, b) => new Date(b._sortDate).getTime() - new Date(a._sortDate).getTime());
@@ -212,7 +217,7 @@ export default function GalleryPage() {
               {/* 4. Map over filteredItems instead of items */}
               {filteredItems.map((item) => (
                 <div
-                  key={`${item.response_id ? 'insp' : 'home'}-${item.id}`}
+                  key={`${item.kind}-${item.id}`}
                   className="bg-white rounded-2xl border-2 border-[#E4EBE4] shadow-sm overflow-hidden hover:shadow-lg transition-all"
                 >
                   <button
@@ -365,6 +370,21 @@ export default function GalleryPage() {
                     >
                       Open full image in new tab
                     </a>
+                  </div>
+
+                  <div className="pt-2">
+                    <DeleteImageButton
+                      key={`delete-${selectedImage.kind}-${selectedImage.id}`}
+                      attachmentId={selectedImage.id}
+                      imageKind={selectedImage.kind}
+                      onDeleted={(deletedId) => {
+                        const deletedKind = selectedImage.kind;
+                        setItems((prev) =>
+                          prev.filter((item) => !(item.id === deletedId && item.kind === deletedKind))
+                        );
+                        setSelectedImage(null);
+                      }}
+                    />
                   </div>
                 </div>
               </div>

@@ -14,6 +14,8 @@ const config: Config = {
     '^react-markdown$': '<rootDir>/__mocks__/react-markdown.tsx',
     '^remark-gfm$': '<rootDir>/__mocks__/remark-gfm.ts',
     '^rehype-raw$': '<rootDir>/__mocks__/rehype-raw.ts',
+    '^@aws-sdk/client-s3$': '<rootDir>/__mocks__/aws-sdk-client-s3.ts',
+    '^@aws-sdk/s3-request-presigner$': '<rootDir>/__mocks__/aws-sdk-s3-request-presigner.ts',
   },
   testPathIgnorePatterns: ['/node_modules/', '/.next/'],
 };

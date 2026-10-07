@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- CJS dev script loaded with require() */
 const { execFileSync, spawn } = require('node:child_process');
 const { existsSync } = require('node:fs');
 const path = require('node:path');
 const dotenv = require('dotenv');
 const { createClient } = require('@supabase/supabase-js');
+const { ensureLocalS3 } = require('./local_s3');
 
 const webappDir = path.resolve(__dirname, '..');
 const supabaseDir = path.join(webappDir, 'supabase');
@@ -78,6 +80,8 @@ async function startDevServer() {
     : await supabaseAdmin.auth.admin.createUser(adminAttributes);
   if (adminError) throw adminError;
 
+  const localS3Env = await ensureLocalS3(webappDir);
+
   const child = spawn('next', ['dev'], {
     cwd: webappDir,
     stdio: 'inherit',
@@ -87,6 +91,7 @@ async function startDevServer() {
       NEXT_PUBLIC_SUPABASE_URL: url,
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
       SUPABASE_SECRET: secretKey,
+      ...localS3Env,
     },
   });
 

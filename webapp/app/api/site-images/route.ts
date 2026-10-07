@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { deleteObjectsByKeys } from "@/utils/media/s3Delete";
 
 const REGION = process.env.AWS_REGION!;
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
@@ -13,6 +14,9 @@ const s3 = new S3Client({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
   },
 });
+
+const IMAGE_TABLES = ["attachments", "homepage_image_uploads"] as const;
+type ImageTable = (typeof IMAGE_TABLES)[number];
 
 export async function GET(request: Request) {
   try {
@@ -84,6 +88,75 @@ export async function GET(request: Request) {
     console.error("site-images error:", err);
     return NextResponse.json(
       { error: "Failed to fetch site images" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (user.app_metadata?.role !== "admin" || user.app_metadata?.authenticated !== true) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const imageId = Number(searchParams.get("id"));
+    const kind = searchParams.get("kind") ?? "attachments";
+
+    if (!(IMAGE_TABLES as readonly string[]).includes(kind)) {
+      return NextResponse.json(
+        { error: "Provide a valid image kind" },
+        { status: 400 }
+      );
+    }
+    const table: ImageTable = kind as ImageTable;
+
+    if (!searchParams.get("id") || Number.isNaN(imageId)) {
+      return NextResponse.json(
+        { error: "Provide a numeric attachment id" },
+        { status: 400 }
+      );
+    }
+
+    const { data: imageRow, error: readError } = await supabase
+      .from(table)
+      .select("id, storage_key")
+      .eq("id", imageId)
+      .single();
+
+    if (readError || !imageRow) {
+      return NextResponse.json(
+        { error: table === "attachments" ? "Attachment not found" : "Homepage image not found" },
+        { status: 404 }
+      );
+    }
+
+    const { data: deletedRows, error: deleteError } = await supabase
+      .from(table)
+      .delete()
+      .eq("id", imageId)
+      .select("id");
+
+    if (deleteError) {
+      throw new Error(deleteError.message || "Failed to delete image");
+    }
+
+    if (!deletedRows || deletedRows.length === 0) {
+      throw new Error("Image row was not deleted");
+    }
+
+    await deleteObjectsByKeys([imageRow.storage_key]);
+
+    return NextResponse.json({ deleted: true });
+  } catch (err) {
+    console.error("site-images delete error:", err);
+    return NextResponse.json(
+      { error: "Failed to delete site image" },
       { status: 500 }
     );
   }

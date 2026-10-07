@@ -14,6 +14,8 @@ import {
 import { daysSince } from "@/app/sites/page";
 import AdminNavBar from "@/app/admin/AdminNavBar";
 import PdfExportModal from '@/components/PdfExportModal';
+import DeleteImageButton from '@/components/DeleteImageButton';
+import type { ImageKind } from '@/components/DeleteImageButton';
 import Image from 'next/image';
 import {
   ArrowLeft,
@@ -72,6 +74,7 @@ interface EditableAnswer {
 
 type GalleryItem = {
   id: string;
+  kind: ImageKind;
   site_id: string;
   site_name?: string | null;
   filename: string;
@@ -249,8 +252,8 @@ export default function AdminSiteDetails() {
         if (!res1.ok) throw new Error(data1.error || "Failed to load homepage-images");
 
         const allItems = [
-          ...(data.items || []).map((item: any) => ({ ...item, _sortDate: item.created_at ?? item.date ?? "" })),
-          ...(data1.items || []).map((item: any) => ({ ...item, _sortDate: item.date ?? item.created_at ?? "" })),
+          ...(data.items || []).map((item: any) => ({ ...item, kind: "attachments", _sortDate: item.created_at ?? item.date ?? "" })),
+          ...(data1.items || []).map((item: any) => ({ ...item, kind: "homepage_image_uploads", _sortDate: item.date ?? item.created_at ?? "" })),
         ].sort((a, b) => new Date(b._sortDate).getTime() - new Date(a._sortDate).getTime());
          
         setGalleryItems(allItems || []);
@@ -1117,7 +1120,7 @@ export default function AdminSiteDetails() {
                   {/* 4. MAP OVER FILTERED ITEMS */}
                   {filteredGalleryItems.map((item) => (
                     <div
-                      key={`${item.response_id ? 'insp' : 'home'}-${item.id}`}
+                      key={`${item.kind}-${item.id}`}
                       className="bg-white rounded-2xl border-2 border-[#E4EBE4] shadow-sm overflow-hidden hover:shadow-lg transition-all"
                     >
                       <button
@@ -1255,6 +1258,21 @@ export default function AdminSiteDetails() {
                   >
                     Open full image in new tab
                   </a>
+                </div>
+
+                <div className="pt-2">
+                  <DeleteImageButton
+                    key={`delete-${selectedImage.kind}-${selectedImage.id}`}
+                    attachmentId={selectedImage.id}
+                    imageKind={selectedImage.kind}
+                    onDeleted={(deletedId) => {
+                      const deletedKind = selectedImage.kind;
+                      setGalleryItems((prev) =>
+                        prev.filter((item) => !(item.id === deletedId && item.kind === deletedKind))
+                      );
+                      setSelectedImage(null);
+                    }}
+                  />
                 </div>
               </div>
             </div>

@@ -1,0 +1,10 @@
+duck01.jpg: File:Anas platyrhynchos male female.jpg - https://commons.wikimedia.org/wiki/File:Anas_platyrhynchos_male_female.jpg
+duck02.jpg: File:Male mallard duck 2.jpg - https://commons.wikimedia.org/wiki/File:Male_mallard_duck_2.jpg
+duck03.jpg: File:Female Mallard Duck Rest 3.jpg - https://commons.wikimedia.org/wiki/File:Female_Mallard_Duck_Rest_3.jpg
+duck04.jpg: File:Anas platyrhynchos - Weiherwald - Karlsruhe 05.jpg - https://commons.wikimedia.org/wiki/File:Anas_platyrhynchos_-_Weiherwald_-_Karlsruhe_05.jpg
+duck05.jpg: File:Mallard (Anas platyrhynchos) chick Denmark.jpg - https://commons.wikimedia.org/wiki/File:Mallard_(Anas_platyrhynchos)_chick_Denmark.jpg
+duck06.jpg: File:Anas platyrhynchos male female quadrat.jpg - https://commons.wikimedia.org/wiki/File:Anas_platyrhynchos_male_female_quadrat.jpg
+duck07.jpg: File:Утки на Набережной - 2.jpg - https://commons.wikimedia.org/wiki/File:%D0%A3%D1%82%D0%BA%D0%B8_%D0%BD%D0%B0_%D0%9D%D0%B0%D0%B1%D0%B5%D1%80%D0%B5%D0%B6%D0%BD%D0%BE%D0%B9_-_2.jpg
+duck08.jpg: File:Anas platyrhynchos MHNT.ZOO.2010.11.18.6.jpg - https://commons.wikimedia.org/wiki/File:Anas_platyrhynchos_MHNT.ZOO.2010.11.18.6.jpg
+duck09.jpg: File:Anas platyrhynchos (Male) on the ground.jpg - https://commons.wikimedia.org/wiki/File:Anas_platyrhynchos_(Male)_on_the_ground.jpg
+duck10.jpg: File:Mallard (Anas platyrhynchos) and 12 chicks.jpg - https://commons.wikimedia.org/wiki/File:Mallard_(Anas_platyrhynchos)_and_12_chicks.jpg
