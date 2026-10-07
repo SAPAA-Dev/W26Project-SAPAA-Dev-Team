@@ -66,10 +66,25 @@ describe('GET /api/pdf/status/[jobId]', () => {
     expect(body).toEqual({ error: 'Job not found' });
   });
 
+  it('returns 403 when the job belongs to another user', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    mockSingle.mockResolvedValue({
+      data: { status: 'complete', storage_path: 'pdf-exports/u2/job-1/report.pdf', error: null, created_by: 'u2' },
+      error: null,
+    });
+
+    const res = await GET({} as Request, makeParams('job-1'));
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body).toEqual({ error: 'Forbidden' });
+    expect(mockGetSignedUrl).not.toHaveBeenCalled();
+  });
+
   it('returns a signed download URL when job is complete', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
     mockSingle.mockResolvedValue({
-      data: { status: 'complete', storage_path: 'pdf-exports/u1/job-1/report.pdf', error: null },
+      data: { status: 'complete', storage_path: 'pdf-exports/u1/job-1/report.pdf', error: null, created_by: 'u1' },
       error: null,
     });
 
@@ -93,7 +108,7 @@ describe('GET /api/pdf/status/[jobId]', () => {
   it('returns status without a download URL when job is pending', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
     mockSingle.mockResolvedValue({
-      data: { status: 'pending', storage_path: null, error: null },
+      data: { status: 'pending', storage_path: null, error: null, created_by: 'u1' },
       error: null,
     });
 
@@ -108,7 +123,7 @@ describe('GET /api/pdf/status/[jobId]', () => {
   it('returns status without a download URL when job is processing', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
     mockSingle.mockResolvedValue({
-      data: { status: 'processing', storage_path: null, error: null },
+      data: { status: 'processing', storage_path: null, error: null, created_by: 'u1' },
       error: null,
     });
 
@@ -122,7 +137,7 @@ describe('GET /api/pdf/status/[jobId]', () => {
   it('returns the error message when job has failed', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
     mockSingle.mockResolvedValue({
-      data: { status: 'failed', storage_path: null, error: 'Render failed' },
+      data: { status: 'failed', storage_path: null, error: 'Render failed', created_by: 'u1' },
       error: null,
     });
 
@@ -136,7 +151,7 @@ describe('GET /api/pdf/status/[jobId]', () => {
   it('does not attempt to sign a URL if status is complete but storage_path is missing', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
     mockSingle.mockResolvedValue({
-      data: { status: 'complete', storage_path: null, error: null },
+      data: { status: 'complete', storage_path: null, error: null, created_by: 'u1' },
       error: null,
     });
 

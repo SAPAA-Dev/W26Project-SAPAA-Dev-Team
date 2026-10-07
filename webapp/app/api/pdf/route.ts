@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createServerSupabase } from '@/utils/supabase/server';
 import { PdfRequest, PdfOptions } from '@/lib/pdf/types';
 import { processPdfJob } from '@/lib/pdf/processPdfJob';
 
@@ -80,12 +80,38 @@ export async function POST(req: NextRequest) {
 
     const role = user.app_metadata?.role;
     const approved = user.app_metadata?.authenticated === true;
-    if (role !== 'admin' || !approved) {
-      return NextResponse.json({ error: 'Forbidden - admin access required' }, { status: 403 });
+    const isAdmin = role === 'admin' && approved;
+    const isSteward = role === 'steward' && approved;
+    if (!isAdmin && !isSteward) {
+      return NextResponse.json({ error: 'Forbidden - steward or admin access required' }, { status: 403 });
     }
 
     const body = await req.json();
     const request = parseRequest(body);
+
+    if (!isAdmin) {
+      // Stewards may only export a single report, and only one they submitted.
+      if (request.mode !== 'single') {
+        return NextResponse.json(
+          { error: 'Forbidden - stewards can only export their own reports' },
+          { status: 403 }
+        );
+      }
+      // The service-role client bypasses RLS, so the ownership check must run here.
+      const admin = createServerSupabase();
+      const { data: response, error: responseError } = await admin
+        .from('form_responses')
+        .select('user_id')
+        .eq('id', request.responseId)
+        .maybeSingle();
+
+      if (responseError || !response || response.user_id !== user.id) {
+        return NextResponse.json(
+          { error: 'Forbidden - you can only export reports you submitted' },
+          { status: 403 }
+        );
+      }
+    }
 
     const { data: job, error: insertError } = await supabase
       .from('S26_pdf_jobs')

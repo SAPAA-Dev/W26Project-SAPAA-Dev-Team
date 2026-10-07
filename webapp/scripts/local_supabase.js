@@ -49,9 +49,33 @@ if (!url || !publishableKey || !secretKey) {
   process.exit(1);
 }
 
+const SEED_PASSWORD = 's&&uper$#sec&&ure';
+
+async function ensureSeedAccount(supabaseAdmin, userList, emails, username, role, fullName) {
+  const existing = userList.users.find((user) => emails.includes(user.email));
+  const attributes = {
+    email: emails[0],
+    password: SEED_PASSWORD,
+    email_confirm: true,
+    user_metadata: {
+      username,
+      ...(fullName ? { full_name: fullName } : {}),
+    },
+    app_metadata: {
+      ...(existing?.app_metadata ?? {}),
+      role,
+      authenticated: true,
+    },
+  };
+  const { data, error } = existing
+    ? await supabaseAdmin.auth.admin.updateUserById(existing.id, attributes)
+    : await supabaseAdmin.auth.admin.createUser(attributes);
+  if (error) throw error;
+  return existing ?? data.user;
+}
+
 async function startDevServer() {
   const supabaseAdmin = createClient(url, secretKey);
-  const adminEmail = 'admin@example.com';
 
   const { data: userList, error: listError } = await supabaseAdmin.auth.admin.listUsers({
     page: 1,
@@ -59,26 +83,34 @@ async function startDevServer() {
   });
   if (listError) throw listError;
 
-  const existingAdmin = userList.users.find(
-    (user) => user.email === adminEmail || user.email === 'admin@local.test'
+  await ensureSeedAccount(
+    supabaseAdmin,
+    userList,
+    ['admin@example.com', 'admin@local.test'],
+    'admin',
+    'admin'
   );
-  const adminAttributes = {
-    email: adminEmail,
-    password: 's&&uper$#sec&&ure',
-    email_confirm: true,
-    user_metadata: {
-      username: 'admin',
-    },
-    app_metadata: {
-      ...(existingAdmin?.app_metadata ?? {}),
-      role: 'admin',
-      authenticated: true,
-    },
-  };
-  const { error: adminError } = existingAdmin
-    ? await supabaseAdmin.auth.admin.updateUserById(existingAdmin.id, adminAttributes)
-    : await supabaseAdmin.auth.admin.createUser(adminAttributes);
-  if (adminError) throw adminError;
+  const steward = await ensureSeedAccount(
+    supabaseAdmin,
+    userList,
+    ['user@example.com'],
+    'steward',
+    'steward',
+    'Sample Steward'
+  );
+
+  // Five sample reports belong to the seed steward, so the steward PDF export can be tested.
+  const currentYear = new Date().getFullYear();
+  const stewardReportNumbers = [0, 1, 2, 3, 4].map(
+    (index) => `${currentYear}-${String(index).padStart(3, '0')}`
+  );
+  const { data: linkedReports, error: linkError } = await supabaseAdmin
+    .from('form_responses')
+    .update({ user_id: steward.id })
+    .in('inspection_no', stewardReportNumbers)
+    .select('id');
+  if (linkError) throw linkError;
+  console.log(`Connected ${linkedReports?.length ?? 0} sample reports to seed steward user@example.com.`);
 
   const localS3Env = await ensureLocalS3(webappDir);
 

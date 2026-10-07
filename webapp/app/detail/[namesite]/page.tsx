@@ -41,6 +41,7 @@ import UserNavBar from "@/components/HeaderDropdown";
 import SiteLinks from "@/components/SiteLinks";
 import SiteSteward from "./SiteSteward";
 import SubmittedBy from "./SubmittedBy";
+import SirPdfExportButton from "@/components/SirPdfExportButton";
 
 const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
@@ -710,6 +711,11 @@ export default function SiteDetailScreen() {
                         <Pencil className="w-4 h-4" />
                         Edit
                       </button>
+                    )}
+
+                    {/* Export PDF - visible to the submitting user, and to admins on every report */}
+                    {(isOwner || currentUser?.role === 'admin') && (
+                      <SirPdfExportButton responseId={response.id} />
                     )}
                   </div>
 

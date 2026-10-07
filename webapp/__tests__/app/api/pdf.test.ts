@@ -1,5 +1,5 @@
 import { POST } from '@/app/api/pdf/route';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createServerSupabase } from '@/utils/supabase/server';
 import { processPdfJob } from '@/lib/pdf/processPdfJob';
 import { NextRequest } from 'next/server';
 
@@ -15,6 +15,7 @@ jest.mock('next/server', () => ({
 
 jest.mock('@/utils/supabase/server', () => ({
   createClient: jest.fn(),
+  createServerSupabase: jest.fn(),
 }));
 
 jest.mock('@/lib/pdf/processPdfJob', () => ({
@@ -29,21 +30,38 @@ function makeRequest(body: any): NextRequest {
 
 describe('POST /api/pdf', () => {
   const mockGetUser = jest.fn();
-  const mockSingle = jest.fn();
-  const mockSelect = jest.fn(() => ({ single: mockSingle }));
-  const mockInsert = jest.fn(() => ({ select: mockSelect }));
-  const mockFrom = jest.fn(() => ({ insert: mockInsert }));
+  // Session client: S26_pdf_jobs insert chain
+  const mockJobSingle = jest.fn();
+  const mockJobSelect = jest.fn(() => ({ single: mockJobSingle }));
+  const mockJobInsert = jest.fn(() => ({ select: mockJobSelect }));
+  const mockSessionFrom = jest.fn(() => ({ insert: mockJobInsert }));
+  // Service-role client: form_responses ownership lookup chain
+  const mockResponseMaybeSingle = jest.fn();
+  const mockResponseEq = jest.fn(() => ({ maybeSingle: mockResponseMaybeSingle }));
+  const mockResponseSelect = jest.fn(() => ({ eq: mockResponseEq }));
+  const mockServiceFrom = jest.fn(() => ({ select: mockResponseSelect }));
+
+  const stewardUser = { id: 'u1', app_metadata: { role: 'steward', authenticated: true } };
 
   beforeEach(() => {
     jest.clearAllMocks();
 
     (createClient as jest.Mock).mockResolvedValue({
       auth: { getUser: mockGetUser },
-      from: mockFrom,
+      from: mockSessionFrom,
     });
 
-    mockSingle.mockResolvedValue({
+    (createServerSupabase as jest.Mock).mockReturnValue({
+      from: mockServiceFrom,
+    });
+
+    mockJobSingle.mockResolvedValue({
       data: { id: 'job-123' },
+      error: null,
+    });
+
+    mockResponseMaybeSingle.mockResolvedValue({
+      data: { user_id: 'u1' },
       error: null,
     });
 
@@ -99,7 +117,7 @@ describe('POST /api/pdf', () => {
 
     expect(res.status).toBe(403);
     expect(body.error).toMatch(/admin/i);
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockSessionFrom).not.toHaveBeenCalled();
   });
 
   // ── Request Validation Tests (unchanged — parseRequest logic didn't change) ──
@@ -195,8 +213,8 @@ describe('POST /api/pdf', () => {
 
     expect(res.status).toBe(202);
     expect(body).toEqual({ jobId: 'job-123' });
-    expect(mockFrom).toHaveBeenCalledWith('S26_pdf_jobs');
-    expect(mockInsert).toHaveBeenCalledWith(
+    expect(mockSessionFrom).toHaveBeenCalledWith('S26_pdf_jobs');
+    expect(mockJobInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         status: 'pending',
         mode: 'single',
@@ -217,7 +235,7 @@ describe('POST /api/pdf', () => {
 
     expect(res.status).toBe(202);
     expect(body).toEqual({ jobId: 'job-123' });
-    expect(mockInsert).toHaveBeenCalledWith(
+    expect(mockJobInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         mode: 'site',
         request_payload: expect.objectContaining({ siteName: 'Elk Island' }),
@@ -238,7 +256,7 @@ describe('POST /api/pdf', () => {
 
     expect(res.status).toBe(202);
     expect(body).toEqual({ jobId: 'job-123' });
-    expect(mockInsert).toHaveBeenCalledWith(
+    expect(mockJobInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         mode: 'multi-site',
         request_payload: expect.objectContaining({ siteNames: ['Site A', 'Site B'] }),
@@ -257,6 +275,93 @@ describe('POST /api/pdf', () => {
     expect(processPdfJob).toHaveBeenCalledWith('job-123');
   });
 
+  // ── Steward Access Tests ──
+
+  it('allows an approved steward to export a SIR they submitted', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
+    mockResponseMaybeSingle.mockResolvedValue({ data: { user_id: 'u1' }, error: null });
+
+    const res = await POST(makeRequest({ mode: 'single', responseId: 42 }));
+    const body = await res.json();
+
+    expect(res.status).toBe(202);
+    expect(body).toEqual({ jobId: 'job-123' });
+    expect(mockServiceFrom).toHaveBeenCalledWith('form_responses');
+    expect(mockResponseEq).toHaveBeenCalledWith('id', 42);
+    expect(mockJobInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'pending',
+        mode: 'single',
+        created_by: 'u1',
+        request_payload: expect.objectContaining({ mode: 'single', responseId: 42 }),
+      })
+    );
+    expect(processPdfJob).toHaveBeenCalledWith('job-123');
+  });
+
+  it('returns 403 when a steward requests a SIR submitted by someone else', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
+    mockResponseMaybeSingle.mockResolvedValue({ data: { user_id: 'other-user' }, error: null });
+
+    const res = await POST(makeRequest({ mode: 'single', responseId: 42 }));
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body.error).toMatch(/only export reports you submitted/i);
+    expect(mockJobInsert).not.toHaveBeenCalled();
+    expect(processPdfJob).not.toHaveBeenCalled();
+  });
+
+  it('returns 403 when a steward requests a SIR that does not exist', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
+    mockResponseMaybeSingle.mockResolvedValue({ data: null, error: null });
+
+    const res = await POST(makeRequest({ mode: 'single', responseId: 999 }));
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body.error).toMatch(/only export reports you submitted/i);
+    expect(mockJobInsert).not.toHaveBeenCalled();
+  });
+
+  it('returns 403 when a steward requests site mode', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
+
+    const res = await POST(makeRequest({ mode: 'site', siteName: 'Elk Island' }));
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body.error).toMatch(/only export their own reports/i);
+    expect(mockJobInsert).not.toHaveBeenCalled();
+    expect(mockServiceFrom).not.toHaveBeenCalled();
+  });
+
+  it('returns 403 when a steward requests multi-site mode', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
+
+    const res = await POST(makeRequest({ mode: 'multi-site', siteNames: ['Site A', 'Site B'] }));
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body.error).toMatch(/only export their own reports/i);
+    expect(mockJobInsert).not.toHaveBeenCalled();
+  });
+
+  it('returns 403 for a steward whose approval was revoked', async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: 'u1', app_metadata: { role: 'steward', authenticated: false } } },
+      error: null,
+    });
+
+    const res = await POST(makeRequest({ mode: 'single', responseId: 42 }));
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body.error).toMatch(/steward or admin/i);
+    expect(mockSessionFrom).not.toHaveBeenCalled();
+    expect(mockServiceFrom).not.toHaveBeenCalled();
+  });
+
   // ── Options Validation Tests (unchanged logic, still checked via request_payload) ──
 
   it('applies default options when none provided', async () => {
@@ -267,7 +372,7 @@ describe('POST /api/pdf', () => {
 
     await POST(makeRequest({ mode: 'site', siteName: 'Test' }));
 
-    expect(mockInsert).toHaveBeenCalledWith(
+    expect(mockJobInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         request_payload: expect.objectContaining({
           options: expect.objectContaining({
@@ -297,7 +402,7 @@ describe('POST /api/pdf', () => {
       })
     );
 
-    expect(mockInsert).toHaveBeenCalledWith(
+    expect(mockJobInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         request_payload: expect.objectContaining({
           options: expect.objectContaining({ maxImagesPerInspection: 5 }),
@@ -320,7 +425,7 @@ describe('POST /api/pdf', () => {
       })
     );
 
-    expect(mockInsert).toHaveBeenCalledWith(
+    expect(mockJobInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         request_payload: expect.objectContaining({
           options: expect.objectContaining({ pageSize: 'LETTER' }),
@@ -343,7 +448,7 @@ describe('POST /api/pdf', () => {
       })
     );
 
-    expect(mockInsert).toHaveBeenCalledWith(
+    expect(mockJobInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         request_payload: expect.objectContaining({
           options: expect.objectContaining({ sortOrder: 'newest' }),
@@ -371,7 +476,7 @@ describe('POST /api/pdf', () => {
       })
     );
 
-    expect(mockInsert).toHaveBeenCalledWith(
+    expect(mockJobInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         request_payload: expect.objectContaining({
           options: expect.objectContaining({
@@ -390,7 +495,7 @@ describe('POST /api/pdf', () => {
 
   it('drops hidden question ids that are not integers', async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
 
@@ -402,7 +507,7 @@ describe('POST /api/pdf', () => {
       })
     );
 
-    expect(mockInsert).toHaveBeenCalledWith(
+    expect(mockJobInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         request_payload: expect.objectContaining({
           options: expect.objectContaining({
@@ -420,7 +525,7 @@ describe('POST /api/pdf', () => {
       data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,
     });
-    mockSingle.mockResolvedValue({ data: null, error: { message: 'Insert failed' } });
+    mockJobSingle.mockResolvedValue({ data: null, error: { message: 'Insert failed' } });
 
     const res = await POST(makeRequest({ mode: 'site', siteName: 'Test' }));
     const body = await res.json();

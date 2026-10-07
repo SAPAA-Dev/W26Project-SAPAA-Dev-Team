@@ -858,7 +858,7 @@ export const openApiSpec = {
         summary: "Start a PDF export job for site inspections",
         tags: ["PDF Export"],
         description:
-          "Creates a background job to generate a PDF inspection report in single, site, or multi-site mode. Returns immediately with a jobId — the actual PDF is generated asynchronously. Poll or subscribe to GET /api/pdf/status/{jobId} for completion and the download link. Admin only.",
+          "Creates a background job to generate a PDF inspection report in single, site, or multi-site mode. Returns immediately with a jobId — the actual PDF is generated asynchronously. Poll or subscribe to GET /api/pdf/status/{jobId} for completion and the download link. Admins can use every mode. Stewards can only use single mode, and only for a report they submitted.",
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -921,7 +921,8 @@ export const openApiSpec = {
             },
           },
           "403": {
-            description: "Forbidden - admin access required",
+            description:
+              "Forbidden - not an approved admin or steward, a steward requested site or multi-site mode, or a steward requested a report they did not submit",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/ErrorResponse" },
@@ -945,7 +946,7 @@ export const openApiSpec = {
         summary: "Get the status of a PDF export job",
         tags: ["PDF Export"],
         description:
-          "Returns the current status of a PDF export job. Once status is \"complete\", the response includes a time-limited (1 hour) signed S3 download URL.",
+          "Returns the current status of a PDF export job. Once status is \"complete\", the response includes a time-limited (1 hour) signed S3 download URL. Only the user who created the job can view it.",
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -968,6 +969,14 @@ export const openApiSpec = {
           },
           "401": {
             description: "Unauthorized",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" },
+              },
+            },
+          },
+          "403": {
+            description: "The job belongs to another user",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/ErrorResponse" },

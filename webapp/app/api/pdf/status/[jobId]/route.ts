@@ -24,11 +24,16 @@ export async function GET(_req: Request, { params }: { params: Promise<{ jobId: 
 
   const { data: job, error } = await supabase
     .from('S26_pdf_jobs')
-    .select('status, storage_path, error')
+    .select('status, storage_path, error, created_by')
     .eq('id', jobId)
     .single();
 
   if (error || !job) return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+
+  // RLS already limits reads to the owner's jobs; this check also holds if RLS changes.
+  if (job.created_by !== user.id) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   if (job.status === 'complete' && job.storage_path) {
     const s3 = getS3Client();
