@@ -38,7 +38,7 @@ const mockSetFormResponseActive = jest.fn();
 const mockUpdateSiteInspectionAnswers = jest.fn();
 
 jest.mock('@/utils/supabase/queries', () => ({
-  getSiteByName: (name: string) => mockGetSiteByName(name),
+  getSiteByNameAdmin: (name: string) => mockGetSiteByName(name),
   getFormResponsesBySiteAdmin: (name: string) => mockGetFormResponsesBySiteAdmin(name),
   setFormResponseActive: (id: number, isActive: boolean) => mockSetFormResponseActive(id, isActive),
   updateSiteInspectionAnswers: (id: number, batch: any[]) => mockUpdateSiteInspectionAnswers(id, batch),
@@ -1085,4 +1085,24 @@ describe('Integration Tests', () => {
       expect(screen.queryByText('Inactive')).not.toBeInTheDocument();
     });
   });
+
+  it('loads an inactive site in the administrator view', async () => {
+    mockGetSiteByName.mockResolvedValue([
+      { ...mockSite, is_active: false },
+    ]);
+
+    render(<AdminSiteDetails />);
+
+    await waitFor(() => {
+      expect(mockGetSiteByName).toHaveBeenCalledWith(
+        'Test National Park'
+      );
+      expect(mockGetFormResponsesBySiteAdmin).toHaveBeenCalledWith(
+        'Test National Park'
+      );
+    });
+
+    expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
+  });
+  
 });

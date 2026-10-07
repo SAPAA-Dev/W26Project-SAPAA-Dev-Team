@@ -4,7 +4,7 @@ import React, { useEffect, useState, useMemo, useRef, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation";
 import {
   getFormResponsesBySiteAdmin,
-  getSiteByName,
+  getSiteByNameAdmin,
   SiteSummary,
   FormResponse,
   FormAnswer,
@@ -223,10 +223,17 @@ export default function AdminSiteDetails() {
   useEffect(() => {
     const load = async () => {
       try {
-        const siteData = await getSiteByName(namesite);
-        const details = await getFormResponsesBySiteAdmin(siteData[0].namesite);
-        setSite(siteData[0]);
-        setInspections(details); // change state type to FormResponse[]
+        const siteData = await getSiteByNameAdmin(namesite);
+        const selectedSite = siteData[0];
+
+        if (!selectedSite) {
+          throw new Error('Site not found');
+        }
+
+        const details = await getFormResponsesBySiteAdmin(selectedSite.namesite);
+
+        setSite(selectedSite);
+        setInspections(details);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error loading inspections';
         setError(message);

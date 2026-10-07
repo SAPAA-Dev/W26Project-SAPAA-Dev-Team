@@ -31,6 +31,7 @@ describe("Supabase admin-only actions", () => {
     ["getFormResponsesBySiteAdmin", () => queries.getFormResponsesBySiteAdmin("Elk Island")],
     ["getNaturalnessDistribution", () => queries.getNaturalnessDistribution()],
     ["getTopSitesDistribution", () => queries.getTopSitesDistribution()],
+    ["getSiteByNameAdmin", () => queries.getSiteByNameAdmin("Elk Island")],
   ])("%s rejects a steward and touches nothing", async (_name, call) => {
     mockCaller("steward");
 
@@ -44,6 +45,7 @@ describe("Supabase admin-only actions", () => {
     ["getFormResponsesBySiteAdmin", () => queries.getFormResponsesBySiteAdmin("Elk Island")],
     ["getNaturalnessDistribution", () => queries.getNaturalnessDistribution()],
     ["getTopSitesDistribution", () => queries.getTopSitesDistribution()],
+    ["getSiteByNameAdmin", () => queries.getSiteByNameAdmin("Elk Island")],
   ])("%s rejects an admin whose approval was revoked", async (_name, call) => {
     mockCaller("admin", false);
 
@@ -59,4 +61,49 @@ describe("Supabase admin-only actions", () => {
     await expect(queries.setFormResponseActive(1, false)).resolves.toBeUndefined();
     expect(mockFrom).toHaveBeenCalledWith("form_responses");
   });
+
+  it("returns an inactive site for an approved admin", async () => {
+  const mockLimit = jest.fn().mockResolvedValue({
+    data: [
+      {
+        id: 7,
+        namesite: "Inactive Site",
+        ab_county: null,
+        is_active: false,
+        ab_counties: null,
+        form_responses: [],
+      },
+    ],
+    error: null,
+  });
+
+  const mockEq = jest.fn().mockReturnValue({
+    limit: mockLimit,
+  });
+
+  mockFrom.mockReturnValueOnce({
+    select: jest.fn().mockReturnValue({
+      eq: mockEq,
+    }),
+  });
+
+  const result = await queries.getSiteByNameAdmin("Inactive Site");
+
+  expect(result).toEqual([
+    {
+      id: 7,
+      namesite: "Inactive Site",
+      county: null,
+      ab_county: null,
+      inspectdate: null,
+      is_active: false,
+    },
+  ]);
+
+  expect(mockEq).toHaveBeenCalledTimes(1);
+  expect(mockEq).toHaveBeenCalledWith(
+    "namesite",
+    "Inactive Site"
+  );
+});
 });

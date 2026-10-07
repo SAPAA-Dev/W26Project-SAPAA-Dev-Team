@@ -575,6 +575,56 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
   });
 }
 
+/**
+ * Returns one site for an approved administrator, including inactive sites,
+ * and calculates the date of its latest inspection.
+ */
+export async function getSiteByNameAdmin(
+  namesite: string
+): Promise<SiteSummary[]> {
+  //Verify user before using client that bypasses RLS
+  await requireApprovedAdmin();
+  const supabase = createServerSupabase();
+
+  //Do not filter by is_active since this is for admins to view
+  const { data, error } = await supabase
+    .from('sites_pa')
+    .select(`
+      id,
+      namesite,
+      ab_county,
+      is_active,
+      ab_counties (
+        county
+      ),
+      form_responses (
+        inspection_date,
+        created_at
+      )
+    `)
+    .eq('namesite', namesite)
+    .limit(1);
+  //Process termination if query fails
+  if (error) {
+    throw new Error(error.message || 'Failed to fetch site');
+  }
+  //Convert database row into the site summary used by the page
+  return (data ?? []).map((site: any) => {
+    const responses = site.form_responses ?? [];
+    const latestDate = getLatestInspectionDate(responses);
+
+    return {
+      id: site.id,
+      namesite: site.namesite,
+      county: site.ab_counties?.county ?? null,
+      ab_county: site.ab_county ?? null,
+      inspectdate: latestDate,
+      is_active: site.is_active ?? true,
+    };
+  });
+}
+
+
 export interface SiteLinks {
   sapaaWebsiteUrl: string | null;
   iNaturalistUrl: string | null;
