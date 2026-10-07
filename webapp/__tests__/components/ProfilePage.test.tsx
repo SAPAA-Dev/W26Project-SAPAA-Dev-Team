@@ -118,6 +118,18 @@ describe('ProfilePage', () => {
     }
   });
 
+  it.each(['', '   '])('blocks saving when the name is %j', async (name) => {
+    render(<ProfilePage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }));
+    const input = screen.getByLabelText('Display name');
+    fireEvent.change(input, { target: { value: name } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    expect(input).toBeInvalid();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('lets an owner update only profile fields', async () => {
     fetchMock
       .mockResolvedValueOnce({ ok: true, json: async () => profilePayload })
