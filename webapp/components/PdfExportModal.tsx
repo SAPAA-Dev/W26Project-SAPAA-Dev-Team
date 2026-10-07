@@ -13,12 +13,13 @@ import {
   ChevronUp,
   CheckSquare,
   Square,
+  MinusSquare,
   AlertCircle,
   Sparkles,
   MapPin,
   Search,
 } from 'lucide-react';
-import { FormResponse } from '@/utils/supabase/queries';
+import { FormResponse, getQuestionsOnline, question } from '@/utils/supabase/queries';
 
 interface PdfExportModalProps {
   open: boolean;
@@ -38,7 +39,7 @@ interface PdfModalOptions {
   includeEmptyAnswers: boolean;
   includeCoverPage: boolean;
   includeNaturalnessSummary: boolean;
-  selectedSections: string[] | 'all';
+  hiddenQuestionIds: number[];
   sortOrder: 'newest' | 'oldest';
   pageSize: 'LETTER' | 'A4';
   selectedResponseIds: number[];
@@ -59,6 +60,9 @@ export default function PdfExportModal({
   const [showQuickOptions, setShowQuickOptions] = useState(true);
   const [selectedSiteNames, setSelectedSiteNames] = useState<string[]>([]);
   const [siteSearch, setSiteSearch] = useState('');
+  const [formQuestions, setFormQuestions] = useState<question[]>([]);
+  const [questionsLoading, setQuestionsLoading] = useState(false);
+  const [questionsError, setQuestionsError] = useState<string | null>(null);
 
   const [options, setOptions] = useState<PdfModalOptions>({
     dateFrom: '',
@@ -68,7 +72,7 @@ export default function PdfExportModal({
     includeEmptyAnswers: false,
     includeCoverPage: true,
     includeNaturalnessSummary: true,
-    selectedSections: 'all',
+    hiddenQuestionIds: [],
     sortOrder: 'newest',
     pageSize: 'LETTER',
     selectedResponseIds: [],
@@ -84,6 +88,23 @@ export default function PdfExportModal({
     }
     return () => { document.body.style.overflow = ''; };
   }, [open, siteNames]);
+
+  const loadQuestions = () => {
+    if (questionsLoading || formQuestions.length > 0) return;
+    setQuestionsLoading(true);
+    setQuestionsError(null);
+    getQuestionsOnline()
+      .then((data) => {
+        setFormQuestions(data);
+      })
+      .catch(() => {
+        setFormQuestions([]);
+        setQuestionsError('The question list did not load. The export includes every question.');
+      })
+      .finally(() => {
+        setQuestionsLoading(false);
+      });
+  };
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -103,15 +124,23 @@ export default function PdfExportModal({
   const selectAllSites = () => setSelectedSiteNames(siteNames ?? []);
   const deselectAllSites = () => setSelectedSiteNames([]);
 
-  const availableSections = useMemo(() => {
-    const sections = new Set<string>();
-    inspections.forEach((r) =>
-      r.answers.forEach((a) => {
-        if (a.section_title) sections.add(a.section_title);
-      })
-    );
-    return Array.from(sections);
-  }, [inspections]);
+  const exportSections = useMemo(() => {
+    const grouped = new Map<string, { title: string; questions: Array<{ id: number; text: string }> }>();
+    const sorted = [...formQuestions].sort((a, b) => (a.formorder ?? 0) - (b.formorder ?? 0));
+    for (const item of sorted) {
+      if (!item.sectionTitle) continue;
+      const text = item.title?.trim() || item.text?.trim();
+      if (!text) continue;
+      const entry = { id: item.id, text };
+      const existing = grouped.get(item.sectionTitle);
+      if (existing) {
+        existing.questions.push(entry);
+      } else {
+        grouped.set(item.sectionTitle, { title: item.sectionTitle, questions: [entry] });
+      }
+    }
+    return Array.from(grouped.values());
+  }, [formQuestions]);
 
   const previewCount = useMemo(() => {
     let filtered = [...inspections];
@@ -165,29 +194,48 @@ export default function PdfExportModal({
     setOptions((prev) => ({ ...prev, selectedResponseIds: [] }));
   };
 
-  const toggleSection = (section: string) => {
+  const isQuestionSelected = (questionId: number) => !options.hiddenQuestionIds.includes(questionId);
+
+  const sectionSelection = (section: { questions: Array<{ id: number }> }) => {
+    const selectedCount = section.questions.filter((item) => isQuestionSelected(item.id)).length;
+    if (selectedCount === 0) return 'none';
+    if (selectedCount === section.questions.length) return 'all';
+    return 'some';
+  };
+
+  const toggleQuestion = (questionId: number) => {
     setOptions((prev) => {
-      if (prev.selectedSections === 'all') {
-        return { ...prev, selectedSections: availableSections.filter((s) => s !== section) };
-      }
-      const sections = prev.selectedSections as string[];
-      if (sections.includes(section)) {
-        const next = sections.filter((s) => s !== section);
-        return { ...prev, selectedSections: next };
-      }
-      const next = [...sections, section];
-      return { ...prev, selectedSections: next.length === availableSections.length ? 'all' : next };
+      const hidden = prev.hiddenQuestionIds.includes(questionId)
+        ? prev.hiddenQuestionIds.filter((id) => id !== questionId)
+        : [...prev.hiddenQuestionIds, questionId];
+      return { ...prev, hiddenQuestionIds: hidden };
     });
   };
 
-  const isSectionSelected = (section: string) => {
-    if (options.selectedSections === 'all') return true;
-    return (options.selectedSections as string[]).includes(section);
+  const toggleSectionQuestions = (section: { questions: Array<{ id: number }> }) => {
+    setOptions((prev) => {
+      const ids = section.questions.map((item) => item.id);
+      const allSelected = ids.every((id) => !prev.hiddenQuestionIds.includes(id));
+      const hidden = new Set(prev.hiddenQuestionIds);
+      if (allSelected) {
+        ids.forEach((id) => hidden.add(id));
+      } else {
+        ids.forEach((id) => hidden.delete(id));
+      }
+      return { ...prev, hiddenQuestionIds: Array.from(hidden) };
+    });
   };
 
-  const noSectionsSelected =
-    options.selectedSections !== 'all' &&
-    (options.selectedSections as string[]).length === 0;
+  const visibleSectionTitles = exportSections
+    .filter((section) => section.questions.some((item) => isQuestionSelected(item.id)))
+    .map((section) => section.title);
+
+  const selectedSections: string[] | 'all' =
+    exportSections.length === 0 || visibleSectionTitles.length === exportSections.length
+      ? 'all'
+      : visibleSectionTitles;
+
+  const noQuestionsSelected = exportSections.length > 0 && visibleSectionTitles.length === 0;
 
   // Invalid only when BOTH dates are set and from > to
   const dateRangeInvalid = !!(
@@ -220,7 +268,8 @@ export default function PdfExportModal({
         includeEmptyAnswers: options.includeEmptyAnswers,
         includeCoverPage: options.includeCoverPage,
         includeNaturalnessSummary: options.includeNaturalnessSummary,
-        selectedSections: options.selectedSections,
+        selectedSections,
+        hiddenQuestionIds: options.hiddenQuestionIds,
         sortOrder: options.sortOrder,
         pageSize: options.pageSize,
         selectedResponseIds: options.selectedResponseIds.length > 0 ? options.selectedResponseIds : undefined,
@@ -629,7 +678,11 @@ export default function PdfExportModal({
           {/* Advanced Options */}
           <div className="bg-[#F7F2EA] rounded-2xl border-2 border-[#E4EBE4]">
             <button
-              onClick={() => setShowAdvanced(!showAdvanced)}
+              onClick={() => {
+                const nextOpen = !showAdvanced;
+                setShowAdvanced(nextOpen);
+                if (nextOpen) loadQuestions();
+              }}
               className="w-full flex items-center justify-between px-5 py-5 hover:bg-[#E4EBE4]/40 rounded-2xl transition-all"
             >
               <div className="flex items-center gap-2">
@@ -686,49 +739,92 @@ export default function PdfExportModal({
                   </div>
                 </div>
 
-                {/* Section Filter */}
-                {availableSections.length > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">Sections</label>
+                {/* Sections and questions */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">Sections</label>
+                    {exportSections.length > 0 && (
                       <button
-                        onClick={() => setOptions((p) => ({ ...p, selectedSections: 'all' }))}
+                        onClick={() => setOptions((p) => ({ ...p, hiddenQuestionIds: [] }))}
                         className="text-xs font-semibold text-[#356B43] hover:text-[#254431] transition-colors"
                       >
-                        {options.selectedSections === 'all' ? 'All selected' : 'Select all'}
+                        {options.hiddenQuestionIds.length === 0 ? 'All selected' : 'Select all'}
                       </button>
-                    </div>
-
-                    {/* Error: all sections deselected */}
-                    {noSectionsSelected && (
-                      <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-[#FEE2E2] rounded-xl">
-                        <AlertCircle className="w-4 h-4 text-[#B91C1C] flex-shrink-0" />
-                        <p className="text-xs text-[#B91C1C]">At least one section must be selected.</p>
-                      </div>
                     )}
-
-                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                      {availableSections.map((section) => (
-                        <button
-                          key={section}
-                          onClick={() => toggleSection(section)}
-                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                            isSectionSelected(section)
-                              ? 'bg-white border-2 border-[#356B43] shadow-sm'
-                              : 'bg-white/50 border-2 border-transparent hover:border-[#E4EBE4]'
-                          }`}
-                        >
-                          {isSectionSelected(section) ? (
-                            <CheckSquare className="w-4 h-4 text-[#356B43] flex-shrink-0" />
-                          ) : (
-                            <Square className="w-4 h-4 text-[#7A8075] flex-shrink-0" />
-                          )}
-                          <p className="text-sm font-medium text-[#254431]">{section}</p>
-                        </button>
-                      ))}
-                    </div>
                   </div>
-                )}
+
+                  {questionsLoading && (
+                    <p className="text-xs text-[#7A8075]">Loading questions...</p>
+                  )}
+
+                  {questionsError && (
+                    <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-[#FEE2E2] rounded-xl">
+                      <AlertCircle className="w-4 h-4 text-[#B91C1C] flex-shrink-0" />
+                      <p className="text-xs text-[#B91C1C]">{questionsError}</p>
+                    </div>
+                  )}
+
+                  {noQuestionsSelected && (
+                    <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-[#FEE2E2] rounded-xl">
+                      <AlertCircle className="w-4 h-4 text-[#B91C1C] flex-shrink-0" />
+                      <p className="text-xs text-[#B91C1C]">At least one question must be selected.</p>
+                    </div>
+                  )}
+
+                  {exportSections.length > 0 && (
+                    <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+                      {exportSections.map((section) => {
+                        const selection = sectionSelection(section);
+                        const selectedBox = 'bg-white border-2 border-[#356B43] shadow-sm';
+                        const idleBox = 'bg-white/50 border-2 border-transparent hover:border-[#E4EBE4]';
+                        return (
+                          <div key={section.title} className="space-y-2">
+                            <button
+                              onClick={() => toggleSectionQuestions(section)}
+                              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                                selection === 'none' ? idleBox : selectedBox
+                              }`}
+                            >
+                              {selection === 'all' ? (
+                                <CheckSquare className="w-4 h-4 text-[#356B43] flex-shrink-0" />
+                              ) : selection === 'some' ? (
+                                <MinusSquare className="w-4 h-4 text-[#356B43] flex-shrink-0" />
+                              ) : (
+                                <Square className="w-4 h-4 text-[#7A8075] flex-shrink-0" />
+                              )}
+                              <p className={`text-sm ${selection === 'none' ? 'font-medium text-[#254431]' : 'font-bold text-[#356B43]'}`}>
+                                {section.title}
+                              </p>
+                            </button>
+                            <div className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                                selection === 'none' ? idleBox : selectedBox
+                              }`}>
+                              {section.questions.map((item) => {
+                                const selected = isQuestionSelected(item.id);
+                                return (
+                                  <button
+                                    key={item.id}
+                                    onClick={() => toggleQuestion(item.id)}
+                                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left transition-all }`}
+                                  >
+                                    {selected ? (
+                                      <CheckSquare className="w-4 h-4 text-[#356B43] flex-shrink-0" />
+                                    ) : (
+                                      <Square className="w-4 h-4 text-[#7A8075] flex-shrink-0" />
+                                    )}
+                                    <p className={`text-sm ${selected ? 'font-bold text-[#356B43]' : 'text-[#7A8075]'}`}>
+                                      {item.text}
+                                    </p>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -760,7 +856,7 @@ export default function PdfExportModal({
               </button>
               <button
                 onClick={handleExport}
-                disabled={loading || (mode === 'site' && previewCount === 0) || (mode === 'multi-site' && selectedSiteNames.length === 0) || dateRangeInvalid || noSectionsSelected}
+                disabled={loading || (mode === 'site' && previewCount === 0) || (mode === 'multi-site' && selectedSiteNames.length === 0) || dateRangeInvalid || noQuestionsSelected}
                 className="px-6 py-2.5 bg-gradient-to-r from-[#356B43] to-[#254431] text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (

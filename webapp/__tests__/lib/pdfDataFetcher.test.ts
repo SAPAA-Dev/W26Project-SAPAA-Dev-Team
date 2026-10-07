@@ -45,6 +45,7 @@ const DEFAULT_OPTIONS: PdfOptions = {
   includeCoverPage: true,
   includeNaturalnessSummary: true,
   selectedSections: 'all',
+  hiddenQuestionIds: [],
   sortOrder: 'newest',
   pageSize: 'LETTER',
 };
@@ -293,6 +294,21 @@ describe('fetchReportData', () => {
     const response10 = result.sites[0].responses.find((r) => r.id === 10)!;
 
     expect(response10.answers).toHaveLength(2);
+  });
+
+  it('omits a hidden question and keeps the other answers', async () => {
+    const request: PdfRequest = {
+      mode: 'site',
+      siteName: 'Elk Island',
+      options: { ...DEFAULT_OPTIONS, hiddenQuestionIds: [1], includeEmptyAnswers: true },
+    };
+
+    const result = await fetchReportData(request);
+    const response10 = result.sites[0].responses.find((r) => r.id === 10)!;
+    const response20 = result.sites[0].responses.find((r) => r.id === 20)!;
+
+    expect(response10.answers.map((answer) => answer.question_id)).toEqual([2]);
+    expect(response20.answers.map((answer) => answer.question_id)).toEqual([3]);
   });
 
   // ── Empty answers ──

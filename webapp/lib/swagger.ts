@@ -153,6 +153,12 @@ export const openApiSpec = {
             enum: ["all", "custom"],
             default: "all",
           },
+          hiddenQuestionIds: {
+            type: "array",
+            items: { type: "integer" },
+            default: [],
+            description: "Question ids to omit from the export. An empty array keeps every question.",
+          },
           sortOrder: {
             type: "string",
             enum: ["newest", "oldest"],

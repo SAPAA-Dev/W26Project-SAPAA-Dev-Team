@@ -131,6 +131,15 @@ function filterResponsesByOptions(
     }));
   }
 
+  const hiddenQuestionIds = options.hiddenQuestionIds ?? [];
+  if (hiddenQuestionIds.length > 0) {
+    const hidden = new Set(hiddenQuestionIds);
+    filtered = filtered.map((r) => ({
+      ...r,
+      answers: r.answers.filter((a) => !hidden.has(a.question_id)),
+    }));
+  }
+
   if (!options.includeEmptyAnswers) {
     filtered = filtered.map((r) => ({
       ...r,

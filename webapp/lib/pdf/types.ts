@@ -9,6 +9,7 @@ export interface PdfOptions {
   includeCoverPage: boolean;
   includeNaturalnessSummary: boolean;
   selectedSections: string[] | 'all';
+  hiddenQuestionIds: number[];
   sortOrder: 'newest' | 'oldest';
   pageSize: 'LETTER' | 'A4';
   selectedResponseIds?: number[];

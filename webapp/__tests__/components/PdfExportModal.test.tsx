@@ -3,13 +3,13 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import PdfExportModal from '@/components/PdfExportModal';
-import { FormResponse } from '@/utils/supabase/queries';
+import { getQuestionsOnline, type FormResponse } from '@/utils/supabase/queries';
 
 // Mock lucide-react icons to simple spans
 jest.mock('lucide-react', () => {
   const icons = [
     'X', 'Download', 'Loader2', 'FileText', 'Calendar', 'Image',
-    'Settings', 'ChevronDown', 'ChevronUp', 'CheckSquare', 'Square',
+    'Settings', 'ChevronDown', 'ChevronUp', 'CheckSquare', 'Square', 'MinusSquare',
     'AlertCircle', 'Sparkles', 'MapPin', 'Search',
   ];
   const mocks: Record<string, React.FC<{ className?: string }>> = {};
@@ -19,6 +19,46 @@ jest.mock('lucide-react', () => {
   });
   return mocks;
 });
+
+jest.mock('@/utils/supabase/queries', () => ({
+  getQuestionsOnline: jest.fn(),
+}));
+
+const mockFormQuestions = [
+  {
+    id: 1,
+    title: 'Vegetation',
+    text: null,
+    sectionTitle: 'Flora',
+    section: 1,
+    formorder: 1,
+    question_type: 'text',
+    is_required: false,
+    answers: [],
+  },
+  {
+    id: 3,
+    title: 'Flowers',
+    text: null,
+    sectionTitle: 'Flora',
+    section: 1,
+    formorder: 2,
+    question_type: 'text',
+    is_required: false,
+    answers: [],
+  },
+  {
+    id: 2,
+    title: 'Wildlife',
+    text: null,
+    sectionTitle: 'Fauna',
+    section: 2,
+    formorder: 3,
+    question_type: 'text',
+    is_required: false,
+    answers: [],
+  },
+];
 
 const mockInspections: FormResponse[] = [
   {
@@ -76,6 +116,7 @@ describe('PdfExportModal', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (getQuestionsOnline as jest.Mock).mockResolvedValue(mockFormQuestions);
   });
 
   // ── Rendering ──
@@ -249,9 +290,9 @@ describe('PdfExportModal', () => {
     expect(screen.getByText('US Letter')).toBeInTheDocument();
   });
 
-  it('shows section filter when inspections have sections', async () => {
+  it('shows sections and questions for site mode and multi-site mode', async () => {
     const user = userEvent.setup();
-    render(
+    const { unmount } = render(
       <PdfExportModal
         open={true}
         onClose={onClose}
@@ -263,9 +304,60 @@ describe('PdfExportModal', () => {
 
     await user.click(screen.getByText('Advanced Options'));
 
-    expect(screen.getByText('Sections')).toBeInTheDocument();
-    expect(screen.getByText('Flora')).toBeInTheDocument();
+    expect(await screen.findByText('Sections')).toBeInTheDocument();
+    expect(await screen.findByText('Flora')).toBeInTheDocument();
     expect(screen.getByText('Fauna')).toBeInTheDocument();
+    expect(screen.getByText('Vegetation')).toBeInTheDocument();
+    expect(screen.getByText('Flowers')).toBeInTheDocument();
+    expect(screen.getByText('Wildlife')).toBeInTheDocument();
+
+    unmount();
+
+    render(
+      <PdfExportModal
+        open={true}
+        onClose={onClose}
+        mode="multi-site"
+        siteNames={['A', 'B']}
+      />
+    );
+
+    await user.click(screen.getByText('Advanced Options'));
+
+    expect(await screen.findByText('Vegetation')).toBeInTheDocument();
+    expect(screen.getByText('Wildlife')).toBeInTheDocument();
+  });
+
+  it('sends hidden question ids and keeps the section when one question stays selected', async () => {
+    const user = userEvent.setup();
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ jobId: 'job-1' }),
+    });
+
+    render(
+      <PdfExportModal
+        open={true}
+        onClose={onClose}
+        mode="multi-site"
+        siteNames={['A']}
+      />
+    );
+
+    await user.click(screen.getByText('Advanced Options'));
+    await user.click(await screen.findByText('Flowers'));
+    await user.click(screen.getByText('Export PDF'));
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith('/api/pdf', expect.any(Object));
+    });
+
+    const exportCall = (global.fetch as jest.Mock).mock.calls.find(
+      (call) => call[0] === '/api/pdf'
+    );
+    const body = JSON.parse(exportCall[1].body);
+    expect(body.options.hiddenQuestionIds).toEqual([3]);
+    expect(body.options.selectedSections).toBe('all');
   });
 
   it('shows max images slider only when images enabled', async () => {

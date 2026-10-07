@@ -11,9 +11,15 @@ const DEFAULT_OPTIONS: PdfOptions = {
   includeCoverPage: true,
   includeNaturalnessSummary: true,
   selectedSections: 'all',
+  hiddenQuestionIds: [],
   sortOrder: 'newest',
   pageSize: 'LETTER',
 };
+
+function parseHiddenQuestionIds(value: unknown): number[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((id): id is number => typeof id === 'number' && Number.isInteger(id));
+}
 
 function parseRequest(body: any): PdfRequest {
   if (!body || !body.mode) {
@@ -34,6 +40,7 @@ function parseRequest(body: any): PdfRequest {
   if (!['newest', 'oldest'].includes(options.sortOrder)) {
     options.sortOrder = 'newest';
   }
+  options.hiddenQuestionIds = parseHiddenQuestionIds(options.hiddenQuestionIds);
 
   switch (body.mode) {
     case 'single':

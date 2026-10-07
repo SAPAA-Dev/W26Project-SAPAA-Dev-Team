@@ -381,6 +381,32 @@ describe('POST /api/pdf', () => {
             includeEmptyAnswers: true,
             includeCoverPage: true,
             includeNaturalnessSummary: true,
+            hiddenQuestionIds: [],
+          }),
+        }),
+      })
+    );
+  });
+
+  it('drops hidden question ids that are not integers', async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: 'u1', user_metadata: { role: 'admin' } } },
+      error: null,
+    });
+
+    await POST(
+      makeRequest({
+        mode: 'multi-site',
+        siteNames: ['A'],
+        options: { hiddenQuestionIds: [2, 'email', 3.5, 4] },
+      })
+    );
+
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        request_payload: expect.objectContaining({
+          options: expect.objectContaining({
+            hiddenQuestionIds: [2, 4],
           }),
         }),
       })
