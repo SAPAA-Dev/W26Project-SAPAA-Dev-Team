@@ -1,8 +1,10 @@
 name: Reviewer gate
 
 # With 2+ assignees, only they review and all of them must approve. With none, any 2
-# people can approve. Exactly 1 assignee fails. Add `reviewers` as a required check in
-# the main ruleset. Approvals only count on the current head commit.
+# people can approve. Exactly 1 assignee fails. Approvals only count on the current head
+# commit. The result is the `reviewer-gate` commit status, which the main and release
+# rulesets require. A status is replaced by the newest one, while job results from earlier
+# runs pile up on the commit and keep blocking after the PR is approved.
 on:
   pull_request:
     branches: [main, release]
@@ -20,6 +22,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      statuses: write
     steps:
       - uses: actions/checkout@v4
       - name: Self-test the gate
@@ -42,8 +45,10 @@ jobs:
           msg=$(sh .github/scripts/reviewer-gate.sh) || rc=$?
           echo "$msg"
           echo "$msg" >> "$GITHUB_STEP_SUMMARY"
-          [ "$rc" -eq 0 ] || echo "::error::$msg"
-          echo "RC=$rc" >> "$GITHUB_ENV"
+          [ "$rc" -eq 0 ] && state=success || state=failure
+          gh api "repos/$REPO/statuses/$head" -f context=reviewer-gate -f state="$state" \
+            -f description="$(printf '%s' "$msg" | cut -c1-140)" \
+            -f target_url="$GITHUB_SERVER_URL/$REPO/actions/runs/$GITHUB_RUN_ID" > /dev/null
           echo "REQ=$(echo "$ASSIGNEES" | grep -vxF "$AUTHOR" | tr '\n' ' ')" >> "$GITHUB_ENV"
       - name: Remind assigned reviewers to read everything
         if: github.event_name == 'pull_request' && env.REQ != ''
@@ -62,6 +67,3 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           PR: ${{ github.event.pull_request.number }}
-      - name: Fail if reviewers are not satisfied
-        if: env.RC != '0'
-        run: exit 1

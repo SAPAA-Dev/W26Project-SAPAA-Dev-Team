@@ -125,11 +125,11 @@ goes through a pull request, and a PR needs all of these before it can merge:
   latest push has to be approved by someone other than its author.
 - **Assigned reviewers.** Assign 2 or more people to the PR (sidebar > Assignees). Then only
   they can review and **all** of them must approve. With no assignees, any 2 teammates can
-  approve. Exactly 1 assignee fails the `reviewers` check. A bot comment reminds assignees to
+  approve. Exactly 1 assignee fails the `reviewer-gate` status. A bot comment reminds assignees to
   read every changed file top to bottom before approving.
 - **All review conversations resolved.**
 - **Green checks:** `webapp-tests`, `mobile-tests`, `docs-build`, `hook-tests`,
-  `conventions` and `reviewers` (branch name, PR title and every commit message).
+  `conventions` and `reviewer-gate` (branch name, PR title and every commit message).
 
 **Squash merge only on `main`** (`release` takes merge commits only, see Branch model). Each PR lands on `main` as one commit, and the PR title is its
 message. That's why the PR title has to follow the `(<type>): <description>` format too.
