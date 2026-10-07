@@ -1,0 +1,27 @@
+{
+  "name": "sapaa-diagrams",
+  "private": true,
+  "type": "module",
+  "description": "Generates and renders the Mermaid diagrams in docs/assets and docs/images.",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "generate": "node src/cli.mjs generate",
+    "render": "puppeteer browsers install chrome-headless-shell > /dev/null && node src/cli.mjs render",
+    "all": "puppeteer browsers install chrome-headless-shell > /dev/null && node src/cli.mjs all",
+    "check": "node src/cli.mjs check",
+    "lint": "node src/cli.mjs lint",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@mermaid-js/mermaid-cli": "12.0.0",
+    "libpg-query": "18.1.5",
+    "mermaid": "12.0.0",
+    "puppeteer": "25.11.0",
+    "ts-morph": "28.0.0"
+  },
+  "overrides": {
+    "mermaid": "12.0.0"
+  }
+}

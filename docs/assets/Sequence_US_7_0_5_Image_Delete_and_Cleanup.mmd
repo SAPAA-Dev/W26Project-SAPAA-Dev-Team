@@ -43,41 +43,56 @@ sequenceDiagram
     autonumber off
     actor Admin
     actor Steward
-    participant Page as Web pages<br/>site page, admin site page,<br/>new-report
-    participant Api as Image delete route<br/>(proposed)
+    participant Page as Web pages<br/>admin gallery, admin site page<br/>(DeleteImageButton), new-report
+    participant Api as Image delete route<br/>DELETE /api/site-images?id=&kind=
     participant Server as Server actions<br/>utils/supabase/queries.ts
     participant DB as Supabase DB<br/>attachments,<br/>homepage_image_uploads
     participant S3 as AWS S3
 
-    Note over Admin,S3: Covers US 7.0.5. No image delete exists today, and no code deletes S3 objects.<br/>"(proposed)" = the step is not in the code today.
+    Note over Admin,S3: Covers US 7.0.5. The image delete route and deleteObjectsByKeys (utils/media/s3Delete.ts) exist.<br/>"(proposed)" = the step is not in the code today.
 
     Note over Admin,S3: Delete an image (AT 1, AT 2, AT 3)
-    Admin->>Page: Open a site gallery. It shows attachments images (/api/sites/[siteId]/gallery)<br/>and homepage_image_uploads images (/api/homepage-images/[siteId]). Both exist.
-    Page->>Page: Show Delete only to Admins (AT 2) (proposed)
-    Admin->>Page: Select Delete on an image and confirm (proposed)
-    Page->>Api: DELETE with image kind (inspection attachment<br/>or homepage upload) and image id (proposed)
-    Api->>Api: Check caller is Admin from a trusted role source, store not decided
-    alt Caller is not Admin (AT 2)
+    Admin->>Page: Open the admin gallery (/api/gallery, /api/homepage-images) or the admin site page<br/>(/api/sites/[siteId]/gallery, /api/homepage-images/[siteId]). Both exist.
+    Page->>Page: Show Delete only on the two admin pages (AT 2). The public site page has no Delete
+    Admin->>Page: Select Delete on an image and confirm<br/>("Confirm delete" or "Cancel")
+    Page->>Api: DELETE ?id={image id}&kind=attachments or homepage_image_uploads
+    Api->>Api: Check app_metadata.role = admin and app_metadata.authenticated = true (exists).<br/>RLS delete policies also require an Admin
+    alt No signed-in user
+        Api-->>Page: 401. Nothing is deleted
+    else Caller is not Admin (AT 2)
         Api-->>Page: 403. Nothing is deleted
     else Caller is Admin
-        Api->>DB: Read storage_key from the table of that image kind:<br/>attachments or homepage_image_uploads
-        DB-->>Api: storage_key
-        Api->>S3: DeleteObject(storage_key) (AT 3)
-        alt S3 delete fails
-            S3-->>Api: Error
-            Api-->>Page: Error. Row is kept
-        else File is deleted
-            S3-->>Api: OK
+        Api->>Api: Check kind and id. A bad value returns 400
+        Api->>DB: Read storage_key from the table of that kind:<br/>attachments or homepage_image_uploads
+        alt Row is not found
+            DB-->>Api: No row
+            Api-->>Page: 404. Nothing is deleted
+        else Row is found
+            DB-->>Api: storage_key
             Api->>DB: Delete that row from the same table
-            Api-->>Page: Success
-            Page-->>Admin: Image is gone from gallery and reports (AT 1)
+            alt Row delete fails
+                DB-->>Api: Error
+                Api-->>Page: Error 500. Row and file are kept
+            else Row is deleted
+                DB-->>Api: OK
+                Api->>S3: deleteObjectsByKeys([storage_key]) (AT 3)
+                alt S3 delete fails
+                    S3-->>Api: Error
+                    Api-->>Page: Error 500. Row is already deleted.<br/>The S3 object stays (no retry)
+                else File is deleted
+                    S3-->>Api: OK
+                    Api-->>Page: Success
+                    Page-->>Admin: Image is gone from gallery and reports (AT 1)
+                end
+            end
         end
     end
-    Note over Api,S3: Open questions: the order (S3 object first, then the row, as shown)<br/>and a retry when one of the two deletes fails.
+    Note over Api,S3: Open question: a retry or a cleanup for orphaned S3 objects.
 
     Note over Admin,S3: Deactivate a SIR (AT 4): this exists and keeps the files
     Admin->>Page: Deactivate a SIR on the admin site page
     Page->>Server: setFormResponseActive(responseId, false)
+    Server->>Server: requireApprovedAdmin() (exists)
     Server->>DB: Set is_active false on form_responses
     Note over Server,S3: Attachment rows and S3 files stay, so reactivation restores the photos.
 
@@ -86,7 +101,8 @@ sequenceDiagram
     Page->>S3: PUT photos to inspections/{siteId}/{responseId}/ (exists)
     Page->>Server: uploadSiteInspectionAnswers or<br/>insertInspectionAttachments fails
     Page->>Server: rollbackSiteInspectionSubmission(responseId) (exists)
-    Server->>DB: Delete attachment, answer and response rows (exists)
+    Server->>DB: Read storage_key of stored attachments rows, then delete<br/>attachment, answer and response rows (exists)
+    Server->>S3: deleteObjectsByKeys(storage_key of stored attachments rows) (exists)
     Server->>S3: Delete all objects under inspections/{siteId}/{responseId}/ (proposed)
     Page-->>Steward: Show error. SIR is not saved
-    Note over Server,S3: Today rollback deletes only database rows. The uploaded files stay in S3.
+    Note over Server,S3: Rollback deletes S3 objects only for attachments rows already saved.<br/>When the attachments insert fails, the uploaded files stay in S3 (gap).

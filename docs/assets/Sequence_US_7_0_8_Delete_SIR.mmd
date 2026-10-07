@@ -43,7 +43,7 @@ sequenceDiagram
     autonumber off
     actor Admin
     participant Page as Admin site page<br/>SIR list
-    participant Server as Server actions<br/>InspectionQueries
+    participant Server as Server actions<br/>utils/supabase/queries.ts
     participant DB as Supabase DB<br/>form_responses, answers,<br/>attachments
     participant S3 as AWS S3
 
@@ -53,7 +53,7 @@ sequenceDiagram
     Page-->>Admin: Ask to confirm, with the number of answers and images (AT 1)
     Admin->>Page: Confirm
     Page->>Server: deleteFormResponse(responseId) (proposed)
-    Server->>Server: Check caller is Admin from a trusted role source, store not decided
+    Server->>Server: requireApprovedAdmin() (exists):<br/>app_metadata.role = admin and authenticated
     alt Caller is not Admin (AT 4)
         Server-->>Page: Refused. The SIR stays unchanged
         Note over Admin,Server: A Steward who sends the request directly is refused the same way
@@ -65,11 +65,11 @@ sequenceDiagram
             Server-->>Page: Error. The SIR and its answers stay unchanged
         else Transaction succeeds
             DB-->>Server: OK
-            Server->>S3: Delete each image file (proposed)
+            Server->>S3: deleteObjectsByKeys(storage_keys)<br/>(helper exists, call proposed)
             Note over DB,S3: If an S3 delete fails, the row is already gone.<br/>Log the key for a later cleanup.
             Server-->>Page: Deleted
             Page-->>Admin: SIR is gone from the Site and report lists. Its images are not shown (AT 2, AT 3)
         end
     end
 
-    Note over Admin,S3: Open question: the client must say how delete is different from deactivate.<br/>Deactivate hides the SIR and keeps its files (US 7.0.5 AT 4). Delete removes it.<br/>Today rollbackSiteInspectionSubmission deletes rows with separate calls and no transaction.
+    Note over Admin,S3: Open question: the client must say how delete is different from deactivate.<br/>Deactivate hides the SIR and keeps its files (US 7.0.5 AT 4). Delete removes it.<br/>Today rollbackSiteInspectionSubmission deletes rows with separate calls and no transaction.<br/>It then deletes the S3 objects of those attachments.

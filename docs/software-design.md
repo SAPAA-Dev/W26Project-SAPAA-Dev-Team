@@ -1,6 +1,17 @@
 # Software Design
 
-This page shows the high-level design of the SAPAA system: the architecture, the data, the key interactions, the user interface, and the technologies. The diagrams mark the parts that are proposed. The other parts show the code as it is today. A proposed part does not exist in the code. It is a design proposal for a user story, not a decision.
+This page shows the high-level design of the SAPAA system: the architecture, the data, the key interactions, the user interface, and the technologies. The diagrams mark the parts that are proposed. The other parts show the code on `main` as of October 7, 2026. Sprint 2 is still in progress: the code freeze is October 11 and the release is October 13. A proposed part does not exist in the code. It is a design proposal for a user story, not a decision.
+
+### How the diagrams are generated
+
+Each diagram has a Mermaid source in `docs/assets/` and a rendered SVG in `docs/images/`. Run `npm run diagrams` from the repository root to update them. The tool in `tools/diagrams/` does these steps:
+
+1. It makes the current schema from the migrations in `webapp/supabase/migrations/` and writes the generated part of the ER diagram and of the data model diagram.
+2. It reads the exported functions and route handlers of the web app and writes the generated part of the services diagram.
+3. It warns when a hand-written diagram names a table or a column that a migration removed.
+4. It renders each source that changed to SVG.
+
+The tool changes only the text between the `%% BEGIN GENERATED` and `%% END GENERATED` markers. All other text in a source is hand-written. On each pull request to `main` or `release`, a workflow runs the tool and commits the changes to the pull request branch. See [Contributing: Diagrams](contributing.md#diagrams).
 
 ---
 
@@ -18,11 +29,11 @@ The legend in the diagram explains the shapes. A rectangle is a component in thi
 
 The system has five layers:
 
-1. **Client layer.** Admins and stewards use the web app in a browser. Stewards use the StewardLog mobile app (`FNR/`). The mobile app keeps an offline copy of site data in expo-sqlite (`FNR/src/services/database.ts`). The Google Sheets script (`googleSheets/code.gs`) is a client for admins. It reads and writes the legacy tables.
-2. **Application layer.** The Next.js web app (`webapp/`) runs on Vercel. Pages and server actions call Supabase with supabase-js (`webapp/utils/supabase/`). API route handlers (`webapp/app/api/`) make presigned S3 URLs, call the OpenCage API, and start the PDF job (`webapp/lib/pdf/processPdfJob.ts`). The mobile app and the Google Sheets script have no server of their own. They call Supabase directly.
-3. **Data and storage layer.** One Supabase project holds the PostgreSQL database, Supabase Auth, and two Edge Functions (`add-user`, `delete-user`) that the mobile admin screens call (`FNR/src/services/adminAuth.ts`). The source of the Edge Functions is not in this repository. An AWS S3 bucket holds inspection photos and PDF files. The browser uploads a photo directly to S3 with a presigned URL. See [Media Storage Architecture](aws-architecture.md).
+1. **Client layer.** Admins and stewards use the web app in a browser. Stewards use the StewardLog mobile app (`FNR/`). The mobile app keeps an offline copy of site data in expo-sqlite (`FNR/src/services/database.ts`). The Google Sheets script (`googleSheets/code.gs`) was removed from the repository in c7f7cb4 (#118).
+2. **Application layer.** The Next.js web app (`webapp/`) runs on Vercel. `webapp/middleware.ts` refreshes the session and sends a signed-out user to `/login`. Pages and server actions call Supabase with supabase-js (`webapp/utils/supabase/`). The server actions include the steward assignment (`webapp/utils/steward-actions.ts`) and the KML import (`webapp/utils/kml-import-actions.ts`). API route handlers (`webapp/app/api/`) make presigned S3 URLs, delete images, return the profile data, call the OpenCage API, and start the PDF job (`webapp/lib/pdf/processPdfJob.ts`). The mobile app has no server of its own. It calls Supabase directly.
+3. **Data and storage layer.** One Supabase project holds the PostgreSQL database, Supabase Auth, the private Storage bucket `kml-imports` for KML uploads, and three Edge Functions (`get-users`, `add-user`, `delete-user`) that the mobile admin screens call (`FNR/src/services/adminAuth.ts`). The source of the Edge Functions is not in this repository. An AWS S3 bucket holds inspection photos and PDF files. The browser uploads a photo directly to S3 with a presigned URL. See [Media Storage Architecture](aws-architecture.md).
 4. **External services.** Supabase Auth signs users in with Google, Microsoft Azure, and GitHub OAuth (`webapp/services/auth.ts`, `webapp/app/login/actions.ts`, `FNR/src/services/auth.ts`). The web app and the mobile app get coordinates from the OpenCage Geocoding API. The web app map uses OpenStreetMap tiles. The mobile map shows a Google My Maps embed. The iNaturalist API is proposed for US 4.0.5 and US 4.0.7.
-5. **Build and documentation tooling.** GitHub Actions runs the Jest tests and the MkDocs build on each push (`.github/workflows/ci.yaml`). On a push to `main`, it publishes this site to GitHub Pages (`.github/workflows/gh-pages.yaml`).
+5. **Build and documentation tooling.** GitHub Actions runs the Jest tests, the hook tests, and the MkDocs build on each push (`.github/workflows/ci.yaml`). On each pull request, it runs the PR checks, the labeler, the reviewer gate, and the diagram update (`.github/workflows/diagrams.yaml`). On a push to `main`, it publishes this site to GitHub Pages (`.github/workflows/gh-pages.yaml`).
 
 ---
 
@@ -37,9 +48,9 @@ For details about how images are stored and retrieved, see the
 
 The ER diagrams show the tables, the columns, and the relations in the database. They show which data each app owns, and where the two inspection systems do not share data. This is important before a change to a query or to the schema.
 
-One Supabase database holds two inspection systems. The web app uses its own tables (for example `form_responses`, `sites_pa`, and `S26_pdf_jobs`). The mobile app (StewardLog) and the Google Apps Script use the legacy tables. The web app and the mobile app both read two legacy tables. The web app reads `luperson` to find if an email belongs to a steward. It reads `sites_report_fnr_test` for the heat map on the admin dashboard (`webapp/app/api/heatmap/route.ts`). The two apps also call the same database functions for the dashboard charts (`get_naturalness_distribution` and `get_top_sites_distribution`). `luperson` is the only table that all three clients use: the web app, the mobile app, and the Google Apps Script. Except for these shared tables and functions, inspection data that one system writes does not show in the other system.
+One Supabase database holds two inspection systems. The web app uses its own tables (for example `form_responses`, `sites_pa`, and `S26_pdf_jobs`). Sprint 2 added the user model (`people`, `site_stewards`, `socials`) and `protected_areas` for the KML import. The migration `20261003000000_remove_w26_prefix.sql` removed the `W26_` prefix from the table names. The mobile app (StewardLog) uses the legacy tables. The web app and the mobile app both read two legacy tables. The web app reads `luperson` to find if an email belongs to a steward. It reads `sites_report_fnr_test` for the heat map on the admin dashboard (`webapp/app/api/heatmap/route.ts`). The two apps also call the same database functions for the dashboard charts (`get_naturalness_distribution` and `get_top_sites_distribution`). `luperson` is the only table that both apps use. Except for these shared tables and functions, inspection data that one system writes does not show in the other system.
 
-The current-schema diagrams show only the tables and columns that the code reads or writes, or that `webapp/supabase/migrations/` defines. A column type is "unknown" when the code does not show it.
+The web app diagram is generated from `webapp/supabase/migrations/`. It shows each table and column that the migrations make. The legacy diagram shows only the tables and columns that the code reads or writes. A column type is "unknown" when the code does not show it.
 
 ### Current schema: web app
 
@@ -49,7 +60,9 @@ The current-schema diagrams show only the tables and columns that the code reads
 
 [Open the diagram at full size](images/ER_Diagram_mermaid.svg)
 
-### Current schema: mobile app and Google Sheets (legacy)
+### Current schema: mobile app (legacy)
+
+The Google Apps Script also used these tables until it was removed in c7f7cb4.
 
 [Mermaid source](assets/ER_Diagram_Legacy.mmd)
 
@@ -71,7 +84,7 @@ This diagram shows the web app tables after the user stories on the [User Storie
 
 ## UML class diagram
 
-The class diagrams show the main code modules and data models, and the calls between them. They show where a user story adds a class or a member, before the code exists. The class diagram is in two parts. Part 1 shows the services of the web app and the mobile app, and the external systems that they call. Part 2 shows the data models. A class with a `<<new x.y.z>>` stereotype is proposed. A member with the tag `[NEW x.y.z]` or `[CHANGE x.y.z]` is a proposed change for that user story. All other items exist in the code today.
+The class diagrams show the main code modules and data models, and the calls between them. They show where a user story adds a class or a member, before the code exists. The class diagram is in two parts. Part 1 shows the services of the web app and the mobile app, and the external systems that they call. Part 2 shows the data models. The class lists between the GENERATED markers come from the code and the migrations. A class with a `<<new x.y.z>>` stereotype is proposed. A member with the tag `[NEW x.y.z]` or `[CHANGE x.y.z]` is a proposed change for that user story. All other items exist in the code today.
 
 ### Part 1: Services
 
@@ -418,13 +431,12 @@ The Fall 2025 team built the mobile app. The Winter 2026 team made small changes
 
 | Technology | What we use it for | Link |
 | --- | --- | --- |
-| Supabase | Hosted PostgreSQL, Auth, REST API, and Edge Functions | [supabase.com/docs](https://supabase.com/docs) |
+| Supabase | Hosted PostgreSQL, Auth, Storage, REST API, and Edge Functions | [supabase.com/docs](https://supabase.com/docs) |
 | PostgreSQL | Relational database for all app data | [postgresql.org/docs](https://www.postgresql.org/docs/) |
 | Amazon S3 | Storage for inspection photos and PDF files | [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) |
 | AWS IAM | Access keys and policies for the S3 bucket | [AWS IAM](https://docs.aws.amazon.com/iam/) |
 | AWS Budgets | Cost alerts for the AWS account | [AWS Budgets](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html) |
 | Vercel | Hosts the web app. See the [Deployment Manual](Deployment-manual.md). | [vercel.com/docs](https://vercel.com/docs) |
-| Google Apps Script | Script in Google Sheets that reads and writes the legacy tables | [developers.google.com/apps-script](https://developers.google.com/apps-script) |
 
 ### External APIs
 
@@ -442,7 +454,7 @@ The Fall 2025 team built the mobile app. The Winter 2026 team made small changes
 | --- | --- | --- |
 | Git and GitHub | Source control, pull requests, and issues | [docs.github.com](https://docs.github.com/) |
 | Git hooks (`.githooks/`) | Check commit messages and branch names | [Contributing](contributing.md) |
-| GitHub Actions | Run the Jest tests, the hook tests, and the MkDocs build on each push. Publish the docs from `main`. | [GitHub Actions](https://docs.github.com/en/actions) |
+| GitHub Actions | Run the Jest tests, the hook tests, and the MkDocs build on each push. Run the PR checks and the diagram update on each pull request. Publish the docs from `main`. | [GitHub Actions](https://docs.github.com/en/actions) |
 | GitHub Pages | Hosts this documentation site | [GitHub Pages](https://docs.github.com/en/pages) |
 | Jest 30, Testing Library, jest-expo | Unit and component tests in the web app and the mobile app | [jestjs.io](https://jestjs.io/) |
 | Cypress 15 | End-to-end tests of the web app. CI does not run them, because they use live data. | [docs.cypress.io](https://docs.cypress.io/) |
@@ -450,6 +462,7 @@ The Fall 2025 team built the mobile app. The Winter 2026 team made small changes
 | Supabase CLI 2 | Run a local Supabase for development (`npm run dev` in `webapp/`) and hold migrations (`webapp/supabase/`) | [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started) |
 | MkDocs with Material for MkDocs | Build this documentation site | [squidfunk.github.io/mkdocs-material](https://squidfunk.github.io/mkdocs-material/) |
 | Mermaid and mermaid-cli | Diagram sources (`docs/assets/*.mmd`) and SVG files | [mermaid.js.org](https://mermaid.js.org/) |
+| libpg-query and ts-morph | Read the migrations and the TypeScript code to generate the diagrams (`tools/diagrams/`) | [libpg-query](https://github.com/launchql/libpg-query-node), [ts-morph](https://ts-morph.com/) |
 
 ### Not used
 

@@ -43,7 +43,8 @@ sequenceDiagram
     autonumber off
     actor Steward
     participant Form as New SIR page<br/>new-report/page.tsx
-    participant Actions as Server actions<br/>ProfileService, queries.ts
+    participant Profile as Profile route<br/>/api/profile
+    participant Actions as Server actions<br/>queries.ts
     participant INat as iNaturalist API<br/>api.inaturalist.org
     participant Presign as Presign route<br/>/api/s3/presign
     participant S3 as AWS S3
@@ -51,15 +52,15 @@ sequenceDiagram
     Note over Steward,S3: Covers US 4.0.5. All iNaturalist steps are proposed. The browser calls iNaturalist.<br/>The upload steps after "Submit SIR" exist today for photos from the device.
 
     Steward->>Form: Select Add photos from iNaturalist (proposed)
-    Form->>Actions: getStewardProfile(own user id): read inat_username (proposed)
-    Actions-->>Form: Profile
+    Form->>Profile: fetch GET /api/profile (exists, inat_username field proposed)
+    Profile-->>Form: profile
     alt Profile has inat_username
         Form->>Form: Use the saved user name
     else No saved user name
         Form-->>Steward: Ask for iNaturalist user name (proposed)
         Steward->>Form: Enter user name
         opt Steward accepts the offer to save it (proposed)
-            Form->>Actions: updateOwnProfile(fields with inat_username) (proposed)
+            Form->>Profile: fetch PATCH /api/profile with inatUsername (exists, field proposed)
         end
     end
     Form->>INat: selectINaturalistPhotos(user name):<br/>GET /v1/observations?user_login=name&photos=true (proposed)

@@ -48,7 +48,7 @@ sequenceDiagram
     participant DB as Supabase<br/>PostgreSQL
     participant S3 as AWS S3
 
-    Note over Steward,S3: Covers US 2.0.1 and 2.0.6. Today the only map is the admin heat map in<br/>/admin/dashboard (components/Map.tsx). It geocodes Site names through /api/geocode<br/>(OpenCage). This flow replaces geocoding with stored geometry (US 6.0.1).
+    Note over Steward,S3: Covers US 2.0.1 and 2.0.6. Today the only map is the admin heat map in /admin/dashboard.<br/>admin/dashboard/page.tsx geocodes through /api/geocode (OpenCage), and admin/dashboard/components/Map.tsx<br/>draws the heat map. This flow replaces geocoding with stored geometry (US 6.0.1).
 
     alt Open from the menu
         Steward->>Map: Select Map in HeaderDropdown (Proposed)
@@ -66,9 +66,12 @@ sequenceDiagram
         Server-->>Map: Refuse (401)
         Map-->>Steward: Go to /login
     else Access allowed
-        Server->>DB: Read active sites_pa rows, ab_counties<br/>and Site geometry (US 6.0.1)
+        Server->>DB: Read active sites_pa rows, ab_counties<br/>and protected_areas.geometry (MultiPolygon jsonb, US 6.0.1)
+        %% Open: protected_areas.site_id and label_point were dropped (20261006010000).
+        %% The site-to-boundary join and a centre point need a new link column.
+        Note right of DB: Open: the join from a Site to its boundary<br/>and the centre point need a new link column.
         activate DB
-        DB-->>Server: Sites with boundary, centre point and county
+        DB-->>Server: Sites, and boundaries from protected_areas
         deactivate DB
         Server-->>Map: Site list
         Map-->>Steward: Draw the boundary of each active Site (AT1)
@@ -105,7 +108,7 @@ sequenceDiagram
 
     opt Search by name (2.0.6 AT3)
         Steward->>Map: Type a Site name
-        Map-->>Steward: Show matching names. Same text match as<br/>the free-text search on the /sites page (exists there)
+        Map-->>Steward: Show matching names. Same case-insensitive substring match<br/>as /sites (name or county) (exists there)
         alt No match
             Map-->>Steward: Show "No Sites found"
         else Steward selects a match

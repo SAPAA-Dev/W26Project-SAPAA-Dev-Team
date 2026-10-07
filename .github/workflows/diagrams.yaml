@@ -1,0 +1,140 @@
+name: Diagrams
+
+# On every PR into main or release, `npm run diagrams` updates the generated parts of the
+# Mermaid diagrams and renders the changed SVGs. If anything changed, the push job commits
+# "(docs): update diagrams" to the PR branch. See docs/contributing.md, "Diagrams".
+#
+# The `diagrams` job runs code from the PR, so it has a read-only token and keeps no
+# credentials. The `diagrams-push` job has the write token and runs no code from the PR:
+# it applies the patch that `diagrams` made, and only to docs/assets and docs/images.
+on:
+  pull_request:
+    branches: [main, release]
+    types: [opened, reopened, synchronize]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  BOT_NAME: github-actions[bot]
+  BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+
+jobs:
+  diagrams:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      changed: ${{ steps.diff.outputs.changed }}
+      last_is_bot: ${{ steps.guard.outputs.last_is_bot }}
+    env:
+      # Only chrome-headless-shell is needed; `npm run diagrams` installs it.
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Is the last commit the diagrams commit?
+        id: guard
+        # The committer, not the author: a rebase keeps the author and sets a new committer.
+        run: |
+          if [ "$(git log -1 --format=%ce)" = "$BOT_EMAIL" ]; then
+            echo "last_is_bot=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tools/diagrams/package-lock.json
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/puppeteer
+          key: puppeteer-${{ runner.os }}-${{ hashFiles('tools/diagrams/package-lock.json') }}
+
+      - name: Update the diagrams
+        run: npm run diagrams
+
+      - name: Self-check
+        run: npm --prefix tools/diagrams test
+
+      - name: Save the changes
+        id: diff
+        run: |
+          git add -A -- docs/assets docs/images
+          if git diff --cached --quiet; then
+            echo "The diagrams are up to date."
+            exit 0
+          fi
+          git status --short -- docs/assets docs/images
+          git diff --cached --binary --no-renames > "$RUNNER_TEMP/diagrams.patch"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        if: steps.diff.outputs.changed == 'true'
+        with:
+          name: diagrams-patch
+          path: ${{ runner.temp }}/diagrams.patch
+          retention-days: 1
+
+  diagrams-push:
+    needs: diagrams
+    if: needs.diagrams.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+      LAST_IS_BOT: ${{ needs.diagrams.outputs.last_is_bot }}
+      APP_ID: ${{ vars.DIAGRAMS_APP_ID }}
+    steps:
+      - name: Can the job push?
+        run: |
+          fail() {
+            echo "::error::The diagrams are out of date. $1 Run 'npm run diagrams' and commit the result."
+            exit 1
+          }
+          [ "$HEAD_REPO" = "$GITHUB_REPOSITORY" ] || fail "The job cannot push to a fork."
+          # A release PR comes from main, and the ruleset does not allow a direct push to main.
+          case "$HEAD_REF" in main|release) fail "The job does not push to $HEAD_REF." ;; esac
+          [ "$LAST_IS_BOT" != "true" ] || fail "The last commit is the diagrams commit. The tool did not give the same result twice."
+          [ -n "$APP_ID" ] || fail "The DIAGRAMS_APP_ID variable is not set, so the job does not push."
+
+      # A push made with GITHUB_TOKEN does not start other workflows, so the required checks
+      # would not run on the new commit. A GitHub App token push does start them.
+      - uses: actions/create-github-app-token@v1
+        id: app
+        with:
+          app-id: ${{ vars.DIAGRAMS_APP_ID }}
+          private-key: ${{ secrets.DIAGRAMS_APP_KEY }}
+
+      - uses: actions/checkout@v4
+        with:
+          # The exact commit that started the run. The push below goes to the branch by name,
+          # and it fails (no overwrite) if someone pushed to the branch in the meantime.
+          ref: ${{ github.event.pull_request.head.sha }}
+          token: ${{ steps.app.outputs.token }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: diagrams-patch
+          path: ${{ runner.temp }}
+
+      - name: Commit and push
+        run: |
+          patch="$RUNNER_TEMP/diagrams.patch"
+          if git apply --numstat "$patch" | cut -f3 | grep -vE '^docs/(assets|images)/[^/]+$'; then
+            echo "::error::The patch changes files outside docs/assets and docs/images."
+            exit 1
+          fi
+          git apply --index "$patch"
+          git config user.name "$BOT_NAME"
+          git config user.email "$BOT_EMAIL"
+          git commit -m "(docs): update diagrams"
+          git push origin "HEAD:refs/heads/$HEAD_REF"

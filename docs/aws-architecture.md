@@ -1,6 +1,6 @@
 # Media Storage Architecture
 
-*Inherited from the Winter 2026 team. We keep this page for reference only. We do not update it for Fall 2026.*
+*Inherited from the Winter 2026 team. On October 7, 2026 we corrected the facts on this page to match the code on `main`. We added PDF exports, image delete, local S3, and the KML staging bucket.*
 
 This document describes how images are uploaded, stored, and retrieved in the SAPAA SIR system.  
 The goal is to help future development teams understand how media files flow through the system and how AWS S3 is used.
@@ -12,6 +12,10 @@ The goal is to help future development teams understand how media files flow thr
 Images uploaded through the SAPAA application are stored in **AWS S3**, while their metadata is stored in the **Supabase PostgreSQL database**.
 
 The system uses **presigned URLs** so that users upload files directly to S3 instead of routing large files through the application server.
+
+The same bucket also holds the PDF exports. See [PDF export path](#pdf-export-path).
+
+KML/KMZ imports are staged in Supabase Storage (bucket `kml-imports`), not S3. See [Other storage](#other-storage).
 
 This approach improves:
 
@@ -115,6 +119,11 @@ Example:
 Example:
 `homepage-image-uploads/207/6966742d-b9e7-46c1-842f-030d4a97ba39/Riverlot56NA-2026-01-31-ZoePrefontaine-BrokenTreeTrunk-f6f399ce-3521-4fa4-987a-43cf356c693b.jpg`
 
+### PDF export path
+`pdf-exports/{userId}/{jobId}/{filename}`
+
+`POST /api/pdf` creates a row in the `S26_pdf_jobs` table and starts the job with `after()`. The job (`lib/pdf/processPdfJob.ts`) reads the inspection images from S3 with signed GET URLs, builds the PDF, and writes it to this key with content type `application/pdf`. The job stores the key in `S26_pdf_jobs.storage_path`. `GET /api/pdf/status/{jobId}` returns a signed download URL when the job status is `complete`.
+
 ### Why a generated unique suffix is added
 
 The generated filename includes a unique suffix so that even if two images share the same metadata, file collisions are avoided.
@@ -186,16 +195,16 @@ Because this endpoint exposes all media files and metadata in the system, it is 
 
 #### Access Level
 
-Only users whose role is set to `admin` in their authentication metadata are allowed to access this endpoint.
+Only approved admins can access this endpoint: `app_metadata.role = 'admin'` and `app_metadata.authenticated = true`.
 
 #### Authorization Logic
 
 When a request is received, the server:
 
 1. Retrieves the currently authenticated user using Supabase authentication.
-2. Reads the user's role from their authentication metadata.
-3. Verifies that the role is `admin`.
-4. Returns a **403 Forbidden** response if the user is not an administrator.
+2. Returns **401 Unauthorized** if there is no signed-in user.
+3. Reads `role` and `authenticated` from the user's `app_metadata`.
+4. Returns **403 Forbidden** unless `role` is `admin` and `authenticated` is `true`.
 
 #### Response
 
@@ -232,7 +241,7 @@ Returns all standalone homepage image uploads with metadata and signed image URL
 
 #### Access Level
 
-Admin users only.
+Approved admins only: `app_metadata.role = 'admin'` and `app_metadata.authenticated = true`.
 
 #### Response Format
 ```json
@@ -263,7 +272,7 @@ Returns standalone homepage image uploads for a specific site.
 
 #### Access Level
 
-Admin users only.
+Authenticated users. The handler checks only that a user is signed in. It has no role check. It is not clear if this endpoint must be admin-only. This is reported to Beta (route auth checks).
 
 #### Path Parameters
 
@@ -477,6 +486,30 @@ Example response:
 
 ---
 
+## Delete flow
+
+### `DELETE /api/site-images?id={id}&kind={kind}`
+
+Deletes one image. `kind` is `attachments` (default) or `homepage_image_uploads`.
+
+#### Access Level
+
+Approved admins only: `app_metadata.role = 'admin'` and `app_metadata.authenticated = true`.
+
+#### Order of operations
+
+1. The handler reads the row to get its `storage_key`.
+2. The handler deletes the database row.
+3. The handler deletes the S3 object with `deleteObjectsByKeys` (`utils/media/s3Delete.ts`, `DeleteObjectsCommand`, up to 1000 keys per request).
+
+The database row is deleted first and the S3 object second.
+
+### SIR rollback
+
+`rollbackSiteInspectionSubmission` in `utils/supabase/queries.ts` also calls `deleteObjectsByKeys`. When an SIR submission fails, it removes the S3 objects that were uploaded for it.
+
+---
+
 ## Security Model
 
 The system protects images using several mechanisms:
@@ -506,9 +539,9 @@ Two types of signed URLs are used:
 | Type | Purpose |
 |-----|-----|
 | Upload URL | Allows client to upload file to S3 |
-| Download URL | Allows temporary viewing of image |
+| Download URL | Allows temporary viewing of image or PDF |
 
-Signed URLs expire after a short time.
+Upload URL: 3 minutes. Download URL: 1 hour.
 
 ---
 
@@ -577,6 +610,29 @@ Unlike the Admin Gallery, the user gallery does not expose storage paths beyond 
 | `/api/homepage-images/{siteId}` | Retrieve standalone homepage images for a specific site |
 | `/api/user-gallery/homepage-upload` | Retrieve all standalone homepage images |
 | `/api/user-gallery/sir-upload` | Retrieve all SIR inspection images |
+| `DELETE /api/site-images` | Delete one image row and its S3 object (approved admins) |
+| `POST /api/pdf` | Start a PDF export job (approved admins) |
+| `GET /api/pdf/status/{jobId}` | Get the job status and a signed download URL |
+
+---
+
+## Local development
+
+`npm run dev` in `webapp/` runs `scripts/local_supabase.js`. In development the app does not use the AWS bucket in ca-central-1. It uses a LocalStack bucket:
+
+1. `scripts/local_s3.js` starts LocalStack through the `lstk` CLI.
+2. It creates the bucket `AWS_S3_BUCKET_NAME` (default `sapaa-inspection-images`) at `http://s3.localhost.localstack.cloud:4566`, region `us-east-1`, with test credentials.
+3. It sets open CORS rules (all origins; GET, PUT, HEAD, DELETE).
+4. It uploads seed images under `seed/ducks/`.
+5. It starts `next dev` with `AWS_ENDPOINT_URL_S3` set to the LocalStack endpoint. The route S3 clients set no endpoint, so the AWS SDK reads this variable.
+
+The production bucket is private. Only the local bucket has open CORS.
+
+---
+
+## Other storage
+
+Admin KML/KMZ uploads (US 6.0.1) do not use S3. The browser uploads the file to the private Supabase Storage bucket `kml-imports` (50 MiB limit). Its RLS policies allow insert, select, and delete only for approved admins. The server action `importProtectedAreasFromStorage` in `utils/kml-import-actions.ts` downloads the file with the service role, upserts the `protected_areas` table, and removes the staged file.
 
 ---
 

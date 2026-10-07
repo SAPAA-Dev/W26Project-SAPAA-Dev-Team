@@ -89,8 +89,13 @@ sequenceDiagram
     end
     deactivate Map
 
-    opt Open an external link (US 2.0.10, UI only)
-        Steward->>Site: Select the SAPAA website link or the iNaturalist link (Proposed)
-        Site-->>Steward: Open the link in a new browser tab (target="_blank")
-        Note right of Site: No server call. The link text is a short URL.<br/>Link source per Site is an open question.<br/>A possible source: legacy<br/>sites_report_fnr_test has sapaaweb<br/>and inatmap (FNR/src/services/<br/>database.ts:503).
+    opt Open an external link (US 2.0.10)
+        Site->>Actions: getSiteLinks(siteId) (exists, placeholder URLs, no DB read)
+        activate Actions
+        Actions-->>Site: sapaaWebsiteUrl, iNaturalistUrl
+        deactivate Actions
+        Site-->>Steward: Show "SAPAA website" and "iNaturalist" (SiteLinks.tsx).<br/>The link text is shortenUrl(url). "Not available" when a URL is null
+        Steward->>Site: Select the SAPAA website link or the iNaturalist link
+        Site-->>Steward: Open the link in a new browser tab<br/>(target="_blank" rel="noopener noreferrer")
+        Note right of Site: getSiteLinks returns the same placeholder<br/>URLs for every Site today.<br/>Open question: the link source per Site.<br/>getSiteLinks is the place to read it.<br/>A possible source: legacy<br/>sites_report_fnr_test has sapaaweb<br/>and inatmap (FNR/src/services/<br/>database.ts:503).
     end

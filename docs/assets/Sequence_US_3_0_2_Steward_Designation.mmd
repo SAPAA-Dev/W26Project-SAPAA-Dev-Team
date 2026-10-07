@@ -43,50 +43,49 @@ sequenceDiagram
     autonumber off
     actor Admin
     actor Steward
-    participant AdminSite as Admin site page<br/>admin/sites/[id]
+    participant AdminSite as Site page (admin view)<br/>/detail/[namesite]<br/>SiteSteward.tsx
     participant Pages as Site page and<br/>profile page
-    participant Server as Server actions<br/>utils/supabase/queries.ts
+    participant Server as Server actions<br/>utils/steward-actions.ts
     participant DB as Supabase DB
 
-    Note over Admin,DB: Covers US 3.0.2. "(proposed)" = the step is not in the code today.
+    Note over Admin,DB: Covers US 3.0.2. All steps are on main as of October 7, 2026 (#133, #139).
 
-    Admin->>AdminSite: Open site and select Designate steward (proposed)
-    Admin->>AdminSite: Type part of a name or email
-    AdminSite->>Server: searchStewards(text) (proposed)
-    Server->>Server: Check caller is Admin<br/>from a trusted role source, store not decided (proposed)
+    Admin->>AdminSite: Open site and select 'Assign steward' or 'Change'<br/>(shown when app_metadata.role = admin)
+    Admin->>AdminSite: Type part of a name
+    AdminSite->>Server: searchStewards(query)
+    Server->>Server: getAdminUserId(): auth.getUser(),<br/>app_metadata.role = 'admin' and app_metadata.authenticated = true
     alt Caller is not Admin
-        Server-->>AdminSite: Refuse. Return no data
+        Server-->>AdminSite: Return [] (UI shows 'No people match that name.')
     else Caller is Admin
-        Server->>DB: Find stewards by name or email
-        DB-->>Server: Matching stewards
+        Server->>DB: people where display_name ilike %query%, limit 10
+        DB-->>Server: Matching people
         Server-->>AdminSite: Steward list
         AdminSite-->>Admin: Show matches (AT 1)
     end
 
-    Admin->>AdminSite: Select one steward and Save
-    AdminSite->>Server: designateSiteSteward(siteId, stewardId) (proposed)
-    Server->>Server: Check caller is Admin<br/>from a trusted role source, store not decided (proposed)
+    Admin->>AdminSite: Select one person
+    AdminSite->>Server: assignSiteSteward(siteId, personId)
+    Server->>Server: getAdminUserId(): auth.getUser(),<br/>app_metadata.role = 'admin' and app_metadata.authenticated = true
     alt Caller is not Admin (AT 4)
-        Server-->>AdminSite: Refuse. No designation is written
+        Server-->>AdminSite: {success:false, error:'Only admins can assign a steward.'}
+        AdminSite-->>Admin: Show error
+    else Site id or person id not valid
+        Server-->>AdminSite: {success:false, error:'Invalid site or person.'}
         AdminSite-->>Admin: Show error
     else Caller is Admin
-        Server->>DB: Set sites_pa.designated_steward_id<br/>to the new steward (proposed)
+        Server->>DB: UPSERT site_stewards {site_id, steward_id, assigned_by, assigned_at}<br/>ON CONFLICT site_id (service role, replaces old steward)
         DB-->>Server: Saved
-        Server-->>AdminSite: Success
-        AdminSite-->>Admin: Show new designated steward (AT 2)
+        Server-->>AdminSite: {success:true}
+        AdminSite-->>Admin: Show new steward (AT 2)
     end
 
     Steward->>Pages: Open site page or steward profile
-    Pages->>Server: Get site or profile data
-    Server->>Server: Check session and approved account (proposed)
-    alt No valid session or account not approved
-        Server-->>Pages: Refuse (401)
-        Pages-->>Steward: Go to /login
-    else Access allowed
-        Server->>DB: Read sites_pa.designated_steward_id<br/>by site or by steward (proposed)
-        DB-->>Server: Designation
-        Server-->>Pages: Data with designation
-        Pages-->>Steward: Show designated steward on site page<br/>and designated sites on profile (AT 3)
-    end
+    Note right of Pages: middleware.ts redirects to /login when there is no user.
+    Pages->>Server: getSiteSteward(siteId) on site page /<br/>getSitesForSteward(personId) on profile
+    Server->>Server: Session client. RLS select policy allows<br/>any authenticated user. No approval check.
+    Server->>DB: site_stewards join people(id, display_name) by site_id /<br/>join sites_pa(namesite) by steward_id
+    DB-->>Server: Steward or stewarded sites
+    Server-->>Pages: Data with steward
+    Pages-->>Steward: Show 'Steward: {name}' linked to /people/{id},<br/>and 'Steward of' on the profile (AT 3)
 
-    Note over AdminSite,DB: The role check must not use user_metadata. A user can change it (see .agents/rules/security.md).<br/>Open question: the trusted role store is not decided (see the proposed ER diagram).
+    Note over AdminSite,DB: The role check must not use user_metadata. A user can change it (see .agents/rules/security.md).<br/>Role store: auth app_metadata (server-writable only).

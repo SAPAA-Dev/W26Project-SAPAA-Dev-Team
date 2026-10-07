@@ -42,51 +42,60 @@ config:
 sequenceDiagram
     autonumber off
     actor Steward
-    participant Profile as Profile page<br/>(Proposed)
-    participant Action as Server action<br/>updateOwnProfile<br/>(Proposed)
+    participant Profile as Profile page<br/>components/ProfilePage.tsx
+    participant Action as API route<br/>PATCH /api/profile<br/>app/api/profile/route.ts
     participant Auth as Supabase Auth
     participant DB as Supabase<br/>PostgreSQL
 
-    Note over Steward,DB: Covers US 1.0.2. No profile edit exists in the code. All steps are Proposed.
+    Note over Steward,DB: Covers US 1.0.2.
 
-    Steward->>Profile: Open own profile and select Edit
+    Steward->>Profile: Open own profile and select Edit profile
     activate Profile
-    Note right of Profile: The Edit control shows only on the<br/>profile of the signed-in user (AT1).
-    Steward->>Profile: Change name, email, skills or focus areas
-    Steward->>Profile: Select Save
-    Profile->>Profile: Check that name and email are not empty (AT3)
+    Note right of Profile: Edit profile button shows only when isOwner<br/>(people.auth_user_id = session user) (AT1).
+    Steward->>Profile: Change display name, skills, focus areas or contact (socials)
+    Steward->>Profile: Select Save changes
+    Profile->>Profile: Display name is not empty and at most 29 characters<br/>(input required, maxLength 29) (AT3)
 
-    alt Name or email is empty
-        Profile-->>Steward: Block save and highlight the empty field (AT3)
-    else Fields are filled
-        Profile->>Action: updateOwnProfile(fields)
+    alt Display name is empty
+        Profile-->>Steward: Browser blocks save on the required field (AT3)
+    else Display name is filled
+        Profile->>Action: saveProfile(): fetch PATCH /api/profile<br/>{displayName, skills, focusAreas, socials}
         activate Action
         Action->>Auth: getUser() from the session cookie
         activate Auth
         Auth-->>Action: Signed-in user id or no user
         deactivate Auth
-        Note right of Action: The action edits only the session user.<br/>A user id from the client is not trusted.
+        Note right of Action: Body has no user id. The write uses the session client<br/>(not the service role), so RLS "users update only their<br/>own person record" and the column grant stop other writes.
 
         alt No session
-            Action-->>Profile: Refuse (401)
-            Profile-->>Steward: Go to /login
-        else Request names another user (AT1, AT2)
-            Action-->>Profile: Refuse (403), no write
-            Profile-->>Steward: Show "You can edit only your own profile"
-        else Own profile
-            Action->>Action: Check name and email again on server (AT3)
-            alt Name or email not valid
-                Action-->>Profile: Field errors (422)
-                Profile-->>Steward: Highlight the fields with errors
+            Action-->>Profile: 401 'Sign in to edit your profile.'
+            Profile-->>Steward: Show error
+        else Signed in
+            Action->>Action: Check again on server (AT3): display name 1 to 29 characters,<br/>at most 12 tags of 1 to 40 characters, normaliseSocials
+            alt Body or values not valid
+                Action-->>Profile: 400 {error: message}
+                Profile-->>Steward: Show the error message
             else Values are valid
-                Action->>DB: Update profiles row of session user<br/>(proposed)
+                Action->>DB: UPDATE people SET display_name, skills, focus_areas<br/>WHERE auth_user_id = session user
                 activate DB
-                alt Database error
+                alt people update failed
                     DB-->>Action: Error
-                    Action-->>Profile: Save failed (500)
+                    Action-->>Profile: 500 'Unable to save your profile.'
                     Profile-->>Steward: Show error and keep the typed values
-                else Update done
-                    DB-->>Action: Saved profile
+                else No people row for session user
+                    DB-->>Action: No row
+                    Action-->>Profile: 404 'Profile not found.'
+                    Profile-->>Steward: Show error
+                else people row updated
+                    DB-->>Action: Saved people row
+                    opt socials sent
+                        Action->>DB: UPSERT socials (person_id) ON CONFLICT person_id
+                        alt socials upsert failed
+                            DB-->>Action: Error
+                            Action-->>Profile: 500 'Unable to save your contact details.'<br/>(people already saved)
+                            Profile-->>Steward: Show error and keep the typed values
+                        end
+                    end
                     Action-->>Profile: Saved profile
                     Profile-->>Steward: Show new values, skills and focus areas (AT4, AT6)
                 end
@@ -97,4 +106,4 @@ sequenceDiagram
     end
     deactivate Profile
 
-    Note over Steward,DB: Values are read from the database on each load. After sign out and sign in,<br/>the profile shows the saved values (AT5). If the email is also the sign-in email,<br/>a change must go through Supabase Auth (open question).
+    Note over Steward,DB: Values are read from the database on each load. After sign out and sign in,<br/>the profile shows the saved values (AT5). A missing table (42P01) returns 503.<br/>socials.email is a contact field. The sign-in email is not edited here.

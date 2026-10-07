@@ -42,45 +42,48 @@ config:
 sequenceDiagram
     autonumber off
     actor Admin
-    participant Page as Admin reports page<br/>PdfExportModal
+    participant Page as Admin sites pages<br/>/admin/sites, /admin/sites/[id]<br/>PdfExportModal
     participant Api as API route<br/>/api/pdf
     participant Job as Background job<br/>processPdfJob, fetchReportData
     participant DB as Supabase DB<br/>S26_pdf_jobs, answers
     participant S3 as AWS S3
 
-    Note over Admin,S3: Covers US 7.0.6 and 7.0.7. The PDF job flow exists. The code has no fixed limit of 50 SIRs.<br/>"(proposed)" = the step is not in the code today.
+    Note over Admin,S3: Covers US 7.0.6 and 7.0.7. The PDF job flow and hidden questions (7.0.7) exist. The code has no fixed limit of 50 SIRs.<br/>"(proposed)" = the step is not in the code today.
 
-    Admin->>Page: Select more than 50 SIRs (US 7.0.6)
-    Admin->>Page: Select questions to hide (US 7.0.7) (proposed)
-    Page->>Api: POST /api/pdf {mode: site or multi-site, siteNames,<br/>options: {selectedResponseIds, hiddenQuestionIds (proposed)}}
-    Api->>Api: Check caller is Admin (exists: app_metadata.role,<br/>the trusted role source)
+    Admin->>Page: Select more than 50 SIRs (US 7.0.6).<br/>Per-SIR selection is only on /admin/sites/[id] (site mode)
+    Admin->>Page: Clear questions to hide, one by one or a whole section (US 7.0.7)
+    Page->>Page: Questions come from getQuestionsOnline(). A section is turned off<br/>only when all of its questions are cleared (selectedSections)
+    Page->>Api: POST /api/pdf {mode: site or multi-site, siteNames,<br/>options: {selectedResponseIds, selectedSections, hiddenQuestionIds}}
+    Api->>Api: Check app_metadata.role = admin and<br/>app_metadata.authenticated = true (exists)
     alt Caller is not Admin (7.0.6 AT 3, 7.0.7 AT 4)
         Api-->>Page: 403. No job is made
         Note over Admin,Api: A Steward who sends the same request directly is refused the same way
     else Caller is Admin
+        Api->>Api: parseHiddenQuestionIds() drops ids that are not integers
         Api->>DB: Insert S26_pdf_jobs row, status pending.<br/>request_payload keeps the options
         Api-->>Page: 202 with jobId
         Api->>Job: after(): processPdfJob(jobId)
         loop Each batch of SIRs (proposed, batch size not decided)
             Job->>DB: Read answers and attachments (read only).<br/>Today fetchReportData loads all SIRs of the sites, then filters by selectedResponseIds
-            Job->>Job: Remove answers of hiddenQuestionIds (proposed, 7.0.7 AT 2)
+            Job->>Job: filterResponsesByOptions() removes answers of hiddenQuestionIds (7.0.7 AT 2)
             Job->>Job: Render pages. Same answers as the SIR page (7.0.6 AT 2)
         end
         alt Render or upload fails
             Job->>DB: Set job failed with error
-            DB-->>Page: Realtime update (PdfJobWatcher)
-            Page-->>Admin: PdfExportsDropdown shows Failed
+            Page-->>Admin: Admin opens Recent Exports (PdfExportsDropdown) and sees Failed.<br/>PdfJobWatcher ignores failed jobs
             Note over Job,S3: The job only reads SIRs, so the stored reports stay unchanged (7.0.6 AT 4, 7.0.7 AT 3).
         else All batches done
             Job->>S3: Put the export file
             Job->>DB: Set job complete with storage_path
-            DB-->>Page: Realtime update (PdfJobWatcher)
+            Page->>DB: PdfJobWatcher polls S26_pdf_jobs every 3 s
+            DB-->>Page: Job is complete
             Page->>Api: GET /api/pdf/status/{jobId}
-            Api->>Api: Check caller is Admin or job creator (proposed)
-            alt Caller is not Admin and not the job creator
-                Api-->>Page: 403. No URL
-            else Caller is allowed
-                Api->>DB: Read S26_pdf_jobs storage_path
+            Api->>DB: Read S26_pdf_jobs status and storage_path.<br/>RLS returns the row only to the job creator (exists in local schema)
+            alt Caller is not the job creator
+                DB-->>Api: No row
+                Api-->>Page: 404 Job not found. No URL
+                Note over Api,DB: An Admin who did not create the job also gets 404.<br/>Letting Admins read other users' jobs is proposed
+            else Caller is the job creator
                 DB-->>Api: storage_path
                 Api-->>Page: Presigned download URL
                 Page-->>Admin: Export has each selected SIR (7.0.6 AT 1).<br/>With no hidden questions it has the full SIR (7.0.7 AT 5)
@@ -88,4 +91,4 @@ sequenceDiagram
         end
     end
 
-    Note over Admin,S3: Open questions: the cause of the 50 SIR limit (the time limit of after(), memory,<br/>or the size of the request), one PDF or a zip of several PDFs, and if hidden fields<br/>are per question or per form section (selectedSections exists and filters by section).
+    Note over Admin,S3: Open questions: the cause of the 50 SIR limit (the time limit of after(), memory,<br/>or the size of the request), and one PDF or a zip of several PDFs.<br/>Decided in code: hidden fields are per question, with a toggle for each section.

@@ -6,12 +6,20 @@ classDiagram
     %% How to read this diagram:
     %% - Each model is one database table. The stereotype gives the table name.
     %%   The field names are the column names of that table.
-    %% - Existing tables and columns: webapp/supabase/migrations/
-    %%   20260925000000_local_app_schema.sql. Proposed tables and columns:
-    %%   ER_Diagram_Proposed_User_Stories.mmd.
-    %% - A class with the stereotype <<new ...>> is proposed. In an existing
-    %%   table, a field that ends with [NEW x.y.z] is a proposed column.
+    %% - Existing tables and columns: webapp/supabase/migrations/ (all files,
+    %%   applied in order). `npm run diagrams` writes them between the
+    %%   GENERATED markers. Do not edit that block, except to add a
+    %%   [CHANGE x.y.z] tag at the end of a line. The generator keeps such tags.
+    %%   A field that ends with ? can be null.
+    %% - Proposed tables and columns: ER_Diagram_Proposed_User_Stories.mmd.
+    %% - A class with the stereotype <<new ...>> is proposed. A proposed column
+    %%   of an existing table is in a second block of that class below the
+    %%   markers, with [NEW x.y.z]. Mermaid joins both blocks. When a migration
+    %%   adds the column or the table, the generator removes the proposed item.
+    %% - Legacy tables are left out on purpose: luperson, sites_list_fnr,
+    %%   sites_detail_fnr_test and sites_report_fnr_test. See ER_Diagram.mmd.
     %% - ActivityStats and SirSummary have no table. The server calculates them.
+    %%   GET /api/profile returns ActivityStats as stats.
     %% - INatObservation has no table. It comes from the iNaturalist API.
     %% - PdfOptions has no table. It is kept in S26_pdf_jobs.request_payload.
     %% - OfflineMapArea has no table. It is in the web app, in browser storage.
@@ -20,19 +28,14 @@ classDiagram
     %%   form_responses. getFormResponsesBySite reads them from the
     %%   answers of Q31, Q32 and Q13.
 
+    %% BEGIN GENERATED: models
+    %% Tables: webapp/supabase/migrations/*.sql. Types: the TypeScript source. ? = nullable.
     class Site {
         <<table sites_pa>>
         +id: number
         +namesite: string
-        +ab_county: number
+        +ab_county: number?
         +is_active: boolean
-        +boundary: polygon [NEW 6.0.1]
-        +latitude: number [NEW 6.0.1]
-        +longitude: number [NEW 6.0.1]
-        +source_feature_id: string [NEW 6.0.1]
-        +sapaaweb: string [NEW 2.0.10]
-        +inatmap: string [NEW 2.0.10]
-        +designated_steward_id: string [NEW 3.0.2]
     }
 
     class County {
@@ -41,12 +44,211 @@ classDiagram
         +county: string
     }
 
-    class KmlSite {
-        <<new table kml_sites, 6.0.1 2.0.2>>
-        +source_feature_id: string
+    class SiteSteward {
+        <<table site_stewards>>
+        +site_id: number
+        +steward_id: number
+        +assigned_by: string?
+        +assigned_at: timestamp
+    }
+
+    class Person {
+        <<table people>>
+        +id: number
+        +auth_user_id: string?
+        +display_name: string
+        +skills: string[]
+        +focus_areas: string[]
+        +activity_points: number
+        +created_at: timestamp
+        +updated_at: timestamp
+    }
+
+    class Socials {
+        <<table socials>>
+        +person_id: number
+        +email: string?
+        +phone: string?
+        +website: string?
+        +instagram: string?
+        +facebook: string?
+        +x: string?
+        +linkedin: string?
+        +updated_at: timestamp
+    }
+
+    class FormResponse {
+        <<table form_responses>>
+        +id: number
+        +site_id: number
+        +user_id: string?
+        +inspection_no: string?
+        +inspection_date: date?
+        +created_at: timestamp
+        +is_active: boolean
+    }
+
+    class Answer {
+        <<table answers>>
+        +id: number
+        +response_id: number
+        +question_id: number
+        +obs_value: string?
+        +obs_comm: string?
+    }
+
+    class Question {
+        <<table questions>>
+        +id: number
+        +question key: string
+        +question_key_id: number?
+        +section_id: number
+        +form_question: string
+        +subtext: string?
+        +question_type: string
+        +is_required: boolean
+        +is_active: boolean
+        +autofill_key: string?
+        +formorder: number?
+        +obs_value: boolean?
+        +obs_comm: boolean?
+    }
+
+    class FormSection {
+        <<table form_sections>>
+        +id: number
+        +title: string
+        +description: string?
+        +header: string?
+    }
+
+    class QuestionKey {
+        <<table question_keys>>
+        +id: number
+        +category: string?
+        +question key: string
+        +comment: boolean
+        +definition: string?
+    }
+
+    class QuestionOption {
+        <<table question_options>>
+        +id: number
+        +question_id: number
+        +option_text: string
+        +is_active: boolean
+        +position: number
+    }
+
+    class Attachment {
+        <<table attachments>>
+        +id: number
+        +response_id: number?
+        +question_id: number?
+        +site_id: number?
+        +storage_key: string
+        +filename: string?
+        +content_type: string?
+        +file_size_bytes: number?
+        +caption: string?
+        +description: string?
+        +photographer: string?
+        +identifier: string? [CHANGE 4.0.6]
+        +date: date?
+        +created_at: timestamp
+    }
+
+    class HomepageImageUpload {
+        <<table homepage_image_uploads>>
+        +id: number
+        +site_id: number
+        +user_id: string?
+        +storage_key: string
+        +filename: string?
+        +content_type: string?
+        +file_size_bytes: number?
+        +date: date?
+        +photographer: string?
+        +identifier: string?
+        +caption: string?
+        +created_at: timestamp
+    }
+
+    class PdfJob {
+        <<table S26_pdf_jobs>>
+        +id: string
+        +created_by: string
+        +mode: string
+        +request_payload: json
+        +status: string
+        +storage_path: string?
+        +error: string?
+        +created_at: timestamp
+    }
+
+    class ProtectedArea {
+        <<table protected_areas>>
+        +id: number
         +name: string
-        +boundary: polygon
-        +loaded_at: timestamp
+        +oc_name: string?
+        +area_type: string
+        +subtype: string?
+        +status: string?
+        +source: string?
+        +iucn: string?
+        +oc_no: string?
+        +acres: number?
+        +hectares: number?
+        +oc_date: date?
+        +date_est: date?
+        +notes: string?
+        +geometry: json
+        +created_at: timestamp
+        +updated_at: timestamp
+        +folder: string
+        +fid: number
+        +date_res: date?
+        +area_ha: number?
+    }
+
+    class PdfOptions {
+        <<type in webapp/lib/pdf/types.ts>>
+        +dateFrom: string?
+        +dateTo: string?
+        +includeImages: boolean
+        +maxImagesPerInspection: number
+        +includeEmptyAnswers: boolean
+        +includeCoverPage: boolean
+        +includeNaturalnessSummary: boolean
+        +selectedSections: string[] or 'all'
+        +hiddenQuestionIds: number[]
+        +sortOrder: 'newest' or 'oldest'
+        +pageSize: 'LETTER' or 'A4'
+        +selectedResponseIds: number[]?
+    }
+
+    County "0..1" <-- "0..*" Site : ab_county
+    Site "1" *-- "0..1" SiteSteward : site_id
+    Person "1" *-- "0..*" SiteSteward : steward_id
+    Person "1" *-- "0..1" Socials : person_id
+    Site "1" <-- "0..*" FormResponse : site_id
+    FormResponse "1" *-- "0..*" Answer : response_id
+    Question "1" <-- "0..*" Answer : question_id
+    QuestionKey "0..1" <-- "0..*" Question : question_key_id
+    FormSection "1" <-- "0..*" Question : section_id
+    Question "1" *-- "0..*" QuestionOption : question_id
+    FormResponse "0..1" *-- "0..*" Attachment : response_id
+    Question "0..1" <-- "0..*" Attachment : question_id
+    Site "0..1" <-- "0..*" Attachment : site_id
+    Site "1" *-- "0..*" HomepageImageUpload : site_id
+    %% END GENERATED: models
+
+    class Site {
+        +boundary: polygon [NEW 6.0.1]
+        +latitude: number [NEW 6.0.1]
+        +longitude: number [NEW 6.0.1]
+        +sapaaweb: string [NEW 2.0.10]
+        +inatmap: string [NEW 2.0.10]
     }
 
     class SitePageField {
@@ -57,7 +259,7 @@ classDiagram
         +value: string
         +is_visible: boolean
         +position: number
-        +provided_by_steward_id: string? [NEW 2.0.5]
+        +provided_by_steward_id: number? [NEW 2.0.5]
         +source_response_id: number? [NEW 2.0.5]
     }
 
@@ -73,14 +275,8 @@ classDiagram
         +created_at: timestamp
     }
 
-    class Profile {
-        <<new table profiles, 1.0.1 1.0.2 4.0.5>>
-        +user_id: string
-        +display_name: string
-        +contact_email: string
-        +skills: string[]
-        +focus_areas: string[]
-        +inat_username: string
+    class Person {
+        +inat_username: string? [NEW 4.0.5]
     }
 
     class ProfileHiddenQuestion {
@@ -90,9 +286,10 @@ classDiagram
     }
 
     class ActivityStats {
-        <<new 1.0.4, no table>>
-        +sir_count: number
-        +activity_counts: Map
+        <<calculated by GET /api/profile, no table>>
+        +inspectionCount: number
+        +distinctSiteCount: number
+        +activity_counts: Map [NEW 1.0.4]
     }
 
     class SirSummary {
@@ -103,61 +300,8 @@ classDiagram
         +naturalness_spread_q31: Map
     }
 
-    class FormResponse {
-        <<table form_responses>>
-        +id: number
-        +site_id: number
-        +user_id: string
-        +inspection_no: string
-        +inspection_date: date
-        +is_active: boolean
-        +created_at: timestamp
-    }
-
-    class Answer {
-        <<table answers>>
-        +id: number
-        +response_id: number
-        +question_id: number
-        +obs_value: string
-        +obs_comm: string
-    }
-
-    class Question {
-        <<table questions>>
-        +id: number
-        +question key: string
-        +form_question: string
-    }
-
     class Attachment {
-        <<table attachments>>
-        +id: number
-        +response_id: number
-        +question_id: number
-        +site_id: number
-        +storage_key: string
-        +identifier: string? [CHANGE 4.0.6]
         +inat_observation_id: number [NEW 4.0.5]
-    }
-
-    class HomepageImageUpload {
-        <<table homepage_image_uploads>>
-        +id: number
-        +site_id: number
-        +user_id: string
-        +storage_key: string
-        +identifier: string
-    }
-
-    class PdfJob {
-        <<table S26_pdf_jobs>>
-        +id: string
-        +created_by: string
-        +mode: string
-        +status: string
-        +storage_path: string
-        +error: string
     }
 
     class ExportJob {
@@ -217,13 +361,6 @@ classDiagram
         +url: string
     }
 
-    class PdfOptions {
-        <<type in webapp/lib/pdf/types.ts>>
-        +selectedResponseIds: number[]
-        +selectedSections: string[]
-        +hiddenQuestionIds: number[] [NEW 7.0.7]
-    }
-
     class OfflineMapArea {
         <<new 4.0.2, web app browser storage>>
         +id: string
@@ -233,23 +370,14 @@ classDiagram
         +status: string
     }
 
-    County "0..1" <-- "0..*" Site : ab_county
     Site "1" *-- "0..*" SitePageField : site_id
-    Site "0..*" --> "0..1" KmlSite : source_feature_id
     Site "1" *-- "0..*" GpxTrack : site_id
-    Site "0..*" --> "0..1" Profile : designated_steward_id
-    Site "1" *-- "0..*" FormResponse : site_id
-    Site "1" *-- "0..*" HomepageImageUpload : site_id
-    Site "1" --> "0..*" Attachment : site_id
-    SitePageField "0..*" --> "0..1" Profile : provided_by_steward_id
+    SitePageField "0..*" --> "0..1" Person : provided_by_steward_id
     SitePageField "0..*" --> "0..1" FormResponse : source_response_id
-    Profile "1" --> "0..*" ProfileHiddenQuestion : user_id
+    Person "1" .. "0..*" ProfileHiddenQuestion : user_id = auth_user_id
     ProfileHiddenQuestion "0..*" --> "1" Question : question_id
-    Profile "1" --> "0..*" GpxTrack : user_id
-    Profile "1" --> "0..*" FormResponse : user_id
-    FormResponse "1" *-- "0..*" Answer : response_id
-    Question "1" --> "0..*" Answer : question_id
-    FormResponse "0..1" *-- "0..*" Attachment : response_id
+    Person "1" .. "0..*" GpxTrack : user_id = auth_user_id
+    Person "1" .. "0..*" FormResponse : user_id = auth_user_id
     ActivityStats ..> FormResponse : counts
     SirSummary ..> Answer : counts
     PdfJob ..> FormResponse : exports
@@ -258,13 +386,16 @@ classDiagram
     ExportJob ..> GpxTrack : zips files
     ExportJob ..> PdfJob : zips completed PDFs
     Site "1" --> "0..*" ActivityPointValue : site_id
-    Profile "1" --> "0..*" ActivityPointEntry : user_id
+    Person "1" .. "0..*" ActivityPointEntry : user_id = auth_user_id
     Site "1" --> "0..*" ActivityPointEntry : site_id
     Site "1" --> "0..1" SiteSafety : site_id
     Site "1" --> "0..1" SitePriority : site_id
     PdfJob ..> PdfOptions : request_payload
     INatObservation ..> Site : found in the boundary
 
-    note for Site "US 2.0.4: deleting a Site deletes its SIRs, answers, attachments,<br>homepage images, GPX tracks, Site fields, point records, safety and priority rows.<br>Related S3 files are deleted; the shared KML source and user Profiles are preserved."
+    note for Site "US 2.0.4: deleting a Site deletes its SIRs, answers, attachments,<br>homepage images, GPX tracks, Site fields, point records, safety and priority rows.<br>Today the database also deletes its site_stewards row (on delete cascade).<br>Related S3 files are deleted; protected_areas rows and Person records are kept."
     note for SitePageField "US 2.0.5: provided_by_steward_id records the steward who supplied the value.<br>source_response_id optionally records the SIR from which it came."
-    note for Attachment "US 4.0.6: identifier is optional.<br>US 7.0.8: an Attachment with response_id is owned by that SIR and is deleted with it."
+    note for Attachment "US 4.0.6: the identifier column can already be null. The story changes the app validation.<br>US 7.0.8: an Attachment with response_id is owned by that SIR and is deleted with it."
+    note for ActivityPointEntry "Person.activity_points (the total) exists. This per-event table is still proposed (1.0.5)."
+    note for ProfileHiddenQuestion "user_id, GpxTrack.user_id and ActivityPointEntry.user_id are auth.users ids.<br>Person.auth_user_id links them to a Person. There is no FK between them."
+    note for ProtectedArea "US 6.0.1: the KML import (webapp/utils/kml-import-actions.ts) upserts rows on (folder, fid).<br>Since migration 20261006010000 there is no link to sites_pa.<br>Open question (6.0.1, 2.0.2): how a Site is matched to a protected area."

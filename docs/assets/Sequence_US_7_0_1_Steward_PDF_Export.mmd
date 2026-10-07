@@ -52,9 +52,9 @@ sequenceDiagram
 
     Steward->>Page: Select Export PDF on own SIR (proposed for stewards)
     Page->>Api: POST /api/pdf {mode single, responseId,<br/>includeImages true}
-    Api->>DB: getResponseOwnerId(responseId) (proposed)
+    Api->>DB: getResponseOwnerId(responseId)<br/>(exists, call from /api/pdf proposed)
     DB-->>Api: Owner user_id
-    Api->>Api: Allow owner or Admin (proposed)<br/>Today: only role admin from app_metadata
+    Api->>Api: Allow owner or Admin (proposed)<br/>Today: only app_metadata.role admin and authenticated
     alt Caller did not submit the SIR (AT 2)
         Api-->>Page: 403. No job is made
         Page-->>Steward: Show "not allowed"
@@ -67,17 +67,17 @@ sequenceDiagram
         Job->>Job: Render PDF (lib/pdf/inspectionReport)
         alt Render or upload fails
             Job->>DB: Set job failed with error
-            DB-->>Page: Realtime update (PdfJobWatcher)
-            Page-->>Steward: PdfExportsDropdown shows Failed
+            Page-->>Steward: Show Failed to Steward (proposed). PdfExportsDropdown<br/>is admin-only today, and PdfJobWatcher ignores failed jobs
         else PDF is made
             Job->>S3: Put PDF
             Job->>DB: Set job complete with storage_path
-            DB-->>Page: Realtime update (PdfJobWatcher)
+            Page->>DB: PdfJobWatcher polls every 3 s
+            DB-->>Page: Job is complete
             Page->>Api: GET /api/pdf/status/{jobId}
-            Api->>Api: Check job belongs to caller (proposed)
+            Api->>DB: Read job. RLS returns the job only to its creator<br/>(exists in local schema, else 404)
             Api-->>Page: Presigned download URL
             Page-->>Steward: Download PDF with same answers<br/>and photos as SIR page (AT 1, AT 3)
         end
     end
 
-    Note over Page,Job: includeImages is false by default today.<br/>AT 3 needs photos, so the request must set it.<br/>Today /api/pdf/route.ts does not read the owner. It checks only app_metadata.role === 'admin'.
+    Note over Page,Job: includeImages is false by default today.<br/>AT 3 needs photos, so the request must set it.<br/>Today /api/pdf/route.ts does not read the owner. It checks only app_metadata.role === 'admin'<br/>and app_metadata.authenticated === true.

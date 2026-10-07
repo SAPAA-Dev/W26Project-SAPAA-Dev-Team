@@ -45,7 +45,7 @@ sequenceDiagram
     participant Page as Web pages<br/>new-report, UploadImages,<br/>profile
     participant Server as Server actions<br/>utils/supabase/queries.ts
     participant Points as ActivityPointsService<br/>(proposed)
-    participant Profile as ProfileService<br/>(proposed)
+    participant Profile as Profile route<br/>GET /api/profile
     participant DB as Supabase DB<br/>activity_points,<br/>activity_point_values (proposed)
 
     Note over Steward,DB: Covers US 1.0.5. No points exist in the code today.<br/>"(proposed)" = the step is not in the code today.
@@ -75,12 +75,12 @@ sequenceDiagram
 
     Note over Steward,DB: Show the total (AT 3)
     Steward->>Page: Open my profile
-    Page->>Profile: getStewardProfile(userId) (proposed)
+    Page->>Profile: fetch GET /api/profile (exists)
     Profile->>Points: getActivityPointsTotal(userId) (proposed)
     Points->>DB: Sum points in activity_points for the user
     DB-->>Points: Total
     Points-->>Profile: Total
-    Profile-->>Page: Profile with the total
+    Profile-->>Page: profile with the total (proposed)
     Page-->>Steward: Show the current total
 
     Note over Steward,DB: The server reads the user id from the session and the site and points from the database.<br/>The browser does not send a user id or a points value.<br/>Open questions: who sets the points for each Site and activity, the default when<br/>a Site has no value, and if points are removed when a SIR or photo is deleted (US 7.0.5, 7.0.8).

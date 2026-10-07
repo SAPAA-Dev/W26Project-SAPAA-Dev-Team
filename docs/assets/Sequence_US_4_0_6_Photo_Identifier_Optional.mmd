@@ -42,19 +42,19 @@ config:
 sequenceDiagram
     autonumber off
     actor Steward
-    participant Form as New SIR page<br/>new-report/page.tsx,<br/>UploadImages.tsx
+    participant Form as New SIR page<br/>new-report/page.tsx,<br/>MainContent.tsx
     participant Presign as Presign route<br/>/api/s3/presign
     participant S3 as AWS S3
     participant Actions as Server actions<br/>utils/supabase/queries.ts
     participant DB as Supabase<br/>PostgreSQL
 
-    Note over Steward,DB: Covers US 4.0.6. The photo upload flow exists. Today the Identifier is required in three places:<br/>the "*" mark in UploadImages.tsx, the checks in new-report/page.tsx and the metadata check in /api/s3/presign.<br/>"(proposed)" = the step is not in the code today.
+    Note over Steward,DB: Covers US 4.0.6. The Identifier is optional since #147. Before #147 it was required in three places:<br/>the "*" mark in MainContent.tsx, the checks in new-report/page.tsx and the metadata check in /api/s3/presign.<br/>"(proposed)" = the step is not in the code today.
 
     Steward->>Form: Open a new SIR and add a photo
     activate Form
-    Form-->>Steward: Show the photo fields. The Identifier label has<br/>no "required" mark (AT 2) (proposed)
+    Form-->>Steward: Show the photo fields. The Identifier label has<br/>no "required" mark (AT 2) (exists)
     Steward->>Form: Fill caption, photographer and date. Leave Identifier empty. Select Submit
-    Form->>Form: Check required answers and photo fields.<br/>Identifier is not in the required list (proposed)
+    Form->>Form: Check required answers and photo fields.<br/>Identifier is not in the required list (exists)
     alt A required field is empty or not in a valid format
         Form-->>Steward: Block submit. List the missing fields
     else All required fields are filled in a valid format
@@ -70,7 +70,9 @@ sequenceDiagram
         Form->>Presign: POST file details with an empty identifier (exists)
         activate Presign
         Presign->>Presign: getUser() from the session (exists)
-        Presign->>Presign: Check metadata. Identifier is optional (proposed).<br/>generateFilename leaves out the identifier part when it is empty (proposed)
+        Presign->>Presign: Check metadata. Only siteName and date are required.<br/>The identifier is trimmed to "" when it is not given (exists)
+        %% Not merged. generateFilename still builds site-date-who-identifier-uuid, so an empty identifier gives "--".
+        Presign->>Presign: generateFilename leaves out the identifier part when it is empty (proposed)
         Presign-->>Form: Presigned PUT URL and key
         deactivate Presign
         Form->>S3: PUT the photo (exists)
@@ -89,4 +91,4 @@ sequenceDiagram
     end
     deactivate Form
 
-    Note over Steward,DB: The edit page edit-report/[responseId]/page.tsx has the same Identifier check.<br/>It must change the same way, so that an edit with an empty Identifier is not blocked.
+    Note over Steward,DB: Done in #147: the edit page edit-report/[responseId]/page.tsx no longer requires the Identifier,<br/>so an edit with an empty Identifier is not blocked. Open: the generateFilename step above.<br/>Not in this flow: components/UploadImages.tsx (the /sites homepage-image uploader) still requires the Identifier.

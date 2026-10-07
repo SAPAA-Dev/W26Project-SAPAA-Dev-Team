@@ -1,7 +1,10 @@
 %% SAPAA system architecture, Fall 2026.
 %% The diagram shows the system as the code is today. Items with the "proposed" style do not exist in the code.
-%% Evidence: webapp/utils/supabase/*.ts, webapp/app/api/**, webapp/lib/pdf/*.ts,
-%% FNR/src/services/*.ts, FNR/src/screens/*.tsx, googleSheets/code.gs, .github/workflows/*.yaml
+%% Evidence: webapp/utils/supabase/*.ts, webapp/app/api/**, webapp/app/auth/**, webapp/middleware.ts,
+%% webapp/lib/pdf/*.ts, webapp/utils/admin-actions.ts, webapp/utils/media/s3Delete.ts,
+%% webapp/utils/kml-import-actions.ts, webapp/lib/map/kmlImport.ts, webapp/scripts/local_*.js,
+%% FNR/src/services/*.ts, FNR/src/screens/*.tsx, .github/workflows/*.yaml
+%% Checked against origin/main d18f3bd on October 7, 2026. The googleSheets/ client was removed in c7f7cb4.
 flowchart TB
     subgraph Legend["Legend"]
         direction LR
@@ -17,20 +20,21 @@ flowchart TB
         Browser["Web browser<br/>admins and stewards"]
         Mobile["StewardLog mobile app<br/>Expo 54, React Native 0.81<br/>FNR/"]
         SQLite[("expo-sqlite<br/>offline copy of site data")]
-        Sheets["Google Sheets with Apps Script<br/>googleSheets/code.gs"]
     end
 
     subgraph AppLayer["2. Application layer: Vercel"]
-        Next["Next.js 16 web app, webapp/<br/>pages, server actions,<br/>middleware.ts refreshes the session"]
-        Api["API route handlers<br/>webapp/app/api/<br/>S3 presign, gallery, PDF, geocode, heatmap, OpenAPI"]
+        Next["Next.js 16 web app, webapp/<br/>pages, server actions,<br/>middleware.ts refreshes the session and sends<br/>signed-out users to /login (also /api;<br/>not /login, /signup, /auth, /error)<br/>handlers /auth/callback, /auth/confirm"]
+        Api["API route handlers<br/>webapp/app/api/<br/>S3 presign, galleries and image delete, profile,<br/>PDF, geocode, heatmap, OpenAPI"]
+        KmlImport["KML import server action, US 6.0.1<br/>utils/kml-import-actions.ts<br/>parser lib/map/kmlImport.ts"]
         PdfJob["PDF job<br/>lib/pdf/processPdfJob.ts<br/>runs after the response"]
     end
 
     subgraph DataLayer["3. Data and storage layer"]
         subgraph Supabase["Supabase"]
             Auth["Supabase Auth<br/>sessions and OAuth sign-in"]
-            Database[("PostgreSQL<br/>web app tables<br/>legacy tables: mobile app and Sheets")]
-            Edge["Edge Functions add-user, delete-user<br/>source is not in this repository"]
+            Database[("PostgreSQL<br/>web app tables<br/>legacy tables: mobile app")]
+            Storage[("Supabase Storage, bucket kml-imports<br/>private, 50 MiB, admin-only RLS")]
+            Edge["Edge Functions get-users, add-user, delete-user<br/>source is not in this repository"]
         end
         S3[("AWS S3 bucket, ca-central-1<br/>inspection photos and PDF files")]
     end
@@ -41,13 +45,19 @@ flowchart TB
         Osm{{"OpenStreetMap tiles"}}
         GoogleMaps{{"Google My Maps embed"}}
         Cdn{{"cdnjs<br/>PDF.js, Leaflet marker icons"}}
+        Fonts{{"Google Fonts<br/>Inter, DM Sans"}}
         INaturalist{{"iNaturalist API<br/>US 4.0.5, US 4.0.7"}}:::proposed
     end
 
     subgraph ToolingLayer["5. Build and documentation tooling"]
         GitHub["GitHub repository"]
-        Actions["GitHub Actions<br/>Jest tests, MkDocs build"]
+        Actions["GitHub Actions<br/>push: Jest, MkDocs build, hook tests<br/>pull_request: PR checks, labeler, reviewer gate,<br/>diagrams (generate, render, push)"]
         Pages{{"GitHub Pages<br/>project documentation"}}
+    end
+
+    subgraph LocalDev["Local development only: npm run dev"]
+        LocalSupabase["scripts/local_supabase.js<br/>Supabase CLI local stack, seed.sql, local admin user"]
+        LocalS3[("scripts/local_s3.js<br/>LocalStack S3 through lstk<br/>s3.localhost.localstack.cloud:4566")]
     end
 
     Browser -->|"HTTPS: pages and server actions"| Next
@@ -55,15 +65,21 @@ flowchart TB
     Browser -->|"PUT file with presigned URL"| S3
     Browser -->|"map tiles"| Osm
     Browser -->|"marker icons"| Cdn
+    Browser -->|"web fonts, globals.css"| Fonts
+    Browser -->|"upload .kml/.kmz (supabase-js)"| Storage
 
-    Next -->|"supabase-js: sign in, session cookies"| Auth
+    Next -->|"supabase-js: sign in, session cookies;<br/>Admin API with service role (create, delete, approve users)"| Auth
     Next -->|"supabase-js: queries"| Database
+    Next -->|"AWS SDK: delete objects (SIR rollback)"| S3
+    Next -->|"server action"| KmlImport
+    KmlImport -->|"download and remove (service role)"| Storage
+    KmlImport -->|"upsert protected_areas"| Database
     Api -->|"supabase-js: queries"| Database
-    Api -->|"AWS SDK: presigned PUT and GET URLs"| S3
+    Api -->|"AWS SDK: presigned PUT and GET URLs, delete objects"| S3
     Api -->|"geocode an address"| OpenCage
     Api -->|"start job with after()"| PdfJob
     PdfJob -->|"read report data"| Database
-    PdfJob -->|"write PDF file"| S3
+    PdfJob -->|"read images, write PDF file"| S3
     Api -.->|"proposed: photo import, top observations"| INaturalist
 
     Auth -->|"OAuth redirect"| OAuth
@@ -77,13 +93,14 @@ flowchart TB
     Mobile -->|"WebView map"| GoogleMaps
     Mobile -->|"PDF.js in WebView"| Cdn
 
-    Sheets -->|"UrlFetchApp: REST /rest/v1, legacy tables"| Database
-
     GitHub -->|"push"| Actions
     Actions -->|"deploy docs on push to main"| Pages
+
+    LocalSupabase -.->|"local only: replaces hosted Supabase"| Next
+    LocalS3 -.->|"local only: AWS_ENDPOINT_URL_S3"| Next
 
     classDef proposed stroke-dasharray: 5 5,fill:#fff8e1,stroke:#b8860b
     classDef external fill:#eef3ff,stroke:#4a6fa5
     classDef store fill:#eaf7ea,stroke:#3c763d
-    class LegendExternal,OAuth,OpenCage,Osm,GoogleMaps,Cdn,Pages external
-    class LegendStore,SQLite,Database,S3 store
+    class LegendExternal,OAuth,OpenCage,Osm,GoogleMaps,Cdn,Fonts,Pages external
+    class LegendStore,SQLite,Database,S3,Storage,LocalS3 store

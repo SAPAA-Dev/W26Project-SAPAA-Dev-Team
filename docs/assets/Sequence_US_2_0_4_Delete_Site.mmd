@@ -47,14 +47,14 @@ sequenceDiagram
     participant DB as Supabase<br/>PostgreSQL
     participant S3 as AWS S3
 
-    Note over Admin,S3: Covers US 2.0.4. No delete exists in the code. All steps are Proposed.<br/>Decision: delete all Site-owned data and files. Preserve user Profiles and the shared KML source.
+    Note over Admin,S3: Covers US 2.0.4. No delete exists in the code. All steps are Proposed,<br/>except requireApprovedAdmin() and deleteObjectsByKeys(), which exist and can be reused.<br/>Decision: delete all Site-owned data and files. Preserve user Profiles and the shared KML source.
 
     Admin->>Page: Select "Delete Site"
     activate Page
     Page->>Actions: getSiteDeleteImpact(siteId)
     activate Actions
-    Actions->>Actions: Check session and Admin role on server
-    Actions->>DB: Count the Site's SIRs, answers, attachments, homepage images,<br/>GPX tracks, Site fields, point records, safety and priority rows
+    Actions->>Actions: requireApprovedAdmin() (exists)
+    Actions->>DB: Count the Site's SIRs, answers, attachments, homepage images, site_stewards row,<br/>and (planned tables) GPX tracks, Site fields, point records, safety and priority rows
     activate DB
     DB-->>Actions: Counts
     deactivate DB
@@ -69,19 +69,19 @@ sequenceDiagram
         Admin->>Page: Select Confirm
         Page->>Actions: deleteSite(siteId)
         activate Actions
-        Actions->>Actions: Check session and Admin role on server
+        Actions->>Actions: requireApprovedAdmin() (exists)
         alt Caller is not an Admin
             Actions-->>Page: Refuse (403), nothing deleted
             Page-->>Admin: Show the error
         else Caller is an Admin
-            Actions->>DB: Begin one transaction. Delete Site page fields, safety, priority,<br/>activity-point rows, GPX rows, homepage-image rows, attachments,<br/>SIR answers and SIRs, then delete sites_pa (AT3).
+            Actions->>DB: Begin one transaction. Delete (planned tables) Site page fields, safety, priority,<br/>activity-point rows and GPX rows. Delete attachments, SIR answers and SIRs,<br/>then delete sites_pa (AT3). homepage_image_uploads and site_stewards rows go by cascade.<br/>People profiles stay. protected_areas has no site_id, so KML rows are not touched.
             alt Any step fails (AT4)
                 DB-->>Actions: Error. Roll back all steps.
                 Actions-->>Page: Deletion rejected
                 Page-->>Admin: Show the error. The Site and all records are unchanged.
             else All steps done
                 DB-->>Actions: Commit
-                Actions->>S3: Delete the removed images and GPX files
+                Actions->>S3: deleteObjectsByKeys(keys) of the removed images and GPX files<br/>(helper exists, call proposed)
                 S3-->>Actions: Done or error
                 Note right of Actions: S3 is outside the database transaction.<br/>A failed object deletion is logged for retry.<br/>It does not restore deleted database rows.
                 Actions-->>Page: Site deleted

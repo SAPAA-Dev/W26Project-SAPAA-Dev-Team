@@ -160,3 +160,105 @@ moves Todo → In progress → In review (PR open) → Done.
 
 PRs are labelled by the folders they touch (`webapp`, `mobile`, `docs`, `infra`), so you can
 filter the PR list down to your area.
+
+## Diagrams
+
+The Mermaid sources are in `docs/assets/*.mmd`. The rendered SVGs are in `docs/images/`.
+[Software design](software-design.md) shows them.
+
+Run this from the repository root after you change a migration, a server module or a `.mmd` file:
+
+```bash
+npm run diagrams        # update the generated parts, then render the SVGs that changed
+npm run diagrams:check  # change nothing; fail if a diagram or an SVG is out of date
+```
+
+The tool is in `tools/diagrams/` and has its own `package.json`. It needs Node 22.13 or later.
+The first run downloads a headless Chrome (about 200 MB on disk) for the renderer.
+
+| Diagram | Generated part comes from |
+| --- | --- |
+| `ER_Diagram.mmd` | `webapp/supabase/migrations/*.sql`, applied in filename order with the Postgres parser |
+| `UML_Class_Diagram_Models.mmd` | the same migrations (tables) and `webapp/lib/pdf/types.ts` (`PdfOptions`) |
+| `UML_Class_Diagram.mmd` | the exported functions and route handlers of the modules in `tools/diagrams/src/config.mjs` |
+
+Rules:
+
+- The tool writes only between `%% BEGIN GENERATED: <name>` and `%% END GENERATED: <name>`.
+  Do not edit that block. Everything outside it is hand-written and the tool keeps it, with
+  the exceptions below.
+- Class diagrams: to show a proposed item, write it outside the markers with a `[NEW x.y.z]`
+  tag. For a new member of an existing class, add a second block of that class
+  (`class Site { ... }`). Mermaid joins the two blocks.
+- Class diagrams: when the code or a migration adds a proposed member, the tool removes the
+  hand-written line. It also removes a `<<new table x>>` class when table `x` exists.
+- Class diagrams: you can add a `[CHANGE x.y.z]` tag at the end of a generated line. The tool
+  keeps it.
+- `ER_Diagram.mmd` shows only the current schema. The tool removes a hand-written entity block
+  for a generated table, and a column that the schema does not have (it shows a warning). It
+  does not keep tags on generated lines. Put proposed tables and columns in
+  `ER_Diagram_Proposed_User_Stories.mmd`.
+- To add a module, a table or a column note, edit `tools/diagrams/src/config.mjs`.
+- The sequence diagrams, `Architecture.mmd` and `ER_Diagram_Proposed_User_Stories.mmd` are
+  hand-written. The tool warns when one of them names a table that a migration dropped or
+  renamed, or a dropped or renamed column as `table.column`. It does not find a column name
+  without its table.
+- The tool renders a `.mmd` again only when its content changes. The hashes are in
+  `docs/assets/.diagram-hashes.json`. A `.mmd` file is saved to the SVG name that
+  `docs/software-design.md` links, for example `ER_Diagram.mmd` to `ER_Diagram_mermaid.svg`.
+- Running the tool twice gives no changes.
+- Self-check: `npm --prefix tools/diagrams test`. The workflow also runs it.
+- The services diagram does not read `webapp/node_modules`. A type from a package shows as
+  `any`, so the output is the same with or without the webapp packages installed.
+
+### The diagrams workflow
+
+`.github/workflows/diagrams.yaml` runs when a PR into `main` or `release` is opened, reopened
+or updated. It has two jobs:
+
+| Job | Token | What it does |
+| --- | --- | --- |
+| `diagrams` | read-only, not kept in `.git/config` | Runs `npm run diagrams` and the self-check. If a file in `docs/assets` or `docs/images` changes, it saves the change as a patch. A render failure fails this job. |
+| `diagrams-push` | GitHub App token | Runs only when the patch is not empty. It runs no code from the PR. It checks that the patch changes only `docs/assets` and `docs/images`, applies it, and pushes one commit, `(docs): update diagrams`, to the PR branch. |
+
+`diagrams-push` fails, and does not push, in these cases. Run `npm run diagrams` and commit
+the result.
+
+| Case | Why it does not push |
+| --- | --- |
+| PR from a fork | It cannot push to a fork. |
+| PR from `main` into `release` | `main` is PR-only. |
+| The last commit is the diagrams commit | The tool did not give the same result twice. This stops a loop. |
+| The `DIAGRAMS_APP_ID` variable is not set | There is no token that can push. |
+
+The guard checks the committer of the last commit, not the author. A rebase sets a new
+committer, so the job runs again on a rebased branch. If someone pushes while the job runs,
+the push fails and nothing is overwritten. The next run updates the diagrams.
+
+**The push token.** A push made with the default `GITHUB_TOKEN` does not start other workflows.
+The five required checks of the `main` ruleset are `webapp-tests`, `docs-build`, `hook-tests`
+(`ci.yaml`, on `push`), `conventions` (`pr-checks.yaml`) and `reviewers` (`reviewer-gate.yaml`,
+both on `pull_request`). None of them run on a commit pushed with `GITHUB_TOKEN`, so the PR
+cannot merge. For this reason the workflow pushes only with a GitHub App token. A repo admin
+sets it up:
+
+1. Create a GitHub App, or use an existing one, with the repository permission
+   **Contents: read and write** only. Install it on this repository only.
+2. Add the repository variable `DIAGRAMS_APP_ID` (the App ID) and the secret
+   `DIAGRAMS_APP_KEY` (the private key).
+
+Do not use a personal access token. The `diagrams` job runs code from the PR, and a token of a
+person lets a teammate push as that person.
+
+As of October 7, 2026, the variable and the secret are not set. So `diagrams-push` fails when
+the diagrams are out of date, and the author runs `npm run diagrams`.
+
+**Required check.** The diagrams jobs are not required checks in the `main` ruleset, so a PR
+with out-of-date diagrams can still merge. To block it, the ruleset owner (Gamma) adds
+`diagrams` and `diagrams-push` as required checks.
+
+**Approvals.** The `main` ruleset dismisses approvals on a new push, and the latest push must be
+approved by someone other than its author. The `reviewers` check counts approvals on the head
+commit only. So a diagrams commit after an approval needs new approvals. Run
+`npm run diagrams` and commit the result before you ask for review, and the workflow has
+nothing to push.

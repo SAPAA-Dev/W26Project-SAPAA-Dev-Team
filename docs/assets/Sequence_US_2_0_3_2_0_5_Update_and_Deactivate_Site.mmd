@@ -47,18 +47,17 @@ sequenceDiagram
     participant Actions as Server actions<br/>utils/supabase/queries.ts
     participant DB as Supabase<br/>PostgreSQL
 
-    Note over Admin,DB: Covers US 2.0.3 and 2.0.5. Part 1 (2.0.3) exists: handleSaveSite calls updateSite and toggleSiteActive.<br/>Part 2 (2.0.5, edit mode on the Site page) is Proposed.<br/><br/>Part 1: US 2.0.3 Deactivate or reactivate a Site
+    Note over Admin,DB: Covers US 2.0.3 and 2.0.5. Part 1 (2.0.3) exists: handleSaveSite calls updateSite and toggleSiteActive,<br/>and both check the caller on the server with requireApprovedAdmin().<br/>Part 2 (2.0.5, edit mode on the Site page) is Proposed.<br/><br/>Part 1: US 2.0.3 Deactivate or reactivate a Site
     Admin->>Page: Open EditSiteModal, set Active on or off, select Save (AT1)
     activate Page
-    Page->>Actions: updateSite(id, namesite, ab_county) and<br/>toggleSiteActive(id, is_active) (exist)
+    Page->>Actions: updateSite(id, namesite, ab_county), then<br/>toggleSiteActive(id, is_active) only if is_active changed (exist)
     activate Actions
-    Actions->>Actions: Check session and Admin role on server (Proposed)
-    Note right of Actions: Missing today: no check. Any signed-in<br/>user can call these actions directly.
+    Actions->>Actions: requireApprovedAdmin() (exists)
     alt Caller is not an Admin
-        Actions-->>Page: Refuse (403), no change
-        Page-->>Admin: Show the error
+        Actions-->>Page: Throw 'Only admins can edit sites.', no change
+        Page-->>Admin: alert() with the error
     else Caller is an Admin
-        Actions->>DB: Update sites_pa set is_active
+        Actions->>DB: Update sites_pa namesite, ab_county,<br/>then is_active only if it changed
         activate DB
         alt Update fails
             DB-->>Actions: Error

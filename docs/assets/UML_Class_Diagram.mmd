@@ -5,20 +5,34 @@ classDiagram
     %% Source: docs/user-stories.md.
     %% How to read this diagram:
     %% - A class with the stereotype <<new ...>> is proposed. It shows the stories.
-    %% - In an existing class, an operation that ends with [NEW x.y.z] is
-    %%   proposed, and [CHANGE x.y.z] is an existing operation that a story
-    %%   changes. All other operations exist in the code with the same name.
+    %% - The block between the GENERATED markers is made from the code by
+    %%   `npm run diagrams` (tools/diagrams/src/config.mjs lists the modules).
+    %%   Do not edit it, except to add a [CHANGE x.y.z] tag at the end of a line.
+    %%   The generator keeps such tags.
+    %% - Proposed operations of an existing class are in a second block of that
+    %%   class below the markers, with [NEW x.y.z]. Mermaid joins both blocks.
+    %%   When the code gets the operation, the generator removes the proposed line.
+    %% - [CHANGE x.y.z] is an existing operation that a story changes.
     %% - A route class is one route.ts file. The stereotype gives the path.
-    %%   The operations are the HTTP handlers (GET, POST) in that file.
+    %%   The operations are the HTTP handlers. The parameters are the path
+    %%   segments, the query keys and "body". The result is the keys of the JSON.
     %% - Proposed operation names are the same as in the Sequence_US_*.mmd files.
     %% - Only the classes that a story touches are shown. Existing code that
     %%   no story touches is not shown: webapp/utils/form-actions.ts,
     %%   webapp/utils/admin-actions.ts, the heatmap route, /api/gallery,
-    %%   /api/homepage-images, /api/user-gallery/*, FNR/src/services/database.ts,
-    %%   FNR/src/services/pdfGenerator.ts, FNR/src/services/adminAuth.ts.
+    %%   /api/homepage-images, /api/user-gallery/*, /api/openapi and
+    %%   webapp/lib/swagger.ts, /auth/callback, /auth/confirm, the other
+    %%   functions in queries.ts, resendConfirmation, getAuthState,
+    %%   subscribeToAuth and notifyListeners in webapp/services/auth.ts,
+    %%   FNR/src/services/database.ts, FNR/src/services/pdfGenerator.ts,
+    %%   FNR/src/services/adminAuth.ts.
+    %% - webapp/app/login/actions.ts (login, loginGithub) is not shown.
+    %%   Nothing in webapp/ imports it.
     %% - The web app uses its own tables. The mobile app uses the legacy
     %%   tables. See ER_Diagram.mmd and ER_Diagram_Legacy.mmd.
 
+    %% BEGIN GENERATED: services
+    %% Exported functions and route handlers from the TypeScript source.
     namespace WebApp {
         class WebAuthService {
             <<webapp/services/auth.ts>>
@@ -27,6 +41,119 @@ classDiagram
             +signInWithGoogle() success, error
             +signInWithMicrosoft() success, error
             +logout() void [CHANGE 5.0.4]
+        }
+        class SiteQueries {
+            <<webapp/utils/supabase/queries.ts>>
+            +getSitesOnline() SiteSummary[]
+            +getSiteByName(namesite) SiteSummary[] [CHANGE 2.0.3, USED 2.0.8]
+            +getCounties() County[]
+            +updateSite(id, namesite, ab_county) void [CHANGE 2.0.3]
+            +toggleSiteActive(id, is_active) void [CHANGE 2.0.3]
+            +createSite(namesite, ab_county) void
+            +findSitesWithName(namesite) string[]
+            +getSiteLinks(siteId) SiteLinks
+        }
+        class InspectionQueries {
+            <<webapp/utils/supabase/queries.ts>>
+            +addSiteInspectionReport(siteId, userId, inspectionDate) any
+            +uploadSiteInspectionAnswers(batchArray) any
+            +insertInspectionAttachments(rows) any [CHANGE 4.0.5]
+            +rollbackSiteInspectionSubmission(responseId) void [CHANGE 7.0.5]
+            +setFormResponseActive(responseId, isActive) void
+            +getFormResponsesBySite(siteName) FormResponse[] [CHANGE 1.0.3, 7.0.4]
+            +getFormResponsesBySiteAdmin(siteName) list of FormResponse and is_active
+            +getFormResponseById(responseId) Record
+            +getAttachmentsByResponseId(responseId) list of id, question_id, storage_key, filename, content_type, ...
+            +updateAttachmentMetadata(attachmentId, fields) void
+            +updateSiteInspectionAnswers(responseId, batchArray, inspectionDate) any [CHANGE 4.0.4]
+            +getResponseOwnerId(responseId) string or null
+            +getSiteIdForResponse(responseId) number or null
+            +getFormResponsesForSiteIds(siteIds, keyMap) Map
+            +getAttachmentsForResponseIds(responseIds) list of id, response_id, question_id, storage_key, filename, ...
+        }
+        class HomepageImageActions {
+            <<webapp/utils/supabase/queries.ts>>
+            +insertHomepageImageUpload(rows) any [CHANGE 1.0.5]
+        }
+        class StewardActions {
+            <<webapp/utils/steward-actions.ts>>
+            +searchStewards(query) StewardOption[]
+            +assignSiteSteward(siteId, personId) ActionResult
+            +getSiteSteward(siteId) StewardOption or null
+            +getSitesForSteward(personId) StewardedSite[]
+            +getPersonByAuthUserId(authUserId) StewardOption or null
+        }
+        class KmlImportActions {
+            <<webapp/utils/kml-import-actions.ts>>
+            +importProtectedAreasFromStorage(storagePath) ImportKmlResult
+        }
+        class KmlParser {
+            <<webapp/lib/map/kmlImport.ts>>
+            +parseProtectedAreaFile(bytes) KmlImportResult
+            +parseProtectedAreaKmlText(kmlText) KmlImportResult
+        }
+        class S3Delete {
+            <<webapp/utils/media/s3Delete.ts>>
+            +deleteObjectsByKeys(keys) void
+        }
+        class ProfileRoute {
+            <<route /api/profile>>
+            +GET(personId, page) profile, isOwner, stats, history, pagination
+            +PATCH(body) profile
+        }
+        class PresignRoute {
+            <<route /api/s3/presign>>
+            +POST(body) uploadUrl, key, generatedFilename [CHANGE 4.0.6]
+        }
+        class HomepagePresignRoute {
+            <<route /api/s3/presign-homepage-images>>
+            +POST(body) uploadUrl, key
+        }
+        class SiteImagesRoute {
+            <<route /api/site-images>>
+            +GET(siteid, responseid) items
+            +DELETE(id, kind) deleted
+        }
+        class SiteGalleryRoute {
+            <<route /api/sites/[siteId]/gallery>>
+            +GET(siteId) items
+        }
+        class HomepageImagesRoute {
+            <<route /api/homepage-images/[siteId]>>
+            +GET(siteId) items
+        }
+        class PdfRoute {
+            <<route /api/pdf>>
+            +POST(body) jobId [CHANGE 7.0.1, 7.0.6, 7.0.7]
+        }
+        class PdfStatusRoute {
+            <<route /api/pdf/status/[jobId]>>
+            +GET(jobId) status, downloadUrl [CHANGE 7.0.1, 7.0.6]
+        }
+        class PdfJobProcessor {
+            <<webapp/lib/pdf/processPdfJob.ts>>
+            +processPdfJob(jobId) void [CHANGE 7.0.6]
+        }
+        class PdfDataFetcher {
+            <<webapp/lib/pdf/pdfDataFetcher.ts>>
+            +fetchReportData(request) PdfReportData [CHANGE 7.0.7]
+        }
+        class GeocodeRoute {
+            <<route /api/geocode>>
+            +GET(q) coords, latitude, longitude [CHANGE 6.0.1]
+        }
+    }
+
+    namespace MobileApp {
+        class StewardLogGeocoder {
+            <<FNR/src/services/openCage.ts>>
+            +getCoordinatesFromName(namesite) latitude, longitude or null
+        }
+    }
+    %% END GENERATED: services
+
+    namespace WebApp {
+        class WebAuthService {
             +requestPasswordReset(email) void [NEW 5.0.2]
             +verifyResetCode(email, code) Session [NEW 5.0.2]
             +updatePassword(newPassword) void [NEW 5.0.2]
@@ -47,44 +174,22 @@ classDiagram
         }
 
         class SiteQueries {
-            <<webapp/utils/supabase/queries.ts>>
-            +getSitesOnline() SiteSummary[]
-            +getSiteByName(namesite) SiteSummary[] [CHANGE 2.0.3, USED 2.0.8]
-            +getCounties() County[]
-            +updateSite(id, namesite, ab_county) void [CHANGE 2.0.3]
-            +toggleSiteActive(id, is_active) void [CHANGE 2.0.3]
             +getSiteMapData() Site[] [NEW 2.0.1]
-            +createSite(name, county, boundary) Site [NEW 2.0.2]
-            +findSitesWithName(name) Site[] [NEW 2.0.2]
-            +getUnmatchedKmlSites() KmlSite[] [NEW 2.0.2]
+            +getUnmatchedKmlSites() ProtectedArea[] [NEW 2.0.2]
             +getSiteDeleteImpact(siteId) record counts [NEW 2.0.4]
             +deleteSite(siteId) void [NEW 2.0.4]
             +getSitePageFields(siteId) SitePageField[] [NEW 2.0.5]
             +updateSitePageFields(siteId, fields, providedByStewardId, sourceResponseId) void [NEW 2.0.5]
-            +designateSiteSteward(siteId, stewardId) void [NEW 3.0.2]
         }
 
         class InspectionQueries {
-            <<webapp/utils/supabase/queries.ts>>
-            +addSiteInspectionReport(siteId, userId, inspectionDate) number
-            +uploadSiteInspectionAnswers(batchArray) void
-            +insertInspectionAttachments(rows) void [CHANGE 4.0.5]
-            +rollbackSiteInspectionSubmission(responseId) void [CHANGE 7.0.5]
-            +setFormResponseActive(responseId, isActive) void
             +deleteFormResponse(responseId) void [NEW 7.0.8]
-            +getFormResponsesBySite(siteName) FormResponse[] [CHANGE 1.0.3, 7.0.4]
-            +getFormResponseById(responseId) answers
-            +updateSiteInspectionAnswers(responseId, batchArray, inspectionDate) void [CHANGE 4.0.4]
-            +getResponseOwnerId(responseId) string or null
             +getSirSummary(fromDate, toDate) SirSummary [NEW 7.0.3]
         }
 
-        class ProfileService {
-            <<new 1.0.1 1.0.2 1.0.3 3.0.2 4.0.5: server actions>>
-            +getStewardProfile(userId) Profile, ActivityStats, SIR list
-            +updateOwnProfile(fields) Profile
+        class HiddenQuestionActions {
+            <<new 1.0.3: server action>>
             +setHiddenQuestions(questionIds) void
-            +searchStewards(text) Profile[]
         }
 
         class ActivityPointsService {
@@ -107,16 +212,6 @@ classDiagram
             +getTopObservations(siteBoundary) INatObservation[]
         }
 
-        class HomepageImageActions {
-            <<webapp/utils/supabase/queries.ts>>
-            +insertHomepageImageUpload(rows) void [CHANGE 1.0.5]
-        }
-
-        class GeometryLoadJob {
-            <<new 6.0.1>>
-            +loadGeometriesFromKml() matched and unmatched counts
-        }
-
         class GpxTrackActions {
             <<new 2.0.9 2.0.1: server actions>>
             +saveGpxTrack(siteId, storageKey) GpxTrack
@@ -135,60 +230,10 @@ classDiagram
             +selectINaturalistPhotos(inatUsername) photos [NEW 4.0.5]
         }
 
-        class PresignRoute {
-            <<route /api/s3/presign>>
-            +POST(fileInfo) PresignedUrl [CHANGE 4.0.6]
-        }
-
-        class SiteImagesRoute {
-            <<route /api/site-images>>
-            +GET(siteid, responseid) attachment images
-        }
-
-        class SiteGalleryRoute {
-            <<route /api/sites/[siteId]/gallery>>
-            +GET(siteId) attachment images
-        }
-
-        class HomepageImagesRoute {
-            <<route /api/homepage-images/[siteId]>>
-            +GET(siteId) homepage upload images
-        }
-
-        class ImageDeleteRoute {
-            <<new 7.0.5: image delete route>>
-            +DELETE(imageKind, imageId) void
-        }
-
-        class PdfRoute {
-            <<route /api/pdf>>
-            +POST(PdfRequest) jobId [CHANGE 7.0.1, 7.0.6, 7.0.7]
-        }
-
-        class PdfStatusRoute {
-            <<route /api/pdf/status/[jobId]>>
-            +GET(jobId) status, downloadUrl [CHANGE 7.0.1, 7.0.6]
-        }
-
-        class PdfJobProcessor {
-            <<webapp/lib/pdf/processPdfJob.ts>>
-            +processPdfJob(jobId) void [CHANGE 7.0.6]
-        }
-
-        class PdfDataFetcher {
-            <<webapp/lib/pdf/pdfDataFetcher.ts>>
-            +fetchReportData(PdfRequest) PdfReportData [CHANGE 7.0.7]
-        }
-
         class ExportRoutes {
             <<new 3.0.3: proposed routes>>
             +createExportJob() jobId [NEW 3.0.3]
             +getExportJobStatus(jobId) ExportJob [NEW 3.0.3]
-        }
-
-        class GeocodeRoute {
-            <<route /api/geocode>>
-            +GET(q) latitude, longitude [CHANGE 6.0.1]
         }
 
         class OfflineMapService {
@@ -196,13 +241,6 @@ classDiagram
             +downloadArea(bounds, minZoom, maxZoom) OfflineMapArea
             +getDownloadStatus(areaId) string
             +isInsideDownloadedArea(point) boolean
-        }
-    }
-
-    namespace MobileApp {
-        class StewardLogGeocoder {
-            <<FNR/src/services/openCage.ts>>
-            +getCoordinatesFromName(namesite) lat, lng
         }
     }
 
@@ -231,7 +269,7 @@ classDiagram
     }
 
     note for InspectionQueries "CHANGE 1.0.3: getFormResponsesBySite removes answers that the steward hides.<br>CHANGE 7.0.4: it also returns the question key of each answer.<br>The site page groups answers by that key. There is no separate query."
-    note for AuthorizationService "Every protected server action gets the caller from the server session.<br>Admin checks must use a role that the user cannot change. Browser UI checks are not trusted.<br>Open question: the role store is not decided (see the proposed ER diagram)."
+    note for AuthorizationService "Every protected server action gets the caller from the server session.<br>Admin checks must use a role that the user cannot change. Browser UI checks are not trusted.<br>The role is in app_metadata (role = admin, authenticated = true). RLS reads it too.<br>Today each file has its own copy of the admin check. AuthorizationService replaces these copies."
     note for SiteQueries "US 2.0.8 uses Site, getSiteByName and getFormResponsesBySite.<br>deleteSite removes the Site's SIRs, answers, attachments, homepage images,<br>GPX tracks and other Site-owned rows; their S3 files are also removed."
     note for ExportRoutes "POST /api/export calls createExportJob.<br>GET /api/export/status/[jobId] calls getExportJobStatus.<br>getExportJobStatus returns the URL only to an Admin or the job creator.<br>The ZIP includes inspection images, homepage images, GPX files and completed PDFs."
     note for PdfDataFetcher "CHANGE 7.0.7: removes the answers of options.hiddenQuestionIds.<br>CHANGE 7.0.6: processPdfJob reads the SIRs in batches.<br>The cause of the 50 SIR limit is an open question."
@@ -244,24 +282,29 @@ classDiagram
     AuthorizationService --> AuthenticatedUser : returns trusted caller
     SiteQueries --> AuthorizationService : Admin for writes
     InspectionQueries --> AuthorizationService : Admin or owner
-    ProfileService --> AuthorizationService : signed-in user or owner
+    ProfileRoute --> AuthorizationService : signed-in user, owner for PATCH
+    HiddenQuestionActions --> AuthorizationService : owner
+    StewardActions --> AuthorizationService : Admin for assign
+    KmlImportActions --> AuthorizationService : Admin
     SiteSafetyPriorityActions --> AuthorizationService : Admin for writes
-    GeometryLoadJob --> AuthorizationService : Admin
     GpxTrackActions --> AuthorizationService : signed-in user
-    ImageDeleteRoute --> AuthorizationService : Admin
+    SiteImagesRoute --> AuthorizationService : Admin for DELETE
     PdfRoute --> AuthorizationService : owner or Admin
     PdfStatusRoute --> AuthorizationService : job creator or Admin
     SiteSafetyPriorityActions --> AuthorizationService : signed-in user for reads
     ExportRoutes --> AuthorizationService : Admin
     SiteQueries --> SupabaseBackend : web app tables
     InspectionQueries --> SupabaseBackend : web app tables
-    ProfileService --> SupabaseBackend : web app tables
-    GeometryLoadJob --> SupabaseBackend : kml_sites, sites_pa
+    ProfileRoute --> SupabaseBackend : people, socials, form_responses
+    HiddenQuestionActions --> SupabaseBackend : profile_hidden_questions
+    StewardActions --> SupabaseBackend : people, site_stewards
+    KmlImportActions --> KmlParser : parses the KML or KMZ file
+    KmlImportActions --> SupabaseBackend : protected_areas, kml-imports bucket
     GpxTrackActions --> SupabaseBackend : gpx_tracks
     GpxTrackActions --> AwsS3 : reads and deletes GPX files
     GpxPresignRoute --> AwsS3 : presigned PUT
     NewReportPage --> INaturalistApi : reads observations and photos
-    NewReportPage --> ProfileService : reads and saves inat_username
+    NewReportPage --> ProfileRoute : reads and saves inat_username [NEW 4.0.5]
     NewReportPage --> PresignRoute : POST file details
     NewReportPage --> AwsS3 : PUT image
     NewReportPage --> InspectionQueries : saves the SIR
@@ -269,8 +312,10 @@ classDiagram
     SiteImagesRoute --> AwsS3 : presigned GET
     SiteGalleryRoute --> AwsS3 : presigned GET
     HomepageImagesRoute --> AwsS3 : presigned GET
-    ImageDeleteRoute --> SupabaseBackend : attachments, homepage_image_uploads
-    ImageDeleteRoute --> AwsS3 : DeleteObject
+    SiteImagesRoute --> SupabaseBackend : attachments, homepage_image_uploads
+    SiteImagesRoute --> S3Delete : DELETE removes the file
+    S3Delete --> AwsS3 : DeleteObjects
+    HomepagePresignRoute --> AwsS3 : presigned PUT
     PdfRoute --> SupabaseBackend : S26_pdf_jobs
     PdfRoute ..> PdfJobProcessor : after()
     PdfJobProcessor --> AwsS3 : stores PDF
@@ -284,8 +329,9 @@ classDiagram
     HomepageImageActions --> ActivityPointsService : after a successful insert
     HomepageImageActions --> SupabaseBackend : homepage_image_uploads
     ActivityPointsService --> SupabaseBackend : activity_points
-    ProfileService --> ActivityPointsService : points total
+    ProfileRoute --> ActivityPointsService : points total
     SiteSafetyPriorityActions --> SupabaseBackend : site_safety, site_priority
     SiteObservationsPanel --> INaturalistApi : top 5 observations
     PdfJobProcessor --> PdfDataFetcher : reads SIRs
-    InspectionQueries --> AwsS3 : deletes files [NEW 7.0.8]
+    PdfDataFetcher --> InspectionQueries : reads SIRs and attachments
+    InspectionQueries --> S3Delete : rollback deletes files, CHANGE 7.0.8 deleteFormResponse

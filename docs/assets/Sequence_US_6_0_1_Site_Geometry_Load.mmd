@@ -43,42 +43,68 @@ sequenceDiagram
     autonumber off
     actor Admin
     actor Steward
-    participant Loader as Geometry load job<br/>loadGeometriesFromKml (proposed)
-    participant KML as Alberta government KML<br/>(same source as website)
-    participant DB as Supabase DB<br/>sites_pa, kml_sites
+    participant Modal as KmlImportModal<br/>/admin/sites
+    participant Bucket as Supabase Storage<br/>bucket kml-imports
+    participant Loader as Import server action<br/>importProtectedAreasFromStorage<br/>(utils/kml-import-actions.ts)
+    participant DB as Supabase DB<br/>protected_areas
     participant Pages as Map and admin pages
-    participant Geo as /api/geocode route
+    participant Geo as /api/geocode route<br/>(no auth check today)
     participant OC as OpenCage API
 
-    Note over Admin,OC: Covers US 6.0.1. sites_pa has no geometry columns today.<br/>"(proposed)" = the step is not in the code today.<br/>Open question: load the KML into a table or read the file each time. kml_sites is the proposed option.
+    Note over Admin,OC: Covers US 6.0.1. The KML/KMZ import exists (#152). The Admin uploads the SAPAA-Map .kml/.kmz export.<br/>sites_pa has no geometry columns. The boundaries are in protected_areas, keyed by UNIQUE (folder, fid).<br/>"(proposed)" = the step is not in the code today.
 
-    Admin->>Loader: Start geometry load (proposed)
-    Loader->>Loader: Check caller is Admin from a trusted role source, store not decided (proposed)
-    alt Caller is not Admin
-        Loader-->>Admin: Refuse (403). Nothing is loaded
-    else Caller is Admin
-        Loader->>KML: Download KML file
-        KML-->>Loader: Placemarks with boundaries
-        Loader->>DB: Store every placemark in kml_sites:<br/>source_feature_id, name, boundary, loaded_at (proposed)
-        Loader->>DB: Read active sites_pa rows
+    Admin->>Modal: Select "Upload Site Data". Choose the SAPAA-Map .kml/.kmz export
+    Modal->>Modal: Check the file type and the size (50 MB or less)
+    Modal->>Bucket: Upload with the browser Supabase client<br/>to kml-imports/<uploadId>/<file>
+    Note right of Bucket: Storage RLS allows insert, select and delete only when<br/>auth.jwt() app_metadata has role = admin and authenticated = true.
+    alt Upload refused or fails
+        Bucket-->>Modal: Error
+        Modal-->>Admin: Show "The upload failed"
+    else Upload done
+        Bucket-->>Modal: OK
+        Modal->>Loader: importProtectedAreasFromStorage(storagePath)
+        activate Loader
+        Loader->>Loader: isApprovedAdmin() reads app_metadata.role<br/>and app_metadata.authenticated from auth.getUser()
+        alt Caller is not Admin
+            Loader-->>Modal: { success: false, error: "Only admins can import protected areas." }
+        else Path does not match IMPORT_PATH_PATTERN
+            Loader-->>Modal: { success: false, error: "The import path is not valid." }
+        else Caller is Admin and the path is valid
+            Loader->>Bucket: Download the staged file with the service role
+            Bucket-->>Loader: File bytes
+            Loader->>Loader: parseProtectedAreaFile (lib/map/kmlImport.ts).<br/>fid = -1 (NO_FID) when a placemark has no FID
+            loop Each chunk of 50 rows
+                Loader->>DB: Upsert into protected_areas, onConflict folder,fid:<br/>folder, fid, name, area_type, oc_name, geometry (MultiPolygon jsonb),<br/>date_res, area_ha, updated_at
+            end
+            Loader->>Bucket: In a finally block: remove the staged file, then sweepStaleUploads
+            Loader-->>Modal: Report upserted and skipped counts and warnings
+        end
+        deactivate Loader
+        Modal-->>Admin: Show the result or the error
+    end
+
+    %% Not merged. protected_areas.site_id was dropped in 20261006010000, so the match needs a new link column.
+    opt Match each active site to a boundary (proposed, AT 1 to AT 3)
+        Loader->>DB: Read active sites_pa rows (proposed)
         DB-->>Loader: Active sites
         loop Each active site
-            Loader->>Loader: Match site name to a placemark
+            Loader->>Loader: Match site name to a protected_areas row (proposed)
             alt Match is found
-                Loader->>DB: Set source_feature_id, boundary as in the KML,<br/>and centre point (lat, lng) on the site (AT 1, AT 2)
+                Loader->>DB: Store the link in a new link column (proposed, AT 1, AT 2)
             else No match
-                Loader->>Loader: Leave source_feature_id NULL (AT 3)
+                Loader->>Loader: Leave the site with no link (proposed, AT 3)
             end
         end
-        Loader-->>Admin: Report matched and unmatched counts
     end
-    Admin->>Pages: Open unmatched sites list (proposed)
-    Pages->>DB: Read active sites_pa rows<br/>where source_feature_id IS NULL
-    DB-->>Pages: Unmatched sites (the AT 3 list)
-    Pages-->>Admin: Show sites for an Admin to fix
+    opt Open unmatched sites list (proposed)
+        Admin->>Pages: Open unmatched sites list (proposed)
+        Pages->>DB: Read active sites_pa rows with no link (proposed)
+        DB-->>Pages: Unmatched sites (the AT 3 list)
+        Pages-->>Admin: Show sites for an Admin to fix
+    end
 
     opt A site has no point and fallback geocoding is used (AT 4)
-        Pages->>Geo: GET /api/geocode?q=site name (exists)
+        Pages->>Geo: GET /api/geocode?q=site name (exists. Today the only caller is<br/>admin/dashboard/page.tsx, which geocodes every site by name in a loop)
         Geo->>Geo: Look for a cached result for this name (proposed)
         alt Cached result exists
             Geo-->>Pages: lat, lng from the cache. No OpenCage request
@@ -91,17 +117,17 @@ sequenceDiagram
                 alt External API returns a result
                     OC-->>Geo: lat, lng
                     Geo->>Geo: Store the result in the cache (proposed)
-                    Geo-->>Pages: lat, lng
+                    Geo-->>Pages: { latitude, longitude }
                 else External API refuses the request or its quota is exhausted
                     OC-->>Geo: Error or no result
-                    Geo-->>Pages: No result
+                    Geo-->>Pages: { coords: null }
                 end
             end
         end
     end
 
-    Steward->>Pages: Open the map
-    Pages->>DB: Read site boundary and centre point (AT 2)
+    Steward->>Pages: Open the map (proposed)
+    Pages->>DB: Read protected_areas.geometry (proposed). No centre point column now
     DB-->>Pages: Geometry
     Pages-->>Steward: Draw site on the map
 

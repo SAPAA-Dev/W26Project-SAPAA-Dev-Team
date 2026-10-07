@@ -22,7 +22,9 @@
   "scripts": {
     "prepare": "git config core.hooksPath .githooks || true",
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "diagrams": "npm --prefix tools/diagrams ci --silent && npm --prefix tools/diagrams run all --silent",
+    "diagrams:check": "npm --prefix tools/diagrams ci --silent && npm --prefix tools/diagrams run check --silent"
   },
   "devDependencies": {
     "@types/react": "~19.1.10",

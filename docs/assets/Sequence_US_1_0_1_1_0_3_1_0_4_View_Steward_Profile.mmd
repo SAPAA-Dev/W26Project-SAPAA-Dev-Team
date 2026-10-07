@@ -43,70 +43,92 @@ sequenceDiagram
     autonumber off
     actor Steward
     participant Pages as Web pages<br/>HeaderDropdown menu,<br/>/detail/[namesite]
-    participant Profile as Profile page<br/>(Proposed)
-    participant Actions as Server actions<br/>utils/supabase/queries.ts
+    participant Profile as Profile page<br/>/profile, /people/[personId]<br/>components/ProfilePage.tsx
+    participant Actions as API route<br/>GET /api/profile<br/>app/api/profile/route.ts
+    participant StewardActions as Server actions<br/>utils/steward-actions.ts,<br/>utils/supabase/queries.ts
     participant DB as Supabase<br/>PostgreSQL
 
-    Note over Steward,DB: Covers US 1.0.1, 1.0.3 and 1.0.4. No profile page exists in the code. All Profile page steps are Proposed.
+    Note over Steward,DB: Covers US 1.0.1, 1.0.3 and 1.0.4. "(Proposed)" = the step is not in the code on main as of October 7, 2026.
 
     alt Open own profile (1.0.1 AT2)
-        Steward->>Pages: Select "My Profile" in HeaderDropdown (Proposed)
-        Pages->>Profile: Open profile of signed-in user
-    else Open profile from a Site page (1.0.1 AT3)
-        Steward->>Pages: Select the steward on a SIR on /detail/[namesite]
-        Pages->>Profile: Open profile of the SIR user_id (Proposed)
+        Steward->>Pages: Select "My profile" in HeaderDropdown (router.push('/profile'))
+        Pages->>Profile: Open /profile of signed-in user
+    else Open profile from "Submitted by" on a Site page (1.0.1 AT3)
+        Pages->>StewardActions: getPersonByAuthUserId(user_id) in utils/steward-actions.ts<br/>(SubmittedBy.tsx, when the SIR loads)
+        StewardActions-->>Pages: people id and display_name
+        Steward->>Pages: Select "Submitted by" name on a SIR on /detail/[namesite]
+        Pages->>Profile: Open /people/{people.id}
+    else Open profile from "Steward:" on a Site page (1.0.1 AT3)
+        Pages->>StewardActions: getSiteSteward(siteId) in utils/steward-actions.ts<br/>(SiteSteward.tsx, when the page loads)
+        StewardActions-->>Pages: people id and display_name
+        Steward->>Pages: Select the "Steward:" link on /detail/[namesite]
+        Pages->>Profile: Open /people/{people.id}
     end
     activate Profile
 
-    Profile->>Actions: getStewardProfile(userId) (Proposed)
+    Profile->>Actions: fetch GET /api/profile?personId={people.id}<br/>(own profile: no personId, page defaults to 1)
     activate Actions
-    Actions->>Actions: Check session and approved account on server (Proposed)
-    Note right of Actions: Missing today: server actions use<br/>createServerSupabase, which bypasses RLS,<br/>and do no access check.
+    Actions->>Actions: requireUser(): auth.getUser() from session cookie
+    Note right of Actions: Session checked on server. Approval is checked only<br/>in the client ProtectedRoute. Reads then use<br/>createServerSupabase (service role).
 
-    alt No valid session or account not approved
-        Actions-->>Profile: Refuse (401)
-        Profile-->>Steward: Go to /login
+    alt No valid session
+        Actions-->>Profile: 401 'Sign in to view profiles.'
+        Profile-->>Steward: Show error
     else Access allowed
-        Actions->>DB: Read name, contact info, skills, focus areas<br/>from profiles (proposed)
+        Actions->>DB: Read people (display_name, skills, focus_areas) with socials<br/>(email, phone, website, instagram, facebook, x, linkedin)<br/>by id = personId, or by auth_user_id = session user
         activate DB
-        DB-->>Actions: Profile row or no row
+        DB-->>Actions: people row or no row
         deactivate DB
         alt No profile for this user
             Actions-->>Profile: Not found (404)
             Profile-->>Steward: Show "Profile not found"
         else Profile found
-            Actions->>DB: Read active form_responses of user_id<br/>with sites_pa name and inspection_date
+            Note right of Actions: Role read from auth app_metadata.role, display only.<br/>If people.auth_user_id is null, the route returns<br/>zero stats and runs no inspection queries.
+            par SIR history and count (1.0.3 AT1, 1.0.4)
+                Actions->>DB: form_responses (is_active, user_id = people.auth_user_id)<br/>with sites_pa name, count exact, range 10 per page
+            and Distinct sites (1.0.4)
+                Actions->>DB: rpc get_distinct_inspected_site_count(p_user_id)
+            end
             activate DB
-            DB-->>Actions: SIR list (1.0.3 AT1)
+            DB-->>Actions: SIR page, inspectionCount, distinctSiteCount
             deactivate DB
-            Actions->>Actions: Calculate SIR count and activity totals (1.0.4)
-            Actions-->>Profile: Profile, stats and SIR list
+            Actions-->>Profile: profile, isOwner, stats {inspectionCount, distinctSiteCount},<br/>history, pagination
             Profile-->>Steward: Show profile, quick stats and SIR history
         end
     end
     deactivate Actions
+
+    Profile->>StewardActions: getSitesForSteward(people.id)
+    activate StewardActions
+    StewardActions->>DB: site_stewards join sites_pa(namesite) where steward_id
+    activate DB
+    DB-->>StewardActions: Stewarded sites
+    deactivate DB
+    StewardActions-->>Profile: Site list
+    deactivate StewardActions
+    Profile-->>Steward: Show "Steward of" site links
     Note over Profile,DB: Data is read again on each load, with no cache (1.0.1 AT5).<br/>A new SIR adds 1 to the count on next load (1.0.4 AT2).
 
     opt Open a past SIR (1.0.3 AT2, AT3)
         Steward->>Profile: Select a SIR in the history
-        Profile->>Pages: Open /detail/[namesite] at that SIR
-        Pages->>Actions: getFormResponsesBySite(namesite) (exists)
-        activate Actions
-        Actions->>Actions: Same session check as above (Proposed)
-        Actions->>DB: Read form_responses and answers
+        Profile->>Pages: Open /detail/[namesite] of that SIR's site (not scrolled to the SIR)
+        Pages->>StewardActions: getFormResponsesBySite(namesite) in utils/supabase/queries.ts<br/>(exists, no session check today)
+        activate StewardActions
+        StewardActions->>StewardActions: Same session check (Proposed)
+        StewardActions->>DB: Read form_responses and answers
         activate DB
-        DB-->>Actions: SIR answers
+        DB-->>StewardActions: SIR answers
         deactivate DB
-        Actions->>Actions: Remove answers listed in<br/>profile_hidden_questions (Proposed)
-        Actions-->>Pages: Visible answers only
-        deactivate Actions
+        StewardActions->>StewardActions: Remove answers listed in<br/>profile_hidden_questions (Proposed)
+        StewardActions-->>Pages: Visible answers only
+        deactivate StewardActions
         Pages-->>Steward: Show the SIR
     end
 
     opt Go back (1.0.1 AT4)
         Steward->>Profile: Select Back
-        Profile-->>Steward: Open previous page from navStack<br/>(handleBack pattern, NavigationTracker)
+        Profile-->>Steward: Go to previous page: router.back(),<br/>or /sites if there is no history
     end
     deactivate Profile
 
-    Note over Steward,DB: Open questions: which answers count as "activities",<br/>how a steward marks answers as hidden, and whether legacy (inspectheader) SIRs count.
+    Note over Steward,DB: Only active web SIRs (form_responses.is_active) are counted.<br/>Open questions: which answers count as "activities",<br/>and how a steward marks answers as hidden.
