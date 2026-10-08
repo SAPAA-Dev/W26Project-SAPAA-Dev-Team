@@ -38,5 +38,5 @@ nav:
       - Deployment Instructions: 'Deployment-manual.md'
       - Static Analysis: 'sonar-qube.md'
       - Job Documentation: 'job-documentation.md'
-      - Traceability Matrix (Winter 2026): 'traceability-matrix.md'
+      - Traceability Matrix: 'traceability-matrix.md'
       - Winter 2026 Requirements: 'index-WINTER2026.md'

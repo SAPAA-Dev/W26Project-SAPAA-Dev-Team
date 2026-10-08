@@ -26,60 +26,63 @@ Labels used: `security`, `data`, `bug`, `feature`, `mobile`, `infra`, `docs`, `u
 
 Sorted by value. Cut the line wherever your capacity runs out.
 
-| # | Title | Area | Impact | Effort | Value | Blocked by |
-|---|---|---|---|---|---|---|
-| 1 | Stop `/gallery` leaking every user's photos | security | 5 | S | ★★★ | |
-| 2 | Remove committed secrets from docs and tests | security | 4 | S | ★★★ | |
-| 3 | Rotate service role key and remove it from the mobile bundle | security | 5 | S | ★★★ | |
-| 4 | Enforce caller identity on every server action | security | 5 | M | ★★★ | |
-| 5 | Move `role` out of `user_metadata` into `app_metadata` | security | 5 | M | ★★★ | |
-| 6 | Decide the canonical database schema (spike) | data | 5 | S | ★★★ | |
-| 7 | Add real coordinates to sites | data | 5 | M | ★★★ | |
-| 8 | Fix the failing test on main | infra | 2 | S | ★★★ | |
-| 9 | Add `.env.example` and a working setup guide | infra | 3 | S | ★★★ | |
-| 10 | Log every role change | security | 3 | S | ★★★ | 4, 5 |
-| 11 | Stop mobile silently discarding offline edits | mobile | 5 | L | ★★★ | |
-| 12 | Make site search work | bug | 4 | S | ★★★ | |
-| 13 | Key site detail pages by id, not name | bug | 4 | S | ★★★ | |
-| 14 | Instrument the events KPIs are built from | feature | 5 | M | ★★★ | |
-| 15 | Add password reset | feature | 4 | S | ★★★ | |
-| 16 | Show stewards a map | feature | 4 | S | ★★★ | 7 |
-| 17 | Send the approval email the app already promises | bug | 3 | S | ★★★ | |
-| 18 | Cache geocoding results and bound the quota | bug | 3 | S | ★★★ | 7 |
-| 19 | Fix logout | bug | 3 | S | ★★ | |
-| 20 | Paginate the sites list | bug | 3 | S | ★★ | |
-| 21 | Build the user profile page | feature | 4 | M | ★★ | 14 |
-| 22 | Port the KPIs that already exist in the mobile app | feature | 4 | M | ★★ | 14 |
-| 23 | Put the database schema in version control | infra | 4 | M | ★★ | 6 |
-| 24 | Add image deletion and clean up orphaned files | feature | 4 | M | ★★ | |
-| 25 | Stand up a staging environment | infra | 4 | M | ★★ | |
-| 26 | Make CI actually gate merges | infra | 3 | S | ★★ | |
-| 27 | Record inspection edit history | feature | 4 | M | ★★ | |
-| 28 | Prepare for December field testing | infra | 4 | S | ★★ | |
-| 29 | Clean the naturalness data | data | 3 | M | ★★ | |
-| 30 | Add "Compare by Question" to the web app | feature | 4 | M | ★★ | |
-| 31 | Fix login and signup accessibility | ux | 3 | S | ★★ | |
-| 32 | Let stewards export their own PDFs | feature | 3 | S | ★★ | |
-| 33 | Promote or delete the `_test` views | data | 2 | S | ★★ | 6 |
-| 34 | Fix the mobile "Sync Now" button | mobile | 2 | S | ★★ | |
-| 35 | Decide the fate of the Google Sheets pipeline | spike | 3 | S | ★★ | 6 |
-| 36 | Fix the mobile delete-by-index bug | mobile | 4 | S | ★★★ | |
-| 37 | Write a backup and recovery runbook | infra | 3 | S | ★★ | |
-| 38 | Reconcile `luperson` with auth accounts | data | 4 | L | ★★ | 6 |
-| 39 | Unify the two question banks | data | 4 | L | ★★ | 6 |
-| 40 | Add an all-inspections summary view | feature | 3 | M | ★★ | |
-| 41 | Show past inspections while filling a new one | feature | 3 | M | ★★ | |
-| 42 | Support non-public, SAPAA-only answers | feature | 3 | M | ★★ | |
-| 43 | Finish site classification by region and county | feature | 2 | S | ★★ | |
-| 44 | Add photo capture to the mobile app | mobile | 4 | L | ★ | |
-| 45 | Publish the mobile app so volunteers can install it | mobile | 3 | L | ★ | |
-| 46 | Declare and request device permissions | mobile | 2 | S | ★ | 44 |
-| 47 | Show how stale offline data is | mobile | 2 | S | ★ | |
-| 48 | Migrate 40+ years of legacy inspections | data | 5 | XL | ★ | 6, 39 |
-| 49 | Give mobile and web a shared read model | data | 4 | XL | ★ | 6, 48 |
-| 50 | Resolve offline edit conflicts | mobile | 4 | XL | ★ | 11 |
-| 51 | Add offline support to the web app | feature | 3 | XL | ★ | |
-| 52 | Confirm whether duplicate sites exist before building dedupe | spike | 1 | S | ★ | |
+**Status** is as of October 7, 2026. It was checked against the pull requests merged into `main`
+up to #155. "Open" means that no merged pull request resolves the item.
+
+| # | Title | Area | Impact | Effort | Value | Blocked by | Status |
+|---|---|---|---|---|---|---|---|
+| 1 | Stop `/gallery` leaking every user's photos | security | 5 | S | ★★★ | | Open |
+| 2 | Remove committed secrets from docs and tests | security | 4 | S | ★★★ | | Open. See the note in item 2 |
+| 3 | Rotate service role key and remove it from the mobile bundle | security | 5 | S | ★★★ | | Open |
+| 4 | Enforce caller identity on every server action | security | 5 | M | ★★★ | | Partly done (#144). Remaining: `queries.ts` write actions |
+| 5 | Move `role` out of `user_metadata` into `app_metadata` | security | 5 | M | ★★★ | | Done: PR #144 (closes #71) |
+| 6 | Decide the canonical database schema (spike) | data | 5 | S | ★★★ | | Open |
+| 7 | Add real coordinates to sites | data | 5 | M | ★★★ | | In progress (#132, #152). Sites still have no coordinates |
+| 8 | Fix the failing test on main | infra | 2 | S | ★★★ | | Open |
+| 9 | Add `.env.example` and a working setup guide | infra | 3 | S | ★★★ | | Open |
+| 10 | Log every role change | security | 3 | S | ★★★ | 4, 5 | Open |
+| 11 | Stop mobile silently discarding offline edits | mobile | 5 | L | ★★★ | | Open |
+| 12 | Make site search work | bug | 4 | S | ★★★ | | Open |
+| 13 | Key site detail pages by id, not name | bug | 4 | S | ★★★ | | Open |
+| 14 | Instrument the events KPIs are built from | feature | 5 | M | ★★★ | | Open |
+| 15 | Add password reset | feature | 4 | S | ★★★ | | Open |
+| 16 | Show stewards a map | feature | 4 | S | ★★★ | 7 | Open. US 2.0.6 (#60) is open |
+| 17 | Send the approval email the app already promises | bug | 3 | S | ★★★ | | Open |
+| 18 | Cache geocoding results and bound the quota | bug | 3 | S | ★★★ | 7 | Open |
+| 19 | Fix logout | bug | 3 | S | ★★ | | Done: PR #120 (closes #94). US 5.0.4 (#64) closed |
+| 20 | Paginate the sites list | bug | 3 | S | ★★ | | Open |
+| 21 | Build the user profile page | feature | 4 | M | ★★ | | Done: #138, #140, #141, #142. US 1.0.1 (#54) closed |
+| 22 | Port the KPIs that already exist in the mobile app | feature | 4 | M | ★★ | 14 | Open |
+| 23 | Put the database schema in version control | infra | 4 | M | ★★ | 6 | Partly done. 10 migrations in `webapp/supabase/migrations/` |
+| 24 | Add image deletion and clean up orphaned files | feature | 4 | M | ★★ | | Done: PR #148 (closes #65, US 7.0.5) |
+| 25 | Stand up a staging environment | infra | 4 | M | ★★ | | Open |
+| 26 | Make CI actually gate merges | infra | 3 | S | ★★ | | Partly done (#124, #125). Lint and build steps missing |
+| 27 | Record inspection edit history | feature | 4 | M | ★★ | | Open |
+| 28 | Prepare for December field testing | infra | 4 | S | ★★ | | Open |
+| 29 | Clean the naturalness data | data | 3 | M | ★★ | | Open |
+| 30 | Add "Compare by Question" to the web app | feature | 4 | M | ★★ | | Open |
+| 31 | Fix login and signup accessibility | ux | 3 | S | ★★ | | Open |
+| 32 | Let stewards export their own PDFs | feature | 3 | S | ★★ | | Done: PR #155 (closes #68, US 7.0.1) |
+| 33 | Promote or delete the `_test` views | data | 2 | S | ★★ | 6 | Open |
+| 34 | Fix the mobile "Sync Now" button | mobile | 2 | S | ★★ | | Open |
+| 35 | Decide the fate of the Google Sheets pipeline | spike | 3 | S | ★★ | 6 | Decided. Apps Script removed from the repository (#118) |
+| 36 | Fix the mobile delete-by-index bug | mobile | 4 | S | ★★★ | | Open |
+| 37 | Write a backup and recovery runbook | infra | 3 | S | ★★ | | Open |
+| 38 | Reconcile `luperson` with auth accounts | data | 4 | L | ★★ | 6 | Open |
+| 39 | Unify the two question banks | data | 4 | L | ★★ | 6 | Open |
+| 40 | Add an all-inspections summary view | feature | 3 | M | ★★ | | Open |
+| 41 | Show past inspections while filling a new one | feature | 3 | M | ★★ | | Open |
+| 42 | Support non-public, SAPAA-only answers | feature | 3 | M | ★★ | | Partly done (#146). Export-time hiding only |
+| 43 | Finish site classification by region and county | feature | 2 | S | ★★ | | Open |
+| 44 | Add photo capture to the mobile app | mobile | 4 | L | ★ | | Open |
+| 45 | Publish the mobile app so volunteers can install it | mobile | 3 | L | ★ | | Open |
+| 46 | Declare and request device permissions | mobile | 2 | S | ★ | 44 | Open |
+| 47 | Show how stale offline data is | mobile | 2 | S | ★ | | Open |
+| 48 | Migrate 40+ years of legacy inspections | data | 5 | XL | ★ | 6, 39 | Open |
+| 49 | Give mobile and web a shared read model | data | 4 | XL | ★ | 6, 48 | Open |
+| 50 | Resolve offline edit conflicts | mobile | 4 | XL | ★ | 11 | Open |
+| 51 | Add offline support to the web app | feature | 3 | XL | ★ | | Open |
+| 52 | Confirm whether duplicate sites exist before building dedupe | spike | 1 | S | ★ | | Open |
 
 ## Where these items are in the user stories
 
@@ -89,7 +92,7 @@ uses the current story set (35 stories). "none" means that no current story cove
 
 | # | User story | MoSCoW | Points | Link |
 |---|---|---|---|---|
-| 4, 5 | none | - | - | The security stories were removed on September 25, 2026. The work is the Sprint 2 task #71 |
+| 4, 5 | none | - | - | The security stories were removed on September 25, 2026. Sprint 2 task #71 was closed by PR #144. Item 5 is done. Item 4 is only partly done |
 | 9 | none | - | - | - |
 | 11 | none | - | - | - |
 | 13 | none | - | - | - |
@@ -97,8 +100,8 @@ uses the current story set (35 stories). "none" means that no current story cove
 | 15 | US 5.0.2 Reset a Forgotten Password | Must | 2 | Same feature |
 | 16 | US 2.0.1 View Sites and Past Visits on an Interactive Map | Should | 8 | Same feature |
 | 18 | US 6.0.1 Store Each Site's Geometry From the Shared Source | Must | 5 | Its AT4 caches geocoding under the OpenCage limit |
-| 21 | US 1.0.1 Add User Profiles | Must | 5 | Same feature |
-| 24 | US 7.0.5 Delete an Image and Clean Up After It | Should | 5 | Same feature |
+| 21 | US 1.0.1 Add User Profiles | Must | 5 | Same feature. Done (#54 closed) |
+| 24 | US 7.0.5 Delete an Image and Clean Up After It | Should | 5 | Same feature. Done (#65 closed by PR #148) |
 | 35 | none | - | - | Decided, see item 35 |
 | 42 | US 7.0.7 Hide Fields on a SIR Before Export | Must | 5 | Related: both keep answers out of a published SIR |
 | 43 | none | - | - | - |
@@ -140,6 +143,11 @@ Real account passwords appear in roughly 15 Cypress specs. The Supabase key is p
 into `docs/webapp-deployment.md`, which GitHub Actions publishes to a public GitHub Pages site.
 An OpenCage API key is hardcoded in `FNR/src/services/openCage.ts`.
 
+Status as of October 7, 2026: open. The file was moved to `internal/webapp-deployment.md`, which
+MkDocs does not publish, but the key is still in it 4 times. The Cypress specs still type literal
+passwords (for example `webapp/cypress/e2e/add_form_editor.cy.ts:29`). The OpenCage key is still
+in `FNR/src/services/openCage.ts:3`.
+
 Fix: move all of these to environment variables, scrub the docs, and rotate anything that was
 public. Acceptance: no credential appears in a grep of the repo or the published docs site.
 
@@ -169,6 +177,15 @@ database, refuse if they are not permitted, and only then use the service role c
 Acceptance: calling a privileged action as a steward, outside the UI, is refused. See issue #5,
 these two belong together. No current user story covers this item. The work is the Sprint 2 task #71.
 
+Status as of October 7, 2026: partly done (#144). Six `'use server'` files now exist:
+`webapp/utils/admin-actions.ts`, `webapp/utils/form-actions.ts`,
+`webapp/utils/kml-import-actions.ts`, `webapp/utils/steward-actions.ts`,
+`webapp/utils/supabase/queries.ts` and `webapp/app/login/actions.ts`. `updateUser`, `addUser`,
+`deleteUser` and `getAllUsers` now refuse a caller who is not an approved admin. Remaining: the
+service-role write actions in `queries.ts` still have no caller check, for example
+`rollbackSiteInspectionSubmission`, `uploadSiteInspectionAnswers` and
+`updateSiteInspectionAnswers`.
+
 #### 5. Move `role` out of `user_metadata` into `app_metadata`
 `Labels: security, data`
 
@@ -180,10 +197,16 @@ Fix: store the role and the approval flag in `app_metadata`, which only the serv
 write, and read them from `app_metadata` in every permission check. Acceptance: a user cannot
 change their own role by any route, including the auth API directly.
 
+Status: done. PR #144 (closes #71). All role and approval checks now read `app_metadata`
+(`isApprovedAdmin` in `admin-actions.ts`, `requireApprovedAdmin` in `queries.ts` and
+`form-actions.ts`, `steward-actions.ts`, and `webapp/app/api/pdf/route.ts`). The web app reads
+`user_metadata` only for `full_name`, `avatar_url` and `phone`.
+
 #### 6. Decide the canonical database schema
 `Labels: spike, data`
 
-The web app reads and writes `W26_*` tables. The mobile app and the Google Sheet read and write
+The web app reads and writes `sites_pa`, `form_responses`, `answers`, `questions` and the other
+tables in `webapp/supabase/migrations/` (the `W26_` prefix was removed by #129, task #73). The mobile app and the Google Sheet read and write
 legacy `inspectheader`, `inspectdetails`, `inspectquestions` and `luperson`. The only shared table
 is `luperson`. So a web inspection does not exist for mobile, the question bank is duplicated, and
 40 years of history is invisible to the web app.
@@ -201,6 +224,13 @@ Sites have no latitude or longitude columns anywhere. The existing heatmap geoco
 This blocks every map user story in the backlog. Fix: add coordinate columns, populate them, and
 read from them instead of geocoding at runtime. Acceptance: the map renders from stored
 coordinates with no external geocoding call on page load.
+
+Progress as of October 7, 2026: `protected_areas` (#132) stores the KML/KMZ geometry. Admins
+import it with `importProtectedAreasFromStorage` (#152), which parses the file with
+`webapp/lib/map/kmlImport.ts`. #152 replaced the parser from #137. But
+`20261006010000_alter_protected_areas_for_kml_import.sql` dropped the `site_id` link, so
+`sites_pa` still has no coordinates. The admin dashboard still geocodes each site by name
+(`webapp/app/admin/dashboard/page.tsx`).
 
 #### 8. Fix the failing test on main
 `Labels: bug, infra`
@@ -266,6 +296,9 @@ The web dashboard map and heat map are admin only, under
 users map and analytics tabs. The gap is web specific, so the story should say so or define what
 is actually missing. Depends on issue 7.
 
+Progress as of October 7, 2026: the web map is still admin only. The Sprint 2 map story
+(US 2.0.6, #60) is still open. See the progress note in item 7.
+
 #### 17. Send the approval email the app already promises
 `Labels: bug`
 
@@ -286,12 +319,20 @@ Both apps already expose logout controls beyond the home page and call Supabase 
 defect remains it is session restoration or reaching pages with the back button after logging out.
 Specify and test that behaviour rather than treating logout as missing. US 5.0.4 (Sprint 2, issue #94) now covers this. `Labels: bug`
 
+Status: done. #94 was closed by PR #120, which added the admin navigation bar to the admin site
+details page, so sign-out can be reached there. US 5.0.4 (#64) is closed.
+
 #### 20. Paginate the sites list
 `/sites` fetches every site and filters and sorts client side in a `useMemo`. `Labels: bug`
 
 #### 21. Build the user profile page
 `full_name`, `avatar_url` and `phone` are read in four places and written in zero, so half the data
 model is already there. Needs issue 14 for the stats. `Labels: feature`
+
+Status: done. #138, #140, #141 and #142 built the profile page. US 1.0.1 (#54) is closed. It does
+not need issue 14: the stats are calculated from `form_responses`. The profile data is in `people`
+and `socials`, not in `user_metadata`. See [User Model](user-model.md). US 1.0.2 (#55) is closed
+by PR #151.
 
 #### 22. Port the KPIs that already exist in the mobile app
 The mobile app already computes total sites inspected, naturalness distribution, top five sites,
@@ -303,9 +344,19 @@ There are zero `.sql` files in the repo and no migrations directory. Two databas
 dashboard depends on exist only inside Supabase. The deployment manual says to contact the
 development team for the schema. `Labels: infra, data`
 
+Status as of October 7, 2026: partly done. `webapp/supabase/migrations/` has 10 migrations.
+`get_naturalness_distribution` and `get_top_sites_distribution` are defined in
+`20260925000000_local_app_schema.sql` and recreated in `20261003000000_remove_w26_prefix.sql`.
+Remaining: the production columns of the legacy tables are not in the repository (for example, the
+local `luperson` has only `id` and `email`).
+
 #### 24. Add image deletion and clean up orphaned files
 Nothing in the codebase can delete an image. Deleting a report leaves its files in storage
 permanently, against a storage budget the client capped at CAD $50. `Labels: feature`
+
+Status: done. PR #148 (closes #65, US 7.0.5). `DELETE /api/site-images` deletes an image row and
+calls `deleteObjectsByKeys` (`webapp/utils/media/s3Delete.ts`). `rollbackSiteInspectionSubmission`
+now deletes the S3 objects of the report. See [API Documentation](api-documentation.md).
 
 #### 25. Stand up a staging environment
 Deliberately left for this team by the client. Also covers the obligation to push approved work to
@@ -316,6 +367,12 @@ Only the webapp test job runs on pull requests. Lint and build checks are absent
 runs on pushes to main only and invokes `/home/ubuntu/deploy/docker-compose.yml`, which lives
 outside the repo, while the deployment manual says no CI is needed. The workflow also still
 triggers on `Sprint-2` through `Sprint-5`, which do not exist on origin. `Labels: infra`
+
+Status as of October 7, 2026: partly done. `.github/workflows/ci.yaml` runs `webapp-tests`,
+`docs-build` and `hook-tests` on every push. `pr-checks.yaml` runs `conventions` and `pr-size`.
+`reviewer-gate.yaml` runs `reviewers` (#124, #125). The rulesets for `main` and `release` require
+`webapp-tests`, `docs-build`, `hook-tests`, `conventions` and `reviewers`. There is no deploy job
+and no `Sprint-N` trigger. Remaining: lint and build steps (`webapp-tests` only runs `npm test`).
 
 #### 27. Record inspection edit history
 Editing an inspection deletes the old answers and inserts new ones with no record of what changed.
@@ -343,6 +400,9 @@ user base is explicitly older and less technical. `Labels: ux`
 #### 32. Let stewards export their own PDFs
 PDF export is admin only today. `Labels: feature`
 
+Status as of October 7, 2026: done. PR #155 merged and closed US 7.0.1 (#68). A steward can
+export a PDF of a SIR that they submitted. `POST /api/pdf` returns 403 for a SIR of another person.
+
 #### 33. Promote or delete the `_test` views
 `sites_detail_fnr_test`, `sites_report_fnr_test`, `inspectheader_fnr_test` and `luperson_fnr_test`
 are in the production read path of one or both apps. `Labels: data`
@@ -358,6 +418,9 @@ not store primary data. Okay. In no way, shape, or form." (D01).
 the sheet, it generates primary keys with max id plus one, and it writes in two steps with a best
 effort undo. Whichever schema wins in issue 6 decides whether it keeps working at all.
 `Labels: spike, data`
+
+The Apps Script source was removed from the repository in #118. Check whether the deployed script
+still runs against production.
 
 #### 36. Fix the mobile delete-by-index bug
 `AdminSiteDetailScreen.tsx` passes the temporary list index where the real key belongs, so deleting
@@ -376,6 +439,9 @@ the two halves of the system. This is also the documented cause of Google sign i
 producing different user records. Needs an invite or claim flow, detection of people with no login
 and logins with no person, and duplicate merging. `Labels: data, feature`
 
+The user model (#116, #131) keeps `luperson` unlinked. `people` is now the auth-linked person
+table. See [User Model](user-model.md).
+
 #### 39. Unify the two question banks
 One definition of the inspection form instead of two. Question numbers must be preserved because
 the legacy data is keyed on them. `Labels: data`
@@ -389,6 +455,10 @@ Same source, never built. `Labels: feature`
 #### 42. Support non-public, SAPAA-only answers
 Sensitive answers that must not appear in public views or in the generated PDF. Specified by the
 Winter team as US 1.0.23 and dropped. `Labels: feature`
+
+Status as of October 7, 2026: partly done by #146. An admin can hide questions at export time
+(`hiddenQuestionIds` on `POST /api/pdf`). Answers are not stored as non-public. US 7.0.7 (#67) and
+task #91 are still open on GitHub.
 
 #### 43. Finish site classification by region and county
 A counties table already exists, so this is finishing rather than building. `Labels: feature`
