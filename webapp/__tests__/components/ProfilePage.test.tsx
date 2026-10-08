@@ -6,7 +6,10 @@ jest.mock('@/utils/steward-actions', () => ({ getSitesForSteward: jest.fn() }));
 const getSitesForStewardMock = getSitesForSteward as jest.Mock;
 
 const routerMock = { back: jest.fn(), push: jest.fn() };
-jest.mock('next/navigation', () => ({ useRouter: () => routerMock }));
+jest.mock('next/navigation', () => ({ useRouter: () => routerMock, usePathname: () => '/profile' }));
+jest.mock('@/utils/supabase/client', () => ({
+  createClient: () => ({ auth: { getSession: async () => ({ data: { session: null } }) } }),
+}));
 
 const profilePayload = {
   profile: {
@@ -150,5 +153,10 @@ describe('ProfilePage', () => {
       socials: { email: 'jamie@example.com', phone: '', website: '', instagram: '', facebook: '', x: '', linkedin: '' },
     });
     expect(body).not.toHaveProperty('role');
+  });
+  it('has the user menu with sign-out in the header (5.0.4 AT3)', async () => {
+    render(<ProfilePage />);
+    fireEvent.click(await screen.findByTitle('Open menu'));
+    expect(screen.getByText('Logout')).toBeInTheDocument();
   });
 });

@@ -15,6 +15,7 @@ import {
   List
 } from "lucide-react";
 import Image from "next/image";
+import UserNavBar from "@/components/HeaderDropdown";
 import MainContent from "./MainContent";
 import StickyFooter from "./Footer";
 
@@ -783,6 +784,7 @@ export default function NewReportPage() {
       {/* --- CONSOLIDATED HEADER --- */}
       <header className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-4 sm:px-6 py-4 shadow-lg">
         <div className="max-w-7xl mx-auto">
+          <div className="float-right -mt-4"><UserNavBar /></div>
 
         <button
           type="button"

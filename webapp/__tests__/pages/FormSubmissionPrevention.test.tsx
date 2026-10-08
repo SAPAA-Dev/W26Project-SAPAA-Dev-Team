@@ -7,6 +7,7 @@ import NewReportPage from '../../app/detail/[namesite]/new-report/page';
 const mockPush = jest.fn();
 const mockBack = jest.fn();
 
+jest.mock('@/components/HeaderDropdown', () => () => null);
 jest.mock('next/navigation', () => ({
   useParams: () => ({ namesite: 'Test%20Site' }),
   useRouter: () => ({ push: mockPush, back: mockBack }),

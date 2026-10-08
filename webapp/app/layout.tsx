@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import NavigationTracker from '../components/NavigationTracker'
 import PdfJobWatcher from '../components/PdfJobWatcher'
+import SignedOutGuard from '../components/SignedOutGuard'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -34,6 +35,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <NavigationTracker />
+        <SignedOutGuard />
         <PdfJobWatcher />
         {children}
       </body>

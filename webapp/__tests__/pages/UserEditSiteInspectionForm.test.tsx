@@ -5,6 +5,7 @@ import * as queries from '@/utils/supabase/queries';
 import { devNull } from 'os';
 
 // - Navigation
+jest.mock('@/components/HeaderDropdown', () => () => null);
 jest.mock('next/navigation', () => ({
   useParams: jest.fn(() => ({ namesite: 'Test%20Site', responseId: '42' })),
   useRouter: jest.fn(() => ({ push: jest.fn(), back: jest.fn() })),

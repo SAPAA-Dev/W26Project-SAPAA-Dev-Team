@@ -6,6 +6,7 @@ import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { Check, ClipboardList, Leaf, Loader2, MapPin, Pencil, Save, UserCheck, UserRound } from 'lucide-react';
 import { getSitesForSteward, StewardedSite } from '@/utils/steward-actions';
 import { SOCIAL_FIELDS, SocialKey, Socials, socialHref } from '@/lib/socials';
+import UserNavBar from '@/components/HeaderDropdown';
 
 type ProfileData = {
   profile: {
@@ -137,7 +138,7 @@ export default function ProfilePage({ personId }: { personId?: string }) {
   const { profile, stats, history, pagination } = data;
   return (
     <main className="min-h-screen bg-[#F7F2EA] text-[#1E2520]">
-      <header className="bg-gradient-to-r from-[#254431] to-[#356B43] px-6 py-5 text-white"><div className="mx-auto flex max-w-5xl items-center justify-between"><button type="button" onClick={() => (window.history.length > 1 ? router.back() : router.push('/sites'))} className="text-sm font-semibold hover:underline">← Back</button><Link href="/profile" className="text-sm font-semibold hover:underline">My profile</Link></div></header>
+      <header className="bg-gradient-to-r from-[#254431] to-[#356B43] px-6 py-5 text-white"><div className="mx-auto flex max-w-5xl items-center justify-between"><button type="button" onClick={() => (window.history.length > 1 ? router.back() : router.push('/sites'))} className="text-sm font-semibold hover:underline">← Back</button><div className="flex items-center gap-4"><Link href="/profile" className="text-sm font-semibold hover:underline">My profile</Link><div className="-mt-4"><UserNavBar /></div></div></div></header>
       <div className="mx-auto max-w-5xl px-6 py-10">
         <section className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">

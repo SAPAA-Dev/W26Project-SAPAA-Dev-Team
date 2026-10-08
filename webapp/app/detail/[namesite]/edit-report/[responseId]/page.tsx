@@ -16,6 +16,7 @@ import { createClient } from '@/utils/supabase/client';
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, AlertCircle, Pencil } from "lucide-react";
+import UserNavBar from "@/components/HeaderDropdown";
 import Image from "next/image";
 import MainContent, { ExistingAttachment, LocalImage } from "../../new-report/MainContent";
 import StickyFooter from "../../new-report/Footer";
@@ -589,6 +590,7 @@ export default function EditReportPage() {
             {/* --- CONSOLIDATED HEADER --- */}
             <header className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-4 sm:px-6 py-4 shadow-lg">
         <div className="max-w-7xl mx-auto">
+          <div className="float-right -mt-4"><UserNavBar /></div>
 
         <button
           onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
