@@ -10,10 +10,14 @@ const LOCAL_ENDPOINT = 'http://s3.localhost.localstack.cloud:4566';
 const READY_TIMEOUT_MS = 180000;
 const READY_POLL_MS = 5000;
 
+const isWindows = process.platform === 'win32';
+
 function findLstkCli() {
+  // On Windows the executable has an extension (.exe, or .cmd/.bat for npm installs).
+  const names = isWindows ? ['lstk.exe', 'lstk.cmd', 'lstk.bat'] : ['lstk'];
   const found = (process.env.PATH || '')
     .split(path.delimiter)
-    .map((directory) => path.join(directory, 'lstk'))
+    .flatMap((directory) => names.map((name) => path.join(directory, name)))
     .find((candidate) => existsSync(candidate));
   if (found) {
     return found;
@@ -25,9 +29,18 @@ function findLstkCli() {
   process.exit(1);
 }
 
+// .cmd/.bat files can only be run through a shell on Windows. The path is
+// quoted because it may contain spaces. macOS/Linux behave exactly as before.
+function runLstk(cli, args, options = {}) {
+  if (isWindows) {
+    return execFileSync(`"${cli}"`, args, { ...options, shell: true });
+  }
+  return execFileSync(cli, args, options);
+}
+
 function isRunning(cli) {
   try {
-    const output = execFileSync(cli, ['status', '--json'], { encoding: 'utf8' });
+    const output = runLstk(cli, ['status', '--json'], { encoding: 'utf8' });
     const status = JSON.parse(output);
     return (status.data?.emulators ?? []).some((emulator) => emulator.running);
   } catch {
@@ -41,8 +54,9 @@ function ensureContainer(cli) {
   }
   console.log('Starting LocalStack for local S3...');
   try {
-    execFileSync(cli, ['start', '--non-interactive'], { stdio: 'inherit' });
+    runLstk(cli, ['start', '--non-interactive'], { stdio: 'inherit' });
   } catch (error) {
+    console.error(error.message);
     console.error('Could not start LocalStack. Is Docker running, and are you logged in (`lstk login`)?');
     process.exit(error.status || 1);
   }

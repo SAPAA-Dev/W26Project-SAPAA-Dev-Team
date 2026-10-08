@@ -8,6 +8,8 @@ const config: Config = {
     '^.+\\.tsx?$': 'ts-jest',               // <-- transform TS/TSX files
   },
   moduleNameMapper: {
+    // Must precede the '@/' catch-all. The real module uses import.meta, which CommonJS rejects.
+    '^@/components/map/enableMapLibreWorker$': '<rootDir>/__mocks__/enableMapLibreWorker.ts',
     '^@/(.*)$': '<rootDir>/$1',             // map @/ imports to root
     '\\.(css|scss|sass)$': 'identity-obj-proxy', // optional for CSS modules
     '\\.(jpg|jpeg|png|gif|svg)$': '<rootDir>/__mocks__/fileMock.ts',

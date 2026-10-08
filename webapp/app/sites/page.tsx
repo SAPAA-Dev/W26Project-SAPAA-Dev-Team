@@ -6,7 +6,7 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSitesOnline, getTotalInspectionCount, SiteSummary } from '@/utils/supabase/queries';
-import { Award, Search, MapPin, Calendar, Home, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock } from 'lucide-react';
+import { Award, Search, MapPin, Calendar, Home, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, LayoutGrid, Map as MapIcon } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import Image from 'next/image';
 import { Suspense } from "react";
@@ -22,7 +22,12 @@ import { siteDetailSteps } from '@/components/TutorialOverlay';
 
 const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
+// MapLibre needs the browser, so the map must never render on the server.
+const SiteMap = dynamic(() => import('@/components/map/SiteMap'), { ssr: false });
+
 type UnifiedSite = SiteSummary;
+
+type ViewMode = 'cards' | 'map';
 
 const MSEC_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -100,7 +105,8 @@ export default function HomeClient() {
   const [totalResponses, setTotalResponses] = useState<number>(0);
   const [menuOpen, setMenuOpen] = useState(false); 
   const [activeTooltip, setActiveTooltip] = useState<number | null>(null);
-  
+  const [viewMode, setViewMode] = useState<ViewMode>('cards');
+
   const [forceTutorial, setForceTutorial] = useState(false);
 
   const handleStartTutorial = useCallback(() => {
@@ -372,7 +378,8 @@ export default function HomeClient() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Search and Sort */}
         <div className="mb-6 space-y-4">
-         <div id="tutorial-search" className="relative">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div id="tutorial-search" className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A8075]" />
             <input
               type="text"
@@ -380,6 +387,36 @@ export default function HomeClient() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"            />
+          </div>
+
+            <div className="flex gap-1.5 sm:shrink-0" role="group" aria-label="View mode">
+              <button
+                type="button"
+                onClick={() => setViewMode('cards')}
+                aria-pressed={viewMode === 'cards'}
+                className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-3 sm:py-4 rounded-xl font-semibold text-sm transition-all border-2 ${
+                  viewMode === 'cards'
+                    ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white shadow-md border-[#254431]'
+                    : 'bg-white text-[#7A8075] hover:bg-[#F7F2EA] border-[#E4EBE4]'
+                }`}
+              >
+                <LayoutGrid className="w-5 h-5" />
+                Cards View
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('map')}
+                aria-pressed={viewMode === 'map'}
+                className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-3 sm:py-4 rounded-xl font-semibold text-sm transition-all border-2 ${
+                  viewMode === 'map'
+                    ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white shadow-md border-[#254431]'
+                    : 'bg-white text-[#7A8075] hover:bg-[#F7F2EA] border-[#E4EBE4]'
+                }`}
+              >
+                <MapIcon className="w-5 h-5" />
+                Map View
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center justify-between">
@@ -439,6 +476,9 @@ export default function HomeClient() {
         </div>
 
         {/* Sites Grid */}
+        {viewMode === 'map' ? (
+          <SiteMap />
+        ) : (
         <div id="tutorial-site-list">
         {filteredSites.length === 0 ? (
           <div className="text-center py-16">
@@ -513,6 +553,7 @@ export default function HomeClient() {
           </div>
         )}
         </div>
+        )}
       </div>
     </div>
     </ProtectedRoute>

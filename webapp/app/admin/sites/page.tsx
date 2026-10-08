@@ -3,10 +3,11 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAllSites, getCounties, updateSite, toggleSiteActive, createSite, getTotalInspectionCount, SiteSummary, County } from '@/utils/supabase/queries';
-import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, Pencil, ArrowLeft, Download, Plus, Upload } from 'lucide-react';
+import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, Pencil, ArrowLeft, Download, Plus, Upload, LayoutGrid, Map as MapIcon } from 'lucide-react';
 import EditSiteModal from './components/EditSiteModal';
 import AddSiteModal from './components/AddSiteModal';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import AdminNavBar from '../AdminNavBar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PdfExportModal from '@/components/PdfExportModal';
@@ -14,6 +15,11 @@ import PdfExportsDropdown from '@/components/PdfExportsDropdown';
 import KmlImportModal from '@/components/KmlImportModal';
 
 type UnifiedSite = SiteSummary;
+
+type ViewMode = 'cards' | 'map';
+
+// MapLibre needs the browser, so the map must never render on the server.
+const SiteMap = dynamic(() => import('@/components/map/SiteMap'), { ssr: false });
 
 const MSEC_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -64,6 +70,7 @@ export default function AdminSitesPage() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState<number | null>(null);
   const [showExportsDropdown, setShowExportsDropdown] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('cards');
 
   useEffect(() => {
     getTotalInspectionCount().then(setTotalResponses).catch(() => {});
@@ -368,15 +375,45 @@ export default function AdminSitesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           {/* Search and Sort */}
           <div className="mb-6 space-y-4">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A8075]" />
-              <input
-                type="text"
-                placeholder="Search by site name or county..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"
-              />
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A8075]" />
+                <input
+                  type="text"
+                  placeholder="Search by site name or county..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"
+                />
+              </div>
+              <div className="flex gap-1.5 sm:shrink-0" role="group" aria-label="View mode">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('cards')}
+                  aria-pressed={viewMode === 'cards'}
+                  className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-3 sm:py-4 rounded-xl font-semibold text-sm transition-all border-2 ${
+                    viewMode === 'cards'
+                      ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white shadow-md border-[#254431]'
+                      : 'bg-white text-[#7A8075] hover:bg-[#F7F2EA] border-[#E4EBE4]'
+                  }`}
+                >
+                  <LayoutGrid className="w-5 h-5" />
+                  Cards View
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('map')}
+                  aria-pressed={viewMode === 'map'}
+                  className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-3 sm:py-4 rounded-xl font-semibold text-sm transition-all border-2 ${
+                    viewMode === 'map'
+                      ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white shadow-md border-[#254431]'
+                      : 'bg-white text-[#7A8075] hover:bg-[#F7F2EA] border-[#E4EBE4]'
+                  }`}
+                >
+                  <MapIcon className="w-5 h-5" />
+                  Map View
+                </button>
+              </div>
             </div>
             
             <div className="flex items-center justify-between gap-2">
@@ -464,6 +501,10 @@ export default function AdminSitesPage() {
 
 
           {/* Sites Grid */}
+          {viewMode === 'map' ? (
+            <SiteMap />
+          ) : (
+            <>
           {filteredSites.length === 0 ? (
             <div className="text-center py-16">
               <div className="w-20 h-20 bg-[#E4EBE4] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -582,6 +623,8 @@ export default function AdminSitesPage() {
                 );
               })}
             </div>
+          )}
+            </>
           )}
         </div>
       </div>
