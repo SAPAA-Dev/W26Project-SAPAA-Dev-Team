@@ -36,10 +36,16 @@ describe('SiteLinks', () => {
     }
   });
 
-  it('shows "Not available" when a link is missing', () => {
+  it('leaves out a link that is missing or hidden', () => {
     render(<SiteLinks sapaaWebsiteUrl={null} iNaturalistUrl={iNaturalistUrl} />);
 
-    expect(screen.getByText('Not available')).toBeInTheDocument();
+    expect(screen.queryByText(/SAPAA website/)).not.toBeInTheDocument();
     expect(screen.getAllByRole('link')).toHaveLength(1);
+  });
+
+  it('renders nothing when no link is shown', () => {
+    const { container } = render(<SiteLinks sapaaWebsiteUrl={null} iNaturalistUrl={null} />);
+
+    expect(container).toBeEmptyDOMElement();
   });
 });

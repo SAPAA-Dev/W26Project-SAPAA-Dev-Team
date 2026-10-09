@@ -220,6 +220,15 @@ erDiagram
         timestamptz updated_at
     }
 
+    site_page_fields["WEB site_page_fields"] {
+        bigint site_id PK, FK
+        text field_key PK
+        text value
+        boolean is_visible
+        uuid updated_by FK
+        timestamptz updated_at
+    }
+
     ab_counties |o--o{ sites_pa : "ab_county"
     question_keys |o--o{ questions : "question_key_id"
     form_sections ||--o{ questions : "section_id"
@@ -239,8 +248,10 @@ erDiagram
     people ||--o{ site_stewards : "steward_id"
     auth_users |o--o{ site_stewards : "assigned_by"
     people ||--o| socials : "person_id"
+    sites_pa ||--o| site_page_fields : "site_id"
+    auth_users |o--o{ site_page_fields : "updated_by"
 
-    class ab_counties,sites_pa,form_sections,question_keys,questions,question_options,form_responses,answers,attachments,homepage_image_uploads,S26_pdf_jobs,people,site_stewards,protected_areas,socials web
+    class ab_counties,sites_pa,form_sections,question_keys,questions,question_options,form_responses,answers,attachments,homepage_image_uploads,S26_pdf_jobs,people,site_stewards,protected_areas,socials,site_page_fields web
     class luperson shared
     %% END GENERATED: er
 

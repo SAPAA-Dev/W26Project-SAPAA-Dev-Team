@@ -6,7 +6,9 @@ import {
   getFormResponsesBySite,
   getSiteByName,
   getSiteLinks,
+  getSitePageFields,
   SiteLinks as SiteLinksData,
+  SitePageFieldValue,
   SiteSummary,
   FormResponse,
   FormAnswer,
@@ -40,6 +42,7 @@ import { createClient } from '@/utils/supabase/client';
 import UserNavBar from "@/components/HeaderDropdown";
 import SiteLinks from "@/components/SiteLinks";
 import SiteSteward from "./SiteSteward";
+import SitePageEditor from "./SitePageEditor";
 import SubmittedBy from "./SubmittedBy";
 import SirPdfExportButton from "@/components/SirPdfExportButton";
 
@@ -169,6 +172,8 @@ export default function SiteDetailScreen() {
   const [inspections, setInspections] = useState<FormResponse[]>([]);
   const [site, setSite] = useState<SiteSummary | null>(null);
   const [siteLinks, setSiteLinks] = useState<SiteLinksData | null>(null);
+  const [pageFields, setPageFields] = useState<SitePageFieldValue[]>([]);
+  const [pageFieldsVersion, setPageFieldsVersion] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedInspections, setExpandedInspections] = useState<Set<number>>(new Set());
@@ -277,7 +282,10 @@ export default function SiteDetailScreen() {
     getSiteLinks(site.id)
       .then(setSiteLinks)
       .catch(() => setSiteLinks(null));
-  }, [site?.id]);
+    getSitePageFields(site.id)
+      .then(setPageFields)
+      .catch(() => setPageFields([]));
+  }, [site?.id, pageFieldsVersion]);
 
   useEffect(() => {
     const fetchGalleryForSite = async () => {
@@ -493,6 +501,9 @@ export default function SiteDetailScreen() {
 
   const age = daysSince(site.inspectdate ?? '1900-01-01');
   const ageText = formatAgeBadge(age);
+  const isAdmin = currentUser?.role === "admin";
+  // Admins still see a hidden steward so they can manage the assignment.
+  const stewardHidden = pageFields.some((field) => field.fieldKey === "designated_steward" && !field.isVisible);
   const gradientPosition = average ? ((average - 1) / 3) * 100 : 0;
 
   return (
@@ -541,11 +552,18 @@ export default function SiteDetailScreen() {
               <span className="text-base">{site.county}</span>
             </div>
           )}
-          <SiteSteward siteId={site.id} isAdmin={currentUser?.role === "admin"} />
+          {(isAdmin || !stewardHidden) && <SiteSteward siteId={site.id} isAdmin={isAdmin} />}
           {siteLinks && (
             <div className="mt-1">
               <SiteLinks {...siteLinks} />
             </div>
+          )}
+          {isAdmin && (
+            <SitePageEditor
+              siteId={site.id}
+              fields={pageFields}
+              onSaved={() => setPageFieldsVersion((version) => version + 1)}
+            />
           )}
         </div>
       </div>

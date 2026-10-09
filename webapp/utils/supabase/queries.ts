@@ -9,6 +9,8 @@ import {
   type ProtectedAreaBoundaryRow,
 } from '../../lib/map/boundaries';
 
+import { SITE_PAGE_FIELDS } from '@/lib/sitePageFields';
+
 export interface SiteSummary {
   id: number;
   namesite: string;
@@ -1082,6 +1084,60 @@ export async function getSiteByNameAdmin(
   });
 }
 
+export interface SitePageFieldValue {
+  fieldKey: string;
+  value: string | null;
+  isVisible: boolean;
+}
+
+export async function getSitePageFields(siteId: number): Promise<SitePageFieldValue[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('site_page_fields')
+    .select('field_key, value, is_visible')
+    .eq('site_id', siteId);
+
+  if (error) throw new Error(error.message || 'Failed to load site page fields');
+  return (data ?? []).map((row) => ({
+    fieldKey: row.field_key,
+    value: row.value,
+    isVisible: row.is_visible,
+  }));
+}
+
+// Only http and https links are saved, so a link like "javascript:..." can never reach the page.
+function cleanLink(value: string | null): string | null {
+  const link = (value ?? '').trim();
+  if (!link) return null;
+  if (!/^https?:\/\/\S+$/i.test(link)) throw new Error('Links must start with http:// or https://');
+  return link;
+}
+
+export async function updateSitePageFields(siteId: number, fields: SitePageFieldValue[]): Promise<void> {
+  await requireApprovedAdmin();
+  const { data: { user } } = await (await createClient()).auth.getUser();
+
+  const definitions = new Map(SITE_PAGE_FIELDS.map((definition) => [definition.key, definition]));
+  const rows = fields.map((field) => {
+    const definition = definitions.get(field.fieldKey);
+    if (!definition) throw new Error(`Unknown site page field: ${field.fieldKey}`);
+    return {
+      site_id: siteId,
+      field_key: field.fieldKey,
+      value: definition.kind === 'url' ? cleanLink(field.value) : null,
+      is_visible: field.isVisible,
+      updated_by: user?.id ?? null,
+      updated_at: new Date().toISOString(),
+    };
+  });
+  if (rows.length === 0) return;
+
+  const { error } = await createServerSupabase()
+    .from('site_page_fields')
+    .upsert(rows, { onConflict: 'site_id,field_key' });
+  if (error) throw new Error(error.message || 'Failed to save site page fields');
+}
+
 export interface SiteDeleteImpact {
   siteId: number;
   siteName: string;
@@ -1131,19 +1187,20 @@ export interface SiteInspectionReportDeleteOutcome {
   storageCleanupComplete: boolean;
 }
 
-
 export interface SiteLinks {
   sapaaWebsiteUrl: string | null;
   iNaturalistUrl: string | null;
 }
 
 export async function getSiteLinks(siteId: number): Promise<SiteLinks> {
-  // Temporary values. The team has not decided where each site's links are stored (US 2.0.10, #61).
-  // When that is decided, read the links for siteId here. The site page does not need to change.
-  void siteId;
+  const fields = await getSitePageFields(siteId);
+  const shownValue = (fieldKey: string) => {
+    const field = fields.find((candidate) => candidate.fieldKey === fieldKey);
+    return field?.isVisible ? field.value : null;
+  };
   return {
-    sapaaWebsiteUrl: 'https://sapaastewards.com/',
-    iNaturalistUrl: 'https://www.inaturalist.org/',
+    sapaaWebsiteUrl: shownValue('sapaa_website'),
+    iNaturalistUrl: shownValue('inaturalist'),
   };
 }
 

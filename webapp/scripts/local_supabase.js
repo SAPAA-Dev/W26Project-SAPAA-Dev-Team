@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports -- CJS dev script loaded with require() */
+//* eslint-disable @typescript-eslint/no-require-imports -- CJS dev script loaded with require() */
 const { execFileSync, spawn } = require('node:child_process');
 const { existsSync } = require('node:fs');
 const path = require('node:path');

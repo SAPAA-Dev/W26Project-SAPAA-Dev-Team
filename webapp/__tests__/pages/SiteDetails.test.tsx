@@ -124,6 +124,7 @@ describe('SiteDetailScreen', () => {
     (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams({}));
     (supabaseQueries.getSiteByName as jest.Mock).mockResolvedValue([mockSite]);
     (supabaseQueries.getSiteLinks as jest.Mock).mockResolvedValue({ sapaaWebsiteUrl: null, iNaturalistUrl: null });
+    (supabaseQueries.getSitePageFields as jest.Mock).mockResolvedValue([]);
     (supabaseQueries.getFormResponsesBySite as jest.Mock).mockResolvedValue(mockInspections);
     (supabaseQueries.getCurrentUserUid as jest.Mock).mockResolvedValue('user-123');
   });

@@ -20,25 +20,24 @@ const links = [
 ] as const;
 
 export default function SiteLinks(props: SiteLinksProps) {
+  const shownLinks = links.filter(({ key }) => props[key]);
+  if (shownLinks.length === 0) return null;
+
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#E4EBE4]">
-      {links.map(({ label, key }) => {
-        const url = props[key];
+      {shownLinks.map(({ label, key }) => {
+        const url = props[key] as string;
         return (
           <span key={key}>
             {label}:{' '}
-            {url ? (
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-white"
-              >
-                {shortenUrl(url)}
-              </a>
-            ) : (
-              <span className="italic">Not available</span>
-            )}
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-white"
+            >
+              {shortenUrl(url)}
+            </a>
           </span>
         );
       })}
