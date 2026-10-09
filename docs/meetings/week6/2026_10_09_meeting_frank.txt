@@ -1,0 +1,673 @@
+All right, Sonya, take it away, man. Perfect. Okay, just give me a second.
+I am gonna share my screen. Um, Holy, okay. Um...
+This is on the uh, the directory, right, by the way? Oh, yes. these decks? Yes.
+So we're pushing them to the repository. That is like, that is R 401 repository.
+We'll talk about how we are choosing to deploy in a moment.
+So, so yeah. Um, slide. How do you?
+I still can't figure this out. How do you start a slides representation? Okay.
+There we go. Slideshow. Yes.
+Okay. Perfect. How are you doing, Frank, 1st of all?
+I am doing excellent. Other than, I have renovations going on. So you guys are
+lucky, there is no begging going on now.
+They have left this weekend. All right. So, um, Today, the main agenda is mostly
+version one. one.
+So version one. one is planned for release on Tuesday, and uh, we can uh, and
+then we start the map, and the basic map functionalities are already
+implemented, and everything is uh, everything already ties to your charter. So,
+Last Friday, you asked us for 3 things. Uh, And uh, we're gonna, we're gonna
+talk about what we did this week and obviously, what's next?
+So, um, okay. So version one. is nearly built. We have everything in review
+right now.
+What we're basically doing is we have 2 reviewers for every pull request and
+everything has been carefully merged onto Maine. And we're hoping to freeze
+everything by October 11th and we can we can finally deploy everything to the
+Sapa Dev repository. And me and Chris on, I think, on Tuesday.
+We sat together and we figured out how to do that and it's just one push away
+from deploying. Obviously, we got to run our checks 1st before we deploy and we
+have to be extra careful, but just so you know, it's like it's on the cards.
+Yeah, so when does use your testing start?
+User testing. What do we think? You probably do next week.
+We can, yeah, we can, we can do user testing next week after the sprint gets
+over, or would, would you want to do it before the sprint? Well, we could do it
+after just to make sure everything's set up. But we've done pretty thorough
+testing already.
+So it should be ready for user evaluation. I feel like every feature has been
+like every feature has been tested or every PR has been tested thoroughly and
+obviously we have to test everything together because uh, yeah, something might
+break. And whatever we've been doing is on the dev production.
+Uh, Dev Branch and it's not really tied to the Versaill app. So I feel like
+we're going to have to sort of test everything end to end on the worst setup.
+But yeah.
+No, no, the good news is the app is very quiet. because we have not pushed it
+for a bunch of reasons. Um, And I'm saying user testing, partly because, uh, you
+know, is my job to give you that user experience. So you guys have a problem as
+techies.
+Can you guess what your problem is? User testing? Your problem is you're
+techies.
+That's, that's the problem. I mean, how can this not work? I mean, we've tried
+it 10 times.
+You know, uh, It's got to be perfect. And then you put it in front of the user
+and the user says, yeah, this is my ass word. Or this isn't how I use them,
+right?
+Um, so, you know, that's, uh, So, uh, the, the, the enhancement or the, uh, the
+fixes were relatively straightforward. I'm not all that concerned But part of my
+job is to remind you guys about the real world. And you and the real world is,
+you know, don't surprise your users.
+Right. Yeah, because, uh, that's a darn good way of uh, the CIO getting phone
+calls from the BB of operations. So, so anyway, uh, push user testing out after
+the deployment, and I'll take a look at it, uh, and I'll, uh, I'll do the
+testing.
+Will the supa-based superview thing be fixed in that release? Yes. Excellent.
+Okay, so I can try running Superview after Tuesday type thing. Yeah, we'll make
+sure to get it running by Tuesday. Yeah.
+Okay, so, because that's a real pain because I can't get out the data otherwise.
+Yeah, of course. And yeah, I could figure out supa bass and write an SQL query,
+I guess, if I had to, but I don't want to.
+I just want to use data visualize, you know, a data tool. Okay, excellent. So,
+uh, do you want to can you just show me that list?
+So you're saying everything is built, just remind me what I put in there. Uh,
+the charger? Yeah, in version one. one.
+So share screen. Remind me what I put in version one. one. so I know what to
+expect. I think you can search for...
+It's just a little store. So, 2026 to 2020. There we go.
+So I'm still seeing your deck at this point, by the way. Okay, you should be
+able to see that. Yep.
+Um, yeah, so you should be going to the enhancement list or the BFE, right?
+Okay, yeah, I'll go to the BFE. Um...
+Here's the B of you. Uh, BFE was on that on the shirt, Google Drive. Want me to
+share ice cream?
+Uh... Yeah, uh, Chris is, Chris can send it to me, just give me a second. I'm
+looking at the shared drive.
+Oh, yeah. No. Okay, so dentist right now.
+Okay, because I believe it's the spreadsheet. Yeah, so Sirs Hoppa, BFE. And I'll
+drop it in the, uh, I'll drop it in the chat here.
+Yeah, I got it open. Perfect. You got another one Perfect.
+All right, let's take it to the top here. F 003 superbase, you're saying that's
+gonna be fixed. Okay, good.
+Thank God. Remove the restriction of maximum of 50 reports when the
+administrator runs the report. So that means I can run as a zillion reports,
+right?
+Yes, yes. Okay, good. And look at that.
+That was actually, I labelled it as an enhancement rather than a bug, so good on
+you guys, and um, updates, type pages, so is this, uh, is roll... Rule 4 is
+that, uh, so you, so you tell me what's in version one. one. Okay, um, Okay, so,
+uh, you can add links now and uh, to the SAPA website and INaturalist to the
+side page.
+Uh, I'm not sure about I naturalist, but you can add links to the SAPA website
+now, so that's good. We've left INatulist for later on. So, yeah, that's
+interesting.
+Yeah, and I mean, our naturalist has a link. So as long as I can add a URL,
+that's all I need. Okay, never mind.
+They have the I naturalist as well. Okay. Administrators can update existing
+side pages.
+Done. When generating a PDF report, all photos are returned. Yes, that also
+works.
+Create a mechanism to extract all images and other digital files. Yes. Hold on
+that.
+Uh, we're gonna have to take a look at this one. Image extract. Okay, yeah.
+Add the ability to designate an individual as a steward to a site. Photos
+require 4 pieces of information. So does that mean you have person management
+running then?
+basic version of it. A basic version of it. Yeah, I mean, it's not very, yeah.
+Look at you guys gold. Wow. I mean, I got to run and catch up.
+Okay, carry on. Um, photos require 4 pieces of information data. I don't think
+you have that implemented.
+Yeah Okay. Okay, so that's also implemented. When generating a report, provide
+an option to suppress select fields, yap.
+Uh, render the at least the equivalent of a Google where you can Google Maps.
+So, yeah, that that works. Yeah, so that one's probably an enhancement rather
+than a bug.
+Yeah, but I mean, we just sort of went through everything, so, almost
+everything, I guess. But yeah, um, about the Google Maps thing, uh, we decided
+on open street maps. Yeah.
+And why? Uh, because, uh, obviously, you can't use Google because later on we'll
+be working with offline map players and they restrict you from using it uh, to
+show data offline and also because proto maps. I mean, the data does come from
+the open street maps, but Proto Maps has, uh, it allows up to 1000000 tile
+requests monthly, and that should be enough.
+And, also how the map is set up. It won't be like there won't be like huge tile
+requests. And how are we displaying it using proto-Libri?
+Yeah, I mean, the front is using maply brick, which is just a library too,
+right? coded. And proton apps?
+Yeah, proto maps. The data that comes from still comes from open street maps,
+though. Yeah.
+So Abby, are you able to demo that next week? Actually, it's already running in
+the loop. Really, yeah.
+Of course is already running. Okay. Okay, carry on.
+Okay. Edit report bug fix, C Harvey's description, still sort of cloudy to me.
+Okay, okay.
+I think I had something on that one, right? Provide PDF functionality to users
+with controls. Yep, that works.
+Implement user management. Basic version of it is running. We will get to the
+sort of the other controls later on because they're planned for the other
+sprint. implement user management.
+Again, basic functionality is done. Add critical safety information, did we do
+that? don't think so.
+No. Yeah, I don't think so. No, no.
+That's a deep enhancement. Yeah. That's probably you guys are probably not going
+to get to, to be honest with you.
+And administrators can delete reports. I think it's in review right now? It's in
+now.
+It's in now? Okay, okay. So it's already that's Audi in.
+Ability to upload GPS tracks. Done? It's for the next.
+It's for the next period, right? So we've left we've left this for the next
+point. Assign to a site, a set of points indicating a priority.
+I don't think we've done that. That's still left on. Yeah.
+So that's the gamification side, yeah. Yeah. So gamification is completely like
+we haven't really like done anything with gamification.
+And that's done and that's done. It was last week done. These 2 work done.
+Okay, so that means next Friday, we get, Sonia, next Friday, we get to do the
+most satisfying thing in a project manager's life. You know what that is? You
+get to Nitpick our hard...
+No? No, no. You get to change column G to 9.
+Done. Okay. Okay.
+And and as we do that, so here is, so here's a human thing. As we're doing that,
+we will sort of go, we will sort of cheer for every one of them. And, you know,
+that's that's not a technical thing, but that's a project, uh, that's the human
+side.
+Celebrate, learn to celebrate those successes, okay, with your team. You know,
+and make a big deal. You know, it's a little it's a little bug that you fixed.
+It doesn't matter. celebrate it. That's how you build that teen cohesion and all
+those kind of good things. I have to go with it.
+So next week, Sonia, I look forward to you driving and you turning the 9 and me
+going, yay, look at that. Yeah, congratulations, guys. Okay, perfect.
+Love it. Love it. Great, great work.
+Cool. Um, I'm gonna go ahead with the remaining part of the presentation.
+Okey-dokey.
+Okay, uh, so where we stand so far. So obviously one. is nearly built. Uh,
+almost everything is in review right now is already pushed to main.
+Uh, testing, we have 2 people or in some cases, even more than 2 people actually
+testing code. So I feel like that's pretty good. Um, The 3rd thing is that
+steward profiles work in our dev version at least, and hopefully fingers
+crossed, it works on the Versal app as well when we deploy.
+But everything from name, skills, inspection history, yada, yada, that all that
+works. Um, So help me out here. So help me with the Dev Prod environment.
+Is there a dev environment for the Versell, like how, or, or how does that work?
+So what what's happening right now is that we have a Sapa dev? I think you
+should be you should be familiar with that.
+We have a Sapa, Dev, Gitab, account, which has the depository that is linked to
+the Bursella. What, what I, what me and Chris did uh, later, like before, before
+this meeting was uh, we sort of added everyone to the collaborator's list and
+what we can do is we got, we're going to link a branch in our repository to the
+release branch. So, uh, to the release branch in the Sapa Dev repository.
+So it's basically linked. So every time we push to one specific branch, it
+automatically gets deployed to the, uh, to the Sapa Dev, uh, repository and that
+is which is linked to her cell. So we also...
+So that's Superbase and Broussel. Yeah, yeah. And where does Amazon come into
+this?
+Does it come anywhere? So we actually have our local environments. We have 2
+pieces of software that mimic both the superbase and the Amazon deployment.
+So every time we run it locally, even if we were offline, we have something
+that's mimicking it. So the Amazon, like the S3 connection is already tested and
+ready. Okay.
+Okay, carry on. Back to you soon. Okay.
+So, again, Stewart profiles work. The map now shows Alberta with the
+government's protected areas, and I think linking all these sites, and their
+boundaries would be our sprint 3 task, and so we can be looking at that later.
+Uh, okay.
+And, uh, Obviously, store profile works, map U works. Stewart is named... Yeah,
+the same thing, again, let me again.
+And you can also delete sites now, and you can sign out from every page
+successfully. What was happening before is that not every page had a sign out
+button, which made it like really weird because some pages do have sign out
+buttons, some pages do not have sign out buttons. So I think that's the 1st
+thing that Aaron was fixing.
+And yeah, we can you can also restore sites. Now. So that's pretty good.
+Uh, downloading reports and hiding private fields we talked about that. Okay,
+um, Which map and why open street maps, I think Abina already described what was
+going on with Google Maps. The offline thing does not really work.
+So, uh, we switch to open street maps. Okay. So, no, I'm going to stop you there
+a second.
+Great. You guys made that decision. How are you going to document that decision?
+So that a year from now, When someone says, why did you go with Open Street
+maps? I can say, because the team at the time recommended it, and here is the
+document. Right, so we already have that on our Google Docs.
+We just have to push it to the depository. Right. Okay, so it will be on my G
+drive.
+Uh... We have it on our G drive right now. We gonna send it to you. put on your
+GTA, so it's gonna be good.
+Okay. And here's the thing, Sonia. I don't need that piecemeal.
+But I do need, at a minimum, a final product. Right. A project closed summary.
+By the end of the project, right? Obviously, by the end of the year. Yeah,
+December.
+Okay, okay, yeah. Perfect. Yep.
+And, uh, Um, But that document, I would like to already have see it on the G
+drive. Right. And when I'm saying things like, where, you know, how are you
+going to document or where are you going to document it?
+I already want to see a section in there. You don't have to have it filled in,
+but I want to see a section in there that says, um, you know, map selection, um,
+uh, decision process or something like that. And that way gives me comfort.
+So that when you guys disappear, You don't go say, well, I'm, you know, that was
+fun. I guess I can purge my G drive. Right?
+Uh, and In addition, there's another reason to do that. Um, uh, You guys are a
+consulting team, you know, that's how I described you guys. As a little consult
+software consulting company. that's working on a contract.
+What should be one of your biggest considerations? Making you happy? Okay.
+That's a that's a big, you know, that's an important one, but it's not number
+one. It's related to number one, but it's not number one. making ourselves
+happy? Okay, and fair enough.
+Happy team, you know, is a productive team. Okay, bro, I'm okay with that. Kind
+of related to number one, but it's not number one.
+Um, not making you think Aaron says that? That's a good one. But, you know, and
+it's a little related to number one, but it's not number one.
+What's the number one, the moment you sign that contract and you start building
+the software. What should be one of the overriding considerations you have?
+Where is the bag of money yet?
+Yep. I would I would put it like 3 or four. Um, yeah.
+Your overriding consideration should be, how do we get the next contract? Right.
+How do we delight?
+and and everything you said there relates to it. How do you delight the client?
+Guess what?
+You walk out the door, and you leave the client holding the bag, for
+documentation. And uh, then the client has the next piece of software to
+develop, and they go with you guys or or this company over here, and this
+company over here, you know, you know, uh, basically did it on a par. But they
+put a ribbon around the project.
+It closed it nicely. Here's a document. You know, here's everything that we did.
+Here's the summary. And guess what? Get AI to write all this shit.
+You guys don't have to write it. No? But that puts a ribbon around it, doesn't
+it?
+Doesn't that leave me with a warm, fuzzy? And so when I'm thinking about, okay,
+we're going to, so we're going to soul source this contract. Who do we give it
+to?
+We don't, we don't give it to those guys because they left us in the lurch. We
+give it to those guys because our last memory is they put a ribbon around the
+country. They delivered.
+I mean, you still got to deliver the product. Don't don't don't get me wrong.
+But they also, uh, um, did a graceful exit from the project as well.
+Now, let me pause there. Is that a surprise to you guys? No, I mean, I think I
+think Or is it obvious in retrospect?
+I think it's, I feel like it's pretty... I feel like to me at least it's pretty
+obvious. I don't know about the other guys, but I think closing off with a bang,
+as I would say it is pretty is a good idea.
+So. Yeah, and I wouldn't say closing off to the bang. I mean, I correct your
+language just a little bit.
+Think of it as a graceful accent. Right. I mean, making the company...
+Yeah. You know, so when you leave, you know, maybe make the client make the last
+memory the client has or you a good memory. Right.
+Yeah. So, so that's why, like, um, So that's why you, Sonya, already wanted to
+be starting to write that document. And already want to have it in there.
+And you want to be constantly asking a question, Frank, you want me to put that
+in the final report? So what we're doing right now is we are writing sprint?
+Like we're writing documents every sprint.
+And so by the end of the sprint, you'll have like a big, like, like everything
+that we did sort of sprint by sprint and then I'm gonna make it in such a way
+that it's much more readable, like not sprint wise, but I feel like it's much
+more readable. So we have all the information. We just have to like organize it
+by the end of the semester.
+Yeah. Yeah. Because I don't sort of have that from our year's time.
+Um, you know, although we uh, we talked about it a lot. And I suspect it's there
+somewhere. And I'm sure if you talked about Harvier, he'll say, oh yeah, it's
+there.
+But it's not obvious to me. I have to go work. Okay, okay.
+Anyway, carry on. You're doing great. Perfect.
+Okay, so again, one of the questions that we were, like we talked about last
+time was how often do you want new versions and you obviously said that you
+don't want something to be released by the end of the end of the semester and I
+feel like, I feel like we sort of agreed on that. And what we do is we demo each
+release to you first, right? Once you sort of understand and sort of trust what
+we did.
+We can release it without waiting for any sort of demos, like going further into
+the semester. Um, again, we code freeze before uh, before we code freeze 2 days
+before each sprint. So we don't really have anything left to implement is just
+like focussing completely on deployment.
+And I hope that works for you. So, uh, let me pick on uh, someone here. Abby,
+I'll pick on you.
+Okay? And by the way, I kind of screwed up today, so I learned a lesson today.
+I'm going to try to do an interview question.
+Um, and I want you to re, you know, to to respond to the question. Okay, so, so,
+so remember, uh, what are my criteria of success? Number one, you guys passed
+the course.
+Please, and I assist you no reason you won't. Number two, you have fodder for
+your resume. Number 3 is you nail interview questions based on whatever
+experience you have.
+And then number four, I get a product. And number, and the last one is there
+because if you have the 1st three, I'm going to get number 4 is going to, it's,
+um, it's, uh, going to fall out of it. So I'm going to ask the question.
+Abby, you don't say anything initially. I want the group to answer this
+question. Is the, is the question reasonable for an interview question, okay?
+And I'm doing that so that you guys are thinking about that job interview and
+you're sitting across, but you need to think about it from being on the other
+side of the table, okay? You need to think about it from being the HR manager
+for Amazon. or skip the dishes or whatever else. So, you know, it's, uh, so
+Abby, can you tell us of a time in which you designed a release management
+process?
+Why did you have to design it? What made it successful, and what would you, and
+in retrospect, what would you change about it? So, can you tell us about the
+time when you had the relief, design your release management process?
+What made it successful? And what would you now change in retrospect? So are you
+okay with the question, Abby?
+Because if you're not, God help you, because I will never remember what I said.
+Okay, so do you have the question, Abby? Yeah.
+Okay. Okay, so before you answer the question, everybody else, is that a
+reasonable interview question? So, Chris, why would the interviewer ask that
+question?
+Uh, I mean, there, it's not so much trying to gauge your technical skills as it
+is, trying to gauge your work ethic or how you go about implementing something
+all the way through. Like, I think I think it's almost a trick question in that
+they're asking you a technical question to begin with, but we're really trying
+to see how you handle it from a higher level. That's right.
+Do you really understand release management? Do you really understand controls,
+you know, ITSM controls and those kind of things? You know, that's that really
+is in the nut, isn't that, of that question?
+Okay? Any other comments before we put Abby on this one? Abby.
+I have no idea. I can't remember the question anymore, so you please answer
+that. Yeah, okay.
+So, one time that I worked with release management was when I was working with
+Sapa. They had a web app and we were working on adding additional features and
+fixing a few bugs. And the approach that we took was constant releases, and we
+made sure that every feature gets tested and reviewed before it is pushed.
+And I think what made it successful was our high standards with testing. And
+something that I would change would be, uh, the D&D. What? Okay.
+Something that would change. Okay, something that I would change would be
+perhaps involving uh, more people with planning the release management because
+when we initially were planning, it was mostly uh, 2 people in the group. And I
+think the Some of us were lacking in knowledge about the decisions we took while
+deciding the release management.
+Yeah, I think I would answer it like that. So that's a good answer in that, you
+know, you provided context. For the answer.
+So you just didn't jump into supply. you know, you you kind of said it was
+green, you know, didn't have release management. We had to send it up, right?
+Then you, then you provided what was release management.
+And you said, this release management was successful because of the testing and
+because of the high standards that we put into it. And then you, but you also,
+um, were humble enough to say, and what we should have done in retrospect was
+that. And the only thing I would have added is you probably could have thrown in
+the fact it was a student project or something to that last part, you know, so
+that, you know, uh, so that the, you know, the person knows the scale and the
+risk wasn't that big.
+So, how did the he do, guys? So, um, Team, I mean, his finance and company is,
+is, is what I just did there. Is it useful to you guys?
+Because that's my quid pro quo, you guys, is to put people on the spot. Uh, and
+you may say, wow, you know, you're making me nervous. Um, but it helps to
+prepare you, right?
+Helps to already be constantly asking the question. Well, what happens if Frank
+asks me, How do how am I going to use this experience? in this future situation?
+Does that make sense? Okay, good. All right.
+Carry on, Sonya. Okay. Um, so as a part of our gamification, uh, we came up with
+uh, sort of a mock-up for this, and uh, the something that we discussed last
+week, and uh, we, we, I really want to see like a top contributor, uh, we'd want
+to see someone who has explored like a bunch of different countries or county,
+sorry.
+And another thing that we want to see is that side variety, right? Diversity in
+the amounts of sites that will visit. So X amount... how are you measuring that
+last one?
+What's the what's the differentiation, Richard? I don't think we've decided on
+that. Is it?
+types and sometimes I don't think to anyone. Okay, like as in, are you talking
+over like implementation details or like, how are you? Well, were you saying
+site variety?
+Most different sites inspect it. So different. How is side A different from side
+B?
+types and sub types, like there's some sites that are for equation, education
+is, sometimes, actually. Yeah. Did you get that?
+No, no. Uh, so what do you, you can, you can explain it, yeah. Okay, so, uh, in
+the filtering feature that you have right now, uh, sites are can be filtered,
+uh, in the basis of like subtypes, some sites are for recreation, some some are
+for education.
+Yeah, so they... Yeah. And that's what I was hoping you were going to say. use
+the data that you have.
+You know, so the other ones would be would be natural region. So there's 6 big
+natural regions and there's a bunch of smaller natural regions. The only other
+thing that I would put across this almost as an overlay would be a time
+dimension.
+You know, so there's all time, you know, Bob is the all-time winner, but George
+is over the past year, you know, the top one. Does that make sense? Yep.
+Good? Okay, perfect. And, uh, you guys are going the right direction?
+Good. And the last thing is... Who was the 1st person to ever report the site?
+So, side explorer? I feel like that's a good metric, I guess. Uh, and uh, we'd
+probably look at it from like a distinct side and a distinct time.
+And we saw it by time. So, yeah. Um, okay.
+Yeah, and you can, and you could throw in, you know, who has, who has visited
+uh, at least once per the last decade or, or something else. No, I like it.
+Around?
+Um, we talked about deleting as well. Uh, and you said that, uh, you rightly
+want 2 levels. One is completely nuking it out of the equation and one is sort
+of suppressing it.
+And uh, and you, we want to make sure that nothing is uh, deleted by accident
+and nothing is erased by accident. So it's either archive, which will hide the
+site, and you can pretty much restore it pretty easily. Uh, you delete, you
+delete for good, uh, which is you basically delete the site and the steward
+link, but the reports and the photos stay.
+And, uh, Maybe you might want to, like, a milder or a more extreme level of
+deletion. So what are your takes on that? Looks good.
+Make it happen. Okay, perfect. Uh, you guys have any questions?
+um What we have planned. So, again, one. done and dusted and release it on
+Tuesday. Um, Release through the next review process, so we test everything.
+So user testing, something that you describe, you'll do that. And each pass
+visit should open its own report and we have scoreboard totals, which is a part
+of gamification again. And the last thing is linking sites to their government
+boundaries.
+And that's again part of the map's functionality. Um Okay, what you can expect
+next Friday again, I can't stop talking about one. one, but yeah, one. is
+frozen. Everything is merged and tested.
+We write the release notes, which is again something that Something that you
+want and something that Professor Polak also expects from us. So... Yeah, and
+hopefully version one. is released to the stewards, we demo it to you, we review
+everything.
+We sort of hopefully, uh, not nitpick it too much, but uh, obviously there's
+going to be some amount of nitpicking because, yeah. Um, Sprint 3 has been uh,
+planned. Uh, I have roughly decided who's gonna do what work, but, like, I'm
+still gonna ask everyone if they're comfortable with what they're working.
+And again, we've decided to sort of switch teams up. And, uh, We have different
+teams now and they have different roles now. Again, the pair programming thing
+still works.
+It's just that the teams are different now. And hopefully you should be able to
+see Superview and see everything properly. And, uh, it's, it's, it works for us
+right now, and hopefully it should for you as well.
+Was it a big deal to flow those database name changes, sir? Not really. I mean,
+Chris, no, it was it was like probably a 5 minute fix.
+Okay, good. Yeah, so it was more finicky than anything. Here are the things that
+are still in review right now, they've been implemented.
+It's just like a bunch of pull requests and we're just gonna like, we're just
+sorting them out and we're just pushing them to the main branch. So I don't
+think it's very important. Okay, uh, again.
+We, at dribble dot 56, when you left the app midform, it reopened on page one
+and the answers are saved within, like, it didn't really work. Now, thanks to
+Abinerv and Alyssa. Okay, just Abina.
+I think he's a star of today's meeting, but everything, hopefully everything
+works, and the form reopens on the page that you left off with your answers, of
+course. And again, it's in review today after the meeting we'll sort of review
+everything. It's good now.
+Okay. Chris says it's good. It's good now.
+It's merged. So, and version one. is all set to fly. Uh, again.
+Sprint 3 what we discussed with the map, same thing remains. We haven't really
+like changed it. I felt like we still had like a bunch of issues with the
+sprint, but with the map initially, but like we worked our way around it.
+Um, and it was mainly about the government side having KML data, and then you're
+sending us GPX data, which was, is all sort of like stuff going on, but we
+managed to work around it, thanks to Abidav again. And Alyssa, yeah. Star,
+stars, activities, maybe.
+But anyways, we can hopefully download an area in the next print and you can
+keep using the map without any signal. So I feel like this is one of the bigger
+features that we're going to try to implement. And, uh, I think me and Chris are
+taking over this, uh, this maps thing from next print.
+So hopefully we should be able to like get it done and dusted. Um, again,
+scoreboard totals, editing passports, and safety information, and you're also
+able to password reset. And uh, I feel like we should have done password reset
+right now, but I mean, I don't, I don't know why we decided to move it to the
+3rd sprint.
+Was there a reason? I never just kind of leave in some easier stuff for what we
+get more. So I feel like we left some easier stuff so that we don't really get,
+you know, overburdened with all the harder things on the screen through.
+And, uh, this is fine. This is fine. Same that we talked about.
+Yep, October 13, version one. one goes. October 27, Maps and History Works.
+November 17th is when you start dumping ideas from your project charter because
+Sprint 4 is again, as we discussed last time, it's basically it's technically
+empty and Sprint 5 has no story points.
+And so again, looking for your requests. Um, 4 and fire still yours. Same thing.
+Okay, okay. Yeah, that's fine. Okay.
+Yeah. So I will say, Sonny, my trust bubble has gone up considerably. I still
+need to see the app after October 13th, and my trust level will really go up.
+Because you say you delivered it, which I'm glad to hear I will, but my trust
+level will go up when I actually see you did deliver it. So trust but verify it.
+Guys, So that means I have sort of another 2 weeks before I need to get you
+those last 2 sprints, which is good because, you know, that gives me a little
+bit of flexibility as well.
+I, uh, I, uh, like it. Um, when it comes to the, uh, talk to me a little bit,
+and I, uh, just noting the time, and I have a question for you guys, that I, I,
+I need your help with something at the end of this. So I'm going to try to carve
+5 minutes off.
+So what does what will uploading a GPX file look like? I think you kind of have
+a demo of that, right? Right now, you can like only upload KMLs for the side
+boundaries.
+GPX is the next print. The GPS. Okay, okay.
+So it's it's down the road. Okay. But in principle, tell me what that will look
+like.
+Oh, yeah. So, uh, uploading the files and just making sure that the map is all
+set up with the data that you want to show is uh, that can be done from the
+admin panel, but a user can also switch to a map view like in the map current,
+in the app currently. You can see all the sites as cards, but now you'd also be
+able to see those sites in the map.
+That's how it works. Okay, so let me be very clear. So, Chris, when we did that
+little field trip, was walking around with a device in his pocket, okay?
+Um, When he got to the end, he turned off the device. And that device, recorded
+a GPX file. So that device.
+Chris can plug a, you know, a USB cable into that device and he, and he can
+download it and he has to plug USB cable in because that's a really old device,
+but otherwise, you know, you use a phone, right? And the phone will generate
+because of the app or whatever, the GPX file. So, so we, So we have somewhere a
+GPX file. of I walked around River Lot 56 on this day.
+I need to upload that file into the application. And that GPX file will sit over
+top of the polygon that's in that's behind it. What does that look like?
+Like, uh, just give me your thinking for for that for the moment? Does my
+question make sense? Like, you're talking about like, it's imported, right?
+How is it displaying on the website, right? Right. What is the user experience
+of, um, I walked around and I I put, um, uh, you know, you know, something on.
+So let me just see if I can find real quick one. There we go. You can take that?
+perfect. So, uh, so, I'm going to share my screen here, so I'm going to, I'm
+going to, yeah. So this is Anton Lake.
+Of course I did that. So here's Anton Lake. So this green box, forget about it.
+That's the Polygon. you know, that's that's the boundary. But do you see this
+purple line here? That's me walking around.
+And here's an orange line, me walking around in a blue line, me walking around.
+So, uh, you don't have that. Rate the second.
+You have this polygon. You're going to receive the orange, the blue, and the
+purple line from people in the future. What does the uploading of that look
+like?
+So we have some rough ideas about it, because we, I do remember the issue you
+were concerned about too, about dirty data. Like, how are we gonna clean that up
+as well? So the idea can be, it's uploaded.
+It's in the website. We would probably want to have some sort of editor pop up
+before that where, because I remember one of the main issues you had is, how do
+you know when you're kind of done? Because you can still leave the device
+running, but you can, you know, walk back to your car, all of a sudden there's
+just a random line going there.
+One of the ideas we have is we could have some sort of cutting tool, so when you
+upload the file, it will show how it's going to look like, but maybe you could
+use a snip tool to like cut off the region you don't care about. Also, you know
+the region near the end of it. And then when you do upload it, that edited
+version, it would kind of show as a highlight, and when you hover your mouse
+over it, they can show additional information.
+Yeah, and I feel like uh, talking about the the dirty GPX file, I feel like the
+dirty GPX file would still remain as it is into the uh, database. Oh, yeah. It
+would just be, it would just be such that there is an extra sort of a layer
+under that GPX which shows up the, which shows the clean GPX part that the
+steward him, themselves uh, edit it.
+So I feel like, I feel like we, I did want to leave it very customizable to the
+steward, um, because I don't know, they might have sort of walked, like, over
+the boundary, but still sort of inspected the, uh, sort of inspected the area.
+So I feel like it's very dependent upon the steward. The initial idea that I was
+sort of floating around was that we have it completely within the boundary.
+I feel like that's not the best idea because what if a steward sort of, you
+know, hovers around, like, like, hovers, uh, outside the area. Right. Yeah.
+Like, like this one right here, this orange line right here. Exactly. You know,
+where you can see, um, uh, I thought I was inside, uh, and probably I was, uh,
+but from a, uh, a KML perspective or from a boundary perspective, it says I
+wasn't.
+Or say this one right here, right? There you go, yeah. I needed to exit.
+So yeah. Okay. And I wasn't asking you for the solution.
+I was as much reminding you of the problem. okay? Right. Okay, good.
+So I do want to car 5 minutes out for my question. So I think you guys are going
+well. Um, let me know.
+I am happy to give you my GP my GPX history. Okay, so, you know, it would be a
+um, a 100 or so GPX files. Yeah, I think that would...
+Would that be useful? Yes, that would be pretty useful. And I hope it's all...
+I hope it's like a bunch of dirty, like dirty and clean, uh, GBX files or is it
+all clean? Uh, it's going to very, I'll have to think about how I did that in my
+library. Um Yeah, it's it's going to vary.
+But, uh, even if they're all clean, then you can use them as an example of,
+okay, I, you know, maybe a bulk uplet, and actually that's probably a feature I
+didn't think about. So Bob has his 100 GPX files from 20 years. Can he bulk up
+those numbers?
+Or does he have to individually upload? Oh, well, probably since they kind of go
+down the same pipeline, we'll probably just support bulk uploading from the get
+go. So you could upload multiple them and then pass them.
+See what? So, with uh, with LLMs nowadays, uh, we can generate our own GPX
+files. So, uh, we sort of, uh, we'll obviously use your GPX files, but uh, like
+need be like more testing, we can generate our own GPX files as well.
+And it's pretty, it's pretty, It's pretty easy to do with AI and LLMs nowadays.
+So, yeah. Okay.
+Okay, so let me, uh, so let me do this and I will um, put them in there as a
+subfolder and then, then whatever else, uh, sorry, I'm not sure in this week. So
+this is sample GPX. All right.
+So, Sonia, do you want to do your round table and then I, because I do want to
+get to my question. Oh, yeah. Oh yeah, sure.
+Okay. Round table. Who do I hate most today?
+I don't. Why? I mean, you get to present ideas that people might be thinking
+also.
+Well, I would say... Um, I would say that, uh, I really appreciate the insights,
+especially the interview question again, that will help us a lot in our futures,
+um, and also the, um, small amount of details to point out what we, should think
+about when we're like, um, finishing up project and something like that. Okay,
+um, Send it.
+Yeah, um. I would just say that, uh, we're, uh, we're glad that we got most of
+the functionality ends before, um, spring free. So this way, even if you want
+something, you want us to change something, if something isn't up to your
+expectations, we have a lot of time to cater to that as well.
+So, um, Just getting a positive feedback from you is it means that we're on the
+right track. So I guess, yeah, we'll be good. Perfect.
+Jim. Um, very informative meeting. So, uh, thank you for the interview tip. and
+That's something.
+Chris? Uh, yeah, no, uh, after meeting, feel like we're on the right track for
+sure. I mean, yeah, I feel like I feel like you'll be happy with the work you
+see on Tuesday from us, so, and meetings are definitely informative just to make
+sure there's no ambiguity between anything.
+Um, Alyssa? Um, I would agree with Zainab, I think it's nice that we got, like,
+most of the features, like, at least initially set up for, like, mutual
+Christmas management stuff as well as, like, um, like, the map stuff, because
+now we can get your feedback early on in case we went down the rock, but
+hopefully you'll be happy with our work. I would like to add like one of the
+challenges in the size that we mentioned was linking the sites to the protected
+areas that we got from the KML because they didn't have, like for some of the
+KMLs, they had the same site names and then there was like no idea to match on.
+So one of the solutions that Ebeneb and I came up with was sort of giving the
+user an option to like manually link the existing sites that show on like that
+homepage to KML upload. So, you'll, we'll, we can demo that to you in the next
+week. But if you had any ideas of how to solve that link, that was also
+mentioned the slides, like, we would appreciate the effect.
+Yeah, and I guess I'll give you a design principle here. If you're talking about
+the polygon, if you're talking about, you know, is Riverlock 56, Riverlock 56,
+has this GIS polygon? And that polygon, it happens to be in KML format, that is
+not a user consideration.
+That's a system consideration. thing. If you're talking about, uh, Chris walking
+around with an ancient Garmin 500 in this pocket and then uploading that GPX
+file, um, then, yeah, I, I gotta understand why you're, you know, you're talking
+about, well, how do you link, that ancient GPS file to, you know, to River Lot
+56? Although recognizing the moment you put that in, it's going to appear
+underneath wherever lot 56, if you will.
+Was the construction or main collisions or? Yeah, I think the concern was
+having, like, that boundary, like, for one of the examples I saw in BKML upload
+was that Lakeland had 3 different types, and that site was kind of separated
+into 3 boundaries. And then for the existing sites we have on the app today.
+Oh, okay, gotcha. Yeah. Yeah, like how did it work?
+Yeah, okay. switch back. Yeah, yeah. I understand now.
+You know, Sonia, what you're going to have to manage that through the 80 or the
+90% automated process and then the 10% manual data crew. Uh, I'm not sure what
+you're talking about. I'm sorry.
+Okay, so there are some station sites. Okay, okay, yeah, I got it again. Okay,
+okay.
+Okay. So, you know, what Lisa is kind of describing as well. You know, most of
+them work beautifully, but then there was these really icky ones.
+The answer is, you need to have the 90% rule, this is how we're gonna manage
+them. And then you got to deal with the 10% picky. Did that help loosen?
+Yes, sort of. Um, just, like, my concern is that, like, we right now could only
+do fuzzy matches, doing the sites are named in the app today, have the type in
+the site name, I believe, like in brackets. So it'll be like Riverlot 56 and
+then NA for Natural Area.
+So, and since, like, some of the sites have, like, similar names or like, parts
+of the name contained as others, like, that actually could be hard. So we'll try
+to come up with like that 90% like way we can automate matching, but yeah, those
+were just some of our consuming. So here is a trip for you guys. when it comes
+to data conversion.
+Okay? Because up to now in your studies, and by the way, we're gonna...
