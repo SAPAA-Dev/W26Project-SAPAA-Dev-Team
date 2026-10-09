@@ -55,11 +55,13 @@ describe("Supabase admin-only actions", () => {
   });
 
   it("lets an approved admin through", async () => {
-    const mockEq = jest.fn().mockResolvedValue({ error: null });
+    const mockIs = jest.fn().mockResolvedValue({ error: null });
+    const mockEq = jest.fn().mockReturnValue({ is: mockIs });
     mockFrom.mockReturnValue({ update: jest.fn().mockReturnValue({ eq: mockEq }) });
 
     await expect(queries.setFormResponseActive(1, false)).resolves.toBeUndefined();
     expect(mockFrom).toHaveBeenCalledWith("form_responses");
+    expect(mockIs).toHaveBeenCalledWith("archived_at", null);
   });
 
   it("returns an inactive site for an approved admin", async () => {

@@ -14,6 +14,7 @@ type ChainableQuery = {
   error: unknown;
   select: jest.Mock;
   eq: jest.Mock;
+  is: jest.Mock;
   order: jest.Mock;
   in: jest.Mock;
 };
@@ -23,6 +24,7 @@ function chainableQuery(result: { data: unknown; error: unknown }): ChainableQue
   const query = { ...result } as ChainableQuery;
   query.select = jest.fn(() => query);
   query.eq = jest.fn(() => query);
+  query.is = jest.fn(() => query);
   query.order = jest.fn(() => query);
   query.in = jest.fn(() => query);
   return query;
@@ -139,6 +141,7 @@ describe('getAllSiteReports', () => {
 
     expect(mockFrom).toHaveBeenCalledWith('form_responses');
     expect(responsesQuery.eq).toHaveBeenCalledWith('is_active', true);
+    expect(responsesQuery.is).toHaveBeenCalledWith('archived_at', null);
     expect(responsesQuery.order).toHaveBeenCalledWith('inspection_date', {
       ascending: false,
       nullsFirst: false,

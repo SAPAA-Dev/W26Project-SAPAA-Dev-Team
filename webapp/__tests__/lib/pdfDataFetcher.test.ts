@@ -386,11 +386,13 @@ describe('fetchReportData', () => {
   it('fetches single response data', async () => {
     const mockSelect = jest.fn().mockReturnThis();
     const mockEq = jest.fn().mockReturnThis();
+    const mockIs = jest.fn().mockReturnThis();
     const mockSingle = jest.fn();
 
     mockSupabaseFrom.mockReturnValue({
       select: mockSelect,
       eq: mockEq,
+      is: mockIs,
       single: mockSingle,
     });
 
@@ -420,12 +422,14 @@ describe('fetchReportData', () => {
     expect(result.sites[0].siteName).toBe('Elk Island');
     expect(result.sites[0].responses).toHaveLength(1);
     expect(result.sites[0].responses[0].id).toBe(10);
+    expect(mockIs).toHaveBeenCalledWith('archived_at', null);
   });
 
   it('throws when single response is not found', async () => {
     mockSupabaseFrom.mockReturnValue({
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
+      is: jest.fn().mockReturnThis(),
       single: jest.fn().mockResolvedValue({
         data: null,
         error: { message: 'Not found' },

@@ -19,7 +19,7 @@ type QueryResult = Record<string, unknown>;
 
 function makeQuery(result: QueryResult) {
   const query: Record<string, unknown> = {};
-  ['select', 'eq', 'order', 'range', 'update'].forEach((method) => {
+  ['select', 'eq', 'is', 'order', 'range', 'update'].forEach((method) => {
     query[method] = jest.fn(() => query);
   });
   query.maybeSingle = jest.fn(async () => result);
@@ -143,7 +143,7 @@ describe('/api/profile', () => {
         count: 3,
       };
       const responsesQuery: Record<string, unknown> = { ...responsesResult };
-      ['select', 'eq', 'order', 'range'].forEach((method) => {
+      ['select', 'eq', 'is', 'order', 'range'].forEach((method) => {
         responsesQuery[method] = jest.fn(() => responsesQuery);
       });
       mockAdminFrom.mockImplementation((table: string) =>
@@ -158,6 +158,7 @@ describe('/api/profile', () => {
         'id, site_id, inspection_date, created_at, sites_pa(id, namesite, archived_at)',
         { count: 'exact' }
       );
+      expect(responsesQuery.is).toHaveBeenCalledWith('archived_at', null);
       expect(body.history).toEqual([
         { id: 7, siteId: 5, siteName: 'Beaver Hills', siteArchived: false, inspectionDate: '2026-09-12' },
         { id: 8, siteId: 6, siteName: 'Duck Lake', siteArchived: true, inspectionDate: '2026-09-01' },

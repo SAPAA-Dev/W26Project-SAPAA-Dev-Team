@@ -38,12 +38,13 @@ export async function GET(request: Request) {
       );
     }
 
-    // Build Supabase query - filter by whichever params were provided
+    // Archived reports keep their images for restore, but normal image lists must hide them.
     let query = supabase
       .from("attachments")
       .select(
-        "id, response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier, site_id"
-      );
+        "id, response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier, site_id, form_responses!inner(archived_at)"
+      )
+      .is("form_responses.archived_at", null);
 
     if (siteId)     query = query.eq("site_id", Number(siteId));
     if (responseId) query = query.eq("response_id", Number(responseId));

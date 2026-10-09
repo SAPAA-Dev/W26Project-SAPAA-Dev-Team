@@ -36,12 +36,16 @@ const mockGetSiteByName = jest.fn();
 const mockGetFormResponsesBySiteAdmin = jest.fn();
 const mockSetFormResponseActive = jest.fn();
 const mockUpdateSiteInspectionAnswers = jest.fn();
+const mockGetReportDeleteImpact = jest.fn();
+const mockArchiveReport = jest.fn();
 
 jest.mock('@/utils/supabase/queries', () => ({
   getSiteByNameAdmin: (name: string) => mockGetSiteByName(name),
   getFormResponsesBySiteAdmin: (name: string) => mockGetFormResponsesBySiteAdmin(name),
   setFormResponseActive: (id: number, isActive: boolean) => mockSetFormResponseActive(id, isActive),
   updateSiteInspectionAnswers: (id: number, batch: any[]) => mockUpdateSiteInspectionAnswers(id, batch),
+  getSiteInspectionReportDeleteImpact: (id: number) => mockGetReportDeleteImpact(id),
+  archiveSiteInspectionReport: (id: number) => mockArchiveReport(id),
 }));
 
 // Mock PdfExportModal
@@ -142,6 +146,18 @@ describe('AdminSiteDetails', () => {
     mockGetFormResponsesBySiteAdmin.mockResolvedValue(mockFormResponses);
     mockSetFormResponseActive.mockResolvedValue(undefined);
     mockUpdateSiteInspectionAnswers.mockResolvedValue(undefined);
+    mockGetReportDeleteImpact.mockResolvedValue({
+      responseId: 101,
+      inspectionNo: 'INS-001',
+      inspectionDate: '2024-06-15',
+      siteName: 'Test National Park',
+      answerCount: 3,
+      attachmentCount: 2,
+    });
+    mockArchiveReport.mockResolvedValue({
+      responseId: 101,
+      archivedAt: '2026-10-09T10:00:00.000Z',
+    });
     // Mock sessionStorage
     Object.defineProperty(window, 'sessionStorage', {
       value: {
@@ -992,6 +1008,18 @@ describe('Integration Tests', () => {
     mockGetFormResponsesBySiteAdmin.mockResolvedValue(mockFormResponses);
     mockSetFormResponseActive.mockResolvedValue(undefined);
     mockUpdateSiteInspectionAnswers.mockResolvedValue(undefined);
+    mockGetReportDeleteImpact.mockResolvedValue({
+      responseId: 101,
+      inspectionNo: 'INS-001',
+      inspectionDate: '2024-06-15',
+      siteName: 'Test National Park',
+      answerCount: 3,
+      attachmentCount: 2,
+    });
+    mockArchiveReport.mockResolvedValue({
+      responseId: 101,
+      archivedAt: '2026-10-09T10:00:00.000Z',
+    });
     Object.defineProperty(window, 'sessionStorage', {
       value: {
         getItem: jest.fn(() => '[]'),
@@ -1103,6 +1131,28 @@ describe('Integration Tests', () => {
     });
 
     expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
+  });
+
+  it('archives a report after the administrator confirms', async () => {
+    const user = userEvent.setup();
+    render(<AdminSiteDetails />);
+
+    await screen.findByText(/Inspection Reports \(2\)/);
+    await user.click(screen.getByTestId('archive-report-button-101'));
+
+    expect(await screen.findByRole('dialog', {
+      name: 'Archive Site Inspection Report',
+    })).toBeInTheDocument();
+    expect(mockGetReportDeleteImpact).toHaveBeenCalledWith(101);
+    expect(screen.getByText('3 answers will be preserved')).toBeInTheDocument();
+
+    await user.click(screen.getByTestId('confirm-archive-report'));
+
+    await waitFor(() => {
+      expect(mockArchiveReport).toHaveBeenCalledWith(101);
+      expect(screen.queryByTestId('archive-report-button-101')).not.toBeInTheDocument();
+    });
+    expect(screen.getByTestId('archive-report-button-102')).toBeInTheDocument();
   });
   
 });

@@ -113,8 +113,8 @@ export async function GET(request: NextRequest) {
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
-  // get_distinct_inspected_site_count counts in SQL. Reading every row to count them was slow
-  // for active stewards. See 20261005000000_profile_distinct_site_count.sql.
+  // Count sites in the database because loading every report only to count it is slow.
+  // Archived reports stay saved for restore, but they do not belong in profile history.
   const [{ data: inspections, error: inspectionsError, count }, { data: siteCount, error: siteCountError }] =
     await Promise.all([
       admin
@@ -122,6 +122,7 @@ export async function GET(request: NextRequest) {
         .select('id, site_id, inspection_date, created_at, sites_pa(id, namesite, archived_at)', { count: 'exact' })
         .eq('user_id', profile.auth_user_id)
         .eq('is_active', true)
+        .is('archived_at', null)
         .order('inspection_date', { ascending: false, nullsFirst: false })
         .range(from, to),
       admin.rpc('get_distinct_inspected_site_count', { p_user_id: profile.auth_user_id }),

@@ -10,12 +10,16 @@ import {
   FormAnswer,
   setFormResponseActive,
   updateSiteInspectionAnswers,
+  archiveSiteInspectionReport,
+  getSiteInspectionReportDeleteImpact,
+  SiteInspectionReportDeleteImpact,
 } from "@/utils/supabase/queries";
 import { daysSince } from "@/app/sites/page";
 import AdminNavBar from "@/app/admin/AdminNavBar";
 import PdfExportModal from '@/components/PdfExportModal';
 import DeleteImageButton from '@/components/DeleteImageButton';
 import type { ImageKind } from '@/components/DeleteImageButton';
+import ArchiveReportModal from '@/app/admin/reports/components/ArchiveReportModal';
 import Image from 'next/image';
 import {
   ArrowLeft,
@@ -44,6 +48,7 @@ import {
   Power,
   ImageIcon,
   Maximize2,
+  Archive,
 } from "lucide-react";
 
 type AdminFormResponse = FormResponse & { is_active: boolean };
@@ -170,6 +175,13 @@ export default function AdminSiteDetails() {
 
   // Toggle active state
   const [togglingId, setTogglingId] = useState<number | null>(null);
+
+  // The archive dialog loads current counts before it lets the admin continue.
+  const [archiveTarget, setArchiveTarget] = useState<AdminFormResponse | null>(null);
+  const [archiveImpact, setArchiveImpact] = useState<SiteInspectionReportDeleteImpact | null>(null);
+  const [archiveError, setArchiveError] = useState<string | null>(null);
+  const [loadingArchiveImpact, setLoadingArchiveImpact] = useState(false);
+  const [archivingReport, setArchivingReport] = useState(false);
 
   // Gallery state
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
@@ -425,6 +437,51 @@ export default function AdminSiteDetails() {
     } finally {
       setTogglingId(null);
     }
+  };
+
+  const handleOpenArchive = async (response: AdminFormResponse) => {
+    setArchiveTarget(response);
+    setArchiveImpact(null);
+    setArchiveError(null);
+    setLoadingArchiveImpact(true);
+    try {
+      setArchiveImpact(await getSiteInspectionReportDeleteImpact(response.id));
+    } catch (impactError) {
+      setArchiveError(
+        impactError instanceof Error ? impactError.message : 'Failed to load report details'
+      );
+    } finally {
+      setLoadingArchiveImpact(false);
+    }
+  };
+
+  const handleConfirmArchive = async () => {
+    if (!archiveTarget || archivingReport) return;
+    setArchivingReport(true);
+    setArchiveError(null);
+    try {
+      await archiveSiteInspectionReport(archiveTarget.id);
+      // Hide the archived report and its images without making the admin reload the page.
+      setInspections((current) => current.filter((report) => report.id !== archiveTarget.id));
+      setGalleryItems((current) =>
+        current.filter((item) => Number(item.response_id) !== archiveTarget.id)
+      );
+      setArchiveTarget(null);
+      setArchiveImpact(null);
+    } catch (archiveFailure) {
+      setArchiveError(
+        archiveFailure instanceof Error ? archiveFailure.message : 'Failed to archive report'
+      );
+    } finally {
+      setArchivingReport(false);
+    }
+  };
+
+  const handleCloseArchive = () => {
+    if (archivingReport) return;
+    setArchiveTarget(null);
+    setArchiveImpact(null);
+    setArchiveError(null);
   };
 
   // Open edit modal
@@ -941,6 +998,14 @@ export default function AdminSiteDetails() {
                           <Power className="w-4 h-4" />
                           {togglingId === response.id ? 'Updating...' : response.is_active ? 'Disable' : 'Enable'}
                         </button>
+                        <button
+                          data-testid={`archive-report-button-${response.id}`}
+                          onClick={() => void handleOpenArchive(response)}
+                          className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800 transition-all hover:bg-amber-100 sm:w-auto"
+                          title="Archive report"
+                        >
+                          <Archive className="h-4 w-4" /> Archive
+                        </button>
                       </div>
                     </div>
 
@@ -1357,6 +1422,17 @@ export default function AdminSiteDetails() {
           </div>
         </div>
       )}
+
+      <ArchiveReportModal
+        report={archiveTarget}
+        siteName={site.namesite}
+        impact={archiveImpact}
+        loading={loadingArchiveImpact}
+        archiving={archivingReport}
+        error={archiveError}
+        onCancel={handleCloseArchive}
+        onConfirm={handleConfirmArchive}
+      />
 
       <PdfExportModal
         open={showPdfModal}

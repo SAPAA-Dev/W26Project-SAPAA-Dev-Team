@@ -106,6 +106,7 @@ describe("GET /api/site-images", () => {
     ];
 
     const queryBuilder: any = {
+      is: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
       then: jest.fn((resolve: any) =>
         resolve({
@@ -129,6 +130,7 @@ describe("GET /api/site-images", () => {
 
     expect(response.status).toBe(200);
     expect(mockFrom).toHaveBeenCalledWith("attachments");
+    expect(queryBuilder.is).toHaveBeenCalledWith("form_responses.archived_at", null);
     expect(queryBuilder.eq).toHaveBeenCalledWith("site_id", 207);
 
     expect(body).toEqual({
@@ -172,6 +174,7 @@ describe("GET /api/site-images", () => {
     ];
 
     const queryBuilder: any = {
+      is: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
       then: jest.fn((resolve: any) =>
         resolve({
@@ -237,6 +240,7 @@ describe("GET /api/site-images", () => {
     ];
 
     const queryBuilder: any = {
+      is: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
       then: jest.fn((resolve: any) =>
         resolve({
@@ -290,6 +294,7 @@ describe("GET /api/site-images", () => {
     });
 
     const queryBuilder: any = {
+      is: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
       then: jest.fn((resolve: any) =>
         resolve({
@@ -319,6 +324,7 @@ describe("GET /api/site-images", () => {
     });
 
     const queryBuilder: any = {
+      is: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
       then: jest.fn((resolve: any) =>
         resolve({
@@ -362,6 +368,7 @@ describe("GET /api/site-images", () => {
     ];
 
     const queryBuilder: any = {
+      is: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
       then: jest.fn((resolve: any) =>
         resolve({

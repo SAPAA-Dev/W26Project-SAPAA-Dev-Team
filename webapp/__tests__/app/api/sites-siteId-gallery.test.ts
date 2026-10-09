@@ -144,8 +144,12 @@ describe("GET /api/sites/[siteId]/gallery", () => {
       order: attachmentsOrderMock,
     });
 
-    const attachmentsEqMock = jest.fn().mockReturnValue({
+    const attachmentsIsMock = jest.fn().mockReturnValue({
       in: attachmentsInMock,
+    });
+
+    const attachmentsEqMock = jest.fn().mockReturnValue({
+      is: attachmentsIsMock,
     });
 
     const attachmentsSelectMock = jest.fn().mockReturnValue({
@@ -197,6 +201,7 @@ describe("GET /api/sites/[siteId]/gallery", () => {
     expect(mockFrom).toHaveBeenCalledWith("sites_pa");
 
     expect(attachmentsEqMock).toHaveBeenCalledWith("site_id", 207);
+    expect(attachmentsIsMock).toHaveBeenCalledWith("form_responses.archived_at", null);
     expect(attachmentsInMock).toHaveBeenCalledWith("content_type", [
       "image/jpeg",
       "image/png",
@@ -275,8 +280,12 @@ describe("GET /api/sites/[siteId]/gallery", () => {
       order: attachmentsOrderMock,
     });
 
-    const attachmentsEqMock = jest.fn().mockReturnValue({
+    const attachmentsIsMock = jest.fn().mockReturnValue({
       in: attachmentsInMock,
+    });
+
+    const attachmentsEqMock = jest.fn().mockReturnValue({
+      is: attachmentsIsMock,
     });
 
     const attachmentsSelectMock = jest.fn().mockReturnValue({
@@ -355,8 +364,12 @@ describe("GET /api/sites/[siteId]/gallery", () => {
       order: attachmentsOrderMock,
     });
 
-    const attachmentsEqMock = jest.fn().mockReturnValue({
+    const attachmentsIsMock = jest.fn().mockReturnValue({
       in: attachmentsInMock,
+    });
+
+    const attachmentsEqMock = jest.fn().mockReturnValue({
+      is: attachmentsIsMock,
     });
 
     const attachmentsSelectMock = jest.fn().mockReturnValue({
@@ -416,8 +429,12 @@ describe("GET /api/sites/[siteId]/gallery", () => {
       order: attachmentsOrderMock,
     });
 
-    const attachmentsEqMock = jest.fn().mockReturnValue({
+    const attachmentsIsMock = jest.fn().mockReturnValue({
       in: attachmentsInMock,
+    });
+
+    const attachmentsEqMock = jest.fn().mockReturnValue({
+      is: attachmentsIsMock,
     });
 
     const attachmentsSelectMock = jest.fn().mockReturnValue({

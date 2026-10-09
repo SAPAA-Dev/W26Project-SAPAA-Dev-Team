@@ -78,6 +78,19 @@ export interface FormResponse {
   answers: FormAnswer[];
 }
 
+export interface ArchivedSiteInspectionReport {
+  id: number;
+  inspectionNo: string | null;
+  inspectionDate: string | null;
+  createdAt: string | null;
+  isActive: boolean;
+  archivedAt: string;
+  siteId: number | null;
+  siteName: string | null;
+  submitterId: number | null;
+  submitterName: string | null;
+}
+
 export interface FormAnswer {
   question_id: number;
   question_text: string;
@@ -104,11 +117,17 @@ export interface SiteReportSummary {
 let keyMapPromise: Promise<Record<string, number>> | null = null;
 
 function getLatestInspectionDate(
-  responses: Array<{ inspection_date?: string | null; created_at?: string | null }>
+  responses: Array<{
+    inspection_date?: string | null;
+    created_at?: string | null;
+    archived_at?: string | null;
+  }>
 ): string | null {
-  if (responses.length === 0) return null;
+  // An archived report must not set the latest date shown for a site.
+  const visibleResponses = responses.filter((response) => !response.archived_at);
+  if (visibleResponses.length === 0) return null;
 
-  const sortedResponses = [...responses].sort((a, b) => {
+  const sortedResponses = [...visibleResponses].sort((a, b) => {
     const dateA = a.inspection_date ?? a.created_at ?? '';
     const dateB = b.inspection_date ?? b.created_at ?? '';
     return new Date(dateB).getTime() - new Date(dateA).getTime();
@@ -245,10 +264,12 @@ export async function setFormResponseActive(responseId: number, isActive: boolea
   await requireApprovedAdmin();
   const supabase = createServerSupabase();
 
+  // An archived report cannot be changed from the normal report page.
   const { error } = await supabase
     .from('form_responses')
     .update({ is_active: isActive })
-    .eq('id', responseId);
+    .eq('id', responseId)
+    .is('archived_at', null);
 
   if (error) {
     throw new Error(error.message || 'Failed to update form response status');
@@ -402,7 +423,8 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
       ),
       form_responses (
         inspection_date,
-        created_at
+        created_at,
+        archived_at
       )
     `)
     .eq('is_active', true)
@@ -468,7 +490,8 @@ export async function getAllSites(): Promise<SiteSummary[]> {
       ),
       form_responses (
         inspection_date,
-        created_at
+        created_at,
+        archived_at
       )
     `)
     .is('archived_at', null)
@@ -507,13 +530,15 @@ export async function getCounties(): Promise<County[]> {
 
 // Site edits run with the service role, so each one checks the caller first.
 // The check reads the signed-in session, never a value the caller sends.
-async function requireApprovedAdmin(): Promise<void> {
+async function requireApprovedAdmin(
+  errorMessage = 'Only admins can edit sites.'
+): Promise<void> {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   const approved = !error
     && data.user?.app_metadata?.role === 'admin'
     && data.user?.app_metadata?.authenticated === true;
-  if (!approved) throw new Error('Only admins can edit sites.');
+  if (!approved) throw new Error(errorMessage);
 }
 
 export async function updateSite(
@@ -680,6 +705,208 @@ export async function permanentlyDeleteSite(
   return data as SiteDeleteImpact;
 }
 
+function validateResponseId(responseId: number): void {
+  if (!Number.isSafeInteger(responseId) || responseId <= 0) {
+    throw new Error('A valid report ID is required.');
+  }
+}
+
+export async function getSiteInspectionReportDeleteImpact(
+  responseId: number
+): Promise<SiteInspectionReportDeleteImpact> {
+  // Check the signed-in user before reading protected archive details.
+  await requireApprovedAdmin('Only approved admins can manage reports.');
+  validateResponseId(responseId);
+
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase.rpc(
+    'get_site_inspection_report_delete_impact',
+    { p_response_id: responseId }
+  );
+
+  if (error) {
+    throw new Error(error.message || 'Failed to get report deletion details');
+  }
+  if (!data) {
+    throw new Error('Site Inspection Report not found.');
+  }
+
+  return data as SiteInspectionReportDeleteImpact;
+}
+
+export async function archiveSiteInspectionReport(
+  responseId: number
+): Promise<SiteInspectionReportArchiveResult> {
+  // Check the signed-in user before changing a report.
+  await requireApprovedAdmin('Only approved admins can manage reports.');
+  validateResponseId(responseId);
+
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase.rpc(
+    'archive_site_inspection_report',
+    { p_response_id: responseId }
+  );
+
+  if (error) {
+    throw new Error(error.message || 'Failed to archive Site Inspection Report');
+  }
+  if (!data) {
+    throw new Error('The database did not return an archive result.');
+  }
+
+  return data as SiteInspectionReportArchiveResult;
+}
+
+export async function restoreSiteInspectionReport(
+  responseId: number
+): Promise<SiteInspectionReportRestoreResult> {
+  // Check the signed-in user before changing a report.
+  await requireApprovedAdmin('Only approved admins can manage reports.');
+  validateResponseId(responseId);
+
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase.rpc(
+    'restore_site_inspection_report',
+    { p_response_id: responseId }
+  );
+
+  if (error) {
+    throw new Error(error.message || 'Failed to restore Site Inspection Report');
+  }
+  if (!data) {
+    throw new Error('The database did not return a restore result.');
+  }
+
+  return data as SiteInspectionReportRestoreResult;
+}
+
+export async function permanentlyDeleteSiteInspectionReport(
+  responseId: number
+): Promise<SiteInspectionReportDeleteOutcome> {
+  // Check the signed-in user before deleting saved data.
+  await requireApprovedAdmin('Only approved admins can manage reports.');
+  validateResponseId(responseId);
+
+  const supabase = createServerSupabase();
+  // Delete the saved data first. If this step fails, the image files stay in storage.
+  const { data, error } = await supabase.rpc(
+    'permanently_delete_site_inspection_report',
+    { p_response_id: responseId }
+  );
+
+  if (error) {
+    throw new Error(error.message || 'Failed to permanently delete Site Inspection Report');
+  }
+  if (!data) {
+    throw new Error('The database did not return a deletion result.');
+  }
+
+  const result = data as SiteInspectionReportDeleteDatabaseResult;
+  const storageKeys = Array.isArray(result.storageKeys)
+    ? result.storageKeys.filter((key): key is string => typeof key === 'string')
+    : [];
+  const impact: SiteInspectionReportDeleteImpact = {
+    responseId: result.responseId,
+    inspectionNo: result.inspectionNo,
+    inspectionDate: result.inspectionDate,
+    siteName: result.siteName,
+    answerCount: result.answerCount,
+    attachmentCount: result.attachmentCount,
+  };
+  let storageCleanupComplete = true;
+
+  try {
+    await deleteObjectsByKeys(storageKeys);
+  } catch (storageError) {
+    // The saved data is already gone, so report the image cleanup problem separately.
+    storageCleanupComplete = false;
+    console.error('SIR S3 cleanup failed after database deletion.', {
+      responseId,
+      storageKeys,
+      error: storageError,
+    });
+  }
+
+  return { impact, storageCleanupComplete };
+}
+
+export async function getArchivedSiteInspectionReports(): Promise<ArchivedSiteInspectionReport[]> {
+  // Archived reports are private admin records.
+  await requireApprovedAdmin('Only approved admins can manage reports.');
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('form_responses')
+    .select(`
+      id, user_id, inspection_no, inspection_date, created_at, is_active,
+      archived_at, site_id,
+      sites_pa (id, namesite)
+    `)
+    .not('archived_at', 'is', null)
+    .order('archived_at', { ascending: false });
+
+  if (error) {
+    throw new Error(error.message || 'Failed to fetch archived Site Inspection Reports');
+  }
+
+  interface ArchivedReportRow {
+    id: number;
+    user_id: string | null;
+    inspection_no: string | null;
+    inspection_date: string | null;
+    created_at: string | null;
+    is_active: boolean;
+    archived_at: string;
+    site_id: number | null;
+    sites_pa: { id: number; namesite: string } | null;
+  }
+
+  const rows = (data ?? []) as unknown as ArchivedReportRow[];
+  // Load all submitter names together instead of making one request for each report.
+  const userIds = [...new Set(
+    rows.map((row) => row.user_id).filter((id): id is string => Boolean(id))
+  )];
+  let peopleByAuthId = new Map<string, { id: number; displayName: string }>();
+
+  if (userIds.length > 0) {
+    const { data: people, error: peopleError } = await supabase
+      .from('people')
+      .select('id, auth_user_id, display_name')
+      .in('auth_user_id', userIds);
+
+    if (peopleError) {
+      throw new Error(peopleError.message || 'Failed to fetch report submitters');
+    }
+
+    peopleByAuthId = new Map(
+      (people ?? []).map((person: {
+        id: number;
+        auth_user_id: string;
+        display_name: string;
+      }) => [
+        person.auth_user_id,
+        { id: person.id, displayName: person.display_name },
+      ])
+    );
+  }
+
+  return rows.map((row) => {
+    const submitter = row.user_id ? peopleByAuthId.get(row.user_id) : undefined;
+    return {
+      id: row.id,
+      inspectionNo: row.inspection_no,
+      inspectionDate: row.inspection_date,
+      createdAt: row.created_at,
+      isActive: row.is_active,
+      archivedAt: row.archived_at,
+      siteId: row.site_id,
+      siteName: row.sites_pa?.namesite ?? null,
+      submitterId: submitter?.id ?? null,
+      submitterName: submitter?.displayName ?? null,
+    };
+  });
+}
+
 /**
  * Returns the archived sites for the Admin archived sites page. Archived sites are
  * hidden from every other site list.
@@ -701,7 +928,8 @@ export async function getArchivedSites(): Promise<SiteSummary[]> {
       ),
       form_responses (
         inspection_date,
-        created_at
+        created_at,
+        archived_at
       )
     `)
     .not('archived_at', 'is', null)
@@ -775,7 +1003,8 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
       ),
       form_responses (
         inspection_date,
-        created_at
+        created_at,
+        archived_at
       )
     `)
     .eq('namesite', namesite)
@@ -826,7 +1055,8 @@ export async function getSiteByNameAdmin(
       ),
       form_responses (
         inspection_date,
-        created_at
+        created_at,
+        archived_at
       )
     `)
     .eq('namesite', namesite)
@@ -871,6 +1101,34 @@ export interface SiteArchiveResult {
 export interface SiteRestoreResult {
   siteId: number;
   siteName: string;
+}
+
+export interface SiteInspectionReportDeleteImpact {
+  responseId: number;
+  inspectionNo: string | null;
+  inspectionDate: string | null;
+  siteName: string | null;
+  answerCount: number;
+  attachmentCount: number;
+}
+
+export interface SiteInspectionReportArchiveResult {
+  responseId: number;
+  archivedAt: string;
+}
+
+export interface SiteInspectionReportRestoreResult {
+  responseId: number;
+}
+
+interface SiteInspectionReportDeleteDatabaseResult
+  extends SiteInspectionReportDeleteImpact {
+  storageKeys: unknown;
+}
+
+export interface SiteInspectionReportDeleteOutcome {
+  impact: SiteInspectionReportDeleteImpact;
+  storageCleanupComplete: boolean;
 }
 
 
@@ -1060,6 +1318,7 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
       )
     `)
     .eq('site_id', siteData.id)
+    .is('archived_at', null)
     .order('inspection_date', { ascending: false })
     .order('created_at', { ascending: false });
 
@@ -1113,6 +1372,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
     `)
     .eq('site_id', siteData.id)
     .eq('is_active', true)
+    .is('archived_at', null)
     .order('inspection_date', { ascending: false })
     .order('created_at', { ascending: false });
 
@@ -1134,9 +1394,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
   });
 }
 
-// Every active inspection report across all sites, newest first. Any signed-in user
-// can read reports (the site detail page already shows them), so this checks only
-// for a session, not a role.
+// Any signed-in user can see current reports, but archived reports are admin-only.
 export async function getAllSiteReports(): Promise<SiteReportSummary[]> {
   const session = await createClient();
   const { data: { user }, error: userError } = await session.auth.getUser();
@@ -1153,6 +1411,7 @@ export async function getAllSiteReports(): Promise<SiteReportSummary[]> {
       )
     `)
     .eq('is_active', true)
+    .is('archived_at', null)
     .order('inspection_date', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false });
 
@@ -1301,12 +1560,14 @@ export async function updateSiteInspectionAnswers(
 ) {
   const supabase = createServerSupabase();
 
+  // Do not change answers while the report is in the archive.
   const { error: updateDateError } = await supabase
     .from('form_responses')
     .update({
       inspection_date: inspectionDate,
     })
     .eq('id', responseId)
+    .is('archived_at', null)
     .select('id')
     .single();
 
@@ -1336,6 +1597,7 @@ export async function getResponseOwnerId(responseId: number): Promise<string | n
     .from('form_responses')
     .select('user_id')
     .eq('id', responseId)
+    .is('archived_at', null)
     .single();
 
   if (error || !data) return null;
@@ -1348,6 +1610,7 @@ export async function getSiteIdForResponse(responseId: number): Promise<number |
     .from('form_responses')
     .select('site_id')
     .eq('id', responseId)
+    .is('archived_at', null)
     .single();
   if (error || !data) return null;
   return (data as any).site_id ?? null;
@@ -1355,9 +1618,11 @@ export async function getSiteIdForResponse(responseId: number): Promise<number |
 
 export async function getTotalInspectionCount(): Promise<number> {
   const supabase = createServerSupabase();
+  // Dashboard totals include only reports that are still in normal use.
   const { count, error } = await supabase
     .from('form_responses')
-    .select('*', { count: 'exact', head: true });
+    .select('*', { count: 'exact', head: true })
+    .is('archived_at', null);
   if (error) throw new Error(error.message);
   return count ?? 0;
 }
@@ -1367,6 +1632,7 @@ export async function getLastInspectionDate(): Promise<string | null> {
   const { data, error } = await supabase
     .from('form_responses')
     .select('created_at')
+    .is('archived_at', null)
     .order('created_at', { ascending: false })
     .limit(1)
     .single();
@@ -1447,6 +1713,7 @@ export async function getFormResponsesForSiteIds(
       `)
       .in('site_id', siteIds)
       .eq('is_active', true)
+      .is('archived_at', null)
       .order('id', { ascending: false }) 
       .order('inspection_date', { ascending: false })
       .range(from, to);

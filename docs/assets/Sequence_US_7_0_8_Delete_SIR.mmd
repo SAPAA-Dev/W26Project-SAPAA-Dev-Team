@@ -47,29 +47,49 @@ sequenceDiagram
     participant DB as Supabase DB<br/>form_responses, answers,<br/>attachments
     participant S3 as AWS S3
 
-    Note over Admin,S3: Covers US 7.0.8. Deactivate exists (setFormResponseActive). Delete does not.<br/>"(proposed)" = the step is not in the code today.
+    Note over Admin,S3: Covers US 7.0.8. Delete first archives a SIR.<br/>Permanent deletion is available only from the archived reports page.
 
-    Admin->>Page: Select Delete on a SIR (proposed)
-    Page-->>Admin: Ask to confirm, with the number of answers and images (AT 1)
-    Admin->>Page: Confirm
-    Page->>Server: deleteFormResponse(responseId) (proposed)
-    Server->>Server: requireApprovedAdmin() (exists):<br/>app_metadata.role = admin and authenticated
-    alt Caller is not Admin (AT 4)
+    Admin->>Page: Select Archive on a SIR
+    Page->>Server: getSiteInspectionReportDeleteImpact(responseId)
+    Server->>Server: requireApprovedAdmin():<br/>app_metadata.role = admin and authenticated
+    Server->>DB: Count answers and attachments
+    Page-->>Admin: Ask to confirm and explain that data is preserved (AT 1)
+    Admin->>Page: Confirm archive
+    Page->>Server: archiveSiteInspectionReport(responseId)
+    Server->>Server: requireApprovedAdmin()
+    alt Caller is not an approved Admin (AT 4)
         Server-->>Page: Refused. The SIR stays unchanged
-        Note over Admin,Server: A Steward who sends the request directly is refused the same way
-    else Caller is Admin
-        Server->>DB: Read storage_key of each attachments row of the SIR
-        Server->>DB: One transaction (database function, proposed):<br/>delete attachments, answers, then the response
-        alt Transaction fails (AT 5)
+    else Caller is an approved Admin
+        Server->>DB: Lock report and set archived_at in one transaction
+        alt Archive fails (AT 5)
             DB-->>Server: Error. Rollback
-            Server-->>Page: Error. The SIR and its answers stay unchanged
-        else Transaction succeeds
-            DB-->>Server: OK
-            Server->>S3: deleteObjectsByKeys(storage_keys)<br/>(helper exists, call proposed)
-            Note over DB,S3: If an S3 delete fails, the row is already gone.<br/>Log the key for a later cleanup.
-            Server-->>Page: Deleted
-            Page-->>Admin: SIR is gone from the Site and report lists. Its images are not shown (AT 2, AT 3)
+            Server-->>Page: Show error. Report data stays unchanged
+        else Archive succeeds
+            DB-->>Server: Archived
+            Server-->>Page: Success
+            Page-->>Admin: Remove SIR and its images from normal views (AT 2, AT 3)
         end
     end
 
-    Note over Admin,S3: Open question: the client must say how delete is different from deactivate.<br/>Deactivate hides the SIR and keeps its files (US 7.0.5 AT 4). Delete removes it.<br/>Today rollbackSiteInspectionSubmission deletes rows with separate calls and no transaction.<br/>It then deletes the S3 objects of those attachments.
+    Admin->>Page: Open Archived Reports
+    alt Restore
+        Admin->>Page: Select Restore
+        Page->>Server: restoreSiteInspectionReport(responseId)
+        Server->>DB: Lock report and clear archived_at
+        DB-->>Server: Restored with the old is_active value
+        Server-->>Page: Remove report from archive list
+    else Delete permanently
+        Admin->>Page: Confirm permanent deletion
+        Page->>Server: permanentlyDeleteSiteInspectionReport(responseId)
+        Server->>Server: requireApprovedAdmin()
+        Server->>DB: One transaction: require archived_at,<br/>capture storage keys, delete attachments,<br/>answers, and form_responses
+        alt Transaction fails (AT 5)
+            DB-->>Server: Error. Rollback
+            Server-->>Page: Show error. Report data stays unchanged
+        else Transaction succeeds
+            DB-->>Server: Counts and storage keys
+            Server->>S3: deleteObjectsByKeys(storage_keys)
+            Note over DB,S3: PostgreSQL and S3 cannot share one transaction.<br/>An S3 failure is logged and shown as incomplete storage cleanup.
+            Server-->>Page: Remove report from archive list
+        end
+    end

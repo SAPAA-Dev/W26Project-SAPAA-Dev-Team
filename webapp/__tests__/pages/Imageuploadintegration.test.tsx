@@ -105,6 +105,7 @@ function makeGalleryFrom(options?: {
     if (table === "attachments") {
       return {
         select: jest.fn().mockReturnThis(),
+        is: jest.fn().mockReturnThis(),
         in: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({
           data: options?.attachmentsError ? null : mockAttachments,

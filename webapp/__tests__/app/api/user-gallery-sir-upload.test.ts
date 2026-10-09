@@ -122,9 +122,12 @@ jest.mock("next/server", () => ({
       const attachmentsInMock = jest.fn().mockReturnValue({
         order: attachmentsOrderMock,
       });
+      const attachmentsIsMock = jest.fn().mockReturnValue({
+        in: attachmentsInMock,
+      });
   
       const attachmentsSelectMock = jest.fn().mockReturnValue({
-        in: attachmentsInMock,
+        is: attachmentsIsMock,
       });
   
       const sitesInMock = jest.fn().mockResolvedValue({
@@ -169,6 +172,7 @@ jest.mock("next/server", () => ({
         "image/png",
         "image/webp",
       ]);
+      expect(attachmentsIsMock).toHaveBeenCalledWith("form_responses.archived_at", null);
   
       expect(sitesInMock).toHaveBeenCalledWith("id", ["207", "208"]);
   
@@ -257,9 +261,12 @@ jest.mock("next/server", () => ({
       const attachmentsInMock = jest.fn().mockReturnValue({
         order: attachmentsOrderMock,
       });
+      const attachmentsIsMock = jest.fn().mockReturnValue({
+        in: attachmentsInMock,
+      });
   
       const attachmentsSelectMock = jest.fn().mockReturnValue({
-        in: attachmentsInMock,
+        is: attachmentsIsMock,
       });
   
       const sitesInMock = jest.fn().mockResolvedValue({
@@ -318,9 +325,12 @@ jest.mock("next/server", () => ({
       const attachmentsInMock = jest.fn().mockReturnValue({
         order: attachmentsOrderMock,
       });
+      const attachmentsIsMock = jest.fn().mockReturnValue({
+        in: attachmentsInMock,
+      });
   
       const attachmentsSelectMock = jest.fn().mockReturnValue({
-        in: attachmentsInMock,
+        is: attachmentsIsMock,
       });
   
       mockFrom.mockImplementation((table: string) => {
@@ -374,9 +384,12 @@ jest.mock("next/server", () => ({
       const attachmentsInMock = jest.fn().mockReturnValue({
         order: attachmentsOrderMock,
       });
+      const attachmentsIsMock = jest.fn().mockReturnValue({
+        in: attachmentsInMock,
+      });
   
       const attachmentsSelectMock = jest.fn().mockReturnValue({
-        in: attachmentsInMock,
+        is: attachmentsIsMock,
       });
   
       const sitesInMock = jest.fn().mockResolvedValue({

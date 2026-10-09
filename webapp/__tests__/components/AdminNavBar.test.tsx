@@ -41,7 +41,11 @@ describe("AdminNavBar", () => {
 
     fireEvent.click(screen.getByTitle("admin dropdown menu"));
 
-    expect(screen.getByRole("link", { name: /Reports/ })).toHaveAttribute("href", "/reports");
+    expect(screen.getByText("Reports").closest("a")).toHaveAttribute("href", "/reports");
+    expect(screen.getByText("Archived Reports").closest("a")).toHaveAttribute(
+      "href",
+      "/admin/reports/archived"
+    );
   });
 
   it("signs out and returns to the login page", async () => {

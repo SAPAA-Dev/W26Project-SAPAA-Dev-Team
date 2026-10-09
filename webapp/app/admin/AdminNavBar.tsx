@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, LayoutDashboard, Users, MapPin, FileEdit, LogOut, ClipboardList } from "lucide-react";
+import { Archive, Home, LayoutDashboard, Users, MapPin, FileEdit, LogOut, ClipboardList } from "lucide-react";
 import { logout } from "@/services/auth";
 import { navigate } from "@/components/HeaderDropdown";
 
@@ -16,6 +16,7 @@ export default function AdminNavBar() {
     { name: "Account Management", href: "/admin/account-management", icon: <Users className="w-4 h-4 text-[#555]" />, description: "Manage user accounts" },
     { name: "Sites", href: "/admin/sites", icon: <MapPin className="w-4 h-4 text-[#555]" />, description: "View and edit all sites" },
     { name: "Reports", href: "/reports", icon: <ClipboardList className="w-4 h-4 text-[#555]" />, description: "View all inspection reports" },
+    { name: "Archived Reports", href: "/admin/reports/archived", icon: <Archive className="w-4 h-4 text-[#555]" />, description: "Restore or delete reports" },
     { name: "Form Editor", href: "/admin/form-editor", icon: <FileEdit className="w-4 h-4 text-[#555]" />, description: "Edit inspection forms" },
   ];
 

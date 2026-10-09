@@ -58,6 +58,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Archived reports keep their images for restore, but the site gallery must hide them.
     const { data: attachments, error: attachmentsError } = await supabase
       .from("attachments")
       .select(`
@@ -69,9 +70,11 @@ export async function GET(
         file_size_bytes,
         filename,
         site_id,
-        response_id
+        response_id,
+        form_responses!inner (archived_at)
       `)
       .eq("site_id", numericSiteId)
+      .is("form_responses.archived_at", null)
       .in("content_type", ALLOWED_IMAGE_TYPES)
       .order("id", { ascending: false });
 

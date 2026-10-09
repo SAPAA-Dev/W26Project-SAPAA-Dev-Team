@@ -229,10 +229,12 @@ async function fetchSiteData(siteName: string, options: PdfOptions): Promise<Pdf
 async function fetchSingleResponse(responseId: number, options: PdfOptions): Promise<PdfSiteData> {
   const supabase = createServerSupabase();
 
+  // An archived report must not be available through an old PDF link.
   const { data: responseData, error } = await supabase
     .from('form_responses')
     .select('site_id')
     .eq('id', responseId)
+    .is('archived_at', null)
     .single();
 
   if (error || !responseData) throw new Error('Response not found');
