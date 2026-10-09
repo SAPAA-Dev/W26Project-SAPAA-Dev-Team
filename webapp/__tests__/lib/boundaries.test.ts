@@ -32,9 +32,17 @@ function row(overrides: Partial<ProtectedAreaBoundaryRow> = {}): ProtectedAreaBo
   return {
     id: 7,
     name: 'Wainwright Dunes',
-    oc_name: 'Wainwright Dunes Ecological Reserve',
+    fid: 12,
     area_type: 'ER',
     subtype: null,
+    iucn: 'Ia',
+    oc_no: 'OC 123/45',
+    acres: 10.5,
+    hectares: 4.25,
+    oc_date: '1971-03-15',
+    date_est: '1971-03-15',
+    oc_name: 'Wainwright Dunes Ecological Reserve',
+    notes: null,
     geometry: { type: 'MultiPolygon', coordinates: [[squareRing(4)]] },
     ...overrides,
   };
@@ -193,9 +201,17 @@ describe('toBoundaryFeatureCollection', () => {
     expect(collection.features[0].id).toBe(7);
     expect(collection.features[0].properties).toEqual({
       name: 'Wainwright Dunes',
-      oc_name: 'Wainwright Dunes Ecological Reserve',
+      fid: 12,
       area_type: 'ER',
       subtype: null,
+      iucn: 'Ia',
+      oc_no: 'OC 123/45',
+      acres: 10.5,
+      hectares: 4.25,
+      oc_date: '1971-03-15',
+      date_est: '1971-03-15',
+      oc_name: 'Wainwright Dunes Ecological Reserve',
+      notes: null,
     });
   });
 

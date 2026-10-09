@@ -58,8 +58,24 @@ interface SiteMapProps {
 function readProperty(properties: unknown, key: string): string | null {
   if (properties === null || typeof properties !== 'object') return null;
   const value = (properties as Record<string, unknown>)[key];
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
   return typeof value === 'string' && value.trim() !== '' ? value : null;
 }
+
+// The order matches the protected-area export. DESCRIPTION is not a column.
+const POPUP_FIELDS: ReadonlyArray<{ label: string; key: string }> = [
+  { label: 'NAME', key: 'name' },
+  { label: 'FID', key: 'fid' },
+  { label: 'TYPE', key: 'area_type' },
+  { label: 'SUBTYPE', key: 'subtype' },
+  { label: 'IUCN', key: 'iucn' },
+  { label: 'OC_NO', key: 'oc_no' },
+  { label: 'ACRES', key: 'acres' },
+  { label: 'HECTARES', key: 'hectares' },
+  { label: 'OC_DATE', key: 'oc_date' },
+  { label: 'DATE_EST', key: 'date_est' },
+  { label: 'OC_NAME', key: 'oc_name' },
+];
 
 /**
  * Builds the popup body from DOM nodes, not from an HTML string. The values come from
@@ -77,8 +93,47 @@ function createPopupContent(properties: unknown): HTMLElement {
   if (areaType !== null) {
     const subtitle = document.createElement('div');
     subtitle.className = 'text-xs text-[#7A8075]';
-    subtitle.textContent = areaType;
+    subtitle.textContent = areaType;  // Suggestion: set this to County if we can get a hard link between protected areas to a site.
     container.appendChild(subtitle);
+  }
+
+  const fields = document.createElement('div');
+  fields.className = 'mt-2';
+  for (const field of POPUP_FIELDS) {
+    const value = readProperty(properties, field.key);
+    if (value === null) continue;
+
+    const line = document.createElement('div');
+    line.className = 'text-xs leading-5 text-[#254431]';
+    line.dataset.field = field.label;
+
+    const label = document.createElement('span');
+    label.className = 'font-bold';
+    label.textContent = `${field.label}:`;
+    line.appendChild(label);
+    line.appendChild(document.createTextNode(` ${value}`));
+    fields.appendChild(line);
+  }
+  if (fields.childElementCount > 0) container.appendChild(fields);
+
+  const notes = readProperty(properties, 'notes');
+  if (notes !== null) {
+    const notesBlock = document.createElement('div');
+    notesBlock.className = 'mt-4';
+
+    const heading = document.createElement('div');
+    heading.className = 'text-xs font-bold text-[#254431]';
+    heading.dataset.notesHeading = 'true';
+    heading.textContent = 'NOTES';
+    notesBlock.appendChild(heading);
+
+    const body = document.createElement('div');
+    body.className = 'text-xs leading-5 text-[#254431] whitespace-pre-wrap';
+    body.dataset.notesBody = 'true';
+    body.textContent = notes;
+    notesBlock.appendChild(body);
+
+    container.appendChild(notesBlock);
   }
 
   return container;
@@ -130,13 +185,22 @@ export default function SiteMap({ boundaries, boundariesLoading, boundariesError
     if (!apiKey || map === null) return;
 
     const applyBoundaries = () => {
-      if (!boundaries || boundaries.features.length === 0) return;
+      if (!boundaries) return;
 
       const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
       if (source) {
+        const hovered = hoveredFeatureRef.current;
+        if (hovered !== null) {
+          map.setFeatureState({ source: SOURCE_ID, id: hovered }, { hover: false });
+          hoveredFeatureRef.current = null;
+        }
+        map.getCanvas().style.cursor = '';
+        popupRef.current?.remove();
         source.setData(boundaries);
         return;
       }
+
+      if (boundaries.features.length === 0) return;
 
       map.addSource(SOURCE_ID, { type: 'geojson', data: boundaries, generateId: true });
 

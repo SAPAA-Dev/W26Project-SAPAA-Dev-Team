@@ -15,6 +15,8 @@ import PdfExportsDropdown from '@/components/PdfExportsDropdown';
 import KmlImportModal from '@/components/KmlImportModal';
 import ArchiveSiteModal from './components/ArchiveSiteModal';
 import type { BoundaryFeatureCollection } from '@/lib/map/boundaries';
+import { boundaryFilterOptions, filterBoundaryCollection } from '@/lib/map/boundaryFilters';
+import MapAreaFilters from '@/components/map/MapAreaFilters';
 
 type UnifiedSite = SiteSummary;
 
@@ -73,6 +75,8 @@ export default function AdminSitesPage() {
   const [activeTooltip, setActiveTooltip] = useState<number | null>(null);
   const [showExportsDropdown, setShowExportsDropdown] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
+  const [selectedAreaTypes, setSelectedAreaTypes] = useState<ReadonlySet<string> | null>(null);
+  const [selectedSubtypes, setSelectedSubtypes] = useState<ReadonlySet<string> | null>(null);
 
   //Archiving states
   const [archiveTarget, setArchiveTarget] = useState<SiteSummary | null>(null);
@@ -104,6 +108,16 @@ export default function AdminSitesPage() {
       .catch(() => setBoundariesError('Site boundaries could not load.'))
       .finally(() => setBoundariesLoading(false));
   }, [viewMode]);
+
+  const areaFilterOptions = useMemo(() => boundaryFilterOptions(boundaries), [boundaries]);
+  const mapBoundaries = useMemo(
+    () =>
+      filterBoundaryCollection(boundaries, search, {
+        types: selectedAreaTypes,
+        subtypes: selectedSubtypes,
+      }),
+    [boundaries, search, selectedAreaTypes, selectedSubtypes]
+  );
 
   const [editSite, setEditSite] = useState<SiteSummary | null>(null);
   const [showAddSite, setShowAddSite] = useState(false);
@@ -464,7 +478,11 @@ const handleCloseArchive = () => {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A8075]" />
                 <input
                   type="text"
-                  placeholder="Search by site name or county..."
+                  placeholder={
+                    viewMode === 'map'
+                      ? 'Search by name or OC name...'
+                      : 'Search by site name or county...'
+                  }
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"
@@ -502,7 +520,11 @@ const handleCloseArchive = () => {
             
             <div className="flex items-center justify-between gap-2">
                 <p className="text-[#7A8075] font-medium">
-                  {filteredSites.length} {filteredSites.length === 1 ? 'site' : 'sites'} found
+                  {viewMode === 'map'
+                    ? boundariesLoading
+                      ? 'Loading map…'
+                      : `${mapBoundaries.features.length} ${mapBoundaries.features.length === 1 ? 'site' : 'sites'} found`
+                    : `${filteredSites.length} ${filteredSites.length === 1 ? 'site' : 'sites'} found`}
                 </p>
                 <div className="flex items-center gap-2">
                 <button
@@ -550,6 +572,17 @@ const handleCloseArchive = () => {
                     <PdfExportsDropdown onClose={() => setShowExportsDropdown(false)} />
                   )}
                 </div>
+                {viewMode === 'map' && (
+                  <MapAreaFilters
+                    types={areaFilterOptions.types}
+                    subtypes={areaFilterOptions.subtypes}
+                    selectedTypes={selectedAreaTypes}
+                    selectedSubtypes={selectedSubtypes}
+                    onTypesChange={setSelectedAreaTypes}
+                    onSubtypesChange={setSelectedSubtypes}
+                  />
+                )}
+                {viewMode !== 'map' && (
                 <div className="relative sort-menu-container">
                   <button
                     onClick={() => setShowSortMenu(!showSortMenu)}
@@ -586,16 +619,16 @@ const handleCloseArchive = () => {
                       </button>
                     </div>
                   )}
-                  </div>
                 </div>
+                )}
               </div>
             </div>
-
+          </div>
 
           {/* Sites Grid */}
           {viewMode === 'map' ? (
             <SiteMap
-              boundaries={boundaries}
+              boundaries={mapBoundaries}
               boundariesLoading={boundariesLoading}
               boundariesError={boundariesError}
             />

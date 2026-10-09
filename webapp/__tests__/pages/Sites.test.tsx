@@ -52,9 +52,28 @@ beforeAll(() => {
 });
 // Mock getSitesOnline and getTotalInspectionCount queries
 const mockGetSitesOnline = jest.fn();
+const mockGetProtectedAreaBoundaries = jest.fn();
 jest.mock('@/utils/supabase/queries', () => ({
   getSitesOnline: () => mockGetSitesOnline(),
   getTotalInspectionCount: () => Promise.resolve(0),
+  getProtectedAreaBoundaries: () => mockGetProtectedAreaBoundaries(),
+}));
+
+jest.mock('@/components/map/SiteMap', () => ({
+  __esModule: true,
+  default: function MockSiteMap({
+    boundaries,
+  }: {
+    boundaries?: { features: Array<{ id: number; properties: { name: string } }> } | null;
+  }) {
+    return (
+      <ul data-testid="site-map">
+        {(boundaries?.features ?? []).map((feature) => (
+          <li key={feature.id}>{feature.properties.name}</li>
+        ))}
+      </ul>
+    );
+  },
 }));
 
 // Sample test data
@@ -605,6 +624,90 @@ describe('Integration Tests', () => {
 
     expect(mockPush).toHaveBeenCalledWith('/detail/Waterton Lakes');
   });
+
+function mapFeature(
+  id: number,
+  name: string,
+  areaType: string,
+  subtype: string | null,
+  ocName: string | null
+) {
+  return {
+    type: 'Feature' as const,
+    id,
+    properties: {
+      name,
+      fid: id,
+      area_type: areaType,
+      subtype,
+      iucn: null,
+      oc_no: null,
+      acres: null,
+      hectares: null,
+      oc_date: null,
+      date_est: null,
+      oc_name: ocName,
+      notes: null,
+    },
+    geometry: { type: 'MultiPolygon' as const, coordinates: [] },
+  };
+}
+
+it('filters the map by type, subtype and name, and keeps the search text across views', async () => {
+  const user = userEvent.setup();
+  mockGetProtectedAreaBoundaries.mockResolvedValue({
+    type: 'FeatureCollection',
+    features: [
+      mapFeature(1, 'Pembina River', 'NA', 'Conservation', 'Pembina River Natural Area'),
+      mapFeature(2, 'Jasper', 'WPP', null, 'Jasper National Park'),
+      mapFeature(3, 'Gooseberry', 'NA', 'Recreation', 'Gooseberry Natural Area'),
+    ],
+  });
+
+  render(<HomeClient />);
+
+  await waitFor(() => {
+    expect(screen.getByText('Elk Island National Park')).toBeInTheDocument();
+  });
+
+  const searchInput = screen.getByPlaceholderText('Search by site name or county...');
+  await user.type(searchInput, 'Natural');
+  await user.click(screen.getByRole('button', { name: 'Map View' }));
+
+  await waitFor(() => {
+    expect(screen.getByTestId('site-map')).toBeInTheDocument();
+  });
+
+  expect(screen.queryByRole('button', { name: /^sort$/i })).not.toBeInTheDocument();
+  expect(screen.getByPlaceholderText('Search by name or OC name...')).toHaveValue('Natural');
+  expect(screen.getByText('Pembina River')).toBeInTheDocument();
+  expect(screen.getByText('Gooseberry')).toBeInTheDocument();
+  expect(screen.queryByText('Jasper')).not.toBeInTheDocument();
+
+  await user.clear(screen.getByPlaceholderText('Search by name or OC name...'));
+  await user.click(screen.getByRole('button', { name: 'Filter' }));
+  await user.click(screen.getByRole('checkbox', { name: 'WPP' }));
+  await user.click(screen.getByRole('checkbox', { name: 'Recreation' }));
+
+  expect(screen.getByText('Pembina River')).toBeInTheDocument();
+  expect(screen.queryByText('Gooseberry')).not.toBeInTheDocument();
+  expect(screen.queryByText('Jasper')).not.toBeInTheDocument();
+
+  await user.click(screen.getByRole('button', { name: 'Cards View' }));
+
+  const cardSearch = screen.getByPlaceholderText('Search by site name or county...');
+  expect(cardSearch).toHaveValue('');
+  expect(screen.getByRole('button', { name: /sort/i })).toBeInTheDocument();
+
+  await user.type(cardSearch, 'River');
+  await user.click(screen.getByRole('button', { name: 'Map View' }));
+
+  await waitFor(() => {
+    expect(screen.getByPlaceholderText('Search by name or OC name...')).toHaveValue('River');
+  });
+  expect(screen.getByText('Pembina River')).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /^sort$/i })).not.toBeInTheDocument();
+});
 
 it('should maintain search state while sorting', async () => {
   const user = userEvent.setup();

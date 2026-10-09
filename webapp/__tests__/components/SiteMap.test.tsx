@@ -82,9 +82,17 @@ const COLLECTION: BoundaryFeatureCollection = {
       id: 1,
       properties: {
         name: 'Wainwright Dunes',
-        oc_name: 'Wainwright Dunes Ecological Reserve',
+        fid: 12,
         area_type: 'ER',
         subtype: null,
+        iucn: null,
+        oc_no: null,
+        acres: null,
+        hectares: null,
+        oc_date: null,
+        date_est: null,
+        oc_name: 'Wainwright Dunes Ecological Reserve',
+        notes: null,
       },
       geometry: {
         type: 'MultiPolygon',
@@ -267,6 +275,17 @@ describe('SiteMap', () => {
       expect(setData).toHaveBeenCalledWith(other);
     });
 
+    it('replaces the polygons with an empty collection and closes the popup', () => {
+      const setData = jest.fn();
+      const { rerender } = render(<SiteMap boundaries={COLLECTION} />);
+
+      mapInstance.getSource.mockReturnValue({ setData });
+      rerender(<SiteMap boundaries={EMPTY_COLLECTION} />);
+
+      expect(setData).toHaveBeenCalledWith(EMPTY_COLLECTION);
+      expect(popupInstance.remove).toHaveBeenCalled();
+    });
+
     it('points the cursor and marks the feature on hover', () => {
       render(<SiteMap boundaries={COLLECTION} />);
 
@@ -319,6 +338,87 @@ describe('SiteMap', () => {
       const content = popupInstance.setDOMContent.mock.calls[0][0] as HTMLElement;
       expect(content.textContent).toContain('Wainwright Dunes');
       expect(content.textContent).toContain('Ecological Reserve');
+    });
+
+    it('lists the stored fields under the subtitle and puts notes on their own lines', () => {
+      render(<SiteMap boundaries={COLLECTION} />);
+
+      act(() =>
+        layerHandler('click')({
+          lngLat: { lng: -110.5, lat: 52.6 },
+          features: [
+            {
+              id: 1,
+              properties: {
+                name: 'Pembina River',
+                fid: 0,
+                area_type: 'NA',
+                subtype: 'Conservation',
+                iucn: 'II',
+                oc_no: 'OC 454/71-42',
+                acres: 185.835377,
+                hectares: 75.204909,
+                oc_date: '1971-03-15',
+                date_est: '1971-03-15',
+                oc_name: 'Pembina River Natural Area',
+                notes: 'Watch the riverbank.',
+              },
+            },
+          ],
+        })
+      );
+
+      const content = popupInstance.setDOMContent.mock.calls[0][0] as HTMLElement;
+      const fields = Array.from(content.querySelectorAll('[data-field]')).map(
+        (line) => line.textContent
+      );
+
+      expect(fields).toEqual([
+        'NAME: Pembina River',
+        'FID: 0',
+        'TYPE: NA',
+        'SUBTYPE: Conservation',
+        'IUCN: II',
+        'OC_NO: OC 454/71-42',
+        'ACRES: 185.835377',
+        'HECTARES: 75.204909',
+        'OC_DATE: 1971-03-15',
+        'DATE_EST: 1971-03-15',
+        'OC_NAME: Pembina River Natural Area',
+      ]);
+      expect(content.querySelector('[data-notes-heading]')?.textContent).toBe('NOTES');
+      expect(content.querySelector('[data-notes-body]')?.textContent).toBe('Watch the riverbank.');
+      expect(content.querySelector('[data-notes-heading]')?.parentElement?.className).toContain('mt-4');
+    });
+
+    it('omits an empty field and the notes block when notes are absent', () => {
+      render(<SiteMap boundaries={COLLECTION} />);
+
+      act(() =>
+        layerHandler('click')({
+          lngLat: { lng: -110.5, lat: 52.6 },
+          features: [
+            {
+              id: 1,
+              properties: {
+                name: 'Pembina River',
+                fid: 0,
+                area_type: 'NA',
+                subtype: '',
+                notes: '   ',
+              },
+            },
+          ],
+        })
+      );
+
+      const content = popupInstance.setDOMContent.mock.calls[0][0] as HTMLElement;
+      const fields = Array.from(content.querySelectorAll('[data-field]')).map(
+        (line) => line.textContent
+      );
+
+      expect(fields).toEqual(['NAME: Pembina River', 'FID: 0', 'TYPE: NA']);
+      expect(content.querySelector('[data-notes-heading]')).toBeNull();
     });
 
     it('falls back to a generic title when the feature carries no name', () => {

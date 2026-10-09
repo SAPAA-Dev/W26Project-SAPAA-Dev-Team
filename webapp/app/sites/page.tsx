@@ -20,6 +20,8 @@ import UserNavBar from "@/components/HeaderDropdown";
 import HelpMenu from '@/components/HelpMenu';
 import { siteDetailSteps } from '@/components/TutorialOverlay';
 import type { BoundaryFeatureCollection } from '@/lib/map/boundaries';
+import { boundaryFilterOptions, filterBoundaryCollection } from '@/lib/map/boundaryFilters';
+import MapAreaFilters from '@/components/map/MapAreaFilters';
 
 const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
@@ -107,6 +109,8 @@ export default function HomeClient() {
   const [menuOpen, setMenuOpen] = useState(false); 
   const [activeTooltip, setActiveTooltip] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
+  const [selectedAreaTypes, setSelectedAreaTypes] = useState<ReadonlySet<string> | null>(null);
+  const [selectedSubtypes, setSelectedSubtypes] = useState<ReadonlySet<string> | null>(null);
 
   // The boundaries are large, so they load the first time the map view opens and never
   // again during the visit.
@@ -125,6 +129,16 @@ export default function HomeClient() {
       .catch(() => setBoundariesError('Site boundaries could not load.'))
       .finally(() => setBoundariesLoading(false));
   }, [viewMode]);
+
+  const areaFilterOptions = useMemo(() => boundaryFilterOptions(boundaries), [boundaries]);
+  const mapBoundaries = useMemo(
+    () =>
+      filterBoundaryCollection(boundaries, search, {
+        types: selectedAreaTypes,
+        subtypes: selectedSubtypes,
+      }),
+    [boundaries, search, selectedAreaTypes, selectedSubtypes]
+  );
 
   const [forceTutorial, setForceTutorial] = useState(false);
 
@@ -402,7 +416,11 @@ export default function HomeClient() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A8075]" />
             <input
               type="text"
-              placeholder="Search by site name or county..."
+              placeholder={
+                viewMode === 'map'
+                  ? 'Search by name or OC name...'
+                  : 'Search by site name or county...'
+              }
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"            />
@@ -438,10 +456,24 @@ export default function HomeClient() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <p className="text-[#7A8075] font-medium">
-              {filteredSites.length} {filteredSites.length === 1 ? 'site' : 'sites'} found
+              {viewMode === 'map'
+                ? boundariesLoading
+                  ? 'Loading map…'
+                  : `${mapBoundaries.features.length} ${mapBoundaries.features.length === 1 ? 'site' : 'sites'} found`
+                : `${filteredSites.length} ${filteredSites.length === 1 ? 'site' : 'sites'} found`}
             </p>
+            {viewMode === 'map' ? (
+              <MapAreaFilters
+                types={areaFilterOptions.types}
+                subtypes={areaFilterOptions.subtypes}
+                selectedTypes={selectedAreaTypes}
+                selectedSubtypes={selectedSubtypes}
+                onTypesChange={setSelectedAreaTypes}
+                onSubtypesChange={setSelectedSubtypes}
+              />
+            ) : (
              <div id="tutorial-sort" className="relative sort-menu-container">
               <button
                 onClick={() => setShowSortMenu(!showSortMenu)}
@@ -491,13 +523,14 @@ export default function HomeClient() {
                 </div>
               )}
             </div>
+            )}
           </div>
         </div>
 
         {/* Sites Grid */}
         {viewMode === 'map' ? (
           <SiteMap
-            boundaries={boundaries}
+            boundaries={mapBoundaries}
             boundariesLoading={boundariesLoading}
             boundariesError={boundariesError}
           />

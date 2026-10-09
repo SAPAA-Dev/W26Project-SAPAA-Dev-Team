@@ -17,17 +17,33 @@ export interface GeoJsonMultiPolygon {
 export interface ProtectedAreaBoundaryRow {
   id: number;
   name: string;
-  oc_name: string | null;
+  fid: number;
   area_type: string;
   subtype: string | null;
+  iucn: string | null;
+  oc_no: string | null;
+  acres: number | null;
+  hectares: number | null;
+  oc_date: string | null;
+  date_est: string | null;
+  oc_name: string | null;
+  notes: string | null;
   geometry: GeoJsonMultiPolygon;
 }
 
 export interface BoundaryProperties {
   name: string;
-  oc_name: string | null;
+  fid: number;
   area_type: string;
   subtype: string | null;
+  iucn: string | null;
+  oc_no: string | null;
+  acres: number | null;
+  hectares: number | null;
+  oc_date: string | null;
+  date_est: string | null;
+  oc_name: string | null;
+  notes: string | null;
 }
 
 export interface BoundaryFeature {
@@ -227,9 +243,17 @@ export function toBoundaryFeatureCollection(
       id: row.id,
       properties: {
         name: row.name,
-        oc_name: row.oc_name,
+        fid: row.fid,
         area_type: row.area_type,
         subtype: row.subtype,
+        iucn: row.iucn,
+        oc_no: row.oc_no,
+        acres: row.acres,
+        hectares: row.hectares,
+        oc_date: row.oc_date,
+        date_est: row.date_est,
+        oc_name: row.oc_name,
+        notes: row.notes,
       },
       geometry,
     });

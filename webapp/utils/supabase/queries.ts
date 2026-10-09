@@ -442,7 +442,9 @@ export async function getProtectedAreaBoundaries(): Promise<BoundaryFeatureColle
 
   const { data, error } = await supabase
     .from('protected_areas')
-    .select('id, name, oc_name, area_type, subtype, geometry');
+    .select(
+      'id, name, fid, area_type, subtype, iucn, oc_no, acres, hectares, oc_date, date_est, oc_name, notes, geometry'
+    );
 
   if (error) throw new Error(error.message || 'Failed to fetch protected area boundaries');
 
