@@ -878,10 +878,10 @@ describe('US 1.0.26 - Persist Site Inspection Form Draft', () => {
     const option = await screen.findByText('Yes');
     fireEvent.click(option);
 
-    const storageKey = 'inspection-draft-user-123-1'; 
+    const storageKey = 'inspection-draft-user-123-1';
     await waitFor(() => {
       const storedData = JSON.parse(localStorage.getItem(storageKey) || '{}');
-      expect(storedData).toMatchObject({ "1": "Yes" });
+      expect(storedData).toMatchObject({ responses: { "1": "Yes" } });
     });
 
     // Refresh by unmounting and remounting
@@ -947,6 +947,64 @@ describe('US 1.0.26 - Persist Site Inspection Form Draft', () => {
     // Check if the text is there upon returning
     const input = await screen.findByTestId("question-input-1") as HTMLTextAreaElement;
     expect(input.value).toBe('Previously saved data');
+  });
+
+  it('returns to the section the steward left, without the verification popup', async () => {
+    const mockQuestions = [
+      {
+        id: 1,
+        title: 'First Section Question',
+        question_type: 'text',
+        section: 1,
+        answers: [],
+        formorder: 1,
+        is_required: false,
+      },
+      {
+        id: 2,
+        title: 'Second Section Question',
+        question_type: 'text',
+        section: 2,
+        answers: [],
+        formorder: 1,
+        is_required: false,
+      },
+    ];
+
+    // This suite keeps mock implementations between tests, so put the two this
+    // test replaces back when it ends.
+    const previousGetUser = mockGetUser.getMockImplementation();
+    const previousIsSteward = mockIsSteward.getMockImplementation();
+
+    try {
+      mockGetQuestionsOnline.mockResolvedValue(mockQuestions);
+      mockGetUser.mockResolvedValue({ data: { user: guestUser }, error: null });
+      mockIsSteward.mockResolvedValue(false);
+      mockGetCurrentUserUid.mockResolvedValue('user-123');
+      mockGetCurrentSiteId.mockResolvedValue('1');
+
+      const { unmount } = render(<NewReportPage />);
+
+      // Accept the disclaimer, then move to the second section
+      const termsCheckbox = await screen.findByTestId('terms-checkbox');
+      fireEvent.click(termsCheckbox);
+      fireEvent.click(screen.getByRole('button', { name: /continue to form/i }));
+
+      await screen.findByTestId('question-input-1');
+      fireEvent.click(screen.getByRole('button', { name: /next/i }));
+      await screen.findByTestId('question-input-2');
+
+      // Leave the page and come back
+      unmount();
+      render(<NewReportPage />);
+
+      expect(await screen.findByTestId('question-input-2')).toBeInTheDocument();
+      expect(screen.queryByTestId('question-input-1')).not.toBeInTheDocument();
+      expect(screen.queryByText(/the fine print up front/i)).not.toBeInTheDocument();
+    } finally {
+      if (previousGetUser) mockGetUser.mockImplementation(previousGetUser);
+      if (previousIsSteward) mockIsSteward.mockImplementation(previousIsSteward);
+    }
   });
 
   it('clears draft data from localStorage after successful submission', async () => {

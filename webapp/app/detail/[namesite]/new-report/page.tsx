@@ -66,7 +66,23 @@ interface ImageWithMeta {
   siteName: string;
 }
 
+interface StoredInspectionDraft {
+  version: 1;
+  responses: Record<number, any>;
+  activeSection: number | null;
+  hasAccepted: boolean;
+}
+
+// Drafts written before version 1 kept the answers at the top level of the
+// stored object, with no wrapper.
+const isStoredInspectionDraft = (value: unknown): value is StoredInspectionDraft => {
+  if (typeof value !== 'object' || value === null) return false;
+  const candidate = value as { responses?: unknown };
+  return typeof candidate.responses === 'object' && candidate.responses !== null;
+};
+
 interface SectionNavigationState {
+  activeSection: number | null;
   isOnLastSection: boolean;
   canGoPrevious: boolean;
   canGoNext: boolean;
@@ -95,14 +111,17 @@ export default function NewReportPage() {
   const [missingImageMetadataDetails, setMissingImageMetadataDetails] = useState<string[]>([]);
   const [draftKey, setDraftKey] = useState<string | null>(null);
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
+  const [restoredActiveSection, setRestoredActiveSection] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);  const [sectionNavigation, setSectionNavigation] = useState<SectionNavigationState>({
+    activeSection: null,
     isOnLastSection: false,
     canGoPrevious: false,
     canGoNext: false,
   });
 
   const handleSectionStateChange = useCallback((state: {
+    activeSection: number | null;
     isOnLastSection: boolean;
     canGoPrevious: boolean;
     canGoNext: boolean;
@@ -111,6 +130,7 @@ export default function NewReportPage() {
   }) => {
     setSectionNavigation((previousState) => {
       if (
+        previousState.activeSection === state.activeSection &&
         previousState.isOnLastSection === state.isOnLastSection &&
         previousState.canGoPrevious === state.canGoPrevious &&
         previousState.canGoNext === state.canGoNext &&
@@ -178,16 +198,24 @@ export default function NewReportPage() {
 
 
 
-  //added 
+  //added
   useEffect(() => {
     const initDraftKey = async () => {
-      const userUid = await getCurrentUserUid();
-      const siteId = await getCurrentSiteId(namesite);
+      try {
+        const userUid = await getCurrentUserUid();
+        const siteId = await getCurrentSiteId(namesite);
 
-      if (userUid && siteId) {
-        const key = `inspection-draft-${userUid}-${siteId}`;
-        setDraftKey(key);
+        if (userUid && siteId) {
+          const key = `inspection-draft-${userUid}-${siteId}`;
+          setDraftKey(key);
+          return;
+        }
+      } catch (error) {
+        console.error('Error restoring the inspection draft:', error);
       }
+
+      // There is no draft to wait for, so the form does not hold back.
+      setIsDraftLoaded(true);
     };
 
     initDraftKey();
@@ -202,8 +230,12 @@ export default function NewReportPage() {
     if (savedDraft) {
           const parsed = JSON.parse(savedDraft);
 
+          const storedDraft: StoredInspectionDraft = isStoredInspectionDraft(parsed)
+            ? parsed
+            : { version: 1, responses: parsed, activeSection: null, hasAccepted: false };
+
           const normalizedResponses = Object.fromEntries(
-            Object.entries(parsed).map(([key, value]) => {
+            Object.entries(storedDraft.responses).map(([key, value]) => {
               if (Array.isArray(value)) {
                 return [
                   key,
@@ -221,6 +253,15 @@ export default function NewReportPage() {
           );
 
           setResponses(normalizedResponses);
+          setRestoredActiveSection(storedDraft.activeSection ?? null);
+
+          // The steward already agreed to the disclaimer for this draft, so the
+          // popup must not come back.
+          if (storedDraft.hasAccepted) {
+            setHasAccepted(true);
+            setHasDismissedVerification(true);
+            setShowVerification(false);
+          }
     }
 
     setIsDraftLoaded(true); // VERY IMPORTANT
@@ -233,8 +274,15 @@ export default function NewReportPage() {
   useEffect(() => {
     if (!draftKey || !isDraftLoaded) return;
 
-    localStorage.setItem(draftKey, JSON.stringify(responses));
-  }, [responses, draftKey, isDraftLoaded]);
+    const draftToStore: StoredInspectionDraft = {
+      version: 1,
+      responses,
+      activeSection: sectionNavigation.activeSection ?? null,
+      hasAccepted,
+    };
+
+    localStorage.setItem(draftKey, JSON.stringify(draftToStore));
+  }, [responses, draftKey, isDraftLoaded, sectionNavigation.activeSection, hasAccepted]);
 
 
 
@@ -590,7 +638,9 @@ export default function NewReportPage() {
           }
   };
 
-  if (isLoading) {
+  // The form waits for the draft, so that a steward who returns to a saved
+  // draft lands on the section they left, with no verification popup flash.
+  if (isLoading || !isDraftLoaded) {
     return (
            <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex flex-col items-center justify-center gap-4">
         <div className="w-16 h-16 border-4 border-[#E4EBE4] border-t-[#356B43] rounded-full animate-spin"></div>
@@ -820,12 +870,13 @@ export default function NewReportPage() {
     </header>
 
       {/* --- MAIN LAYOUT --- */}
-      <MainContent 
+      <MainContent
         responses={responses}
         onResponsesChange={handleResponsesChange}
         onSectionStateChange={handleSectionStateChange}
         siteName={namesite}
         currentUser={currentUser}
+        restoredActiveSection={restoredActiveSection}
       />
 
 

@@ -50,6 +50,8 @@ interface MainContentProps {
   // Keyed by question_id. These are display-only and cannot be removed.
   existingAttachments?: ExistingAttachment[];
   onExistingAttachmentsChange?: (attachments: ExistingAttachment[]) => void;
+  // Section saved in the draft, applied on the first render of the section list.
+  restoredActiveSection?: number | null;
 }
 
 // An image already persisted in AWS + attachments
@@ -85,6 +87,7 @@ export default function MainContent({
   currentUser,
   existingAttachments = [],
   onExistingAttachmentsChange,
+  restoredActiveSection = null,
 }: MainContentProps) {
   const [activeSection, setActiveSection] = useState<number | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -191,8 +194,15 @@ export default function MainContent({
   const canGoNext = currentSectionIndex >= 0 && currentSectionIndex < sections.length - 1;
 
   useEffect(() => {
-    if (sections.length > 0 && activeSection === null) setActiveSection(sections[0]);
-  }, [sections.length]);
+    if (sections.length === 0 || activeSection !== null) return;
+
+    if (restoredActiveSection !== null && sections.includes(restoredActiveSection)) {
+      setActiveSection(restoredActiveSection);
+      return;
+    }
+
+    setActiveSection(sections[0]);
+  }, [activeSection, restoredActiveSection, sections]);
 
   goToPreviousSectionRef.current = () => {
     if (!canGoPrevious) return;
