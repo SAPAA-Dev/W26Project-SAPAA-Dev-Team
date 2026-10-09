@@ -3,6 +3,11 @@
 import { UniqueIdentifier } from '@dnd-kit/core';
 import { createServerSupabase, createClient } from './server';
 import { deleteObjectsByKeys } from '../media/s3Delete';
+import {
+  toBoundaryFeatureCollection,
+  type BoundaryFeatureCollection,
+  type ProtectedAreaBoundaryRow,
+} from '../../lib/map/boundaries';
 
 export interface SiteSummary {
   id: number;
@@ -401,6 +406,28 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
       is_active: site.is_active ?? true,
     };
   });
+}
+
+/**
+ * Returns the boundaries the map draws, ready for MapLibre.
+ *
+ * The geometry column is jsonb that holds a GeoJSON MultiPolygon, so no conversion is
+ * needed. The coordinates are rounded and the rings are simplified here, on the
+ * server, to keep the payload small.
+ */
+export async function getProtectedAreaBoundaries(): Promise<BoundaryFeatureCollection> {
+  // The cookie client, not createServerSupabase. RLS grants select on protected_areas
+  // to authenticated users, so the policy is the gate and the service-role key is not
+  // needed for a read.
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('protected_areas')
+    .select('id, name, oc_name, area_type, subtype, geometry');
+
+  if (error) throw new Error(error.message || 'Failed to fetch protected area boundaries');
+
+  return toBoundaryFeatureCollection((data ?? []) as ProtectedAreaBoundaryRow[]);
 }
 
 export async function getAllSites(): Promise<SiteSummary[]> {

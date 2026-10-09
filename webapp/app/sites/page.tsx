@@ -3,9 +3,9 @@
 
 
 
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSitesOnline, getTotalInspectionCount, SiteSummary } from '@/utils/supabase/queries';
+import { getSitesOnline, getTotalInspectionCount, getProtectedAreaBoundaries, SiteSummary } from '@/utils/supabase/queries';
 import { Award, Search, MapPin, Calendar, Home, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, LayoutGrid, Map as MapIcon } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import Image from 'next/image';
@@ -19,6 +19,7 @@ import { sitesDashboardSteps } from '@/components/TutorialOverlay';
 import UserNavBar from "@/components/HeaderDropdown";
 import HelpMenu from '@/components/HelpMenu';
 import { siteDetailSteps } from '@/components/TutorialOverlay';
+import type { BoundaryFeatureCollection } from '@/lib/map/boundaries';
 
 const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
@@ -106,6 +107,24 @@ export default function HomeClient() {
   const [menuOpen, setMenuOpen] = useState(false); 
   const [activeTooltip, setActiveTooltip] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
+
+  // The boundaries are large, so they load the first time the map view opens and never
+  // again during the visit.
+  const [boundaries, setBoundaries] = useState<BoundaryFeatureCollection | null>(null);
+  const [boundariesLoading, setBoundariesLoading] = useState(false);
+  const [boundariesError, setBoundariesError] = useState<string | null>(null);
+  const boundariesRequested = useRef(false);
+
+  useEffect(() => {
+    if (viewMode !== 'map' || boundariesRequested.current) return;
+    boundariesRequested.current = true;
+
+    setBoundariesLoading(true);
+    getProtectedAreaBoundaries()
+      .then(setBoundaries)
+      .catch(() => setBoundariesError('Site boundaries could not load.'))
+      .finally(() => setBoundariesLoading(false));
+  }, [viewMode]);
 
   const [forceTutorial, setForceTutorial] = useState(false);
 
@@ -477,7 +496,11 @@ export default function HomeClient() {
 
         {/* Sites Grid */}
         {viewMode === 'map' ? (
-          <SiteMap />
+          <SiteMap
+            boundaries={boundaries}
+            boundariesLoading={boundariesLoading}
+            boundariesError={boundariesError}
+          />
         ) : (
         <div id="tutorial-site-list">
         {filteredSites.length === 0 ? (

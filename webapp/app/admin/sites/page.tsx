@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAllSites, getCounties, updateSite, toggleSiteActive, createSite, getTotalInspectionCount, SiteSummary, County } from '@/utils/supabase/queries';
+import { getAllSites, getCounties, updateSite, toggleSiteActive, createSite, getTotalInspectionCount, getProtectedAreaBoundaries, SiteSummary, County } from '@/utils/supabase/queries';
 import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, Pencil, ArrowLeft, Download, Plus, Upload, LayoutGrid, Map as MapIcon } from 'lucide-react';
 import EditSiteModal from './components/EditSiteModal';
 import AddSiteModal from './components/AddSiteModal';
@@ -13,6 +13,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import PdfExportModal from '@/components/PdfExportModal';
 import PdfExportsDropdown from '@/components/PdfExportsDropdown';
 import KmlImportModal from '@/components/KmlImportModal';
+import type { BoundaryFeatureCollection } from '@/lib/map/boundaries';
 
 type UnifiedSite = SiteSummary;
 
@@ -75,6 +76,25 @@ export default function AdminSitesPage() {
   useEffect(() => {
     getTotalInspectionCount().then(setTotalResponses).catch(() => {});
   }, []);
+
+  // The boundaries are large, so they load the first time the map view opens and never
+  // again during the visit.
+  const [boundaries, setBoundaries] = useState<BoundaryFeatureCollection | null>(null);
+  const [boundariesLoading, setBoundariesLoading] = useState(false);
+  const [boundariesError, setBoundariesError] = useState<string | null>(null);
+  const boundariesRequested = useRef(false);
+
+  useEffect(() => {
+    if (viewMode !== 'map' || boundariesRequested.current) return;
+    boundariesRequested.current = true;
+
+    setBoundariesLoading(true);
+    getProtectedAreaBoundaries()
+      .then(setBoundaries)
+      .catch(() => setBoundariesError('Site boundaries could not load.'))
+      .finally(() => setBoundariesLoading(false));
+  }, [viewMode]);
+
   const [editSite, setEditSite] = useState<SiteSummary | null>(null);
   const [showAddSite, setShowAddSite] = useState(false);
   const [counties, setCounties] = useState<County[]>([]);
@@ -502,7 +522,11 @@ export default function AdminSitesPage() {
 
           {/* Sites Grid */}
           {viewMode === 'map' ? (
-            <SiteMap />
+            <SiteMap
+              boundaries={boundaries}
+              boundariesLoading={boundariesLoading}
+              boundariesError={boundariesError}
+            />
           ) : (
             <>
           {filteredSites.length === 0 ? (

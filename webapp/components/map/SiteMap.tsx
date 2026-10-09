@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Map as MapLibreMap } from 'maplibre-gl';
+import { Map as MapLibreMap, Popup } from 'maplibre-gl';
+import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@/components/map/enableMapLibreWorker';
 import { KeyRound } from 'lucide-react';
+import type { BoundaryFeatureCollection } from '@/lib/map/boundaries';
 
 const STYLE_URL = 'https://api.protomaps.com/styles/v5/light/en.json';
 const CENTER: [number, number] = [-114.5, 54.5];
@@ -12,6 +14,21 @@ const ZOOM = 5.5;
 const MAX_BOUNDS: [[number, number], [number, number]] = [
   [-122.0, 48.0],
   [-108.0, 60.5],
+];
+
+const SOURCE_ID = 'protected-areas';
+const FILL_LAYER_ID = 'protected-areas-fill';
+const OUTLINE_LAYER_ID = 'protected-areas-outline';
+
+const FILL_COLOR = '#356B43';
+const OUTLINE_COLOR = '#254431';
+
+// The hover state is a boolean on the feature, so the map repaints one polygon
+// instead of every polygon.
+const HOVERED: ['boolean', ['feature-state', 'hover'], boolean] = [
+  'boolean',
+  ['feature-state', 'hover'],
+  false,
 ];
 
 // Values a developer leaves in .env.local before the real key arrives.
@@ -31,8 +48,47 @@ function readApiKey(): string | null {
   return value;
 }
 
-export default function SiteMap() {
+interface SiteMapProps {
+  /** Boundaries to draw. The page loads them when the map view opens. */
+  boundaries?: BoundaryFeatureCollection | null;
+  boundariesLoading?: boolean;
+  boundariesError?: string | null;
+}
+
+function readProperty(properties: unknown, key: string): string | null {
+  if (properties === null || typeof properties !== 'object') return null;
+  const value = (properties as Record<string, unknown>)[key];
+  return typeof value === 'string' && value.trim() !== '' ? value : null;
+}
+
+/**
+ * Builds the popup body from DOM nodes, not from an HTML string. The values come from
+ * an imported file, and a node cannot carry markup.
+ */
+function createPopupContent(properties: unknown): HTMLElement {
+  const container = document.createElement('div');
+
+  const title = document.createElement('div');
+  title.className = 'text-sm font-bold text-[#254431]';
+  title.textContent = readProperty(properties, 'name') ?? 'Protected area';
+  container.appendChild(title);
+
+  const areaType = readProperty(properties, 'area_type');
+  if (areaType !== null) {
+    const subtitle = document.createElement('div');
+    subtitle.className = 'text-xs text-[#7A8075]';
+    subtitle.textContent = areaType;
+    container.appendChild(subtitle);
+  }
+
+  return container;
+}
+
+export default function SiteMap({ boundaries, boundariesLoading, boundariesError }: SiteMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<MapLibreMap | null>(null);
+  const popupRef = useRef<Popup | null>(null);
+  const hoveredFeatureRef = useRef<string | number | null>(null);
   const apiKey = readApiKey();
 
   useEffect(() => {
@@ -46,6 +102,8 @@ export default function SiteMap() {
       maxBounds: MAX_BOUNDS,
       renderWorldCopies: false,
     });
+    mapRef.current = map;
+    popupRef.current = new Popup({ closeButton: false, closeOnClick: true });
 
     // The canvas keeps the size it had when the toggle revealed the map, so a
     // later layout change (a window resize, a wrapped toolbar) needs a resize call.
@@ -53,10 +111,109 @@ export default function SiteMap() {
     observer.observe(containerRef.current);
 
     return () => {
+      popupRef.current?.remove();
+      popupRef.current = null;
+      hoveredFeatureRef.current = null;
+      mapRef.current = null;
       observer.disconnect();
+      // map.remove() also drops every source, layer and listener on the map, so
+      // there is nothing else to detach here.
       map.remove();
     };
   }, [apiKey]);
+
+  // The boundaries arrive after the map exists, so the data lives in its own effect.
+  // The first set builds the source and the layers; a later set only replaces the data,
+  // which keeps the pan, the zoom and the WebGL context.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!apiKey || map === null) return;
+
+    const applyBoundaries = () => {
+      if (!boundaries || boundaries.features.length === 0) return;
+
+      const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
+      if (source) {
+        source.setData(boundaries);
+        return;
+      }
+
+      map.addSource(SOURCE_ID, { type: 'geojson', data: boundaries, generateId: true });
+
+      map.addLayer({
+        id: FILL_LAYER_ID,
+        type: 'fill',
+        source: SOURCE_ID,
+        paint: {
+          'fill-color': FILL_COLOR,
+          'fill-opacity': ['case', HOVERED, 0.45, 0.25],
+        },
+      });
+
+      map.addLayer({
+        id: OUTLINE_LAYER_ID,
+        type: 'line',
+        source: SOURCE_ID,
+        paint: {
+          'line-color': OUTLINE_COLOR,
+          'line-width': ['case', HOVERED, 3, 2],
+        },
+      });
+
+      const clearHover = () => {
+        const hovered = hoveredFeatureRef.current;
+        if (hovered === null) return;
+        map.setFeatureState({ source: SOURCE_ID, id: hovered }, { hover: false });
+        hoveredFeatureRef.current = null;
+      };
+
+      const handleMouseMove = (event: MapLayerMouseEvent) => {
+        map.getCanvas().style.cursor = 'pointer';
+
+        const feature = event.features?.[0];
+        // generateId puts an id on every feature, so the hover state can name one.
+        if (feature === undefined || feature.id === undefined) return;
+        if (hoveredFeatureRef.current === feature.id) return;
+
+        clearHover();
+        hoveredFeatureRef.current = feature.id;
+        map.setFeatureState({ source: SOURCE_ID, id: feature.id }, { hover: true });
+      };
+
+      const handleMouseLeave = () => {
+        map.getCanvas().style.cursor = '';
+        clearHover();
+      };
+
+      const handleClick = (event: MapLayerMouseEvent) => {
+        const feature = event.features?.[0];
+        const popup = popupRef.current;
+        if (feature === undefined || popup === null) return;
+        popup
+          .setLngLat(event.lngLat)
+          .setDOMContent(createPopupContent(feature.properties))
+          .addTo(map);
+      };
+
+      map.on('mousemove', FILL_LAYER_ID, handleMouseMove);
+      map.on('mouseleave', FILL_LAYER_ID, handleMouseLeave);
+      map.on('click', FILL_LAYER_ID, handleClick);
+    };
+
+    // A source or a layer can be added only once the style has loaded.
+    if (map.isStyleLoaded()) {
+      applyBoundaries();
+      return;
+    }
+
+    map.once('load', applyBoundaries);
+
+    return () => {
+      // The effect above clears the ref before it removes the map, so this runs only
+      // while the map is still alive.
+      if (mapRef.current !== null) mapRef.current.off('load', applyBoundaries);
+    };
+  }, [apiKey, boundaries]);
 
   if (!apiKey) {
     return (
@@ -98,5 +255,18 @@ export default function SiteMap() {
     );
   }
 
-  return <div ref={containerRef} className={BOX_CLASSES} />;
+  // The map still works without the boundaries, so the two states are a note on top
+  // of the canvas rather than a replacement for it.
+  const status = boundariesError ?? (boundariesLoading ? 'Loading boundaries…' : null);
+
+  return (
+    <div className="relative">
+      <div ref={containerRef} className={BOX_CLASSES} />
+      {status !== null && (
+        <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-[#E4EBE4] bg-white/95 px-3 py-1.5 text-xs font-medium text-[#254431] shadow-sm">
+          {status}
+        </div>
+      )}
+    </div>
+  );
 }
