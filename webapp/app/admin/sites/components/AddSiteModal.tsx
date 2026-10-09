@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X, MapPin, Plus, Pencil, AlertTriangle } from "lucide-react";
-import { County, findSitesWithName } from "@/utils/supabase/queries";
+import { County, SiteSuggestion, findSitesWithName, getSiteSuggestions } from "@/utils/supabase/queries";
+
+const MAX_SHOWN_SUGGESTIONS = 8;
 
 interface AddSiteModalProps {
   visible: boolean;
@@ -23,14 +25,31 @@ export default function AddSiteModal({
   const [countyId, setCountyId] = useState("");
   const [nameMissing, setNameMissing] = useState(false);
   const [duplicateNames, setDuplicateNames] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<SiteSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => {
+    if (!visible) return;
+    getSiteSuggestions()
+      .then(setSuggestions)
+      .catch(() => setSuggestions([]));
+  }, [visible]);
 
   if (!visible) return null;
+
+  const typedName = namesite.trim().toLowerCase();
+  const matchingSuggestions = typedName
+    ? suggestions
+        .filter((suggestion) => suggestion.name.toLowerCase().includes(typedName))
+        .slice(0, MAX_SHOWN_SUGGESTIONS)
+    : [];
 
   const resetForm = () => {
     setNamesite("");
     setCountyId("");
     setNameMissing(false);
     setDuplicateNames([]);
+    setShowSuggestions(false);
   };
 
   const handleClose = () => {
@@ -38,9 +57,9 @@ export default function AddSiteModal({
     onClose();
   };
 
-  const checkForDuplicates = async () => {
+  const checkForDuplicates = async (name: string = namesite) => {
     try {
-      setDuplicateNames(await findSitesWithName(namesite));
+      setDuplicateNames(await findSitesWithName(name));
     } catch {
       // The warning only helps the admin. If the check fails, the database still refuses an exact duplicate.
       setDuplicateNames([]);
@@ -57,6 +76,13 @@ export default function AddSiteModal({
       ab_county: countyId ? Number(countyId) : null,
     });
     if (saved) resetForm();
+  };
+
+  const chooseSuggestion = (name: string) => {
+    setNamesite(name);
+    setNameMissing(false);
+    setShowSuggestions(false);
+    checkForDuplicates(name);
   };
 
   return (
@@ -85,24 +111,52 @@ export default function AddSiteModal({
               <Pencil className="w-4 h-4 text-[#356B43]" />
               Site Name <span className="text-red-600">*</span>
             </label>
-            <input
-              id="add-site-name"
-              data-testid="add-site-name-input"
-              type="text"
-              aria-invalid={nameMissing}
-              className={`w-full px-4 py-3 bg-[#F7F2EA] border-2 rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] transition-all ${
-                nameMissing ? "border-red-500" : "border-[#86A98A]"
-              }`}
-              placeholder="Enter site name"
-              value={namesite}
-              onChange={(e) => {
-                setNamesite(e.target.value);
-                setNameMissing(false);
-                setDuplicateNames([]);
-              }}
-              onBlur={checkForDuplicates}
-              disabled={saving}
-            />
+            <div className="relative">
+              <input
+                id="add-site-name"
+                data-testid="add-site-name-input"
+                type="text"
+                autoComplete="off"
+                aria-invalid={nameMissing}
+                className={`w-full px-4 py-3 bg-[#F7F2EA] border-2 rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] transition-all ${
+                  nameMissing ? "border-red-500" : "border-[#86A98A]"
+                }`}
+                placeholder="Enter site name"
+                value={namesite}
+                onChange={(e) => {
+                  setNamesite(e.target.value);
+                  setNameMissing(false);
+                  setDuplicateNames([]);
+                  setShowSuggestions(true);
+                }}
+                onBlur={() => {
+                  setShowSuggestions(false);
+                  checkForDuplicates();
+                }}
+                disabled={saving}
+              />
+              {showSuggestions && matchingSuggestions.length > 0 && (
+                <ul
+                  data-testid="add-site-suggestions"
+                  className="absolute top-full mt-1 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg z-10 max-h-60 overflow-y-auto"
+                >
+                  <li className="px-3 pt-2 pb-1 text-xs text-[#7A8075]">Suggestions from the SAPAA map</li>
+                  {matchingSuggestions.map((suggestion) => (
+                    <li key={suggestion.name}>
+                      <button
+                        type="button"
+                        className="w-full text-left px-3 py-2 hover:bg-green-50 transition-colors"
+                        // onMouseDown runs before the input's onBlur hides this list.
+                        onMouseDown={() => chooseSuggestion(suggestion.name)}
+                      >
+                        <span className="text-sm font-medium text-gray-800">{suggestion.name}</span>
+                        <span className="ml-2 text-xs text-[#7A8075]">{suggestion.category}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
             {nameMissing && (
               <p className="mt-1 text-sm text-red-600">Site name is required.</p>
             )}

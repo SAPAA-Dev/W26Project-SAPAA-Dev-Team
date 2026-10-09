@@ -955,23 +955,56 @@ export async function getArchivedSites(): Promise<SiteSummary[]> {
   });
 }
 
+// Containment on very short names (e.g. "Elk") would match many sites, so it needs a minimum length.
+const MIN_CONTAINED_NAME_LENGTH = 4;
+
+function isPossibleDuplicate(newName: string, existingName: string): boolean {
+  if (newName === existingName) return true;
+  const shorter = newName.length < existingName.length ? newName : existingName;
+  const longer = shorter === newName ? existingName : newName;
+  return shorter.length >= MIN_CONTAINED_NAME_LENGTH && longer.includes(shorter);
+}
+
 export async function findSitesWithName(namesite: string): Promise<string[]> {
   await requireApprovedAdmin();
 
-  const name = namesite.trim();
+  const name = namesite.trim().toLowerCase();
   if (!name) return [];
 
-  // ilike ignores case. Escape its wildcards so a "%" or "_" in a site name matches only itself.
-  const pattern = name.replace(/[\\%_]/g, (character) => `\\${character}`);
-
   const supabase = createServerSupabase();
-  const { data, error } = await supabase
-    .from('sites_pa')
-    .select('namesite')
-    .ilike('namesite', pattern);
+  const { data, error } = await supabase.from('sites_pa').select('namesite');
 
   if (error) throw new Error(error.message || 'Failed to check for duplicate sites');
-  return (data ?? []).map((site) => site.namesite);
+  return (data ?? [])
+    .map((site) => site.namesite as string)
+    .filter((existing) => isPossibleDuplicate(name, existing.toLowerCase()));
+}
+
+export interface SiteSuggestion {
+  name: string;
+  category: string;
+}
+
+export async function getSiteSuggestions(): Promise<SiteSuggestion[]> {
+  await requireApprovedAdmin();
+  const supabase = createServerSupabase();
+
+  const [areas, sites] = await Promise.all([
+    supabase.from('protected_areas').select('name, folder'),
+    supabase.from('sites_pa').select('namesite'),
+  ]);
+  if (areas.error) throw new Error(areas.error.message || 'Failed to load the SAPAA map areas');
+  if (sites.error) throw new Error(sites.error.message || 'Failed to load sites');
+
+  const existingNames = new Set((sites.data ?? []).map((site) => (site.namesite as string).toLowerCase()));
+  const suggestions = new Map<string, SiteSuggestion>();
+  for (const area of areas.data ?? []) {
+    const key = (area.name as string).toLowerCase();
+    if (!existingNames.has(key) && !suggestions.has(key)) {
+      suggestions.set(key, { name: area.name, category: area.folder });
+    }
+  }
+  return [...suggestions.values()].sort((first, second) => first.name.localeCompare(second.name));
 }
 
 export async function toggleSiteActive(

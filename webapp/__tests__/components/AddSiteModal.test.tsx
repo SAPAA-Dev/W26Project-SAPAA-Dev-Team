@@ -1,10 +1,11 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import AddSiteModal from "../../app/admin/sites/components/AddSiteModal";
-import { findSitesWithName } from "../../utils/supabase/queries";
+import { findSitesWithName, getSiteSuggestions } from "../../utils/supabase/queries";
 
 jest.mock("../../utils/supabase/queries", () => ({
   findSitesWithName: jest.fn(),
+  getSiteSuggestions: jest.fn(),
 }));
 
 const counties = [
@@ -23,6 +24,11 @@ describe("AddSiteModal", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (findSitesWithName as jest.Mock).mockResolvedValue([]);
+    (getSiteSuggestions as jest.Mock).mockResolvedValue([
+      { name: "Bilby", category: "Natural Areas (OC)" },
+      { name: "Bilberry Creek", category: "Provincial Recreation Areas" },
+      { name: "Wagner", category: "Natural Areas (OC)" },
+    ]);
   });
 
   it("renders nothing when it is not visible", () => {
@@ -75,5 +81,29 @@ describe("AddSiteModal", () => {
     fireEvent.click(screen.getByTestId("add-site-save-button"));
 
     await waitFor(() => expect(onSave).toHaveBeenCalledWith({ namesite: "New Site", ab_county: 2 }));
+  });
+
+  it("suggests SAPAA map areas that match what the admin types", async () => {
+    renderModal();
+    await waitFor(() => expect(getSiteSuggestions).toHaveBeenCalled());
+
+    fireEvent.change(screen.getByTestId("add-site-name-input"), { target: { value: "bil" } });
+
+    const list = await screen.findByTestId("add-site-suggestions");
+    expect(list).toHaveTextContent("Bilby");
+    expect(list).toHaveTextContent("Bilberry Creek");
+    expect(list).not.toHaveTextContent("Wagner");
+  });
+
+  it("fills in the name when the admin picks a suggestion", async () => {
+    renderModal();
+    await waitFor(() => expect(getSiteSuggestions).toHaveBeenCalled());
+
+    fireEvent.change(screen.getByTestId("add-site-name-input"), { target: { value: "bil" } });
+    fireEvent.mouseDown(await screen.findByText("Bilberry Creek"));
+
+    expect(screen.getByTestId("add-site-name-input")).toHaveValue("Bilberry Creek");
+    expect(screen.queryByTestId("add-site-suggestions")).not.toBeInTheDocument();
+    await waitFor(() => expect(findSitesWithName).toHaveBeenCalledWith("Bilberry Creek"));
   });
 });

@@ -66,25 +66,68 @@ describe("createSite and findSitesWithName", () => {
     await expect(queries.createSite("Bilby NA", null)).rejects.toThrow("A site with this name already exists.");
   });
 
-  it("findSitesWithName returns the matching names, ignoring case", async () => {
-    const mockIlike = jest.fn().mockResolvedValue({ data: [{ namesite: "Bilby NA" }], error: null });
-    mockFrom.mockReturnValue({ select: jest.fn().mockReturnValue({ ilike: mockIlike }) });
+  it("findSitesWithName warns on the same name, ignoring case", async () => {
+    mockFrom.mockReturnValue({
+      select: jest.fn().mockResolvedValue({ data: [{ namesite: "Bilby NA" }, { namesite: "Elk Island" }], error: null }),
+    });
 
     await expect(queries.findSitesWithName(" bilby na ")).resolves.toEqual(["Bilby NA"]);
-    expect(mockIlike).toHaveBeenCalledWith("namesite", "bilby na");
   });
 
-  it("findSitesWithName escapes wildcard characters", async () => {
-    const mockIlike = jest.fn().mockResolvedValue({ data: [], error: null });
-    mockFrom.mockReturnValue({ select: jest.fn().mockReturnValue({ ilike: mockIlike }) });
+  it("findSitesWithName warns when one name contains the other", async () => {
+    mockFrom.mockReturnValue({
+      select: jest.fn().mockResolvedValue({
+        data: [{ namesite: "Bilby Natural Area" }, { namesite: "Wagner Natural Area" }],
+        error: null,
+      }),
+    });
 
-    await queries.findSitesWithName("50%_site");
+    await expect(queries.findSitesWithName("Bilby")).resolves.toEqual(["Bilby Natural Area"]);
+    await expect(queries.findSitesWithName("Bilby Natural Area East")).resolves.toEqual(["Bilby Natural Area"]);
+  });
 
-    expect(mockIlike).toHaveBeenCalledWith("namesite", "50\\%\\_site");
+  it("findSitesWithName ignores containment for very short names", async () => {
+    mockFrom.mockReturnValue({
+      select: jest.fn().mockResolvedValue({ data: [{ namesite: "Elk Island" }], error: null }),
+    });
+
+    await expect(queries.findSitesWithName("Elk")).resolves.toEqual([]);
   });
 
   it("findSitesWithName returns nothing for an empty name", async () => {
     await expect(queries.findSitesWithName("  ")).resolves.toEqual([]);
     expect(mockFrom).not.toHaveBeenCalled();
   });
+
+  it("getSiteSuggestions rejects a steward and touches nothing", async () => {
+    mockCaller("steward");
+
+    await expect(queries.getSiteSuggestions()).rejects.toThrow("Only admins can edit sites.");
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it("getSiteSuggestions returns map areas that are not sites yet, once each, sorted", async () => {
+    mockFrom.mockImplementation((table: string) => ({
+      select: jest.fn().mockResolvedValue(
+        table === "protected_areas"
+          ? {
+              data: [
+                { name: "Wagner", folder: "Natural Areas (OC)" },
+                { name: "Bilby", folder: "Natural Areas (OC)" },
+                { name: "Alexo", folder: "Provincial Recreation Areas" },
+                { name: "Alexo", folder: "Protective Notations (PNT)" },
+              ],
+              error: null,
+            }
+          : { data: [{ namesite: "WAGNER" }], error: null }
+      ),
+    }));
+
+    await expect(queries.getSiteSuggestions()).resolves.toEqual([
+      { name: "Alexo", category: "Provincial Recreation Areas" },
+      { name: "Bilby", category: "Natural Areas (OC)" },
+    ]);
+  });
+
+
 });
