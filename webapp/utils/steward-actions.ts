@@ -80,14 +80,17 @@ export async function getSitesForSteward(personId: number): Promise<StewardedSit
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('site_stewards')
-    .select('site_id, sites_pa(namesite)')
+    .select('site_id, sites_pa(namesite, archived_at)')
     .eq('steward_id', personId);
 
   if (error) throw new Error(error.message);
-  return (data ?? []).map((row) => ({
-    siteId: row.site_id,
-    namesite: (row.sites_pa as unknown as { namesite: string } | null)?.namesite ?? '',
-  }));
+  return (data ?? [])
+    // Archived sites are hidden from the app.
+    .filter((row) => !(row.sites_pa as unknown as { archived_at: string | null } | null)?.archived_at)
+    .map((row) => ({
+      siteId: row.site_id,
+      namesite: (row.sites_pa as unknown as { namesite: string } | null)?.namesite ?? '',
+    }));
 }
 
 // 1.0.1 AT3: the person who submitted an inspection, so the site page can link to their profile.

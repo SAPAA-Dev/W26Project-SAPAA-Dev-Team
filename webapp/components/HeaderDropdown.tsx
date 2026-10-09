@@ -2,7 +2,7 @@
 
 import { logout } from "@/services/auth";
 import { usePathname } from "next/navigation";
-import { Mail, LogOut, BadgeInfo, Images, House, ShieldUser, UserRound} from 'lucide-react';
+import { Mail, LogOut, BadgeInfo, Images, House, ShieldUser, UserRound, ClipboardList} from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
 
@@ -17,7 +17,8 @@ interface UserNavBarProps {
 const ROUTES = {
   home: "/sites",
   gallery: "/gallery",
-  profile: "/profile"
+  profile: "/profile",
+  reports: "/reports"
 };
 
 async function getCurrentUser(): Promise<{ email: string; role: string; name: string; avatar: string} | null> {
@@ -167,6 +168,22 @@ export default function UserNavBar({ onStartTutorial }: UserNavBarProps) {
                         My profile
                     </span>
                     <p className="text-xs text-black/40">View your contributions</p>
+                    </div>
+                    </button>
+                    <button
+                    onClick={() => { setMenuOpen(false); router.push(ROUTES.reports); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f5f5f3] transition-colors"
+                    >
+                    <span className="w-8 h-8 rounded-lg bg-[#f0efeb] flex items-center justify-center flex-shrink-0">
+                        <ClipboardList className="w-4 h-4 text-[#555]" />
+                    </span>
+                    <div className="text-left">
+                    <span className={`text-sm text-[#1a1a1a] ${
+                            pathname == ROUTES.reports ? "font-bold" : "font-medium"
+                    }`}>
+                        All reports
+                    </span>
+                    <p className="text-xs text-black/40">Browse every inspection report</p>
                     </div>
                     </button>
                     <button

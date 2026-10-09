@@ -36,17 +36,20 @@ describe("Supabase site functions", () => {
         },
       ];
 
+      const mockIs = jest.fn().mockReturnThis();
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
+        is: mockIs,
         order: jest.fn().mockResolvedValue({ data: mockData, error: null }),
       });
 
       const result = await queries.getSitesOnline();
 
+      expect(mockIs).toHaveBeenCalledWith("archived_at", null);
       expect(result).toEqual([
-        { id: 1, namesite: "Alpha", county: "County1", ab_county: 10, inspectdate: "2025-11-30", is_active: true },
-        { id: 2, namesite: "Beta", county: null, ab_county: null, inspectdate: null, is_active: true },
+        { id: 1, namesite: "Alpha", county: "County1", ab_county: 10, inspectdate: "2025-11-30", is_active: true, archived_at: null },
+        { id: 2, namesite: "Beta", county: null, ab_county: null, inspectdate: null, is_active: true, archived_at: null },
       ]);
     });
 
@@ -54,6 +57,7 @@ describe("Supabase site functions", () => {
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
+        is: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({ data: null, error: { message: "Failed" } }),
       });
 
@@ -74,20 +78,24 @@ describe("Supabase site functions", () => {
         },
       ];
 
+      const mockIs = jest.fn().mockReturnThis();
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
+        is: mockIs,
         limit: jest.fn().mockResolvedValue({ data: mockData, error: null }),
       });
 
       const result = await queries.getSiteByName("Alpha");
-      expect(result).toEqual([{ id: 1, namesite: "Alpha", county: "County1", ab_county: 10, inspectdate: "2025-11-30", is_active: true }]);
+      expect(mockIs).toHaveBeenCalledWith("archived_at", null);
+      expect(result).toEqual([{ id: 1, namesite: "Alpha", county: "County1", ab_county: 10, inspectdate: "2025-11-30", is_active: true, archived_at: null }]);
     });
 
     it("throws error if Supabase fails", async () => {
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
+        is: jest.fn().mockReturnThis(),
         limit: jest.fn().mockResolvedValue({ data: null, error: { message: "Error" } }),
       });
 

@@ -36,6 +36,7 @@ classDiagram
         +namesite: string
         +ab_county: number?
         +is_active: boolean
+        +archived_at: timestamp?
     }
 
     class County {
@@ -80,7 +81,7 @@ classDiagram
     class FormResponse {
         <<table form_responses>>
         +id: number
-        +site_id: number
+        +site_id: number?
         +user_id: string?
         +inspection_no: string?
         +inspection_date: date?
@@ -161,7 +162,7 @@ classDiagram
     class HomepageImageUpload {
         <<table homepage_image_uploads>>
         +id: number
-        +site_id: number
+        +site_id: number?
         +user_id: string?
         +storage_key: string
         +filename: string?
@@ -231,7 +232,7 @@ classDiagram
     Site "1" *-- "0..1" SiteSteward : site_id
     Person "1" *-- "0..*" SiteSteward : steward_id
     Person "1" *-- "0..1" Socials : person_id
-    Site "1" <-- "0..*" FormResponse : site_id
+    Site "0..1" <-- "0..*" FormResponse : site_id
     FormResponse "1" *-- "0..*" Answer : response_id
     Question "1" <-- "0..*" Answer : question_id
     QuestionKey "0..1" <-- "0..*" Question : question_key_id
@@ -240,7 +241,7 @@ classDiagram
     FormResponse "0..1" *-- "0..*" Attachment : response_id
     Question "0..1" <-- "0..*" Attachment : question_id
     Site "0..1" <-- "0..*" Attachment : site_id
-    Site "1" *-- "0..*" HomepageImageUpload : site_id
+    Site "0..1" *-- "0..*" HomepageImageUpload : site_id
     %% END GENERATED: models
 
     class Site {

@@ -24,7 +24,7 @@ type InspectionRow = {
   site_id: number | null;
   inspection_date: string | null;
   created_at: string | null;
-  sites_pa: { id: number; namesite: string } | null;
+  sites_pa: { id: number; namesite: string; archived_at: string | null } | null;
 };
 
 function profileTableMissing(error: { code?: string } | null) {
@@ -119,7 +119,7 @@ export async function GET(request: NextRequest) {
     await Promise.all([
       admin
         .from('form_responses')
-        .select('id, site_id, inspection_date, created_at, sites_pa(id, namesite)', { count: 'exact' })
+        .select('id, site_id, inspection_date, created_at, sites_pa(id, namesite, archived_at)', { count: 'exact' })
         .eq('user_id', profile.auth_user_id)
         .eq('is_active', true)
         .order('inspection_date', { ascending: false, nullsFirst: false })
@@ -135,6 +135,9 @@ export async function GET(request: NextRequest) {
     id: inspection.id,
     siteId: inspection.site_id,
     siteName: inspection.sites_pa?.namesite ?? 'Unknown site',
+    // Archived sites are hidden from the app, so the profile lists their reports
+    // without linking to the site page.
+    siteArchived: inspection.sites_pa?.archived_at != null,
     inspectionDate: inspection.inspection_date ?? inspection.created_at,
   }));
 

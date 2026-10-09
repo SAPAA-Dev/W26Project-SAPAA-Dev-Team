@@ -12,6 +12,7 @@ jest.mock('next/navigation', () => ({
 // Mock supabase queries
 jest.mock('@/utils/supabase/queries', () => ({
   getAllSites: jest.fn(),
+  getArchivedSites: jest.fn().mockResolvedValue([]),
   getCounties: jest.fn().mockResolvedValue([]),
   updateSite: jest.fn().mockResolvedValue(undefined),
   toggleSiteActive: jest.fn().mockResolvedValue(undefined),

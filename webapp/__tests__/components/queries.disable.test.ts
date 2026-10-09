@@ -45,22 +45,26 @@ describe("Supabase disable site functions", () => {
         },
       ];
 
+      const mockIs = jest.fn().mockReturnThis();
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
+        is: mockIs,
         order: jest.fn().mockResolvedValue({ data: mockData, error: null }),
       });
 
       const result = await queries.getAllSites();
 
+      expect(mockIs).toHaveBeenCalledWith("archived_at", null);
       expect(result).toEqual([
-        { id: 1, namesite: "Active Site", county: "County1", ab_county: 10, inspectdate: "2025-11-30", is_active: true },
-        { id: 2, namesite: "Inactive Site", county: null, ab_county: null, inspectdate: null, is_active: false },
+        { id: 1, namesite: "Active Site", county: "County1", ab_county: 10, inspectdate: "2025-11-30", is_active: true, archived_at: null },
+        { id: 2, namesite: "Inactive Site", county: null, ab_county: null, inspectdate: null, is_active: false, archived_at: null },
       ]);
     });
 
     it("throws error if Supabase fails", async () => {
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
+        is: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({ data: null, error: { message: "Failed" } }),
       });
 

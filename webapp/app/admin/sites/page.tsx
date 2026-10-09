@@ -2,8 +2,8 @@
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAllSites, getCounties, updateSite, toggleSiteActive, createSite, getTotalInspectionCount, getProtectedAreaBoundaries, SiteSummary, County } from '@/utils/supabase/queries';
-import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, Pencil, ArrowLeft, Download, Plus, Upload, LayoutGrid, Map as MapIcon } from 'lucide-react';
+import { getAllSites, getArchivedSites, getCounties, updateSite, toggleSiteActive, createSite, getTotalInspectionCount, getProtectedAreaBoundaries, SiteSummary, County, SiteDeleteImpact, archiveSite, getSiteDeleteImpact } from '@/utils/supabase/queries';
+import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, Pencil, ArrowLeft, Download, Plus, Upload, LayoutGrid, Map as MapIcon, Archive } from 'lucide-react';
 import EditSiteModal from './components/EditSiteModal';
 import AddSiteModal from './components/AddSiteModal';
 import Image from 'next/image';
@@ -13,6 +13,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import PdfExportModal from '@/components/PdfExportModal';
 import PdfExportsDropdown from '@/components/PdfExportsDropdown';
 import KmlImportModal from '@/components/KmlImportModal';
+import ArchiveSiteModal from './components/ArchiveSiteModal';
 import type { BoundaryFeatureCollection } from '@/lib/map/boundaries';
 
 type UnifiedSite = SiteSummary;
@@ -73,8 +74,17 @@ export default function AdminSitesPage() {
   const [showExportsDropdown, setShowExportsDropdown] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
 
+  //Archiving states
+  const [archiveTarget, setArchiveTarget] = useState<SiteSummary | null>(null);
+  const [archiveImpact, setArchiveImpact] = useState<SiteDeleteImpact | null>(null);
+  const [archiveError, setArchiveError] = useState<string | null>(null);
+  const [loadingArchiveImpact, setLoadingArchiveImpact] = useState(false);
+  const [archivingSite, setArchivingSite] = useState(false);
+  const [archivedCount, setArchivedCount] = useState(0);
+
   useEffect(() => {
     getTotalInspectionCount().then(setTotalResponses).catch(() => {});
+    getArchivedSites().then((archived) => setArchivedCount(archived.length)).catch(() => {});
   }, []);
 
   // The boundaries are large, so they load the first time the map view opens and never
@@ -231,6 +241,60 @@ export default function AdminSitesPage() {
       setSaving(false);
     }
   };
+
+  const handleOpenArchive = async (site: SiteSummary) => {
+  setArchiveTarget(site);
+  setArchiveImpact(null);
+  setArchiveError(null);
+  setLoadingArchiveImpact(true);
+
+  try {
+    const impact = await getSiteDeleteImpact(site.id);
+    setArchiveImpact(impact);
+  } catch (error) {
+    setArchiveError(
+      error instanceof Error
+        ? error.message
+        : 'Failed to load site details'
+    );
+  } finally {
+    setLoadingArchiveImpact(false);
+  }
+};
+const handleConfirmArchive = async () => {
+  if (!archiveTarget) return;
+
+  setArchivingSite(true);
+  setArchiveError(null);
+
+  try {
+    await archiveSite(archiveTarget.id);
+
+    setSites((currentSites) =>
+      currentSites.filter((site) => site.id !== archiveTarget.id)
+    );
+    setArchivedCount((currentCount) => currentCount + 1);
+
+    setArchiveTarget(null);
+    setArchiveImpact(null);
+  } catch (error) {
+    setArchiveError(
+      error instanceof Error
+        ? error.message
+        : 'Failed to archive site'
+    );
+  } finally {
+    setArchivingSite(false);
+  }
+};
+
+const handleCloseArchive = () => {
+  if (archivingSite) return;
+
+  setArchiveTarget(null);
+  setArchiveImpact(null);
+  setArchiveError(null);
+};
 
   // Handle Back Button Navigation
   const handleBack = () => {
@@ -449,6 +513,14 @@ export default function AdminSitesPage() {
                   <Plus className="w-4 h-4" />
                   Add Site
                 </button>
+                <button
+                  data-testid="archived-sites-button"
+                  onClick={() => router.push('/admin/sites/archived')}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm"
+                >
+                  <Archive className="w-4 h-4" />
+                  Archived{archivedCount > 0 ? ` (${archivedCount})` : ''}
+                </button>
                 {/* Outside the count guard below, so an admin can import into an empty list. */}
                 <button
                   onClick={() => setShowImportModal(true)}
@@ -642,6 +714,18 @@ export default function AdminSitesPage() {
                         <ChevronRight className="w-4 h-4" />
                         User View
                       </button>
+                      <button
+                        type="button"
+                        data-testid={`archive-site-button-${item.id}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          void handleOpenArchive(item);
+                        }}
+                        className="flex items-center justify-center rounded-lg bg-amber-50 p-2 text-amber-700 transition-colors hover:bg-amber-100"
+                        title="Archive site"
+                      >
+                        <Archive className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
                 );
@@ -682,6 +766,16 @@ export default function AdminSitesPage() {
         onSave={handleCreateSite}
         saving={saving}
       />
+
+      <ArchiveSiteModal
+      site={archiveTarget}
+      impact={archiveImpact}
+      loading={loadingArchiveImpact}
+      deleting={archivingSite}
+      error={archiveError}
+      onCancel={handleCloseArchive}
+      onConfirm={handleConfirmArchive}
+    />
     </ProtectedRoute>
   );
 }

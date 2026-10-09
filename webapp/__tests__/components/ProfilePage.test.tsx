@@ -21,7 +21,7 @@ const profilePayload = {
   },
   isOwner: true,
   stats: { inspectionCount: 3, distinctSiteCount: 2 },
-  history: [{ id: 7, siteId: 5, siteName: 'Beaver Hills', inspectionDate: '2026-09-12' }],
+  history: [{ id: 7, siteId: 5, siteName: 'Beaver Hills', siteArchived: false, inspectionDate: '2026-09-12' }],
   pagination: { page: 1, pageSize: 10, total: 3 },
 };
 
@@ -63,6 +63,31 @@ describe('ProfilePage', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: '← Back' }));
     expect(routerMock.back).toHaveBeenCalled();
+  });
+
+  it('lists reports of archived sites as plain text with an Archived badge, not links', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ...profilePayload,
+        history: [
+          { id: 7, siteId: 5, siteName: 'Beaver Hills', siteArchived: false, inspectionDate: '2026-09-12' },
+          { id: 8, siteId: 6, siteName: 'Duck Lake', siteArchived: true, inspectionDate: '2026-09-01' },
+          { id: 9, siteId: null, siteName: 'Unknown site', siteArchived: false, inspectionDate: '2026-08-01' },
+        ],
+      }),
+    });
+    render(<ProfilePage />);
+
+    // An active site stays a link to the site page.
+    expect(await screen.findByRole('link', { name: 'Beaver Hills' })).toHaveAttribute('href', '/detail/Beaver%20Hills');
+    // An archived site is plain text with a badge.
+    expect(screen.queryByRole('link', { name: 'Duck Lake' })).not.toBeInTheDocument();
+    expect(screen.getByText('Duck Lake')).toBeInTheDocument();
+    expect(screen.getByTestId('archived-site-badge-8')).toHaveTextContent('Archived');
+    // A permanently deleted site stays plain text.
+    expect(screen.queryByRole('link', { name: 'Unknown site' })).not.toBeInTheDocument();
+    expect(screen.getByText('Unknown site')).toBeInTheDocument();
   });
 
   it('shows profile data and derived inspection summaries', async () => {

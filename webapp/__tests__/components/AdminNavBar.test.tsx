@@ -36,6 +36,14 @@ describe("AdminNavBar", () => {
     expect(screen.getByRole("button", { name: "Logout" })).toBeInTheDocument();
   });
 
+  it("links to the all-reports page when the menu is open", () => {
+    render(<AdminNavBar />);
+
+    fireEvent.click(screen.getByTitle("admin dropdown menu"));
+
+    expect(screen.getByRole("link", { name: /Reports/ })).toHaveAttribute("href", "/reports");
+  });
+
   it("signs out and returns to the login page", async () => {
     (auth.logout as jest.Mock).mockResolvedValue(undefined);
     render(<AdminNavBar />);

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { Check, ClipboardList, Leaf, Loader2, MapPin, Pencil, Save, UserCheck, UserRound } from 'lucide-react';
+import { Archive, Check, ClipboardList, Leaf, Loader2, MapPin, Pencil, Save, UserCheck, UserRound } from 'lucide-react';
 import { getSitesForSteward, StewardedSite } from '@/utils/steward-actions';
 import { SOCIAL_FIELDS, SocialKey, Socials, socialHref } from '@/lib/socials';
 import UserNavBar from '@/components/HeaderDropdown';
@@ -19,7 +19,7 @@ type ProfileData = {
   };
   isOwner: boolean;
   stats: { inspectionCount: number; distinctSiteCount: number };
-  history: Array<{ id: number; siteId: number | null; siteName: string; inspectionDate: string | null }>;
+  history: Array<{ id: number; siteId: number | null; siteName: string; siteArchived: boolean; inspectionDate: string | null }>;
   pagination: { page: number; pageSize: number; total: number };
 };
 
@@ -159,7 +159,7 @@ export default function ProfilePage({ personId }: { personId?: string }) {
 
         <section className="mt-6 grid gap-4 sm:grid-cols-2"><div className="rounded-2xl bg-white p-5 shadow-sm"><ClipboardList className="h-5 w-5 text-[#356B43]" /><p className="mt-3 text-sm font-medium text-[#5B655D]">Inspection reports submitted</p><p className="text-3xl font-bold text-[#254431]">{stats.inspectionCount}</p></div><div className="rounded-2xl bg-white p-5 shadow-sm"><MapPin className="h-5 w-5 text-[#356B43]" /><p className="mt-3 text-sm font-medium text-[#5B655D]">Distinct sites inspected</p><p className="text-3xl font-bold text-[#254431]">{stats.distinctSiteCount}</p></div></section>
 
-        <section className="mt-6 rounded-2xl bg-white p-6 shadow-sm"><div className="flex items-center gap-2"><Leaf className="h-5 w-5 text-[#356B43]" /><h2 className="text-xl font-bold text-[#254431]">Inspection history</h2></div><p className="mt-1 text-sm text-[#5B655D]">Web inspection records only.</p>{history.length === 0 ? <p className="py-8 text-sm text-[#5B655D]">No inspection reports recorded yet.</p> : <ul className="mt-5 divide-y divide-[#E4EBE4]">{history.map((inspection) => <li key={inspection.id} className="flex items-center justify-between gap-4 py-4"><div><p className="font-semibold text-[#254431]">{inspection.siteId ? <Link href={`/detail/${encodeURIComponent(inspection.siteName)}`} className="hover:underline">{inspection.siteName}</Link> : inspection.siteName}</p><p className="mt-1 text-sm text-[#5B655D]">{formatDate(inspection.inspectionDate)}</p></div></li>)}</ul>}{pagination.total > pagination.pageSize && <p className="mt-4 text-sm text-[#5B655D]">Showing the most recent {history.length} of {pagination.total} reports.</p>}</section>
+        <section className="mt-6 rounded-2xl bg-white p-6 shadow-sm"><div className="flex items-center gap-2"><Leaf className="h-5 w-5 text-[#356B43]" /><h2 className="text-xl font-bold text-[#254431]">Inspection history</h2></div><p className="mt-1 text-sm text-[#5B655D]">Web inspection records only.</p>{history.length === 0 ? <p className="py-8 text-sm text-[#5B655D]">No inspection reports recorded yet.</p> : <ul className="mt-5 divide-y divide-[#E4EBE4]">{history.map((inspection) => <li key={inspection.id} className="flex items-center justify-between gap-4 py-4"><div><p className="font-semibold text-[#254431]">{inspection.siteId && !inspection.siteArchived ? <Link href={`/detail/${encodeURIComponent(inspection.siteName)}`} className="hover:underline">{inspection.siteName}</Link> : <span>{inspection.siteName}{inspection.siteArchived && <span data-testid={`archived-site-badge-${inspection.id}`} className="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 align-middle"><Archive className="h-3 w-3" />Archived</span>}</span>}</p><p className="mt-1 text-sm text-[#5B655D]">{formatDate(inspection.inspectionDate)}</p></div></li>)}</ul>}{pagination.total > pagination.pageSize && <p className="mt-4 text-sm text-[#5B655D]">Showing the most recent {history.length} of {pagination.total} reports.</p>}</section>
       </div>
     </main>
   );

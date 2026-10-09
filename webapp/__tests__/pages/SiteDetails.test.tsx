@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import SiteDetailScreen from '../../app/detail/[namesite]/page';
 import * as supabaseQueries from '@/utils/supabase/queries';
 import * as sitesPage from '@/app/sites/page';
@@ -110,10 +110,18 @@ describe('SiteDetailScreen', () => {
     namesite: 'Aspen%20Grove%20Reserve',
   };
 
+  const mockSearchParams = (params: Record<string, string>) => ({
+    get: (key: string) => (key in params ? params[key] : null),
+  });
+
+  const scrollIntoViewMock = jest.fn();
+
   beforeEach(() => {
     jest.clearAllMocks();
+    Element.prototype.scrollIntoView = scrollIntoViewMock;
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
     (useParams as jest.Mock).mockReturnValue(mockParams);
+    (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams({}));
     (supabaseQueries.getSiteByName as jest.Mock).mockResolvedValue([mockSite]);
     (supabaseQueries.getSiteLinks as jest.Mock).mockResolvedValue({ sapaaWebsiteUrl: null, iNaturalistUrl: null });
     (supabaseQueries.getFormResponsesBySite as jest.Mock).mockResolvedValue(mockInspections);
@@ -139,6 +147,17 @@ describe('SiteDetailScreen', () => {
         expect(screen.getByText(/Unable to Load Site/i)).toBeInTheDocument();
         expect(screen.getByText(errorMessage)).toBeInTheDocument();
       });
+    });
+
+    it('should show the not-found state when the site is archived or unknown instead of crashing', async () => {
+      // getSiteByName returns an empty list for archived, inactive, and unknown sites.
+      (supabaseQueries.getSiteByName as jest.Mock).mockResolvedValue([]);
+      render(<SiteDetailScreen />);
+      await waitFor(() => {
+        expect(screen.getByText(/Unable to Load Site/i)).toBeInTheDocument();
+        expect(screen.getByText('Site not found')).toBeInTheDocument();
+      });
+      expect(supabaseQueries.getFormResponsesBySite).not.toHaveBeenCalled();
     });
 
     it('should navigate back to sites when Back to Sites button is clicked from error state', async () => {
@@ -586,6 +605,59 @@ describe('SiteDetailScreen', () => {
           'Aspen Grove Reserve'
         );
       });
+    });
+  });
+
+  describe('Report link navigation', () => {
+    it('expands and scrolls to the report named in the ?report= param', async () => {
+      // Linked from the all-reports page: /detail/<site>?report=<id>
+      (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams({ report: '3208' }));
+
+      render(<SiteDetailScreen />);
+
+      // The March report's details only render when it is expanded.
+      await waitFor(() => {
+        expect(screen.getByText('Minor erosion detected')).toBeInTheDocument();
+      });
+      expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+      expect(scrollIntoViewMock).toHaveBeenCalledTimes(1);
+      expect(scrollIntoViewMock).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
+    });
+
+    it('does not auto-expand any report without a ?report= param', async () => {
+      render(<SiteDetailScreen />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Inspection Reports/i)).toBeInTheDocument();
+      });
+      expect(screen.queryByText('Site is in good condition')).not.toBeInTheDocument();
+      expect(screen.queryByText('Minor erosion detected')).not.toBeInTheDocument();
+      expect(scrollIntoViewMock).not.toHaveBeenCalled();
+    });
+
+    it('ignores a ?report= param for a report that is not on this site', async () => {
+      (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams({ report: '9999' }));
+
+      render(<SiteDetailScreen />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Inspection Reports/i)).toBeInTheDocument();
+      });
+      expect(screen.queryByText('Site is in good condition')).not.toBeInTheDocument();
+      expect(screen.queryByText('Minor erosion detected')).not.toBeInTheDocument();
+      expect(scrollIntoViewMock).not.toHaveBeenCalled();
+    });
+
+    it('ignores a non-numeric ?report= param', async () => {
+      (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams({ report: 'abc' }));
+
+      render(<SiteDetailScreen />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Inspection Reports/i)).toBeInTheDocument();
+      });
+      expect(screen.queryByText('Site is in good condition')).not.toBeInTheDocument();
+      expect(scrollIntoViewMock).not.toHaveBeenCalled();
     });
   });
 });

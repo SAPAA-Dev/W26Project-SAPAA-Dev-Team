@@ -16,6 +16,7 @@ export interface SiteSummary {
   ab_county: number | null;
   inspectdate: string | null;
   is_active: boolean;
+  archived_at: string | null;
 }
 
 export interface County {
@@ -84,6 +85,20 @@ export interface FormAnswer {
   obs_comm: string | null;
   section_id: number | null;
   section_title: string | null;
+}
+
+// One row of the all-reports page. siteName is null when the site was permanently
+// deleted, and siteArchived marks reports whose site is hidden from the app.
+export interface SiteReportSummary {
+  id: number;
+  inspectionNo: string | null;
+  inspectionDate: string | null;
+  createdAt: string | null;
+  siteId: number | null;
+  siteName: string | null;
+  siteArchived: boolean;
+  submitterId: number | null;
+  submitterName: string | null;
 }
 
 let keyMapPromise: Promise<Record<string, number>> | null = null;
@@ -254,6 +269,7 @@ export async function getCurrentSiteId(siteName: string) {
     .from('sites_pa')
     .select('id')
     .eq('namesite', siteName)
+    .is('archived_at', null)
     .single();
 
   if (error) {
@@ -380,6 +396,7 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
       namesite,
       ab_county,
       is_active,
+      archived_at,
       ab_counties (
         county
       ),
@@ -389,6 +406,7 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
       )
     `)
     .eq('is_active', true)
+    .is('archived_at', null)
     .order('namesite', { ascending: true });
 
   if (error) throw new Error(error.message || 'Failed to fetch sites');
@@ -404,6 +422,7 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
       ab_county: site.ab_county ?? null,
       inspectdate: latestDate,
       is_active: site.is_active ?? true,
+      archived_at: site.archived_at ?? null,
     };
   });
 }
@@ -441,6 +460,7 @@ export async function getAllSites(): Promise<SiteSummary[]> {
       namesite,
       ab_county,
       is_active,
+      archived_at,
       ab_counties (
         county
       ),
@@ -449,6 +469,7 @@ export async function getAllSites(): Promise<SiteSummary[]> {
         created_at
       )
     `)
+    .is('archived_at', null)
     .order('namesite', { ascending: true });
 
   if (error) throw new Error(error.message || 'Failed to fetch sites');
@@ -464,6 +485,7 @@ export async function getAllSites(): Promise<SiteSummary[]> {
       ab_county: site.ab_county ?? null,
       inspectdate: latestDate,
       is_active: site.is_active ?? true,
+      archived_at: site.archived_at ?? null,
     };
   });
 }
@@ -529,6 +551,178 @@ export async function createSite(
   }
 }
 
+/**
+ * Verifies the caller, validates the site ID, and requests the connected-record counts
+ * that the Admin confirmation dialogs show before a site is archived or permanently deleted.
+ */
+export async function getSiteDeleteImpact(
+  siteId: number
+): Promise<SiteDeleteImpact> {
+  // Authorization must run before creating the service-role client that bypasses RLS.
+  await requireApprovedAdmin();
+
+  // Server action arguments are untrusted even when the normal UI sends them.
+  if (!Number.isSafeInteger(siteId) || siteId <= 0) {
+    throw new Error('A valid site ID is required.');
+  }
+
+  // The database function returns all counts together so the dialog uses one snapshot.
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase.rpc('get_site_delete_impact', {
+    p_site_id: siteId,
+  });
+
+  // Keep the database message when available because it gives the most useful failure reason.
+  if (error) {
+    throw new Error(
+      error.message || 'Failed to get site deletion details'
+    );
+  }
+
+  // A successful RPC with no JSON result means the requested site was not found.
+  if (!data) {
+    throw new Error('Site not found.');
+  }
+
+  // The RPC returns the JSON shape defined by the SiteDeleteImpact interface.
+  return data as SiteDeleteImpact;
+}
+
+
+/**
+ * Verifies the caller, validates the site ID, and archives the site in one database
+ * transaction. Archiving hides the site from the app; no report, answer, attachment,
+ * homepage image, or steward assignment is deleted.
+ */
+export async function archiveSite(
+  siteId: number
+): Promise<SiteArchiveResult> {
+  await requireApprovedAdmin();
+
+  if (!Number.isSafeInteger(siteId) || siteId <= 0) {
+    throw new Error('A valid site ID is required.');
+  }
+
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase.rpc('archive_site', {
+    p_site_id: siteId,
+  });
+
+  if (error) {
+    throw new Error(error.message || 'Failed to archive site');
+  }
+
+  if (!data) {
+    throw new Error('The database did not return an archive result.');
+  }
+
+  return data as SiteArchiveResult;
+}
+
+/**
+ * Verifies the caller, validates the site ID, and restores an archived site so it
+ * is visible in the app again.
+ */
+export async function restoreSite(
+  siteId: number
+): Promise<SiteRestoreResult> {
+  await requireApprovedAdmin();
+
+  if (!Number.isSafeInteger(siteId) || siteId <= 0) {
+    throw new Error('A valid site ID is required.');
+  }
+
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase.rpc('restore_site', {
+    p_site_id: siteId,
+  });
+
+  if (error) {
+    throw new Error(error.message || 'Failed to restore site');
+  }
+
+  if (!data) {
+    throw new Error('The database did not return a restore result.');
+  }
+
+  return data as SiteRestoreResult;
+}
+
+/**
+ * Verifies the caller, validates the site ID, and permanently deletes an archived
+ * site. Only the sites_pa row is deleted; reports, answers, attachments, and
+ * homepage images stay in the database, disconnected from any site.
+ */
+export async function permanentlyDeleteSite(
+  siteId: number
+): Promise<SiteDeleteImpact> {
+  await requireApprovedAdmin();
+
+  if (!Number.isSafeInteger(siteId) || siteId <= 0) {
+    throw new Error('A valid site ID is required.');
+  }
+
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase.rpc('permanently_delete_site', {
+    p_site_id: siteId,
+  });
+
+  if (error) {
+    throw new Error(error.message || 'Failed to permanently delete site');
+  }
+
+  if (!data) {
+    throw new Error('The database did not return a deletion result.');
+  }
+
+  return data as SiteDeleteImpact;
+}
+
+/**
+ * Returns the archived sites for the Admin archived sites page. Archived sites are
+ * hidden from every other site list.
+ */
+export async function getArchivedSites(): Promise<SiteSummary[]> {
+  await requireApprovedAdmin();
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('sites_pa')
+    .select(`
+      id,
+      namesite,
+      ab_county,
+      is_active,
+      archived_at,
+      ab_counties (
+        county
+      ),
+      form_responses (
+        inspection_date,
+        created_at
+      )
+    `)
+    .not('archived_at', 'is', null)
+    .order('archived_at', { ascending: false });
+
+  if (error) throw new Error(error.message || 'Failed to fetch archived sites');
+
+  return (data ?? []).map((site: any) => {
+    const responses = site.form_responses ?? [];
+    const latestDate = getLatestInspectionDate(responses);
+
+    return {
+      id: site.id,
+      namesite: site.namesite,
+      county: site.ab_counties?.county ?? null,
+      ab_county: site.ab_county ?? null,
+      inspectdate: latestDate,
+      is_active: site.is_active ?? true,
+      archived_at: site.archived_at ?? null,
+    };
+  });
+}
+
 export async function findSitesWithName(namesite: string): Promise<string[]> {
   await requireApprovedAdmin();
 
@@ -573,6 +767,7 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
       namesite,
       ab_county,
       is_active,
+      archived_at,
       ab_counties (
         county
       ),
@@ -583,6 +778,7 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
     `)
     .eq('namesite', namesite)
     .eq('is_active', true)
+    .is('archived_at', null)
     .limit(1);
 
   if (error) throw new Error(error.message || 'Failed to fetch site');
@@ -598,6 +794,7 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
       ab_county: site.ab_county ?? null,
       inspectdate: latestDate,
       is_active: site.is_active ?? true,
+      archived_at: site.archived_at ?? null,
     };
   });
 }
@@ -621,6 +818,7 @@ export async function getSiteByNameAdmin(
       namesite,
       ab_county,
       is_active,
+      archived_at,
       ab_counties (
         county
       ),
@@ -647,8 +845,30 @@ export async function getSiteByNameAdmin(
       ab_county: site.ab_county ?? null,
       inspectdate: latestDate,
       is_active: site.is_active ?? true,
+      archived_at: site.archived_at ?? null,
     };
   });
+}
+
+export interface SiteDeleteImpact {
+  siteId: number;
+  siteName: string;
+  inspectionCount: number;
+  answerCount: number;
+  attachmentCount: number;
+  homepageImageCount: number;
+  siteStewardCount: number;
+}
+
+export interface SiteArchiveResult {
+  siteId: number;
+  siteName: string;
+  archivedAt: string;
+}
+
+export interface SiteRestoreResult {
+  siteId: number;
+  siteName: string;
 }
 
 
@@ -908,6 +1128,78 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
       naturalness_details: naturalnessDetails,
       steward,
       answers,
+    };
+  });
+}
+
+// Every active inspection report across all sites, newest first. Any signed-in user
+// can read reports (the site detail page already shows them), so this checks only
+// for a session, not a role.
+export async function getAllSiteReports(): Promise<SiteReportSummary[]> {
+  const session = await createClient();
+  const { data: { user }, error: userError } = await session.auth.getUser();
+  if (userError || !user) throw new Error('Sign in to view inspection reports.');
+
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('form_responses')
+    .select(`
+      id, user_id, inspection_no, inspection_date, created_at, site_id,
+      sites_pa (
+        id, namesite, archived_at
+      )
+    `)
+    .eq('is_active', true)
+    .order('inspection_date', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message || 'Failed to fetch inspection reports');
+
+  interface SiteReportRow {
+    id: number;
+    user_id: string | null;
+    inspection_no: string | null;
+    inspection_date: string | null;
+    created_at: string | null;
+    site_id: number | null;
+    sites_pa: { id: number; namesite: string; archived_at: string | null } | null;
+  }
+
+  // The untyped client types a many-to-one embed as an array; at runtime it is one object.
+  const rows = (data ?? []) as unknown as SiteReportRow[];
+
+  // Resolve submitter display names in one query instead of one lookup per report.
+  const userIds = [...new Set(rows.map((row) => row.user_id).filter((id): id is string => Boolean(id)))];
+  let peopleByAuthId = new Map<string, { id: number; displayName: string }>();
+  if (userIds.length > 0) {
+    const { data: people, error: peopleError } = await supabase
+      .from('people')
+      .select('id, auth_user_id, display_name')
+      .in('auth_user_id', userIds);
+
+    if (peopleError) throw new Error(peopleError.message || 'Failed to fetch inspection submitters');
+
+    peopleByAuthId = new Map(
+      (people ?? []).map((person: { id: number; auth_user_id: string; display_name: string }) => [
+        person.auth_user_id,
+        { id: person.id, displayName: person.display_name },
+      ])
+    );
+  }
+
+  return rows.map((row) => {
+    const submitter = row.user_id ? peopleByAuthId.get(row.user_id) : undefined;
+    return {
+      id: row.id,
+      inspectionNo: row.inspection_no ?? null,
+      inspectionDate: row.inspection_date ?? null,
+      createdAt: row.created_at ?? null,
+      siteId: row.site_id ?? null,
+      siteName: row.sites_pa?.namesite ?? null,
+      siteArchived: row.sites_pa?.archived_at != null,
+      submitterId: submitter?.id ?? null,
+      submitterName: submitter?.displayName ?? null,
     };
   });
 }

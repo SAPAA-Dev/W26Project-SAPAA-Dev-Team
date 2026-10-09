@@ -97,6 +97,7 @@ describe("Supabase admin-only actions", () => {
       ab_county: null,
       inspectdate: null,
       is_active: false,
+      archived_at: null,
     },
   ]);
 

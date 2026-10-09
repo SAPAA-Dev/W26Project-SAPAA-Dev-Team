@@ -79,6 +79,18 @@ describe('UserNavBar - logout button', () => {
     });
   });
 
+  it('navigates to /reports from the All reports menu item', async () => {
+    const push = jest.fn();
+    const { useRouter } = jest.requireMock('next/navigation');
+    (useRouter as jest.Mock).mockReturnValue({ push });
+    await act(async () => { render(<UserNavBar />); });
+    openMenu();
+
+    fireEvent.click(screen.getByText('All reports'));
+
+    expect(push).toHaveBeenCalledWith('/reports');
+  });
+
   it('closes the menu when logout is clicked', async () => {
     (auth.logout as jest.Mock).mockResolvedValueOnce(undefined);
     await act(async () => { render(<UserNavBar />); });

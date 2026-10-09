@@ -130,6 +130,41 @@ describe('/api/profile', () => {
       expect(mockAdminFrom).toHaveBeenCalledWith('form_responses');
     });
 
+    it('flags reports whose site is archived and keeps deleted sites as Unknown site', async () => {
+      const peopleQuery = makeQuery({ data: PERSON, error: null });
+      // The route awaits the form_responses query directly, so the mock carries the result.
+      const responsesResult = {
+        data: [
+          { id: 7, site_id: 5, inspection_date: '2026-09-12', created_at: null, sites_pa: { id: 5, namesite: 'Beaver Hills', archived_at: null } },
+          { id: 8, site_id: 6, inspection_date: '2026-09-01', created_at: null, sites_pa: { id: 6, namesite: 'Duck Lake', archived_at: '2026-10-08T20:00:00.000Z' } },
+          { id: 9, site_id: null, inspection_date: '2026-08-01', created_at: null, sites_pa: null },
+        ],
+        error: null,
+        count: 3,
+      };
+      const responsesQuery: Record<string, unknown> = { ...responsesResult };
+      ['select', 'eq', 'order', 'range'].forEach((method) => {
+        responsesQuery[method] = jest.fn(() => responsesQuery);
+      });
+      mockAdminFrom.mockImplementation((table: string) =>
+        table === 'form_responses' ? responsesQuery : peopleQuery
+      );
+
+      const response = await GET(makeRequest({ personId: '42' }) as never);
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(responsesQuery.select).toHaveBeenCalledWith(
+        'id, site_id, inspection_date, created_at, sites_pa(id, namesite, archived_at)',
+        { count: 'exact' }
+      );
+      expect(body.history).toEqual([
+        { id: 7, siteId: 5, siteName: 'Beaver Hills', siteArchived: false, inspectionDate: '2026-09-12' },
+        { id: 8, siteId: 6, siteName: 'Duck Lake', siteArchived: true, inspectionDate: '2026-09-01' },
+        { id: 9, siteId: null, siteName: 'Unknown site', siteArchived: false, inspectionDate: '2026-08-01' },
+      ]);
+    });
+
     it('returns the person\'s contact details, with blanks as null (1.0.1 AT1)', async () => {
       mockAdminFrom.mockReturnValue(
         makeQuery({ data: { ...PERSON, socials: { email: 'jamie@example.com', x: null } }, error: null }),

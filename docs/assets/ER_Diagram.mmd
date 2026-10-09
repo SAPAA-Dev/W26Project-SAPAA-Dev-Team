@@ -57,6 +57,7 @@ erDiagram
         text namesite UK
         bigint ab_county FK
         boolean is_active
+        timestamptz archived_at
     }
 
     form_sections["WEB form_sections"] {
@@ -222,14 +223,14 @@ erDiagram
     question_keys |o--o{ questions : "question_key_id"
     form_sections ||--o{ questions : "section_id"
     questions ||--o{ question_options : "question_id"
-    sites_pa ||--o{ form_responses : "site_id"
+    sites_pa |o--o{ form_responses : "site_id"
     auth_users |o--o{ form_responses : "user_id"
     form_responses ||--o{ answers : "response_id"
     questions ||--o{ answers : "question_id"
     form_responses |o--o{ attachments : "response_id"
     questions |o--o{ attachments : "question_id"
     sites_pa |o--o{ attachments : "site_id"
-    sites_pa ||--o{ homepage_image_uploads : "site_id"
+    sites_pa |o--o{ homepage_image_uploads : "site_id"
     auth_users |o--o{ homepage_image_uploads : "user_id"
     auth_users ||--o{ S26_pdf_jobs : "created_by"
     auth_users |o--o| people : "auth_user_id"

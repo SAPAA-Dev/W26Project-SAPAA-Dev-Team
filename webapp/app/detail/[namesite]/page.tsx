@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
   getFormResponsesBySite,
   getSiteByName,
@@ -163,6 +163,8 @@ export default function SiteDetailScreen() {
   const params = useParams<{ namesite: string }>();
   const router = useRouter();
   const namesite = decodeURIComponent(params.namesite);
+  // ?report=<id> (from the all-reports page) marks a report to expand and scroll to.
+  const reportParam = useSearchParams().get('report');
 
   const [inspections, setInspections] = useState<FormResponse[]>([]);
   const [site, setSite] = useState<SiteSummary | null>(null);
@@ -170,6 +172,7 @@ export default function SiteDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedInspections, setExpandedInspections] = useState<Set<number>>(new Set());
+  const scrollTargetRef = useRef<number | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('by-date');
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set());
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -229,11 +232,23 @@ export default function SiteDetailScreen() {
           getSiteByName(namesite),
           getCurrentUserUid(),
         ]);
+        // Archived, inactive, and unknown site names all come back empty here.
+        if (siteData.length === 0) {
+          setError('Site not found');
+          setLoading(false);
+          return;
+        }
         const details = await getFormResponsesBySite(siteData[0].namesite);
 
         setSite(siteData[0]);
         setInspections(details);
         setCurrentUserId(uid ?? null);
+
+        const targetId = reportParam && /^\d+$/.test(reportParam) ? Number(reportParam) : null;
+        if (targetId !== null && details.some((detail) => detail.id === targetId)) {
+          setExpandedInspections((prev) => new Set(prev).add(targetId));
+          scrollTargetRef.current = targetId;
+        }
         try {
           const { createClient } = await import('@/utils/supabase/client');
           const supabase = createClient();
@@ -248,7 +263,14 @@ export default function SiteDetailScreen() {
       }
     };
     load();
-  }, [namesite]);
+  }, [namesite, reportParam]);
+
+  useEffect(() => {
+    const targetId = scrollTargetRef.current;
+    if (targetId === null || inspections.length === 0) return;
+    scrollTargetRef.current = null;
+    document.getElementById(`report-${targetId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [inspections]);
 
   useEffect(() => {
     if (!site?.id) return;
@@ -669,7 +691,7 @@ export default function SiteDetailScreen() {
               const isOwner = currentUserId !== null && response.user_id === currentUserId;
 
               return (
-                <div key={response.id} className="bg-white rounded-2xl border-2 border-[#E4EBE4] overflow-hidden shadow-sm hover:shadow-md transition-all">
+                <div key={response.id} id={`report-${response.id}`} className="bg-white rounded-2xl border-2 border-[#E4EBE4] overflow-hidden shadow-sm hover:shadow-md transition-all">
                   <div className="flex flex-col sm:flex-row sm:items-center">
                     {/* Main clickable area */}
                     <button

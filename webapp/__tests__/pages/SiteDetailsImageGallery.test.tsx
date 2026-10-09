@@ -10,6 +10,7 @@ jest.mock("next/navigation", () => ({
     back: jest.fn(),
   }),
   usePathname: () => "/sites",
+  useSearchParams: () => ({ get: () => null }),
 }));
 
 jest.mock("next/image", () => ({
