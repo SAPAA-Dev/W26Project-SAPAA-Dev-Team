@@ -50,12 +50,58 @@ describe("createSite and findSitesWithName", () => {
     await expect(queries.createSite("  New Site  ", 3)).resolves.toBeUndefined();
 
     expect(mockFrom).toHaveBeenCalledWith("sites_pa");
-    expect(mockInsert).toHaveBeenCalledWith({ namesite: "New Site", ab_county: 3, is_active: true });
+    expect(mockInsert).toHaveBeenCalledWith({
+      namesite: "New Site",
+      ab_county: 3,
+      is_active: true,
+      protected_area_id: null,
+    });
   });
 
   it("createSite refuses an empty name without touching the database", async () => {
     await expect(queries.createSite("   ", null)).rejects.toThrow("Site name is required.");
     expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it("createSite saves the selected protected area", async () => {
+    const mockInsert = jest.fn().mockResolvedValue({ error: null });
+    mockFrom.mockReturnValue({ insert: mockInsert });
+
+    await queries.createSite("Lakeland Site", null, 9);
+
+    expect(mockInsert).toHaveBeenCalledWith({
+      namesite: "Lakeland Site",
+      ab_county: null,
+      is_active: true,
+      protected_area_id: 9,
+    });
+  });
+
+  it("createSite refuses a protected area id that is not a positive integer", async () => {
+    await expect(queries.createSite("New Site", null, 1.5)).rejects.toThrow("The protected area is not valid.");
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it("createSite explains a missing protected area", async () => {
+    mockFrom.mockReturnValue({
+      insert: jest.fn().mockResolvedValue({ error: { code: "23503", message: "foreign key" } }),
+    });
+
+    await expect(queries.createSite("Lakeland Site", null, 9)).rejects.toThrow(
+      "The selected protected area does not exist."
+    );
+  });
+
+  it("createSite explains a protected area that is already linked", async () => {
+    mockFrom.mockReturnValue({
+      insert: jest.fn().mockResolvedValue({
+        error: { code: "23505", message: 'duplicate key value violates unique constraint "sites_pa_protected_area_id_key"' },
+      }),
+    });
+
+    await expect(queries.createSite("Lakeland Site", null, 9)).rejects.toThrow(
+      "That protected area is already linked to a site."
+    );
   });
 
   it("createSite explains a duplicate name", async () => {

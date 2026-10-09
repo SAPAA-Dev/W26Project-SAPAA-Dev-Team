@@ -2,27 +2,31 @@
 
 import { useEffect, useState } from "react";
 import { X, MapPin, Plus, Pencil, AlertTriangle } from "lucide-react";
-import { County, SiteSuggestion, findSitesWithName, getSiteSuggestions } from "@/utils/supabase/queries";
+import { County, ProtectedAreaChoice, SiteSuggestion, findSitesWithName, getSiteSuggestions } from "@/utils/supabase/queries";
+import ProtectedAreaField from "./ProtectedAreaField";
 
 const MAX_SHOWN_SUGGESTIONS = 8;
 
 interface AddSiteModalProps {
   visible: boolean;
   counties: County[];
+  protectedAreas: ProtectedAreaChoice[];
   onClose: () => void;
-  onSave: (data: { namesite: string; ab_county: number | null }) => Promise<boolean>;
+  onSave: (data: { namesite: string; ab_county: number | null; protected_area_id: number | null }) => Promise<boolean>;
   saving: boolean;
 }
 
 export default function AddSiteModal({
   visible,
   counties,
+  protectedAreas,
   onClose,
   onSave,
   saving,
 }: AddSiteModalProps) {
   const [namesite, setNamesite] = useState("");
   const [countyId, setCountyId] = useState("");
+  const [protectedAreaId, setProtectedAreaId] = useState<number | null>(null);
   const [nameMissing, setNameMissing] = useState(false);
   const [duplicateNames, setDuplicateNames] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<SiteSuggestion[]>([]);
@@ -47,6 +51,7 @@ export default function AddSiteModal({
   const resetForm = () => {
     setNamesite("");
     setCountyId("");
+    setProtectedAreaId(null);
     setNameMissing(false);
     setDuplicateNames([]);
     setShowSuggestions(false);
@@ -74,6 +79,7 @@ export default function AddSiteModal({
     const saved = await onSave({
       namesite: namesite.trim(),
       ab_county: countyId ? Number(countyId) : null,
+      protected_area_id: protectedAreaId,
     });
     if (saved) resetForm();
   };
@@ -87,7 +93,7 @@ export default function AddSiteModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm p-4">
-      <div data-testid="add-site-modal" className="bg-white rounded-2xl shadow-2xl w-[500px] max-w-[95vw] border-2 border-[#E4EBE4] overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div data-testid="add-site-modal" className="bg-white rounded-2xl shadow-2xl w-[500px] max-w-[95vw] max-h-[90vh] overflow-y-auto border-2 border-[#E4EBE4] animate-in fade-in zoom-in duration-200">
         <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-5">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -191,6 +197,14 @@ export default function AddSiteModal({
               ))}
             </select>
           </div>
+
+          <ProtectedAreaField
+            areas={protectedAreas}
+            selectedId={protectedAreaId}
+            onChange={setProtectedAreaId}
+            disabled={saving}
+            testIdPrefix="add-site-protected-area"
+          />
         </div>
 
         <div className="px-6 pb-6 flex items-center justify-end gap-3">

@@ -39,7 +39,7 @@ describe("Supabase site functions", () => {
       const mockIs = jest.fn().mockReturnThis();
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
+        or: jest.fn().mockReturnThis(),
         is: mockIs,
         order: jest.fn().mockResolvedValue({ data: mockData, error: null }),
       });
@@ -56,7 +56,7 @@ describe("Supabase site functions", () => {
     it("throws error if Supabase returns error", async () => {
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
+        or: jest.fn().mockReturnThis(),
         is: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({ data: null, error: { message: "Failed" } }),
       });

@@ -14,6 +14,7 @@ jest.mock('@/utils/supabase/queries', () => ({
   getAllSites: jest.fn(),
   getArchivedSites: jest.fn().mockResolvedValue([]),
   getCounties: jest.fn().mockResolvedValue([]),
+  getProtectedAreaChoices: jest.fn().mockResolvedValue([]),
   updateSite: jest.fn().mockResolvedValue(undefined),
   toggleSiteActive: jest.fn().mockResolvedValue(undefined),
   getTotalInspectionCount: jest.fn().mockResolvedValue(0),
@@ -113,7 +114,7 @@ describe('AdminSitesPage – Edit Site', () => {
     fireEvent.click(screen.getByTestId('edit-site-save-button'));
 
     await waitFor(() => {
-      expect(supabaseQueries.updateSite).toHaveBeenCalledWith(1, 'Alpha Renamed', 10);
+      expect(supabaseQueries.updateSite).toHaveBeenCalledWith(1, 'Alpha Renamed', 10, null);
       expect(screen.queryByTestId('edit-site-modal')).not.toBeInTheDocument();
       expect(screen.getByText('Alpha Renamed')).toBeInTheDocument();
     });
@@ -162,8 +163,60 @@ describe('AdminSitesPage – Edit Site', () => {
     fireEvent.click(screen.getByTestId('edit-site-save-button'));
 
     await waitFor(() => {
-      expect(supabaseQueries.updateSite).toHaveBeenCalledWith(1, 'Alpha', 20);
+      expect(supabaseQueries.updateSite).toHaveBeenCalledWith(1, 'Alpha', 20, null);
       expect(screen.queryByTestId('edit-site-modal')).not.toBeInTheDocument();
+    });
+  });
+
+  it('shows the protected area already saved on the site', async () => {
+    const mockSites = [
+      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString(), is_active: true, protected_area_id: 9 },
+    ];
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue(mockSites);
+    (supabaseQueries.getCounties as jest.Mock).mockResolvedValue([{ id: 10, county: 'CountyA' }]);
+    (supabaseQueries.getProtectedAreaChoices as jest.Mock).mockResolvedValue([
+      { id: 9, name: 'Lakeland', fid: 181, area_type: 'PRA' },
+    ]);
+
+    render(<AdminSitesPage />);
+    await waitFor(() => screen.getByText('Alpha'));
+    fireEvent.click(screen.getByTestId('edit-site-button-1'));
+
+    expect(await screen.findByTestId('edit-site-protected-area-selected-name')).toHaveTextContent('Lakeland');
+    expect(screen.getByTestId('edit-site-protected-area-selected-detail')).toHaveTextContent('181 | PRA');
+  });
+
+  it('saves one protected area from the edit modal', async () => {
+    const mockSites = [
+      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString(), is_active: true, protected_area_id: null },
+    ];
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue(mockSites);
+    (supabaseQueries.getCounties as jest.Mock).mockResolvedValue([{ id: 10, county: 'CountyA' }]);
+    (supabaseQueries.getProtectedAreaChoices as jest.Mock).mockResolvedValue([
+      { id: 9, name: 'Lakeland', fid: 181, area_type: 'PRA' },
+      { id: 10, name: 'Wainwright Dunes', fid: 44, area_type: 'ER' },
+    ]);
+    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue(undefined);
+
+    render(<AdminSitesPage />);
+    await waitFor(() => screen.getByText('Alpha'));
+
+    fireEvent.click(screen.getByTestId('edit-site-button-1'));
+    await waitFor(() => screen.getByTestId('edit-site-modal'));
+
+    const search = screen.getByTestId('edit-site-protected-area-search');
+    fireEvent.change(search, { target: { value: '181' } });
+    fireEvent.focus(search);
+    fireEvent.mouseDown(screen.getByTestId('edit-site-protected-area-option-9'));
+
+    expect(screen.getByTestId('edit-site-protected-area-selected-name')).toHaveTextContent('Lakeland');
+    expect(screen.getByTestId('edit-site-protected-area-selected-detail')).toHaveTextContent('181 | PRA');
+    expect(screen.queryByTestId('edit-site-protected-area-option-10')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('edit-site-save-button'));
+
+    await waitFor(() => {
+      expect(supabaseQueries.updateSite).toHaveBeenCalledWith(1, 'Alpha', 10, 9);
     });
   });
 

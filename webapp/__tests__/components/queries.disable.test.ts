@@ -56,8 +56,8 @@ describe("Supabase disable site functions", () => {
 
       expect(mockIs).toHaveBeenCalledWith("archived_at", null);
       expect(result).toEqual([
-        { id: 1, namesite: "Active Site", county: "County1", ab_county: 10, inspectdate: "2025-11-30", is_active: true, archived_at: null },
-        { id: 2, namesite: "Inactive Site", county: null, ab_county: null, inspectdate: null, is_active: false, archived_at: null },
+        { id: 1, namesite: "Active Site", county: "County1", ab_county: 10, inspectdate: "2025-11-30", is_active: true, archived_at: null, protected_area_id: null },
+        { id: 2, namesite: "Inactive Site", county: null, ab_county: null, inspectdate: null, is_active: false, archived_at: null, protected_area_id: null },
       ]);
     });
 

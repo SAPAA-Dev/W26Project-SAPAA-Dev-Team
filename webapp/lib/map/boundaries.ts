@@ -29,6 +29,10 @@ export interface ProtectedAreaBoundaryRow {
   oc_name: string | null;
   notes: string | null;
   geometry: GeoJsonMultiPolygon;
+  // Null when no sites_pa row points at this protected area, or the site has no county.
+  county?: string | null;
+  // Null when no sites_pa row points at this protected area.
+  is_active?: boolean | null;
 }
 
 export interface BoundaryProperties {
@@ -44,6 +48,8 @@ export interface BoundaryProperties {
   date_est: string | null;
   oc_name: string | null;
   notes: string | null;
+  county: string | null;
+  is_active: boolean | null;
 }
 
 export interface BoundaryFeature {
@@ -254,6 +260,8 @@ export function toBoundaryFeatureCollection(
         date_est: row.date_est,
         oc_name: row.oc_name,
         notes: row.notes,
+        county: row.county ?? null,
+        is_active: row.is_active ?? null,
       },
       geometry,
     });

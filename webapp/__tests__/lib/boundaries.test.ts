@@ -212,6 +212,8 @@ describe('toBoundaryFeatureCollection', () => {
       date_est: '1971-03-15',
       oc_name: 'Wainwright Dunes Ecological Reserve',
       notes: null,
+      county: null,
+      is_active: null,
     });
   });
 

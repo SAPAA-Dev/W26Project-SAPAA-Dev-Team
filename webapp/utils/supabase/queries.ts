@@ -19,6 +19,14 @@ export interface SiteSummary {
   inspectdate: string | null;
   is_active: boolean;
   archived_at: string | null;
+  protected_area_id?: number | null;
+}
+
+export interface ProtectedAreaChoice {
+  id: number;
+  name: string;
+  fid: number;
+  area_type: string;
 }
 
 export interface County {
@@ -429,7 +437,7 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
         archived_at
       )
     `)
-    .eq('is_active', true)
+    .or('is_active.eq.true,is_active.is.null')
     .is('archived_at', null)
     .order('namesite', { ascending: true });
 
@@ -458,10 +466,51 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
  * needed. The coordinates are rounded and the rings are simplified here, on the
  * server, to keep the payload small.
  */
+async function requireApprovedCaller(): Promise<{ isAdmin: boolean }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+  const user = data.user;
+  const approved = !error && user?.app_metadata?.authenticated === true;
+  if (!approved || !user) throw new Error('You must be signed in to view site boundaries.');
+  return { isAdmin: user.app_metadata?.role === 'admin' };
+}
+
+function countyFromEmbed(
+  value: { county: string } | { county: string }[] | null
+): string | null {
+  if (value === null) return null;
+  if (Array.isArray(value)) return value[0]?.county ?? null;
+  return value.county ?? null;
+}
+
+// ab_counties has row level security and no select policy for signed-in users.
+// The caller is already approved. This read returns only the link, the county, and is_active.
+async function readProtectedAreaLinks(): Promise<Map<number, { county: string | null; is_active: boolean | null }>> {
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from('sites_pa')
+    .select('protected_area_id, is_active, ab_counties(county)')
+    .not('protected_area_id', 'is', null);
+
+  if (error) throw new Error(error.message || 'Failed to fetch site links');
+
+  const links = new Map<number, { county: string | null; is_active: boolean | null }>();
+  for (const row of data ?? []) {
+    const areaId = row.protected_area_id as number | null;
+    if (areaId === null || links.has(areaId)) continue;
+    links.set(areaId, {
+      county: countyFromEmbed(row.ab_counties as { county: string } | { county: string }[] | null),
+      is_active: (row.is_active as boolean | null) ?? null,
+    });
+  }
+  return links;
+}
+
 export async function getProtectedAreaBoundaries(): Promise<BoundaryFeatureCollection> {
+  const caller = await requireApprovedCaller();
   // The cookie client, not createServerSupabase. RLS grants select on protected_areas
   // to authenticated users, so the policy is the gate and the service-role key is not
-  // needed for a read.
+  // needed for the geometry read.
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -472,7 +521,23 @@ export async function getProtectedAreaBoundaries(): Promise<BoundaryFeatureColle
 
   if (error) throw new Error(error.message || 'Failed to fetch protected area boundaries');
 
-  return toBoundaryFeatureCollection((data ?? []) as ProtectedAreaBoundaryRow[]);
+  const links = await readProtectedAreaLinks();
+  const rows = ((data ?? []) as ProtectedAreaBoundaryRow[]).map((row) => {
+    const link = links.get(row.id);
+    return {
+      ...row,
+      county: link?.county ?? null,
+      is_active: link ? link.is_active : null,
+    };
+  });
+
+  const collection = toBoundaryFeatureCollection(rows);
+  if (caller.isAdmin) return collection;
+
+  return {
+    type: 'FeatureCollection',
+    features: collection.features.filter((feature) => feature.properties.is_active !== false),
+  };
 }
 
 export async function getAllSites(): Promise<SiteSummary[]> {
@@ -487,6 +552,7 @@ export async function getAllSites(): Promise<SiteSummary[]> {
       ab_county,
       is_active,
       archived_at,
+      protected_area_id,
       ab_counties (
         county
       ),
@@ -513,6 +579,7 @@ export async function getAllSites(): Promise<SiteSummary[]> {
       inspectdate: latestDate,
       is_active: site.is_active ?? true,
       archived_at: site.archived_at ?? null,
+      protected_area_id: site.protected_area_id ?? null,
     };
   });
 }
@@ -528,6 +595,38 @@ export async function getCounties(): Promise<County[]> {
 
   if (error) throw new Error(error.message || 'Failed to fetch counties');
   return data ?? [];
+}
+
+export async function getProtectedAreaChoices(): Promise<ProtectedAreaChoice[]> {
+  await requireApprovedAdmin();
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('protected_areas')
+    .select('id, name, fid, area_type')
+    .order('name', { ascending: true });
+
+  if (error) throw new Error(error.message || 'Failed to fetch protected areas');
+  return data ?? [];
+}
+
+function siteWriteError(error: { code?: string; message?: string }, fallback: string): Error {
+  if (error.code === '23505') {
+    if ((error.message ?? '').includes('protected_area')) {
+      return new Error('That protected area is already linked to a site.');
+    }
+    return new Error('A site with this name already exists.');
+  }
+  if (error.code === '23503') return new Error('The selected protected area does not exist.');
+  return new Error(error.message || fallback);
+}
+
+function protectedAreaIdOrNull(value: number | null): number | null {
+  if (value === null) return null;
+  if (!Number.isInteger(value) || value < 1) {
+    throw new Error('The protected area is not valid.');
+  }
+  return value;
 }
 
 // Site edits run with the service role, so each one checks the caller first.
@@ -546,38 +645,38 @@ async function requireApprovedAdmin(
 export async function updateSite(
   id: number,
   namesite: string,
-  ab_county: number | null
+  ab_county: number | null,
+  protectedAreaId: number | null = null
 ): Promise<void> {
   await requireApprovedAdmin();
+  const protected_area_id = protectedAreaIdOrNull(protectedAreaId);
   const supabase = createServerSupabase();
 
   const { error } = await supabase
     .from('sites_pa')
-    .update({ namesite, ab_county })
+    .update({ namesite, ab_county, protected_area_id })
     .eq('id', id);
 
-  if (error) throw new Error(error.message || 'Failed to update site');
+  if (error) throw siteWriteError(error, 'Failed to update site');
 }
 
 export async function createSite(
   namesite: string,
-  ab_county: number | null
+  ab_county: number | null,
+  protectedAreaId: number | null = null
 ): Promise<void> {
   await requireApprovedAdmin();
 
   const name = namesite.trim();
   if (!name) throw new Error('Site name is required.');
+  const protected_area_id = protectedAreaIdOrNull(protectedAreaId);
 
   const supabase = createServerSupabase();
   const { error } = await supabase
     .from('sites_pa')
-    .insert({ namesite: name, ab_county, is_active: true });
+    .insert({ namesite: name, ab_county, is_active: true, protected_area_id });
 
-  if (error) {
-    // 23505 is the Postgres code for a unique-constraint violation: namesite is UNIQUE.
-    if (error.code === '23505') throw new Error('A site with this name already exists.');
-    throw new Error(error.message || 'Failed to create site');
-  }
+  if (error) throw siteWriteError(error, 'Failed to create site');
 }
 
 /**
@@ -1043,7 +1142,6 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
       )
     `)
     .eq('namesite', namesite)
-    .eq('is_active', true)
     .is('archived_at', null)
     .limit(1);
 

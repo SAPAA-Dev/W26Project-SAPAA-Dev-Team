@@ -33,8 +33,8 @@ erDiagram
     %% - people has one row for each login. The trigger create_person_on_signup
     %%   on auth.users (function create_person_for_new_user) makes it.
     %% - site_stewards.site_id is the primary key, so a site has one steward.
-    %% - protected_areas has no foreign key. The KML import
-    %%   (webapp/utils/kml-import-actions.ts) matches rows on (folder, fid).
+    %% - sites_pa.protected_area_id is an optional link to protected_areas.id.
+    %%   The KML import (webapp/utils/kml-import-actions.ts) matches rows on (folder, fid).
     %% - The role is in raw_app_meta_data (app_metadata.role and
     %%   app_metadata.authenticated). The RLS policies read it.
 
@@ -58,6 +58,7 @@ erDiagram
         bigint ab_county FK
         boolean is_active
         timestamptz archived_at
+        bigint protected_area_id FK, UK "optional protected_areas.id"
     }
 
     form_sections["WEB form_sections"] {
@@ -230,6 +231,7 @@ erDiagram
     }
 
     ab_counties |o--o{ sites_pa : "ab_county"
+    protected_areas |o--o| sites_pa : "protected_area_id"
     question_keys |o--o{ questions : "question_key_id"
     form_sections ||--o{ questions : "section_id"
     questions ||--o{ question_options : "question_id"

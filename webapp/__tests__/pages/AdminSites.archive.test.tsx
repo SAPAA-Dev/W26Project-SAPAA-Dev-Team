@@ -23,6 +23,7 @@ jest.mock('@/utils/supabase/queries', () => ({
   getAllSites: jest.fn(),
   getArchivedSites: jest.fn(),
   getCounties: jest.fn(),
+  getProtectedAreaChoices: jest.fn(),
   getTotalInspectionCount: jest.fn(),
   getSiteDeleteImpact: jest.fn(),
   archiveSite: jest.fn(),
@@ -139,6 +140,7 @@ describe('Admin Sites archive flow', () => {
     (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue(sites);
     (supabaseQueries.getArchivedSites as jest.Mock).mockResolvedValue([]);
     (supabaseQueries.getCounties as jest.Mock).mockResolvedValue([]);
+    (supabaseQueries.getProtectedAreaChoices as jest.Mock).mockResolvedValue([]);
     (supabaseQueries.getTotalInspectionCount as jest.Mock).mockResolvedValue(10);
     (supabaseQueries.getSiteDeleteImpact as jest.Mock).mockResolvedValue(impact);
     (supabaseQueries.archiveSite as jest.Mock).mockResolvedValue(archiveResult);

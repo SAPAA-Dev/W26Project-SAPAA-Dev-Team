@@ -2,14 +2,16 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { X, MapPin, Save, Pencil, Search, Eye, EyeOff } from "lucide-react";
-import { County } from "@/utils/supabase/queries";
+import { County, ProtectedAreaChoice } from "@/utils/supabase/queries";
+import ProtectedAreaField from "./ProtectedAreaField";
 
 interface EditSiteModalProps {
   visible: boolean;
-  site: { id: number; namesite: string; ab_county: number | null; is_active: boolean } | null;
+  site: { id: number; namesite: string; ab_county: number | null; is_active: boolean; protected_area_id?: number | null } | null;
   counties: County[];
+  protectedAreas: ProtectedAreaChoice[];
   onClose: () => void;
-  onSave: (data: { id: number; namesite: string; ab_county: number | null; is_active: boolean }) => void;
+  onSave: (data: { id: number; namesite: string; ab_county: number | null; is_active: boolean; protected_area_id: number | null }) => void;
   saving: boolean;
 }
 
@@ -17,6 +19,7 @@ export default function EditSiteModal({
   visible,
   site,
   counties,
+  protectedAreas,
   onClose,
   onSave,
   saving,
@@ -25,6 +28,7 @@ export default function EditSiteModal({
   const [selectedCounty, setSelectedCounty] = useState<County | null>(null);
   const [countySearch, setCountySearch] = useState("");
   const [countyDropdownOpen, setCountyDropdownOpen] = useState(false);
+  const [protectedAreaId, setProtectedAreaId] = useState<number | null>(null);
   const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
@@ -34,6 +38,7 @@ export default function EditSiteModal({
       setSelectedCounty(match);
       setCountySearch("");
       setCountyDropdownOpen(false);
+      setProtectedAreaId(site.protected_area_id ?? null);
       setIsActive(site.is_active);
     }
   }, [site, counties]);
@@ -54,6 +59,7 @@ export default function EditSiteModal({
       namesite: namesite.trim(),
       ab_county: selectedCounty?.id ?? null,
       is_active: isActive,
+      protected_area_id: protectedAreaId,
     });
   };
 
@@ -61,7 +67,7 @@ export default function EditSiteModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm p-4">
-      <div data-testid="edit-site-modal" className="bg-white rounded-2xl shadow-2xl w-[500px] max-w-[95vw] border-2 border-[#E4EBE4] overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div data-testid="edit-site-modal" className="bg-white rounded-2xl shadow-2xl w-[500px] max-w-[95vw] max-h-[90vh] overflow-y-auto border-2 border-[#E4EBE4] animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-5">
           <div className="flex items-center justify-between">
@@ -159,6 +165,14 @@ export default function EditSiteModal({
               </div>
             )}
           </div>
+
+          <ProtectedAreaField
+            areas={protectedAreas}
+            selectedId={protectedAreaId}
+            onChange={setProtectedAreaId}
+            disabled={saving}
+            testIdPrefix="edit-site-protected-area"
+          />
 
           {/* Site Visibility Toggle */}
           <div>

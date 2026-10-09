@@ -1,8 +1,16 @@
 import {
+  ACTIVE_STATUS_LABEL,
+  INACTIVE_STATUS_LABEL,
+  NO_STATUS_LABEL,
   NO_SUBTYPE_LABEL,
   NO_TYPE_LABEL,
+  UNKNOWN_COUNTY_LABEL,
   boundaryFilterOptions,
+  countyFilterOptions,
+  defaultMapStatuses,
   filterBoundaryFeatures,
+  matchesActiveFilter,
+  matchesCountyFilter,
   toggleAllCategoryValues,
   toggleCategoryValue,
 } from '@/lib/map/boundaryFilters';
@@ -13,7 +21,9 @@ function feature(
   name: string,
   areaType: string,
   subtype: string | null,
-  ocName: string | null
+  ocName: string | null,
+  county: string | null = null,
+  isActive: boolean | null = null
 ): BoundaryFeature {
   return {
     type: 'Feature',
@@ -31,6 +41,8 @@ function feature(
       date_est: null,
       oc_name: ocName,
       notes: null,
+      county,
+      is_active: isActive,
     },
     geometry: { type: 'MultiPolygon', coordinates: [] },
   };
@@ -41,7 +53,7 @@ const JASPER = feature(2, 'Jasper', 'WPP', null, 'Jasper National Park');
 const GOOSEBERRY = feature(3, 'Gooseberry', 'NA', 'Recreation', 'Gooseberry Natural Area');
 const FEATURES = [PEMBINA, JASPER, GOOSEBERRY];
 
-const ALL_SELECTED = { types: null, subtypes: null };
+const ALL_SELECTED = { types: null, subtypes: null, counties: null, statuses: null };
 
 describe('boundaryFilterOptions', () => {
   it('lists each type and subtype once, in order, and adds a choice for a missing value', () => {
@@ -51,6 +63,7 @@ describe('boundaryFilterOptions', () => {
     ).toEqual({
       types: [NO_TYPE_LABEL, 'NA', 'WPP'],
       subtypes: [NO_SUBTYPE_LABEL, 'Conservation', 'Recreation'],
+      counties: [UNKNOWN_COUNTY_LABEL],
     });
   });
 
@@ -63,6 +76,7 @@ describe('boundaryFilterOptions', () => {
     ).toEqual({
       types: ['NA'],
       subtypes: ['Conservation', 'Recreation'],
+      counties: [UNKNOWN_COUNTY_LABEL],
     });
   });
 });
@@ -85,6 +99,8 @@ describe('filterBoundaryFeatures', () => {
     const matched = filterBoundaryFeatures(FEATURES, '', {
       types: new Set(['NA', 'WPP']),
       subtypes: new Set(['Conservation']),
+      counties: null,
+      statuses: null,
     });
 
     expect(matched.map((item) => item.id)).toEqual([1]);
@@ -94,6 +110,8 @@ describe('filterBoundaryFeatures', () => {
     const matched = filterBoundaryFeatures(FEATURES, '', {
       types: null,
       subtypes: new Set([NO_SUBTYPE_LABEL]),
+      counties: null,
+      statuses: null,
     });
 
     expect(matched.map((item) => item.id)).toEqual([2]);
@@ -104,6 +122,8 @@ describe('filterBoundaryFeatures', () => {
     const matched = filterBoundaryFeatures([PEMBINA, blank], '', {
       types: new Set([NO_TYPE_LABEL]),
       subtypes: null,
+      counties: null,
+      statuses: null,
     });
 
     expect(matched.map((item) => item.id)).toEqual([4]);
@@ -113,6 +133,8 @@ describe('filterBoundaryFeatures', () => {
     const matched = filterBoundaryFeatures(FEATURES, '', {
       types: null,
       subtypes: new Set(['Recreation']),
+      counties: null,
+      statuses: null,
     });
 
     expect(matched.map((item) => item.id)).toEqual([3]);
@@ -122,6 +144,8 @@ describe('filterBoundaryFeatures', () => {
     const matched = filterBoundaryFeatures(FEATURES, '', {
       types: new Set(['WPP']),
       subtypes: null,
+      counties: null,
+      statuses: null,
     });
 
     expect(matched.map((item) => item.id)).toEqual([2]);
@@ -129,8 +153,62 @@ describe('filterBoundaryFeatures', () => {
 
   it('shows nothing when a category has no selected values', () => {
     expect(
-      filterBoundaryFeatures(FEATURES, '', { types: new Set(), subtypes: null })
+      filterBoundaryFeatures(FEATURES, '', { types: new Set(), subtypes: null, counties: null, statuses: null })
     ).toEqual([]);
+  });
+
+  it('uses Unknown county when a protected area has no county', () => {
+    const named = feature(8, 'Pembina River', 'NA', 'Conservation', null, 'Parkland', true);
+    expect(countyFilterOptions([named.properties.county, null])).toEqual([UNKNOWN_COUNTY_LABEL, 'Parkland']);
+
+    const matched = filterBoundaryFeatures([named, PEMBINA], '', {
+      types: null,
+      subtypes: null,
+      counties: new Set([UNKNOWN_COUNTY_LABEL]),
+      statuses: null,
+    });
+
+    expect(matched.map((item) => item.id)).toEqual([1]);
+  });
+
+  it('hides inactive sites unless Inactive is selected', () => {
+    const active = feature(1, 'Pembina River', 'NA', 'Conservation', null, 'Parkland', true);
+    const inactive = feature(2, 'Jasper', 'WPP', null, null, 'Parkland', false);
+    const unlinked = feature(3, 'Gooseberry', 'NA', 'Recreation', null, null, null);
+    const rows = [active, inactive, unlinked];
+
+    const visible = filterBoundaryFeatures(rows, '', {
+      types: null,
+      subtypes: null,
+      counties: null,
+      statuses: defaultMapStatuses(),
+    });
+    expect(visible.map((item) => item.id)).toEqual([1, 3]);
+
+    const onlyInactive = filterBoundaryFeatures(rows, '', {
+      types: null,
+      subtypes: null,
+      counties: null,
+      statuses: new Set([INACTIVE_STATUS_LABEL]),
+    });
+    expect(onlyInactive.map((item) => item.id)).toEqual([2]);
+    expect(defaultMapStatuses().has(ACTIVE_STATUS_LABEL)).toBe(true);
+    expect(defaultMapStatuses().has(NO_STATUS_LABEL)).toBe(true);
+    expect(defaultMapStatuses().has(INACTIVE_STATUS_LABEL)).toBe(false);
+  });
+});
+
+describe('list filters', () => {
+  it('matches a site with no county only for Unknown county', () => {
+    expect(matchesCountyFilter(null, new Set([UNKNOWN_COUNTY_LABEL]))).toBe(true);
+    expect(matchesCountyFilter('Parkland', new Set([UNKNOWN_COUNTY_LABEL]))).toBe(false);
+    expect(matchesCountyFilter('Parkland', null)).toBe(true);
+  });
+
+  it('matches active and inactive site cards', () => {
+    expect(matchesActiveFilter(true, new Set([ACTIVE_STATUS_LABEL]))).toBe(true);
+    expect(matchesActiveFilter(false, new Set([ACTIVE_STATUS_LABEL]))).toBe(false);
+    expect(matchesActiveFilter(false, null)).toBe(true);
   });
 });
 

@@ -237,11 +237,14 @@ export default function SiteDetailScreen() {
           getSiteByName(namesite),
           getCurrentUserUid(),
         ]);
-        // Archived, inactive, and unknown site names all come back empty here.
+        // Archived and unknown site names come back empty here.
         if (siteData.length === 0) {
           setError('Site not found');
           setLoading(false);
           return;
+        }
+        if (siteData[0].is_active === false) {
+          throw new Error('This site is not active');
         }
         const details = await getFormResponsesBySite(siteData[0].namesite);
 

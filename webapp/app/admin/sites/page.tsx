@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAllSites, getArchivedSites, getCounties, updateSite, toggleSiteActive, createSite, getTotalInspectionCount, getProtectedAreaBoundaries, SiteSummary, County, SiteDeleteImpact, archiveSite, getSiteDeleteImpact } from '@/utils/supabase/queries';
+import { getAllSites, getArchivedSites, getCounties, getProtectedAreaChoices, updateSite, toggleSiteActive, createSite, getTotalInspectionCount, getProtectedAreaBoundaries, SiteSummary, County, ProtectedAreaChoice, SiteDeleteImpact, archiveSite, getSiteDeleteImpact } from '@/utils/supabase/queries';
 import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, Pencil, ArrowLeft, Download, Plus, Upload, LayoutGrid, Map as MapIcon, Archive } from 'lucide-react';
 import EditSiteModal from './components/EditSiteModal';
 import AddSiteModal from './components/AddSiteModal';
@@ -15,8 +15,9 @@ import PdfExportsDropdown from '@/components/PdfExportsDropdown';
 import KmlImportModal from '@/components/KmlImportModal';
 import ArchiveSiteModal from './components/ArchiveSiteModal';
 import type { BoundaryFeatureCollection } from '@/lib/map/boundaries';
-import { boundaryFilterOptions, filterBoundaryCollection } from '@/lib/map/boundaryFilters';
+import { boundaryFilterOptions, CARD_STATUS_OPTIONS, countyFilterOptions, defaultMapStatuses, filterBoundaryCollection, MAP_STATUS_OPTIONS, matchesActiveFilter, matchesCountyFilter } from '@/lib/map/boundaryFilters';
 import MapAreaFilters from '@/components/map/MapAreaFilters';
+import { availableProtectedAreas } from '@/lib/sites/availableProtectedAreas';
 
 type UnifiedSite = SiteSummary;
 
@@ -77,6 +78,9 @@ export default function AdminSitesPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
   const [selectedAreaTypes, setSelectedAreaTypes] = useState<ReadonlySet<string> | null>(null);
   const [selectedSubtypes, setSelectedSubtypes] = useState<ReadonlySet<string> | null>(null);
+  const [selectedCounties, setSelectedCounties] = useState<ReadonlySet<string> | null>(null);
+  const [selectedCardStatuses, setSelectedCardStatuses] = useState<ReadonlySet<string> | null>(null);
+  const [selectedMapStatuses, setSelectedMapStatuses] = useState<ReadonlySet<string> | null>(defaultMapStatuses);
 
   //Archiving states
   const [archiveTarget, setArchiveTarget] = useState<SiteSummary | null>(null);
@@ -115,26 +119,43 @@ export default function AdminSitesPage() {
       filterBoundaryCollection(boundaries, search, {
         types: selectedAreaTypes,
         subtypes: selectedSubtypes,
+        counties: selectedCounties,
+        statuses: selectedMapStatuses,
       }),
-    [boundaries, search, selectedAreaTypes, selectedSubtypes]
+    [boundaries, search, selectedAreaTypes, selectedSubtypes, selectedCounties, selectedMapStatuses]
+  );
+  const cardCountyOptions = useMemo(
+    () => countyFilterOptions(sites.map((site) => site.county)),
+    [sites]
   );
 
   const [editSite, setEditSite] = useState<SiteSummary | null>(null);
   const [showAddSite, setShowAddSite] = useState(false);
   const [counties, setCounties] = useState<County[]>([]);
+  const [protectedAreas, setProtectedAreas] = useState<ProtectedAreaChoice[]>([]);
   const [saving, setSaving] = useState(false);
+  const addAreaChoices = useMemo(
+    () => availableProtectedAreas(protectedAreas, sites, null),
+    [protectedAreas, sites]
+  );
+  const editAreaChoices = useMemo(
+    () => availableProtectedAreas(protectedAreas, sites, editSite?.id ?? null),
+    [protectedAreas, sites, editSite]
+  );
 
   
   useEffect(() => {
     const loadSites = async () => {
       setLoading(true);
       try {
-        const [allSites, countyList] = await Promise.all([
+        const [allSites, countyList, areaList] = await Promise.all([
           getAllSites(),
           getCounties(),
+          getProtectedAreaChoices(),
         ]);
         setSites(allSites);
         setCounties(countyList);
+        setProtectedAreas(areaList);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error loading sites';
         setError(message);
@@ -182,8 +203,10 @@ export default function AdminSitesPage() {
     const lower = search.toLowerCase();
     const filtered = sites.filter(
       (s) =>
-        s.namesite.toLowerCase().includes(lower) ||
-        (s.county && s.county.toLowerCase().includes(lower))
+        (s.namesite.toLowerCase().includes(lower) ||
+          (s.county && s.county.toLowerCase().includes(lower))) &&
+        matchesCountyFilter(s.county, selectedCounties) &&
+        matchesActiveFilter(s.is_active, selectedCardStatuses)
     );
 
     return filtered.sort((a, b) => {
@@ -196,7 +219,7 @@ export default function AdminSitesPage() {
       }
       return sortBy.direction === 'asc' ? comparison : -comparison;
     });
-  }, [sites, search, sortBy]);
+  }, [sites, search, sortBy, selectedCounties, selectedCardStatuses]);
 
   const stats = useMemo(() => {
     const totalSites = sites.length;
@@ -217,11 +240,11 @@ export default function AdminSitesPage() {
     return { totalSites, totalInspections, totalResponses, activeThisYear, needsAttention };
   }, [sites]);
 
-  const handleSaveSite = async (data: { id: number; namesite: string; ab_county: number | null; is_active: boolean }) => {
+  const handleSaveSite = async (data: { id: number; namesite: string; ab_county: number | null; is_active: boolean; protected_area_id: number | null }) => {
     setSaving(true);
     try {
       const currentSite = sites.find((s) => s.id === data.id);
-      await updateSite(data.id, data.namesite, data.ab_county);
+      await updateSite(data.id, data.namesite, data.ab_county, data.protected_area_id);
       if (currentSite && currentSite.is_active !== data.is_active) {
         await toggleSiteActive(data.id, data.is_active);
       }
@@ -229,7 +252,7 @@ export default function AdminSitesPage() {
       setSites((prev) =>
         prev.map((s) =>
           s.id === data.id
-            ? { ...s, namesite: data.namesite, ab_county: data.ab_county, county: countyObj?.county ?? null, is_active: data.is_active }
+            ? { ...s, namesite: data.namesite, ab_county: data.ab_county, county: countyObj?.county ?? null, is_active: data.is_active, protected_area_id: data.protected_area_id }
             : s
         )
       );
@@ -241,10 +264,10 @@ export default function AdminSitesPage() {
     }
   };
 
-  const handleCreateSite = async (data: { namesite: string; ab_county: number | null }): Promise<boolean> => {
+  const handleCreateSite = async (data: { namesite: string; ab_county: number | null; protected_area_id: number | null }): Promise<boolean> => {
     setSaving(true);
     try {
-      await createSite(data.namesite, data.ab_county);
+      await createSite(data.namesite, data.ab_county, data.protected_area_id);
       setSites(await getAllSites());
       setShowAddSite(false);
       return true;
@@ -572,14 +595,29 @@ const handleCloseArchive = () => {
                     <PdfExportsDropdown onClose={() => setShowExportsDropdown(false)} />
                   )}
                 </div>
-                {viewMode === 'map' && (
+                {viewMode === 'map' ? (
                   <MapAreaFilters
                     types={areaFilterOptions.types}
                     subtypes={areaFilterOptions.subtypes}
+                    counties={areaFilterOptions.counties}
+                    statuses={MAP_STATUS_OPTIONS}
                     selectedTypes={selectedAreaTypes}
                     selectedSubtypes={selectedSubtypes}
+                    selectedCounties={selectedCounties}
+                    selectedStatuses={selectedMapStatuses}
                     onTypesChange={setSelectedAreaTypes}
                     onSubtypesChange={setSelectedSubtypes}
+                    onCountiesChange={setSelectedCounties}
+                    onStatusesChange={setSelectedMapStatuses}
+                  />
+                ) : (
+                  <MapAreaFilters
+                    counties={cardCountyOptions}
+                    statuses={CARD_STATUS_OPTIONS}
+                    selectedCounties={selectedCounties}
+                    selectedStatuses={selectedCardStatuses}
+                    onCountiesChange={setSelectedCounties}
+                    onStatusesChange={setSelectedCardStatuses}
                   />
                 )}
                 {viewMode !== 'map' && (
@@ -788,6 +826,7 @@ const handleCloseArchive = () => {
         visible={!!editSite}
         site={editSite}
         counties={counties}
+        protectedAreas={editAreaChoices}
         onClose={() => setEditSite(null)}
         onSave={handleSaveSite}
         saving={saving}
@@ -795,6 +834,7 @@ const handleCloseArchive = () => {
       <AddSiteModal
         visible={showAddSite}
         counties={counties}
+        protectedAreas={addAreaChoices}
         onClose={() => setShowAddSite(false)}
         onSave={handleCreateSite}
         saving={saving}

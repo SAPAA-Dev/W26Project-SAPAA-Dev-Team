@@ -37,6 +37,7 @@ classDiagram
         +ab_county: number?
         +is_active: boolean
         +archived_at: timestamp?
+        +protected_area_id: number?
     }
 
     class County {
@@ -230,6 +231,7 @@ classDiagram
     }
 
     County "0..1" <-- "0..*" Site : ab_county
+    ProtectedArea "0..1" <-- "0..1" Site : protected_area_id
     Site "1" *-- "0..1" SiteSteward : site_id
     Person "1" *-- "0..*" SiteSteward : steward_id
     Person "1" *-- "0..1" Socials : person_id
@@ -388,4 +390,4 @@ classDiagram
     note for Attachment "US 4.0.6: the identifier column can already be null. The story changes the app validation.<br>US 7.0.8: an Attachment with response_id is owned by that SIR and is deleted with it."
     note for ActivityPointEntry "Person.activity_points (the total) exists. This per-event table is still proposed (1.0.5)."
     note for ProfileHiddenQuestion "user_id, GpxTrack.user_id and ActivityPointEntry.user_id are auth.users ids.<br>Person.auth_user_id links them to a Person. There is no FK between them."
-    note for ProtectedArea "US 6.0.1: the KML import (webapp/utils/kml-import-actions.ts) upserts rows on (folder, fid).<br>Since migration 20261006010000 there is no link to sites_pa.<br>Open question (6.0.1, 2.0.2): how a Site is matched to a protected area."
+    note for ProtectedArea "US 6.0.1: the KML import (webapp/utils/kml-import-actions.ts) upserts rows on (folder, fid).<br>sites_pa.protected_area_id is an optional link to protected_areas.id. Null means no link."

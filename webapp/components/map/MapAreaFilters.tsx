@@ -18,7 +18,7 @@ function FilterSection({ label, options, selected, onChange }: FilterSectionProp
   const selectedCount = allSelected ? options.length : selected.size;
   const normalizedQuery = query.trim().toLowerCase();
   const visibleOptions = options.filter((option) => option.toLowerCase().includes(normalizedQuery));
-  const searchLabel = `Search ${label.toLowerCase()}s`;
+  const searchLabel = searchLabelFor(label);
 
   return (
     <section className="border-b border-[#E4EBE4] last:border-b-0" aria-label={label}>
@@ -47,15 +47,15 @@ function FilterSection({ label, options, selected, onChange }: FilterSectionProp
       </div>
       {expanded && (
         <div className="px-3 pb-3">
-          <input
+          {label !== 'Status' &&<input
             type="text"
             value={query}
             aria-label={searchLabel}
             placeholder={searchLabel}
             onChange={(event) => setQuery(event.target.value)}
             className="mb-2 w-full rounded-lg border border-[#E4EBE4] px-3 py-2 text-sm text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43]"
-          />
-          <div className="max-h-40 overflow-y-auto">
+          />}
+          <div className="max-h-40 overflow-y-auto rounded-lg border border-[#E4EBE4]">
             {visibleOptions.length === 0 ? (
               <p className="px-1 py-2 text-sm text-[#7A8075]">No matches</p>
             ) : (
@@ -84,26 +84,44 @@ function FilterSection({ label, options, selected, onChange }: FilterSectionProp
   );
 }
 
+function searchLabelFor(label: string): string {
+  if (label === 'County') return 'Search counties';
+  if (label === 'Status') return 'Search statuses';
+  return `Search ${label.toLowerCase()}s`;
+}
+
 interface MapAreaFiltersProps {
-  types: readonly string[];
-  subtypes: readonly string[];
-  selectedTypes: ReadonlySet<string> | null;
-  selectedSubtypes: ReadonlySet<string> | null;
-  onTypesChange: (next: ReadonlySet<string> | null) => void;
-  onSubtypesChange: (next: ReadonlySet<string> | null) => void;
+  types?: readonly string[];
+  subtypes?: readonly string[];
+  counties?: readonly string[];
+  statuses?: readonly string[];
+  selectedTypes?: ReadonlySet<string> | null;
+  selectedSubtypes?: ReadonlySet<string> | null;
+  selectedCounties?: ReadonlySet<string> | null;
+  selectedStatuses?: ReadonlySet<string> | null;
+  onTypesChange?: (next: ReadonlySet<string> | null) => void;
+  onSubtypesChange?: (next: ReadonlySet<string> | null) => void;
+  onCountiesChange?: (next: ReadonlySet<string> | null) => void;
+  onStatusesChange?: (next: ReadonlySet<string> | null) => void;
 }
 
 export default function MapAreaFilters({
-  types,
-  subtypes,
-  selectedTypes,
-  selectedSubtypes,
-  onTypesChange,
-  onSubtypesChange,
+  types = [],
+  subtypes = [],
+  counties = [],
+  statuses = [],
+  selectedTypes = null,
+  selectedSubtypes = null,
+  selectedCounties = null,
+  selectedStatuses = null,
+  onTypesChange = () => {},
+  onSubtypesChange = () => {},
+  onCountiesChange = () => {},
+  onStatusesChange = () => {},
 }: MapAreaFiltersProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const disabled = types.length === 0 && subtypes.length === 0;
+  const disabled = types.length === 0 && subtypes.length === 0 && counties.length === 0 && statuses.length === 0;
 
   useEffect(() => {
     if (!open) return;
@@ -130,14 +148,34 @@ export default function MapAreaFilters({
         <ChevronDown className="w-4 h-4" />
       </button>
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-80 rounded-xl border-2 border-[#E4EBE4] bg-white shadow-xl">
-          <FilterSection label="Type" options={types} selected={selectedTypes} onChange={onTypesChange} />
-          <FilterSection
-            label="Subtype"
-            options={subtypes}
-            selected={selectedSubtypes}
-            onChange={onSubtypesChange}
-          />
+        <div className="absolute right-0 z-20 mt-2 w-80 max-h-[calc(80vh-8rem)] overflow-y-auto rounded-xl border-2 border-[#E4EBE4] bg-white shadow-xl">
+          {types.length > 0 && (
+            <FilterSection label="Type" options={types} selected={selectedTypes} onChange={onTypesChange} />
+          )}
+          {subtypes.length > 0 && (
+            <FilterSection
+              label="Subtype"
+              options={subtypes}
+              selected={selectedSubtypes}
+              onChange={onSubtypesChange}
+            />
+          )}
+          {counties.length > 0 && (
+            <FilterSection
+              label="County"
+              options={counties}
+              selected={selectedCounties}
+              onChange={onCountiesChange}
+            />
+          )}
+          {statuses.length > 0 && (
+            <FilterSection
+              label="Status"
+              options={statuses}
+              selected={selectedStatuses}
+              onChange={onStatusesChange}
+            />
+          )}
         </div>
       )}
     </div>

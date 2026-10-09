@@ -630,7 +630,8 @@ function mapFeature(
   name: string,
   areaType: string,
   subtype: string | null,
-  ocName: string | null
+  ocName: string | null,
+  isActive: boolean | null = null
 ) {
   return {
     type: 'Feature' as const,
@@ -648,6 +649,8 @@ function mapFeature(
       date_est: null,
       oc_name: ocName,
       notes: null,
+      county: null,
+      is_active: isActive,
     },
     geometry: { type: 'MultiPolygon' as const, coordinates: [] },
   };
@@ -658,9 +661,10 @@ it('filters the map by type, subtype and name, and keeps the search text across 
   mockGetProtectedAreaBoundaries.mockResolvedValue({
     type: 'FeatureCollection',
     features: [
-      mapFeature(1, 'Pembina River', 'NA', 'Conservation', 'Pembina River Natural Area'),
-      mapFeature(2, 'Jasper', 'WPP', null, 'Jasper National Park'),
-      mapFeature(3, 'Gooseberry', 'NA', 'Recreation', 'Gooseberry Natural Area'),
+      mapFeature(1, 'Pembina River', 'NA', 'Conservation', 'Pembina River Natural Area', true),
+      mapFeature(2, 'Jasper', 'WPP', null, 'Jasper National Park', true),
+      mapFeature(3, 'Gooseberry', 'NA', 'Recreation', 'Gooseberry Natural Area', null),
+      mapFeature(4, 'Hidden Site', 'NA', 'Conservation', 'Hidden Site Natural Area', false),
     ],
   });
 
@@ -683,6 +687,7 @@ it('filters the map by type, subtype and name, and keeps the search text across 
   expect(screen.getByText('Pembina River')).toBeInTheDocument();
   expect(screen.getByText('Gooseberry')).toBeInTheDocument();
   expect(screen.queryByText('Jasper')).not.toBeInTheDocument();
+  expect(screen.queryByText('Hidden Site')).not.toBeInTheDocument();
 
   await user.clear(screen.getByPlaceholderText('Search by name or OC name...'));
   await user.click(screen.getByRole('button', { name: 'Filter' }));

@@ -47,9 +47,10 @@ classDiagram
             +getSitesOnline() SiteSummary[]
             +getSiteByName(namesite) SiteSummary[] [CHANGE 2.0.3, USED 2.0.8]
             +getCounties() County[]
-            +updateSite(id, namesite, ab_county) void [CHANGE 2.0.3]
+            +getProtectedAreaChoices() ProtectedAreaChoice[]
+            +updateSite(id, namesite, ab_county, protectedAreaId) void [CHANGE 2.0.3]
             +toggleSiteActive(id, is_active) void [CHANGE 2.0.3]
-            +createSite(namesite, ab_county) void
+            +createSite(namesite, ab_county, protectedAreaId) void
             +findSitesWithName(namesite) string[]
             +getSiteLinks(siteId) SiteLinks
         }

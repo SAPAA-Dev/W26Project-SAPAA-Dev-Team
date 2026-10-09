@@ -13,9 +13,21 @@ const counties = [
   { id: 2, county: "Parkland County" },
 ];
 
+const protectedAreas = [
+  { id: 9, name: "Lakeland", fid: 181, area_type: "PRA" },
+  { id: 10, name: "Wainwright Dunes", fid: 44, area_type: "ER" },
+];
+
 function renderModal(onSave = jest.fn().mockResolvedValue(true)) {
   render(
-    <AddSiteModal visible counties={counties} onClose={jest.fn()} onSave={onSave} saving={false} />
+    <AddSiteModal
+      visible
+      counties={counties}
+      protectedAreas={protectedAreas}
+      onClose={jest.fn()}
+      onSave={onSave}
+      saving={false}
+    />
   );
   return onSave;
 }
@@ -33,7 +45,14 @@ describe("AddSiteModal", () => {
 
   it("renders nothing when it is not visible", () => {
     const { container } = render(
-      <AddSiteModal visible={false} counties={counties} onClose={jest.fn()} onSave={jest.fn()} saving={false} />
+      <AddSiteModal
+        visible={false}
+        counties={counties}
+        protectedAreas={protectedAreas}
+        onClose={jest.fn()}
+        onSave={jest.fn()}
+        saving={false}
+      />
     );
     expect(container).toBeEmptyDOMElement();
   });
@@ -70,7 +89,9 @@ describe("AddSiteModal", () => {
     await screen.findByTestId("add-site-duplicate-warning");
     fireEvent.click(screen.getByTestId("add-site-save-button"));
 
-    await waitFor(() => expect(onSave).toHaveBeenCalledWith({ namesite: "Bilby NA East", ab_county: null }));
+    await waitFor(() =>
+      expect(onSave).toHaveBeenCalledWith({ namesite: "Bilby NA East", ab_county: null, protected_area_id: null })
+    );
   });
 
   it("saves the trimmed name and the chosen county", async () => {
@@ -80,7 +101,26 @@ describe("AddSiteModal", () => {
     fireEvent.change(screen.getByTestId("add-site-county-select"), { target: { value: "2" } });
     fireEvent.click(screen.getByTestId("add-site-save-button"));
 
-    await waitFor(() => expect(onSave).toHaveBeenCalledWith({ namesite: "New Site", ab_county: 2 }));
+    await waitFor(() =>
+      expect(onSave).toHaveBeenCalledWith({ namesite: "New Site", ab_county: 2, protected_area_id: null })
+    );
+  });
+
+  it("saves one selected protected area", async () => {
+    const onSave = renderModal();
+
+    fireEvent.change(screen.getByTestId("add-site-name-input"), { target: { value: "Lakeland Site" } });
+    const search = screen.getByTestId("add-site-protected-area-search");
+    fireEvent.change(search, { target: { value: "lake" } });
+    fireEvent.focus(search);
+    fireEvent.mouseDown(screen.getByTestId("add-site-protected-area-option-9"));
+    expect(screen.getByTestId("add-site-protected-area-selected-name")).toHaveTextContent("Lakeland");
+    expect(screen.getByTestId("add-site-protected-area-selected-detail")).toHaveTextContent("181 | PRA");
+    fireEvent.click(screen.getByTestId("add-site-save-button"));
+
+    await waitFor(() =>
+      expect(onSave).toHaveBeenCalledWith({ namesite: "Lakeland Site", ab_county: null, protected_area_id: 9 })
+    );
   });
 
   it("suggests SAPAA map areas that match what the admin types", async () => {

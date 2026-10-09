@@ -20,7 +20,7 @@ import UserNavBar from "@/components/HeaderDropdown";
 import HelpMenu from '@/components/HelpMenu';
 import { siteDetailSteps } from '@/components/TutorialOverlay';
 import type { BoundaryFeatureCollection } from '@/lib/map/boundaries';
-import { boundaryFilterOptions, filterBoundaryCollection } from '@/lib/map/boundaryFilters';
+import { boundaryFilterOptions, countyFilterOptions, defaultMapStatuses, filterBoundaryCollection, matchesCountyFilter } from '@/lib/map/boundaryFilters';
 import MapAreaFilters from '@/components/map/MapAreaFilters';
 
 const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
@@ -111,6 +111,7 @@ export default function HomeClient() {
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
   const [selectedAreaTypes, setSelectedAreaTypes] = useState<ReadonlySet<string> | null>(null);
   const [selectedSubtypes, setSelectedSubtypes] = useState<ReadonlySet<string> | null>(null);
+  const [selectedCounties, setSelectedCounties] = useState<ReadonlySet<string> | null>(null);
 
   // The boundaries are large, so they load the first time the map view opens and never
   // again during the visit.
@@ -131,13 +132,19 @@ export default function HomeClient() {
   }, [viewMode]);
 
   const areaFilterOptions = useMemo(() => boundaryFilterOptions(boundaries), [boundaries]);
+  const cardCountyOptions = useMemo(
+    () => countyFilterOptions(sites.map((site) => site.county)),
+    [sites]
+  );
   const mapBoundaries = useMemo(
     () =>
       filterBoundaryCollection(boundaries, search, {
         types: selectedAreaTypes,
         subtypes: selectedSubtypes,
+        counties: selectedCounties,
+        statuses: defaultMapStatuses(),
       }),
-    [boundaries, search, selectedAreaTypes, selectedSubtypes]
+    [boundaries, search, selectedAreaTypes, selectedSubtypes, selectedCounties]
   );
 
   const [forceTutorial, setForceTutorial] = useState(false);
@@ -223,8 +230,10 @@ export default function HomeClient() {
     const lower = search.toLowerCase();
     const filtered = sites.filter(
       (s) =>
-        s.namesite.toLowerCase().includes(lower) ||
-        (s.county && s.county.toLowerCase().includes(lower))
+        (s.is_active !== false) &&
+        (s.namesite.toLowerCase().includes(lower) ||
+          (s.county && s.county.toLowerCase().includes(lower))) &&
+        matchesCountyFilter(s.county, selectedCounties)
     );
 
     return filtered.sort((a, b) => {
@@ -237,7 +246,7 @@ export default function HomeClient() {
       }
       return sortBy.direction === 'asc' ? comparison : -comparison;
     });
-  }, [sites, search, sortBy]);
+  }, [sites, search, sortBy, selectedCounties]);
 
   const stats = useMemo(() => {
     const totalSites = sites.length;
@@ -468,12 +477,21 @@ export default function HomeClient() {
               <MapAreaFilters
                 types={areaFilterOptions.types}
                 subtypes={areaFilterOptions.subtypes}
+                counties={areaFilterOptions.counties}
                 selectedTypes={selectedAreaTypes}
                 selectedSubtypes={selectedSubtypes}
+                selectedCounties={selectedCounties}
                 onTypesChange={setSelectedAreaTypes}
                 onSubtypesChange={setSelectedSubtypes}
+                onCountiesChange={setSelectedCounties}
               />
             ) : (
+              <div className="flex items-center gap-2">
+              <MapAreaFilters
+                counties={cardCountyOptions}
+                selectedCounties={selectedCounties}
+                onCountiesChange={setSelectedCounties}
+              />
              <div id="tutorial-sort" className="relative sort-menu-container">
               <button
                 onClick={() => setShowSortMenu(!showSortMenu)}
@@ -523,6 +541,7 @@ export default function HomeClient() {
                 </div>
               )}
             </div>
+              </div>
             )}
           </div>
         </div>

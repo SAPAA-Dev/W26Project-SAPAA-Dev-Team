@@ -77,6 +77,30 @@ describe("Supabase edit site functions", () => {
     });
   });
 
+  describe("getProtectedAreaChoices", () => {
+    it("returns name, fid, and type in name order", async () => {
+      const mockData = [
+        { id: 9, name: "Lakeland", fid: 181, area_type: "PRA" },
+        { id: 10, name: "Wainwright Dunes", fid: 44, area_type: "ER" },
+      ];
+      const mockOrder = jest.fn().mockResolvedValue({ data: mockData, error: null });
+      const mockSelect = jest.fn().mockReturnValue({ order: mockOrder });
+      mockFrom.mockReturnValueOnce({ select: mockSelect });
+
+      await expect(queries.getProtectedAreaChoices()).resolves.toEqual(mockData);
+      expect(mockFrom).toHaveBeenCalledWith("protected_areas");
+      expect(mockSelect).toHaveBeenCalledWith("id, name, fid, area_type");
+      expect(mockOrder).toHaveBeenCalledWith("name", { ascending: true });
+    });
+
+    it("rejects a steward and reads nothing", async () => {
+      mockCaller("steward");
+
+      await expect(queries.getProtectedAreaChoices()).rejects.toThrow("Only admins can edit sites.");
+      expect(mockFrom).not.toHaveBeenCalled();
+    });
+  });
+
   describe("updateSite", () => {
     it("updates site name and county successfully", async () => {
       const mockUpdate = jest.fn().mockReturnThis();
@@ -90,7 +114,7 @@ describe("Supabase edit site functions", () => {
 
       await expect(queries.updateSite(1, "New Name", 5)).resolves.toBeUndefined();
       expect(mockFrom).toHaveBeenCalledWith("sites_pa");
-      expect(mockUpdate).toHaveBeenCalledWith({ namesite: "New Name", ab_county: 5 });
+      expect(mockUpdate).toHaveBeenCalledWith({ namesite: "New Name", ab_county: 5, protected_area_id: null });
       expect(mockEq).toHaveBeenCalledWith("id", 1);
     });
 
@@ -100,7 +124,38 @@ describe("Supabase edit site functions", () => {
       mockFrom.mockReturnValueOnce({ update: mockUpdate });
 
       await expect(queries.updateSite(1, "Name", null)).resolves.toBeUndefined();
-      expect(mockUpdate).toHaveBeenCalledWith({ namesite: "Name", ab_county: null });
+      expect(mockUpdate).toHaveBeenCalledWith({ namesite: "Name", ab_county: null, protected_area_id: null });
+    });
+
+    it("saves the selected protected area", async () => {
+      const mockEq = jest.fn().mockResolvedValue({ error: null });
+      const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq });
+      mockFrom.mockReturnValueOnce({ update: mockUpdate });
+
+      await expect(queries.updateSite(1, "Name", null, 9)).resolves.toBeUndefined();
+      expect(mockUpdate).toHaveBeenCalledWith({ namesite: "Name", ab_county: null, protected_area_id: 9 });
+    });
+
+    it("explains a protected area that is already linked", async () => {
+      const mockEq = jest.fn().mockResolvedValue({
+        error: { code: "23505", message: 'duplicate key value violates unique constraint "sites_pa_protected_area_id_key"' },
+      });
+      const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq });
+      mockFrom.mockReturnValueOnce({ update: mockUpdate });
+
+      await expect(queries.updateSite(1, "Name", null, 9)).rejects.toThrow(
+        "That protected area is already linked to a site."
+      );
+    });
+
+    it("explains a missing protected area", async () => {
+      const mockEq = jest.fn().mockResolvedValue({ error: { code: "23503", message: "foreign key" } });
+      const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq });
+      mockFrom.mockReturnValueOnce({ update: mockUpdate });
+
+      await expect(queries.updateSite(1, "Name", null, 9)).rejects.toThrow(
+        "The selected protected area does not exist."
+      );
     });
 
     it("throws error if Supabase fails", async () => {
