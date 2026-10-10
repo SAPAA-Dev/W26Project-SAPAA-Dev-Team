@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within, act } from '@testing-library/react';
 import NewReportPage from '../../app/detail/[namesite]/new-report/page';
 import MainContent from '../../app/detail/[namesite]/new-report/MainContent';
 import StickyFooter from '../../app/detail/[namesite]/new-report/Footer';
@@ -1004,6 +1004,248 @@ describe('US 1.0.26 - Persist Site Inspection Form Draft', () => {
     } finally {
       if (previousGetUser) mockGetUser.mockImplementation(previousGetUser);
       if (previousIsSteward) mockIsSteward.mockImplementation(previousIsSteward);
+    }
+  });
+
+  it('keeps the verification popup closed when the steward check resolves after the draft loads', async () => {
+    const previousGetUser = mockGetUser.getMockImplementation();
+    const previousIsSteward = mockIsSteward.getMockImplementation();
+
+    try {
+      mockGetQuestionsOnline.mockResolvedValue([
+        { id: 1, title: 'Draft Question', question_type: 'text', section: 1, answers: [], formorder: 1, is_required: false },
+      ]);
+      mockGetUser.mockResolvedValue({ data: { user: guestUser }, error: null });
+      mockGetCurrentUserUid.mockResolvedValue('user-123');
+      mockGetCurrentSiteId.mockResolvedValue('1');
+
+      // Hold the steward check back until the draft has been restored
+      let resolveIsSteward: (value: boolean) => void = () => {};
+      const slowIsSteward = new Promise<boolean>((resolve) => {
+        resolveIsSteward = resolve;
+      });
+      mockIsSteward.mockImplementation(() => slowIsSteward);
+
+      localStorage.setItem(
+        'inspection-draft-user-123-1',
+        JSON.stringify({ version: 1, responses: { 1: 'Saved answer' }, activeSection: 1, hasAccepted: true })
+      );
+
+      render(<NewReportPage />);
+
+      await waitFor(() => expect(mockIsSteward).toHaveBeenCalled());
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+      await act(async () => {
+        resolveIsSteward(false);
+      });
+
+      const input = await screen.findByTestId('question-input-1') as HTMLTextAreaElement;
+      expect(input.value).toBe('Saved answer');
+      expect(screen.queryByText(/the fine print up front/i)).not.toBeInTheDocument();
+    } finally {
+      if (previousGetUser) mockGetUser.mockImplementation(previousGetUser);
+      if (previousIsSteward) mockIsSteward.mockImplementation(previousIsSteward);
+    }
+  });
+
+  it('saves the disclaimer as accepted only after Continue to Form is pressed', async () => {
+    const previousGetUser = mockGetUser.getMockImplementation();
+    const previousIsSteward = mockIsSteward.getMockImplementation();
+
+    try {
+      mockGetQuestionsOnline.mockResolvedValue([
+        { id: 1, title: 'Draft Question', question_type: 'text', section: 1, answers: [], formorder: 1, is_required: false },
+      ]);
+      mockGetUser.mockResolvedValue({ data: { user: guestUser }, error: null });
+      mockIsSteward.mockResolvedValue(false);
+      mockGetCurrentUserUid.mockResolvedValue('user-123');
+      mockGetCurrentSiteId.mockResolvedValue('1');
+
+      const storageKey = 'inspection-draft-user-123-1';
+      const readStoredAcceptance = () =>
+        JSON.parse(localStorage.getItem(storageKey) ?? '{}').hasAccepted;
+
+      render(<NewReportPage />);
+
+      fireEvent.click(await screen.findByTestId('terms-checkbox'));
+      await waitFor(() => expect(readStoredAcceptance()).toBe(false));
+
+      fireEvent.click(screen.getByRole('button', { name: /continue to form/i }));
+      await waitFor(() => expect(readStoredAcceptance()).toBe(true));
+    } finally {
+      if (previousGetUser) mockGetUser.mockImplementation(previousGetUser);
+      if (previousIsSteward) mockIsSteward.mockImplementation(previousIsSteward);
+    }
+  });
+
+  it('keeps the saved section in the draft when the questions fail to load', async () => {
+    mockGetQuestionsOnline.mockRejectedValue(new Error('network down'));
+    mockGetCurrentUserUid.mockResolvedValue('user-123');
+    mockGetCurrentSiteId.mockResolvedValue('1');
+
+    const storageKey = 'inspection-draft-user-123-1';
+    localStorage.setItem(
+      storageKey,
+      JSON.stringify({ version: 1, responses: { 1: 'Saved answer' }, activeSection: 2, hasAccepted: false })
+    );
+
+    render(<NewReportPage />);
+
+    await screen.findByText('Site Inspection Form');
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(JSON.parse(localStorage.getItem(storageKey) ?? '{}').activeSection).toBe(2);
+  });
+
+  it('tells the steward that photos are not kept in a restored draft', async () => {
+    mockGetQuestionsOnline.mockResolvedValue([
+      { id: 1, title: 'Draft Question', question_type: 'text', section: 4, answers: [], formorder: 1, is_required: false },
+    ]);
+    mockGetCurrentUserUid.mockResolvedValue('user-123');
+    mockGetCurrentSiteId.mockResolvedValue('1');
+
+    localStorage.setItem(
+      'inspection-draft-user-123-1',
+      JSON.stringify({
+        version: 1,
+        responses: {
+          1: 'Saved answer',
+          2: [{ id: 'photo-1', file: {}, previewUrl: 'blob:photo-1', caption: 'Trail', photographer: 'Jane', date: '2026-10-01' }],
+        },
+        activeSection: null,
+        hasAccepted: false,
+      })
+    );
+
+    render(<NewReportPage />);
+
+    const input = await screen.findByTestId('question-input-1') as HTMLTextAreaElement;
+    expect(input.value).toBe('Saved answer');
+    expect(screen.getByTestId('draft-photos-note')).toHaveTextContent(/photos are not kept in a draft/i);
+  });
+
+  it('does not show the photos note when the restored draft had no photos', async () => {
+    mockGetQuestionsOnline.mockResolvedValue([
+      { id: 1, title: 'Draft Question', question_type: 'text', section: 4, answers: [], formorder: 1, is_required: false },
+    ]);
+    mockGetCurrentUserUid.mockResolvedValue('user-123');
+    mockGetCurrentSiteId.mockResolvedValue('1');
+
+    localStorage.setItem('inspection-draft-user-123-1', JSON.stringify({ 1: 'Saved answer' }));
+
+    render(<NewReportPage />);
+
+    await screen.findByTestId('question-input-1');
+    expect(screen.queryByTestId('draft-photos-note')).not.toBeInTheDocument();
+  });
+
+  it('opens an empty form and replaces a draft that is not valid JSON', async () => {
+    mockGetQuestionsOnline.mockResolvedValue([
+      { id: 1, title: 'Draft Question', question_type: 'text', section: 4, answers: [], formorder: 1, is_required: false },
+    ]);
+    mockGetCurrentUserUid.mockResolvedValue('user-123');
+    mockGetCurrentSiteId.mockResolvedValue('1');
+
+    const storageKey = 'inspection-draft-user-123-1';
+    localStorage.setItem(storageKey, '{not valid json');
+
+    render(<NewReportPage />);
+
+    const input = await screen.findByTestId('question-input-1') as HTMLTextAreaElement;
+    expect(input.value).toBe('');
+    await waitFor(() => {
+      expect(() => JSON.parse(localStorage.getItem(storageKey) ?? '')).not.toThrow();
+    });
+  });
+
+  it.each([
+    ['a draft whose responses are not an object', { version: 1, responses: 'oops', activeSection: 4, hasAccepted: true }],
+    ['a draft from an unknown version', { version: 2, responses: { 1: 'From the future' } }],
+    ['a top-level array', ['first', 'second']],
+    ['a top-level string', 'just a string'],
+  ])('discards %s and submits only real question ids', async (_label, savedDraft) => {
+    mockGetQuestionsOnline.mockResolvedValue([
+      { id: 1, title: 'Draft Question', question_type: 'text', section: 4, answers: [], formorder: 1, is_required: true },
+    ]);
+    mockGetCurrentUserUid.mockResolvedValue('user-123');
+    mockGetCurrentSiteId.mockResolvedValue('1');
+    mockAddSiteInspectionReport.mockResolvedValue({ id: 502 });
+    mockGetQuestionResponseType.mockResolvedValue([{ question_id: 1, obs_value: 1, obs_comm: 0 }]);
+
+    const storageKey = 'inspection-draft-user-123-1';
+    localStorage.setItem(storageKey, JSON.stringify(savedDraft));
+
+    render(<NewReportPage />);
+
+    const input = await screen.findByTestId('question-input-1') as HTMLTextAreaElement;
+    expect(input.value).toBe('');
+    await waitFor(() => {
+      expect(JSON.parse(localStorage.getItem(storageKey) ?? '{}')).toMatchObject({ version: 1, responses: {} });
+    });
+
+    fireEvent.change(input, { target: { value: 'Fresh answer' } });
+    fireEvent.click(screen.getByRole('button', { name: /Review & Submit/i }));
+
+    await waitFor(() => expect(mockUploadSiteInspectionAnswers).toHaveBeenCalled());
+    const questionIds = mockUploadSiteInspectionAnswers.mock.calls[0][0].map((row: any) => row.question_id);
+    expect(questionIds).toEqual([1]);
+  });
+
+  it('keeps only question answers from an old draft that has no version', async () => {
+    mockGetQuestionsOnline.mockResolvedValue([
+      { id: 1, title: 'Draft Question', question_type: 'text', section: 4, answers: [], formorder: 1, is_required: false },
+    ]);
+    mockGetCurrentUserUid.mockResolvedValue('user-123');
+    mockGetCurrentSiteId.mockResolvedValue('1');
+
+    const storageKey = 'inspection-draft-user-123-1';
+    localStorage.setItem(storageKey, JSON.stringify({ 1: 'Saved answer', '1_comm': 'A note', junk: 'not a question' }));
+
+    render(<NewReportPage />);
+
+    const input = await screen.findByTestId('question-input-1') as HTMLTextAreaElement;
+    expect(input.value).toBe('Saved answer');
+    await waitFor(() => {
+      expect(JSON.parse(localStorage.getItem(storageKey) ?? '{}').responses).toEqual({ 1: 'Saved answer', '1_comm': 'A note' });
+    });
+  });
+
+  it('opens the form when browser storage is blocked', async () => {
+    mockGetQuestionsOnline.mockResolvedValue([
+      { id: 1, title: 'Draft Question', question_type: 'text', section: 4, answers: [], formorder: 1, is_required: false },
+    ]);
+    mockGetCurrentUserUid.mockResolvedValue('user-123');
+    mockGetCurrentSiteId.mockResolvedValue('1');
+
+    const blocked = () => {
+      throw new DOMException('Storage is blocked', 'SecurityError');
+    };
+    const spies = [
+      jest.spyOn(Storage.prototype, 'getItem').mockImplementation(blocked),
+      jest.spyOn(Storage.prototype, 'setItem').mockImplementation(blocked),
+      jest.spyOn(Storage.prototype, 'removeItem').mockImplementation(blocked),
+    ];
+
+    try {
+      render(<NewReportPage />);
+
+      const input = await screen.findByTestId('question-input-1');
+      fireEvent.change(input, { target: { value: 'Typed with storage blocked' } });
+      expect(await screen.findByDisplayValue('Typed with storage blocked')).toBeInTheDocument();
+
+      // The report saves, so failing to clear the draft must not roll it back.
+      mockAddSiteInspectionReport.mockResolvedValue({ id: 501 });
+      mockGetQuestionResponseType.mockResolvedValue([{ question_id: 1, obs_value: 1, obs_comm: 0 }]);
+      fireEvent.click(screen.getByRole('button', { name: /Review & Submit/i }));
+
+      await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/sites?submitted=true'));
+      expect(mockRollbackSiteInspectionSubmission).not.toHaveBeenCalled();
+    } finally {
+      spies.forEach((spy) => spy.mockRestore());
     }
   });
 

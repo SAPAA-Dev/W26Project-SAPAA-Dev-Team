@@ -75,11 +75,14 @@ interface StoredInspectionDraft {
 
 // Drafts written before version 1 kept the answers at the top level of the
 // stored object, with no wrapper.
-const isStoredInspectionDraft = (value: unknown): value is StoredInspectionDraft => {
-  if (typeof value !== 'object' || value === null) return false;
-  const candidate = value as { responses?: unknown };
-  return typeof candidate.responses === 'object' && candidate.responses !== null;
-};
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const isStoredInspectionDraft = (value: unknown): value is StoredInspectionDraft =>
+  isPlainObject(value) && value.version === 1 && isPlainObject(value.responses);
+
+// Answers are keyed by question id, and "Other" comments by "<id>_comm".
+const DRAFT_RESPONSE_KEY = /^\d+(_comm)?$/;
 
 interface SectionNavigationState {
   activeSection: number | null;
@@ -100,7 +103,9 @@ export default function NewReportPage() {
   
   const [hasAccepted, setHasAccepted] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
-  const [hasDismissedVerification, setHasDismissedVerification] = useState(false);
+  // A ref, not state: the steward check reads it when its fetch resolves, so a
+  // slow fetch cannot reopen a popup that a restored draft already closed.
+  const hasDismissedVerificationRef = useRef(false);
   const [responses, setResponses] = useState<Record<number, any>>({});
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name: string; avatar: string } | null>(null);
@@ -112,6 +117,7 @@ export default function NewReportPage() {
   const [draftKey, setDraftKey] = useState<string | null>(null);
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
   const [restoredActiveSection, setRestoredActiveSection] = useState<number | null>(null);
+  const [hasDroppedDraftPhotos, setHasDroppedDraftPhotos] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);  const [sectionNavigation, setSectionNavigation] = useState<SectionNavigationState>({
     activeSection: null,
@@ -162,18 +168,18 @@ export default function NewReportPage() {
           const stewardStatus = await isSteward(user.email);
           setIsStewardUser(stewardStatus);
 
-          if (!stewardStatus && !hasDismissedVerification) {
+          if (!stewardStatus && !hasDismissedVerificationRef.current) {
             setHasAccepted(false);   //new
             setShowVerification(true);
           }
-        } else if (!hasDismissedVerification) {
+        } else if (!hasDismissedVerificationRef.current) {
           setHasAccepted(false);
           setShowVerification(true);
         }
       } catch (err) {
         console.error('Error fetching user:', err);
         setCurrentUser(null);
-        if (!hasDismissedVerification) {
+        if (!hasDismissedVerificationRef.current) {
         setShowVerification(true);
        }
       } finally {
@@ -182,7 +188,7 @@ export default function NewReportPage() {
     };
     
       fetchUserAndCheckSteward();
-    }, [hasDismissedVerification]);
+    }, []);
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -225,22 +231,33 @@ export default function NewReportPage() {
   useEffect(() => {
     if (!draftKey) return;
 
-    const savedDraft = localStorage.getItem(draftKey);
+    try {
+      const savedDraft = localStorage.getItem(draftKey);
 
-    if (savedDraft) {
+      if (savedDraft) {
           const parsed = JSON.parse(savedDraft);
 
-          const storedDraft: StoredInspectionDraft = isStoredInspectionDraft(parsed)
-            ? parsed
-            : { version: 1, responses: parsed, activeSection: null, hasAccepted: false };
+          let storedDraft: StoredInspectionDraft;
+          if (isStoredInspectionDraft(parsed)) {
+            storedDraft = parsed;
+          } else if (isPlainObject(parsed) && !('version' in parsed)) {
+            storedDraft = { version: 1, responses: parsed, activeSection: null, hasAccepted: false };
+          } else {
+            // Anything else would be read as answers and break the submission.
+            throw new Error('The saved inspection draft has an unknown shape.');
+          }
 
+          // Photos are local files, which a draft cannot keep, so they are
+          // dropped here and the steward is told to add them again.
+          let droppedPhotos = false;
           const normalizedResponses = Object.fromEntries(
-            Object.entries(storedDraft.responses).map(([key, value]) => {
+            Object.entries(storedDraft.responses).filter(([key]) => DRAFT_RESPONSE_KEY.test(key)).map(([key, value]) => {
               if (Array.isArray(value)) {
                 return [
                   key,
                   value.map((item) => {
                     if (item && typeof item === 'object' && 'previewUrl' in item) {
+                      droppedPhotos = true;
                       return null;
                     }
                     return item;
@@ -253,18 +270,29 @@ export default function NewReportPage() {
           );
 
           setResponses(normalizedResponses);
-          setRestoredActiveSection(storedDraft.activeSection ?? null);
+          setRestoredActiveSection(typeof storedDraft.activeSection === 'number' ? storedDraft.activeSection : null);
+          setHasDroppedDraftPhotos(droppedPhotos);
 
           // The steward already agreed to the disclaimer for this draft, so the
           // popup must not come back.
-          if (storedDraft.hasAccepted) {
+          if (storedDraft.hasAccepted === true) {
             setHasAccepted(true);
-            setHasDismissedVerification(true);
+            hasDismissedVerificationRef.current = true;
             setShowVerification(false);
           }
+      }
+    } catch (error) {
+      // A draft that cannot be read must not keep the form on the loading
+      // screen, so drop it and start a fresh one.
+      console.error('Discarding an unreadable inspection draft:', error);
+      try {
+        localStorage.removeItem(draftKey);
+      } catch {
+        // Storage is not available, so there is nothing to remove.
+      }
+    } finally {
+      setIsDraftLoaded(true); // VERY IMPORTANT
     }
-
-    setIsDraftLoaded(true); // VERY IMPORTANT
   }, [draftKey]);
 
 
@@ -277,12 +305,21 @@ export default function NewReportPage() {
     const draftToStore: StoredInspectionDraft = {
       version: 1,
       responses,
-      activeSection: sectionNavigation.activeSection ?? null,
-      hasAccepted,
+      // Until the form reports a section (or if questions fail to load), keep
+      // the section the restored draft had.
+      activeSection: sectionNavigation.activeSection ?? restoredActiveSection,
+      // Ticking the box is not enough: the disclaimer only counts as accepted
+      // once the steward has pressed "Continue to Form" and the popup closed.
+      hasAccepted: hasAccepted && !showVerification,
     };
 
-    localStorage.setItem(draftKey, JSON.stringify(draftToStore));
-  }, [responses, draftKey, isDraftLoaded, sectionNavigation.activeSection, hasAccepted]);
+    try {
+      localStorage.setItem(draftKey, JSON.stringify(draftToStore));
+    } catch (error) {
+      // Storage is blocked or full: the draft is lost, but the form stays open.
+      console.error('Could not save the inspection draft:', error);
+    }
+  }, [responses, draftKey, isDraftLoaded, sectionNavigation.activeSection, restoredActiveSection, hasAccepted, showVerification]);
 
 
 
@@ -617,7 +654,13 @@ export default function NewReportPage() {
 
 
             if (draftKey) {
-              localStorage.removeItem(draftKey);
+              // The report is already saved, so a storage error here must not
+              // reach the rollback below.
+              try {
+                localStorage.removeItem(draftKey);
+              } catch (error) {
+                console.error('Could not clear the inspection draft:', error);
+              }
             }
 
             if (isMountedRef.current) {
@@ -762,7 +805,7 @@ export default function NewReportPage() {
                   disabled={!hasAccepted}
                   onClick={() => {
                     setShowVerification(false);
-                    setHasDismissedVerification(true);
+                    hasDismissedVerificationRef.current = true;
                   }}
                   className="w-full sm:flex-[2] py-3 bg-[#356B43] text-white font-bold rounded-xl shadow-lg hover:bg-[#254431] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
@@ -868,6 +911,15 @@ export default function NewReportPage() {
         </div>
       </div>
     </header>
+
+      {hasDroppedDraftPhotos && (
+        <div data-testid="draft-photos-note" role="status" className="max-w-7xl w-full mx-auto px-4 sm:px-6 mt-4">
+          <div className="bg-white border border-[#E4EBE4] rounded-xl px-4 py-3 flex items-start gap-3 text-sm text-[#254431]">
+            <AlertCircle className="w-5 h-5 text-[#356B43] flex-shrink-0 mt-0.5" />
+            <p>Your saved draft was restored, but photos are not kept in a draft. Please add your photos again before you submit.</p>
+          </div>
+        </div>
+      )}
 
       {/* --- MAIN LAYOUT --- */}
       <MainContent
