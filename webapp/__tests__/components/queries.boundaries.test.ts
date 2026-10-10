@@ -46,10 +46,13 @@ describe("getProtectedAreaBoundaries", () => {
     });
   }
 
+  const mockLinksIs = jest.fn();
+
   function mockLinks(rows: unknown[]) {
+    mockLinksIs.mockResolvedValue({ data: rows, error: null });
     mockAdminFrom.mockReturnValue({
       select: jest.fn().mockReturnValue({
-        not: jest.fn().mockResolvedValue({ data: rows, error: null }),
+        not: jest.fn().mockReturnValue({ is: mockLinksIs }),
       }),
     });
   }
@@ -79,6 +82,24 @@ describe("getProtectedAreaBoundaries", () => {
 
     expect(collection.features[0].properties.county).toBe("Parkland");
     expect(collection.features[0].properties.is_active).toBe(false);
+  });
+
+  it("reads links only from sites that are not archived (M10)", async () => {
+    mockAreas([area]);
+    mockLinks([]);
+
+    await queries.getProtectedAreaBoundaries();
+
+    expect(mockLinksIs).toHaveBeenCalledWith("archived_at", null);
+  });
+
+  it("treats a linked site with a null active flag as active (L21)", async () => {
+    mockAreas([area]);
+    mockLinks([{ protected_area_id: 7, is_active: null, ab_counties: { county: "Parkland" } }]);
+
+    const collection = await queries.getProtectedAreaBoundaries();
+
+    expect(collection.features[0].properties.is_active).toBe(true);
   });
 
   it("leaves county and status empty when no site joins the protected area", async () => {

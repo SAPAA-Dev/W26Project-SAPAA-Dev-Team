@@ -15,7 +15,7 @@ jest.mock('@/utils/supabase/queries', () => ({
   getArchivedSites: jest.fn().mockResolvedValue([]),
   getCounties: jest.fn().mockResolvedValue([]),
   getProtectedAreaChoices: jest.fn().mockResolvedValue([]),
-  updateSite: jest.fn().mockResolvedValue(undefined),
+  updateSite: jest.fn().mockResolvedValue({ ok: true }),
   toggleSiteActive: jest.fn().mockResolvedValue(undefined),
   getTotalInspectionCount: jest.fn().mockResolvedValue(0),
 }));
@@ -63,6 +63,24 @@ describe('AdminSitesPage – Disable Site', () => {
     });
   });
 
+  it('US 2.0.3: disables User View for an inactive site and encodes the site name (L29)', async () => {
+    const mockSites = [
+      { id: 1, namesite: 'Bilby #2 / East', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: new Date().toISOString() },
+      { id: 2, namesite: 'Inactive Site', county: 'CountyB', ab_county: 20, is_active: false, inspectdate: '1900-01-01' },
+    ];
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue(mockSites);
+
+    render(<AdminSitesPage />);
+    await waitFor(() => screen.getByText('Inactive Site'));
+
+    expect(screen.getByTestId('user-view-button-2')).toBeDisabled();
+    fireEvent.click(screen.getByTestId('user-view-button-2'));
+    expect(mockPush).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByTestId('user-view-button-1'));
+    expect(mockPush).toHaveBeenCalledWith('/detail/Bilby%20%232%20%2F%20East');
+  });
+
   it('shows visibility toggle in edit modal with correct initial state', async () => {
     const mockSites = [
       { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: new Date().toISOString() },
@@ -92,7 +110,7 @@ describe('AdminSitesPage – Disable Site', () => {
     (supabaseQueries.getCounties as jest.Mock).mockResolvedValue([
       { id: 10, county: 'CountyA' },
     ]);
-    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue(undefined);
+    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue({ ok: true });
     (supabaseQueries.toggleSiteActive as jest.Mock).mockResolvedValue(undefined);
 
     render(<AdminSitesPage />);
@@ -127,7 +145,7 @@ describe('AdminSitesPage – Disable Site', () => {
     (supabaseQueries.getCounties as jest.Mock).mockResolvedValue([
       { id: 10, county: 'CountyA' },
     ]);
-    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue(undefined);
+    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue({ ok: true });
     (supabaseQueries.toggleSiteActive as jest.Mock).mockResolvedValue(undefined);
 
     render(<AdminSitesPage />);
@@ -167,7 +185,7 @@ describe('AdminSitesPage – Disable Site', () => {
     (supabaseQueries.getCounties as jest.Mock).mockResolvedValue([
       { id: 10, county: 'CountyA' },
     ]);
-    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue(undefined);
+    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue({ ok: true });
 
     render(<AdminSitesPage />);
     await waitFor(() => screen.getByText('Alpha'));

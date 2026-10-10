@@ -10,6 +10,7 @@ export interface StewardOption {
 export interface StewardedSite {
   siteId: number;
   namesite: string;
+  isActive: boolean;
 }
 
 type ActionResult = { success: true } | { success: false; error: string };
@@ -80,7 +81,7 @@ export async function getSitesForSteward(personId: number): Promise<StewardedSit
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('site_stewards')
-    .select('site_id, sites_pa(namesite, archived_at)')
+    .select('site_id, sites_pa(namesite, archived_at, is_active)')
     .eq('steward_id', personId);
 
   if (error) throw new Error(error.message);
@@ -90,6 +91,8 @@ export async function getSitesForSteward(personId: number): Promise<StewardedSit
     .map((row) => ({
       siteId: row.site_id,
       namesite: (row.sites_pa as unknown as { namesite: string } | null)?.namesite ?? '',
+      // A deactivated site stays on the profile, but its page cannot be opened.
+      isActive: (row.sites_pa as unknown as { is_active: boolean | null } | null)?.is_active !== false,
     }));
 }
 

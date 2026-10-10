@@ -37,7 +37,7 @@ describe("site page fields", () => {
 
     await expect(
       queries.updateSitePageFields(7, [{ fieldKey: "inaturalist", value: "https://example.org", isVisible: true }])
-    ).rejects.toThrow("Only admins can edit sites.");
+    ).resolves.toEqual({ ok: false, error: "Only admins can edit sites." });
     expect(mockFrom).not.toHaveBeenCalled();
   });
 
@@ -67,14 +67,35 @@ describe("site page fields", () => {
   it("updateSitePageFields refuses a field that is not on the list", async () => {
     await expect(
       queries.updateSitePageFields(7, [{ fieldKey: "secret_notes", value: "x", isVisible: true }])
-    ).rejects.toThrow("Unknown site page field: secret_notes");
+    ).resolves.toEqual({ ok: false, error: "Unknown site page field: secret_notes" });
     expect(mockUpsert).not.toHaveBeenCalled();
   });
 
   it("updateSitePageFields refuses a link that is not http or https", async () => {
     await expect(
       queries.updateSitePageFields(7, [{ fieldKey: "inaturalist", value: "javascript:alert(1)", isVisible: true }])
-    ).rejects.toThrow("Links must start with http:// or https://");
+    ).resolves.toEqual({ ok: false, error: "Links must start with http:// or https://" });
+    expect(mockUpsert).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["a site id that is not a positive integer", () => queries.updateSitePageFields(1.5, []), "A valid site ID is required."],
+    ["fields that are not a list", () => queries.updateSitePageFields(7, null as never), "The site page fields are not valid."],
+    [
+      "a field listed twice",
+      () => queries.updateSitePageFields(7, [
+        { fieldKey: "inaturalist", value: "https://a.org", isVisible: true },
+        { fieldKey: "inaturalist", value: "https://b.org", isVisible: false },
+      ]),
+      "Site page field listed twice: inaturalist",
+    ],
+    [
+      "a visibility that is not a boolean",
+      () => queries.updateSitePageFields(7, [{ fieldKey: "inaturalist", value: null, isVisible: "yes" as never }]),
+      "Visibility must be true or false: inaturalist",
+    ],
+  ])("US 2.0.5: updateSitePageFields refuses %s and saves nothing (L18)", async (_name, call, message) => {
+    await expect(call()).resolves.toEqual({ ok: false, error: message });
     expect(mockUpsert).not.toHaveBeenCalled();
   });
 
@@ -96,5 +117,32 @@ describe("site page fields", () => {
       iNaturalistUrl: null,
     });
     expect(mockUserFrom).toHaveBeenCalledWith("site_page_fields");
+  });
+
+  it("US 2.0.10: getSiteLinks shows the default links for a site with no saved rows (M2)", async () => {
+    mockUserFrom.mockReturnValue({
+      select: jest.fn().mockReturnValue({ eq: jest.fn().mockResolvedValue({ data: [], error: null }) }),
+    });
+
+    await expect(queries.getSiteLinks(7)).resolves.toEqual({
+      sapaaWebsiteUrl: "https://sapaastewards.com/",
+      iNaturalistUrl: "https://www.inaturalist.org/",
+    });
+  });
+
+  it("US 2.0.10: getSiteLinks keeps a link the admin cleared or hid empty (M2)", async () => {
+    mockUserFrom.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockResolvedValue({
+          data: [
+            { field_key: "sapaa_website", value: null, is_visible: true },
+            { field_key: "inaturalist", value: null, is_visible: false },
+          ],
+          error: null,
+        }),
+      }),
+    });
+
+    await expect(queries.getSiteLinks(7)).resolves.toEqual({ sapaaWebsiteUrl: null, iNaturalistUrl: null });
   });
 });

@@ -268,6 +268,7 @@ describe('site archive queries', () => {
             ab_county: 4,
             is_active: true,
             archived_at: '2026-10-08T20:00:00.000Z',
+            protected_area_id: 9,
             ab_counties: { county: 'Quack County' },
             form_responses: [{ inspection_date: '2026-10-01', created_at: null }],
           },
@@ -284,6 +285,7 @@ describe('site archive queries', () => {
           inspectdate: '2026-10-01',
           is_active: true,
           archived_at: '2026-10-08T20:00:00.000Z',
+          protected_area_id: 9,
         },
       ]);
       expect(mockFrom).toHaveBeenCalledWith('sites_pa');

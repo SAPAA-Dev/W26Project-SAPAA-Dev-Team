@@ -111,7 +111,8 @@ export interface FormAnswer {
 }
 
 // One row of the all-reports page. siteName is null when the site was permanently
-// deleted, and siteArchived marks reports whose site is hidden from the app.
+// deleted, siteArchived marks reports whose site is hidden from the app, and siteInactive
+// marks reports whose site is deactivated, so its page cannot be opened.
 export interface SiteReportSummary {
   id: number;
   inspectionNo: string | null;
@@ -120,6 +121,7 @@ export interface SiteReportSummary {
   siteId: number | null;
   siteName: string | null;
   siteArchived: boolean;
+  siteInactive: boolean;
   submitterId: number | null;
   submitterName: string | null;
 }
@@ -490,7 +492,9 @@ async function readProtectedAreaLinks(): Promise<Map<number, { county: string | 
   const { data, error } = await supabase
     .from('sites_pa')
     .select('protected_area_id, is_active, ab_counties(county)')
-    .not('protected_area_id', 'is', null);
+    .not('protected_area_id', 'is', null)
+    // An archived site is hidden from the app, so it must not give a map area a county or status.
+    .is('archived_at', null);
 
   if (error) throw new Error(error.message || 'Failed to fetch site links');
 
@@ -500,7 +504,8 @@ async function readProtectedAreaLinks(): Promise<Map<number, { county: string | 
     if (areaId === null || links.has(areaId)) continue;
     links.set(areaId, {
       county: countyFromEmbed(row.ab_counties as { county: string } | { county: string }[] | null),
-      is_active: (row.is_active as boolean | null) ?? null,
+      // A null is_active means active, the same as getSitesOnline and getAllSites.
+      is_active: (row.is_active as boolean | null) ?? true,
     });
   }
   return links;
@@ -629,6 +634,20 @@ function protectedAreaIdOrNull(value: number | null): number | null {
   return value;
 }
 
+export type SiteActionResult = { ok: true } | { ok: false; error: string };
+
+// A production build of Next replaces the message of an error thrown by a server action
+// with a generic one. These admin site actions return the message instead, so the admin
+// still reads "A site with this name already exists." and similar errors.
+async function siteActionResult(run: () => Promise<void>): Promise<SiteActionResult> {
+  try {
+    await run();
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : 'Failed to save the site.' };
+  }
+}
+
 // Site edits run with the service role, so each one checks the caller first.
 // The check reads the signed-in session, never a value the caller sends.
 async function requireApprovedAdmin(
@@ -647,14 +666,26 @@ export async function updateSite(
   namesite: string,
   ab_county: number | null,
   protectedAreaId: number | null = null
+): Promise<SiteActionResult> {
+  return siteActionResult(() => updateSiteOrThrow(id, namesite, ab_county, protectedAreaId));
+}
+
+async function updateSiteOrThrow(
+  id: number,
+  namesite: string,
+  ab_county: number | null,
+  protectedAreaId: number | null
 ): Promise<void> {
   await requireApprovedAdmin();
+  // The same name rule as createSite: the name is the site's URL, so it cannot be blank.
+  const name = namesite.trim();
+  if (!name) throw new Error('Site name is required.');
   const protected_area_id = protectedAreaIdOrNull(protectedAreaId);
   const supabase = createServerSupabase();
 
   const { error } = await supabase
     .from('sites_pa')
-    .update({ namesite, ab_county, protected_area_id })
+    .update({ namesite: name, ab_county, protected_area_id })
     .eq('id', id);
 
   if (error) throw siteWriteError(error, 'Failed to update site');
@@ -664,6 +695,14 @@ export async function createSite(
   namesite: string,
   ab_county: number | null,
   protectedAreaId: number | null = null
+): Promise<SiteActionResult> {
+  return siteActionResult(() => createSiteOrThrow(namesite, ab_county, protectedAreaId));
+}
+
+async function createSiteOrThrow(
+  namesite: string,
+  ab_county: number | null,
+  protectedAreaId: number | null
 ): Promise<void> {
   await requireApprovedAdmin();
 
@@ -1024,6 +1063,7 @@ export async function getArchivedSites(): Promise<SiteSummary[]> {
       ab_county,
       is_active,
       archived_at,
+      protected_area_id,
       ab_counties (
         county
       ),
@@ -1050,6 +1090,7 @@ export async function getArchivedSites(): Promise<SiteSummary[]> {
       inspectdate: latestDate,
       is_active: site.is_active ?? true,
       archived_at: site.archived_at ?? null,
+      protected_area_id: site.protected_area_id ?? null,
     };
   });
 }
@@ -1244,14 +1285,26 @@ function cleanLink(value: string | null): string | null {
   return link;
 }
 
-export async function updateSitePageFields(siteId: number, fields: SitePageFieldValue[]): Promise<void> {
+export async function updateSitePageFields(siteId: number, fields: SitePageFieldValue[]): Promise<SiteActionResult> {
+  return siteActionResult(() => updateSitePageFieldsOrThrow(siteId, fields));
+}
+
+async function updateSitePageFieldsOrThrow(siteId: number, fields: SitePageFieldValue[]): Promise<void> {
   await requireApprovedAdmin();
+  // Server action arguments are untrusted even when the normal UI sends them.
+  if (!Number.isSafeInteger(siteId) || siteId <= 0) throw new Error('A valid site ID is required.');
+  if (!Array.isArray(fields)) throw new Error('The site page fields are not valid.');
   const { data: { user } } = await (await createClient()).auth.getUser();
 
   const definitions = new Map(SITE_PAGE_FIELDS.map((definition) => [definition.key, definition]));
+  const seenKeys = new Set<string>();
   const rows = fields.map((field) => {
     const definition = definitions.get(field.fieldKey);
     if (!definition) throw new Error(`Unknown site page field: ${field.fieldKey}`);
+    // One upsert cannot change the same row twice, so a repeated key is refused here.
+    if (seenKeys.has(field.fieldKey)) throw new Error(`Site page field listed twice: ${field.fieldKey}`);
+    seenKeys.add(field.fieldKey);
+    if (typeof field.isVisible !== 'boolean') throw new Error(`Visibility must be true or false: ${field.fieldKey}`);
     return {
       site_id: siteId,
       field_key: field.fieldKey,
@@ -1327,7 +1380,9 @@ export async function getSiteLinks(siteId: number): Promise<SiteLinks> {
   const fields = await getSitePageFields(siteId);
   const shownValue = (fieldKey: string) => {
     const field = fields.find((candidate) => candidate.fieldKey === fieldKey);
-    return field?.isVisible ? field.value : null;
+    // No saved row yet: show the default link, as every site did before admins could set one.
+    if (!field) return SITE_PAGE_FIELDS.find((definition) => definition.key === fieldKey)?.defaultValue ?? null;
+    return field.isVisible ? field.value : null;
   };
   return {
     sapaaWebsiteUrl: shownValue('sapaa_website'),
@@ -1604,7 +1659,7 @@ export async function getAllSiteReports(): Promise<SiteReportSummary[]> {
     .select(`
       id, user_id, inspection_no, inspection_date, created_at, site_id,
       sites_pa (
-        id, namesite, archived_at
+        id, namesite, archived_at, is_active
       )
     `)
     .eq('is_active', true)
@@ -1621,7 +1676,7 @@ export async function getAllSiteReports(): Promise<SiteReportSummary[]> {
     inspection_date: string | null;
     created_at: string | null;
     site_id: number | null;
-    sites_pa: { id: number; namesite: string; archived_at: string | null } | null;
+    sites_pa: { id: number; namesite: string; archived_at: string | null; is_active: boolean | null } | null;
   }
 
   // The untyped client types a many-to-one embed as an array; at runtime it is one object.
@@ -1656,6 +1711,7 @@ export async function getAllSiteReports(): Promise<SiteReportSummary[]> {
       siteId: row.site_id ?? null,
       siteName: row.sites_pa?.namesite ?? null,
       siteArchived: row.sites_pa?.archived_at != null,
+      siteInactive: row.sites_pa?.is_active === false,
       submitterId: submitter?.id ?? null,
       submitterName: submitter?.displayName ?? null,
     };

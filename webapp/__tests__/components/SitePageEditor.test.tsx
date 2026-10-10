@@ -21,7 +21,7 @@ function openEditor(onSaved = jest.fn()) {
 describe("SitePageEditor", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (updateSitePageFields as jest.Mock).mockResolvedValue(undefined);
+    (updateSitePageFields as jest.Mock).mockResolvedValue({ ok: true });
   });
 
   it("enters edit mode with every field from the list", () => {
@@ -31,6 +31,14 @@ describe("SitePageEditor", () => {
     expect(screen.getByTestId("site-page-field-sapaa_website")).toBeInTheDocument();
     expect(screen.getByTestId("site-page-field-inaturalist")).toBeInTheDocument();
     expect(screen.getByTestId("site-page-field-designated_steward")).toBeInTheDocument();
+  });
+
+  it("US 2.0.10: starts a site with no saved links from the default links (M2)", () => {
+    render(<SitePageEditor siteId={7} fields={[]} onSaved={jest.fn()} />);
+    fireEvent.click(screen.getByTestId("edit-site-page-button"));
+
+    expect(screen.getByLabelText("SAPAA website")).toHaveValue("https://sapaastewards.com/");
+    expect(screen.getByLabelText("iNaturalist")).toHaveValue("https://www.inaturalist.org/");
   });
 
   it("marks each field as shown or hidden", () => {
@@ -57,8 +65,8 @@ describe("SitePageEditor", () => {
     expect(screen.queryByTestId("site-page-editor")).not.toBeInTheDocument();
   });
 
-  it("shows the server's error and stays in edit mode", async () => {
-    (updateSitePageFields as jest.Mock).mockRejectedValue(new Error("Links must start with http:// or https://"));
+  it("US 2.0.5 (M8): shows the error the action returns and stays in edit mode", async () => {
+    (updateSitePageFields as jest.Mock).mockResolvedValue({ ok: false, error: "Links must start with http:// or https://" });
     const onSaved = openEditor();
 
     fireEvent.click(screen.getByTestId("site-page-save-button"));

@@ -15,7 +15,10 @@ jest.mock('@/utils/supabase/queries', () => ({
   getArchivedSites: jest.fn().mockResolvedValue([]),
   getCounties: jest.fn().mockResolvedValue([]),
   getProtectedAreaChoices: jest.fn().mockResolvedValue([]),
-  updateSite: jest.fn().mockResolvedValue(undefined),
+  updateSite: jest.fn().mockResolvedValue({ ok: true }),
+  createSite: jest.fn(),
+  findSitesWithName: jest.fn().mockResolvedValue([]),
+  getSiteSuggestions: jest.fn().mockResolvedValue([]),
   toggleSiteActive: jest.fn().mockResolvedValue(undefined),
   getTotalInspectionCount: jest.fn().mockResolvedValue(0),
 }));
@@ -97,7 +100,7 @@ describe('AdminSitesPage – Edit Site', () => {
     (supabaseQueries.getCounties as jest.Mock).mockResolvedValue([
       { id: 10, county: 'CountyA' },
     ]);
-    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue(undefined);
+    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue({ ok: true });
 
     render(<AdminSitesPage />);
     await waitFor(() => screen.getByText('Alpha'));
@@ -129,7 +132,7 @@ describe('AdminSitesPage – Edit Site', () => {
       { id: 10, county: 'CountyA' },
       { id: 20, county: 'CountyB' },
     ]);
-    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue(undefined);
+    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue({ ok: true });
 
     render(<AdminSitesPage />);
     await waitFor(() => screen.getByText('Alpha'));
@@ -196,7 +199,7 @@ describe('AdminSitesPage – Edit Site', () => {
       { id: 9, name: 'Lakeland', fid: 181, area_type: 'PRA' },
       { id: 10, name: 'Wainwright Dunes', fid: 44, area_type: 'ER' },
     ]);
-    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue(undefined);
+    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue({ ok: true });
 
     render(<AdminSitesPage />);
     await waitFor(() => screen.getByText('Alpha'));
@@ -220,6 +223,52 @@ describe('AdminSitesPage – Edit Site', () => {
     });
   });
 
+  it('M10: hides a protected area that an archived site still holds', async () => {
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue([
+      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString(), is_active: true, protected_area_id: null },
+    ]);
+    (supabaseQueries.getArchivedSites as jest.Mock).mockResolvedValueOnce([
+      { id: 2, namesite: 'Old Site', county: 'CountyA', ab_county: 10, inspectdate: null, is_active: true, archived_at: '2026-10-01T00:00:00Z', protected_area_id: 9 },
+    ]);
+    (supabaseQueries.getCounties as jest.Mock).mockResolvedValue([{ id: 10, county: 'CountyA' }]);
+    (supabaseQueries.getProtectedAreaChoices as jest.Mock).mockResolvedValue([
+      { id: 9, name: 'Lakeland', fid: 181, area_type: 'PRA' },
+      { id: 10, name: 'Wainwright Dunes', fid: 44, area_type: 'ER' },
+    ]);
+
+    render(<AdminSitesPage />);
+    await waitFor(() => screen.getByText('Alpha'));
+    await waitFor(() => expect(supabaseQueries.getArchivedSites).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByTestId('edit-site-button-1'));
+    await waitFor(() => screen.getByTestId('edit-site-modal'));
+
+    const search = screen.getByTestId('edit-site-protected-area-search');
+    fireEvent.focus(search);
+    fireEvent.change(search, { target: { value: 'a' } });
+
+    expect(await screen.findByTestId('edit-site-protected-area-option-10')).toBeInTheDocument();
+    expect(screen.queryByTestId('edit-site-protected-area-option-9')).not.toBeInTheDocument();
+  });
+
+  it('US 2.0.2 (M8): shows the message createSite returns and keeps the add form open', async () => {
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue([]);
+    (supabaseQueries.createSite as jest.Mock).mockResolvedValue({ ok: false, error: 'A site with this name already exists.' });
+    jest.spyOn(window, 'alert').mockImplementation(() => {});
+
+    render(<AdminSitesPage />);
+    fireEvent.click(await screen.findByTestId('add-site-button'));
+    fireEvent.change(screen.getByTestId('add-site-name-input'), { target: { value: 'Bilby NA' } });
+    fireEvent.click(screen.getByTestId('add-site-save-button'));
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith('A site with this name already exists.');
+    });
+    expect(screen.getByTestId('add-site-modal')).toBeInTheDocument();
+    expect(supabaseQueries.getAllSites).toHaveBeenCalledTimes(1);
+  });
+
+  // US 2.0.5 (M8): the action returns its message, so a production build still shows it.
   it('shows alert when updateSite fails', async () => {
     const mockSites = [
       { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString(), is_active: true },
@@ -228,7 +277,7 @@ describe('AdminSitesPage – Edit Site', () => {
     (supabaseQueries.getCounties as jest.Mock).mockResolvedValue([
       { id: 10, county: 'CountyA' },
     ]);
-    (supabaseQueries.updateSite as jest.Mock).mockRejectedValue(new Error('Update failed'));
+    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue({ ok: false, error: 'Update failed' });
 
     jest.spyOn(window, 'alert').mockImplementation(() => {});
 

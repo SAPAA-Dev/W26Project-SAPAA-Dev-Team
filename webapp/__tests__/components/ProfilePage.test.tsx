@@ -21,7 +21,7 @@ const profilePayload = {
   },
   isOwner: true,
   stats: { inspectionCount: 3, distinctSiteCount: 2 },
-  history: [{ id: 7, siteId: 5, siteName: 'Beaver Hills', siteArchived: false, inspectionDate: '2026-09-12' }],
+  history: [{ id: 7, siteId: 5, siteName: 'Beaver Hills', siteArchived: false, siteInactive: false, inspectionDate: '2026-09-12' }],
   pagination: { page: 1, pageSize: 10, total: 3 },
 };
 
@@ -39,13 +39,22 @@ describe('ProfilePage', () => {
   });
 
   it('lists the sites this person is steward of, linked to each site page', async () => {
-    getSitesForStewardMock.mockResolvedValue([{ siteId: 5, namesite: 'Beaver Hills' }]);
+    getSitesForStewardMock.mockResolvedValue([{ siteId: 5, namesite: 'Beaver Hills', isActive: true }]);
     render(<ProfilePage personId="42" />);
 
     const section = await screen.findByTestId('stewarded-sites');
     expect(getSitesForStewardMock).toHaveBeenCalledWith(42);
     expect(section).toHaveTextContent('Steward of');
     expect(within(section).getByRole('link', { name: 'Beaver Hills' })).toHaveAttribute('href', '/detail/Beaver%20Hills');
+  });
+
+  it('US 2.0.3: shows a deactivated stewarded site as plain text with an Inactive badge (M25)', async () => {
+    getSitesForStewardMock.mockResolvedValue([{ siteId: 6, namesite: 'Elk Island', isActive: false }]);
+    render(<ProfilePage personId="42" />);
+
+    const section = await screen.findByTestId('stewarded-sites');
+    expect(within(section).queryByRole('link')).not.toBeInTheDocument();
+    expect(within(section).getByTestId('stewarded-site-inactive-6')).toHaveTextContent('Elk IslandInactive');
   });
 
   it('hides the steward section when the person looks after no sites', async () => {
@@ -71,9 +80,10 @@ describe('ProfilePage', () => {
       json: async () => ({
         ...profilePayload,
         history: [
-          { id: 7, siteId: 5, siteName: 'Beaver Hills', siteArchived: false, inspectionDate: '2026-09-12' },
-          { id: 8, siteId: 6, siteName: 'Duck Lake', siteArchived: true, inspectionDate: '2026-09-01' },
-          { id: 9, siteId: null, siteName: 'Unknown site', siteArchived: false, inspectionDate: '2026-08-01' },
+          { id: 7, siteId: 5, siteName: 'Beaver Hills', siteArchived: false, siteInactive: false, inspectionDate: '2026-09-12' },
+          { id: 8, siteId: 6, siteName: 'Duck Lake', siteArchived: true, siteInactive: false, inspectionDate: '2026-09-01' },
+          { id: 10, siteId: 7, siteName: 'Elk Island', siteArchived: false, siteInactive: true, inspectionDate: '2026-08-15' },
+          { id: 9, siteId: null, siteName: 'Unknown site', siteArchived: false, siteInactive: false, inspectionDate: '2026-08-01' },
         ],
       }),
     });
@@ -85,6 +95,9 @@ describe('ProfilePage', () => {
     expect(screen.queryByRole('link', { name: 'Duck Lake' })).not.toBeInTheDocument();
     expect(screen.getByText('Duck Lake')).toBeInTheDocument();
     expect(screen.getByTestId('archived-site-badge-8')).toHaveTextContent('Archived');
+    // US 2.0.3 (M25): a deactivated site's page shows an error, so it is plain text with a badge.
+    expect(screen.queryByRole('link', { name: /Elk Island/ })).not.toBeInTheDocument();
+    expect(screen.getByTestId('inactive-site-badge-10')).toHaveTextContent('Inactive');
     // A permanently deleted site stays plain text.
     expect(screen.queryByRole('link', { name: 'Unknown site' })).not.toBeInTheDocument();
     expect(screen.getByText('Unknown site')).toBeInTheDocument();

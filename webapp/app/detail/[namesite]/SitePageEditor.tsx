@@ -16,7 +16,8 @@ function draftsFrom(fields: SitePageFieldValue[]): SitePageFieldValue[] {
     const stored = fields.find((field) => field.fieldKey === definition.key);
     return {
       fieldKey: definition.key,
-      value: stored?.value ?? "",
+      // With no saved row the page shows the default link, so the editor starts from it too.
+      value: stored ? stored.value ?? "" : definition.defaultValue ?? "",
       isVisible: stored?.isVisible ?? true,
     };
   });
@@ -44,7 +45,11 @@ export default function SitePageEditor({ siteId, fields, onSaved }: SitePageEdit
     setSaving(true);
     setErrorMessage(null);
     try {
-      await updateSitePageFields(siteId, drafts);
+      const result = await updateSitePageFields(siteId, drafts);
+      if (!result.ok) {
+        setErrorMessage(result.error);
+        return;
+      }
       setEditing(false);
       onSaved();
     } catch (error) {

@@ -17,8 +17,9 @@ function formatReportDate(report: SiteReportSummary): string {
 }
 
 function SiteName({ report }: { report: SiteReportSummary }) {
-  // Archived sites are hidden from the app, so their reports are listed but not linked.
-  if (report.siteId && !report.siteArchived && report.siteName) {
+  // Archived sites are hidden from the app and a deactivated site's page shows an error,
+  // so their reports are listed but not linked.
+  if (report.siteId && !report.siteArchived && !report.siteInactive && report.siteName) {
     return (
       <Link
         href={`/detail/${encodeURIComponent(report.siteName)}?report=${report.id}`}
@@ -40,6 +41,14 @@ function SiteName({ report }: { report: SiteReportSummary }) {
         >
           <Archive className="h-3 w-3" />
           Archived
+        </span>
+      )}
+      {!report.siteArchived && report.siteInactive && (
+        <span
+          data-testid={`report-site-inactive-${report.id}`}
+          className="ml-2 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600"
+        >
+          Inactive
         </span>
       )}
     </span>

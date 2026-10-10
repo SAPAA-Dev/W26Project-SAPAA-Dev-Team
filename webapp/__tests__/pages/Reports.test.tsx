@@ -35,6 +35,7 @@ const reports = [
     siteId: 5,
     siteName: 'Beaver Hills',
     siteArchived: false,
+    siteInactive: false,
     submitterId: 42,
     submitterName: 'Jamie Rivera',
   },
@@ -46,6 +47,7 @@ const reports = [
     siteId: 6,
     siteName: 'Duck Lake',
     siteArchived: true,
+    siteInactive: false,
     submitterId: 43,
     submitterName: 'Robin Chen',
   },
@@ -57,6 +59,7 @@ const reports = [
     siteId: null,
     siteName: null,
     siteArchived: false,
+    siteInactive: false,
     submitterId: null,
     submitterName: null,
   },
@@ -106,6 +109,18 @@ describe('ReportsPage', () => {
     expect(screen.queryByTestId('report-site-link-12')).not.toBeInTheDocument();
     expect(screen.getByTestId('report-site-plain-12')).toHaveTextContent('Duck Lake');
     expect(screen.getByTestId('report-site-archived-12')).toHaveTextContent('Archived');
+  });
+
+  it('US 2.0.3: lists reports of deactivated sites as plain text with an Inactive badge, not links (M25)', async () => {
+    (supabaseQueries.getAllSiteReports as jest.Mock).mockResolvedValue([
+      { ...reports[0], id: 14, siteName: 'Elk Island', siteInactive: true },
+    ]);
+    render(<ReportsPage />);
+
+    await screen.findByTestId('reports-list');
+    expect(screen.queryByTestId('report-site-link-14')).not.toBeInTheDocument();
+    expect(screen.getByTestId('report-site-plain-14')).toHaveTextContent('Elk Island');
+    expect(screen.getByTestId('report-site-inactive-14')).toHaveTextContent('Inactive');
   });
 
   it('lists reports of permanently deleted sites as Unknown site, not links', async () => {

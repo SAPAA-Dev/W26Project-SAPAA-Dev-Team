@@ -142,7 +142,16 @@ describe("steward-actions", () => {
     it("returns the steward's sites (AT3)", async () => {
       setup("steward");
       userFrom.mockReturnValue(builder({ data: [{ site_id: 7, sites_pa: { namesite: "Elk Island" } }], error: null }));
-      expect(await getSitesForSteward(3)).toEqual([{ siteId: 7, namesite: "Elk Island" }]);
+      expect(await getSitesForSteward(3)).toEqual([{ siteId: 7, namesite: "Elk Island", isActive: true }]);
+    });
+
+    it("US 2.0.3: marks a deactivated site so the profile does not link to it (M25)", async () => {
+      setup("steward");
+      userFrom.mockReturnValue(builder({
+        data: [{ site_id: 8, sites_pa: { namesite: "Duck Lake", archived_at: null, is_active: false } }],
+        error: null,
+      }));
+      expect(await getSitesForSteward(3)).toEqual([{ siteId: 8, namesite: "Duck Lake", isActive: false }]);
     });
   });
 

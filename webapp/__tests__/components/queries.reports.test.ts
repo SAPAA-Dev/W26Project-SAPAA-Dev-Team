@@ -112,6 +112,7 @@ describe('getAllSiteReports', () => {
         siteId: 5,
         siteName: 'Beaver Hills',
         siteArchived: false,
+        siteInactive: false,
         submitterId: 42,
         submitterName: 'Jamie Rivera',
       },
@@ -123,6 +124,7 @@ describe('getAllSiteReports', () => {
         siteId: 6,
         siteName: 'Duck Lake',
         siteArchived: true,
+        siteInactive: false,
         submitterId: 43,
         submitterName: 'Robin Chen',
       },
@@ -134,6 +136,7 @@ describe('getAllSiteReports', () => {
         siteId: null,
         siteName: null,
         siteArchived: false,
+        siteInactive: false,
         submitterId: null,
         submitterName: null,
       },
@@ -150,6 +153,21 @@ describe('getAllSiteReports', () => {
       ascending: false,
     });
     expect(peopleQuery.in).toHaveBeenCalledWith('auth_user_id', ['u1', 'u2']);
+  });
+
+  it('US 2.0.3: flags a report whose site is deactivated so it is not linked (M25)', async () => {
+    const responsesQuery = chainableQuery({
+      data: [{ ...reportRows[2], site_id: 7, sites_pa: { id: 7, namesite: 'Elk Island', archived_at: null, is_active: false } }],
+      error: null,
+    });
+    mockFrom.mockReturnValue(responsesQuery);
+
+    const [report] = await getAllSiteReports();
+
+    expect(responsesQuery.select).toHaveBeenCalledWith(expect.stringContaining('is_active'));
+    expect(report.siteName).toBe('Elk Island');
+    expect(report.siteArchived).toBe(false);
+    expect(report.siteInactive).toBe(true);
   });
 
   it('skips the submitter lookup when no report has a user', async () => {

@@ -112,7 +112,7 @@ describe("Supabase edit site functions", () => {
       // Chain: from().update().eq()
       mockUpdate.mockReturnValue({ eq: mockEq });
 
-      await expect(queries.updateSite(1, "New Name", 5)).resolves.toBeUndefined();
+      await expect(queries.updateSite(1, "New Name", 5)).resolves.toEqual({ ok: true });
       expect(mockFrom).toHaveBeenCalledWith("sites_pa");
       expect(mockUpdate).toHaveBeenCalledWith({ namesite: "New Name", ab_county: 5, protected_area_id: null });
       expect(mockEq).toHaveBeenCalledWith("id", 1);
@@ -123,8 +123,22 @@ describe("Supabase edit site functions", () => {
       const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq });
       mockFrom.mockReturnValueOnce({ update: mockUpdate });
 
-      await expect(queries.updateSite(1, "Name", null)).resolves.toBeUndefined();
+      await expect(queries.updateSite(1, "Name", null)).resolves.toEqual({ ok: true });
       expect(mockUpdate).toHaveBeenCalledWith({ namesite: "Name", ab_county: null, protected_area_id: null });
+    });
+
+    it("US 2.0.5: trims the site name before saving (L17)", async () => {
+      const mockEq = jest.fn().mockResolvedValue({ error: null });
+      const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq });
+      mockFrom.mockReturnValueOnce({ update: mockUpdate });
+
+      await queries.updateSite(1, "  New Name  ", 5);
+      expect(mockUpdate).toHaveBeenCalledWith({ namesite: "New Name", ab_county: 5, protected_area_id: null });
+    });
+
+    it("US 2.0.5: refuses a blank name without touching the database (L17)", async () => {
+      await expect(queries.updateSite(1, "   ", 5)).resolves.toEqual({ ok: false, error: "Site name is required." });
+      expect(mockFrom).not.toHaveBeenCalled();
     });
 
     it("saves the selected protected area", async () => {
@@ -132,7 +146,7 @@ describe("Supabase edit site functions", () => {
       const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq });
       mockFrom.mockReturnValueOnce({ update: mockUpdate });
 
-      await expect(queries.updateSite(1, "Name", null, 9)).resolves.toBeUndefined();
+      await expect(queries.updateSite(1, "Name", null, 9)).resolves.toEqual({ ok: true });
       expect(mockUpdate).toHaveBeenCalledWith({ namesite: "Name", ab_county: null, protected_area_id: 9 });
     });
 
@@ -143,9 +157,7 @@ describe("Supabase edit site functions", () => {
       const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq });
       mockFrom.mockReturnValueOnce({ update: mockUpdate });
 
-      await expect(queries.updateSite(1, "Name", null, 9)).rejects.toThrow(
-        "That protected area is already linked to a site."
-      );
+      await expect(queries.updateSite(1, "Name", null, 9)).resolves.toEqual({ ok: false, error: "That protected area is already linked to a site." });
     });
 
     it("explains a missing protected area", async () => {
@@ -153,30 +165,28 @@ describe("Supabase edit site functions", () => {
       const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq });
       mockFrom.mockReturnValueOnce({ update: mockUpdate });
 
-      await expect(queries.updateSite(1, "Name", null, 9)).rejects.toThrow(
-        "The selected protected area does not exist."
-      );
+      await expect(queries.updateSite(1, "Name", null, 9)).resolves.toEqual({ ok: false, error: "The selected protected area does not exist." });
     });
 
-    it("throws error if Supabase fails", async () => {
+    it("US 2.0.5: returns the database error instead of throwing it (M8)", async () => {
       const mockEq = jest.fn().mockResolvedValue({ error: { message: "Update failed" } });
       const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq });
       mockFrom.mockReturnValueOnce({ update: mockUpdate });
 
-      await expect(queries.updateSite(1, "Name", 5)).rejects.toThrow("Update failed");
+      await expect(queries.updateSite(1, "Name", 5)).resolves.toEqual({ ok: false, error: "Update failed" });
     });
 
     it("rejects a steward and writes nothing", async () => {
       mockCaller("steward");
 
-      await expect(queries.updateSite(1, "Name", 5)).rejects.toThrow("Only admins can edit sites.");
+      await expect(queries.updateSite(1, "Name", 5)).resolves.toEqual({ ok: false, error: "Only admins can edit sites." });
       expect(mockFrom).not.toHaveBeenCalled();
     });
 
     it("rejects an admin whose approval was revoked", async () => {
       mockCaller("admin", false);
 
-      await expect(queries.updateSite(1, "Name", 5)).rejects.toThrow("Only admins can edit sites.");
+      await expect(queries.updateSite(1, "Name", 5)).resolves.toEqual({ ok: false, error: "Only admins can edit sites." });
       expect(mockFrom).not.toHaveBeenCalled();
     });
   });

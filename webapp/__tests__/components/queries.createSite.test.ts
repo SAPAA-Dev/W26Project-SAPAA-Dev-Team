@@ -26,20 +26,24 @@ describe("createSite and findSitesWithName", () => {
     (createServerSupabase as jest.Mock).mockReturnValue({ from: mockFrom });
   });
 
-  it.each([
-    ["createSite", () => queries.createSite("New Site", null)],
-    ["findSitesWithName", () => queries.findSitesWithName("New Site")],
-  ])("%s rejects a steward and touches nothing", async (_name, call) => {
+  it("createSite rejects a steward and touches nothing", async () => {
     mockCaller("steward");
 
-    await expect(call()).rejects.toThrow("Only admins can edit sites.");
+    await expect(queries.createSite("New Site", null)).resolves.toEqual({ ok: false, error: "Only admins can edit sites." });
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it("findSitesWithName rejects a steward and touches nothing", async () => {
+    mockCaller("steward");
+
+    await expect(queries.findSitesWithName("New Site")).rejects.toThrow("Only admins can edit sites.");
     expect(mockFrom).not.toHaveBeenCalled();
   });
 
   it("createSite rejects an admin whose approval was revoked", async () => {
     mockCaller("admin", false);
 
-    await expect(queries.createSite("New Site", null)).rejects.toThrow("Only admins can edit sites.");
+    await expect(queries.createSite("New Site", null)).resolves.toEqual({ ok: false, error: "Only admins can edit sites." });
     expect(mockFrom).not.toHaveBeenCalled();
   });
 
@@ -47,7 +51,7 @@ describe("createSite and findSitesWithName", () => {
     const mockInsert = jest.fn().mockResolvedValue({ error: null });
     mockFrom.mockReturnValue({ insert: mockInsert });
 
-    await expect(queries.createSite("  New Site  ", 3)).resolves.toBeUndefined();
+    await expect(queries.createSite("  New Site  ", 3)).resolves.toEqual({ ok: true });
 
     expect(mockFrom).toHaveBeenCalledWith("sites_pa");
     expect(mockInsert).toHaveBeenCalledWith({
@@ -59,7 +63,7 @@ describe("createSite and findSitesWithName", () => {
   });
 
   it("createSite refuses an empty name without touching the database", async () => {
-    await expect(queries.createSite("   ", null)).rejects.toThrow("Site name is required.");
+    await expect(queries.createSite("   ", null)).resolves.toEqual({ ok: false, error: "Site name is required." });
     expect(mockFrom).not.toHaveBeenCalled();
   });
 
@@ -78,7 +82,7 @@ describe("createSite and findSitesWithName", () => {
   });
 
   it("createSite refuses a protected area id that is not a positive integer", async () => {
-    await expect(queries.createSite("New Site", null, 1.5)).rejects.toThrow("The protected area is not valid.");
+    await expect(queries.createSite("New Site", null, 1.5)).resolves.toEqual({ ok: false, error: "The protected area is not valid." });
     expect(mockFrom).not.toHaveBeenCalled();
   });
 
@@ -87,9 +91,7 @@ describe("createSite and findSitesWithName", () => {
       insert: jest.fn().mockResolvedValue({ error: { code: "23503", message: "foreign key" } }),
     });
 
-    await expect(queries.createSite("Lakeland Site", null, 9)).rejects.toThrow(
-      "The selected protected area does not exist."
-    );
+    await expect(queries.createSite("Lakeland Site", null, 9)).resolves.toEqual({ ok: false, error: "The selected protected area does not exist." });
   });
 
   it("createSite explains a protected area that is already linked", async () => {
@@ -99,9 +101,7 @@ describe("createSite and findSitesWithName", () => {
       }),
     });
 
-    await expect(queries.createSite("Lakeland Site", null, 9)).rejects.toThrow(
-      "That protected area is already linked to a site."
-    );
+    await expect(queries.createSite("Lakeland Site", null, 9)).resolves.toEqual({ ok: false, error: "That protected area is already linked to a site." });
   });
 
   it("createSite explains a duplicate name", async () => {
@@ -109,7 +109,7 @@ describe("createSite and findSitesWithName", () => {
       insert: jest.fn().mockResolvedValue({ error: { code: "23505", message: "duplicate key" } }),
     });
 
-    await expect(queries.createSite("Bilby NA", null)).rejects.toThrow("A site with this name already exists.");
+    await expect(queries.createSite("Bilby NA", null)).resolves.toEqual({ ok: false, error: "A site with this name already exists." });
   });
 
   it("findSitesWithName warns on the same name, ignoring case", async () => {

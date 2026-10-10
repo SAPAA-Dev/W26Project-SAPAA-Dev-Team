@@ -144,9 +144,9 @@ describe('Admin Sites archive flow', () => {
     (supabaseQueries.getTotalInspectionCount as jest.Mock).mockResolvedValue(10);
     (supabaseQueries.getSiteDeleteImpact as jest.Mock).mockResolvedValue(impact);
     (supabaseQueries.archiveSite as jest.Mock).mockResolvedValue(archiveResult);
-    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue(undefined);
+    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue({ ok: true });
     (supabaseQueries.toggleSiteActive as jest.Mock).mockResolvedValue(undefined);
-    (supabaseQueries.createSite as jest.Mock).mockResolvedValue(undefined);
+    (supabaseQueries.createSite as jest.Mock).mockResolvedValue({ ok: true });
   });
 
   it('opens the dialog and explains the records that stay with the site', async () => {

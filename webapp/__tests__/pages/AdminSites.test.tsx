@@ -17,7 +17,7 @@ jest.mock('@/utils/supabase/queries', () => ({
   getArchivedSites: jest.fn().mockResolvedValue([]),
   getCounties: jest.fn().mockResolvedValue([]),
   getProtectedAreaChoices: jest.fn().mockResolvedValue([]),
-  updateSite: jest.fn().mockResolvedValue(undefined),
+  updateSite: jest.fn().mockResolvedValue({ ok: true }),
   toggleSiteActive: jest.fn().mockResolvedValue(undefined),
   getTotalInspectionCount: jest.fn().mockResolvedValue(0),
 }));

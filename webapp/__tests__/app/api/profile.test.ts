@@ -137,6 +137,7 @@ describe('/api/profile', () => {
         data: [
           { id: 7, site_id: 5, inspection_date: '2026-09-12', created_at: null, sites_pa: { id: 5, namesite: 'Beaver Hills', archived_at: null } },
           { id: 8, site_id: 6, inspection_date: '2026-09-01', created_at: null, sites_pa: { id: 6, namesite: 'Duck Lake', archived_at: '2026-10-08T20:00:00.000Z' } },
+          { id: 10, site_id: 7, inspection_date: '2026-08-15', created_at: null, sites_pa: { id: 7, namesite: 'Elk Island', archived_at: null, is_active: false } },
           { id: 9, site_id: null, inspection_date: '2026-08-01', created_at: null, sites_pa: null },
         ],
         error: null,
@@ -155,14 +156,16 @@ describe('/api/profile', () => {
 
       expect(response.status).toBe(200);
       expect(responsesQuery.select).toHaveBeenCalledWith(
-        'id, site_id, inspection_date, created_at, sites_pa(id, namesite, archived_at)',
+        'id, site_id, inspection_date, created_at, sites_pa(id, namesite, archived_at, is_active)',
         { count: 'exact' }
       );
       expect(responsesQuery.is).toHaveBeenCalledWith('archived_at', null);
       expect(body.history).toEqual([
-        { id: 7, siteId: 5, siteName: 'Beaver Hills', siteArchived: false, inspectionDate: '2026-09-12' },
-        { id: 8, siteId: 6, siteName: 'Duck Lake', siteArchived: true, inspectionDate: '2026-09-01' },
-        { id: 9, siteId: null, siteName: 'Unknown site', siteArchived: false, inspectionDate: '2026-08-01' },
+        { id: 7, siteId: 5, siteName: 'Beaver Hills', siteArchived: false, siteInactive: false, inspectionDate: '2026-09-12' },
+        { id: 8, siteId: 6, siteName: 'Duck Lake', siteArchived: true, siteInactive: false, inspectionDate: '2026-09-01' },
+        // US 2.0.3 (M25): a deactivated site is flagged so the profile does not link to it.
+        { id: 10, siteId: 7, siteName: 'Elk Island', siteArchived: false, siteInactive: true, inspectionDate: '2026-08-15' },
+        { id: 9, siteId: null, siteName: 'Unknown site', siteArchived: false, siteInactive: false, inspectionDate: '2026-08-01' },
       ]);
     });
 

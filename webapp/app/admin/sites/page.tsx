@@ -88,11 +88,13 @@ export default function AdminSitesPage() {
   const [archiveError, setArchiveError] = useState<string | null>(null);
   const [loadingArchiveImpact, setLoadingArchiveImpact] = useState(false);
   const [archivingSite, setArchivingSite] = useState(false);
-  const [archivedCount, setArchivedCount] = useState(0);
+  // Archived sites still hold their protected area, so the picker must hide those areas too.
+  const [archivedSites, setArchivedSites] = useState<SiteSummary[]>([]);
+  const archivedCount = archivedSites.length;
 
   useEffect(() => {
     getTotalInspectionCount().then(setTotalResponses).catch(() => {});
-    getArchivedSites().then((archived) => setArchivedCount(archived.length)).catch(() => {});
+    getArchivedSites().then(setArchivedSites).catch(() => {});
   }, []);
 
   // The boundaries are large, so they load the first time the map view opens and never
@@ -135,12 +137,12 @@ export default function AdminSitesPage() {
   const [protectedAreas, setProtectedAreas] = useState<ProtectedAreaChoice[]>([]);
   const [saving, setSaving] = useState(false);
   const addAreaChoices = useMemo(
-    () => availableProtectedAreas(protectedAreas, sites, null),
-    [protectedAreas, sites]
+    () => availableProtectedAreas(protectedAreas, [...sites, ...archivedSites], null),
+    [protectedAreas, sites, archivedSites]
   );
   const editAreaChoices = useMemo(
-    () => availableProtectedAreas(protectedAreas, sites, editSite?.id ?? null),
-    [protectedAreas, sites, editSite]
+    () => availableProtectedAreas(protectedAreas, [...sites, ...archivedSites], editSite?.id ?? null),
+    [protectedAreas, sites, archivedSites, editSite]
   );
 
   
@@ -244,7 +246,8 @@ export default function AdminSitesPage() {
     setSaving(true);
     try {
       const currentSite = sites.find((s) => s.id === data.id);
-      await updateSite(data.id, data.namesite, data.ab_county, data.protected_area_id);
+      const result = await updateSite(data.id, data.namesite, data.ab_county, data.protected_area_id);
+      if (!result.ok) throw new Error(result.error);
       if (currentSite && currentSite.is_active !== data.is_active) {
         await toggleSiteActive(data.id, data.is_active);
       }
@@ -267,7 +270,8 @@ export default function AdminSitesPage() {
   const handleCreateSite = async (data: { namesite: string; ab_county: number | null; protected_area_id: number | null }): Promise<boolean> => {
     setSaving(true);
     try {
-      await createSite(data.namesite, data.ab_county, data.protected_area_id);
+      const result = await createSite(data.namesite, data.ab_county, data.protected_area_id);
+      if (!result.ok) throw new Error(result.error);
       setSites(await getAllSites());
       setShowAddSite(false);
       return true;
@@ -310,7 +314,7 @@ const handleConfirmArchive = async () => {
     setSites((currentSites) =>
       currentSites.filter((site) => site.id !== archiveTarget.id)
     );
-    setArchivedCount((currentCount) => currentCount + 1);
+    setArchivedSites((current) => [archiveTarget, ...current]);
 
     setArchiveTarget(null);
     setArchiveImpact(null);
@@ -776,11 +780,15 @@ const handleCloseArchive = () => {
                         Admin View
                       </button>
                       <button
+                        data-testid={`user-view-button-${item.id}`}
+                        // An inactive site's page shows an error, so there is no user view to open.
+                        disabled={!item.is_active}
+                        title={item.is_active ? undefined : 'Inactive sites have no user view'}
                         onClick={(e) => {
                           e.stopPropagation();
-                          router.push(`/detail/${item.namesite}`);
+                          router.push(`/detail/${encodeURIComponent(item.namesite)}`);
                         }}
-                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border-2 border-[#E4EBE4] hover:border-[#86A98A] text-[#254431] rounded-lg text-sm font-medium transition-colors"
+                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border-2 border-[#E4EBE4] hover:border-[#86A98A] text-[#254431] rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-[#E4EBE4]"
                       >
                         <ChevronRight className="w-4 h-4" />
                         User View
