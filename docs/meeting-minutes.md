@@ -252,6 +252,254 @@ The team presented its user stories and plan. Frank asked for every story to be 
 
 ---
 
+#### September 26, 2026 – Meeting #5: Field trip to River Lot 56 with Frank
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA SIR |
+| **Date** | September 26, 2026 |
+| **Time** | Not recorded in the source — team to confirm |
+| **Location** | River Lot 56 |
+| **Attendees** | Frank (client) and Chris are named as present in the [October 2](meetings/week5/2026_10_02%20_meeting_Frank.txt) and [October 9](meetings/week6/2026_10_09_meeting_frank.txt) transcripts. Attendance of the other members is not recorded in the source — team to confirm. |
+| **Source** | No transcript or notes exist for the trip. This entry uses the action items of Meeting #4 and what Frank and the team said about the trip on October 2 and October 9. |
+
+##### Agenda
+
+- Each member submits a River Lot 56 site inspection report with photos (action item of Meeting #4).
+- Each member records the walk with a phone GPS app (action item of Meeting #4).
+- Frank shows how he uses the form and the app in the field.
+
+##### Summary
+
+The team walked River Lot 56 with Frank. Frank showed how he fills in the site inspection form on his phone. The visit showed the team a bug in the form and gave them sample GPS data for the map work.
+
+##### Key Discussions & Decisions
+
+- While Frank filled in the form, he put his phone away. When he opened the app again, it opened on the first page of the form. His answers were still saved, but he had to click forward to carry on. The team made this a Sprint 2 task: the form keeps the page it was on ([#87](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/87), fixed by [PR #164](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/164)).
+- The trip produced GPS files in more than one format. The file from the device that Chris carried is clean. The file from Frank's handheld GPS is slightly dirty, because he did not turn it off until after the walk. His phone file is very poor. Frank gave the team clean and dirty files on purpose, as a test of how the map work deals with bad data.
+- The October 2 talk track says that Frank shared his version 3.0 plan, managing site information, with the team on the trip.
+
+##### Action Items
+
+- Send the GPS files from the trip (Frank). He sent them before October 2.
+- Fix the form so it reopens on the page the user left ([#87](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/87)).
+
+##### Next Meeting Agenda
+
+- Weekly client meeting on October 2 (Meeting #7).
+
+---
+
+### Sprint 2
+
+---
+
+#### September 30, 2026 – Meeting #6: 401 Lab, meeting with TA
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA SIR |
+| **Date** | September 30, 2026 (the source is undated; team to confirm) |
+| **Time** | Not recorded in the source — team to confirm |
+| **Location** | Not recorded in the source — team to confirm |
+| **Attendees** | Alex (TA) is named in the notes. Attendance of the members is not recorded in the source — team to confirm. |
+| **Source** | [Meeting notes, week 5](meetings/week5/Meeting_Notes.md) (added in [PR #126](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/126)) |
+
+##### Agenda
+
+Not recorded in the source. The notes cover gamification, user story clarity and points, deleting site data, and generating UML diagrams.
+
+##### Summary
+
+The notes are titled "Meeting with Alex". They list Alex's advice on gamification, user story clarity and deleting data. The same file also holds notes on what Frank said on October 2 (map layers, dirty GPX files, the Google Maps terms of service, simple gamification stats, release cadence and deletion levels). Those points are in Meeting #7.
+
+##### Key Discussions & Decisions
+
+TA advice:
+
+- Ask Frank more about gamification. Does he want visual progress that shows off social status?
+- Pitch Frank a bounty board, where visiting specific sites earns more points than other sites, instead of equal points for every site.
+- Keep pushing Frank for specifics. Think about the behaviours to reward and the user flows that reward them.
+- Set up automated UML generation from the code base.
+- Alex said that in the real world a user story is not complete until all details are clear. The ambiguity of a story should not be tied to its points.
+- Do not delete site data. Mark it as deleted and hide it, so that Frank still has the data if he needs it.
+
+How we addressed it:
+
+- Gamification questions: on October 2 Alissa asked Frank which actions should earn points. Frank asked for a mockup of simple gamification built from existing data. The team showed the mockup on October 9: top contributor, most counties, site variety and first reporter. Frank accepted the direction (Meeting #7 and Meeting #9). The aggregate totals are planned as US 1.0.4 in Sprint 3 ([Project Management](project-management.md)).
+- Bounty board: not raised with Frank in the October 2 or October 9 transcripts. This is still open.
+- Automated UML: [PR #157](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/157) adds a diagram generator that builds the ER and UML class diagrams from the migrations and the TypeScript and updates them on every PR.
+- Story clarity and points: no change is recorded in the issues or PRs. Team to confirm.
+- Soft delete: sites are archived instead of deleted, with a separate admin hard delete ([#81](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/81), [PR #160](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/160)). Reports are archived before they can be deleted ([#93](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/93), [PR #165](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/165)). Frank approved this on October 9.
+
+##### Action Items
+
+Not recorded in the source.
+
+##### Next Meeting Agenda
+
+Not recorded in the source. The next meeting was the weekly client meeting on October 2.
+
+---
+
+#### October 2, 2026 – Meeting #7: Client meeting with Frank
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA SIR |
+| **Date** | October 2, 2026 |
+| **Time** | Not recorded in the source — team to confirm |
+| **Location** | Not recorded in the source — team to confirm |
+| **Attendees** | Frank (client), Chris, Alissa, Abhinav, Jayden and Zanab (each speaks in the transcript), and Saumya (presents the deck, per the [talk track](meetings/week5/SAPAA-2026-10-02-script.md)). Attendance of Aaron and anyone else is not recorded in the source — team to confirm. |
+| **Source** | [Raw transcript](meetings/week5/2026_10_02%20_meeting_Frank.txt), [deck](meetings/week5/SAPAA-2026-10-02.pdf) and [talk track](meetings/week5/SAPAA-2026-10-02-script.md) |
+
+##### Agenda
+
+- What the team did this week and what it will do next week, tied to the charter projects.
+- The sprint plan for Sprints 2 to 5.
+- Questions from the team, a summary and a round table.
+
+##### Summary
+
+Weekly client meeting. The team presented the Sprint 2 plan against the charter. Frank described the four layers of the map, asked the team to defend its design decisions with research, and asked for a release management recommendation and a gamification mockup for the next meeting.
+
+##### Key Discussions & Decisions
+
+- Frank said he will rearrange work with the team when a sprint needs it, even if the work is outside the charter. He also said the team's own internal target dates are flexible.
+- Environments: the team built a development copy of the app that runs on a laptop with test data and its own Supabase instance. Frank described other naming schemes (sandbox, bronze, silver, gold) so that the team knows other companies use different names.
+- User model: one row per person, with or without a login. Profile fields are name, contacts, skills, focus areas and activity points. A separate table names the steward of each site. Existing accounts are copied, so nothing in the existing tables changes.
+- Frank described the map as four layers: the base map, a static layer of polygons, a GPS history layer, and a layer for data visualisation. He asked each pair to say which layer it works on.
+- Base map: the team will recommend an open map, probably OpenStreetMap. Frank said the team must give the reasons and must check them, for example the cost of Google Maps and any non-profit pricing. Chris added that Google's terms do not allow showing its maps offline in a third-party app. Frank said to write this down.
+- Polygons: the Alberta open data set for 2023 is missing one type of natural area that the 2021 set has. Frank holds the 2021 set. The team can use the 2023 set for testing and development, and the 2021 set is needed for the real release.
+- GPS files: GPX first and no phone tracking, all in Sprint 3. Frank said it is acceptable for version 2 to accept only GPX. The team should start with clean files and then deal with dirty ones.
+- Offline map layers will be built for the web app only. They are not in the charter, but the team planned them anyway.
+- Fix list: Frank's list has 20 items. The team plans to finish 10 by October 13. Two are already done, six are bigger and are planned for Sprints 3 and 4, and two need more detail first: the Edit Report bug, where the team waits for Harveer's description, and bringing user management into the app.
+- The form that resets to page one when the phone sleeps (seen on the field trip) is planned for October 6.
+- Release management: Frank asked the team to research how companies release and to recommend a schedule. He prefers weekly or monthly releases to one release at the end of the semester. The team's position is to demo each release to Frank first until he trusts its process, to have at least two reviewers on every change, and to freeze code two days before each sprint deadline.
+- Sprints 4 and 5 are light so that there is room for Frank's requests. Frank will describe version 3.0 in more detail during October.
+- Gamification: Frank wants simple gamification built from data that already exists, such as the number of inspections and the number of counties visited, and then improved over time. He suggested a mockup with the top contributor, the contributor with the most counties, the contributor with the greatest variety of sites, and the first contributor.
+- Deleting sites and reports: Frank wants levels, suppress, archive and delete for good, and said there may even be three levels.
+- Frank asked the team to pick one or two members who stay out of the research and question the recommendation the way Frank would.
+
+##### Action Items
+
+- Write up the map recommendation with the reasons and send it to Frank before the next meeting, if possible over the weekend (Abhinav and Alissa, the map team).
+- Add an enhancement to Frank's fix and enhancement list to accept or convert non-GPX tracks (Saumya).
+- Make contact with Frank's GIS contact and build the relationship before the map work needs help (Saumya; Frank to send the contact).
+- Connect with Frank on LinkedIn, his preferred channel for the introduction (Everyone).
+- Bring a release schedule recommendation to the next meeting (Chris).
+- Bring a gamification mockup to the next meeting (Team).
+- Ask Harveer for the description of the Edit Report bug (Saumya).
+- Describe version 3.0 in more detail (Frank).
+
+##### Next Meeting Agenda
+
+- Release schedule recommendation.
+- Gamification mockup.
+- The work due before the meeting (slide 13 of the [talk track](meetings/week5/SAPAA-2026-10-02-script.md)): authentication checks, the Supaview fix, sign-out, the form page, add a site, map set-up and steward profiles.
+
+---
+
+#### October 7, 2026 – Meeting #8: 401 Lab, meeting with TA
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA SIR |
+| **Date** | October 7, 2026 (the weekly Wednesday 9:30 AM lab slot from Meeting #0) |
+| **Time** | Not recorded — team to confirm |
+| **Location** | Not recorded — team to confirm |
+| **Attendees** | Not recorded — team to confirm |
+| **Source** | No notes or transcript were recorded. |
+
+##### Agenda
+
+Not recorded.
+
+##### Summary
+
+Not recorded. No notes or transcript were recorded for this lab.
+
+##### Key Discussions & Decisions
+
+Not recorded.
+
+##### Action Items
+
+- Fill in this entry from members' memory and any notes (Aaron, the Sprint 2 Scrum Master), before the October 14 lab.
+- Record Alex's answer on whether DevOps and release work can be written as user stories ([#22](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/22)), or ask him at the October 14 lab (Aaron).
+
+##### Next Meeting Agenda
+
+Not recorded.
+
+---
+
+#### October 9, 2026 – Meeting #9: Client meeting with Frank
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA SIR |
+| **Date** | October 9, 2026 |
+| **Time** | Not recorded in the source — team to confirm |
+| **Location** | Not recorded in the source — team to confirm |
+| **Attendees** | Frank (client), Chris, Abhinav, Alissa and Zanab (each speaks in the transcript), and Saumya (presents the deck). Attendance of Aaron, Jayden and anyone else is not recorded in the source — team to confirm. |
+| **Source** | [Raw transcript](meetings/week6/2026_10_09_meeting_frank.txt). The transcript ends before the meeting does. |
+
+##### Agenda
+
+- Status of version 1.1, which is planned for release on Tuesday, October 13.
+- Walk through Frank's fix and enhancement list.
+- Development and production environments.
+- The map decision: which map and why.
+- Gamification mockup, deletion levels and the Sprint 3 plan.
+
+##### Summary
+
+The team showed that version 1.1 is nearly built and that everything is merged or in review. Frank went through his fix and enhancement list and agreed that most items are done. He asked the team to document the reasons for the map decision, approved the delete design, and asked how GPX upload will work.
+
+##### Key Discussions & Decisions
+
+- Version 1.1: all work is merged on `main` or in review. Code freeze is October 11 and the release is October 13. Every pull request has two reviewers.
+- Frank will run user testing after the release, and wants no surprises for users. The Supaview connection will work after the release.
+- Frank's list: the Supaview fix, removing the 50 report limit, SAPAA website links, admin edits of site pages, all photos in the PDF, steward designation, hiding fields on export, a map and basic user management are done or running. Image extract needs another look. Critical safety information is not done, and Frank does not expect the team to reach it. Report deletion was in review, and GPS track upload and site priority points are for later sprints. Frank added that an iNaturalist link only needs a URL field, so he is satisfied.
+- Map: the team uses Protomaps data, which comes from OpenStreetMap, drawn with MapLibre. The team gave two reasons: Google does not allow offline display, and Protomaps allows up to 1,000,000 tile requests a month, which the team expects to be enough.
+- Frank asked how the team will document the map decision. The decision document is in the team's Google Docs and will go to the repository and to Frank's Drive. Frank wants a project close summary by the end of the project, with a section on how the map was chosen. He wants to see that section on the Drive now, even if it is empty.
+- Environments: a SAPAA Dev GitHub account holds a repository linked to Vercel. A branch in the team repository will be linked to the release branch of that repository, so a push deploys automatically. Local environments imitate Supabase and the S3 storage, so the team can work offline.
+- Releases: the team demos each release to Frank until he trusts the process. After that it can release without a demo. Frank's trust will go up when he sees the app after October 13.
+- Gamification mockup: top contributor, most counties, site variety and the first reporter of a site. The team measures variety by site subtype, which the site filter already has. Frank also suggested natural region, and a time dimension such as all time and the past year. He said the team is going in the right direction.
+- Deleting: there are two levels. Archive hides a site and can be restored easily. Delete for good removes the site and the steward link, and the reports and photos stay. Frank approved it.
+- The form now reopens on the page the user left (Abhinav, [PR #164](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/164)). The team told Frank that the database name change took about five minutes.
+- Sprint 3 has been planned and the teams change. Dates: October 13 for version 1.1, October 27 for maps and history, and November 17 for Frank's requests. Sprint 3 includes scoreboard totals, editing reports, safety information, password reset, offline map download and linking sites to government boundaries.
+- GPX upload: today the admin panel accepts KML for site boundaries only, and GPX upload is for Sprint 3. Frank asked what the user experience will be. The team's ideas: an editor with a cutting tool when a file is uploaded, the original file stays in the database, and the cleaned track shows as an extra layer. The steward decides what to keep, because a steward may walk outside the boundary and still inspect the area.
+- Frank offered about 100 of his own GPX files as samples and asked about bulk upload. The team will support uploading several files from the start.
+- Linking sites to protected areas: some KML areas share site names, and one site such as Lakeland has three boundaries. The sites in the app have a type in brackets in the name, for example Riverlot 56 (NA), so only fuzzy matching is possible. The team proposes automatic matching plus a manual link option. Frank's advice: the KML format is a system concern, not a user concern. Expect about 90 percent to match automatically and clean up the other 10 percent by hand.
+- Frank advised the team to leave the client with a project close summary and a graceful exit, because the next contract goes to the team that did. He asked Abhinav a mock interview question on release management and discussed the answer.
+
+##### Action Items
+
+- Put the map decision document in the repository and share it with Frank (Saumya). Add a section on how the map was chosen to the project close summary.
+- Demo the Protomaps and MapLibre map next week (Abhinav).
+- Demo the manual link between sites and protected areas next week (Alissa and Abhinav).
+- Get the Supaview connection working by Tuesday (Team).
+- Freeze code on October 11, release version 1.1 on October 13, and write the release notes (Team).
+- Put Frank's sample GPX files in a sample GPX subfolder (Frank).
+- Mark the finished items as done in column G of Frank's list at the next meeting (Saumya and Frank).
+- Check with each member that they are comfortable with their Sprint 3 work (Saumya).
+
+##### Next Meeting Agenda
+
+- Version 1.1 frozen, merged and tested, with the release notes.
+- Release of version 1.1 to the stewards, a demo for Frank and a review.
+- Demo of the map and of the manual link between sites and protected areas.
+- Sprint 3 plan.
+
+---
+
 ## Winter 2026 (previous team)
 
 ### Winter 2026 Sprint 1
