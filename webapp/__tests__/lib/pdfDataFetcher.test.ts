@@ -311,6 +311,37 @@ describe('fetchReportData', () => {
     expect(response20.answers.map((answer) => answer.question_id)).toEqual([3]);
   });
 
+  // The key map in beforeEach: Q31 naturalness = 1, Q32 details = 2, Q13 steward/guest name = 3.
+  const siteRequest = (hiddenQuestionIds: number[]): PdfRequest => ({
+    mode: 'site',
+    siteName: 'Elk Island',
+    options: { ...DEFAULT_OPTIONS, hiddenQuestionIds },
+  });
+
+  it('US 7.0.7 AT2: hides the naturalness score when its question is hidden', async () => {
+    const result = await fetchReportData(siteRequest([1]));
+    const response10 = result.sites[0].responses.find((r) => r.id === 10)!;
+
+    expect(response10.naturalness_score).toBeNull();
+    expect(response10.naturalness_details).toBe('OK');
+    expect(response10.steward).toBe('Alice');
+  });
+
+  it('US 7.0.7 AT2: hides the naturalness details when their question is hidden', async () => {
+    const result = await fetchReportData(siteRequest([2]));
+    const response10 = result.sites[0].responses.find((r) => r.id === 10)!;
+
+    expect(response10.naturalness_details).toBeNull();
+    expect(response10.naturalness_score).toBe('3.0');
+  });
+
+  it('US 7.0.7 AT2: hides the steward/guest name when its question is hidden', async () => {
+    const result = await fetchReportData(siteRequest([3]));
+
+    expect(result.sites[0].responses.map((r) => r.steward)).toEqual([null, null, null]);
+    expect(result.sites[0].responses.find((r) => r.id === 10)!.naturalness_score).toBe('3.0');
+  });
+
   // ── Empty answers ──
 
   it('filters empty answers when includeEmptyAnswers is false', async () => {
@@ -369,6 +400,53 @@ describe('fetchReportData', () => {
     expect(result.sites[1].county).toBe('County 2');
   });
 
+  // ── More than 50 reports (US 7.0.6) ──
+
+  const manyResponses = (count: number, idBase = 1000): FormResponse[] =>
+    Array.from({ length: count }, (_, i) => ({
+      ...mockResponses[0],
+      id: idBase + i,
+      created_at: new Date(Date.UTC(2024, 0, 1 + i)).toISOString(),
+    }));
+
+  it('US 7.0.6 AT1: a site export of 60 selected reports contains each one', async () => {
+    const reports = manyResponses(60);
+    mockGetFormResponsesBySite.mockResolvedValue(reports);
+
+    const result = await fetchReportData({
+      mode: 'site',
+      siteName: 'Elk Island',
+      options: { ...DEFAULT_OPTIONS, selectedResponseIds: reports.map((r) => r.id) },
+    });
+
+    expect(result.sites[0].responses).toHaveLength(60);
+    expect(new Set(result.sites[0].responses.map((r) => r.id))).toEqual(new Set(reports.map((r) => r.id)));
+  });
+
+  it('US 7.0.6 AT1: a multi-site export of 51 reports over 3 sites contains each one', async () => {
+    mockGetSitesByNames.mockResolvedValue([
+      { id: 1, namesite: 'Site A', ab_county: null, ab_counties: null },
+      { id: 2, namesite: 'Site B', ab_county: null, ab_counties: null },
+      { id: 3, namesite: 'Site C', ab_county: null, ab_counties: null },
+    ]);
+    mockGetFormResponsesForSiteIds.mockResolvedValue(
+      new Map([
+        [1, manyResponses(17, 1000)],
+        [2, manyResponses(17, 2000)],
+        [3, manyResponses(17, 3000)],
+      ])
+    );
+
+    const result = await fetchReportData({
+      mode: 'multi-site',
+      siteNames: ['Site A', 'Site B', 'Site C'],
+      options: DEFAULT_OPTIONS,
+    });
+
+    expect(result.sites.flatMap((site) => site.responses)).toHaveLength(51);
+    expect(result.sites.map((site) => site.responses.length)).toEqual([17, 17, 17]);
+  });
+
   it('throws when no sites match in multi-site mode', async () => {
     mockGetSitesByNames.mockResolvedValue([]);
 
@@ -423,6 +501,36 @@ describe('fetchReportData', () => {
     expect(result.sites[0].responses).toHaveLength(1);
     expect(result.sites[0].responses[0].id).toBe(10);
     expect(mockIs).toHaveBeenCalledWith('archived_at', null);
+  });
+
+  it('US 7.0.1 AT3: includes every photo in a single SIR export, past the bulk cap', async () => {
+    mockSupabaseFrom.mockReturnValue({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      is: jest.fn().mockReturnThis(),
+      single: jest
+        .fn()
+        .mockResolvedValueOnce({ data: { site_id: 99 }, error: null })
+        .mockResolvedValueOnce({ data: { namesite: 'Elk Island', ab_counties: null }, error: null }),
+    });
+    mockGetFormResponsesBySite.mockResolvedValue([mockResponses[0]]);
+    mockGetAttachmentsByResponseId.mockResolvedValue(
+      Array.from({ length: 25 }, (_, i) => ({
+        id: i, question_id: null, filename: `p${i}.jpg`, content_type: 'image/jpeg',
+        storage_key: `k${i}`, caption: null, identifier: null,
+      }))
+    );
+    const jpegAb = new ArrayBuffer(4);
+    new Uint8Array(jpegAb).set([0xff, 0xd8, 0xff, 0xe0]);
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, arrayBuffer: () => Promise.resolve(jpegAb) });
+
+    const result = await fetchReportData({
+      mode: 'single',
+      responseId: 10,
+      options: { ...DEFAULT_OPTIONS, includeImages: true, maxImagesPerInspection: 20 },
+    });
+
+    expect(result.sites[0].attachmentsByResponse!.get(10)).toHaveLength(25);
   });
 
   it('throws when single response is not found', async () => {
@@ -493,6 +601,32 @@ describe('fetchReportData', () => {
     expect(site.attachmentsByResponse).toBeDefined();
   });
 
+  it('US 7.0.7 AT2: leaves out photos attached to a hidden question', async () => {
+    const rows = [
+      { id: 1, response_id: 10, question_id: 7, filename: 'shown.jpg', content_type: 'image/jpeg', storage_key: 'a', caption: null, identifier: null },
+      { id: 2, response_id: 10, question_id: 8, filename: 'hidden.jpg', content_type: 'image/jpeg', storage_key: 'b', caption: null, identifier: null },
+    ];
+    mockGetAttachmentsByResponseId.mockResolvedValue(rows);
+    mockGetAttachmentsForResponseIds.mockResolvedValue(rows);
+    mockGetSitesByNames.mockResolvedValue([
+      { id: 1, namesite: 'Site A', ab_county: null, ab_counties: null },
+    ]);
+    mockGetFormResponsesForSiteIds.mockResolvedValue(new Map([[1, [mockResponses[0]]]]));
+
+    const jpegAb = new ArrayBuffer(4);
+    new Uint8Array(jpegAb).set([0xff, 0xd8, 0xff, 0xe0]);
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, arrayBuffer: () => Promise.resolve(jpegAb) });
+
+    const options = { ...DEFAULT_OPTIONS, includeImages: true, hiddenQuestionIds: [8] };
+    const site = await fetchReportData({ mode: 'site', siteName: 'Elk Island', options });
+    const multi = await fetchReportData({ mode: 'multi-site', siteNames: ['Site A'], options });
+
+    for (const result of [site, multi]) {
+      const files = result.sites[0].attachmentsByResponse!.get(10)!.map((a) => a.filename);
+      expect(files).toEqual(['shown.jpg']);
+    }
+  });
+
   it('limits images per inspection to maxImagesPerInspection', async () => {
     const manyAttachments = Array.from({ length: 10 }, (_, i) => ({
       id: i,
@@ -525,7 +659,30 @@ describe('fetchReportData', () => {
     }
   });
 
-  it('skips unsupported image formats (webp)', async () => {
+  it('US 7.0.1 AT3: converts a WebP photo to JPEG so the PDF can draw it', async () => {
+    const sharp = (await import('sharp')).default;
+    const webp = await sharp({
+      create: { width: 2, height: 2, channels: 3, background: '#356B43' },
+    }).webp().toBuffer();
+    const webpAb = new ArrayBuffer(webp.length);
+    new Uint8Array(webpAb).set(webp);
+    mockGetAttachmentsByResponseId.mockResolvedValue([
+      { id: 1, question_id: null, filename: 'photo.webp', content_type: 'image/webp', storage_key: 'uploads/photo.webp', caption: null, identifier: null },
+    ]);
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, arrayBuffer: () => Promise.resolve(webpAb) });
+
+    const result = await fetchReportData({
+      mode: 'site',
+      siteName: 'Elk Island',
+      options: { ...DEFAULT_OPTIONS, includeImages: true, selectedResponseIds: [10] },
+    });
+
+    const [att] = result.sites[0].attachmentsByResponse!.get(10)!;
+    expect(att.contentType).toBe('image/jpeg');
+    expect([...att.imageBuffer!.subarray(0, 3)]).toEqual([0xff, 0xd8, 0xff]);
+  });
+
+  it('skips a WebP photo that cannot be converted', async () => {
     mockGetAttachmentsByResponseId.mockResolvedValue([
       {
         id: 1,
@@ -556,7 +713,7 @@ describe('fetchReportData', () => {
 
     const result = await fetchReportData(request);
 
-    // Attachment should exist but without image buffer (webp unsupported)
+    // Only a WebP header, so conversion fails: the attachment stays without image data
     const site = result.sites[0];
     if (site.attachmentsByResponse) {
       for (const [, atts] of site.attachmentsByResponse) {

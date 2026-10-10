@@ -27,11 +27,24 @@ function getS3Client() {
   });
 }
 
-function detectImageFormat(buf: Buffer): 'png' | 'jpg' | null {
+function detectImageFormat(buf: Buffer): 'png' | 'jpg' | 'webp' | null {
   if (buf.length < 4) return null;
   if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'png';
   if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'jpg';
+  // RIFF....WEBP
+  if (buf.length >= 12 && buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP') return 'webp';
   return null;
+}
+
+// react-pdf cannot draw WebP, so convert it to JPEG. sharp ships with Next.js;
+// if it is missing or the file is corrupt, the photo is skipped and the PDF notes it.
+async function webpToJpeg(buf: Buffer): Promise<Buffer | undefined> {
+  try {
+    const { default: sharp } = await import('sharp');
+    return await sharp(buf).flatten({ background: '#ffffff' }).jpeg({ quality: 85 }).toBuffer();
+  } catch {
+    return undefined;
+  }
 }
 
 async function fetchImageBuffer(url: string): Promise<{ buffer: Buffer; format: 'png' | 'jpg' } | undefined> {
@@ -42,6 +55,10 @@ async function fetchImageBuffer(url: string): Promise<{ buffer: Buffer; format: 
     const buffer = Buffer.from(arrayBuffer);
     const format = detectImageFormat(buffer);
     if (!format) return undefined;
+    if (format === 'webp') {
+      const jpeg = await webpToJpeg(buffer);
+      return jpeg ? { buffer: jpeg, format: 'jpg' } : undefined;
+    }
     return { buffer, format };
   } catch {
     return undefined;
@@ -90,9 +107,24 @@ async function downloadAttachmentRows(
   return Promise.all(rows.map(row => imageDownloadLimit(() => downloadOneAttachment(row))));
 }
 
+// Photos to export: supported image types, minus photos on hidden questions (US 7.0.7 AT2).
+function exportableImageRows<T extends { content_type: string | null; question_id: number | null }>(
+  rows: T[],
+  options: PdfOptions
+): T[] {
+  const hidden = new Set(options.hiddenQuestionIds ?? []);
+  return rows.filter(
+    row =>
+      row.content_type &&
+      ALLOWED_IMAGE_TYPES.includes(row.content_type) &&
+      !(row.question_id != null && hidden.has(row.question_id))
+  );
+}
+
 function filterResponsesByOptions(
   responses: import('@/utils/supabase/queries').FormResponse[],
-  options: PdfOptions
+  options: PdfOptions,
+  keyMap: Record<string, number>
 ) {
   let filtered = [...responses];
 
@@ -134,8 +166,13 @@ function filterResponsesByOptions(
   const hiddenQuestionIds = options.hiddenQuestionIds ?? [];
   if (hiddenQuestionIds.length > 0) {
     const hidden = new Set(hiddenQuestionIds);
+    // These answers are lifted into top-level fields, so hide them there too (US 7.0.7 AT2).
+    const isHidden = (questionKey: string) => hidden.has(Number(keyMap[questionKey]));
     filtered = filtered.map((r) => ({
       ...r,
+      naturalness_score: isHidden('Q31_Naturalness') ? null : r.naturalness_score,
+      naturalness_details: isHidden('Q32_Natural_Comm') ? null : r.naturalness_details,
+      steward: isHidden('Q13_FirstandLastNameForGuests') ? null : r.steward,
       answers: r.answers.filter((a) => !hidden.has(a.question_id)),
     }));
   }
@@ -160,7 +197,7 @@ async function fetchMultiSiteData(siteNames: string[], options: PdfOptions): Pro
 
   const sites: PdfSiteData[] = siteRows.map(site => {
     const raw = responsesBySite.get(site.id) ?? [];
-    const responses = filterResponsesByOptions(raw, options);
+    const responses = filterResponsesByOptions(raw, options, keyMap);
     return {
       siteName: site.namesite,
       county: site.ab_counties?.county ?? null,
@@ -183,8 +220,7 @@ async function fetchMultiSiteData(siteNames: string[], options: PdfOptions): Pro
     for (const site of sites) {
       const map = new Map<number, PdfAttachment[]>();
       for (const r of site.responses) {
-        const rows = (byResponse.get(r.id) ?? [])
-          .filter(row => row.content_type && ALLOWED_IMAGE_TYPES.includes(row.content_type))
+        const rows = exportableImageRows(byResponse.get(r.id) ?? [], options)
           .slice(0, options.maxImagesPerInspection);
         if (rows.length > 0) {
           map.set(r.id, await downloadAttachmentRows(rows));
@@ -202,15 +238,15 @@ async function fetchSiteData(siteName: string, options: PdfOptions): Promise<Pdf
   if (!siteInfo.length) throw new Error(`Site not found: ${siteName}`);
 
   const rawResponses = await getFormResponsesBySite(siteName);
-  const responses = filterResponsesByOptions(rawResponses, options);
+  const keyMap = await getReportQuestionKeyMap();
+  const responses = filterResponsesByOptions(rawResponses, options, keyMap);
 
   let attachmentsByResponse: Map<number, PdfAttachment[]> | undefined;
   if (options.includeImages) {
     attachmentsByResponse = new Map();
     for (const r of responses) {
       const rows = await getAttachmentsByResponseId(r.id);
-      const imageRows = rows
-        .filter(row => row.content_type && ALLOWED_IMAGE_TYPES.includes(row.content_type))
+      const imageRows = exportableImageRows(rows, options)
         .slice(0, options.maxImagesPerInspection);
       if (imageRows.length > 0) {
         attachmentsByResponse.set(r.id, await downloadAttachmentRows(imageRows));
@@ -252,15 +288,15 @@ async function fetchSingleResponse(responseId: number, options: PdfOptions): Pro
 
   const allResponses = await getFormResponsesBySite(siteName);
   const singleOnly = allResponses.filter((r) => r.id === responseId);
-  const responses = filterResponsesByOptions(singleOnly, options);
+  const keyMap = await getReportQuestionKeyMap();
+  const responses = filterResponsesByOptions(singleOnly, options, keyMap);
 
   let attachmentsByResponse: Map<number, PdfAttachment[]> | undefined;
   if (options.includeImages) {
     attachmentsByResponse = new Map();
     const rows = await getAttachmentsByResponseId(responseId);
-    const imageRows = rows
-      .filter(row => row.content_type && ALLOWED_IMAGE_TYPES.includes(row.content_type))
-      .slice(0, options.maxImagesPerInspection);
+    // A single SIR export includes every photo; the per-inspection cap is for bulk exports.
+    const imageRows = exportableImageRows(rows, options);
     if (imageRows.length > 0) {
       attachmentsByResponse.set(responseId, await downloadAttachmentRows(imageRows));
     }

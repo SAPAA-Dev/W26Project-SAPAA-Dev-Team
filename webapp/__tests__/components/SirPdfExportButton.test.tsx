@@ -93,4 +93,36 @@ describe('SirPdfExportButton', () => {
       expect(screen.getByTestId('export-pdf-error')).toHaveTextContent('Render failed');
     });
   });
+
+  it('US 7.0.1: stops polling and shows the error when the status check returns 404', async () => {
+    mockFetch
+      .mockResolvedValueOnce(jsonResponse({ jobId: 'job-1' }, true, 202))
+      .mockResolvedValueOnce(jsonResponse({ error: 'Job not found' }, false, 404));
+
+    render(<SirPdfExportButton responseId={42} />);
+    fireEvent.click(screen.getByTestId('export-pdf-button'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('export-pdf-error')).toHaveTextContent('Job not found');
+    });
+    expect(screen.getByTestId('export-pdf-button')).not.toBeDisabled();
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('US 7.0.1: gives up on a job that stays pending', async () => {
+    // The first call records the start; later calls are past the 3-minute limit.
+    const now = jest.spyOn(Date, 'now').mockReturnValueOnce(0).mockReturnValue(3 * 60 * 1000);
+    mockFetch
+      .mockResolvedValueOnce(jsonResponse({ jobId: 'job-1' }, true, 202))
+      .mockResolvedValue(jsonResponse({ status: 'pending', error: null }));
+
+    render(<SirPdfExportButton responseId={42} />);
+    fireEvent.click(screen.getByTestId('export-pdf-button'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('export-pdf-error')).toHaveTextContent(/timed out/i);
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    now.mockRestore();
+  });
 });

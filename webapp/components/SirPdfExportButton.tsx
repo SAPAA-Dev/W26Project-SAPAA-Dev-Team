@@ -5,6 +5,8 @@ import { Download, Loader2 } from 'lucide-react';
 
 const POLL_INTERVAL_MS = 2500;
 const RESET_DELAY_MS = 5000;
+// Stop polling a job that never finishes, so the button does not spin forever.
+const MAX_POLL_MS = 3 * 60 * 1000;
 
 type ExportState = 'idle' | 'exporting' | 'downloaded' | 'failed';
 
@@ -31,25 +33,38 @@ export default function SirPdfExportButton({ responseId }: { responseId: number 
     }, RESET_DELAY_MS);
   };
 
-  const pollStatus = async (jobId: string) => {
+  const fail = (message: string) => {
+    setState('failed');
+    setErrorMessage(message);
+    scheduleReset();
+  };
+
+  const pollStatus = async (jobId: string, startedAt: number) => {
     try {
       const res = await fetch(`/api/pdf/status/${jobId}`);
-      const body = await res.json();
+      const body = await res.json().catch(() => ({}));
+      // A 403/404 or a body without a status will not change on retry.
+      if (!res.ok || !body.status) {
+        fail(body.error || `PDF export failed (${res.status})`);
+        return;
+      }
       if (body.status === 'complete') {
         setState('downloaded');
         scheduleReset();
         return;
       }
       if (body.status === 'failed') {
-        setState('failed');
-        setErrorMessage(body.error || 'PDF export failed');
-        scheduleReset();
+        fail(body.error || 'PDF export failed');
         return;
       }
     } catch {
       // Keep polling on transient network errors.
     }
-    pollTimer.current = setTimeout(() => pollStatus(jobId), POLL_INTERVAL_MS);
+    if (Date.now() - startedAt >= MAX_POLL_MS) {
+      fail('PDF export timed out. Try again later.');
+      return;
+    }
+    pollTimer.current = setTimeout(() => pollStatus(jobId, startedAt), POLL_INTERVAL_MS);
   };
 
   const handleExport = async () => {
@@ -84,7 +99,7 @@ export default function SirPdfExportButton({ responseId }: { responseId: number 
       }
 
       const { jobId } = await res.json();
-      pollStatus(jobId);
+      pollStatus(jobId, Date.now());
     } catch (err) {
       setState('failed');
       setErrorMessage(err instanceof Error ? err.message : 'Failed to start PDF export');

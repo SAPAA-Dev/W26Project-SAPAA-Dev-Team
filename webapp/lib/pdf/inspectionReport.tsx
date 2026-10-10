@@ -280,9 +280,9 @@ function SectionBlock({
 function AttachmentGallery({ attachments }: { attachments: PdfAttachment[] }) {
   if (!attachments || attachments.length === 0) return null;
 
-  // Only show attachments that have image data
+  // Only show attachments that have image data, and say how many could not be drawn
   const withImages = attachments.filter((att) => att.imageBuffer);
-  if (withImages.length === 0) return null;
+  const omitted = attachments.length - withImages.length;
 
   return (
     <View style={styles.attachmentsContainer}>
@@ -300,6 +300,11 @@ function AttachmentGallery({ attachments }: { attachments: PdfAttachment[] }) {
           </View>
         ))}
       </View>
+      {omitted > 0 && (
+        <Text style={styles.attachmentCaption}>
+          {omitted} {omitted === 1 ? 'photo' : 'photos'} could not be included in this PDF.
+        </Text>
+      )}
     </View>
   );
 }

@@ -97,6 +97,13 @@ export async function POST(req: NextRequest) {
           { status: 403 }
         );
       }
+      // Hiding fields is an admin export option (US 7.0.7 AT4).
+      if (request.options.hiddenQuestionIds.length > 0) {
+        return NextResponse.json(
+          { error: 'Forbidden - only admins can hide fields on export' },
+          { status: 403 }
+        );
+      }
       // The service-role client bypasses RLS, so the ownership check must run here.
       const admin = createServerSupabase();
       const { data: response, error: responseError } = await admin

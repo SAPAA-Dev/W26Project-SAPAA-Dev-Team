@@ -264,6 +264,21 @@ describe('POST /api/pdf', () => {
     );
   });
 
+  it('US 7.0.6 AT1: accepts an admin multi-site export of more than 50 sites', async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: 'admin-1', app_metadata: { role: 'admin', authenticated: true } } },
+      error: null,
+    });
+    const siteNames = Array.from({ length: 60 }, (_, i) => `Site ${i}`);
+
+    const res = await POST(makeRequest({ mode: 'multi-site', siteNames }));
+
+    expect(res.status).toBe(202);
+    expect(mockJobInsert).toHaveBeenCalledWith(
+      expect.objectContaining({ request_payload: expect.objectContaining({ siteNames }) })
+    );
+  });
+
   it('kicks off processPdfJob with the created jobId', async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
@@ -322,6 +337,20 @@ describe('POST /api/pdf', () => {
     expect(res.status).toBe(403);
     expect(body.error).toMatch(/only export reports you submitted/i);
     expect(mockJobInsert).not.toHaveBeenCalled();
+  });
+
+  it('US 7.0.7 AT4: returns 403 when a steward export hides fields', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
+
+    const res = await POST(
+      makeRequest({ mode: 'single', responseId: 42, options: { hiddenQuestionIds: [3] } })
+    );
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body.error).toMatch(/only admins can hide fields/i);
+    expect(mockJobInsert).not.toHaveBeenCalled();
+    expect(processPdfJob).not.toHaveBeenCalled();
   });
 
   it('returns 403 when a steward requests site mode', async () => {

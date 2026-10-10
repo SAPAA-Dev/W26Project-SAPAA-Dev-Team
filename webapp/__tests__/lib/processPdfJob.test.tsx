@@ -92,6 +92,23 @@ describe('processPdfJob', () => {
     );
   });
 
+  it('US 7.0.6 AT4: a failed export of 51 reports only marks its job failed', async () => {
+    const responses = Array.from({ length: 51 }, (_, i) => ({ id: i + 1, answers: [] }));
+    (fetchReportData as jest.Mock).mockResolvedValue({
+      sites: [{ siteName: 'Elk Island', county: null, responses }],
+      generatedAt: new Date().toISOString(),
+      options: {},
+    });
+    (renderToBuffer as jest.Mock).mockRejectedValue(new Error('Render failed'));
+
+    await expect(processPdfJob('job-123')).rejects.toThrow('Render failed');
+
+    expect(mockUpdate).toHaveBeenLastCalledWith({ status: 'failed', error: 'Render failed' });
+    expect(mockS3Send).not.toHaveBeenCalled();
+    // Only the job row is written; no stored report is touched.
+    expect(new Set(mockFrom.mock.calls.map(([table]) => table))).toEqual(new Set(['S26_pdf_jobs']));
+  });
+
   it('throws if the job itself is not found', async () => {
     mockSelect.mockResolvedValue({ data: null, error: { message: 'not found' } });
 

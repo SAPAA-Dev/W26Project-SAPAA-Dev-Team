@@ -1548,25 +1548,34 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
     stewardId: Number(keyMap['Q13_FirstandLastNameForGuests']),
   };
 
-  const { data, error } = await supabase
-    .from('form_responses')
-    .select(`
-      id, user_id, created_at, inspection_date, inspection_no,
-      answers (
-        question_id, obs_value, obs_comm,
-        questions ( id, form_question, section_id,
-          form_sections!questions_section_id_fkey ( id, title ) )
-      )
-    `)
-    .eq('site_id', siteData.id)
-    .eq('is_active', true)
-    .is('archived_at', null)
-    .order('inspection_date', { ascending: false })
-    .order('created_at', { ascending: false });
+  // Page past the PostgREST max_rows limit (1000) so older reports are not cut off.
+  const PAGE_SIZE = 1000;
+  const data: any[] = [];
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data: page, error } = await supabase
+      .from('form_responses')
+      .select(`
+        id, user_id, created_at, inspection_date, inspection_no,
+        answers (
+          question_id, obs_value, obs_comm,
+          questions ( id, form_question, section_id,
+            form_sections!questions_section_id_fkey ( id, title ) )
+        )
+      `)
+      .eq('site_id', siteData.id)
+      .eq('is_active', true)
+      .is('archived_at', null)
+      .order('inspection_date', { ascending: false })
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+      .range(from, from + PAGE_SIZE - 1);
 
-  if (error) throw new Error(error.message || 'Failed to fetch form responses');
+    if (error) throw new Error(error.message || 'Failed to fetch form responses');
+    data.push(...(page ?? []));
+    if (!page || page.length < PAGE_SIZE) break;
+  }
 
-  return (data ?? []).map((r: any) => {
+  return data.map((r: any) => {
     const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.answers, ids);
     return {
       id: r.id,
@@ -1888,7 +1897,6 @@ export async function getFormResponsesForSiteIds(
   while (true) {
     const from = page * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
-    console.log(from, to);
     const { data, error } = await supabase
       .from('form_responses')
       .select(`
@@ -1909,7 +1917,6 @@ export async function getFormResponsesForSiteIds(
     if (error) throw new Error(error.message || 'Failed to fetch form responses');
     
     allRows.push(...(data ?? []));
-    console.log('Total rows fetched:', allRows.length);
     if (!data || data.length < PAGE_SIZE) break; // last page reached
     page++;
   }
@@ -1955,15 +1962,21 @@ export async function getAttachmentsForResponseIds(responseIds: number[]): Promi
   if (responseIds.length === 0) return [];
   const supabase = createServerSupabase();
   const CHUNK = 300;
+  const PAGE_SIZE = 1000; // PostgREST max_rows: page so a chunk with many photos is not cut off
   const out: any[] = [];
   for (let i = 0; i < responseIds.length; i += CHUNK) {
     const chunk = responseIds.slice(i, i + CHUNK);
-    const { data, error } = await supabase
-      .from('attachments')
-      .select('id, response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier')
-      .in('response_id', chunk);
-    if (error) throw new Error(error.message || 'Failed to fetch attachments');
-    out.push(...(data ?? []));
+    for (let from = 0; ; from += PAGE_SIZE) {
+      const { data, error } = await supabase
+        .from('attachments')
+        .select('id, response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier')
+        .in('response_id', chunk)
+        .order('id', { ascending: true })
+        .range(from, from + PAGE_SIZE - 1);
+      if (error) throw new Error(error.message || 'Failed to fetch attachments');
+      out.push(...(data ?? []));
+      if (!data || data.length < PAGE_SIZE) break;
+    }
   }
   return out;
 }
