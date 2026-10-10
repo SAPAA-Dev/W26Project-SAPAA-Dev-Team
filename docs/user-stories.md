@@ -128,6 +128,8 @@ The line below each story title names the one charter project that is the best m
 > 3. Site is deleted -> The agreed cascade behaviour is applied consistently to its inspections, images, and any user visit counts
 > 4. Cascade cannot complete -> Deletion is rejected with an error and the site and all of its records are left unchanged
 
+> **Design note.** Delete archives the site by default (`sites_pa.archived_at`), as the TA advised, so the inspections, images and visit counts stay and the site can be restored. This is the cascade behaviour that AT3 refers to. A separate admin hard delete also exists, because the client asked for more than one level of delete. It works only on an archived site and removes the site, its steward link and its links (SAPAA website and iNaturalist). The inspections and images stay, with no site. See [Software Design](software-design.md#delete-archive-by-default-and-an-admin-hard-delete) for the reasons.
+
 ### US 2.0.5 - Update a Site | Story Points: 5
 *Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
 

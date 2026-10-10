@@ -1,6 +1,6 @@
 # Software Design
 
-This page shows the high-level design of the SAPAA system: the architecture, the data, the key interactions, the user interface, and the technologies. The diagrams mark the parts that are proposed. The other parts show the code on `main` as of October 7, 2026. Sprint 2 is still in progress: the code freeze is October 11 and the release is October 13. A proposed part does not exist in the code. It is a design proposal for a user story, not a decision.
+This page shows the high-level design of the SAPAA system: the architecture, the data, the key interactions, the user interface, and the technologies. The diagrams mark the parts that are proposed. The other parts show the code on `main` as of October 9, 2026. Sprint 2 is still in progress: the code freeze is October 11 and the release is October 13. A proposed part does not exist in the code. It is a design proposal for a user story, not a decision.
 
 ### How the diagrams are generated
 
@@ -32,7 +32,7 @@ The system has five layers:
 1. **Client layer.** Admins and stewards use the web app in a browser. Stewards use the StewardLog mobile app (`FNR/`). The mobile app keeps an offline copy of site data in expo-sqlite (`FNR/src/services/database.ts`). The Google Sheets script (`googleSheets/code.gs`) was removed from the repository in c7f7cb4 (#118).
 2. **Application layer.** The Next.js web app (`webapp/`) runs on Vercel. `webapp/middleware.ts` refreshes the session and sends a signed-out user to `/login`. Pages and server actions call Supabase with supabase-js (`webapp/utils/supabase/`). The server actions include the steward assignment (`webapp/utils/steward-actions.ts`) and the KML import (`webapp/utils/kml-import-actions.ts`). API route handlers (`webapp/app/api/`) make presigned S3 URLs, delete images, return the profile data, call the OpenCage API, and start the PDF job (`webapp/lib/pdf/processPdfJob.ts`). The mobile app has no server of its own. It calls Supabase directly.
 3. **Data and storage layer.** One Supabase project holds the PostgreSQL database, Supabase Auth, the private Storage bucket `kml-imports` for KML uploads, and three Edge Functions (`get-users`, `add-user`, `delete-user`) that the mobile admin screens call (`FNR/src/services/adminAuth.ts`). The source of the Edge Functions is not in this repository. An AWS S3 bucket holds inspection photos and PDF files. The browser uploads a photo directly to S3 with a presigned URL. See [Media Storage Architecture](aws-architecture.md).
-4. **External services.** Supabase Auth signs users in with Google, Microsoft Azure, and GitHub OAuth (`webapp/services/auth.ts`, `webapp/app/login/actions.ts`, `FNR/src/services/auth.ts`). The web app and the mobile app get coordinates from the OpenCage Geocoding API. The web app map uses OpenStreetMap tiles. The mobile map shows a Google My Maps embed. The iNaturalist API is proposed for US 4.0.5 and US 4.0.7.
+4. **External services.** Supabase Auth signs users in with Google, Microsoft Azure, and GitHub OAuth (`webapp/services/auth.ts`, `webapp/app/login/actions.ts`, `FNR/src/services/auth.ts`). The web app and the mobile app get coordinates from the OpenCage Geocoding API. The site map (`webapp/components/map/SiteMap.tsx`) uses MapLibre GL with a Protomaps basemap style from `api.protomaps.com`. The Protomaps key is in `NEXT_PUBLIC_PROTOMAPS_API_KEY`. The heat map on the admin dashboard still uses Leaflet with OpenStreetMap tiles. The mobile map shows a Google My Maps embed. The iNaturalist API is proposed for US 4.0.5 and US 4.0.7.
 5. **Build and documentation tooling.** GitHub Actions runs the Jest tests, the hook tests, and the MkDocs build on each push (`.github/workflows/ci.yaml`). On each pull request, it runs the PR checks, the labeler, the reviewer gate, and the diagram update (`.github/workflows/diagrams.yaml`). On a push to `main`, it publishes this site to GitHub Pages (`.github/workflows/gh-pages.yaml`).
 
 ---
@@ -41,6 +41,43 @@ The system has five layers:
 
 For details about how images are stored and retrieved, see the
 [Media Storage Architecture](aws-architecture.md).
+
+---
+
+## Interfaces
+
+The system has four kinds of interface. Each page of the web app calls a server action in `webapp/utils/` for most reads and writes. An admin server action checks the caller on the server before it creates the service-role client. Some write actions in `queries.ts` still have no caller check (backlog item 4 in [Issues](issues.md)). An action calls Supabase with supabase-js. Some actions call a SQL function with `supabase.rpc`, so that a count or a change runs in one transaction. An API route handler in `webapp/app/api/` serves the calls that a server action does not fit: the profile, the image delete, the PDF job, the geocoder and the presigned S3 URLs. The browser then sends a photo straight to S3 with the presigned URL. The mobile app skips this layer and calls Supabase directly.
+
+| Interface | Where it is documented |
+| --- | --- |
+| API routes and server actions, with inputs, outputs and the auth rule of each | [API Documentation](api-documentation.md) |
+| SQL functions (RPC), with parameters, return value, security and grants | [Database RPC functions](api-documentation.md#6-database-rpc-functions) |
+| Tables, columns and row level security of profiles, stewards and contact details | [User Model](user-model.md) |
+| Route handlers with an OpenAPI description, tried out in the browser | `/api-docs` (Swagger). It does not list every route yet. See [API Documentation](api-documentation.md). |
+| Images and PDF files in S3 | [Media Storage Architecture](aws-architecture.md) |
+
+The [UML class diagram](#uml-class-diagram) lists the exported server actions that the generator finds in the code.
+
+---
+
+## Design decisions
+
+### Delete: archive by default and an admin hard delete
+
+Deleting a site (US 2.0.4) archives it. `archiveSite` sets `sites_pa.archived_at`. The site then disappears from every list, and an admin can bring it back with `restoreSite`. Its reports, answers, images and steward assignment are not changed. An admin can also delete an archived site for good with `permanentlyDeleteSite`. That removes the `sites_pa` row. The reports, attachments and homepage images stay in the database with no site. The steward assignment and the site's links (`site_page_fields` rows) go with the row, because of `ON DELETE CASCADE`. The server action and RPC details are in [API Documentation](api-documentation.md#delete-behavior).
+
+The two levels come from two pieces of advice:
+
+- The TA advised that we do not delete site data, and that we mark a site as deleted and hide it, so that the client keeps the data ([TA lab notes](meetings/week5/Meeting_Notes.md), week 5). Archive is that default.
+- The client asked for more than one level. On October 2 he asked for two or three levels when deleting a report: "suppress, archive, nuke" ([Oct 2 meeting](<meetings/week5/2026_10_02 _meeting_Frank.txt>), lines 975 to 982). On October 9 the team showed two levels, an archive that hides and can be restored and a delete for good that keeps the reports and photos. He answered "Make it happen" ([Oct 9 meeting](meetings/week6/2026_10_09_meeting_frank.txt), lines 425 to 434).
+
+We kept the hard delete next to the archive for these reasons:
+
+- The user story asks for a way to remove incorrect or duplicate site information (US 2.0.4). Only a hard delete does that. This is the "nuke" level of the client's request.
+- The hard delete cannot run by accident. It works only on a site that is already archived, and the admin sees the count of connected records before each step (US 2.0.4 AT2).
+- The hard delete does not remove inspection data. It only disconnects it, so it follows the TA's point that the client keeps the data. Only a report delete (US 7.0.8) removes inspection data, and that also needs an archive first.
+
+We did not build a separate suppress level. The team notes call it redundant, and deactivating a site (US 2.0.3) already hides it from stewards.
 
 ---
 
@@ -395,7 +432,8 @@ The versions are the major versions in `webapp/package.json` and `FNR/package.js
 | TypeScript 5 | Typed JavaScript for the web app and the mobile app | [typescriptlang.org](https://www.typescriptlang.org/docs/) |
 | MUI 7 and Emotion | User interface components and styles | [mui.com](https://mui.com/material-ui/) |
 | Tailwind CSS 4 | Utility CSS classes | [tailwindcss.com](https://tailwindcss.com/docs) |
-| Leaflet 1, React Leaflet 5, leaflet.heat | Site map and heat map on the admin dashboard | [leafletjs.com](https://leafletjs.com/), [react-leaflet.js.org](https://react-leaflet.js.org/) |
+| MapLibre GL 6 | Site map with the protected area boundaries (`webapp/components/map/SiteMap.tsx`, #159) | [maplibre.org](https://maplibre.org/maplibre-gl-js/docs/) |
+| Leaflet 1, React Leaflet 5, leaflet.heat | Heat map on the admin dashboard | [leafletjs.com](https://leafletjs.com/), [react-leaflet.js.org](https://react-leaflet.js.org/) |
 | Chart.js 4 and react-chartjs-2 | Charts on the admin dashboard | [chartjs.org](https://www.chartjs.org/docs/) |
 | @react-pdf/renderer 4 | PDF export of site inspection reports | [react-pdf.org](https://react-pdf.org/) |
 | supabase-js 2 and @supabase/ssr | Database queries and sign-in with session cookies | [supabase.com/docs/reference/javascript](https://supabase.com/docs/reference/javascript/introduction) |
@@ -443,7 +481,8 @@ The Fall 2025 team built the mobile app. The Winter 2026 team made small changes
 | Service | What we use it for | Link |
 | --- | --- | --- |
 | OpenCage Geocoding API | Coordinates from an address or a site name | [opencagedata.com/api](https://opencagedata.com/api) |
-| OpenStreetMap tiles | Base map in the web app | [openstreetmap.org](https://www.openstreetmap.org/copyright) |
+| Protomaps | Basemap style and tiles of the site map. It needs an API key in `NEXT_PUBLIC_PROTOMAPS_API_KEY`. | [protomaps.com](https://docs.protomaps.com/) |
+| OpenStreetMap tiles | Base map of the heat map on the admin dashboard | [openstreetmap.org](https://www.openstreetmap.org/copyright) |
 | Google My Maps | Map embed in the mobile app | [Google My Maps](https://www.google.com/maps/about/mymaps/) |
 | Supabase Auth OAuth providers | Sign-in with Google, Microsoft Azure, and GitHub | [Supabase social login](https://supabase.com/docs/guides/auth/social-login) |
 | iNaturalist API (proposed) | Photo import and top observations for US 4.0.5 and US 4.0.7. Not in the code today. | [api.inaturalist.org](https://api.inaturalist.org/v1/docs/) |

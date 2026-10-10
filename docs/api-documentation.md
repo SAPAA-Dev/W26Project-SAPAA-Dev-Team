@@ -1,7 +1,7 @@
 # API Documentation
 
 *The Winter 2026 and Fall 2025 sections are inherited from those teams. The Fall 2026 section lists
-the endpoints and server actions that Fall 2026 added, as of October 7, 2026. The Fall 2025 section
+the endpoints and server actions that Fall 2026 added, as of October 9, 2026. The Fall 2025 section
 is corrected to match the code on `main`.*
 
 ## API Documentation From Fall 2026
@@ -236,10 +236,106 @@ still a public endpoint, so each action below checks the caller on the server.
 |---|---|---|---|---|
 | `importProtectedAreasFromStorage` | `storagePath: string`, a `.kml` or `.kmz` file in the `kml-imports` bucket, in the form `kml-imports/<uploadId>/<file>` | `{success, error?, upserted?, skipped?, warnings?}` | Admin only. Reads the file and upserts `protected_areas` with the service-role client. | `Only admins can import protected areas.`, `The import path is not valid.`, a file larger than 50 MB, a file with no protected areas, or a partial write. |
 
-**Other admin actions:** the form editor actions in `webapp/utils/form-actions.ts` and the site and
-report actions in `webapp/utils/supabase/queries.ts` that call `requireApprovedAdmin` use the same
-admin rule. They throw when the caller is not an approved admin. Some write actions in
+**Sites** (`webapp/utils/supabase/queries.ts`, [#160](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/160), [#162](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/162), [#167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167), US 2.0.2, 2.0.3, 2.0.4, 2.0.5, 2.0.6). An action marked "Admin only" calls `requireApprovedAdmin` before it creates the service-role client. It throws `Only admins can edit sites.` for any other caller.
+
+| Action | Input | Output | Auth rule | Errors |
+|---|---|---|---|---|
+| `createSite` | `namesite: string`, `ab_county: number \| null`, `protectedAreaId: number \| null` (default `null`) | Nothing. Inserts an active site with the trimmed name. | Admin only. | `Site name is required.`, `The protected area is not valid.`, `A site with this name already exists.`, `That protected area is already linked to a site.`, `The selected protected area does not exist.`, or the database message. |
+| `updateSite` | `id: number`, `namesite: string`, `ab_county: number \| null`, `protectedAreaId: number \| null` (default `null`) | Nothing. | Admin only. | The same errors as `createSite`, except the blank-name check. |
+| `toggleSiteActive` | `id: number`, `is_active: boolean` | Nothing. | Admin only. | The database message. |
+| `findSitesWithName` | `namesite: string` | The names of existing sites (archived ones too) that equal the name, contain it, or are contained in it, ignoring case. A contained name must have at least 4 characters. `[]` for a blank name. | Admin only. | The database message. |
+| `getSiteSuggestions` | None | A list of `{name, category}`: the protected areas whose name is not yet a site name, sorted by name. `category` is `protected_areas.folder`. | Admin only. | The database message. |
+| `getCounties` | None | A list of `{id, county}` sorted by county. | Admin only. | The database message. |
+| `getProtectedAreaChoices` | None | A list of `{id, name, fid, area_type}` sorted by name. | Admin only. | The database message. |
+| `getProtectedAreaBoundaries` | None | A GeoJSON `FeatureCollection` of the protected area boundaries, with the linked county and site status in each feature. It reads with the signed-in client, so RLS on `protected_areas` applies. | Any approved user (`app_metadata.authenticated` is `true`). A non-admin does not get an area whose linked site is inactive. | `You must be signed in to view site boundaries.` or the database message. |
+| `getSiteDeleteImpact` | `siteId: number` | `{siteId, siteName, inspectionCount, answerCount, attachmentCount, homepageImageCount, siteStewardCount}` from `get_site_delete_impact`. | Admin only. | `A valid site ID is required.`, `Site not found.` or the database message. |
+| `archiveSite` | `siteId: number` | `{siteId, siteName, archivedAt}` from `archive_site`. Hides the site. Nothing else changes. | Admin only. | `A valid site ID is required.`, or the database message (the site does not exist, or it is already archived). |
+| `restoreSite` | `siteId: number` | `{siteId, siteName}` from `restore_site`. | Admin only. | `A valid site ID is required.`, or the database message (the site does not exist, or it is not archived). |
+| `permanentlyDeleteSite` | `siteId: number` | The `SiteDeleteImpact` counts from before the delete, from `permanently_delete_site`. It deletes the `sites_pa` row, and the cascade removes the site's link rows. See [Delete behavior](#delete-behavior). | Admin only. | `A valid site ID is required.`, or the database message (the site does not exist, or it is not archived). |
+| `getArchivedSites` | None | A list of `SiteSummary` for the sites with `archived_at` set, newest archive first. | Admin only. | The database message. |
+
+**Site page fields** (`webapp/utils/supabase/queries.ts`, [#163](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/163), US 2.0.5). The fields are fixed in `webapp/lib/sitePageFields.ts`: `sapaa_website`, `inaturalist` and `designated_steward`.
+
+| Action | Input | Output | Auth rule | Errors |
+|---|---|---|---|---|
+| `getSitePageFields` | `siteId: number` | A list of `{fieldKey, value, isVisible}`. | Any signed-in user (RLS on `site_page_fields`). | The database message. |
+| `updateSitePageFields` | `siteId: number`, `fields: {fieldKey, value, isVisible}[]` | Nothing. It upserts one row for each field on `(site_id, field_key)` and records `updated_by`. A link field keeps its value. Any other field stores `null`. An empty list writes nothing. | Admin only. | `Unknown site page field: <key>`, `Links must start with http:// or https://`, or the database message. |
+| `getSiteLinks` | `siteId: number` | `{sapaaWebsiteUrl, iNaturalistUrl}`. A link that is hidden or empty is `null`. | Any signed-in user (RLS on `site_page_fields`). | The database message. |
+
+**Site inspection reports** (`webapp/utils/supabase/queries.ts`, [#165](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/165), US 7.0.8). Each action is admin only and throws `Only approved admins can manage reports.` for any other caller. Each action that takes `responseId` also throws `A valid report ID is required.` when it is not a positive integer.
+
+| Action | Input | Output | Errors |
+|---|---|---|---|
+| `getSiteInspectionReportDeleteImpact` | `responseId: number` | `{responseId, inspectionNo, inspectionDate, siteName, answerCount, attachmentCount}` | `Site Inspection Report not found.` or the database message. |
+| `archiveSiteInspectionReport` | `responseId: number` | `{responseId, archivedAt}`. Hides the report. Its answers and images stay. | The database message (the report does not exist, or it is already archived). |
+| `restoreSiteInspectionReport` | `responseId: number` | `{responseId}` | The database message (the report does not exist, or it is not archived). |
+| `permanentlyDeleteSiteInspectionReport` | `responseId: number` | `{impact, storageCleanupComplete}`. The database delete runs first, then `deleteObjectsByKeys` removes the S3 objects. If the S3 step fails, the action does not throw. It logs the error and returns `storageCleanupComplete: false`. | The database message (the report does not exist, or it is not archived). |
+| `getArchivedSiteInspectionReports` | None | A list of `{id, inspectionNo, inspectionDate, createdAt, isActive, archivedAt, siteId, siteName, submitterId, submitterName}`, newest archive first. | The database message. |
+
+**Dashboard totals** (`webapp/utils/supabase/queries.ts`). Both actions are admin only and throw `Only admins can edit sites.` for any other caller.
+
+| Action | Input | Output | Errors |
+|---|---|---|---|
+| `getNaturalnessDistribution` | None | A list of `{naturalness_score, count}` from `get_naturalness_distribution`. | The database message. |
+| `getTopSitesDistribution` | None | The five sites with the most reports, as `{namesite, count}`, from `get_top_sites_distribution`. | The database message. |
+
+#### Delete behavior
+
+A site has two levels of delete (US 2.0.4, [#160](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/160)). `archiveSite` is the default. A site must be archived before `permanentlyDeleteSite` accepts it. A report has the same two levels (US 7.0.8, [#165](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/165)). See [Software Design](software-design.md#delete-archive-by-default-and-an-admin-hard-delete) for the reason.
+
+| Level | Site | Report |
+|---|---|---|
+| Archive | Sets `sites_pa.archived_at`. The site is hidden from the app. Reports, answers, images and the steward assignment are not changed. `restoreSite` clears it. | Sets `form_responses.archived_at`. The report is hidden and leaves the totals. Answers and images stay. `restoreSiteInspectionReport` clears it. |
+| Permanent delete | Deletes the `sites_pa` row. Its reports, attachments and homepage images stay, with `site_id` set to `null`. The `site_stewards` and `site_page_fields` rows (the site's links) are deleted by `ON DELETE CASCADE`. The `people` row of the steward and the S3 files are not touched. | Deletes the attachments, answers and report in one transaction. Then the server deletes the S3 objects. |
+
+**Other admin actions:** the form editor actions in `webapp/utils/form-actions.ts` and the other
+site and report actions in `webapp/utils/supabase/queries.ts` that call `requireApprovedAdmin` use
+the same admin rule. They throw when the caller is not an approved admin. Some write actions in
 `queries.ts` still have no caller check (backlog item 4 in [Issues](issues.md)).
+
+---
+
+### 6. Database RPC functions
+
+A server action calls these functions with `supabase.rpc`, using the service-role client from
+`createServerSupabase`. Every function is `security invoker`, so it runs with the rights of its
+caller. The service role bypasses row level security, so the action must check the admin first (see
+[Admin rule](#admin-rule)). A browser cannot call the eight functions marked "`service_role` only",
+because their migration revokes execute from `public`, `anon` and `authenticated`. The migrations
+are the source of truth for the SQL.
+
+**Site delete and archive** (`webapp/supabase/migrations/20261008164223_delete_site.sql`). The
+functions use `set search_path = ''`.
+
+| Function | Parameters | Returns | Grants | Caller |
+|---|---|---|---|---|
+| `get_site_delete_impact` | `p_site_id bigint` | `jsonb` `{siteId, siteName, inspectionCount, answerCount, attachmentCount, homepageImageCount, siteStewardCount}`. `null` when the site does not exist. `stable`. | `service_role` only. | `getSiteDeleteImpact`. `permanently_delete_site` also calls it. |
+| `archive_site` | `p_site_id bigint` | `jsonb` `{siteId, siteName, archivedAt}`. It locks the site row. It raises `P0002` when the site does not exist and an error when the site is already archived. | `service_role` only. | `archiveSite` |
+| `restore_site` | `p_site_id bigint` | `jsonb` `{siteId, siteName}`. It raises `P0002` when the site does not exist and an error when the site is not archived. | `service_role` only. | `restoreSite` |
+| `permanently_delete_site` | `p_site_id bigint` | The `get_site_delete_impact` result from before the delete. It raises `P0002` when the site does not exist and an error when the site is not archived. It sets `site_id` to `null` on `form_responses`, `attachments` and `homepage_image_uploads`, then deletes the site. | `service_role` only. | `permanentlyDeleteSite` |
+
+**Site inspection report archive and delete**
+(`webapp/supabase/migrations/20261009000000_archive_site_inspection_reports.sql`). The functions use
+`set search_path = ''`.
+
+| Function | Parameters | Returns | Grants | Caller |
+|---|---|---|---|---|
+| `get_site_inspection_report_delete_impact` | `p_response_id bigint` | `jsonb` `{responseId, inspectionNo, inspectionDate, siteName, answerCount, attachmentCount}`. `null` when the report does not exist. `stable`. | `service_role` only. | `getSiteInspectionReportDeleteImpact`. `permanently_delete_site_inspection_report` also calls it. |
+| `archive_site_inspection_report` | `p_response_id bigint` | `jsonb` `{responseId, archivedAt}`. It raises `P0002` when the report does not exist and an error when the report is already archived. | `service_role` only. | `archiveSiteInspectionReport` |
+| `restore_site_inspection_report` | `p_response_id bigint` | `jsonb` `{responseId}`. It raises `P0002` when the report does not exist and an error when the report is not archived. | `service_role` only. | `restoreSiteInspectionReport` |
+| `permanently_delete_site_inspection_report` | `p_response_id bigint` | The delete-impact object plus `storageKeys`, the S3 keys of the deleted attachments. It raises `P0002` when the report does not exist and an error when the report is not archived. All deletes run in one transaction. | `service_role` only. | `permanentlyDeleteSiteInspectionReport`, which then calls `deleteObjectsByKeys` |
+
+**Totals.** The report migration above redefines all three functions so that archived reports are
+not counted. The functions use `set search_path = public`.
+
+| Function | Parameters | Returns | Grants | Caller |
+|---|---|---|---|---|
+| `get_naturalness_distribution` | None | A table of `(naturalness_score text, count bigint)`, from the answers to `Q31_Naturalness` of active, unarchived reports. `stable`. | Execute to `service_role`. The migrations do not revoke the default execute right. | `getNaturalnessDistribution` |
+| `get_top_sites_distribution` | None | A table of `(namesite text, count bigint)`: the five sites with the most active, unarchived reports. `stable`. | Execute to `service_role`. The migrations do not revoke the default execute right. | `getTopSitesDistribution` |
+| `get_distinct_inspected_site_count` | `p_user_id uuid` | `bigint`: the number of distinct sites in the active, unarchived reports of the user. `stable`. First created by `20261005000000_profile_distinct_site_count.sql`. | Execute to `service_role`. The migrations do not revoke the default execute right. | `GET /api/profile` (see [User Model](user-model.md#inspection-counts)) |
+
+A person with database access runs each migration file in the Supabase dashboard for production. Each
+file is safe to run twice.
 
 ---
 

@@ -120,3 +120,46 @@ No existing table is changed, so no data can be lost.
 | 5 | How many stewards per site? | One. A new assignment replaces the old one (`site_id` is the primary key). | US 3.0.2 AT2 (#62). If the client wants more, change the key to `(site_id, steward_id)`. |
 | 6 | Table names? | No `W26_` prefix. | #73, done by #129. |
 | 7 | Can a profile use the current role? | It may display the role from `app_metadata`, but only as information; it must never authorize any action. `GET /api/profile` follows this rule. | Fixed by the move to `app_metadata` (GitHub #71, PR #144). |
+
+## Gamification proposal
+
+Status: **proposed**. Nothing in this section is built. The client asked for a simple gamification
+that uses the data that already exists, and he asked to see how it flows, what a user sees and which
+stats are shown ([Oct 2 meeting](<meetings/week5/2026_10_02 _meeting_Frank.txt>), lines 891 to 940).
+The TA asked us to start from the behaviours that we want to reward, and suggested a bounty board
+([TA lab notes](meetings/week5/Meeting_Notes.md)). The team showed a mockup on October 9
+([Oct 9 meeting](meetings/week6/2026_10_09_meeting_frank.txt), lines 387 to 422), and the client said
+the direction was right.
+
+### Behaviours and metrics
+
+Each metric rewards one behaviour. All of them can be calculated from `form_responses`, `sites_pa`
+and `people`, like the counts in [Inspection counts](#inspection-counts). None of them needs a new
+table.
+
+| Metric | Behaviour it rewards | How it is calculated | Who asked |
+|---|---|---|---|
+| Inspections submitted | Keep inspecting. | Count the active, unarchived `form_responses` of the person. The profile already shows this as `inspectionCount`. | Client, Oct 2 |
+| Different counties visited | Visit sites in more of Alberta. | Count the distinct `sites_pa.ab_county` of the sites in the reports of the person. | Client, Oct 2 |
+| Site variety | Inspect different kinds of sites. | Count the distinct site types and subtypes in the reports of the person. The client also named the natural region. We still have to confirm which column holds each of them. | Client, Oct 2 and Oct 9 |
+| Site explorer | Be the first to report a site. | The person with the earliest active report of a site. | Oct 9 meeting |
+| Top contributor | Be the person with the most inspections, counties or site variety. | Rank the metrics above. | Client, Oct 2 and Oct 9 |
+
+Each ranking can cover all time or the last year, so that a new contributor can lead the board
+(client, Oct 9). The team also listed scoreboard totals in its Oct 9 plan.
+
+### Considered and not chosen yet
+
+| Idea | Reason |
+|---|---|
+| Bounty board: more points for visiting chosen sites, so that not every site is worth the same. | The TA suggested it. It needs a decision about who picks the sites and how the points change. It also uses `people.activity_points`, which US 1.0.5 owns. Ask the client first. |
+| Points for photos and other activity (US 1.0.5 as written). | The client prefers a simple version that uses existing data over a complete design. `people.activity_points` stays unused until he decides. |
+
+### Plan
+
+1. Show this proposal and the mockup to the client and ask which metrics he wants first.
+2. Rewrite the acceptance tests of US 1.0.5 to match the chosen metrics. The story is about points today.
+3. Build the first version as US 1.0.5 in Sprint 4 (planned, see [Project Management](project-management.md)). The counts are calculated, like the inspection counts, so no stored value can become incorrect.
+
+Open questions for the client: what makes two sites "different", and whether a hard-deleted site
+(site not known) still counts toward a person's totals.
