@@ -93,6 +93,8 @@ const COLLECTION: BoundaryFeatureCollection = {
         date_est: null,
         oc_name: 'Wainwright Dunes Ecological Reserve',
         notes: null,
+        county: null,
+        is_active: null,
       },
       geometry: {
         type: 'MultiPolygon',
