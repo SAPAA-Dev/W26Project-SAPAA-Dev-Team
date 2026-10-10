@@ -58,4 +58,20 @@ describe('MapAreaFilters', () => {
     expect(within(subtypeGroup).getByRole('checkbox', { name: 'Recreation' })).not.toBeChecked();
     expect(within(typeGroup).getByRole('checkbox', { name: 'NA' })).toBeChecked();
   });
+
+  it('US 2.0.6: counts only the selected counties that this view lists', async () => {
+    const user = userEvent.setup();
+    // 'Banff' and 'Jasper' come from the card view, which shares the county selection.
+    render(
+      <MapAreaFilters
+        counties={['Parkland County', 'Strathcona County']}
+        selectedCounties={new Set(['Banff', 'Jasper', 'Parkland County'])}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Filter' }));
+
+    const countyGroup = screen.getByRole('region', { name: 'County' });
+    expect(within(countyGroup).getByText('1 selected')).toBeInTheDocument();
+  });
 });

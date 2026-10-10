@@ -15,7 +15,8 @@ function FilterSection({ label, options, selected, onChange }: FilterSectionProp
   const [expanded, setExpanded] = useState(true);
   const [query, setQuery] = useState('');
   const allSelected = selected === null;
-  const selectedCount = allSelected ? options.length : selected.size;
+  // Count only the values shown here. A shared selection can hold values from the other view.
+  const selectedCount = allSelected ? options.length : options.filter((option) => selected.has(option)).length;
   const normalizedQuery = query.trim().toLowerCase();
   const visibleOptions = options.filter((option) => option.toLowerCase().includes(normalizedQuery));
   const searchLabel = searchLabelFor(label);

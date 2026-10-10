@@ -225,4 +225,12 @@ describe('category selection', () => {
     expect(toggleAllCategoryValues(none)).toBeNull();
     expect(toggleCategoryValue(withoutNa, options, 'NA')).toBeNull();
   });
+
+  it('US 2.0.6: does not treat a value from the other view as one of these options', () => {
+    // 'Banff' was picked in the card view and is not a map option. 'WPP' is still off.
+    const selection = toggleCategoryValue(new Set(['Banff']), ['NA', 'WPP'], 'NA');
+
+    expect(selection).not.toBeNull();
+    expect(Array.from(selection ?? []).sort()).toEqual(['Banff', 'NA']);
+  });
 });

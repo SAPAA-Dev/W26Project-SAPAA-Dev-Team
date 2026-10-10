@@ -6,7 +6,8 @@ import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@/components/map/enableMapLibreWorker';
 import { KeyRound } from 'lucide-react';
-import type { BoundaryFeatureCollection } from '@/lib/map/boundaries';
+import { boundaryBounds } from '@/lib/map/boundaries';
+import type { BoundaryFeature, BoundaryFeatureCollection } from '@/lib/map/boundaries';
 
 const STYLE_URL = 'https://api.protomaps.com/styles/v5/light/en.json';
 const CENTER: [number, number] = [-114.5, 54.5];
@@ -53,6 +54,8 @@ interface SiteMapProps {
   boundaries?: BoundaryFeatureCollection | null;
   boundariesLoading?: boolean;
   boundariesError?: string | null;
+  /** The area the user picked from the search matches. The map fits its bounds. */
+  focusedArea?: BoundaryFeature | null;
 }
 
 function readProperty(properties: unknown, key: string): string | null {
@@ -139,7 +142,12 @@ function createPopupContent(properties: unknown): HTMLElement {
   return container;
 }
 
-export default function SiteMap({ boundaries, boundariesLoading, boundariesError }: SiteMapProps) {
+export default function SiteMap({
+  boundaries,
+  boundariesLoading,
+  boundariesError,
+  focusedArea,
+}: SiteMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const popupRef = useRef<Popup | null>(null);
@@ -278,6 +286,14 @@ export default function SiteMap({ boundaries, boundariesLoading, boundariesError
       if (mapRef.current !== null) mapRef.current.off('load', applyBoundaries);
     };
   }, [apiKey, boundaries]);
+
+  // The camera can move before the style loads, so this effect does not wait for it.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (map === null || !focusedArea) return;
+    const bounds = boundaryBounds(focusedArea.geometry);
+    if (bounds !== null) map.fitBounds(bounds, { padding: 48, maxZoom: 13 });
+  }, [apiKey, focusedArea]);
 
   if (!apiKey) {
     return (

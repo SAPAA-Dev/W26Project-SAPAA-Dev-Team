@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Search, Trees, X } from "lucide-react";
 import type { ProtectedAreaChoice } from "@/utils/supabase/queries";
+import { useListbox } from "@/hooks/useListbox";
 
 interface ProtectedAreaFieldProps {
   areas: ProtectedAreaChoice[];
@@ -41,6 +42,17 @@ export default function ProtectedAreaField({
     () => areas.filter((area) => matchesQuery(area, query)),
     [areas, query]
   );
+  const listbox = useListbox({
+    options: matches,
+    open,
+    onOpen: () => setOpen(true),
+    onClose: () => setOpen(false),
+    onPick: (area) => {
+      onChange(area.id);
+      setQuery("");
+      setOpen(false);
+    },
+  });
 
   return (
     <div>
@@ -78,6 +90,7 @@ export default function ProtectedAreaField({
           <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8075] pointer-events-none" />
           <input
             data-testid={`${testIdPrefix}-search`}
+            {...listbox.inputProps}
             type="text"
             aria-label="Search protected areas"
             autoComplete="off"
@@ -87,6 +100,7 @@ export default function ProtectedAreaField({
             onChange={(event) => {
               setQuery(event.target.value);
               setOpen(true);
+              listbox.resetActive();
             }}
             onFocus={() => setOpen(true)}
             onBlur={() => setTimeout(() => setOpen(false), 150)}
@@ -97,23 +111,19 @@ export default function ProtectedAreaField({
               {matches.length === 0 ? (
                 <p className="text-xs text-[#7A8075] text-center py-3">No protected areas found</p>
               ) : (
-                matches.map((area) => (
-                  <button
-                    key={area.id}
-                    type="button"
-                    data-testid={`${testIdPrefix}-option-${area.id}`}
-                    className="w-full text-left px-3 py-2 cursor-pointer hover:bg-green-50 transition-colors"
-                    onMouseDown={(event) => {
-                      event.preventDefault();
-                      onChange(area.id);
-                      setQuery("");
-                      setOpen(false);
-                    }}
-                  >
-                    <p className="text-sm font-medium text-[#1E2520]">{area.name}</p>
-                    <p className="text-xs text-[#7A8075]">{detailLine(area)}</p>
-                  </button>
-                ))
+                <ul {...listbox.listProps} aria-label="Protected areas">
+                  {matches.map((area, index) => (
+                    <li
+                      key={area.id}
+                      {...listbox.optionProps(index)}
+                      data-testid={`${testIdPrefix}-option-${area.id}`}
+                      className="w-full text-left px-3 py-2 cursor-pointer hover:bg-green-50 aria-selected:bg-green-50 transition-colors"
+                    >
+                      <p className="text-sm font-medium text-[#1E2520]">{area.name}</p>
+                      <p className="text-xs text-[#7A8075]">{detailLine(area)}</p>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
           )}

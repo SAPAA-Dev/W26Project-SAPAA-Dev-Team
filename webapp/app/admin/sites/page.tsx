@@ -14,9 +14,10 @@ import PdfExportModal from '@/components/PdfExportModal';
 import PdfExportsDropdown from '@/components/PdfExportsDropdown';
 import KmlImportModal from '@/components/KmlImportModal';
 import ArchiveSiteModal from './components/ArchiveSiteModal';
-import type { BoundaryFeatureCollection } from '@/lib/map/boundaries';
+import type { BoundaryFeature, BoundaryFeatureCollection } from '@/lib/map/boundaries';
 import { boundaryFilterOptions, CARD_STATUS_OPTIONS, countyFilterOptions, defaultMapStatuses, filterBoundaryCollection, MAP_STATUS_OPTIONS, matchesActiveFilter, matchesCountyFilter } from '@/lib/map/boundaryFilters';
 import MapAreaFilters from '@/components/map/MapAreaFilters';
+import MapSearchInput from '@/components/map/MapSearchInput';
 import { availableProtectedAreas } from '@/lib/sites/availableProtectedAreas';
 
 type UnifiedSite = SiteSummary;
@@ -103,6 +104,7 @@ export default function AdminSitesPage() {
   const [boundariesLoading, setBoundariesLoading] = useState(false);
   const [boundariesError, setBoundariesError] = useState<string | null>(null);
   const boundariesRequested = useRef(false);
+  const [focusedArea, setFocusedArea] = useState<BoundaryFeature | null>(null);
 
   useEffect(() => {
     if (viewMode !== 'map' || boundariesRequested.current) return;
@@ -280,6 +282,17 @@ export default function AdminSitesPage() {
       return false;
     } finally {
       setSaving(false);
+    }
+  };
+
+  // A KML import adds or changes protected areas, so the picker and the map reload them.
+  // The map reloads only when it has loaded once; otherwise its first open fetches fresh data.
+  const handleKmlImported = () => {
+    getProtectedAreaChoices().then(setProtectedAreas).catch(() => {});
+    if (boundariesRequested.current) {
+      getProtectedAreaBoundaries()
+        .then(setBoundaries)
+        .catch(() => setBoundariesError('Site boundaries could not load.'));
     }
   };
 
@@ -503,15 +516,17 @@ const handleCloseArchive = () => {
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A8075]" />
-                <input
-                  type="text"
+                <MapSearchInput
                   placeholder={
                     viewMode === 'map'
-                      ? 'Search by name or OC name...'
+                      ? 'Search by name, OC name or county...'
                       : 'Search by site name or county...'
                   }
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={setSearch}
+                  matches={viewMode === 'map' ? mapBoundaries.features : null}
+                  // A new object, so picking the same area again centres the map again.
+                  onPick={(area) => setFocusedArea({ ...area })}
                   className="w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"
                 />
               </div>
@@ -545,15 +560,15 @@ const handleCloseArchive = () => {
               </div>
             </div>
             
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-[#7A8075] font-medium">
                   {viewMode === 'map'
                     ? boundariesLoading
                       ? 'Loading map…'
-                      : `${mapBoundaries.features.length} ${mapBoundaries.features.length === 1 ? 'site' : 'sites'} found`
+                      : `${mapBoundaries.features.length} ${mapBoundaries.features.length === 1 ? 'protected area' : 'protected areas'} found`
                     : `${filteredSites.length} ${filteredSites.length === 1 ? 'site' : 'sites'} found`}
                 </p>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                 <button
                   data-testid="add-site-button"
                   onClick={() => setShowAddSite(true)}
@@ -573,7 +588,7 @@ const handleCloseArchive = () => {
                 {/* Outside the count guard below, so an admin can import into an empty list. */}
                 <button
                   onClick={() => setShowImportModal(true)}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm"
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm"
                 >
                   <Upload className="w-4 h-4" />
                   Upload Site Data
@@ -581,7 +596,7 @@ const handleCloseArchive = () => {
                 {filteredSites.length > 0 && (
                   <button
                     onClick={() => setShowPdfModal(true)}
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm"
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm"
                   >
                     <Download className="w-4 h-4" />
                     Bulk PDF
@@ -628,7 +643,7 @@ const handleCloseArchive = () => {
                 <div className="relative sort-menu-container">
                   <button
                     onClick={() => setShowSortMenu(!showSortMenu)}
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm"
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm"
                   >
                     <ArrowUpDown className="w-4 h-4" />
                     Sort
@@ -673,6 +688,7 @@ const handleCloseArchive = () => {
               boundaries={mapBoundaries}
               boundariesLoading={boundariesLoading}
               boundariesError={boundariesError}
+              focusedArea={focusedArea}
             />
           ) : (
             <>
@@ -828,6 +844,7 @@ const handleCloseArchive = () => {
       <KmlImportModal
         open={showImportModal}
         onClose={() => setShowImportModal(false)}
+        onImported={handleKmlImported}
       />
 
       <EditSiteModal

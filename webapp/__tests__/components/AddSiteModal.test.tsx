@@ -113,7 +113,7 @@ describe("AddSiteModal", () => {
     const search = screen.getByTestId("add-site-protected-area-search");
     fireEvent.change(search, { target: { value: "lake" } });
     fireEvent.focus(search);
-    fireEvent.mouseDown(screen.getByTestId("add-site-protected-area-option-9"));
+    fireEvent.click(screen.getByTestId("add-site-protected-area-option-9"));
     expect(screen.getByTestId("add-site-protected-area-selected-name")).toHaveTextContent("Lakeland");
     expect(screen.getByTestId("add-site-protected-area-selected-detail")).toHaveTextContent("181 | PRA");
     fireEvent.click(screen.getByTestId("add-site-save-button"));
@@ -140,10 +140,42 @@ describe("AddSiteModal", () => {
     await waitFor(() => expect(getSiteSuggestions).toHaveBeenCalled());
 
     fireEvent.change(screen.getByTestId("add-site-name-input"), { target: { value: "bil" } });
-    fireEvent.mouseDown(await screen.findByText("Bilberry Creek"));
+    fireEvent.click(await screen.findByText("Bilberry Creek"));
 
     expect(screen.getByTestId("add-site-name-input")).toHaveValue("Bilberry Creek");
     expect(screen.queryByTestId("add-site-suggestions")).not.toBeInTheDocument();
     await waitFor(() => expect(findSitesWithName).toHaveBeenCalledWith("Bilberry Creek"));
+  });
+
+  it("US 2.0.2: picks a suggestion with the keyboard", async () => {
+    renderModal();
+    await waitFor(() => expect(getSiteSuggestions).toHaveBeenCalled());
+
+    const nameInput = screen.getByRole("combobox", { name: /Site Name/ });
+    fireEvent.change(nameInput, { target: { value: "bil" } });
+    await screen.findByRole("listbox", { name: "Suggestions from the SAPAA map" });
+
+    fireEvent.keyDown(nameInput, { key: "ArrowDown" });
+    fireEvent.keyDown(nameInput, { key: "ArrowDown" });
+    expect(screen.getByRole("option", { name: /Bilberry Creek/ })).toHaveAttribute("aria-selected", "true");
+    fireEvent.keyDown(nameInput, { key: "Enter" });
+
+    expect(nameInput).toHaveValue("Bilberry Creek");
+    expect(screen.queryByTestId("add-site-suggestions")).not.toBeInTheDocument();
+    await waitFor(() => expect(findSitesWithName).toHaveBeenCalledWith("Bilberry Creek"));
+  });
+
+  it("US 2.0.2: Escape closes the suggestions and keeps the typed name", async () => {
+    renderModal();
+    await waitFor(() => expect(getSiteSuggestions).toHaveBeenCalled());
+
+    const nameInput = screen.getByRole("combobox", { name: /Site Name/ });
+    fireEvent.change(nameInput, { target: { value: "bil" } });
+    await screen.findByTestId("add-site-suggestions");
+
+    fireEvent.keyDown(nameInput, { key: "Escape" });
+
+    expect(screen.queryByTestId("add-site-suggestions")).not.toBeInTheDocument();
+    expect(nameInput).toHaveValue("bil");
   });
 });

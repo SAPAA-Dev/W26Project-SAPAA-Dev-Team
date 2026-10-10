@@ -23,6 +23,7 @@ jest.mock(
       isStyleLoaded: jest.fn(),
       getCanvas: jest.fn(),
       setFeatureState: jest.fn(),
+      fitBounds: jest.fn(),
     };
 
     const popup = {
@@ -430,6 +431,34 @@ describe('SiteMap', () => {
 
       const content = popupInstance.setDOMContent.mock.calls[0][0] as HTMLElement;
       expect(content.textContent).toContain('Protected area');
+    });
+  });
+
+  describe('search focus', () => {
+    beforeEach(() => {
+      process.env.NEXT_PUBLIC_PROTOMAPS_API_KEY = 'test-key';
+    });
+
+    it('US 2.0.6 AT3: fits the map to the area picked from the search matches', () => {
+      const { rerender } = render(<SiteMap boundaries={COLLECTION} />);
+      expect(mapInstance.fitBounds).not.toHaveBeenCalled();
+
+      rerender(<SiteMap boundaries={COLLECTION} focusedArea={COLLECTION.features[0]} />);
+
+      expect(mapInstance.fitBounds).toHaveBeenCalledTimes(1);
+      expect(mapInstance.fitBounds.mock.calls[0][0]).toEqual([
+        [-110.67, 52.62],
+        [-110.66, 52.63],
+      ]);
+    });
+
+    it('US 2.0.6 AT3: fits the map again when the same area is picked again', () => {
+      const area = COLLECTION.features[0];
+      const { rerender } = render(<SiteMap boundaries={COLLECTION} focusedArea={area} />);
+
+      rerender(<SiteMap boundaries={COLLECTION} focusedArea={{ ...area }} />);
+
+      expect(mapInstance.fitBounds).toHaveBeenCalledTimes(2);
     });
   });
 

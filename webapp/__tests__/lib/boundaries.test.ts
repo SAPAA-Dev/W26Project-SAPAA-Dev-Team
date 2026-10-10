@@ -1,4 +1,5 @@
 import {
+  boundaryBounds,
   roundCoordinates,
   simplifyMultiPolygon,
   simplifyRing,
@@ -259,5 +260,23 @@ describe('toBoundaryFeatureCollection', () => {
     ]);
 
     expect(collection.features.map((feature) => feature.id)).toEqual([2]);
+  });
+});
+
+describe('boundaryBounds', () => {
+  it('US 2.0.6 AT3: returns the box around every polygon of the boundary', () => {
+    const geometry: GeoJsonMultiPolygon = {
+      type: 'MultiPolygon',
+      coordinates: [[squareRing(1, -114)], [squareRing(2, -110)]],
+    };
+
+    expect(boundaryBounds(geometry)).toEqual([
+      [-114, -114],
+      [-108, -108],
+    ]);
+  });
+
+  it('returns null for a boundary with no positions', () => {
+    expect(boundaryBounds({ type: 'MultiPolygon', coordinates: [] })).toBeNull();
   });
 });

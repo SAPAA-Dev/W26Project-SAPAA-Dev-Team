@@ -53,17 +53,60 @@ describe("ProtectedAreaField", () => {
 
     const search = screen.getByTestId("protected-area-search");
     fireEvent.focus(search);
-    fireEvent.mouseDown(screen.getByTestId("protected-area-option-9"));
+    fireEvent.click(screen.getByTestId("protected-area-option-9"));
     expect(screen.getByTestId("protected-area-selected-name")).toHaveTextContent("Lakeland");
     expect(screen.queryByTestId("protected-area-search")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId("protected-area-clear"));
     fireEvent.focus(screen.getByTestId("protected-area-search"));
-    fireEvent.mouseDown(screen.getByTestId("protected-area-option-10"));
+    fireEvent.click(screen.getByTestId("protected-area-option-10"));
 
     expect(screen.getByTestId("protected-area-selected-name")).toHaveTextContent("Wainwright Dunes");
     expect(screen.getByTestId("protected-area-selected-detail")).toHaveTextContent("44 | ER");
     expect(screen.queryByText("Lakeland")).not.toBeInTheDocument();
+  });
+
+  it("US 2.0.2: picks an area with the arrow keys and Enter", () => {
+    const onChange = renderField();
+
+    const search = screen.getByRole("combobox", { name: "Search protected areas" });
+    fireEvent.focus(search);
+    expect(search).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getAllByRole("option")).toHaveLength(2);
+
+    fireEvent.keyDown(search, { key: "ArrowDown" });
+    fireEvent.keyDown(search, { key: "ArrowDown" });
+    const second = screen.getByRole("option", { name: /Wainwright Dunes/ });
+    expect(second).toHaveAttribute("aria-selected", "true");
+    expect(search).toHaveAttribute("aria-activedescendant", second.id);
+
+    fireEvent.keyDown(search, { key: "Enter" });
+    expect(onChange).toHaveBeenCalledWith(10);
+  });
+
+  it("US 2.0.2: wraps from the first option to the last with ArrowUp", () => {
+    const onChange = renderField();
+
+    const search = screen.getByRole("combobox", { name: "Search protected areas" });
+    fireEvent.focus(search);
+    fireEvent.keyDown(search, { key: "ArrowUp" });
+    fireEvent.keyDown(search, { key: "Enter" });
+
+    expect(onChange).toHaveBeenCalledWith(10);
+  });
+
+  it("US 2.0.2: closes the list with Escape and picks nothing", () => {
+    const onChange = renderField();
+
+    const search = screen.getByRole("combobox", { name: "Search protected areas" });
+    fireEvent.focus(search);
+    fireEvent.keyDown(search, { key: "ArrowDown" });
+    fireEvent.keyDown(search, { key: "Escape" });
+
+    expect(search).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    fireEvent.keyDown(search, { key: "Enter" });
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   it("shows the saved id when the area is not in the list", () => {

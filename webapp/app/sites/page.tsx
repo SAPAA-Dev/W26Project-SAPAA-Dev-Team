@@ -19,9 +19,10 @@ import { sitesDashboardSteps } from '@/components/TutorialOverlay';
 import UserNavBar from "@/components/HeaderDropdown";
 import HelpMenu from '@/components/HelpMenu';
 import { siteDetailSteps } from '@/components/TutorialOverlay';
-import type { BoundaryFeatureCollection } from '@/lib/map/boundaries';
+import type { BoundaryFeature, BoundaryFeatureCollection } from '@/lib/map/boundaries';
 import { boundaryFilterOptions, countyFilterOptions, defaultMapStatuses, filterBoundaryCollection, matchesCountyFilter } from '@/lib/map/boundaryFilters';
 import MapAreaFilters from '@/components/map/MapAreaFilters';
+import MapSearchInput from '@/components/map/MapSearchInput';
 
 const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
@@ -119,6 +120,7 @@ export default function HomeClient() {
   const [boundariesLoading, setBoundariesLoading] = useState(false);
   const [boundariesError, setBoundariesError] = useState<string | null>(null);
   const boundariesRequested = useRef(false);
+  const [focusedArea, setFocusedArea] = useState<BoundaryFeature | null>(null);
 
   useEffect(() => {
     if (viewMode !== 'map' || boundariesRequested.current) return;
@@ -423,15 +425,17 @@ export default function HomeClient() {
           <div className="flex flex-col sm:flex-row gap-2">
             <div id="tutorial-search" className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A8075]" />
-            <input
-              type="text"
+            <MapSearchInput
               placeholder={
                 viewMode === 'map'
-                  ? 'Search by name or OC name...'
+                  ? 'Search by name, OC name or county...'
                   : 'Search by site name or county...'
               }
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={setSearch}
+              matches={viewMode === 'map' ? mapBoundaries.features : null}
+              // A new object, so picking the same area again centres the map again.
+              onPick={(area) => setFocusedArea({ ...area })}
               className="w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"            />
           </div>
 
@@ -470,7 +474,7 @@ export default function HomeClient() {
               {viewMode === 'map'
                 ? boundariesLoading
                   ? 'Loading map…'
-                  : `${mapBoundaries.features.length} ${mapBoundaries.features.length === 1 ? 'site' : 'sites'} found`
+                  : `${mapBoundaries.features.length} ${mapBoundaries.features.length === 1 ? 'protected area' : 'protected areas'} found`
                 : `${filteredSites.length} ${filteredSites.length === 1 ? 'site' : 'sites'} found`}
             </p>
             {viewMode === 'map' ? (
@@ -552,6 +556,7 @@ export default function HomeClient() {
             boundaries={mapBoundaries}
             boundariesLoading={boundariesLoading}
             boundariesError={boundariesError}
+            focusedArea={focusedArea}
           />
         ) : (
         <div id="tutorial-site-list">

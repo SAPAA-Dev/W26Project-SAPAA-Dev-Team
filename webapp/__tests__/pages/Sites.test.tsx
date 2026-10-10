@@ -63,11 +63,13 @@ jest.mock('@/components/map/SiteMap', () => ({
   __esModule: true,
   default: function MockSiteMap({
     boundaries,
+    focusedArea,
   }: {
     boundaries?: { features: Array<{ id: number; properties: { name: string } }> } | null;
+    focusedArea?: { properties: { name: string } } | null;
   }) {
     return (
-      <ul data-testid="site-map">
+      <ul data-testid="site-map" data-focused={focusedArea?.properties.name ?? ''}>
         {(boundaries?.features ?? []).map((feature) => (
           <li key={feature.id}>{feature.properties.name}</li>
         ))}
@@ -683,13 +685,13 @@ it('filters the map by type, subtype and name, and keeps the search text across 
   });
 
   expect(screen.queryByRole('button', { name: /^sort$/i })).not.toBeInTheDocument();
-  expect(screen.getByPlaceholderText('Search by name or OC name...')).toHaveValue('Natural');
+  expect(screen.getByPlaceholderText('Search by name, OC name or county...')).toHaveValue('Natural');
   expect(screen.getByText('Pembina River')).toBeInTheDocument();
   expect(screen.getByText('Gooseberry')).toBeInTheDocument();
   expect(screen.queryByText('Jasper')).not.toBeInTheDocument();
   expect(screen.queryByText('Hidden Site')).not.toBeInTheDocument();
 
-  await user.clear(screen.getByPlaceholderText('Search by name or OC name...'));
+  await user.clear(screen.getByPlaceholderText('Search by name, OC name or county...'));
   await user.click(screen.getByRole('button', { name: 'Filter' }));
   await user.click(screen.getByRole('checkbox', { name: 'WPP' }));
   await user.click(screen.getByRole('checkbox', { name: 'Recreation' }));
@@ -708,10 +710,108 @@ it('filters the map by type, subtype and name, and keeps the search text across 
   await user.click(screen.getByRole('button', { name: 'Map View' }));
 
   await waitFor(() => {
-    expect(screen.getByPlaceholderText('Search by name or OC name...')).toHaveValue('River');
+    expect(screen.getByPlaceholderText('Search by name, OC name or county...')).toHaveValue('River');
   });
   expect(screen.getByText('Pembina River')).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: /^sort$/i })).not.toBeInTheDocument();
+});
+
+it('US 2.0.6 AT3: offers the map matches and centres the map on the chosen one', async () => {
+  const user = userEvent.setup();
+  mockGetProtectedAreaBoundaries.mockResolvedValue({
+    type: 'FeatureCollection',
+    features: [
+      mapFeature(1, 'Pembina River', 'NA', 'Conservation', 'Pembina River Natural Area', true),
+      mapFeature(2, 'Jasper', 'WPP', null, 'Jasper National Park', true),
+      mapFeature(3, 'Red Deer River', 'NA', null, 'Red Deer River Natural Area', true),
+    ],
+  });
+
+  render(<HomeClient />);
+  await waitFor(() => {
+    expect(screen.getByText('Elk Island National Park')).toBeInTheDocument();
+  });
+  await user.click(screen.getByRole('button', { name: 'Map View' }));
+  await waitFor(() => {
+    expect(screen.getByTestId('site-map')).toBeInTheDocument();
+  });
+
+  const search = screen.getByRole('combobox', { name: 'Search' });
+  await user.type(search, 'river');
+
+  const list = await screen.findByRole('listbox', { name: 'Matching protected areas' });
+  const options = within(list).getAllByRole('option');
+  expect(options.map((option) => option.textContent)).toEqual([
+    'Pembina RiverPembina River Natural Area',
+    'Red Deer RiverRed Deer River Natural Area',
+  ]);
+
+  await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
+
+  expect(screen.getByTestId('site-map')).toHaveAttribute('data-focused', 'Red Deer River');
+  expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+
+  await user.type(search, ' ');
+  await user.click(await screen.findByRole('option', { name: /Pembina River/ }));
+  expect(screen.getByTestId('site-map')).toHaveAttribute('data-focused', 'Pembina River');
+});
+
+it('US 2.0.6: counts protected areas, not sites, in the map view', async () => {
+  const user = userEvent.setup();
+  mockGetProtectedAreaBoundaries.mockResolvedValue({
+    type: 'FeatureCollection',
+    features: [
+      mapFeature(1, 'Pembina River', 'NA', null, 'Pembina River Natural Area', true),
+      mapFeature(2, 'Jasper', 'WPP', null, 'Jasper National Park', null),
+    ],
+  });
+
+  render(<HomeClient />);
+  await waitFor(() => {
+    expect(screen.getByText('4 sites found')).toBeInTheDocument();
+  });
+  await user.click(screen.getByRole('button', { name: 'Map View' }));
+
+  expect(await screen.findByText('2 protected areas found')).toBeInTheDocument();
+  await user.type(screen.getByRole('combobox', { name: 'Search' }), 'jasper');
+  expect(screen.getByText('1 protected area found')).toBeInTheDocument();
+});
+
+it('US 2.0.6: the map search hint names county, and a county search finds the area', async () => {
+  const user = userEvent.setup();
+  const pembina = mapFeature(1, 'Pembina River', 'NA', null, 'Pembina River Natural Area', true);
+  mockGetProtectedAreaBoundaries.mockResolvedValue({
+    type: 'FeatureCollection',
+    features: [
+      { ...pembina, properties: { ...pembina.properties, county: 'Parkland County' } },
+      mapFeature(2, 'Jasper', 'WPP', null, 'Jasper National Park', true),
+    ],
+  });
+
+  render(<HomeClient />);
+  await waitFor(() => {
+    expect(screen.getByText('4 sites found')).toBeInTheDocument();
+  });
+  await user.click(screen.getByRole('button', { name: 'Map View' }));
+  await screen.findByText('2 protected areas found');
+
+  await user.type(screen.getByPlaceholderText('Search by name, OC name or county...'), 'parkland');
+
+  expect(screen.getByText('1 protected area found')).toBeInTheDocument();
+  expect(within(screen.getByTestId('site-map')).getByText('Pembina River')).toBeInTheDocument();
+});
+
+it('keeps the cards search a plain text box with no match list', async () => {
+  const user = userEvent.setup();
+  render(<HomeClient />);
+  await waitFor(() => {
+    expect(screen.getByText('Elk Island National Park')).toBeInTheDocument();
+  });
+
+  await user.type(screen.getByRole('textbox', { name: 'Search' }), 'Banff');
+
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+  expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
 });
 
 it('should maintain search state while sorting', async () => {

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { X, MapPin, Plus, Pencil, AlertTriangle } from "lucide-react";
 import { County, ProtectedAreaChoice, SiteSuggestion, findSitesWithName, getSiteSuggestions } from "@/utils/supabase/queries";
 import ProtectedAreaField from "./ProtectedAreaField";
+import { useListbox } from "@/hooks/useListbox";
 
 const MAX_SHOWN_SUGGESTIONS = 8;
 
@@ -39,14 +40,21 @@ export default function AddSiteModal({
       .catch(() => setSuggestions([]));
   }, [visible]);
 
-  if (!visible) return null;
-
   const typedName = namesite.trim().toLowerCase();
   const matchingSuggestions = typedName
     ? suggestions
         .filter((suggestion) => suggestion.name.toLowerCase().includes(typedName))
         .slice(0, MAX_SHOWN_SUGGESTIONS)
     : [];
+  const listbox = useListbox({
+    options: matchingSuggestions,
+    open: showSuggestions && matchingSuggestions.length > 0,
+    onOpen: () => setShowSuggestions(true),
+    onClose: () => setShowSuggestions(false),
+    onPick: (suggestion) => chooseSuggestion(suggestion.name),
+  });
+
+  if (!visible) return null;
 
   const resetForm = () => {
     setNamesite("");
@@ -121,6 +129,7 @@ export default function AddSiteModal({
               <input
                 id="add-site-name"
                 data-testid="add-site-name-input"
+                {...listbox.inputProps}
                 type="text"
                 autoComplete="off"
                 aria-invalid={nameMissing}
@@ -134,6 +143,7 @@ export default function AddSiteModal({
                   setNameMissing(false);
                   setDuplicateNames([]);
                   setShowSuggestions(true);
+                  listbox.resetActive();
                 }}
                 onBlur={() => {
                   setShowSuggestions(false);
@@ -143,21 +153,20 @@ export default function AddSiteModal({
               />
               {showSuggestions && matchingSuggestions.length > 0 && (
                 <ul
+                  {...listbox.listProps}
+                  aria-label="Suggestions from the SAPAA map"
                   data-testid="add-site-suggestions"
                   className="absolute top-full mt-1 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg z-10 max-h-60 overflow-y-auto"
                 >
-                  <li className="px-3 pt-2 pb-1 text-xs text-[#7A8075]">Suggestions from the SAPAA map</li>
-                  {matchingSuggestions.map((suggestion) => (
-                    <li key={suggestion.name}>
-                      <button
-                        type="button"
-                        className="w-full text-left px-3 py-2 hover:bg-green-50 transition-colors"
-                        // onMouseDown runs before the input's onBlur hides this list.
-                        onMouseDown={() => chooseSuggestion(suggestion.name)}
-                      >
-                        <span className="text-sm font-medium text-gray-800">{suggestion.name}</span>
-                        <span className="ml-2 text-xs text-[#7A8075]">{suggestion.category}</span>
-                      </button>
+                  <li role="presentation" className="px-3 pt-2 pb-1 text-xs text-[#7A8075]">Suggestions from the SAPAA map</li>
+                  {matchingSuggestions.map((suggestion, index) => (
+                    <li
+                      key={suggestion.name}
+                      {...listbox.optionProps(index)}
+                      className="w-full text-left px-3 py-2 cursor-pointer hover:bg-green-50 aria-selected:bg-green-50 transition-colors"
+                    >
+                      <span className="text-sm font-medium text-gray-800">{suggestion.name}</span>
+                      <span className="ml-2 text-xs text-[#7A8075]">{suggestion.category}</span>
                     </li>
                   ))}
                 </ul>

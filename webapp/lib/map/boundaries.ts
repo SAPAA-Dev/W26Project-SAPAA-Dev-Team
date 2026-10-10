@@ -269,3 +269,33 @@ export function toBoundaryFeatureCollection(
 
   return { type: 'FeatureCollection', features };
 }
+
+/**
+ * The box around a boundary, in the [[west, south], [east, north]] form that
+ * MapLibre's fitBounds reads. Returns null when the geometry holds no position.
+ */
+export function boundaryBounds(
+  geometry: GeoJsonMultiPolygon
+): [[number, number], [number, number]] | null {
+  let west = Infinity;
+  let south = Infinity;
+  let east = -Infinity;
+  let north = -Infinity;
+
+  for (const polygon of geometry.coordinates) {
+    for (const ring of polygon) {
+      for (const [longitude, latitude] of ring) {
+        west = Math.min(west, longitude);
+        east = Math.max(east, longitude);
+        south = Math.min(south, latitude);
+        north = Math.max(north, latitude);
+      }
+    }
+  }
+
+  if (west === Infinity) return null;
+  return [
+    [west, south],
+    [east, north],
+  ];
+}

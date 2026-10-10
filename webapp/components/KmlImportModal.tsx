@@ -8,6 +8,8 @@ import { importProtectedAreasFromStorage, ImportKmlResult } from '@/utils/kml-im
 interface KmlImportModalProps {
   open: boolean;
   onClose: () => void;
+  /** Runs after a successful import, so the page can reload the protected areas. */
+  onImported?: () => void;
 }
 
 // Matches the bucket that 20261006000000_create_kml_imports_bucket.sql creates.
@@ -42,7 +44,7 @@ function safeFileName(filename: string): string {
   return filename.replace(/[^A-Za-z0-9._-]/g, '_');
 }
 
-export default function KmlImportModal({ open, onClose }: KmlImportModalProps) {
+export default function KmlImportModal({ open, onClose, onImported }: KmlImportModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [stage, setStage] = useState<Stage>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -103,6 +105,7 @@ export default function KmlImportModal({ open, onClose }: KmlImportModalProps) {
       }
 
       setStage('done');
+      onImported?.();
     } catch (caught) {
       setStage('error');
       setError(caught instanceof Error ? caught.message : 'The import failed.');

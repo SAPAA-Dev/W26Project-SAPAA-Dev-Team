@@ -158,7 +158,9 @@ export function toggleCategoryValue(
   const next = new Set(selected === null ? options : selected);
   if (next.has(value)) next.delete(value);
   else next.add(value);
-  if (next.size === options.length) return null;
+  // The card and map views share one county selection, so it can hold values that
+  // are not options here. Only a selection that covers every option means "all".
+  if (options.every((option) => next.has(option))) return null;
   return next;
 }
 

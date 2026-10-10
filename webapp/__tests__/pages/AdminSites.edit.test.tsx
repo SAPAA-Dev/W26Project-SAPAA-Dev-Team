@@ -210,7 +210,7 @@ describe('AdminSitesPage – Edit Site', () => {
     const search = screen.getByTestId('edit-site-protected-area-search');
     fireEvent.change(search, { target: { value: '181' } });
     fireEvent.focus(search);
-    fireEvent.mouseDown(screen.getByTestId('edit-site-protected-area-option-9'));
+    fireEvent.click(screen.getByTestId('edit-site-protected-area-option-9'));
 
     expect(screen.getByTestId('edit-site-protected-area-selected-name')).toHaveTextContent('Lakeland');
     expect(screen.getByTestId('edit-site-protected-area-selected-detail')).toHaveTextContent('181 | PRA');
