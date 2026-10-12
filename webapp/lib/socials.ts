@@ -1,4 +1,5 @@
-// 1.0.1 AT1: a person's optional contact details. One list, used by /api/profile and ProfilePage.
+// 1.0.1 AT1: a person's contact details. Email is required (1.0.2 AT3), the rest are optional.
+// One list, used by /api/profile and ProfilePage.
 // The checks here match the ones on public.socials in 20261005010000_create_socials.sql.
 
 export const SOCIAL_FIELDS = [
@@ -49,6 +50,8 @@ export function normaliseSocials(value: unknown): Socials {
     socials[key] = text;
   }
 
+  // 1.0.2 AT3: a blank email blocks the save. Checked last so a field error above shows first.
+  if (!socials.email) throw new Error('Email is required.');
   return socials;
 }
 

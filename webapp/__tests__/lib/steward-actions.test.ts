@@ -44,7 +44,7 @@ describe("steward-actions", () => {
   beforeEach(() => jest.clearAllMocks());
 
   describe("assignSiteSteward", () => {
-    it("rejects a steward and writes nothing (AT4)", async () => {
+    it("rejects a steward and writes nothing (3.0.2 AT4)", async () => {
       setup("steward");
       const result = await assignSiteSteward(1, 2);
       expect(result).toEqual({ success: false, error: "Only admins can assign a steward." });
@@ -58,7 +58,7 @@ describe("steward-actions", () => {
       expect(serviceFrom).not.toHaveBeenCalled();
     });
 
-    it("rejects an admin whose approval was revoked", async () => {
+    it("rejects an admin whose approval was revoked (3.0.2 AT4)", async () => {
       setup("admin", false);
       const result = await assignSiteSteward(1, 2);
       expect(result).toEqual({ success: false, error: "Only admins can assign a steward." });
@@ -72,7 +72,7 @@ describe("steward-actions", () => {
       expect(serviceFrom).not.toHaveBeenCalled();
     });
 
-    it("upserts on site_id so a new steward replaces the old one (AT2)", async () => {
+    it("upserts on site_id so a new steward replaces the old one (3.0.2 AT2)", async () => {
       setup("admin");
       const b = builder({ error: null });
       serviceFrom.mockReturnValue(b);
@@ -95,7 +95,7 @@ describe("steward-actions", () => {
   });
 
   describe("searchStewards", () => {
-    it("returns nothing for non-admins (AT1)", async () => {
+    it("returns nothing for non-admins (3.0.2 AT1)", async () => {
       setup("steward");
       expect(await searchStewards("ann")).toEqual([]);
       expect(userFrom).not.toHaveBeenCalled();
@@ -122,10 +122,30 @@ describe("steward-actions", () => {
       expect(userFrom).toHaveBeenCalledWith("people");
       expect(b.ilike).toHaveBeenCalledWith("display_name", "%ann%");
     });
+
+    it("matches %, _ and \\ as plain characters (3.0.2 AT1)", async () => {
+      setup("admin");
+      const b = builder({ data: [], error: null });
+      userFrom.mockReturnValue(b);
+
+      await searchStewards("50%_a\\b");
+      expect(b.ilike).toHaveBeenCalledWith("display_name", "%50\\%\\_a\\\\b%");
+    });
+
+    it("does not treat * as a wildcard (3.0.2 AT1)", async () => {
+      setup("admin");
+      expect(await searchStewards("*")).toEqual([]);
+      expect(userFrom).not.toHaveBeenCalled();
+
+      const b = builder({ data: [], error: null });
+      userFrom.mockReturnValue(b);
+      await searchStewards("a*n");
+      expect(b.ilike).toHaveBeenCalledWith("display_name", "%an%");
+    });
   });
 
   describe("getSiteSteward", () => {
-    it("returns the assigned steward (AT3)", async () => {
+    it("returns the assigned steward (3.0.2 AT3)", async () => {
       setup("steward");
       userFrom.mockReturnValue(builder({ data: { people: { id: 3, display_name: "Ann Lee" } }, error: null }));
       expect(await getSiteSteward(7)).toEqual({ id: 3, displayName: "Ann Lee" });
@@ -139,7 +159,7 @@ describe("steward-actions", () => {
   });
 
   describe("getSitesForSteward", () => {
-    it("returns the steward's sites (AT3)", async () => {
+    it("returns the steward's sites (3.0.2 AT3)", async () => {
       setup("steward");
       userFrom.mockReturnValue(builder({ data: [{ site_id: 7, sites_pa: { namesite: "Elk Island" } }], error: null }));
       expect(await getSitesForSteward(3)).toEqual([{ siteId: 7, namesite: "Elk Island", isActive: true }]);

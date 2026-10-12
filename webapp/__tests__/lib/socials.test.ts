@@ -13,8 +13,13 @@ describe('socials', () => {
     });
   });
 
-  it('accepts an empty object because every field is optional', () => {
-    expect(Object.values(normaliseSocials({})).every((v) => v === null)).toBe(true);
+  it('accepts only an email because the other fields are optional', () => {
+    const socials = normaliseSocials({ email: 'ann@example.com' });
+    expect(Object.entries(socials).filter(([key]) => key !== 'email').every(([, v]) => v === null)).toBe(true);
+  });
+
+  it.each([{}, { email: '' }, { email: '   ' }])('rejects a blank email (1.0.2 AT3): %j', (value) => {
+    expect(() => normaliseSocials(value)).toThrow('Email is required.');
   });
 
   it('rejects a bad email', () => {

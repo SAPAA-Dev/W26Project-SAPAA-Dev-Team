@@ -27,14 +27,17 @@ async function getAdminUserId(): Promise<string | null> {
 // 3.0.2 AT1: admins search people by name.
 export async function searchStewards(query: string): Promise<StewardOption[]> {
   if (!(await getAdminUserId())) return [];
-  const term = query.trim();
+  // PostgREST reads "*" as "%" in ilike and has no escape for it, so drop it.
+  const term = query.replace(/\*/g, '').trim();
   if (!term) return [];
+  // Escape the LIKE wildcards so a search for "_" or "%" matches those characters, not everyone.
+  const escaped = term.replace(/[\\%_]/g, '\\$&');
 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('people')
     .select('id, display_name')
-    .ilike('display_name', `%${term}%`)
+    .ilike('display_name', `%${escaped}%`)
     .order('display_name')
     .limit(10);
 

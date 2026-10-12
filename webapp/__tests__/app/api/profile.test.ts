@@ -36,7 +36,7 @@ function makeRequest(params: Record<string, string>, body?: unknown) {
   };
 }
 
-const VIEWER = { id: '11111111-1111-1111-1111-111111111111' };
+const VIEWER = { id: '11111111-1111-1111-1111-111111111111', app_metadata: { authenticated: true } };
 const PERSON = {
   id: 42,
   auth_user_id: VIEWER.id,
@@ -188,12 +188,21 @@ describe('/api/profile', () => {
 
       expect(response.status).toBe(401);
     });
+
+    it.each([{}, { authenticated: false }])('answers 403 and reads nothing for an account that is not approved: %j', async (appMetadata) => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: VIEWER.id, app_metadata: appMetadata } }, error: null });
+
+      const response = await GET(makeRequest({ personId: '42' }) as never);
+
+      expect(response.status).toBe(403);
+      expect(createServerSupabase).not.toHaveBeenCalled();
+    });
   });
 
   describe('PATCH', () => {
     const validBody = { displayName: 'Jamie R.', skills: ['Bird ID'], focusAreas: ['Wetlands'] };
 
-    it('writes with the signed-in client so the database applies the rules', async () => {
+    it('writes with the signed-in client so the database applies the rules (1.0.2 AT2)', async () => {
       const updateQuery = makeQuery({ data: { ...PERSON, display_name: 'Jamie R.' }, error: null });
       const sessionFrom = jest.fn().mockReturnValue(updateQuery);
       (createClient as jest.Mock).mockResolvedValue({ auth: { getUser: mockGetUser }, from: sessionFrom });
@@ -212,7 +221,7 @@ describe('/api/profile', () => {
       expect(createServerSupabase).not.toHaveBeenCalled();
     });
 
-    it('saves contact details for the signed-in person only', async () => {
+    it('saves contact details for the signed-in person only (1.0.2 AT1)', async () => {
       const updateQuery = makeQuery({ data: PERSON, error: null });
       const socialsQuery = { upsert: jest.fn().mockResolvedValue({ error: null }) };
       const sessionFrom = jest.fn((table: string) => (table === 'socials' ? socialsQuery : updateQuery));
@@ -229,6 +238,34 @@ describe('/api/profile', () => {
         { onConflict: 'person_id' },
       );
       expect(body.profile.socials.email).toBe('jamie@example.com');
+    });
+
+    it('returns the saved profile with the error when only the contact details fail (1.0.2 AT4)', async () => {
+      const updateQuery = makeQuery({ data: { ...PERSON, display_name: 'Jamie R.' }, error: null });
+      const socialsQuery = { upsert: jest.fn().mockResolvedValue({ error: { message: 'rls' } }) };
+      const sessionFrom = jest.fn((table: string) => (table === 'socials' ? socialsQuery : updateQuery));
+      (createClient as jest.Mock).mockResolvedValue({ auth: { getUser: mockGetUser }, from: sessionFrom });
+
+      const response = await PATCH(
+        makeRequest({}, { ...validBody, socials: { email: 'jamie@example.com' } }) as never,
+      );
+      const body = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(body.error).toMatch(/contact details were not/);
+      expect(body.profile).toEqual({ id: 42, displayName: 'Jamie R.', skills: ['Bird ID'], focusAreas: ['Wetlands'] });
+    });
+
+    it('rejects a blank contact email and writes nothing (1.0.2 AT3)', async () => {
+      const sessionFrom = jest.fn();
+      (createClient as jest.Mock).mockResolvedValue({ auth: { getUser: mockGetUser }, from: sessionFrom });
+
+      const response = await PATCH(makeRequest({}, { ...validBody, socials: { email: '  ' } }) as never);
+      const body = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(body.error).toBe('Email is required.');
+      expect(sessionFrom).not.toHaveBeenCalled();
     });
 
     it('rejects a non-https link and writes nothing', async () => {
@@ -251,7 +288,7 @@ describe('/api/profile', () => {
       expect(sessionFrom).not.toHaveBeenCalledWith('socials');
     });
 
-    it('answers 401 when nobody is signed in', async () => {
+    it('answers 401 when nobody is signed in (1.0.2 AT1)', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
 
       const response = await PATCH(makeRequest({}, validBody) as never);
@@ -259,7 +296,7 @@ describe('/api/profile', () => {
       expect(response.status).toBe(401);
     });
 
-    it('rejects a display name of 30 characters because the database stops at 29', async () => {
+    it('rejects a display name of 30 characters because the database stops at 29 (1.0.2 AT3)', async () => {
       const thirtyCharacters = 'x'.repeat(30);
       const response = await PATCH(makeRequest({}, { ...validBody, displayName: thirtyCharacters }) as never);
       const body = await response.json();
@@ -268,7 +305,7 @@ describe('/api/profile', () => {
       expect(body.error).toBe('Display name must be between 1 and 29 characters.');
     });
 
-    it('accepts a display name of 29 characters', async () => {
+    it('accepts a display name of 29 characters (1.0.2 AT4)', async () => {
       const updateQuery = makeQuery({ data: PERSON, error: null });
       (createClient as jest.Mock).mockResolvedValue({ auth: { getUser: mockGetUser }, from: jest.fn(() => updateQuery) });
 
@@ -277,7 +314,7 @@ describe('/api/profile', () => {
       expect(response.status).toBe(200);
     });
 
-    it('rejects more than twelve skills', async () => {
+    it('rejects more than twelve skills (1.0.2 AT6)', async () => {
       const manySkills = Array.from({ length: 13 }, (_, index) => `Skill ${index}`);
       const response = await PATCH(makeRequest({}, { ...validBody, skills: manySkills }) as never);
       const body = await response.json();

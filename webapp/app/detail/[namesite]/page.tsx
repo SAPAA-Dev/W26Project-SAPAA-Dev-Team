@@ -102,7 +102,7 @@ function formatInspectionDate(
   return new Date(dateString).toLocaleDateString('en-US', formatOptions);
 }
 
-async function getCurrentUser(): Promise<{ email: string; role: string; name: string; avatar: string} | null> {
+async function getCurrentUser(): Promise<{ email: string; role: string; name: string; avatar: string; approved: boolean } | null> {
   try {
     const supabase = createClient();
     
@@ -123,7 +123,8 @@ async function getCurrentUser(): Promise<{ email: string; role: string; name: st
       email,
       role,
       name,
-      avatar
+      avatar,
+      approved: session.user.app_metadata?.authenticated === true,
     };
   } catch (error) {
     return null;
@@ -188,7 +189,7 @@ export default function SiteDetailScreen() {
   const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name:string; avatar:string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name:string; avatar:string; approved: boolean } | null>(null);
   const [forceTutorial, setForceTutorial] = useState(false);
 
   const [menuOpen, setMenuOpen] = useState(false); 
@@ -555,7 +556,7 @@ export default function SiteDetailScreen() {
               <span className="text-base">{site.county}</span>
             </div>
           )}
-          {(isAdmin || !stewardHidden) && <SiteSteward siteId={site.id} isAdmin={isAdmin} />}
+          {(isAdmin || !stewardHidden) && <SiteSteward siteId={site.id} isAdmin={isAdmin && currentUser?.approved === true} />}
           {siteLinks && (
             <div className="mt-1">
               <SiteLinks {...siteLinks} />

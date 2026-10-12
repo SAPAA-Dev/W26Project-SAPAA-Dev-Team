@@ -38,7 +38,7 @@ describe('ProfilePage', () => {
     routerMock.push.mockReset();
   });
 
-  it('lists the sites this person is steward of, linked to each site page', async () => {
+  it('lists the sites this person is steward of, linked to each site page (3.0.2 AT3)', async () => {
     getSitesForStewardMock.mockResolvedValue([{ siteId: 5, namesite: 'Beaver Hills', isActive: true }]);
     render(<ProfilePage personId="42" />);
 
@@ -57,7 +57,7 @@ describe('ProfilePage', () => {
     expect(within(section).getByTestId('stewarded-site-inactive-6')).toHaveTextContent('Elk IslandInactive');
   });
 
-  it('hides the steward section when the person looks after no sites', async () => {
+  it('hides the steward section when the person looks after no sites (3.0.2 AT3)', async () => {
     render(<ProfilePage />);
 
     await screen.findByRole('heading', { name: 'Jamie Rivera' });
@@ -66,7 +66,7 @@ describe('ProfilePage', () => {
   });
 
   // 1.0.1 AT4: a profile opened from a site page goes back to that page.
-  it('goes back to the previous page', async () => {
+  it('goes back to the previous page (1.0.1 AT4)', async () => {
     window.history.pushState({}, '', '/detail/Beaver%20Hills');
     render(<ProfilePage personId="42" />);
 
@@ -103,7 +103,7 @@ describe('ProfilePage', () => {
     expect(screen.getByText('Unknown site')).toBeInTheDocument();
   });
 
-  it('shows profile data and derived inspection summaries', async () => {
+  it('shows profile data and derived inspection summaries (1.0.1 AT1)', async () => {
     render(<ProfilePage />);
 
     expect(await screen.findByRole('heading', { name: 'Jamie Rivera' })).toBeInTheDocument();
@@ -131,13 +131,13 @@ describe('ProfilePage', () => {
     expect(within(contact).queryByText(/Phone/)).not.toBeInTheDocument();
   });
 
-  it('hides the contact section when nothing is filled in', async () => {
+  it('hides the contact section when nothing is filled in (1.0.1 AT1)', async () => {
     render(<ProfilePage />);
     await screen.findByRole('heading', { name: 'Jamie Rivera' });
     expect(screen.queryByTestId('profile-contact')).not.toBeInTheDocument();
   });
 
-  it('shows skills and focus areas without opening the edit form', async () => {
+  it('shows skills and focus areas without opening the edit form (1.0.1 AT1)', async () => {
     render(<ProfilePage />);
 
     expect(await screen.findByText('Skills')).toBeInTheDocument();
@@ -159,7 +159,7 @@ describe('ProfilePage', () => {
     }
   });
 
-  it.each(['', '   '])('blocks saving when the name is %j', async (name) => {
+  it.each(['', '   '])('blocks saving when the name is %j (1.0.2 AT3)', async (name) => {
     render(<ProfilePage />);
 
     fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }));
@@ -171,7 +171,20 @@ describe('ProfilePage', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('lets an owner update only profile fields', async () => {
+  it('blocks saving when the email is blank and marks the field (1.0.2 AT3)', async () => {
+    render(<ProfilePage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }));
+    const email = screen.getByLabelText('Email');
+    fireEvent.change(email, { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    expect(email).toBeRequired();
+    expect(email).toBeInvalid();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets an owner update only profile fields (1.0.2 AT1)', async () => {
     fetchMock
       .mockResolvedValueOnce({ ok: true, json: async () => profilePayload })
       .mockResolvedValueOnce({ ok: true, json: async () => ({ profile: { ...profilePayload.profile, displayName: 'Jamie R.' } }) });
@@ -192,6 +205,65 @@ describe('ProfilePage', () => {
     });
     expect(body).not.toHaveProperty('role');
   });
+  it('keeps the form and the typed edits when the server refuses a save (1.0.2 AT4)', async () => {
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => profilePayload })
+      .mockResolvedValueOnce({ ok: false, json: async () => ({ error: 'Skills entries must be between 1 and 40 characters.' }) });
+    render(<ProfilePage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }));
+    fireEvent.change(screen.getByLabelText('Display name'), { target: { value: 'Jamie R.' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'jamie@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Skills entries must be between 1 and 40 characters.');
+    expect(screen.queryByText('Profile unavailable')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Display name')).toHaveValue('Jamie R.');
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeEnabled();
+  });
+
+  it('shows the stored name when only the contact details fail to save (1.0.2 AT4)', async () => {
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => profilePayload })
+      .mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ error: 'Your contact details were not saved.', profile: { ...profilePayload.profile, displayName: 'Jamie R.' } }),
+      });
+    render(<ProfilePage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }));
+    fireEvent.change(screen.getByLabelText('Display name'), { target: { value: 'Jamie R.' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'jamie@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Your contact details were not saved.');
+    expect(screen.getByRole('heading', { name: 'Jamie R.' })).toBeInTheDocument();
+  });
+
+  it('shows the saved values again after a reload (1.0.1 AT5)', async () => {
+    const stored = { ...profilePayload.profile, displayName: 'Jamie R.', skills: ['Bird ID', 'Mosses'] };
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => profilePayload })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ profile: stored }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ ...profilePayload, profile: stored }) });
+    const { unmount } = render(<ProfilePage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }));
+    fireEvent.change(screen.getByLabelText('Display name'), { target: { value: 'Jamie R.' } });
+    fireEvent.change(screen.getByLabelText(/^Skills/), { target: { value: 'Bird ID, Mosses' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'jamie@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(await screen.findByText('Profile saved.')).toBeInTheDocument();
+
+    // A reload mounts the page again, and it reads the profile from the server.
+    unmount();
+    render(<ProfilePage />);
+
+    expect(await screen.findByRole('heading', { name: 'Jamie R.' })).toBeInTheDocument();
+    expect(screen.getByText('Mosses')).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/profile');
+  });
+
   it('has the user menu with sign-out in the header (5.0.4 AT3)', async () => {
     render(<ProfilePage />);
     fireEvent.click(await screen.findByTitle('Open menu'));

@@ -91,6 +91,18 @@ describe('UserNavBar - logout button', () => {
     expect(push).toHaveBeenCalledWith('/reports');
   });
 
+  it('opens my own profile from the My profile menu item (1.0.1 AT2)', async () => {
+    const push = jest.fn();
+    const { useRouter } = jest.requireMock('next/navigation');
+    (useRouter as jest.Mock).mockReturnValue({ push });
+    await act(async () => { render(<UserNavBar />); });
+    openMenu();
+
+    fireEvent.click(screen.getByText('My profile'));
+
+    expect(push).toHaveBeenCalledWith('/profile');
+  });
+
   it('closes the menu when logout is clicked', async () => {
     (auth.logout as jest.Mock).mockResolvedValueOnce(undefined);
     await act(async () => { render(<UserNavBar />); });

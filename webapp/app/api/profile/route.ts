@@ -62,9 +62,18 @@ async function requireUser() {
   return user;
 }
 
+// GET reads with the service role, so it repeats the approval check that row level security
+// applies to people and socials (20261010000100_require_approval_for_people_reads.sql).
+function isApproved(user: { app_metadata?: Record<string, unknown> }) {
+  return user.app_metadata?.authenticated === true;
+}
+
 export async function GET(request: NextRequest) {
   const viewer = await requireUser();
   if (!viewer) return NextResponse.json({ error: 'Sign in to view profiles.' }, { status: 401 });
+  if (!isApproved(viewer)) {
+    return NextResponse.json({ error: 'Your account is waiting for admin approval.' }, { status: 403 });
+  }
 
   const requestedId = request.nextUrl.searchParams.get('personId');
   // people.id is a bigint. Anything else cannot match a row, so answer 404 instead of letting
@@ -194,22 +203,28 @@ export async function PATCH(request: NextRequest) {
     if (error) return NextResponse.json({ error: 'Unable to save your profile.' }, { status: 500 });
     if (!data) return NextResponse.json({ error: 'Profile not found.' }, { status: 404 });
 
+    const saved = {
+      id: (data as ProfileRow).id,
+      displayName: (data as ProfileRow).display_name,
+      skills: (data as ProfileRow).skills ?? [],
+      focusAreas: (data as ProfileRow).focus_areas ?? [],
+    };
+
     if (socials) {
       const { error: socialsError } = await sessionClient
         .from('socials')
-        .upsert({ person_id: (data as ProfileRow).id, ...socials }, { onConflict: 'person_id' });
-      if (socialsError) return NextResponse.json({ error: 'Unable to save your contact details.' }, { status: 500 });
+        .upsert({ person_id: saved.id, ...socials }, { onConflict: 'person_id' });
+      // The name, skills and focus areas are already saved, so send them back with the error and
+      // the page can show what is stored.
+      if (socialsError) {
+        return NextResponse.json(
+          { error: 'Your name, skills and focus areas were saved, but your contact details were not. Try again.', profile: saved },
+          { status: 500 },
+        );
+      }
     }
 
-    return NextResponse.json({
-      profile: {
-        id: (data as ProfileRow).id,
-        displayName: (data as ProfileRow).display_name,
-        skills: (data as ProfileRow).skills ?? [],
-        focusAreas: (data as ProfileRow).focus_areas ?? [],
-        ...(socials ? { socials } : {}),
-      },
-    });
+    return NextResponse.json({ profile: { ...saved, ...(socials ? { socials } : {}) } });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Invalid profile update.' },

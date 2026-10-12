@@ -9,9 +9,12 @@ import * as sitesPage from '@/app/sites/page';
 // Mock dependencies
 jest.mock('next/navigation');
 jest.mock('@/utils/supabase/queries');
+// The session the page reads for the signed-in user's role. null means no session.
+let mockSession: unknown = null;
 jest.mock('@/utils/supabase/client', () => ({
   createClient: () => ({
     auth: {
+      getSession: jest.fn(async () => ({ data: { session: mockSession }, error: null })),
       getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'user-123', app_metadata: { authenticated: true } } } }),
       onAuthStateChange: jest.fn((callback) => {
         // Immediately call with authenticated user
@@ -171,6 +174,25 @@ describe('SiteDetailScreen', () => {
         fireEvent.click(backButton);
       });
       expect(mockRouter.push).toHaveBeenCalledWith('/sites');
+    });
+  });
+
+  describe('Steward assignment', () => {
+    afterEach(() => { mockSession = null; });
+
+    it('hides the assign steward button from an admin whose approval was revoked (3.0.2 AT1)', async () => {
+      mockSession = { user: { email: 'a@example.com', app_metadata: { role: 'admin', authenticated: false }, user_metadata: {} } };
+      render(<SiteDetailScreen />);
+
+      expect(await screen.findByTestId('site-steward')).toBeInTheDocument();
+      expect(screen.queryByTestId('site-steward-edit')).not.toBeInTheDocument();
+    });
+
+    it('shows the assign steward button to an approved admin (3.0.2 AT1)', async () => {
+      mockSession = { user: { email: 'a@example.com', app_metadata: { role: 'admin', authenticated: true }, user_metadata: {} } };
+      render(<SiteDetailScreen />);
+
+      expect(await screen.findByTestId('site-steward-edit')).toBeInTheDocument();
     });
   });
 

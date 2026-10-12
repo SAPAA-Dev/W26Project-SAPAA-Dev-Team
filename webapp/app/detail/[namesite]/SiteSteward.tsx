@@ -16,6 +16,8 @@ export default function SiteSteward({ siteId, isAdmin }: { siteId: number; isAdm
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<StewardOption[]>([]);
   const [message, setMessage] = useState<string | null>(null);
+  // One request at a time, so a double click does not search or assign twice.
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     getSiteSteward(siteId).then(setSteward).catch(() => setSteward(null));
@@ -23,23 +25,39 @@ export default function SiteSteward({ siteId, isAdmin }: { siteId: number; isAdm
 
   async function search(e: React.FormEvent) {
     e.preventDefault();
+    if (busy) return;
+    setBusy(true);
     setMessage(null);
-    const found = await searchStewards(query);
-    setResults(found);
-    if (found.length === 0) setMessage("No people match that name.");
+    try {
+      const found = await searchStewards(query);
+      setResults(found);
+      if (found.length === 0) setMessage("No people match that name.");
+    } catch {
+      setMessage("The search failed. Try again.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function assign(person: StewardOption) {
-    const result = await assignSiteSteward(siteId, person.id);
-    if (!result.success) {
-      setMessage(result.error);
-      return;
+    if (busy) return;
+    setBusy(true);
+    try {
+      const result = await assignSiteSteward(siteId, person.id);
+      if (!result.success) {
+        setMessage(result.error);
+        return;
+      }
+      setSteward(person);
+      setEditing(false);
+      setQuery("");
+      setResults([]);
+      setMessage(null);
+    } catch {
+      setMessage("The steward was not assigned. Try again.");
+    } finally {
+      setBusy(false);
     }
-    setSteward(person);
-    setEditing(false);
-    setQuery("");
-    setResults([]);
-    setMessage(null);
   }
 
   return (
@@ -79,7 +97,7 @@ export default function SiteSteward({ siteId, isAdmin }: { siteId: number; isAdm
               className="flex-1 border border-[#E4EBE4] rounded-lg px-2 py-1 text-sm"
               data-testid="site-steward-search"
             />
-            <button type="submit" className="text-sm font-semibold px-2">Search</button>
+            <button type="submit" disabled={busy} className="text-sm font-semibold px-2 disabled:opacity-60">Search</button>
             <button type="button" onClick={() => setEditing(false)} className="text-sm px-2">Cancel</button>
           </form>
           {results.length > 0 && (
@@ -89,7 +107,8 @@ export default function SiteSteward({ siteId, isAdmin }: { siteId: number; isAdm
                   <button
                     type="button"
                     onClick={() => assign(p)}
-                    className="w-full text-left text-sm py-1.5 hover:bg-[#F7F2EA]"
+                    disabled={busy}
+                    className="w-full text-left text-sm py-1.5 hover:bg-[#F7F2EA] disabled:opacity-60"
                   >
                     {p.displayName}
                   </button>

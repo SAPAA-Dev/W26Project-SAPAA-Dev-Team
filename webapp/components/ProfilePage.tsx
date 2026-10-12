@@ -62,6 +62,8 @@ export default function ProfilePage({ personId }: { personId?: string }) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  // A failed save keeps the form and the typed edits. `error` is only for a failed load.
+  const [saveError, setSaveError] = useState<string | null>(null);
   const router = useRouter();
   const [form, setForm] = useState({ displayName: '', skills: '', focusAreas: '', socials: socialsForm(undefined) });
   const [stewardedSites, setStewardedSites] = useState<StewardedSite[]>([]);
@@ -102,7 +104,7 @@ export default function ProfilePage({ personId }: { personId?: string }) {
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
-    setError(null);
+    setSaveError(null);
     setSaved(false);
     try {
       const response = await fetch('/api/profile', {
@@ -116,12 +118,13 @@ export default function ProfilePage({ personId }: { personId?: string }) {
         }),
       });
       const payload = await response.json();
+      // A partial save still sends back the stored profile, so the page shows it.
+      if (payload.profile) setData((current) => current ? { ...current, profile: { ...current.profile, ...payload.profile } } : current);
       if (!response.ok) throw new Error(payload.error ?? 'Unable to save profile.');
-      setData((current) => current ? { ...current, profile: { ...current.profile, ...payload.profile } } : current);
       setEditing(false);
       setSaved(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to save profile.');
+      setSaveError(err instanceof Error ? err.message : 'Unable to save profile.');
     } finally {
       setSaving(false);
     }
@@ -153,7 +156,7 @@ export default function ProfilePage({ personId }: { personId?: string }) {
           {saved && <p role="status" className="mt-5 flex items-center gap-2 text-sm font-medium text-[#17633B]"><Check className="h-4 w-4" />Profile saved.</p>}
         </section>
 
-        {editing && data.isOwner && <form onSubmit={saveProfile} className="mt-6 rounded-2xl bg-white p-6 shadow-sm"><h2 className="text-xl font-bold text-[#254431]">Edit profile</h2><p className="mt-1 text-sm text-[#5B655D]">Your role and account credentials are managed separately.</p><div className="mt-5 grid gap-4 sm:grid-cols-2"><label className="text-sm font-semibold text-[#254431]">Display name<input value={form.displayName} maxLength={29} onChange={(event) => setForm({ ...form, displayName: event.target.value })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2 user-invalid:border-red-600 user-invalid:bg-red-50" required pattern=".*\S.*" title="Enter your name." /></label><label className="text-sm font-semibold text-[#254431]">Skills <span className="font-normal">(comma-separated)</span><input value={form.skills} onChange={(event) => setForm({ ...form, skills: event.target.value })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2" /></label><label className="text-sm font-semibold text-[#254431]">Focus areas <span className="font-normal">(comma-separated)</span><input value={form.focusAreas} onChange={(event) => setForm({ ...form, focusAreas: event.target.value })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2" /></label></div><h3 className="mt-6 text-base font-bold text-[#254431]">Contact <span className="text-sm font-normal text-[#5B655D]">(all optional, visible to signed-in members)</span></h3><div className="mt-3 grid gap-4 sm:grid-cols-2">{SOCIAL_FIELDS.map(({ key, label, kind }) => <label key={key} className="text-sm font-semibold text-[#254431]">{label}<input type={kind === 'email' ? 'email' : kind === 'phone' ? 'tel' : 'url'} value={form.socials[key]} placeholder={kind === 'link' ? 'https://' : undefined} onChange={(event) => setForm({ ...form, socials: { ...form.socials, [key]: event.target.value } })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2 user-invalid:border-red-600 user-invalid:bg-red-50" /></label>)}</div><div className="mt-6 flex gap-3"><button disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-[#356B43] px-4 py-2.5 font-semibold text-white disabled:opacity-60"><Save className="h-4 w-4" />{saving ? 'Saving…' : 'Save changes'}</button><button type="button" onClick={() => setEditing(false)} className="rounded-xl px-4 py-2.5 font-semibold text-[#254431]">Cancel</button></div></form>}
+        {editing && data.isOwner && <form onSubmit={saveProfile} className="mt-6 rounded-2xl bg-white p-6 shadow-sm"><h2 className="text-xl font-bold text-[#254431]">Edit profile</h2><p className="mt-1 text-sm text-[#5B655D]">Your role and account credentials are managed separately.</p><div className="mt-5 grid gap-4 sm:grid-cols-2"><label className="text-sm font-semibold text-[#254431]">Display name<input value={form.displayName} maxLength={29} onChange={(event) => setForm({ ...form, displayName: event.target.value })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2 user-invalid:border-red-600 user-invalid:bg-red-50" required pattern=".*\S.*" title="Enter your name." /></label><label className="text-sm font-semibold text-[#254431]">Skills <span className="font-normal">(comma-separated)</span><input value={form.skills} onChange={(event) => setForm({ ...form, skills: event.target.value })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2" /></label><label className="text-sm font-semibold text-[#254431]">Focus areas <span className="font-normal">(comma-separated)</span><input value={form.focusAreas} onChange={(event) => setForm({ ...form, focusAreas: event.target.value })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2" /></label></div><h3 className="mt-6 text-base font-bold text-[#254431]">Contact <span className="text-sm font-normal text-[#5B655D]">(email required, the rest optional, visible to signed-in members)</span></h3><div className="mt-3 grid gap-4 sm:grid-cols-2">{SOCIAL_FIELDS.map(({ key, label, kind }) => <label key={key} className="text-sm font-semibold text-[#254431]">{label}<input type={kind === 'email' ? 'email' : kind === 'phone' ? 'tel' : 'url'} value={form.socials[key]} placeholder={kind === 'link' ? 'https://' : undefined} required={kind === 'email'} pattern={kind === 'link' ? 'https://.*' : undefined} title={kind === 'link' ? 'Enter a link that starts with https://' : undefined} onChange={(event) => setForm({ ...form, socials: { ...form.socials, [key]: event.target.value } })} className="mt-1 block w-full rounded-lg border border-[#B9C8BC] px-3 py-2 user-invalid:border-red-600 user-invalid:bg-red-50" /></label>)}</div>{saveError && <p role="alert" className="mt-5 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">{saveError}</p>}<div className="mt-6 flex gap-3"><button disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-[#356B43] px-4 py-2.5 font-semibold text-white disabled:opacity-60"><Save className="h-4 w-4" />{saving ? 'Saving…' : 'Save changes'}</button><button type="button" onClick={() => { setEditing(false); setSaveError(null); }} className="rounded-xl px-4 py-2.5 font-semibold text-[#254431]">Cancel</button></div></form>}
 
         {stewardedSites.length > 0 && <section className="mt-6 rounded-2xl bg-white p-6 shadow-sm" data-testid="stewarded-sites"><div className="flex items-center gap-2"><UserCheck className="h-5 w-5 text-[#356B43]" /><h2 className="text-xl font-bold text-[#254431]">Steward of</h2></div><ul className="mt-4 flex flex-wrap gap-2">{stewardedSites.map((site) => <li key={site.siteId}>{site.isActive ? <Link href={`/detail/${encodeURIComponent(site.namesite)}`} className="inline-block rounded-lg bg-[#E4EBE4] px-3 py-1.5 text-sm font-semibold text-[#254431] hover:underline">{site.namesite}</Link> : <span data-testid={`stewarded-site-inactive-${site.siteId}`} className="inline-flex items-center gap-2 rounded-lg bg-[#E4EBE4] px-3 py-1.5 text-sm font-semibold text-[#5B655D]">{site.namesite}<span className="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-600">Inactive</span></span>}</li>)}</ul></section>}
 

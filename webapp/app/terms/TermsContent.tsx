@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
+import UserNavBar from "@/components/HeaderDropdown";
 
 export default function TermsContent() {
   const router = useRouter();
@@ -29,6 +30,8 @@ export default function TermsContent() {
               SAPAA Site Inspection Reports
             </p>
           </div>
+          {/* 5.0.4 AT3: sign out from this page too. */}
+          <div className="ml-auto -mt-4"><UserNavBar /></div>
         </div>
       </header>
 
