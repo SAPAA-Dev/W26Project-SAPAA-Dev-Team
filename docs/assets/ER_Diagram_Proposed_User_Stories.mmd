@@ -20,8 +20,10 @@ erDiagram
     %% Stories that need no new table or column:
     %% - US 1.0.4 activity stats: count form_responses and answers.
     %% - US 2.0.3 deactivate and reactivate: sites_pa.is_active exists.
-    %% - US 2.0.4 delete a site: delete all Site-owned rows and their S3 files.
-    %%   Keep the protected_areas rows and the people rows.
+    %% - US 2.0.4 delete a site: built. sites_pa.archived_at hides a site (archive_site).
+    %%   A permanent delete (permanently_delete_site) removes the sites_pa row and its
+    %%   site_stewards and site_page_fields rows. Reports and homepage images stay with
+    %%   site_id set to NULL. The protected_areas rows and the people rows stay.
     %% - US 2.0.6 filter by county, US 2.0.8 site details from the map.
     %% - US 4.0.2 offline map layers: tiles stay in browser storage only.
     %% - US 4.0.4 edit own SIR: the edit page exists; ownership is user_id.
@@ -43,11 +45,12 @@ erDiagram
     %% requests stay under 2,500 per day. Where the cache and the daily count
     %% are stored is not decided. See the OPEN QUESTIONS box.
     %% The role store is raw_app_meta_data. See the OPEN QUESTIONS box.
-    %% The KML is loaded into protected_areas (folder, fid) now. How a Site
-    %% links to a protected_areas row is open. See the OPEN QUESTIONS box.
-    %% US 2.0.10: the legacy table sites_report_fnr_test already has sapaaweb
-    %% and inatmap (FNR/src/services/database.ts:503). It is a possible source
-    %% for the new links.
+    %% The KML is loaded into protected_areas (folder, fid). A Site links to one
+    %% protected_areas row through sites_pa.protected_area_id (unique, nullable).
+    %% The polygon is protected_areas.geometry, so sites_pa has no boundary column.
+    %% US 2.0.10: the site links are rows of site_page_fields with the field_key
+    %% sapaa_website and inaturalist. The legacy table sites_report_fnr_test has
+    %% sapaaweb and inatmap (FNR/src/services/database.ts:503) and was not copied.
 
     auth_users["EXISTING auth.users"] {
         uuid id PK
@@ -61,7 +64,6 @@ erDiagram
         text role_store_need "Sequence diagrams need a role that the user cannot change"
         text geocode_cache "US 6.0.1 AT 4: store for cached OpenCage results"
         text geocode_daily_count "US 6.0.1 AT 4: store for the daily request count, limit 2,500"
-        text site_area_link "US 6.0.1, 2.0.2: how a Site links to a protected_areas row (site_id was dropped in 20261006010000)"
     }
 
     people["EXISTING people"] {
@@ -115,22 +117,19 @@ erDiagram
         text namesite "US 2.0.2 duplicate warning"
         bigint ab_county FK "US 2.0.6"
         boolean is_active "US 2.0.3"
-        geometry boundary "NEW US 6.0.1, 2.0.1, 2.0.2: polygon, SRID 4326"
+        timestamptz archived_at "US 2.0.4: NULL = visible"
+        bigint protected_area_id FK, UK "US 6.0.1, 2.0.1, 2.0.2: optional protected_areas.id"
         numeric latitude "NEW US 6.0.1: centre point"
         numeric longitude "NEW US 6.0.1: centre point"
-        text sapaaweb "NEW US 2.0.10: legacy sites_report_fnr_test has it"
-        text inatmap "NEW US 2.0.10: legacy sites_report_fnr_test has it"
     }
 
-    site_page_fields["NEW site_page_fields (US 2.0.5)"] {
-        bigint id PK
-        bigint site_id FK
-        text label
-        text value
-        boolean is_visible "include or exclude on the site page"
-        integer position
-        bigint provided_by_steward_id FK "NEW US 2.0.5: people.id"
-        bigint source_response_id FK "NEW US 2.0.5: optional source SIR"
+    site_page_fields["EXISTING site_page_fields"] {
+        bigint site_id PK, FK "US 2.0.5"
+        text field_key PK "from webapp/lib/sitePageFields.ts"
+        text value "http or https link, or NULL"
+        boolean is_visible "US 2.0.5 AT3: a hidden field keeps its value"
+        uuid updated_by FK "auth.users.id"
+        timestamptz updated_at
     }
 
     gpx_tracks["NEW gpx_tracks (US 2.0.9, 2.0.1)"] {
@@ -242,8 +241,8 @@ erDiagram
     questions ||--o{ profile_hidden_questions : "question_id"
     ab_counties |o--o{ sites_pa : "ab_county"
     sites_pa ||--o{ site_page_fields : "site_id"
-    people |o--o{ site_page_fields : "provided_by_steward_id"
-    form_responses |o--o{ site_page_fields : "source_response_id"
+    auth_users |o--o{ site_page_fields : "updated_by"
+    protected_areas |o--o| sites_pa : "protected_area_id"
     sites_pa ||--o{ gpx_tracks : "site_id"
     auth_users ||--o{ gpx_tracks : "user_id"
     sites_pa ||--o{ form_responses : "site_id"
@@ -266,8 +265,8 @@ erDiagram
     classDef proposed fill:#c9f7d4,stroke:#1a7f37,stroke-width:2px,color:#111
     classDef question fill:#ffe344,stroke:#d4ba24,stroke-width:2px,color:#111
 
-    class auth_users,people,socials,site_stewards,protected_areas,ab_counties,sites_pa,form_responses,answers,questions,attachments,homepage_image_uploads,S26_pdf_jobs existing
-    class profile_hidden_questions,site_page_fields,gpx_tracks,export_jobs,activity_point_values,activity_points,site_safety,site_priority proposed
+    class auth_users,people,socials,site_stewards,protected_areas,ab_counties,sites_pa,site_page_fields,form_responses,answers,questions,attachments,homepage_image_uploads,S26_pdf_jobs existing
+    class profile_hidden_questions,gpx_tracks,export_jobs,activity_point_values,activity_points,site_safety,site_priority proposed
     class OPEN_QUESTIONS question
 
     %% text_array means the PostgreSQL type text[].

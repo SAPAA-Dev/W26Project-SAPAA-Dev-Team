@@ -48,11 +48,20 @@ classDiagram
             +getSiteByName(namesite) SiteSummary[] [CHANGE 2.0.3, USED 2.0.8]
             +getCounties() County[]
             +getProtectedAreaChoices() ProtectedAreaChoice[]
+            +getProtectedAreaBoundaries() BoundaryFeatureCollection
             +updateSite(id, namesite, ab_county, protectedAreaId) SiteActionResult [CHANGE 2.0.3]
             +toggleSiteActive(id, is_active) void [CHANGE 2.0.3]
             +createSite(namesite, ab_county, protectedAreaId) SiteActionResult
             +findSitesWithName(namesite) string[]
+            +getSiteSuggestions() SiteSuggestion[]
             +getSiteLinks(siteId) SiteLinks
+            +getSitePageFields(siteId) SitePageFieldValue[]
+            +updateSitePageFields(siteId, fields) SiteActionResult
+            +getSiteDeleteImpact(siteId) SiteDeleteImpact
+            +archiveSite(siteId) SiteArchiveResult
+            +restoreSite(siteId) SiteRestoreResult
+            +permanentlyDeleteSite(siteId) SiteDeleteImpact
+            +getArchivedSites() SiteSummary[]
         }
         class InspectionQueries {
             <<webapp/utils/supabase/queries.ts>>
@@ -71,6 +80,11 @@ classDiagram
             +getSiteIdForResponse(responseId) number or null
             +getFormResponsesForSiteIds(siteIds, keyMap) Map
             +getAttachmentsForResponseIds(responseIds) list of id, response_id, question_id, storage_key, filename, ...
+            +getSiteInspectionReportDeleteImpact(responseId) SiteInspectionReportDeleteImpact
+            +archiveSiteInspectionReport(responseId) SiteInspectionReportArchiveResult
+            +restoreSiteInspectionReport(responseId) SiteInspectionReportRestoreResult
+            +permanentlyDeleteSiteInspectionReport(responseId) SiteInspectionReportDeleteOutcome
+            +getArchivedSiteInspectionReports() ArchivedSiteInspectionReport[]
         }
         class HomepageImageActions {
             <<webapp/utils/supabase/queries.ts>>
@@ -177,10 +191,7 @@ classDiagram
         class SiteQueries {
             +getSiteMapData() Site[] [NEW 2.0.1]
             +getUnmatchedKmlSites() ProtectedArea[] [NEW 2.0.2]
-            +getSiteDeleteImpact(siteId) record counts [NEW 2.0.4]
             +deleteSite(siteId) void [NEW 2.0.4]
-            +getSitePageFields(siteId) SitePageField[] [NEW 2.0.5]
-            +updateSitePageFields(siteId, fields, providedByStewardId, sourceResponseId) void [NEW 2.0.5]
         }
 
         class InspectionQueries {

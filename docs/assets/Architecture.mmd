@@ -4,7 +4,7 @@
 %% webapp/lib/pdf/*.ts, webapp/utils/admin-actions.ts, webapp/utils/media/s3Delete.ts,
 %% webapp/utils/kml-import-actions.ts, webapp/lib/map/kmlImport.ts, webapp/scripts/local_*.js,
 %% FNR/src/services/*.ts, FNR/src/screens/*.tsx, .github/workflows/*.yaml
-%% Checked against origin/main d18f3bd on October 7, 2026. The googleSheets/ client was removed in c7f7cb4.
+%% Checked against origin/main 7709e46 on October 9, 2026. The googleSheets/ client was removed in c7f7cb4.
 flowchart TB
     subgraph Legend["Legend"]
         direction LR
@@ -20,6 +20,7 @@ flowchart TB
         Browser["Web browser<br/>admins and stewards"]
         Mobile["StewardLog mobile app<br/>Expo 54, React Native 0.81<br/>FNR/"]
         SQLite[("expo-sqlite<br/>offline copy of site data")]
+        SiteMap["Site map component, US 2.0.1 and 2.0.6<br/>components/map/SiteMap.tsx<br/>MapLibre GL, protected area polygons"]
     end
 
     subgraph AppLayer["2. Application layer: Vercel"]
@@ -42,7 +43,8 @@ flowchart TB
     subgraph ExternalLayer["4. External services"]
         OAuth{{"OAuth providers<br/>Google, Microsoft Azure, GitHub"}}
         OpenCage{{"OpenCage Geocoding API"}}
-        Osm{{"OpenStreetMap tiles"}}
+        Protomaps{{"Protomaps basemap<br/>api.protomaps.com style and tiles<br/>needs NEXT_PUBLIC_PROTOMAPS_API_KEY"}}
+        Osm{{"OpenStreetMap tiles<br/>admin dashboard heat map"}}
         GoogleMaps{{"Google My Maps embed"}}
         Cdn{{"cdnjs<br/>PDF.js, Leaflet marker icons"}}
         Fonts{{"Google Fonts<br/>Inter, DM Sans"}}
@@ -63,7 +65,9 @@ flowchart TB
     Browser -->|"HTTPS: pages and server actions"| Next
     Browser -->|"fetch /api/*"| Api
     Browser -->|"PUT file with presigned URL"| S3
-    Browser -->|"map tiles"| Osm
+    Browser -->|"loads on /sites and /admin/sites"| SiteMap
+    SiteMap -->|"map style and vector tiles (API key in the URL)"| Protomaps
+    Browser -->|"heat map tiles (Leaflet)"| Osm
     Browser -->|"marker icons"| Cdn
     Browser -->|"web fonts, globals.css"| Fonts
     Browser -->|"upload .kml/.kmz (supabase-js)"| Storage
@@ -71,6 +75,7 @@ flowchart TB
     Next -->|"supabase-js: sign in, session cookies;<br/>Admin API with service role (create, delete, approve users)"| Auth
     Next -->|"supabase-js: queries"| Database
     Next -->|"AWS SDK: delete objects (SIR rollback)"| S3
+    Next -->|"server action getProtectedAreaBoundaries: GeoJSON"| SiteMap
     Next -->|"server action"| KmlImport
     KmlImport -->|"download and remove (service role)"| Storage
     KmlImport -->|"upsert protected_areas"| Database
@@ -102,5 +107,5 @@ flowchart TB
     classDef proposed stroke-dasharray: 5 5,fill:#fff8e1,stroke:#b8860b
     classDef external fill:#eef3ff,stroke:#4a6fa5
     classDef store fill:#eaf7ea,stroke:#3c763d
-    class LegendExternal,OAuth,OpenCage,Osm,GoogleMaps,Cdn,Fonts,Pages external
+    class LegendExternal,OAuth,OpenCage,Protomaps,Osm,GoogleMaps,Cdn,Fonts,Pages external
     class LegendStore,SQLite,Database,S3,Storage,LocalS3 store

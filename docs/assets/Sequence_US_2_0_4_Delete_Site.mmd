@@ -1,5 +1,5 @@
 ---
-title: "US 2.0.4: Delete a Site"
+title: "US 2.0.4: Delete a Site (archive and permanent delete)"
 config:
   theme: base
   sequence:
@@ -43,22 +43,24 @@ sequenceDiagram
     autonumber off
     actor Admin
     participant Page as Admin sites page<br/>/admin/sites
+    participant Archived as Archived sites page<br/>/admin/sites/archived
     participant Actions as Server actions<br/>utils/supabase/queries.ts
     participant DB as Supabase<br/>PostgreSQL
-    participant S3 as AWS S3
 
-    Note over Admin,S3: Covers US 2.0.4. No delete exists in the code. All steps are Proposed,<br/>except requireApprovedAdmin() and deleteObjectsByKeys(), which exist and can be reused.<br/>Decision: delete all Site-owned data and files. Preserve user Profiles and the shared KML source.
+    Note over Admin,DB: Covers US 2.0.4. The team chose archive over a hard delete (#160). "Delete" archives the Site.<br/>An Admin can then restore it or delete it permanently from the archived list.<br/>Every action calls requireApprovedAdmin() first. The RPCs run with the service role client.
 
-    Admin->>Page: Select "Delete Site"
+    rect rgb(240, 245, 255)
+    Note over Admin,DB: Archive a Site
+    Admin->>Page: Select "Archive site" on a Site
     activate Page
     Page->>Actions: getSiteDeleteImpact(siteId)
     activate Actions
-    Actions->>Actions: requireApprovedAdmin() (exists)
-    Actions->>DB: Count the Site's SIRs, answers, attachments, homepage images, site_stewards row,<br/>and (planned tables) GPX tracks, Site fields, point records, safety and priority rows
+    Actions->>Actions: requireApprovedAdmin()
+    Actions->>DB: rpc get_site_delete_impact(p_site_id)
     activate DB
-    DB-->>Actions: Counts
+    DB-->>Actions: Counts of SIRs, answers, attachments, homepage images and steward assignments
     deactivate DB
-    Actions-->>Page: Counts
+    Actions-->>Page: SiteDeleteImpact
     deactivate Actions
     Page-->>Admin: Ask to confirm. Name the number of affected records (AT1, AT2)
 
@@ -66,30 +68,82 @@ sequenceDiagram
         Admin->>Page: Select Cancel
         Page-->>Admin: Close the dialog. Nothing changes.
     else Admin confirms
-        Admin->>Page: Select Confirm
-        Page->>Actions: deleteSite(siteId)
+        Admin->>Page: Select "Archive Site"
+        Page->>Actions: archiveSite(siteId)
         activate Actions
-        Actions->>Actions: requireApprovedAdmin() (exists)
-        alt Caller is not an Admin
-            Actions-->>Page: Refuse (403), nothing deleted
-            Page-->>Admin: Show the error
-        else Caller is an Admin
-            Actions->>DB: Begin one transaction. Delete (planned tables) Site page fields, safety, priority,<br/>activity-point rows and GPX rows. Delete attachments, SIR answers and SIRs,<br/>then delete sites_pa (AT3). homepage_image_uploads and site_stewards rows go by cascade.<br/>People profiles stay. protected_areas has no site_id, so KML rows are not touched.
-            alt Any step fails (AT4)
-                DB-->>Actions: Error. Roll back all steps.
-                Actions-->>Page: Deletion rejected
+        Actions->>Actions: requireApprovedAdmin()
+        alt Caller is not an approved Admin
+            Actions-->>Page: Error "Only admins can edit sites."
+            Page-->>Admin: Show the error. Nothing changes.
+        else Caller is an approved Admin
+            Actions->>DB: rpc archive_site(p_site_id)<br/>one transaction, row locked: set sites_pa.archived_at = now()
+            activate DB
+            alt Site is missing or already archived (AT4)
+                DB-->>Actions: Error. Nothing is changed.
+                Actions-->>Page: Error message
                 Page-->>Admin: Show the error. The Site and all records are unchanged.
-            else All steps done
-                DB-->>Actions: Commit
-                Actions->>S3: deleteObjectsByKeys(keys) of the removed images and GPX files<br/>(helper exists, call proposed)
-                S3-->>Actions: Done or error
-                Note right of Actions: S3 is outside the database transaction.<br/>A failed object deletion is logged for retry.<br/>It does not restore deleted database rows.
-                Actions-->>Page: Site deleted
-                Page-->>Admin: Remove the Site from the list
+            else Archived
+                DB-->>Actions: siteId, siteName, archivedAt
+                deactivate DB
+                Actions-->>Page: SiteArchiveResult
+                Page-->>Admin: Remove the Site from the list and add 1 to the Archived count
             end
         end
         deactivate Actions
     end
     deactivate Page
+    Note over Admin,DB: Archiving deletes nothing. SIRs, answers, attachments, homepage images and the steward assignment<br/>stay connected to the Site (AT3). getSitesOnline, getAllSites and getCurrentSiteId filter on archived_at is null,<br/>so the Site leaves the site lists and takes no new SIR until it is restored.
+    end
 
-    Note over Admin,S3: In the local schema copy, form_responses.site_id is ON DELETE RESTRICT, so deleteSite must perform<br/>the ordered transaction above. Profile SIR counts come from form_responses and therefore follow the cascade.
+    rect rgb(240, 255, 240)
+    Note over Admin,DB: Restore an archived Site
+    Admin->>Archived: Open "Archived" and select Restore on a Site
+    activate Archived
+    Archived->>Actions: getArchivedSites() when the page loads
+    Actions-->>Archived: SiteSummary[] with archived_at
+    Archived->>Actions: restoreSite(siteId)
+    activate Actions
+    Actions->>Actions: requireApprovedAdmin()
+    Actions->>DB: rpc restore_site(p_site_id): set archived_at = null
+    DB-->>Actions: siteId, siteName (error if the Site is not archived)
+    Actions-->>Archived: SiteRestoreResult
+    deactivate Actions
+    Archived-->>Admin: Remove the Site from the archived list. It shows on /admin/sites again.
+    deactivate Archived
+    end
+
+    rect rgb(255, 245, 240)
+    Note over Admin,DB: Permanently delete an archived Site
+    Admin->>Archived: Select "Permanently delete" on an archived Site
+    activate Archived
+    Archived->>Actions: getSiteDeleteImpact(siteId)
+    Actions->>DB: rpc get_site_delete_impact(p_site_id)
+    DB-->>Actions: Counts
+    Actions-->>Archived: SiteDeleteImpact
+    Archived-->>Admin: Ask to confirm. Name the records that will be disconnected (AT1, AT2).<br/>The dialog says this cannot be undone.
+    alt Admin cancels
+        Admin->>Archived: Select Cancel
+        Archived-->>Admin: Close the dialog. Nothing changes.
+    else Admin confirms
+        Admin->>Archived: Select confirm
+        Archived->>Actions: permanentlyDeleteSite(siteId)
+        activate Actions
+        Actions->>Actions: requireApprovedAdmin()
+        Actions->>DB: rpc permanently_delete_site(p_site_id)<br/>one transaction, row locked
+        activate DB
+        alt Site is missing or not archived (AT4)
+            DB-->>Actions: Error. Nothing is changed.
+            Actions-->>Archived: Error message
+            Archived-->>Admin: Show the error. The Site and all records are unchanged.
+        else Archived Site
+            DB->>DB: Set site_id = NULL on form_responses, attachments and homepage_image_uploads.<br/>Delete the sites_pa row. site_stewards and site_page_fields rows go by cascade.
+            DB-->>Actions: Counts from before the delete
+            deactivate DB
+            Actions-->>Archived: SiteDeleteImpact
+            Archived-->>Admin: Remove the Site from the archived list
+        end
+        deactivate Actions
+    end
+    deactivate Archived
+    Note over Admin,DB: Only the Site row, its steward assignment and its page fields are removed. SIRs, answers, attachments<br/>and homepage images stay in the database with no Site, and their S3 files are not deleted.<br/>protected_areas and people rows are not touched.
+    end

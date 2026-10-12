@@ -3,7 +3,7 @@ config:
   layout: elk
 ---
 erDiagram
-    %% CURRENT SCHEMA: WEB APP (generated from the migrations; comments checked on 2026-10-07)
+    %% CURRENT SCHEMA: WEB APP (generated from the migrations; comments checked on 2026-10-09)
     %% One Supabase database holds two inspection systems:
     %%   WEB    = form_responses, answers, sites_pa, S26_pdf_jobs, and others. Used only by webapp/.
     %%   LEGACY = inspectheader, inspectdetails, and others. Used by FNR/ and
@@ -277,8 +277,16 @@ erDiagram
     %%   getInspectionDetailsOnline in queries.ts). The two functions in
     %%   queries.ts have no caller in webapp/app or webapp/components.
     %%   See ER_Diagram_Legacy.mmd.
-    %% - RPC functions get_naturalness_distribution, get_top_sites_distribution
-    %%   (getNaturalnessDistribution and getTopSitesDistribution in queries.ts)
-    %%   and get_distinct_inspected_site_count (webapp/app/api/profile/route.ts).
+    %% - RPC functions (supabase.rpc). The caller is in brackets:
+    %%   get_naturalness_distribution (getNaturalnessDistribution),
+    %%   get_top_sites_distribution (getTopSitesDistribution),
+    %%   get_distinct_inspected_site_count (webapp/app/api/profile/route.ts),
+    %%   get_site_delete_impact (getSiteDeleteImpact), archive_site (archiveSite),
+    %%   restore_site (restoreSite), permanently_delete_site (permanentlyDeleteSite),
+    %%   get_site_inspection_report_delete_impact (getSiteInspectionReportDeleteImpact),
+    %%   archive_site_inspection_report (archiveSiteInspectionReport),
+    %%   restore_site_inspection_report (restoreSiteInspectionReport) and
+    %%   permanently_delete_site_inspection_report (permanentlyDeleteSiteInspectionReport).
+    %%   All callers are in queries.ts unless a path is given.
     %% - Image and PDF files are in AWS S3. KML and KMZ imports are staged in the
     %%   private Supabase Storage bucket kml-imports (admins only, 50 MiB).

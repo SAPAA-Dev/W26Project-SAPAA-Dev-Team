@@ -42,51 +42,67 @@ config:
 sequenceDiagram
     autonumber off
     actor Steward
-    participant Map as Steward map page<br/>Leaflet (Proposed)
-    participant Tiles as OpenStreetMap<br/>tile server
-    participant Server as Server actions<br/>(Proposed)
+    participant Page as Sites page<br/>/sites (also /admin/sites)
+    participant Map as Site map<br/>components/map/SiteMap.tsx<br/>MapLibre GL
+    participant Tiles as Protomaps<br/>api.protomaps.com
+    participant Server as Server actions<br/>utils/supabase/queries.ts
     participant DB as Supabase<br/>PostgreSQL
     participant S3 as AWS S3
 
-    Note over Steward,S3: Covers US 2.0.1 and 2.0.6. Today the only map is the admin heat map in /admin/dashboard.<br/>admin/dashboard/page.tsx geocodes through /api/geocode (OpenCage), and admin/dashboard/components/Map.tsx<br/>draws the heat map. This flow replaces geocoding with stored geometry (US 6.0.1).
+    Note over Steward,S3: Covers US 2.0.1 and 2.0.6. The map exists (#159, #161, #166, #167): a Cards View and Map View toggle on /sites,<br/>with the same toggle on /admin/sites. It draws protected_areas boundaries. The admin heat map in /admin/dashboard still uses Leaflet.<br/>Steps marked (Proposed) are not in the code today: the menu link, "View on map", GPX tracks and centring on a search match.
 
-    alt Open from the menu
-        Steward->>Map: Select Map in HeaderDropdown (Proposed)
-    else Open from a Site page (2.0.1 AT3)
-        Steward->>Map: Select "View on map" on /detail/[namesite] (Proposed)
+    opt Open the map from another page (2.0.1 AT3, Proposed)
+        alt Open from the menu
+            Steward->>Page: Select Map in HeaderDropdown (Proposed)
+        else Open from a Site page
+            Steward->>Page: Select "View on map" on /detail/[namesite] (Proposed)
+        end
     end
-    activate Map
-    Map->>Tiles: Get base tiles
-    Tiles-->>Map: Tiles
 
-    Map->>Server: getSiteMapData()
+    Steward->>Page: Open /sites and select "Map View"
+    activate Page
+    Page->>Map: Render SiteMap (loaded with dynamic import, no server render)
+    activate Map
+    alt NEXT_PUBLIC_PROTOMAPS_API_KEY is not set
+        Map-->>Steward: Show "Map key not set" with the steps to add the key. No map is drawn.
+    else The key is set
+        Map->>Tiles: Get the map style and vector tiles (api.protomaps.com/styles/v5/light/en.json?key=...)
+        Tiles-->>Map: Style and tiles
+        Map-->>Steward: Draw the basemap. The view is limited to Alberta.
+    end
+
+    Note over Page,Server: The first time the map opens, the page loads the boundaries. They are not loaded again during the visit.
+    Page->>Server: getProtectedAreaBoundaries()
     activate Server
-    Server->>Server: Check session and approved account (Proposed)
+    Server->>Server: requireApprovedCaller(): the session must have app_metadata.authenticated = true
     alt No valid session or account not approved
-        Server-->>Map: Refuse (401)
-        Map-->>Steward: Go to /login
+        Server-->>Page: Throw "You must be signed in to view site boundaries."
+        Page-->>Steward: Show "Site boundaries could not load."
     else Access allowed
-        Server->>DB: Read active sites_pa rows, ab_counties<br/>and protected_areas.geometry (MultiPolygon jsonb, US 6.0.1)
-        %% Open: protected_areas.site_id and label_point were dropped (20261006010000).
-        %% The site-to-boundary join and a centre point need a new link column.
-        Note right of DB: Open: the join from a Site to its boundary<br/>and the centre point need a new link column.
+        Server->>DB: Read protected_areas (name, area_type, subtype, geometry and other fields)<br/>with the signed-in session. RLS lets signed-in users select.
         activate DB
-        DB-->>Server: Sites, and boundaries from protected_areas
+        DB-->>Server: Boundaries
+        Server->>DB: Read sites_pa.protected_area_id, is_active and the county (service role)
+        DB-->>Server: The Site, county and status of each linked protected area
         deactivate DB
-        Server-->>Map: Site list
-        Map-->>Steward: Draw the boundary of each active Site (AT1)
-        Note right of Map: A Site with no geometry is not drawn.<br/>US 6.0.1 lists it for an Admin to fix.
+        Server->>Server: Join them. A protected area with no Site has no status.<br/>For a Steward, drop the boundaries of inactive Sites. An Admin gets them all.
+        Server-->>Page: GeoJSON FeatureCollection
     end
     deactivate Server
+    Page->>Map: boundaries (filtered, see below)
+    Map-->>Steward: Draw each boundary as a filled polygon with an outline (AT1)
+    Note right of Map: The map draws a polygon for every protected area, so a protected area with no Site also shows.<br/>The default status filter keeps Active Sites and areas with no Site, and hides inactive Sites.<br/>/sites has no status control. /admin/sites has one, so an Admin can show inactive Sites.
 
-    opt Map opened from a Site page
-        Map-->>Steward: Highlight that Site and zoom to it
+    opt Hover or click a boundary (2.0.1 AT4, 2.0.8)
+        Steward->>Map: Move over a boundary
+        Map-->>Steward: Highlight only that boundary. The previous one returns to normal.
+        Steward->>Map: Click the boundary
+        Map-->>Steward: Open a popup with the name, type and the other fields of the protected area
     end
 
-    opt Zoom to a Site that has GPX tracks (2.0.1 AT2)
-        Map->>Server: getSiteTracks(siteId)
+    opt Zoom to a Site that has GPX tracks (2.0.1 AT2, Proposed)
+        Map->>Server: getSiteTracks(siteId) (Proposed)
         activate Server
-        Server->>Server: Same session check as above
         Server->>DB: Read gpx_tracks rows of the Site (US 2.0.9)
         activate DB
         DB-->>Server: Track storage keys
@@ -98,23 +114,28 @@ sequenceDiagram
         Map-->>Steward: Draw tracks as lines in a style<br/>different from the boundary
     end
 
-    opt Filter by county (2.0.6 AT1, AT2)
-        Steward->>Map: Select one or more counties
-        Map->>Map: Keep only Sites in those counties, in the browser (proposed).<br/>The /sites page has no county filter today.
-        Map-->>Steward: Show only matching Sites
-        Steward->>Map: Clear the filter
-        Map-->>Steward: Show all active Sites again
+    opt Filter by county, type or subtype, and by status on /admin/sites (2.0.6 AT1, AT2)
+        Steward->>Page: Select one or more values in the filters
+        Page->>Page: filterBoundaryCollection() keeps the boundaries that match every filter.<br/>Inside one filter any selected value is enough. This runs in the browser.
+        Page->>Map: Filtered boundaries
+        Map->>Map: Replace the data of the GeoJSON source. The pan and zoom stay.
+        Map-->>Steward: Show only matching boundaries. The page shows the count.
+        Steward->>Page: Clear the filter
+        Page->>Map: All boundaries again
+        Map-->>Steward: Show all boundaries again (AT2). Inactive Sites stay hidden.
     end
 
     opt Search by name (2.0.6 AT3)
-        Steward->>Map: Type a Site name
-        Map-->>Steward: Show matching names. Same case-insensitive substring match<br/>as /sites (name or county) (exists there)
-        alt No match
-            Map-->>Steward: Show "No Sites found"
-        else Steward selects a match
-            Map-->>Steward: Centre the map on that Site
+        Steward->>Page: Type in the search box
+        Page->>Page: Keep the boundaries whose name, oc_name or county contains the text, ignoring case
+        Page->>Map: Matching boundaries
+        Map-->>Steward: Show only the matching boundaries
+        opt Centre on the selected match (Proposed)
+            Steward->>Map: Select a match
+            Map-->>Steward: Centre the map on that Site (Proposed)
         end
     end
     deactivate Map
+    deactivate Page
 
-    Note over Steward,S3: Filter and search use the Site list that is already loaded. They make no server call.<br/>Open questions: GPX storage (see US 2.0.9) and the time window of tracks to show.
+    Note over Steward,S3: Filter and search use the boundaries that are already loaded. They make no server call.<br/>Cards View uses getSitesOnline and the same search box and county filter.<br/>Open questions: GPX storage (see US 2.0.9) and the time window of tracks to show.

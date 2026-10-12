@@ -43,26 +43,26 @@ sequenceDiagram
     autonumber off
     actor Admin
     participant Page as Admin sites page<br/>/admin/sites<br/>EditSiteModal
-    participant SitePage as Site page<br/>/detail/[namesite]
+    participant SitePage as Site page<br/>/detail/[namesite]<br/>SitePageEditor
     participant Actions as Server actions<br/>utils/supabase/queries.ts
     participant DB as Supabase<br/>PostgreSQL
 
-    Note over Admin,DB: Covers US 2.0.3 and 2.0.5. Part 1 (2.0.3) exists: handleSaveSite calls updateSite and toggleSiteActive,<br/>and both check the caller on the server with requireApprovedAdmin().<br/>Part 2 (2.0.5, edit mode on the Site page) is Proposed.<br/><br/>Part 1: US 2.0.3 Deactivate or reactivate a Site
+    Note over Admin,DB: Covers US 2.0.3 and 2.0.5. Both parts exist in the code. updateSite, toggleSiteActive and updateSitePageFields<br/>check the caller on the server with requireApprovedAdmin(). getSitePageFields reads with the signed-in session.<br/><br/>Part 1: US 2.0.3 Deactivate or reactivate a Site
     Admin->>Page: Open EditSiteModal, set Active on or off, select Save (AT1)
     activate Page
-    Page->>Actions: updateSite(id, namesite, ab_county), then<br/>toggleSiteActive(id, is_active) only if is_active changed (exist)
+    Page->>Actions: handleSaveSite: updateSite(id, namesite, ab_county, protectedAreaId), then<br/>toggleSiteActive(id, is_active) only if is_active changed
     activate Actions
-    Actions->>Actions: requireApprovedAdmin() (exists)
+    Actions->>Actions: requireApprovedAdmin()
     alt Caller is not an Admin
         Actions-->>Page: Throw 'Only admins can edit sites.', no change
         Page-->>Admin: alert() with the error
     else Caller is an Admin
-        Actions->>DB: Update sites_pa namesite, ab_county,<br/>then is_active only if it changed
+        Actions->>DB: Update sites_pa namesite, ab_county, protected_area_id,<br/>then is_active only if it changed
         activate DB
         alt Update fails
-            DB-->>Actions: Error
+            DB-->>Actions: Error (a duplicate name or a protected area that is already linked gives a clear message)
             Actions-->>Page: Throw error
-            Page-->>Admin: alert() with the error (existing)
+            Page-->>Admin: alert() with the error
         else Update done
             DB-->>Actions: OK
             Actions-->>Page: OK
@@ -72,39 +72,47 @@ sequenceDiagram
     end
     deactivate Actions
     deactivate Page
-    Note over Admin,DB: getSitesOnline and getSiteByName read only is_active Sites. An inactive Site leaves pickers<br/>and search (AT2) and comes back after reactivation (AT3). Gap for AT4: getSiteByName also hides<br/>the Site page of an inactive Site, so its SIRs cannot be viewed. This needs a change (Proposed).<br/><br/>Part 2: US 2.0.5 Update the fields of a Site page (Proposed)
-    Admin->>SitePage: Select "Edit mode"
+    Note over Admin,DB: createSite inserts is_active = true, so a new Site is active (AT5). getSitesOnline reads only active Sites, so an inactive Site<br/>leaves the Site list, pickers and search (AT2) and the map boundaries (is_active !== false), and returns after reactivation (AT3).<br/>Gap for AT4: getSiteByName returns an inactive Site, but the Site page throws "This site is not active",<br/>so its SIRs cannot be opened there. This is not fixed.<br/><br/>Part 2: US 2.0.5 Update the fields of a Site page
+    Admin->>SitePage: Open the Site page
     activate SitePage
-    SitePage->>Actions: getSitePageFields(siteId) (Proposed)
+    SitePage->>Actions: getSiteLinks(siteId) and getSitePageFields(siteId)
     activate Actions
-    Actions->>Actions: Check session and Admin role on server
-    alt Caller is not an Admin (AT2)
-        Actions-->>SitePage: Refuse (403)
-        SitePage-->>Admin: Stay in view mode, show "Admins only"
-    else Caller is an Admin
-        Actions->>DB: Read site_page_fields rows and their<br/>is_visible flags (proposed)
-        activate DB
-        DB-->>Actions: Fields
-        deactivate DB
-        Actions-->>SitePage: Fields
-        SitePage-->>Admin: Show each field with a clear shown or hidden mark (AT1, AT3)
-        Admin->>SitePage: Change values, identify the steward who supplied them,<br/>optionally select the source SIR, set shown or hidden, and select Save
-        SitePage->>Actions: updateSitePageFields(siteId, fields,<br/>providedByStewardId, sourceResponseId) (Proposed)
-        Actions->>Actions: Check Admin role again
-        Actions->>DB: Update site_page_fields with provided_by_steward_id<br/>and optional source_response_id
-        activate DB
-        alt Update fails
-            DB-->>Actions: Error
-            Actions-->>SitePage: Error
-            SitePage-->>Admin: Show the error and stay in edit mode
-        else Update done
-            DB-->>Actions: OK
-            Actions-->>SitePage: OK
-            SitePage-->>Admin: Show new fields and remove hidden fields (AT4)
-        end
-        deactivate DB
-    end
+    Actions->>DB: Select field_key, value, is_visible from site_page_fields for the Site<br/>(the signed-in session, RLS allows signed-in users)
+    activate DB
+    DB-->>Actions: Rows
+    deactivate DB
+    Actions-->>SitePage: Fields. getSiteLinks returns only the visible links.
     deactivate Actions
+    alt Caller is not an Admin (AT2)
+        SitePage-->>Admin: No "Edit site page" button. The Site page stays in view mode.
+    else Caller is an Admin (AT1)
+        Admin->>SitePage: Select "Edit site page"
+        SitePage-->>Admin: Show each field from SITE_PAGE_FIELDS (SAPAA website, iNaturalist, designated steward)<br/>with a Shown or Hidden toggle (AT3)
+        Admin->>SitePage: Change the links, toggle Shown or Hidden, select Save
+        SitePage->>Actions: updateSitePageFields(siteId, fields)
+        activate Actions
+        Actions->>Actions: requireApprovedAdmin()
+        alt Caller is not an Admin
+            Actions-->>SitePage: Throw 'Only admins can edit sites.'
+            SitePage-->>Admin: Show the error and stay in the editor
+        else Caller is an Admin
+            Actions->>Actions: Reject an unknown field_key. Reject a link that does not start with http:// or https://.
+            Actions->>DB: Upsert site_page_fields on (site_id, field_key) with value, is_visible,<br/>updated_by and updated_at
+            activate DB
+            alt Validation or update fails
+                DB-->>Actions: Error
+                Actions-->>SitePage: Throw error
+                SitePage-->>Admin: Show the error and stay in the editor
+            else Update done
+                DB-->>Actions: OK
+                Actions-->>SitePage: OK
+                SitePage->>Actions: getSiteLinks(siteId) and getSitePageFields(siteId) again
+                SitePage-->>Admin: Show the visible links and drop the hidden fields (AT4)
+            end
+            deactivate DB
+        end
+        deactivate Actions
+    end
     deactivate SitePage
 
-    Note over Admin,DB: Decision for US 2.0.5: each saved field records the steward who supplied it.<br/>When the value came from a SIR, it also records that source response.
+    Note over Admin,DB: A hidden field keeps its saved value. The designated steward field only shows or hides the steward.<br/>The steward is assigned with the Steward control on the Site page (US 3.0.2), not in this editor.<br/>An Admin still sees a hidden steward so the assignment can be managed.

@@ -46,36 +46,40 @@ sequenceDiagram
     participant Actions as Server actions<br/>utils/supabase/queries.ts
     participant DB as Supabase<br/>PostgreSQL
 
-    Note over Admin,DB: Covers US 2.0.2. The Add Site flow exists (#153). Only AT1 (select a boundary) and AT6 (suggestions) are not done.<br/>"(Proposed)" = the step is not in the code today.<br/>ProtectedRoute requireAdmin hides the page in the browser only. It reads app_metadata in the browser, so it is not a security check.
+    Note over Admin,DB: Covers US 2.0.2. The Add Site flow exists (#153), with name suggestions and a similar-name warning (#162) and boundary selection (#167).<br/>ProtectedRoute requireAdmin hides the page in the browser only. It reads app_metadata in the browser, so it is not a security check.
 
     Admin->>Page: Select "Add Site" (data-testid add-site-button)
     activate Page
     Page-->>Admin: Open AddSiteModal
 
-    %% AT6 is not merged. protected_areas exists, but no column links a boundary to a sites_pa row.
-    opt Suggest boundaries from the KML (Proposed, AT6)
-        Page->>Actions: Read protected_areas with no Site link (Proposed)
-        activate Actions
-        Actions->>Actions: requireApprovedAdmin()
-        Actions->>DB: Read protected_areas rows (loaded by US 6.0.1)
-        activate DB
-        DB-->>Actions: Suggested boundaries
-        deactivate DB
-        Actions-->>Page: Suggestions
-        deactivate Actions
-        Page-->>Admin: Show suggestions on a map (Proposed)
-        Admin->>Page: Select a boundary (Proposed, AT1)
-    end
-
-    Admin->>Page: Enter the Site name. Select a county or "No county"
-    Page->>Actions: findSitesWithName(namesite), when the name field loses focus
+    Note over Page,DB: The page loads getProtectedAreaChoices() once. availableProtectedAreas() hides every protected area<br/>that another Site already uses, so one boundary links to one Site.
+    Page->>Actions: getSiteSuggestions(), when the modal opens (AT6)
     activate Actions
     Actions->>Actions: requireApprovedAdmin()
-    Actions->>DB: Read sites_pa.namesite with ilike (case ignored, wildcards escaped),<br/>active and inactive
+    Actions->>DB: Read protected_areas (name, folder) and sites_pa.namesite
     activate DB
-    DB-->>Actions: Matching rows
+    DB-->>Actions: Rows
     deactivate DB
-    Actions-->>Page: Matching names, case ignored
+    Actions-->>Page: Names in protected_areas that no Site has yet (case ignored)
+    deactivate Actions
+    Note right of Page: If the call fails, the page shows no suggestions.
+
+    Admin->>Page: Type the Site name
+    Page-->>Admin: List the suggestions whose name contains the typed text (at most 8)
+    opt Admin selects a suggestion
+        Admin->>Page: Select a suggestion
+        Page->>Page: Fill the name field with the suggested name
+    end
+    Admin->>Page: Select a county or "No county"
+    Admin->>Page: Search and select a protected area, or leave it empty (AT1)
+    Page->>Actions: findSitesWithName(namesite), when the name field loses focus or a suggestion is selected
+    activate Actions
+    Actions->>Actions: requireApprovedAdmin()
+    Actions->>DB: Read every sites_pa.namesite (active, inactive and archived)
+    activate DB
+    DB-->>Actions: Names
+    deactivate DB
+    Actions-->>Page: Names that equal the typed name or contain it or are contained in it<br/>(case ignored, the shorter name needs at least 4 characters)
     deactivate Actions
     opt A Site with the same name exists (AT2)
         Page-->>Admin: Show a possible-duplicate warning (add-site-duplicate-warning).<br/>The Admin can still save
@@ -86,7 +90,7 @@ sequenceDiagram
     alt The name is empty (AT3)
         Page-->>Admin: Block creation. Red border on the name, aria-invalid,<br/>and "Site name is required."
     else The name is filled
-        Page->>Actions: createSite(namesite, ab_county)
+        Page->>Actions: createSite(namesite, ab_county, protectedAreaId)
         activate Actions
         Actions->>Actions: requireApprovedAdmin() reads app_metadata.role<br/>and app_metadata.authenticated from auth.getUser()
         alt Caller is not an Admin, for example a Steward<br/>who sends the request directly (AT4)
@@ -94,11 +98,20 @@ sequenceDiagram
             Page-->>Admin: Show the error in an alert
         else Caller is an Admin
             Actions->>Actions: Trim the name. If empty, throw "Site name is required." (AT3)
-            Actions->>DB: Insert sites_pa row (namesite, ab_county, is_active = true)
+            Actions->>Actions: Check that protectedAreaId is null or a positive whole number
+            Actions->>DB: Insert sites_pa row (namesite, ab_county, is_active = true, protected_area_id)
             activate DB
-            alt Name already exists (23505)
-                DB-->>Actions: Unique violation on namesite
+            alt Name already exists (23505 on namesite)
+                DB-->>Actions: Unique violation
                 Actions-->>Page: Error "A site with this name already exists."
+                Page-->>Admin: Show the error in an alert. The modal stays open
+            else Protected area already linked (23505 on protected_area_id)
+                DB-->>Actions: Unique violation
+                Actions-->>Page: Error "That protected area is already linked to a site."
+                Page-->>Admin: Show the error in an alert. The modal stays open
+            else Protected area does not exist (23503)
+                DB-->>Actions: Foreign key violation
+                Actions-->>Page: Error "The selected protected area does not exist."
                 Page-->>Admin: Show the error in an alert. The modal stays open
             else Other insert error
                 DB-->>Actions: Error
@@ -119,4 +132,4 @@ sequenceDiagram
     end
     deactivate Page
 
-    Note over Admin,DB: A new Site is active by default (US 2.0.3 AT5). getSitesOnline reads active Sites, so the new Site<br/>shows in Site search (AT5). The Admin can save after the duplicate warning. The database then refuses an exact duplicate,<br/>because namesite is UNIQUE. The ilike check ignores case, but the UNIQUE constraint does not.<br/>Open question: how a Site links to a boundary in protected_areas. protected_areas.site_id was dropped (20261006010000).
+    Note over Admin,DB: A new Site is active by default (US 2.0.3 AT5). getSitesOnline reads active Sites, so the new Site<br/>shows in Site search (AT5). The Admin can save after the duplicate warning. The database then refuses an exact duplicate,<br/>because namesite is UNIQUE. The duplicate check ignores case and also matches names that contain each other,<br/>but the UNIQUE constraint does not. sites_pa.protected_area_id links the Site to its boundary in protected_areas<br/>(nullable and unique, migrations 20261009120000 and 20261009120100).
