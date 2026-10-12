@@ -14,12 +14,12 @@ let mockSession: unknown = null;
 jest.mock('@/utils/supabase/client', () => ({
   createClient: () => ({
     auth: {
-      getSession: jest.fn(async () => ({ data: { session: mockSession }, error: null })),
-      getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'user-123', app_metadata: { authenticated: true } } } }),
-      getSession: jest.fn().mockResolvedValue({
-        data: { session: { user: { id: 'user-123', email: 'steward@example.com', app_metadata: { authenticated: true }, user_metadata: {} } } },
+      // A test sets mockSession to sign in as someone else; otherwise this is an approved steward.
+      getSession: jest.fn(async () => ({
+        data: { session: mockSession ?? { user: { id: 'user-123', email: 'steward@example.com', app_metadata: { authenticated: true }, user_metadata: {} } } },
         error: null,
-      }),
+      })),
+      getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'user-123', app_metadata: { authenticated: true } } } }),
       onAuthStateChange: jest.fn((callback) => {
         // Immediately call with authenticated user
         callback('SIGNED_IN', { user: { id: 'user-123', app_metadata: { authenticated: true } } });
