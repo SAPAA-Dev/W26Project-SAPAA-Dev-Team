@@ -219,9 +219,9 @@ describe("Acceptance Test 1 – Images are stored in AWS S3", () => {
       filename: "photo.jpg",
       contentType: "image/jpeg",
       fileSize: 500000,
-      responseId: "resp-1",
-      questionId: "q-1",
-      siteId: "site-1",
+      responseId: 3226,
+      questionId: 27,
+      siteId: 207,
     });
 
     const res = await POST(req as any);
@@ -229,7 +229,7 @@ describe("Acceptance Test 1 – Images are stored in AWS S3", () => {
 
     expect(res.status).toBe(200);
     expect(body.uploadUrl).toBe(fakeUploadUrl);
-    expect(body.key).toMatch(/^inspections\/site-1\/resp-1\/q-1\/.+\.jpg$/);
+    expect(body.key).toMatch(/^inspections\/207\/3226\/27\/.+\.jpg$/);
   });
 
   it("generates a unique S3 key for each upload", async () => {
@@ -241,18 +241,18 @@ describe("Acceptance Test 1 – Images are stored in AWS S3", () => {
       filename: "photo1.jpg",
       contentType: "image/jpeg",
       fileSize: 100000,
-      responseId: "resp-1",
-      questionId: "q-1",
-      siteId: "site-1",
+      responseId: 3226,
+      questionId: 27,
+      siteId: 207,
     });
 
     const req2 = makePresignRequest({
       filename: "photo2.jpg",
       contentType: "image/jpeg",
       fileSize: 100000,
-      responseId: "resp-1",
-      questionId: "q-1",
-      siteId: "site-1",
+      responseId: 3226,
+      questionId: 27,
+      siteId: 207,
     });
 
     const [res1, res2] = await Promise.all([POST(req1 as any), POST(req2 as any)]);
@@ -266,9 +266,9 @@ describe("Acceptance Test 1 – Images are stored in AWS S3", () => {
       filename: "document.pdf",
       contentType: "application/pdf",
       fileSize: 100000,
-      responseId: "resp-1",
-      questionId: "q-1",
-      siteId: "site-1",
+      responseId: 3226,
+      questionId: 27,
+      siteId: 207,
     });
 
     const res = await POST(req as any);
@@ -283,9 +283,9 @@ describe("Acceptance Test 1 – Images are stored in AWS S3", () => {
       filename: "huge.jpg",
       contentType: "image/jpeg",
       fileSize: 11 * 1024 * 1024,
-      responseId: "resp-1",
-      questionId: "q-1",
-      siteId: "site-1",
+      responseId: 3226,
+      questionId: 27,
+      siteId: 207,
     });
 
     const res = await POST(req as any);
@@ -302,9 +302,9 @@ describe("Acceptance Test 1 – Images are stored in AWS S3", () => {
       filename: "photo.jpg",
       contentType: "image/jpeg",
       fileSize: 500000,
-      responseId: "resp-1",
-      questionId: "q-1",
-      siteId: "site-1",
+      responseId: 3226,
+      questionId: 27,
+      siteId: 207,
     });
 
     const res = await POST(req as any);
@@ -319,9 +319,9 @@ describe("Acceptance Test 1 – Images are stored in AWS S3", () => {
         filename: "photo",
         contentType,
         fileSize: 100000,
-        responseId: "resp-1",
-        questionId: "q-1",
-        siteId: "site-1",
+        responseId: 3226,
+        questionId: 27,
+        siteId: 207,
       });
 
       const res = await POST(req as any);
@@ -348,17 +348,15 @@ describe("Acceptance Test 2 – Image metadata is stored in the database", () =>
       filename: "photo.jpg",
       contentType: "image/jpeg",
       fileSize: 500000,
-      responseId: "resp-42",
-      questionId: "q-7",
-      siteId: "site-99",
+      responseId: 42,
+      questionId: 7,
+      siteId: 99,
     });
 
     const res = await POST(req as any);
     const body = await parseBody(res);
 
-    expect(body.key).toContain("site-99");
-    expect(body.key).toContain("resp-42");
-    expect(body.key).toContain("q-7");
+    expect(body.key).toMatch(/^inspections\/99\/42\/7\//);
   });
 
   it("returns 400 when responseId is missing", async () => {
@@ -366,8 +364,8 @@ describe("Acceptance Test 2 – Image metadata is stored in the database", () =>
       filename: "photo.jpg",
       contentType: "image/jpeg",
       fileSize: 500000,
-      questionId: "q-1",
-      siteId: "site-1",
+      questionId: 27,
+      siteId: 207,
     });
 
     const res = await POST(req as any);
@@ -382,8 +380,8 @@ describe("Acceptance Test 2 – Image metadata is stored in the database", () =>
       filename: "photo.jpg",
       contentType: "image/jpeg",
       fileSize: 500000,
-      responseId: "resp-1",
-      siteId: "site-1",
+      responseId: 3226,
+      siteId: 207,
     });
 
     const res = await POST(req as any);
@@ -398,8 +396,8 @@ describe("Acceptance Test 2 – Image metadata is stored in the database", () =>
       filename: "photo.jpg",
       contentType: "image/jpeg",
       fileSize: 500000,
-      responseId: "resp-1",
-      questionId: "q-1",
+      responseId: 3226,
+      questionId: 27,
     });
 
     const res = await POST(req as any);
@@ -525,9 +523,9 @@ describe("Acceptance Test 3 – Uploaded images are accessible through the appli
       filename: "photo.jpg",
       contentType: "image/jpeg",
       fileSize: 500000,
-      responseId: "resp-1",
-      questionId: "q-1",
-      siteId: "site-1",
+      responseId: 3226,
+      questionId: 27,
+      siteId: 207,
     });
 
     await POST(req as any);

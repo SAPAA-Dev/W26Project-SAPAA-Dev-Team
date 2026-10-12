@@ -3,6 +3,7 @@
 import { UniqueIdentifier } from '@dnd-kit/core';
 import { createServerSupabase, createClient } from './server';
 import { deleteObjectsByKeys } from '../media/s3Delete';
+import { isAllowedStorageKey } from '../media/storageKeys';
 import {
   toBoundaryFeatureCollection,
   type BoundaryFeatureCollection,
@@ -149,6 +150,9 @@ function getLatestInspectionDate(
 }
 
 export async function uploadSiteInspectionAnswers(batchArray: SupabaseAnswer[]) {
+  for (const responseId of new Set(batchArray.map((answer) => answer.response_id))) {
+    await requireReportWriter(responseId);
+  }
   const supabase = createServerSupabase();
   const { data, error } = await supabase
     .from('answers')
@@ -182,48 +186,44 @@ export async function getQuestionResponseType() {
 export async function getNextFormInspectionNumber() {
   const supabase = createServerSupabase();
   const currentYear = new Date().getFullYear();
-  const { data, error } = await supabase
-    .from('form_responses')
-    .select('inspection_no')
-    .like('inspection_no', `${currentYear}-%`)
-    .order('inspection_no', { ascending: false })
-    .limit(1);
+  // The database compares the numbers, so "2026-1000" follows "2026-999" and the
+  // 1000-row response limit cannot hide the highest one. An empty year returns 0.
+  const { data, error } = await supabase.rpc('get_max_inspection_number', {
+    p_year: currentYear,
+  });
 
-  if (error) {
-    console.error('Error fetching inspection number:', error);
-    return null;
-  }
+  // A report saved without a number cannot be numbered later, so fail the submission.
+  if (error) throw new Error(error.message || 'Failed to get the next inspection number');
 
-  const inspectionNumber = data[0].inspection_no;
-
-  // If no previous records exist at all, start at 001 for the current year
-  if (!inspectionNumber) {
-    return `${currentYear}-001`;
-  }
-
-  // Split the string (e.g., "2026-005" -> ["2026", "005"])
-  const [yearPart, numPart] = inspectionNumber.split("-");
-
-  // Check if we've moved to a new year
-  if (yearPart !== currentYear.toString()) {
-    // Reset sequence for the new year
-    return `${currentYear}-001`;
-  }
-
-  const nextNum = parseInt(numPart, 10) + 1;
+  const nextNum = Number(data ?? 0) + 1;
   const paddedNum = nextNum.toString().padStart(3, "0");
   return `${currentYear}-${paddedNum}`;
 }
 
-export async function addSiteInspectionReport(siteId: number, userId: any, inspectionDate: string) {
+export async function addSiteInspectionReport(siteId: number, inspectionDate: string) {
+  // The report belongs to the signed-in user, never to an id the browser sends.
+  const caller = await requireApprovedCaller('Only approved users can submit reports.');
   const supabase = createServerSupabase();
+
+  // The page hides deactivated and archived sites, but this action is callable directly.
+  const { data: site, error: siteError } = await supabase
+    .from('sites_pa')
+    .select('id')
+    .eq('id', siteId)
+    .is('archived_at', null)
+    .or('is_active.eq.true,is_active.is.null')
+    .maybeSingle();
+
+  if (siteError) throw new Error(siteError.message || 'Failed to check the site');
+  if (!site) throw new Error('This site is not accepting new reports.');
+
   const newInspectNo = await getNextFormInspectionNumber();
 
   const { data, error } = await supabase
     .from('form_responses')
     .insert({
       site_id: siteId,
-      user_id: userId,
+      user_id: caller.userId,
       inspection_no: newInspectNo,
       inspection_date: inspectionDate,
     })
@@ -236,7 +236,48 @@ export async function addSiteInspectionReport(siteId: number, userId: any, inspe
   return data;
 }
 
+const REPORT_WRITE_DENIED = 'You are not allowed to change this report.';
+
+// Report writes run with the service role, so each one checks the caller first.
+// Only the report owner or an approved admin may change a report, and an archived
+// report changes only through the admin archive actions.
+async function requireReportWriter(responseId: number): Promise<{
+  isAdmin: boolean;
+  userId: string;
+  siteId: number;
+  createdAt: string | null;
+}> {
+  const caller = await requireApprovedCaller(REPORT_WRITE_DENIED);
+  validateResponseId(responseId);
+
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from('form_responses')
+    .select('user_id, site_id, created_at')
+    .eq('id', responseId)
+    .is('archived_at', null)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message || 'Failed to check the report owner');
+  if (!data || (!caller.isAdmin && data.user_id !== caller.userId)) {
+    throw new Error(REPORT_WRITE_DENIED);
+  }
+  return { ...caller, siteId: data.site_id, createdAt: data.created_at ?? null };
+}
+
+// The new-report page rolls back a report when its answers or photos fail to save.
+// Photo uploads happen in between, so the window allows for a slow connection.
+const ROLLBACK_WINDOW_MS = 30 * 60 * 1000;
+
 export async function rollbackSiteInspectionSubmission(responseId: number) {
+  const report = await requireReportWriter(responseId);
+  const createdAt = report.createdAt ? new Date(report.createdAt).getTime() : NaN;
+  // Only a submission that just failed can be undone. Older reports are removed
+  // through the admin archive and delete flow (US 7.0.8), which asks to confirm.
+  if (!(Date.now() - createdAt <= ROLLBACK_WINDOW_MS)) {
+    throw new Error(REPORT_WRITE_DENIED);
+  }
+
   const supabase = createServerSupabase();
 
   const attachments = await getAttachmentsByResponseId(responseId);
@@ -303,6 +344,8 @@ export async function getCurrentSiteId(siteName: string) {
     .select('id')
     .eq('namesite', siteName)
     .is('archived_at', null)
+    // A deactivated site takes no new reports, even when the URL is typed in.
+    .or('is_active.eq.true,is_active.is.null')
     .single();
 
   if (error) {
@@ -468,13 +511,15 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
  * needed. The coordinates are rounded and the rings are simplified here, on the
  * server, to keep the payload small.
  */
-async function requireApprovedCaller(): Promise<{ isAdmin: boolean }> {
+async function requireApprovedCaller(
+  errorMessage = 'You must be signed in to view site boundaries.'
+): Promise<{ isAdmin: boolean; userId: string }> {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   const user = data.user;
   const approved = !error && user?.app_metadata?.authenticated === true;
-  if (!approved || !user) throw new Error('You must be signed in to view site boundaries.');
-  return { isAdmin: user.app_metadata?.role === 'admin' };
+  if (!approved || !user) throw new Error(errorMessage);
+  return { isAdmin: user.app_metadata?.role === 'admin', userId: user.id };
 }
 
 function countyFromEmbed(
@@ -1419,6 +1464,7 @@ export async function getInspectionDetailsOnline(namesite: string): Promise<Insp
 export async function insertInspectionAttachments(rows: Array<{
   response_id: number | null;
   question_id: number;
+  site_id?: number | null;
   storage_key: string; 
   filename?: string | null;
   content_type?: string | null;
@@ -1430,6 +1476,19 @@ export async function insertInspectionAttachments(rows: Array<{
   date?: string | null;
   
 }>) {
+  const siteIds = new Map<number, number>();
+  for (const responseId of new Set(rows.map((row) => row.response_id))) {
+    if (responseId === null) throw new Error(REPORT_WRITE_DENIED);
+    siteIds.set(responseId, (await requireReportWriter(responseId)).siteId);
+  }
+  // Each photo must sit in its own report's folder, the one the presign route made.
+  for (const row of rows) {
+    const siteId = siteIds.get(row.response_id!);
+    const keyMatches = isAllowedStorageKey(row.storage_key, 'inspections', siteId!, row.response_id!, row.question_id);
+    if (!keyMatches || (row.site_id != null && row.site_id !== siteId)) {
+      throw new Error('The photo storage key is not valid.');
+    }
+  }
   const supabase = createServerSupabase();  
 
   const { data, error } = await supabase
@@ -1449,18 +1508,22 @@ export async function insertHomepageImageUpload(rows: Array<{
   content_type?: string | null;
   file_size_bytes?: number | null;
   site_id: number;
-  user_id: string;
   date: Date;
   photographer: string | null;
   identifier: string | null;
   caption: string | null;
   created_at: string | null;
 }>) {
+  // The uploader is the signed-in user, never an id the browser sends.
+  const caller = await requireApprovedCaller('Only approved users can upload images.');
+  if (!rows.every((row) => isAllowedStorageKey(row.storage_key, 'homepage-image-uploads', row.site_id, caller.userId))) {
+    throw new Error('The photo storage key is not valid.');
+  }
   const supabase = createServerSupabase();  
 
   const { data, error } = await supabase
     .from('homepage_image_uploads')
-    .insert(rows);
+    .insert(rows.map((row) => ({ ...row, user_id: caller.userId })));
 
   if (error) {
     throw new Error(error.message || 'Failed to insert homepage attachments');
@@ -1797,9 +1860,20 @@ export async function updateAttachmentMetadata(
 ) {
   const supabase = createServerSupabase();
 
+  // Only the owner of the attachment's report, or an admin, may change it.
+  const { data: attachment, error: readError } = await supabase
+    .from('attachments')
+    .select('response_id')
+    .eq('id', attachmentId)
+    .maybeSingle();
+
+  if (readError) throw new Error(readError.message || 'Failed to read attachment');
+  if (!attachment?.response_id) throw new Error(REPORT_WRITE_DENIED);
+  await requireReportWriter(attachment.response_id);
+
   const { error } = await supabase
     .from('attachments')
-    .update(fields)
+    .update({ caption: fields.caption, identifier: fields.identifier })
     .eq('id', attachmentId);
 
   if (error) throw new Error(error.message || 'Failed to update attachment metadata');
@@ -1811,6 +1885,7 @@ export async function updateSiteInspectionAnswers(
   batchArray: Omit<SupabaseAnswer, 'response_id'>[],
   inspectionDate: string,
 ) {
+  await requireReportWriter(responseId);
   const supabase = createServerSupabase();
 
   // Do not change answers while the report is in the archive.

@@ -719,7 +719,7 @@ describe('W26 US 1.0.5 - Add Details Regarding the Overview of my Visit', () => 
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(mockAddSiteInspectionReport).toHaveBeenCalledWith('site-1', 'user-1', '2026-02-12');
+      expect(mockAddSiteInspectionReport).toHaveBeenCalledWith('site-1', '2026-02-12');
       
       expect(mockUploadSiteInspectionAnswers).toHaveBeenCalledWith(
         expect.arrayContaining([
@@ -2159,7 +2159,7 @@ describe('W26 US 1.0.16 - Add Photography Captured During Visit', () => {
 
     // Should successfully call the upload function
     await waitFor(() => {
-      expect(mockAddSiteInspectionReport).toHaveBeenCalledWith('site-1', 'user-1', '2026-02-12');
+      expect(mockAddSiteInspectionReport).toHaveBeenCalledWith('site-1', '2026-02-12');
     });
   });
 

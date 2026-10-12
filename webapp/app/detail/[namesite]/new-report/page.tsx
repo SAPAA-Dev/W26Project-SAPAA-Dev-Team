@@ -511,10 +511,9 @@ export default function NewReportPage() {
 
     try {
       const siteId = await getCurrentSiteId(namesite);
-      const userUid = await getCurrentUserUid();
       const dateOfVisitQuestionId = await getDateOfVisitQuestionId();
       const inspectionDate = responses[dateOfVisitQuestionId];
-      siteInspectionReportId = (await addSiteInspectionReport(siteId, userUid, inspectionDate)).id;
+      siteInspectionReportId = (await addSiteInspectionReport(siteId, inspectionDate)).id;
 
       // We need to figure out whether the answer to each question should be placed in the obs_value or obs_comm column in Supabase
       // So we convert the question response types into a map that we can search for it

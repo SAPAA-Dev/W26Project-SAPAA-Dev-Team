@@ -258,13 +258,12 @@ describe("Private user info – never submitted to the database", () => {
 
 
   describe("uid scoping", () => {
-    it("the uid is passed to addSiteInspectionReport to link the report - not stored in answers", async () => {
+    it("the uid is not sent to addSiteInspectionReport - the server reads it from the session", async () => {
       const { addSiteInspectionReport } = require("@/utils/supabase/queries");
       const rows = await submitForm();
 
       expect(addSiteInspectionReport as jest.Mock).toHaveBeenCalledWith(
         "site-456",
-        PRIVATE.uid,
         undefined 
       );
 

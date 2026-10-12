@@ -243,7 +243,7 @@ describe("DELETE /api/site-images (US 7.0.5)", () => {
   });
 
   it("deletes a homepage upload row and its S3 file when kind is homepage_image_uploads (7.0.5 AT1, 7.0.5 AT3)", async () => {
-    mockAttachmentRow({ id: 7, storage_key: "homepage/207/file2.jpg" });
+    mockAttachmentRow({ id: 7, storage_key: "homepage-image-uploads/207/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/file2.jpg" });
     mockAttachmentDelete([{ id: 7 }]);
 
     const response = await DELETE(deleteRequest("7", "homepage_image_uploads"));
@@ -253,7 +253,17 @@ describe("DELETE /api/site-images (US 7.0.5)", () => {
     expect(body).toEqual({ deleted: true, storageCleanupComplete: true });
     expect(mockFrom).toHaveBeenNthCalledWith(1, "homepage_image_uploads");
     expect(mockFrom).toHaveBeenNthCalledWith(2, "homepage_image_uploads");
-    expect(deleteObjectsByKeys).toHaveBeenCalledWith(["homepage/207/file2.jpg"]);
+    expect(deleteObjectsByKeys).toHaveBeenCalledWith(["homepage-image-uploads/207/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/file2.jpg"]);
+  });
+
+  it("returns 422 and deletes nothing when the storage key is outside the image folders", async () => {
+    mockAttachmentRow({ id: 14, storage_key: "exports/207/report.pdf" });
+
+    const response = await DELETE(deleteRequest("14"));
+
+    expect(response.status).toBe(422);
+    expect(mockFrom).toHaveBeenCalledTimes(1);
+    expect(deleteObjectsByKeys).not.toHaveBeenCalled();
   });
 
   it("returns 404 when the homepage upload row is missing", async () => {

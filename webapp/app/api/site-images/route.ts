@@ -3,6 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { deleteObjectsByKeys } from "@/utils/media/s3Delete";
+import { isAllowedStorageKey } from "@/utils/media/storageKeys";
 
 const REGION = process.env.AWS_REGION!;
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
@@ -60,8 +61,9 @@ export async function GET(request: Request) {
     }
 
     // Generate a presigned GET URL for each attachment (1 hour expiry)
+    // A row whose key is outside the image folders is never signed.
     const items = await Promise.all(
-      attachments.map(async (row) => {
+      attachments.filter((row) => isAllowedStorageKey(row.storage_key)).map(async (row) => {
         const command = new GetObjectCommand({
           Bucket: BUCKET,
           Key: row.storage_key,
@@ -134,6 +136,15 @@ export async function DELETE(request: Request) {
       return NextResponse.json(
         { error: table === "attachments" ? "Attachment not found" : "Homepage image not found" },
         { status: 404 }
+      );
+    }
+
+    // deleteObjectsByKeys refuses keys outside the image folders. Check first, so the row is
+    // not deleted while its S3 object stays behind.
+    if (!isAllowedStorageKey(imageRow.storage_key)) {
+      return NextResponse.json(
+        { error: "This image is stored outside the image folders and cannot be deleted here" },
+        { status: 422 }
       );
     }
 

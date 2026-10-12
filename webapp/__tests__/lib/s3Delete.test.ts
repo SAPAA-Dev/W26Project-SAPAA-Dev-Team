@@ -47,11 +47,19 @@ describe("deleteObjectsByKeys (US 7.0.5)", () => {
   });
 
   it("splits more than 1000 keys into several commands", async () => {
-    const keys = Array.from({ length: 1001 }, (_, index) => `key-${index}`);
+    const keys = Array.from({ length: 1001 }, (_, index) => `inspections/1/2/3/file-${index}.jpg`);
 
     await deleteObjectsByKeys(keys);
 
     expect(DeleteObjectsCommand).toHaveBeenCalledTimes(2);
     expect(mockSend).toHaveBeenCalledTimes(2);
+  });
+
+  it("refuses the whole batch when a key is outside the image folders", async () => {
+    await expect(
+      deleteObjectsByKeys(["seed/ducks/duck01.jpg", "pdf-exports/user-1/job-1/report.pdf"])
+    ).rejects.toThrow("pdf-exports/user-1/job-1/report.pdf");
+
+    expect(mockSend).not.toHaveBeenCalled();
   });
 });

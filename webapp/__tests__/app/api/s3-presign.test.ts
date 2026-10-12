@@ -584,4 +584,41 @@ describe("POST /api/s3/presign", () => {
     expect(response.status).toBe(500);
     expect(body).toEqual({ error: "Failed to generate upload URL" });
   });
+
+  it.each([
+    ["a text id", { siteId: "207/../pdf-exports" }],
+    ["a negative id", { responseId: -1 }],
+    ["a decimal id", { questionId: 2.5 }],
+  ])("returns 400 for %s and signs nothing", async (_label, change) => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
+
+    const request = new Request("http://localhost:3000/api/s3/presign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...validBody, ...change }),
+    });
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "Invalid ids" });
+    expect(getSignedUrl).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 when the metadata would put a folder into the key", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
+    (generateFilename as jest.Mock).mockReturnValue("Riverlot56-2026/../x-generated.jpg");
+
+    const request = new Request("http://localhost:3000/api/s3/presign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...validBody, date: "2026/../x" }),
+    });
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "Invalid image metadata" });
+    expect(getSignedUrl).not.toHaveBeenCalled();
+  });
 });

@@ -65,7 +65,7 @@ classDiagram
         }
         class InspectionQueries {
             <<webapp/utils/supabase/queries.ts>>
-            +addSiteInspectionReport(siteId, userId, inspectionDate) any
+            +addSiteInspectionReport(siteId, inspectionDate) any
             +uploadSiteInspectionAnswers(batchArray) any
             +insertInspectionAttachments(rows) any [CHANGE 4.0.5]
             +rollbackSiteInspectionSubmission(responseId) void [CHANGE 7.0.5]

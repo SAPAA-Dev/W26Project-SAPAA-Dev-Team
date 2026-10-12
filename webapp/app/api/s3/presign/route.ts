@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { generateFilename } from "@/utils/media/generateFilename";
+import { isAllowedStorageKey } from "@/utils/media/storageKeys";
 // AWS configuration
 const REGION = process.env.AWS_REGION!;
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
@@ -52,6 +53,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing ids" }, { status: 400 });
     }
 
+    if (![siteId, responseId, questionId].every((id) => Number.isSafeInteger(id) && id > 0)) {
+      return NextResponse.json({ error: "Invalid ids" }, { status: 400 });
+    }
+
     if (!siteName || !date) {
       return NextResponse.json({ error: "Missing image metadata" }, { status: 400 });
     }
@@ -93,6 +98,11 @@ export async function POST(request: Request) {
 
       const key =
         `inspections/${siteId}/${responseId}/${questionId}/${generatedFilename}`;
+
+      // The date and names go into the key, so check the result before signing it.
+      if (!isAllowedStorageKey(key, "inspections", siteId, responseId, questionId)) {
+        return NextResponse.json({ error: "Invalid image metadata" }, { status: 400 });
+      }
 
 
 

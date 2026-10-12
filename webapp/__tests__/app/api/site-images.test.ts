@@ -402,4 +402,30 @@ describe("GET /api/site-images", () => {
     expect(response.status).toBe(500);
     expect(body).toEqual({ error: "Failed to fetch site images" });
   });
+
+  it("never signs a row whose key is outside the image folders", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
+
+    const queryBuilder: any = {
+      is: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      then: jest.fn((resolve: any) =>
+        resolve({
+          data: [
+            { id: 14, storage_key: "inspections/207/3235/27/file1.jpg" },
+            { id: 15, storage_key: "pdf-exports/user-2/job-9/report.pdf" },
+          ],
+          error: null,
+        })
+      ),
+    };
+    mockFrom.mockReturnValue({ select: jest.fn().mockReturnValue(queryBuilder) });
+    (getSignedUrl as jest.Mock).mockResolvedValue("https://signed-url.example.com/file1.jpg");
+
+    const response = await GET(new Request("http://localhost:3000/api/site-images?siteid=207"));
+    const body = await response.json();
+
+    expect(body.items.map((item: { id: number }) => item.id)).toEqual([14]);
+    expect(getSignedUrl).toHaveBeenCalledTimes(1);
+  });
 });

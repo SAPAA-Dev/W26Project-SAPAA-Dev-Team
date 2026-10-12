@@ -170,7 +170,6 @@ export default function UploadImages() {
         content_type: string;
         file_size_bytes: number;
         site_id: number;
-        user_id: string;
         date: Date;
         photographer: string;
         identifier: string;
@@ -205,7 +204,6 @@ export default function UploadImages() {
           content_type: file.type,
           file_size_bytes: file.size,
           site_id: entry.site!.id,
-          user_id: userUid,
           date: new Date(entry.date),
           photographer: entry.who,
           identifier: entry.identifier,
