@@ -20,7 +20,7 @@ function mockCaller(role: string, approved = true) {
   });
 }
 
-describe("site page fields", () => {
+describe("site page fields (US 2.0.5)", () => {
   const mockFrom = jest.fn();
   const mockUpsert = jest.fn();
 
@@ -32,7 +32,7 @@ describe("site page fields", () => {
     (createServerSupabase as jest.Mock).mockReturnValue({ from: mockFrom });
   });
 
-  it("updateSitePageFields rejects a steward and touches nothing", async () => {
+  it("updateSitePageFields rejects a steward and touches nothing (2.0.5 AT2)", async () => {
     mockCaller("steward");
 
     await expect(
@@ -41,7 +41,7 @@ describe("site page fields", () => {
     expect(mockFrom).not.toHaveBeenCalled();
   });
 
-  it("updateSitePageFields saves links and keeps a hidden field's value", async () => {
+  it("updateSitePageFields saves links and keeps a hidden field's value (2.0.5 AT4)", async () => {
     await queries.updateSitePageFields(7, [
       { fieldKey: "sapaa_website", value: "  https://sapaastewards.com/bilby  ", isVisible: true },
       { fieldKey: "inaturalist", value: "https://www.inaturalist.org/places/bilby", isVisible: false },
@@ -99,7 +99,7 @@ describe("site page fields", () => {
     expect(mockUpsert).not.toHaveBeenCalled();
   });
 
-  it("getSiteLinks returns only links that are shown", async () => {
+  it("getSiteLinks returns only links that are shown (2.0.5 AT4)", async () => {
     mockUserFrom.mockReturnValue({
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockResolvedValue({

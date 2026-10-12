@@ -4,6 +4,7 @@ import {
   getSiteInspectionReportDeleteImpact,
   permanentlyDeleteSiteInspectionReport,
   restoreSiteInspectionReport,
+  setFormResponseActive,
   type SiteInspectionReportDeleteImpact,
 } from '../../utils/supabase/queries';
 import { deleteObjectsByKeys } from '../../utils/media/s3Delete';
@@ -38,7 +39,7 @@ function mockCaller(role: string | null, approved = true) {
   });
 }
 
-describe('Site Inspection Report archive queries', () => {
+describe('Site Inspection Report archive queries (US 7.0.8)', () => {
   const mockRpc = jest.fn();
   const mockFrom = jest.fn();
 
@@ -56,7 +57,7 @@ describe('Site Inspection Report archive queries', () => {
     ['a steward', 'steward', true],
     ['an unapproved admin', 'admin', false],
     ['a signed-out caller', null, true],
-  ])('rejects %s before a privileged client is created', async (_label, role, approved) => {
+  ])('rejects %s before a privileged client is created (7.0.8 AT4)', async (_label, role, approved) => {
     mockCaller(role, approved);
 
     await expect(archiveSiteInspectionReport(41)).rejects.toThrow(
@@ -84,7 +85,7 @@ describe('Site Inspection Report archive queries', () => {
     }
   );
 
-  it('gets the confirmation counts', async () => {
+  it('gets the confirmation counts (7.0.8 AT1)', async () => {
     mockRpc.mockResolvedValue({ data: impact, error: null });
 
     await expect(getSiteInspectionReportDeleteImpact(41)).resolves.toEqual(impact);
@@ -115,7 +116,29 @@ describe('Site Inspection Report archive queries', () => {
     });
   });
 
-  it('permanently deletes an archived report and then removes its S3 objects', async () => {
+  it('keeps the S3 files of a deactivated or archived report (7.0.5 AT4)', async () => {
+    const mockIs = jest.fn().mockResolvedValue({ error: null });
+    const mockUpdate = jest.fn().mockReturnValue({
+      eq: jest.fn().mockReturnValue({ is: mockIs }),
+    });
+    mockFrom.mockReturnValue({ update: mockUpdate });
+    mockRpc.mockResolvedValue({
+      data: { responseId: 41, archivedAt: '2026-10-09T10:00:00.000Z' },
+      error: null,
+    });
+
+    await setFormResponseActive(41, false);
+    await archiveSiteInspectionReport(41);
+
+    expect(mockFrom).toHaveBeenCalledTimes(1);
+    expect(mockFrom).toHaveBeenCalledWith('form_responses');
+    expect(mockUpdate).toHaveBeenCalledWith({ is_active: false });
+    expect(mockRpc).toHaveBeenCalledTimes(1);
+    expect(mockRpc).toHaveBeenCalledWith('archive_site_inspection_report', { p_response_id: 41 });
+    expect(deleteObjectsByKeys).not.toHaveBeenCalled();
+  });
+
+  it('permanently deletes an archived report and then removes its S3 objects (7.0.8 AT3)', async () => {
     mockRpc.mockResolvedValue({
       data: { ...impact, storageKeys: ['sir/one.jpg', 'sir/two.jpg'] },
       error: null,
@@ -146,7 +169,7 @@ describe('Site Inspection Report archive queries', () => {
     consoleError.mockRestore();
   });
 
-  it('does not delete S3 objects when the database transaction fails', async () => {
+  it('does not delete S3 objects when the database transaction fails (7.0.8 AT5)', async () => {
     mockRpc.mockResolvedValue({
       data: null,
       error: { message: 'Report must be archived first' },

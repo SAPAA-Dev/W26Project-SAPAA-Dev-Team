@@ -3,7 +3,7 @@
 const TEST_RESPONSE_ID = 3237; 
 const NEW_VALUE = 'Thank you Frank Potter for hosting this field trip!';
 
-describe("US 1.0.22 - Editing Site Inspection Form", () => {
+describe("W26 US 1.0.22 - Editing Site Inspection Form", () => {
 
   beforeEach(() => {
     cy.visit("http://localhost:3000/");

@@ -604,7 +604,7 @@ beforeEach(() => {
   window.scrollTo = jest.fn();
 });
 
-describe('US 1.0.22 – (User) Edit My Site Inspections Form', () => {
+describe('W26 US 1.0.22 – (User) Edit My Site Inspections Form', () => {
     beforeEach(() => {
       jest.clearAllMocks();
       localStorage.clear();
@@ -733,7 +733,7 @@ describe('US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         expect(queries.updateSiteInspectionAnswers).not.toHaveBeenCalled();
     });
 
-    it("blocks saving when a newly uploaded image is missing required metadata fields", async () => {
+    it("blocks saving when a newly uploaded image is missing required metadata fields (4.0.6 AT1)", async () => {
         (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(mockQuestions);
         (queries.getFormResponseById as jest.Mock).mockResolvedValue(mockResponses);
 

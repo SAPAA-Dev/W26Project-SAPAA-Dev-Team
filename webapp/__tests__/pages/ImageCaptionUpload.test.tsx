@@ -58,7 +58,7 @@ async function renderImageMainContent(mockOnChange: jest.Mock) {
   return view;
 }
 
-describe("US 1.0.18 - Image Caption Behavior in Upload Question", () => {
+describe("W26 US 1.0.18 - Image Caption Behavior in Upload Question", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();

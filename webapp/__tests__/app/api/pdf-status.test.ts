@@ -66,7 +66,7 @@ describe('GET /api/pdf/status/[jobId]', () => {
     expect(body).toEqual({ error: 'Job not found' });
   });
 
-  it('returns 403 when the job belongs to another user', async () => {
+  it('returns 403 when the job belongs to another user (7.0.1 AT2)', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
     mockSingle.mockResolvedValue({
       data: { status: 'complete', storage_path: 'pdf-exports/u2/job-1/report.pdf', error: null, created_by: 'u2' },

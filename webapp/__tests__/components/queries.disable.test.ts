@@ -13,7 +13,7 @@ function mockCaller(role: string | null, approved = true) {
   });
 }
 
-describe("Supabase disable site functions", () => {
+describe("Supabase disable site functions (US 2.0.3)", () => {
   const mockFrom = jest.fn();
 
   beforeEach(() => {
@@ -87,7 +87,7 @@ describe("Supabase disable site functions", () => {
   });
 
   describe("toggleSiteActive", () => {
-    it("sets site to inactive", async () => {
+    it("sets site to inactive (2.0.3 AT1)", async () => {
       const mockEq = jest.fn().mockResolvedValue({ error: null });
       const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq });
       mockFrom.mockReturnValueOnce({ update: mockUpdate });
@@ -98,7 +98,7 @@ describe("Supabase disable site functions", () => {
       expect(mockEq).toHaveBeenCalledWith("id", 1);
     });
 
-    it("sets site to active", async () => {
+    it("sets site to active (2.0.3 AT1)", async () => {
       const mockEq = jest.fn().mockResolvedValue({ error: null });
       const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq });
       mockFrom.mockReturnValueOnce({ update: mockUpdate });
@@ -115,7 +115,7 @@ describe("Supabase disable site functions", () => {
       await expect(queries.toggleSiteActive(1, false)).rejects.toThrow("Toggle failed");
     });
 
-    it("rejects a steward and writes nothing", async () => {
+    it("rejects a steward and writes nothing (2.0.3 AT1)", async () => {
       mockCaller("steward");
 
       await expect(queries.toggleSiteActive(1, false)).rejects.toThrow("Only admins can edit sites.");

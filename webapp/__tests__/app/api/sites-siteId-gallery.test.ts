@@ -99,7 +99,7 @@ describe("GET /api/sites/[siteId]/gallery", () => {
     expect(body).toEqual({ error: "Unauthorized" });
   });
 
-  it("returns gallery items successfully", async () => {
+  it("returns gallery items successfully (7.0.8 AT3)", async () => {
     mockGetUser.mockResolvedValue({
       data: {
         user: {

@@ -126,7 +126,7 @@ describe("GET /api/gallery", () => {
     expect(body).toEqual({ error: "Forbidden" });
   });
 
-  it("returns gallery items successfully for admin", async () => {
+  it("returns gallery items successfully for admin (7.0.8 AT3)", async () => {
     mockGetUser.mockResolvedValue({
       data: {
         user: {

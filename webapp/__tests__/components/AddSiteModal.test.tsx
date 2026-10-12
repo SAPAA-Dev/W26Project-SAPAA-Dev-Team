@@ -32,7 +32,7 @@ function renderModal(onSave = jest.fn().mockResolvedValue(true)) {
   return onSave;
 }
 
-describe("AddSiteModal", () => {
+describe("AddSiteModal (US 2.0.2)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (findSitesWithName as jest.Mock).mockResolvedValue([]);
@@ -57,7 +57,7 @@ describe("AddSiteModal", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it("blocks saving and highlights the name when it is empty", async () => {
+  it("blocks saving and highlights the name when it is empty (2.0.2 AT3)", async () => {
     const onSave = renderModal();
 
     fireEvent.click(screen.getByTestId("add-site-save-button"));
@@ -67,7 +67,7 @@ describe("AddSiteModal", () => {
     expect(onSave).not.toHaveBeenCalled();
   });
 
-  it("shows a possible-duplicate warning when the name already exists", async () => {
+  it("shows a possible-duplicate warning when the name already exists (2.0.2 AT2)", async () => {
     (findSitesWithName as jest.Mock).mockResolvedValue(["Bilby NA"]);
     renderModal();
 
@@ -79,7 +79,7 @@ describe("AddSiteModal", () => {
     expect(findSitesWithName).toHaveBeenCalledWith("bilby na");
   });
 
-  it("still lets the admin save after the duplicate warning", async () => {
+  it("still lets the admin save after the duplicate warning (2.0.2 AT2)", async () => {
     (findSitesWithName as jest.Mock).mockResolvedValue(["Bilby NA"]);
     const onSave = renderModal();
 
@@ -94,7 +94,7 @@ describe("AddSiteModal", () => {
     );
   });
 
-  it("saves the trimmed name and the chosen county", async () => {
+  it("saves the trimmed name and the chosen county (2.0.2 AT3)", async () => {
     const onSave = renderModal();
 
     fireEvent.change(screen.getByTestId("add-site-name-input"), { target: { value: "  New Site  " } });
@@ -106,7 +106,7 @@ describe("AddSiteModal", () => {
     );
   });
 
-  it("saves one selected protected area", async () => {
+  it("saves one selected protected area (2.0.2 AT1)", async () => {
     const onSave = renderModal();
 
     fireEvent.change(screen.getByTestId("add-site-name-input"), { target: { value: "Lakeland Site" } });
@@ -123,7 +123,7 @@ describe("AddSiteModal", () => {
     );
   });
 
-  it("suggests SAPAA map areas that match what the admin types", async () => {
+  it("suggests SAPAA map areas that match what the admin types (2.0.2 AT6)", async () => {
     renderModal();
     await waitFor(() => expect(getSiteSuggestions).toHaveBeenCalled());
 
@@ -135,7 +135,7 @@ describe("AddSiteModal", () => {
     expect(list).not.toHaveTextContent("Wagner");
   });
 
-  it("fills in the name when the admin picks a suggestion", async () => {
+  it("fills in the name when the admin picks a suggestion (2.0.2 AT6)", async () => {
     renderModal();
     await waitFor(() => expect(getSiteSuggestions).toHaveBeenCalled());
 

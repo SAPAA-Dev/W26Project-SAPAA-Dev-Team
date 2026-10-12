@@ -18,13 +18,13 @@ function openEditor(onSaved = jest.fn()) {
   return onSaved;
 }
 
-describe("SitePageEditor", () => {
+describe("SitePageEditor (US 2.0.5)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (updateSitePageFields as jest.Mock).mockResolvedValue({ ok: true });
   });
 
-  it("enters edit mode with every field from the list", () => {
+  it("enters edit mode with every field from the list (2.0.5 AT1)", () => {
     openEditor();
 
     expect(screen.getByTestId("site-page-editor")).toBeInTheDocument();
@@ -41,7 +41,7 @@ describe("SitePageEditor", () => {
     expect(screen.getByLabelText("iNaturalist")).toHaveValue("https://www.inaturalist.org/");
   });
 
-  it("marks each field as shown or hidden", () => {
+  it("marks each field as shown or hidden (2.0.5 AT3)", () => {
     openEditor();
 
     expect(screen.getByTestId("site-page-visibility-sapaa_website")).toHaveTextContent("Shown");
@@ -49,7 +49,7 @@ describe("SitePageEditor", () => {
     expect(screen.getByTestId("site-page-visibility-designated_steward")).toHaveTextContent("Shown");
   });
 
-  it("saves edited values and visibility, then reports the save", async () => {
+  it("saves edited values and visibility, then reports the save (2.0.5 AT4)", async () => {
     const onSaved = openEditor();
 
     fireEvent.change(screen.getByLabelText("SAPAA website"), { target: { value: "https://sapaastewards.com/new" } });
@@ -65,7 +65,7 @@ describe("SitePageEditor", () => {
     expect(screen.queryByTestId("site-page-editor")).not.toBeInTheDocument();
   });
 
-  it("US 2.0.5 (M8): shows the error the action returns and stays in edit mode", async () => {
+  it("US 2.0.5 (M8): shows the error the action returns and stays in edit mode (2.0.5 AT4)", async () => {
     (updateSitePageFields as jest.Mock).mockResolvedValue({ ok: false, error: "Links must start with http:// or https://" });
     const onSaved = openEditor();
 

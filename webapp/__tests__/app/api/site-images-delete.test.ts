@@ -28,7 +28,7 @@ jest.mock("@/utils/media/s3Delete", () => ({
   deleteObjectsByKeys: jest.fn(),
 }));
 
-describe("DELETE /api/site-images", () => {
+describe("DELETE /api/site-images (US 7.0.5)", () => {
   const mockGetUser = jest.fn();
   const mockFrom = jest.fn();
   const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
@@ -95,7 +95,7 @@ describe("DELETE /api/site-images", () => {
     expect(deleteObjectsByKeys).not.toHaveBeenCalled();
   });
 
-  it("returns 403 for a non-admin user and deletes nothing", async () => {
+  it("returns 403 for a non-admin user and deletes nothing (7.0.5 AT2)", async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: "user-1", app_metadata: { role: "steward", authenticated: true } } },
       error: null,
@@ -110,7 +110,7 @@ describe("DELETE /api/site-images", () => {
     expect(deleteObjectsByKeys).not.toHaveBeenCalled();
   });
 
-  it("returns 403 when only user_metadata claims admin and deletes nothing", async () => {
+  it("returns 403 when only user_metadata claims admin and deletes nothing (7.0.5 AT2)", async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: "user-1", user_metadata: { role: "admin" }, app_metadata: { role: "steward", authenticated: true } } },
       error: null,
@@ -125,7 +125,7 @@ describe("DELETE /api/site-images", () => {
     expect(deleteObjectsByKeys).not.toHaveBeenCalled();
   });
 
-  it("returns 403 for an unapproved admin and deletes nothing", async () => {
+  it("returns 403 for an unapproved admin and deletes nothing (7.0.5 AT2)", async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: "user-1", app_metadata: { role: "admin", authenticated: false } } },
       error: null,
@@ -169,7 +169,7 @@ describe("DELETE /api/site-images", () => {
     expect(deleteObjectsByKeys).not.toHaveBeenCalled();
   });
 
-  it("deletes the row before the S3 file on success", async () => {
+  it("deletes the row before the S3 file on success (7.0.5 AT1, 7.0.5 AT3)", async () => {
     mockAttachmentRow({ id: 14, storage_key: "inspections/207/3226/27/file1.jpg" });
     const { eqMock } = mockAttachmentDelete([{ id: 14 }]);
 
@@ -187,7 +187,7 @@ describe("DELETE /api/site-images", () => {
     );
   });
 
-  it("returns 500 after the row delete when the S3 delete fails", async () => {
+  it("returns 500 after the row delete when the S3 delete fails (7.0.5 AT3)", async () => {
     mockAttachmentRow({ id: 14, storage_key: "inspections/207/3226/27/file1.jpg" });
     mockAttachmentDelete([{ id: 14 }]);
     (deleteObjectsByKeys as jest.Mock).mockRejectedValueOnce(new Error("S3 down"));
@@ -238,7 +238,7 @@ describe("DELETE /api/site-images", () => {
     expect(mockFrom).toHaveBeenNthCalledWith(2, "attachments");
   });
 
-  it("deletes a homepage upload row and its S3 file when kind is homepage_image_uploads", async () => {
+  it("deletes a homepage upload row and its S3 file when kind is homepage_image_uploads (7.0.5 AT1, 7.0.5 AT3)", async () => {
     mockAttachmentRow({ id: 7, storage_key: "homepage/207/file2.jpg" });
     mockAttachmentDelete([{ id: 7 }]);
 

@@ -57,7 +57,7 @@ function mockCaller(role: string | null, approved = true) {
   });
 }
 
-describe('site archive queries', () => {
+describe('site archive queries (US 2.0.4)', () => {
   const mockRpc = jest.fn();
   const mockOrder = jest.fn();
   const mockNot = jest.fn();
@@ -77,7 +77,7 @@ describe('site archive queries', () => {
   });
 
   describe('getSiteDeleteImpact', () => {
-    it('returns the connected record counts for an approved administrator', async () => {
+    it('returns the connected record counts for an approved administrator (2.0.4 AT2)', async () => {
       mockRpc.mockResolvedValue({ data: impact, error: null });
 
       await expect(getSiteDeleteImpact(27)).resolves.toEqual(impact);
@@ -141,7 +141,7 @@ describe('site archive queries', () => {
   });
 
   describe('archiveSite', () => {
-    it('returns the archive result for an approved administrator', async () => {
+    it('returns the archive result for an approved administrator (2.0.4 AT3)', async () => {
       mockRpc.mockResolvedValue({ data: archiveResult, error: null });
 
       await expect(archiveSite(27)).resolves.toEqual(archiveResult);
@@ -160,7 +160,7 @@ describe('site archive queries', () => {
       }
     );
 
-    it('returns the database error when the archive transaction fails', async () => {
+    it('returns the database error when the archive transaction fails (2.0.4 AT4)', async () => {
       mockRpc.mockResolvedValue({
         data: null,
         error: { message: 'Site 27 is already archived' },
@@ -219,7 +219,7 @@ describe('site archive queries', () => {
   });
 
   describe('permanentlyDeleteSite', () => {
-    it('returns the connected record counts for an approved administrator', async () => {
+    it('returns the connected record counts for an approved administrator (2.0.4 AT3)', async () => {
       mockRpc.mockResolvedValue({ data: impact, error: null });
 
       await expect(permanentlyDeleteSite(27)).resolves.toEqual(impact);
@@ -238,7 +238,7 @@ describe('site archive queries', () => {
       }
     );
 
-    it('returns the database error when the delete transaction fails', async () => {
+    it('returns the database error when the delete transaction fails (2.0.4 AT4)', async () => {
       mockRpc.mockResolvedValue({
         data: null,
         error: { message: 'Site 27 must be archived before it can be permanently deleted' },

@@ -102,7 +102,7 @@ describe('ReportsPage', () => {
     );
   });
 
-  it('lists reports of archived sites as plain text with an Archived badge, not links', async () => {
+  it('lists reports of archived sites as plain text with an Archived badge, not links (2.0.4 AT3)', async () => {
     render(<ReportsPage />);
 
     await screen.findByTestId('reports-list');
@@ -123,7 +123,7 @@ describe('ReportsPage', () => {
     expect(screen.getByTestId('report-site-inactive-14')).toHaveTextContent('Inactive');
   });
 
-  it('lists reports of permanently deleted sites as Unknown site, not links', async () => {
+  it('lists reports of permanently deleted sites as Unknown site, not links (2.0.4 AT3)', async () => {
     render(<ReportsPage />);
 
     await screen.findByTestId('reports-list');

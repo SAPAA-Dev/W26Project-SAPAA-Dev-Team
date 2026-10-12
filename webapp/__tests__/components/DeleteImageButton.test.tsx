@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import DeleteImageButton from "@/components/DeleteImageButton";
 
-describe("DeleteImageButton", () => {
+describe("DeleteImageButton (US 7.0.5)", () => {
   const mockFetch = jest.fn();
   const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
@@ -31,7 +31,7 @@ describe("DeleteImageButton", () => {
     expect(mockFetch).not.toHaveBeenCalled();
   });
 
-  it("sends the DELETE request and reports the deleted id", async () => {
+  it("sends the DELETE request and reports the deleted id (7.0.5 AT1)", async () => {
     mockFetch.mockResolvedValueOnce({ ok: true });
     const onDeleted = jest.fn();
     render(<DeleteImageButton attachmentId="14" onDeleted={onDeleted} />);
@@ -63,7 +63,7 @@ describe("DeleteImageButton", () => {
     expect(onDeleted).toHaveBeenCalledWith("7");
   });
 
-  it("shows an error and deletes nothing when the request fails", async () => {
+  it("shows an error and deletes nothing when the request fails (7.0.5 AT1)", async () => {
     mockFetch.mockResolvedValueOnce({ ok: false });
     const onDeleted = jest.fn();
     render(<DeleteImageButton attachmentId="14" onDeleted={onDeleted} />);

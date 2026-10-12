@@ -69,7 +69,7 @@ jest.mock("next/server", () => ({
       expect(body).toEqual({ error: "Unauthorized" });
     });
   
-    it("returns gallery items successfully for user", async () => {
+    it("returns gallery items successfully for user (7.0.8 AT3)", async () => {
       mockGetUser.mockResolvedValue({
         data: {
             user: {

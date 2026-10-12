@@ -658,7 +658,7 @@ function mapFeature(
   };
 }
 
-it('filters the map by type, subtype and name, and keeps the search text across views', async () => {
+it('filters the map by type, subtype and name, and keeps the search text across views (2.0.6 AT1)', async () => {
   const user = userEvent.setup();
   mockGetProtectedAreaBoundaries.mockResolvedValue({
     type: 'FeatureCollection',
@@ -706,13 +706,16 @@ it('filters the map by type, subtype and name, and keeps the search text across 
   expect(cardSearch).toHaveValue('');
   expect(screen.getByRole('button', { name: /sort/i })).toBeInTheDocument();
 
-  await user.type(cardSearch, 'River');
+  // One change event instead of typed keys, so a slow run cannot drop letters
+  fireEvent.change(cardSearch, { target: { value: 'River' } });
+  expect(cardSearch).toHaveValue('River');
   await user.click(screen.getByRole('button', { name: 'Map View' }));
 
   await waitFor(() => {
     expect(screen.getByPlaceholderText('Search by name, OC name or county...')).toHaveValue('River');
   });
-  expect(screen.getByText('Pembina River')).toBeInTheDocument();
+  // The area is on the map and in the search matches list (2.0.6 AT3)
+  expect(screen.getAllByText('Pembina River').length).toBeGreaterThan(0);
   expect(screen.queryByRole('button', { name: /^sort$/i })).not.toBeInTheDocument();
 });
 

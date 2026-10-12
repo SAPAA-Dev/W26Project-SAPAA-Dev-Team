@@ -31,7 +31,7 @@ function mockCaller(role: string, approved = true) {
   return userFrom;
 }
 
-describe("getProtectedAreaBoundaries", () => {
+describe("getProtectedAreaBoundaries (US 2.0.6)", () => {
   const mockAdminFrom = jest.fn();
 
   beforeEach(() => {
@@ -74,7 +74,7 @@ describe("getProtectedAreaBoundaries", () => {
     geometry: SQUARE,
   };
 
-  it("attaches the county and active flag from the linked site", async () => {
+  it("attaches the county and active flag from the linked site (2.0.6 AT1)", async () => {
     mockAreas([area]);
     mockLinks([{ protected_area_id: 7, is_active: false, ab_counties: { county: "Parkland" } }]);
 
@@ -102,7 +102,7 @@ describe("getProtectedAreaBoundaries", () => {
     expect(collection.features[0].properties.is_active).toBe(true);
   });
 
-  it("leaves county and status empty when no site joins the protected area", async () => {
+  it("leaves county and status empty when no site joins the protected area (2.0.6 AT1)", async () => {
     mockAreas([area]);
     mockLinks([]);
 
@@ -112,7 +112,7 @@ describe("getProtectedAreaBoundaries", () => {
     expect(collection.features[0].properties.is_active).toBeNull();
   });
 
-  it("omits an inactive site for a steward", async () => {
+  it("omits an inactive site for a steward (2.0.3 AT2)", async () => {
     const userFrom = mockCaller("steward");
     userFrom.mockReturnValue({
       select: jest.fn().mockResolvedValue({ data: [area], error: null }),

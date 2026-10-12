@@ -24,12 +24,12 @@ function jsonResponse(body: unknown, ok = true, status = 200) {
   } as Response;
 }
 
-describe('SirPdfExportButton', () => {
+describe('SirPdfExportButton (US 7.0.1)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('renders an Export PDF button', () => {
+  it('renders an Export PDF button (7.0.1 AT1)', () => {
     render(<SirPdfExportButton responseId={42} />);
 
     const button = screen.getByTestId('export-pdf-button');
@@ -38,7 +38,7 @@ describe('SirPdfExportButton', () => {
     expect(button).not.toBeDisabled();
   });
 
-  it('starts a single-report export job with images included and tracks it to completion', async () => {
+  it('starts a single-report export job with images included and tracks it to completion (7.0.1 AT1, 7.0.1 AT3)', async () => {
     mockFetch
       .mockResolvedValueOnce(jsonResponse({ jobId: 'job-1' }, true, 202))
       .mockResolvedValueOnce(jsonResponse({ status: 'complete', downloadUrl: 'https://example.com/report.pdf' }));
@@ -65,7 +65,7 @@ describe('SirPdfExportButton', () => {
     expect(mockFetch).toHaveBeenNthCalledWith(2, '/api/pdf/status/job-1');
   });
 
-  it('shows the server error when the export request is refused', async () => {
+  it('shows the server error when the export request is refused (7.0.1 AT2)', async () => {
     mockFetch.mockResolvedValueOnce(
       jsonResponse({ error: 'Forbidden - you can only export reports you submitted' }, false, 403)
     );
@@ -81,7 +81,7 @@ describe('SirPdfExportButton', () => {
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
-  it('shows the job error when PDF generation fails', async () => {
+  it('shows the job error when PDF generation fails (7.0.1 AT1)', async () => {
     mockFetch
       .mockResolvedValueOnce(jsonResponse({ jobId: 'job-1' }, true, 202))
       .mockResolvedValueOnce(jsonResponse({ status: 'failed', error: 'Render failed' }));

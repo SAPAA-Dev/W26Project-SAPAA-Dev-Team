@@ -274,7 +274,7 @@ describe('PdfExportModal', () => {
 
   // ── Advanced Options ──
 
-  it('toggles advanced options panel', async () => {
+  it('toggles advanced options panel (7.0.7 AT1)', async () => {
     const user = userEvent.setup();
     render(
       <PdfExportModal open={true} onClose={onClose} mode="site" siteName="Test" />
@@ -290,7 +290,7 @@ describe('PdfExportModal', () => {
     expect(screen.getByText('US Letter')).toBeInTheDocument();
   });
 
-  it('shows sections and questions for site mode and multi-site mode', async () => {
+  it('shows sections and questions for site mode and multi-site mode (7.0.7 AT1)', async () => {
     const user = userEvent.setup();
     const { unmount } = render(
       <PdfExportModal
@@ -328,7 +328,7 @@ describe('PdfExportModal', () => {
     expect(screen.getByText('Wildlife')).toBeInTheDocument();
   });
 
-  it('sends hidden question ids and keeps the section when one question stays selected', async () => {
+  it('sends hidden question ids and keeps the section when one question stays selected (7.0.7 AT1)', async () => {
     const user = userEvent.setup();
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,

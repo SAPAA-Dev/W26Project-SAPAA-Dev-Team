@@ -125,7 +125,7 @@ function layerHandler(eventName: string): (event: Record<string, unknown>) => vo
   return call[2];
 }
 
-describe('SiteMap', () => {
+describe('SiteMap (US 2.0.6)', () => {
   beforeAll(() => {
     // jsdom does not implement ResizeObserver.
     (global as unknown as { ResizeObserver: unknown }).ResizeObserver = jest.fn(

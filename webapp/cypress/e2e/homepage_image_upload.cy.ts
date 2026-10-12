@@ -74,7 +74,7 @@ function fillAllFields() {
   selectSite("Riverlot 56");
 }
 
-describe("US 2.0.8 - User Upload of Standalone Site Images", () => {
+describe("W26 US 2.0.8 - User Upload of Standalone Site Images", () => {
   it("shows empty fields after uploading an image", () => {
     cy.contains(/Image 1 of 1/i).should("exist");
     siteInput().should("have.value", "");

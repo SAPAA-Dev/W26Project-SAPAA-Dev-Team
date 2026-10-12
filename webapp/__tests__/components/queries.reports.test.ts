@@ -90,7 +90,7 @@ describe('getAllSiteReports', () => {
     expect(mockFrom).not.toHaveBeenCalled();
   });
 
-  it('returns every active report with site and submitter details', async () => {
+  it('returns every active report with site and submitter details (7.0.8 AT2)', async () => {
     const responsesQuery = chainableQuery({ data: reportRows, error: null });
     const peopleQuery = chainableQuery({
       data: [

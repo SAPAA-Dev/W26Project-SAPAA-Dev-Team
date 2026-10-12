@@ -55,7 +55,7 @@ const FEATURES = [PEMBINA, JASPER, GOOSEBERRY];
 
 const ALL_SELECTED = { types: null, subtypes: null, counties: null, statuses: null };
 
-describe('boundaryFilterOptions', () => {
+describe('boundaryFilterOptions (US 2.0.6)', () => {
   it('lists each type and subtype once, in order, and adds a choice for a missing value', () => {
     const unnamed = feature(4, 'Blank', '  ', null, null);
     expect(
@@ -81,8 +81,8 @@ describe('boundaryFilterOptions', () => {
   });
 });
 
-describe('filterBoundaryFeatures', () => {
-  it('matches NAME and OC_NAME without regard to case', () => {
+describe('filterBoundaryFeatures (US 2.0.6)', () => {
+  it('matches NAME and OC_NAME without regard to case (2.0.6 AT1)', () => {
     expect(filterBoundaryFeatures(FEATURES, '  PEMBINA  ', ALL_SELECTED).map((item) => item.id)).toEqual([
       1,
     ]);
@@ -91,11 +91,11 @@ describe('filterBoundaryFeatures', () => {
     ]);
   });
 
-  it('keeps every feature when the search is blank', () => {
+  it('keeps every feature when the search is blank (2.0.6 AT2)', () => {
     expect(filterBoundaryFeatures(FEATURES, '   ', ALL_SELECTED)).toHaveLength(3);
   });
 
-  it('treats several types as a match for any of them, and requires the subtype as well', () => {
+  it('treats several types as a match for any of them, and requires the subtype as well (2.0.6 AT1)', () => {
     const matched = filterBoundaryFeatures(FEATURES, '', {
       types: new Set(['NA', 'WPP']),
       subtypes: new Set(['Conservation']),
@@ -106,7 +106,7 @@ describe('filterBoundaryFeatures', () => {
     expect(matched.map((item) => item.id)).toEqual([1]);
   });
 
-  it('matches a feature with no subtype only when No Subtype is selected', () => {
+  it('matches a feature with no subtype only when No Subtype is selected (2.0.6 AT1)', () => {
     const matched = filterBoundaryFeatures(FEATURES, '', {
       types: null,
       subtypes: new Set([NO_SUBTYPE_LABEL]),
@@ -117,7 +117,7 @@ describe('filterBoundaryFeatures', () => {
     expect(matched.map((item) => item.id)).toEqual([2]);
   });
 
-  it('matches a feature with no type only when No Type is selected', () => {
+  it('matches a feature with no type only when No Type is selected (2.0.6 AT1)', () => {
     const blank = feature(4, 'Blank', '', 'Conservation', null);
     const matched = filterBoundaryFeatures([PEMBINA, blank], '', {
       types: new Set([NO_TYPE_LABEL]),
@@ -129,7 +129,7 @@ describe('filterBoundaryFeatures', () => {
     expect(matched.map((item) => item.id)).toEqual([4]);
   });
 
-  it('hides a feature with no subtype when a subtype is selected', () => {
+  it('hides a feature with no subtype when a subtype is selected (2.0.6 AT1)', () => {
     const matched = filterBoundaryFeatures(FEATURES, '', {
       types: null,
       subtypes: new Set(['Recreation']),
@@ -140,7 +140,7 @@ describe('filterBoundaryFeatures', () => {
     expect(matched.map((item) => item.id)).toEqual([3]);
   });
 
-  it('shows a feature with no subtype when every subtype is selected', () => {
+  it('shows a feature with no subtype when every subtype is selected (2.0.6 AT2)', () => {
     const matched = filterBoundaryFeatures(FEATURES, '', {
       types: new Set(['WPP']),
       subtypes: null,
@@ -151,13 +151,13 @@ describe('filterBoundaryFeatures', () => {
     expect(matched.map((item) => item.id)).toEqual([2]);
   });
 
-  it('shows nothing when a category has no selected values', () => {
+  it('shows nothing when a category has no selected values (2.0.6 AT1)', () => {
     expect(
       filterBoundaryFeatures(FEATURES, '', { types: new Set(), subtypes: null, counties: null, statuses: null })
     ).toEqual([]);
   });
 
-  it('uses Unknown county when a protected area has no county', () => {
+  it('uses Unknown county when a protected area has no county (2.0.6 AT1)', () => {
     const named = feature(8, 'Pembina River', 'NA', 'Conservation', null, 'Parkland', true);
     expect(countyFilterOptions([named.properties.county, null])).toEqual([UNKNOWN_COUNTY_LABEL, 'Parkland']);
 
@@ -171,7 +171,7 @@ describe('filterBoundaryFeatures', () => {
     expect(matched.map((item) => item.id)).toEqual([1]);
   });
 
-  it('hides inactive sites unless Inactive is selected', () => {
+  it('hides inactive sites unless Inactive is selected (2.0.6 AT2)', () => {
     const active = feature(1, 'Pembina River', 'NA', 'Conservation', null, 'Parkland', true);
     const inactive = feature(2, 'Jasper', 'WPP', null, null, 'Parkland', false);
     const unlinked = feature(3, 'Gooseberry', 'NA', 'Recreation', null, null, null);
@@ -198,24 +198,24 @@ describe('filterBoundaryFeatures', () => {
   });
 });
 
-describe('list filters', () => {
-  it('matches a site with no county only for Unknown county', () => {
+describe('list filters (US 2.0.6)', () => {
+  it('matches a site with no county only for Unknown county (2.0.6 AT1)', () => {
     expect(matchesCountyFilter(null, new Set([UNKNOWN_COUNTY_LABEL]))).toBe(true);
     expect(matchesCountyFilter('Parkland', new Set([UNKNOWN_COUNTY_LABEL]))).toBe(false);
     expect(matchesCountyFilter('Parkland', null)).toBe(true);
   });
 
-  it('matches active and inactive site cards', () => {
+  it('matches active and inactive site cards (2.0.6 AT1)', () => {
     expect(matchesActiveFilter(true, new Set([ACTIVE_STATUS_LABEL]))).toBe(true);
     expect(matchesActiveFilter(false, new Set([ACTIVE_STATUS_LABEL]))).toBe(false);
     expect(matchesActiveFilter(false, null)).toBe(true);
   });
 });
 
-describe('category selection', () => {
+describe('category selection (US 2.0.6)', () => {
   const options = ['NA', 'WPP'];
 
-  it('can narrow the selection and then select every value again', () => {
+  it('can narrow the selection and then select every value again (2.0.6 AT2)', () => {
     const withoutNa = toggleCategoryValue(null, options, 'NA');
     expect(Array.from(withoutNa ?? [])).toEqual(['WPP']);
 

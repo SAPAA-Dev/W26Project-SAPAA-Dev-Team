@@ -58,7 +58,7 @@ async function renderDesignationProtectedAreaMainContent(mockOnChange: jest.Mock
   });
 }
 
-describe('US 1.0.9 - Indicate how the area is designated as protected', () => {
+describe('W26 US 1.0.9 - Indicate how the area is designated as protected', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();

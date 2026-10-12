@@ -103,7 +103,7 @@ async function openPermanentDeleteDialog() {
   await screen.findByRole('dialog', { name: 'Permanently Delete Site' });
 }
 
-describe('Admin archived sites page', () => {
+describe('Admin archived sites page (US 2.0.4)', () => {
   const mockPush = jest.fn();
 
   beforeEach(() => {
@@ -158,7 +158,7 @@ describe('Admin archived sites page', () => {
     expect(screen.getByText('Duck Lake')).toBeInTheDocument();
   });
 
-  it('permanently deletes a site after confirmation', async () => {
+  it('permanently deletes a site after confirmation (2.0.4 AT1)', async () => {
     await renderLoadedPage();
     await openPermanentDeleteDialog();
 
@@ -177,7 +177,7 @@ describe('Admin archived sites page', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('keeps confirmation disabled until the impact arrives', async () => {
+  it('keeps confirmation disabled until the impact arrives (2.0.4 AT2)', async () => {
     const pendingImpact = deferred<SiteDeleteImpact>();
     (supabaseQueries.getSiteDeleteImpact as jest.Mock).mockReturnValue(
       pendingImpact.promise
@@ -199,7 +199,7 @@ describe('Admin archived sites page', () => {
     });
   });
 
-  it('closes the dialog without deleting when the administrator cancels', async () => {
+  it('closes the dialog without deleting when the administrator cancels (2.0.4 AT1)', async () => {
     await renderLoadedPage();
     await openPermanentDeleteDialog();
     await screen.findByText('3 inspection reports');
@@ -211,7 +211,7 @@ describe('Admin archived sites page', () => {
     expect(screen.getByText('Duck Lake')).toBeInTheDocument();
   });
 
-  it('keeps the site and dialog visible when the permanent delete fails', async () => {
+  it('keeps the site and dialog visible when the permanent delete fails (2.0.4 AT4)', async () => {
     (supabaseQueries.permanentlyDeleteSite as jest.Mock).mockRejectedValue(
       new Error('Delete transaction failed')
     );
@@ -228,7 +228,7 @@ describe('Admin archived sites page', () => {
     expect(screen.getAllByText('Duck Lake')).toHaveLength(2);
   });
 
-  it('prevents a second confirmation while deletion is pending', async () => {
+  it('prevents a second confirmation while deletion is pending (2.0.4 AT1)', async () => {
     const pendingDelete = deferred<SiteDeleteImpact>();
     (supabaseQueries.permanentlyDeleteSite as jest.Mock).mockReturnValue(
       pendingDelete.promise

@@ -93,7 +93,7 @@ describe('POST /api/pdf', () => {
     expect(body).toEqual({ error: 'Unauthorized' });
   });
 
-  it('returns 403 if user is not admin', async () => {
+  it('returns 403 if user is not admin (7.0.6 AT3, 7.0.7 AT4)', async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: 'u1', app_metadata: { role: 'user' } } },
       error: null,
@@ -292,7 +292,7 @@ describe('POST /api/pdf', () => {
 
   // ── Steward Access Tests ──
 
-  it('allows an approved steward to export a SIR they submitted', async () => {
+  it('allows an approved steward to export a SIR they submitted (7.0.1 AT1)', async () => {
     mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
     mockResponseMaybeSingle.mockResolvedValue({ data: { user_id: 'u1' }, error: null });
 
@@ -314,7 +314,7 @@ describe('POST /api/pdf', () => {
     expect(processPdfJob).toHaveBeenCalledWith('job-123');
   });
 
-  it('returns 403 when a steward requests a SIR submitted by someone else', async () => {
+  it('returns 403 when a steward requests a SIR submitted by someone else (7.0.1 AT2)', async () => {
     mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
     mockResponseMaybeSingle.mockResolvedValue({ data: { user_id: 'other-user' }, error: null });
 
@@ -327,7 +327,7 @@ describe('POST /api/pdf', () => {
     expect(processPdfJob).not.toHaveBeenCalled();
   });
 
-  it('returns 403 when a steward requests a SIR that does not exist', async () => {
+  it('returns 403 when a steward requests a SIR that does not exist (7.0.1 AT2)', async () => {
     mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
     mockResponseMaybeSingle.mockResolvedValue({ data: null, error: null });
 
@@ -353,7 +353,7 @@ describe('POST /api/pdf', () => {
     expect(processPdfJob).not.toHaveBeenCalled();
   });
 
-  it('returns 403 when a steward requests site mode', async () => {
+  it('returns 403 when a steward requests site mode (7.0.1 AT2)', async () => {
     mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
 
     const res = await POST(makeRequest({ mode: 'site', siteName: 'Elk Island' }));
@@ -365,7 +365,7 @@ describe('POST /api/pdf', () => {
     expect(mockServiceFrom).not.toHaveBeenCalled();
   });
 
-  it('returns 403 when a steward requests multi-site mode', async () => {
+  it('returns 403 when a steward requests multi-site mode (7.0.1 AT2)', async () => {
     mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
 
     const res = await POST(makeRequest({ mode: 'multi-site', siteNames: ['Site A', 'Site B'] }));
@@ -376,7 +376,7 @@ describe('POST /api/pdf', () => {
     expect(mockJobInsert).not.toHaveBeenCalled();
   });
 
-  it('returns 403 for a steward whose approval was revoked', async () => {
+  it('returns 403 for a steward whose approval was revoked (7.0.1 AT2)', async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: 'u1', app_metadata: { role: 'steward', authenticated: false } } },
       error: null,
@@ -522,7 +522,7 @@ describe('POST /api/pdf', () => {
     );
   });
 
-  it('drops hidden question ids that are not integers', async () => {
+  it('drops hidden question ids that are not integers (7.0.7 AT2)', async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
       error: null,

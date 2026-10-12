@@ -471,6 +471,56 @@ describe("POST /api/s3/presign", () => {
     });
   });
 
+  it.each([
+    ["empty", ""],
+    ["null", null],
+  ])("returns an upload url when the identifier is %s (4.0.6 AT1)", async (_label, identifier) => {
+    mockGetUser.mockResolvedValue({
+      data: {
+        user: {
+          id: "user-1",
+          user_metadata: { full_name: "Raiyana Rahman" },
+        },
+      },
+      error: null,
+    });
+
+    (generateFilename as jest.Mock).mockReturnValueOnce(
+      "Riverlot56-2026-03-21-RaiyanaRahman-generated.jpg"
+    );
+
+    (getSignedUrl as jest.Mock).mockResolvedValueOnce(
+      "https://signed-upload.example.com/jpeg"
+    );
+
+    const request = new Request("http://localhost:3000/api/s3/presign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...validBody,
+        identifier,
+      }),
+    });
+
+    const response = await POST(request);
+    const body = await response.json();
+
+    expect(generateFilename).toHaveBeenCalledWith({
+      siteName: "Riverlot 56",
+      date: "2026-03-21",
+      photographer: "Raiyana Rahman",
+      identifier: "",
+      extension: "jpg",
+    });
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      uploadUrl: "https://signed-upload.example.com/jpeg",
+      key: "inspections/207/3226/27/Riverlot56-2026-03-21-RaiyanaRahman-generated.jpg",
+      generatedFilename: "Riverlot56-2026-03-21-RaiyanaRahman-generated.jpg",
+    });
+  });
+
   it("returns 500 when request.json throws", async () => {
     mockGetUser.mockResolvedValue({
       data: {

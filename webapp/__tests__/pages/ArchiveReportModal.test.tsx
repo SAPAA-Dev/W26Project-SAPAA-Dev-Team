@@ -27,8 +27,8 @@ const impact: SiteInspectionReportDeleteImpact = {
   attachmentCount: 2,
 };
 
-describe('ArchiveReportModal', () => {
-  it('explains that answers and images are preserved before confirmation', () => {
+describe('ArchiveReportModal (US 7.0.8)', () => {
+  it('explains that answers and images are preserved before confirmation (7.0.8 AT1)', () => {
     const onConfirm = jest.fn();
     render(
       <ArchiveReportModal
@@ -50,7 +50,7 @@ describe('ArchiveReportModal', () => {
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
 
-  it('does not enable confirmation until matching impact data is ready', () => {
+  it('does not enable confirmation until matching impact data is ready (7.0.8 AT1)', () => {
     render(
       <ArchiveReportModal
         report={report}
@@ -68,7 +68,7 @@ describe('ArchiveReportModal', () => {
     expect(screen.queryByText('18 answers will be preserved')).not.toBeInTheDocument();
   });
 
-  it('keeps the dialog open and shows a server error', () => {
+  it('keeps the dialog open and shows a server error (7.0.8 AT5)', () => {
     render(
       <ArchiveReportModal
         report={report}

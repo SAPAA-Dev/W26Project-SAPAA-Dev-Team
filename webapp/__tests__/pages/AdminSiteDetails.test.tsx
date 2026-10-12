@@ -1114,7 +1114,7 @@ describe('Integration Tests', () => {
     });
   });
 
-  it('loads an inactive site in the administrator view', async () => {
+  it('loads an inactive site in the administrator view (2.0.3 AT4)', async () => {
     mockGetSiteByName.mockResolvedValue([
       { ...mockSite, is_active: false },
     ]);
@@ -1133,7 +1133,7 @@ describe('Integration Tests', () => {
     expect(screen.getByText(/Inspection Reports/)).toBeInTheDocument();
   });
 
-  it('archives a report after the administrator confirms', async () => {
+  it('archives a report after the administrator confirms (7.0.8 AT1, 7.0.8 AT2)', async () => {
     const user = userEvent.setup();
     render(<AdminSiteDetails />);
 

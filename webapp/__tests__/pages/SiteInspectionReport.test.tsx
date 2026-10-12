@@ -303,7 +303,7 @@ const tripDetailsQuestions = [
 
 // --- Tests ---
 
-describe('US 1.0.4 - Have access to the Terms and Conditions of Inputting Information', () => {
+describe('W26 US 1.0.4 - Have access to the Terms and Conditions of Inputting Information', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
@@ -341,7 +341,7 @@ describe('US 1.0.4 - Have access to the Terms and Conditions of Inputting Inform
   });
 });
 
-describe('US 1.0.2 - Add Personal Information to Site Inspection Form', () => {
+describe('W26 US 1.0.2 - Add Personal Information to Site Inspection Form', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
@@ -442,7 +442,7 @@ describe('US 1.0.2 - Add Personal Information to Site Inspection Form', () => {
   });
 });
 
-describe('US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
+describe('W26 US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
@@ -744,7 +744,7 @@ describe('US 1.0.5 - Add Details Regarding the Overview of my Visit', () => {
   });
 });
 
-describe('US 1.0.8 - Address What Amenities are in the Site', () => {
+describe('W26 US 1.0.8 - Address What Amenities are in the Site', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
@@ -793,7 +793,7 @@ describe('US 1.0.8 - Address What Amenities are in the Site', () => {
   });
 });
 
-describe('US 1.0.12 - Address any Biological Observations that is in the Site', () => {
+describe('W26 US 1.0.12 - Address any Biological Observations that is in the Site', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
@@ -849,7 +849,7 @@ describe('US 1.0.12 - Address any Biological Observations that is in the Site', 
   });
 });
 
-describe('US 1.0.26 - Persist Site Inspection Form Draft', () => {
+describe('W26 US 1.0.26 - Persist Site Inspection Form Draft', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
@@ -1302,7 +1302,7 @@ describe('US 1.0.26 - Persist Site Inspection Form Draft', () => {
   });
 });
 
-describe('US 1.0.27 - Enforce Required Questions on Site Inspection Form (also covers the submission acceptance test for US 1.0.1)', () => {
+describe('W26 US 1.0.27 - Enforce Required Questions on Site Inspection Form (also covers the submission acceptance test for W26 US 1.0.1)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
@@ -1463,7 +1463,7 @@ describe('US 1.0.27 - Enforce Required Questions on Site Inspection Form (also c
   });
 });
 
-describe('US 1.0.7 - Add Trip Details about how the trip went', () => {
+describe('W26 US 1.0.7 - Add Trip Details about how the trip went', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
@@ -1561,7 +1561,7 @@ describe('US 1.0.7 - Add Trip Details about how the trip went', () => {
   
 });
 
-describe('US 1.0.14 - Add Other Comments', () => {
+describe('W26 US 1.0.14 - Add Other Comments', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
@@ -1678,7 +1678,7 @@ describe('US 1.0.14 - Add Other Comments', () => {
   });
 });
 
-describe('US 1.0.11 - Add Details Regarding Significant Site Changes', () => {
+describe('W26 US 1.0.11 - Add Details Regarding Significant Site Changes', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
@@ -1718,7 +1718,7 @@ describe('US 1.0.11 - Add Details Regarding Significant Site Changes', () => {
 });
 
 // Tests for US 1.0.28
-describe('US 1.0.28 - Autofill Form Fields from User Account', () => {
+describe('W26 US 1.0.28 - Autofill Form Fields from User Account', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
@@ -1976,7 +1976,7 @@ async function renderPhotographyMainContent(mockOnChange: jest.Mock) {
   });
 }
 
-describe('US 1.0.16 - Add Photography Captured During Visit', () => {
+describe('W26 US 1.0.16 - Add Photography Captured During Visit', () => {
   let uuidCounter: number;
 
   beforeEach(() => {

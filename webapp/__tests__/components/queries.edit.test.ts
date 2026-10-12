@@ -13,7 +13,7 @@ function mockCaller(role: string | null, approved = true) {
   });
 }
 
-describe("Supabase edit site functions", () => {
+describe("Supabase edit site functions (US 2.0.5)", () => {
   const mockFrom = jest.fn();
 
   beforeEach(() => {
@@ -102,7 +102,7 @@ describe("Supabase edit site functions", () => {
   });
 
   describe("updateSite", () => {
-    it("updates site name and county successfully", async () => {
+    it("updates site name and county successfully (2.0.5 AT1)", async () => {
       const mockUpdate = jest.fn().mockReturnThis();
       const mockEq = jest.fn().mockResolvedValue({ error: null });
       mockFrom.mockReturnValueOnce({
@@ -176,7 +176,7 @@ describe("Supabase edit site functions", () => {
       await expect(queries.updateSite(1, "Name", 5)).resolves.toEqual({ ok: false, error: "Update failed" });
     });
 
-    it("rejects a steward and writes nothing", async () => {
+    it("rejects a steward and writes nothing (2.0.5 AT2)", async () => {
       mockCaller("steward");
 
       await expect(queries.updateSite(1, "Name", 5)).resolves.toEqual({ ok: false, error: "Only admins can edit sites." });

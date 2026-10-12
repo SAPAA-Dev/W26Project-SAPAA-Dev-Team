@@ -131,7 +131,7 @@ async function openArchiveDialog() {
   await screen.findByRole('dialog', { name: 'Archive Site' });
 }
 
-describe('Admin Sites archive flow', () => {
+describe('Admin Sites archive flow (US 2.0.4)', () => {
   const mockPush = jest.fn();
 
   beforeEach(() => {
@@ -149,7 +149,7 @@ describe('Admin Sites archive flow', () => {
     (supabaseQueries.createSite as jest.Mock).mockResolvedValue({ ok: true });
   });
 
-  it('opens the dialog and explains the records that stay with the site', async () => {
+  it('opens the dialog and explains the records that stay with the site (2.0.4 AT1, 2.0.4 AT2)', async () => {
     await renderLoadedPage();
     await openArchiveDialog();
 
@@ -164,7 +164,7 @@ describe('Admin Sites archive flow', () => {
     expect(screen.getByTestId('confirm-archive-site')).toBeEnabled();
   });
 
-  it('keeps confirmation disabled until the impact arrives', async () => {
+  it('keeps confirmation disabled until the impact arrives (2.0.4 AT2)', async () => {
     const pendingImpact = deferred<SiteDeleteImpact>();
     (supabaseQueries.getSiteDeleteImpact as jest.Mock).mockReturnValue(
       pendingImpact.promise
@@ -186,7 +186,7 @@ describe('Admin Sites archive flow', () => {
     });
   });
 
-  it('ignores impact counts that belong to a different site', async () => {
+  it('ignores impact counts that belong to a different site (2.0.4 AT2)', async () => {
     (supabaseQueries.getSiteDeleteImpact as jest.Mock).mockResolvedValue({
       ...impact,
       siteId: 28,
@@ -203,7 +203,7 @@ describe('Admin Sites archive flow', () => {
     expect(screen.getByTestId('confirm-archive-site')).toBeDisabled();
   });
 
-  it('closes the dialog without archiving when the administrator cancels', async () => {
+  it('closes the dialog without archiving when the administrator cancels (2.0.4 AT1)', async () => {
     await renderLoadedPage();
     await openArchiveDialog();
     await screen.findByText('3 inspection reports');
@@ -215,7 +215,7 @@ describe('Admin Sites archive flow', () => {
     expect(screen.getByText('Duck Lake')).toBeInTheDocument();
   });
 
-  it('removes the site card after a successful confirmed archive', async () => {
+  it('removes the site card after a successful confirmed archive (2.0.4 AT1)', async () => {
     await renderLoadedPage();
     await openArchiveDialog();
     await screen.findByText('3 inspection reports');
@@ -232,7 +232,7 @@ describe('Admin Sites archive flow', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('keeps the site and dialog visible when the archive fails', async () => {
+  it('keeps the site and dialog visible when the archive fails (2.0.4 AT4)', async () => {
     (supabaseQueries.archiveSite as jest.Mock).mockRejectedValue(
       new Error('Site 27 is already archived')
     );
@@ -249,7 +249,7 @@ describe('Admin Sites archive flow', () => {
     expect(screen.getAllByText('Duck Lake')).toHaveLength(2);
   });
 
-  it('shows an impact error and never enables confirmation', async () => {
+  it('shows an impact error and never enables confirmation (2.0.4 AT2)', async () => {
     (supabaseQueries.getSiteDeleteImpact as jest.Mock).mockRejectedValue(
       new Error('Impact query failed')
     );
@@ -264,7 +264,7 @@ describe('Admin Sites archive flow', () => {
     expect(supabaseQueries.archiveSite).not.toHaveBeenCalled();
   });
 
-  it('prevents a second confirmation while archiving is pending', async () => {
+  it('prevents a second confirmation while archiving is pending (2.0.4 AT1)', async () => {
     const pendingArchive = deferred<SiteArchiveResult>();
     (supabaseQueries.archiveSite as jest.Mock).mockReturnValue(
       pendingArchive.promise

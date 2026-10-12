@@ -30,7 +30,7 @@ jest.mock('next/image', () => (props: any) => <img {...props} alt={props.alt} />
 jest.mock('../../app/admin/AdminNavBar', () => () => <div>AdminNavBarMock</div>);
 jest.mock('@/components/ProtectedRoute', () => ({ children }: any) => <div>{children}</div>);
 
-describe('AdminSitesPage – Edit Site', () => {
+describe('AdminSitesPage – Edit Site (US 2.0.5)', () => {
   const mockPush = jest.fn();
 
   beforeEach(() => {
@@ -38,7 +38,7 @@ describe('AdminSitesPage – Edit Site', () => {
     jest.clearAllMocks();
   });
 
-  it('renders edit (pencil) button on each site card', async () => {
+  it('renders edit (pencil) button on each site card (2.0.5 AT1)', async () => {
     const mockSites = [
       { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString(), is_active: true },
       { id: 2, namesite: 'Beta', county: 'CountyB', ab_county: 20, inspectdate: '1900-01-01', is_active: true },
@@ -52,7 +52,7 @@ describe('AdminSitesPage – Edit Site', () => {
     expect(screen.getByTestId('edit-site-button-2')).toBeInTheDocument();
   });
 
-  it('opens edit modal when pencil button is clicked', async () => {
+  it('opens edit modal when pencil button is clicked (2.0.5 AT1)', async () => {
     const mockSites = [
       { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString(), is_active: true },
     ];
@@ -92,7 +92,7 @@ describe('AdminSitesPage – Edit Site', () => {
     });
   });
 
-  it('updates site name via edit modal and reflects change on card', async () => {
+  it('updates site name via edit modal and reflects change on card (2.0.5 AT1)', async () => {
     const mockSites = [
       { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString(), is_active: true },
     ];
@@ -123,7 +123,7 @@ describe('AdminSitesPage – Edit Site', () => {
     });
   });
 
-  it('updates county via edit modal and reflects change on card', async () => {
+  it('updates county via edit modal and reflects change on card (2.0.5 AT1)', async () => {
     const mockSites = [
       { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString(), is_active: true },
     ];
@@ -189,7 +189,7 @@ describe('AdminSitesPage – Edit Site', () => {
     expect(screen.getByTestId('edit-site-protected-area-selected-detail')).toHaveTextContent('181 | PRA');
   });
 
-  it('saves one protected area from the edit modal', async () => {
+  it('saves one protected area from the edit modal (2.0.5 AT1)', async () => {
     const mockSites = [
       { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, inspectdate: new Date().toISOString(), is_active: true, protected_area_id: null },
     ];
@@ -297,7 +297,7 @@ describe('AdminSitesPage – Edit Site', () => {
     expect(screen.getByTestId('edit-site-modal')).toBeInTheDocument();
   });
 
-  it('does not show edit buttons to non-admin users (ProtectedRoute blocks access)', async () => {
+  it('does not show edit buttons to non-admin users (ProtectedRoute blocks access) (2.0.5 AT2)', async () => {
     // ProtectedRoute is mocked to render children, but in production
     // it would block non-admin users. Verify the page requires admin access.
     // The ProtectedRoute wrapper with requireAdmin is the access control.

@@ -150,7 +150,7 @@ describe('SiteDetailScreen', () => {
       });
     });
 
-    it('should show the not-found state when the site is archived or unknown instead of crashing', async () => {
+    it('should show the not-found state when the site is archived or unknown instead of crashing (2.0.4 AT3)', async () => {
       // getSiteByName returns an empty list for archived, inactive, and unknown sites.
       (supabaseQueries.getSiteByName as jest.Mock).mockResolvedValue([]);
       render(<SiteDetailScreen />);
@@ -291,7 +291,7 @@ describe('SiteDetailScreen', () => {
     });
   });
 
-  describe('US 1.0.1 - Access Site Inspection Form on Web Application', () => {
+  describe('W26 US 1.0.1 - Access Site Inspection Form on Web Application', () => {
     it('should have the New Site Inspection Report button visible and enabled', async () => {
       render(<SiteDetailScreen />);
       await waitFor(() => {

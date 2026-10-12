@@ -2,12 +2,12 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import SiteLinks, { shortenUrl } from '../../components/SiteLinks';
 
-describe('shortenUrl', () => {
-  it('removes the scheme and www', () => {
+describe('shortenUrl (US 2.0.10)', () => {
+  it('removes the scheme and www (2.0.10 AT1)', () => {
     expect(shortenUrl('https://www.inaturalist.org/')).toBe('inaturalist.org');
   });
 
-  it('shows an ellipsis when the URL has a path', () => {
+  it('shows an ellipsis when the URL has a path (2.0.10 AT1)', () => {
     expect(shortenUrl('https://sapaastewards.com/natural-areas/bilby')).toBe('sapaastewards.com/…');
   });
 
@@ -16,18 +16,18 @@ describe('shortenUrl', () => {
   });
 });
 
-describe('SiteLinks', () => {
+describe('SiteLinks (US 2.0.10)', () => {
   const sapaaUrl = 'https://sapaastewards.com/natural-areas/bilby';
   const iNaturalistUrl = 'https://www.inaturalist.org/places/bilby';
 
-  it('shows both links with short text', () => {
+  it('shows both links with short text (2.0.10 AT1, 2.0.10 AT2)', () => {
     render(<SiteLinks sapaaWebsiteUrl={sapaaUrl} iNaturalistUrl={iNaturalistUrl} />);
 
     expect(screen.getByRole('link', { name: 'sapaastewards.com/…' })).toHaveAttribute('href', sapaaUrl);
     expect(screen.getByRole('link', { name: 'inaturalist.org/…' })).toHaveAttribute('href', iNaturalistUrl);
   });
 
-  it('opens each link in a new tab', () => {
+  it('opens each link in a new tab (2.0.10 AT3)', () => {
     render(<SiteLinks sapaaWebsiteUrl={sapaaUrl} iNaturalistUrl={iNaturalistUrl} />);
 
     for (const link of screen.getAllByRole('link')) {
@@ -36,7 +36,7 @@ describe('SiteLinks', () => {
     }
   });
 
-  it('leaves out a link that is missing or hidden', () => {
+  it('leaves out a link that is missing or hidden (2.0.5 AT4)', () => {
     render(<SiteLinks sapaaWebsiteUrl={null} iNaturalistUrl={iNaturalistUrl} />);
 
     expect(screen.queryByText(/SAPAA website/)).not.toBeInTheDocument();

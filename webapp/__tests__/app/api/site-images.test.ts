@@ -84,7 +84,7 @@ describe("GET /api/site-images", () => {
     });
   });
 
-  it("returns items filtered by siteid", async () => {
+  it("returns items filtered by siteid (7.0.8 AT3)", async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: "user-1" } },
       error: null,

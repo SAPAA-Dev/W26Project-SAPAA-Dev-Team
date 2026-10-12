@@ -27,7 +27,7 @@ jest.mock('next/image', () => (props: any) => <img {...props} alt={props.alt} />
 jest.mock('../../app/admin/AdminNavBar', () => () => <div>AdminNavBarMock</div>);
 jest.mock('@/components/ProtectedRoute', () => ({ children }: any) => <div>{children}</div>);
 
-describe('AdminSitesPage – Disable Site', () => {
+describe('AdminSitesPage – Disable Site (US 2.0.3)', () => {
   const mockPush = jest.fn();
 
   beforeEach(() => {
@@ -35,7 +35,7 @@ describe('AdminSitesPage – Disable Site', () => {
     jest.clearAllMocks();
   });
 
-  it('shows inactive badge on deactivated site cards', async () => {
+  it('shows inactive badge on deactivated site cards (2.0.3 AT1)', async () => {
     const mockSites = [
       { id: 1, namesite: 'Active Site', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: new Date().toISOString() },
       { id: 2, namesite: 'Disabled Site', county: 'CountyB', ab_county: 20, is_active: false, inspectdate: '1900-01-01' },
@@ -49,7 +49,7 @@ describe('AdminSitesPage – Disable Site', () => {
     expect(inactiveBadges).toHaveLength(1);
   });
 
-  it('displays both active and inactive sites in admin view', async () => {
+  it('displays both active and inactive sites in admin view (2.0.3 AT1)', async () => {
     const mockSites = [
       { id: 1, namesite: 'Active Site', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: new Date().toISOString() },
       { id: 2, namesite: 'Inactive Site', county: 'CountyB', ab_county: 20, is_active: false, inspectdate: '1900-01-01' },
@@ -81,7 +81,7 @@ describe('AdminSitesPage – Disable Site', () => {
     expect(mockPush).toHaveBeenCalledWith('/detail/Bilby%20%232%20%2F%20East');
   });
 
-  it('shows visibility toggle in edit modal with correct initial state', async () => {
+  it('shows visibility toggle in edit modal with correct initial state (2.0.3 AT1)', async () => {
     const mockSites = [
       { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: new Date().toISOString() },
     ];
@@ -102,7 +102,7 @@ describe('AdminSitesPage – Disable Site', () => {
     expect(screen.getByText('Visible to all users')).toBeInTheDocument();
   });
 
-  it('deactivates a site via the edit modal toggle and save', async () => {
+  it('deactivates a site via the edit modal toggle and save (2.0.3 AT1)', async () => {
     const mockSites = [
       { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: new Date().toISOString() },
     ];
@@ -137,7 +137,7 @@ describe('AdminSitesPage – Disable Site', () => {
     });
   });
 
-  it('reactivates an inactive site via the edit modal toggle and save', async () => {
+  it('reactivates an inactive site via the edit modal toggle and save (2.0.3 AT3)', async () => {
     const mockSites = [
       { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, is_active: false, inspectdate: new Date().toISOString() },
     ];
@@ -177,7 +177,7 @@ describe('AdminSitesPage – Disable Site', () => {
     });
   });
 
-  it('does not call toggleSiteActive when visibility is unchanged', async () => {
+  it('does not call toggleSiteActive when visibility is unchanged (2.0.3 AT1)', async () => {
     const mockSites = [
       { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: new Date().toISOString() },
     ];

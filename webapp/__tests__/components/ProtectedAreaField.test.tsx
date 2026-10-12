@@ -20,8 +20,8 @@ function renderField(selectedId: number | null = null, onChange = jest.fn()) {
   return onChange;
 }
 
-describe("ProtectedAreaField", () => {
-  it("filters by name, FID, and type, and shows the detail under the name", () => {
+describe("ProtectedAreaField (US 2.0.2)", () => {
+  it("filters by name, FID, and type, and shows the detail under the name (2.0.2 AT1)", () => {
     renderField();
 
     const search = screen.getByTestId("protected-area-search");
@@ -35,7 +35,7 @@ describe("ProtectedAreaField", () => {
     expect(screen.getByText("44 | ER")).toBeInTheDocument();
   });
 
-  it("keeps one choice and replaces it when another area is selected", () => {
+  it("keeps one choice and replaces it when another area is selected (2.0.2 AT1)", () => {
     function Harness() {
       const [selectedId, setSelectedId] = useState<number | null>(null);
       return (

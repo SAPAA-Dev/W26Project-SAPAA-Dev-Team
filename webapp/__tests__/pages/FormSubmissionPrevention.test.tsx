@@ -298,7 +298,7 @@ describe('Prevent Multiple Form Submissions', () => {
     });
   });
 
-  it('rolls back the created report if submission fails after the response row is created', async () => {
+  it('rolls back the created report if submission fails after the response row is created (7.0.5 AT5)', async () => {
     mockGetQuestionsOnline.mockResolvedValue(mockQuestion);
     mockAddSiteInspectionReport.mockResolvedValue({ id: 500 });
     mockGetQuestionResponseType.mockResolvedValue([{ question_id: 1, obs_value: 1, obs_comm: 0 }]);
@@ -364,7 +364,7 @@ describe('Prevent Multiple Form Submissions', () => {
     expect(mockUploadSiteInspectionAnswers).not.toHaveBeenCalled();
   });
 
-  it('does not submit when an uploaded image is missing required metadata fields', async () => {
+  it('does not submit when an uploaded image is missing required metadata fields (4.0.6 AT1)', async () => {
     const questionsWithImageUpload = [
       {
         id: 1,
@@ -426,6 +426,88 @@ describe('Prevent Multiple Form Submissions', () => {
 
     expect(mockAddSiteInspectionReport).not.toHaveBeenCalled();
     expect(mockUploadSiteInspectionAnswers).not.toHaveBeenCalled();
+  });
+
+  describe('optional photo Identifier (US 4.0.6)', () => {
+    const questionsWithImageUpload = [
+      { ...mockQuestion[0] },
+      {
+        id: 81,
+        title: 'Upload Images, GPS Files, etc. (Q81.1)',
+        text: 'Optional image upload',
+        question_type: 'image',
+        section: 4,
+        answers: [],
+        formorder: 2,
+        is_required: false,
+        sectionTitle: 'Test',
+        sectionDescription: 'Test',
+        sectionHeader: 'Test',
+      },
+    ];
+    const originalFetch = global.fetch;
+
+    afterEach(() => {
+      global.fetch = originalFetch;
+    });
+
+    async function renderWithImage() {
+      mockGetQuestionsOnline.mockResolvedValue(questionsWithImageUpload);
+      render(<NewReportPage />);
+
+      fireEvent.click(await screen.findByText('Yes'));
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const imageFile = new File(['fake-image'], 'test-image.jpg', { type: 'image/jpeg' });
+      fireEvent.change(fileInput, { target: { files: [imageFile] } });
+
+      await screen.findByPlaceholderText('Short Description');
+    }
+
+    it('submits a report whose image has an empty Identifier (4.0.6 AT1)', async () => {
+      mockAddSiteInspectionReport.mockResolvedValue({ id: 500 });
+      mockGetQuestionResponseType.mockResolvedValue([{ question_id: 1, obs_value: 1, obs_comm: 0 }]);
+      mockUploadSiteInspectionAnswers.mockResolvedValue(undefined);
+      mockInsertInspectionAttachments.mockResolvedValue(undefined);
+      global.fetch = jest.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            uploadUrl: 'https://s3.example.com/upload',
+            key: 'inspections/1/500/81/test.jpg',
+            generatedFilename: 'test.jpg',
+          }),
+        })
+        .mockResolvedValueOnce({ ok: true }) as unknown as typeof fetch;
+
+      await renderWithImage();
+
+      fireEvent.change(screen.getByPlaceholderText('Longer Description'), { target: { value: 'A broken tree' } });
+      fireEvent.change(screen.getByPlaceholderText('Owner of digital file'), { target: { value: 'Jane Steward' } });
+      expect(screen.getByPlaceholderText('Short Description')).toHaveValue('');
+
+      fireEvent.click(screen.getByRole('button', { name: /Review & Submit/i }));
+
+      await waitFor(() => {
+        expect(mockInsertInspectionAttachments).toHaveBeenCalledWith([
+          expect.objectContaining({ question_id: 81, caption: 'A broken tree', identifier: null }),
+        ]);
+      });
+      expect(JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body)).toMatchObject({ identifier: '' });
+      expect(screen.queryByText(/Required Questions Missing/i)).not.toBeInTheDocument();
+      expect(mockRollbackSiteInspectionSubmission).not.toHaveBeenCalled();
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith('/sites?submitted=true');
+      });
+    });
+
+    it('shows no "required" note beside the Identifier field (4.0.6 AT2)', async () => {
+      await renderWithImage();
+
+      expect(screen.getByText('Caption', { exact: false, selector: 'label' })).toHaveTextContent('*');
+      const identifierLabel = screen.getByText('Identifier', { selector: 'label' });
+      expect(identifierLabel).not.toHaveTextContent('*');
+      expect(identifierLabel).not.toHaveTextContent(/required/i);
+    });
   });
 
   it('keeps button enabled when validation fails before submission starts', async () => {

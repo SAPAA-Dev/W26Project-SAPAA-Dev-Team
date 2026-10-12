@@ -76,7 +76,7 @@ async function renderINaturalistSubmissionsMainContent(mockOnChange: jest.Mock) 
   });
 }
 
-describe('US 1.0.10 - Indicate Submissions to iNaturalist', () => {
+describe('W26 US 1.0.10 - Indicate Submissions to iNaturalist', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();

@@ -64,7 +64,7 @@ describe("Supabase admin-only actions", () => {
     expect(mockIs).toHaveBeenCalledWith("archived_at", null);
   });
 
-  it("returns an inactive site for an approved admin", async () => {
+  it("returns an inactive site for an approved admin (2.0.3 AT4)", async () => {
   const mockLimit = jest.fn().mockResolvedValue({
     data: [
       {

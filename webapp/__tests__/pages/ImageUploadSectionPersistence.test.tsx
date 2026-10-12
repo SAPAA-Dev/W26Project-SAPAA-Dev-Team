@@ -93,7 +93,7 @@ function uploadOneImage(container: HTMLElement, fileName: string) {
   fireEvent.change(fileInput, { target: { files: [file] } });
 }
 
-describe("US 2.0.2 - Image Metadata", () => {
+describe("W26 US 2.0.2 - Image Metadata", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();

@@ -49,7 +49,7 @@ function row(overrides: Partial<ProtectedAreaBoundaryRow> = {}): ProtectedAreaBo
   };
 }
 
-describe('roundCoordinates', () => {
+describe('roundCoordinates (US 2.0.6)', () => {
   it('rounds each coordinate to five decimals and drops the third value', () => {
     const geometry: GeoJsonMultiPolygon = {
       type: 'MultiPolygon',
@@ -83,7 +83,7 @@ describe('roundCoordinates', () => {
   });
 });
 
-describe('simplifyRing', () => {
+describe('simplifyRing (US 2.0.6)', () => {
   it('drops collinear positions and keeps the corners', () => {
     const ring = [
       [0, 0],
@@ -151,7 +151,7 @@ describe('simplifyRing', () => {
   });
 });
 
-describe('simplifyMultiPolygon', () => {
+describe('simplifyMultiPolygon (US 2.0.6)', () => {
   it('keeps a hole and simplifies it on its own', () => {
     const geometry: GeoJsonMultiPolygon = {
       type: 'MultiPolygon',
@@ -186,7 +186,7 @@ describe('simplifyMultiPolygon', () => {
   });
 });
 
-describe('toBoundaryFeatureCollection', () => {
+describe('toBoundaryFeatureCollection (US 2.0.6)', () => {
   it('returns an empty collection for no rows', () => {
     expect(toBoundaryFeatureCollection([])).toEqual({
       type: 'FeatureCollection',

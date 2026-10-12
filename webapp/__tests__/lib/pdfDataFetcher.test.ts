@@ -283,7 +283,7 @@ describe('fetchReportData', () => {
     expect(response20.answers[0].section_title).toBe('Flora');
   });
 
-  it('returns all sections when selectedSections is "all"', async () => {
+  it('returns all sections when selectedSections is "all" (7.0.7 AT5)', async () => {
     const request: PdfRequest = {
       mode: 'site',
       siteName: 'Elk Island',
@@ -296,7 +296,7 @@ describe('fetchReportData', () => {
     expect(response10.answers).toHaveLength(2);
   });
 
-  it('omits a hidden question and keeps the other answers', async () => {
+  it('omits a hidden question and keeps the other answers (7.0.7 AT2)', async () => {
     const request: PdfRequest = {
       mode: 'site',
       siteName: 'Elk Island',
@@ -309,6 +309,43 @@ describe('fetchReportData', () => {
 
     expect(response10.answers.map((answer) => answer.question_id)).toEqual([2]);
     expect(response20.answers.map((answer) => answer.question_id)).toEqual([3]);
+  });
+
+  it('leaves the stored answers unchanged after an export with hidden fields (7.0.7 AT3)', async () => {
+    const storedQuestionIds = mockResponses.map((r) => r.answers.map((a) => a.question_id));
+
+    await fetchReportData({
+      mode: 'site',
+      siteName: 'Elk Island',
+      options: { ...DEFAULT_OPTIONS, hiddenQuestionIds: [1], includeEmptyAnswers: true },
+    });
+
+    // The export reads only: no write to the database, and the loaded reports keep every answer
+    expect(mockSupabaseFrom).not.toHaveBeenCalled();
+    expect(mockResponses.map((r) => r.answers.map((a) => a.question_id))).toEqual(storedQuestionIds);
+
+    const after = await fetchReportData({
+      mode: 'site',
+      siteName: 'Elk Island',
+      options: { ...DEFAULT_OPTIONS, includeEmptyAnswers: true },
+    });
+    const response10 = after.sites[0].responses.find((r) => r.id === 10)!;
+    expect(response10.answers.map((answer) => answer.question_id)).toEqual([1, 2]);
+  });
+
+  it('exports the full SIR when no fields are hidden (7.0.7 AT5)', async () => {
+    const request: PdfRequest = {
+      mode: 'site',
+      siteName: 'Elk Island',
+      options: { ...DEFAULT_OPTIONS, hiddenQuestionIds: [], includeEmptyAnswers: true },
+    };
+
+    const result = await fetchReportData(request);
+
+    for (const stored of mockResponses) {
+      const exported = result.sites[0].responses.find((r) => r.id === stored.id)!;
+      expect(exported.answers).toEqual(stored.answers);
+    }
   });
 
   // The key map in beforeEach: Q31 naturalness = 1, Q32 details = 2, Q13 steward/guest name = 3.

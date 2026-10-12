@@ -26,7 +26,7 @@ function makeFile(name = "test.jpg", type = "image/jpeg") {
   return new File(["content"], name, { type });
 }
 
-describe("US 2.0.8 - User Upload of Standalone Site Images", () => {
+describe("W26 US 2.0.8 - User Upload of Standalone Site Images", () => {
   const mockPush = jest.fn();
 
   beforeEach(() => {

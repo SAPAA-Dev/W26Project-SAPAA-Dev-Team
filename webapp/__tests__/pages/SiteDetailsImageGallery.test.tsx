@@ -225,6 +225,29 @@ describe("SiteDetailScreen image gallery", () => {
     expect(screen.getAllByText("Large crack running up the trunk of a tree.").length).toBeGreaterThanOrEqual(2);
   });
   
+  it("shows no delete control in the site gallery or the image modal (7.0.5 AT2)", async () => {
+    render(<SiteDetailScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Image Gallery/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Image Gallery/i }));
+
+    await waitFor(() => {
+      expect(screen.getByAltText("Large crack running up the trunk of a tree.")).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByAltText("Large crack running up the trunk of a tree.").closest('button')!);
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /Open full image in new tab/i })).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument();
+    expect(document.querySelector('[data-testid^="delete-image-"]')).toBeNull();
+  });
+
   it("shows homepage image metadata in modal", async () => {
     render(<SiteDetailScreen />);
   

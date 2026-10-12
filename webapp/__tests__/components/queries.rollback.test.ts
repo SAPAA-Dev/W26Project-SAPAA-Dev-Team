@@ -10,7 +10,7 @@ jest.mock("../../utils/media/s3Delete", () => ({
   deleteObjectsByKeys: jest.fn(),
 }));
 
-describe("rollbackSiteInspectionSubmission", () => {
+describe("rollbackSiteInspectionSubmission (US 7.0.5)", () => {
   const mockFrom = jest.fn();
 
   beforeEach(() => {
@@ -34,7 +34,7 @@ describe("rollbackSiteInspectionSubmission", () => {
     return eqMock;
   }
 
-  it("deletes the database rows before the response files from S3", async () => {
+  it("deletes the database rows before the response files from S3 (7.0.5 AT5)", async () => {
     mockSelect([
       { storage_key: "inspections/207/3226/27/file1.jpg" },
       { storage_key: "inspections/207/3226/27/file2.jpg" },
@@ -56,7 +56,7 @@ describe("rollbackSiteInspectionSubmission", () => {
     expect(answersDeleteEq).toHaveBeenCalledWith("response_id", 3226);
   });
 
-  it("removes the database rows before the S3 delete fails", async () => {
+  it("removes the database rows before the S3 delete fails (7.0.5 AT5)", async () => {
     mockSelect([{ storage_key: "inspections/207/3226/27/file1.jpg" }]);
     mockDelete();
     mockDelete();
@@ -67,7 +67,7 @@ describe("rollbackSiteInspectionSubmission", () => {
     expect(mockFrom).toHaveBeenCalledTimes(4);
   });
 
-  it("still removes rows when the response has no files", async () => {
+  it("still removes rows when the response has no files (7.0.5 AT5)", async () => {
     mockSelect([]);
 
     const attachmentsDeleteEq = mockDelete();

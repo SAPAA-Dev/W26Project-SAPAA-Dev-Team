@@ -57,7 +57,7 @@ const impact: SiteInspectionReportDeleteImpact = {
   attachmentCount: 2,
 };
 
-describe('Archived Reports page', () => {
+describe('Archived Reports page (US 7.0.8)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (queries.getArchivedSiteInspectionReports as jest.Mock).mockResolvedValue(reports);
@@ -90,7 +90,7 @@ describe('Archived Reports page', () => {
     });
   });
 
-  it('offers permanent deletion only from the archived reports page', async () => {
+  it('offers permanent deletion only from the archived reports page (7.0.8 AT1)', async () => {
     render(<ArchivedReportsPage />);
     await screen.findByText('2026-041');
 
@@ -122,7 +122,7 @@ describe('Archived Reports page', () => {
     );
   });
 
-  it('keeps the archived report when permanent deletion fails', async () => {
+  it('keeps the archived report when permanent deletion fails (7.0.8 AT5)', async () => {
     (queries.permanentlyDeleteSiteInspectionReport as jest.Mock).mockRejectedValue(
       new Error('Delete transaction failed')
     );

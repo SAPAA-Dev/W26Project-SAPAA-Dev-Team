@@ -10,13 +10,13 @@ jest.mock("@aws-sdk/client-s3", () => ({
 import { deleteObjectsByKeys } from "@/utils/media/s3Delete";
 import { DeleteObjectsCommand } from "@aws-sdk/client-s3";
 
-describe("deleteObjectsByKeys", () => {
+describe("deleteObjectsByKeys (US 7.0.5)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockSend.mockResolvedValue({ Errors: [] });
   });
 
-  it("sends one DeleteObjectsCommand with the given keys", async () => {
+  it("sends one DeleteObjectsCommand with the given keys (7.0.5 AT3)", async () => {
     await deleteObjectsByKeys(["seed/ducks/duck01.jpg", "seed/ducks/duck02.jpg"]);
 
     expect(DeleteObjectsCommand).toHaveBeenCalledTimes(1);

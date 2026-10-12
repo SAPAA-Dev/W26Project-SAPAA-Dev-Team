@@ -19,8 +19,8 @@ function Harness() {
   );
 }
 
-describe('MapAreaFilters', () => {
-  it('opens one panel with a searchable, collapsible group and a select-all button for each category', async () => {
+describe('MapAreaFilters (US 2.0.6)', () => {
+  it('opens one panel with a searchable, collapsible group and a select-all button for each category (2.0.6 AT1)', async () => {
     const user = userEvent.setup();
     render(<Harness />);
 
