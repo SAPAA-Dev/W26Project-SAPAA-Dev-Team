@@ -1,6 +1,6 @@
 # SAPAA Web Application Deployment Documentation
 
-*Inherited from the Winter 2026 team. We keep this page for reference only. We do not update it for Fall 2026.*
+*Inherited from the Winter 2026 team. The Fall 2026 team updated the environment variables, the production branch and the database steps. The rest is unchanged.*
 
 ## Table of Contents
 
@@ -164,7 +164,14 @@ The application requires the following environment variables.
 | `AWS_ACCESS_KEY_ID` | AWS IAM access key ID | AWS IAM → Users → Security credentials |
 | `AWS_SECRET_ACCESS_KEY` | AWS IAM secret access key | AWS IAM → Users → Security credentials |
 | `AWS_REGION` | AWS region of your S3 bucket | AWS S3 bucket settings |
-| `AWS_S3_BUCKET` | S3 bucket name | AWS S3 console |
+| `AWS_S3_BUCKET_NAME` | S3 bucket name | AWS S3 console |
+| `OPENCAGE_API_KEY` | OpenCage Geocoding API key. The geocode route (`/api/geocode`) reads it | [opencagedata.com](https://opencagedata.com) → API Keys |
+| `NEXT_PUBLIC_PROTOMAPS_API_KEY` | Protomaps key for the site map. Without it the map shows "Map key not set" | [maps.protomaps.com](https://maps.protomaps.com) → API keys |
+
+`NEXT_PUBLIC_` variables are written into the build, so set `NEXT_PUBLIC_PROTOMAPS_API_KEY` before
+`next build` runs. Changing it later needs a new build. Restrict the allowed origins of the
+Protomaps key to your deployed domain at maps.protomaps.com. `webapp/.env.example` lists every
+variable name with an empty value.
 
 ### Environment Variable Format
 
@@ -178,8 +185,10 @@ SUPABASE_SECRET=your_supabase_secret
 AWS_ACCESS_KEY_ID=your_aws_access_key
 AWS_SECRET_ACCESS_KEY=your_aws_secret_key
 AWS_REGION=your_region
-AWS_S3_BUCKET=your_bucket_name
+AWS_S3_BUCKET_NAME=your_bucket_name
 
+OPENCAGE_API_KEY=your_opencage_key
+NEXT_PUBLIC_PROTOMAPS_API_KEY=your_protomaps_key
 ```
 
 **Important:**
@@ -290,11 +299,10 @@ vercel link
 vercel --prod
 ```
 
-Or push to your main branch if you have connected a Git repository:
-
-```bash
-git push origin main
-```
+Or merge the release PR into `release` if you have connected a Git repository. Production
+deploys from `release`, not from `main`. See [Contributing](contributing.md#branch-model).
+Run the database migrations first, because the new code fails on the old tables:
+[Production database migrations](contributing.md#production-database-migrations).
 
 ---
 
@@ -318,7 +326,11 @@ Vercel will automatically install dependencies, build the project, and deploy to
 
 Vercel provides built-in CI/CD through GitHub integration — no GitHub Actions required.
 
-- Push to `main` branch → triggers production deployment
+- Push to `release` branch → triggers production deployment. Nobody pushes to `release`
+  directly: the PR from `main` is the only way in.
+- The hosting project has a production branch setting that is not stored in the repository.
+  Whoever owns the hosting account must check that it is `release`. If it is `main`, every
+  merged PR goes to production.
 - Pull requests → creates preview deployments
 
 ---
@@ -338,7 +350,8 @@ After deployment, your app will be available at `https://your-project-name.verce
 3. Run the SQL scripts provided by your development team to create the required tables and views:
     - Tables: `sites_pa`, `answers`, `attachments`, `form_sections`, `form_responses`, `questions`
 
-**Note:** Contact your development team for the complete SQL schema.
+**Note:** The SQL files are in `webapp/supabase/migrations/`. The order to run them in, and the
+checks to make first, are in [Production database migrations](contributing.md#production-database-migrations).
 
 ### Setting Up Row Level Security (RLS)
 
@@ -1174,12 +1187,9 @@ Commit `package-lock.json` changes after any updates.
 
 #### Option 2: Git-Based Rollback
 
-```bash
-git checkout <previous-stable-commit>
-git push origin main
-```
-
-This triggers a new Vercel deployment from the stable commit.
+Undo the bad change with a revert PR into `main`. Then open the PR from `main` into `release`.
+Merging it triggers a new Vercel deployment. A rollback does not undo database migrations, so
+check that the older code still works with the current tables.
 
 ### Monitoring
 

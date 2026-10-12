@@ -23,6 +23,8 @@ The SAPAA Web Application is a Next.js 16 application that provides a web interf
 - **Next.js 16.0.1** - React framework with App Router
 - **Supabase** - Database and authentication service
 - **OpenCage Geocoding API** - For location-based features
+- **AWS S3** - Image storage
+- **Protomaps** - Map tiles for the site map
 - **Vercel** - Deployment platform
 
 **Deployed URL:** https://sapaa-webapp.vercel.app/
@@ -118,6 +120,15 @@ The application requires the following environment variables:
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase anon/public key | Supabase Dashboard → Settings → API → anon public |
 | `SUPABASE_SECRET` | Supabase service role key (server-side only) | Supabase Dashboard → Settings → API → service_role |
 | `OPENCAGE_API_KEY` | OpenCage Geocoding API key | OpenCage Dashboard → API Keys |
+| `AWS_ACCESS_KEY_ID` | AWS IAM access key ID (image storage) | AWS IAM → Users → Security credentials |
+| `AWS_SECRET_ACCESS_KEY` | AWS IAM secret access key (server-side only) | AWS IAM → Users → Security credentials |
+| `AWS_REGION` | AWS region of the S3 bucket | AWS S3 bucket settings |
+| `AWS_S3_BUCKET_NAME` | S3 bucket name | AWS S3 console |
+| `NEXT_PUBLIC_PROTOMAPS_API_KEY` | Protomaps key for the site map | maps.protomaps.com → API keys |
+
+`NEXT_PUBLIC_PROTOMAPS_API_KEY` is written into the build, so set it before `next build` runs.
+Restrict its allowed origins to the deployed domain at maps.protomaps.com. Without it the map
+shows "Map key not set". `webapp/.env.example` lists every variable name with an empty value.
 
 ### Environment Variable Format
 
@@ -128,6 +139,11 @@ NEXT_PUBLIC_SUPABASE_URL=https://yizmvkfkgahyoqeznvki.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlpem12a2ZrZ2FoeW9xZXpudmtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjQ4NzIsImV4cCI6MjA3NTEwMDg3Mn0.cHeCjiv7NEPHO6EzU0hD2JaWFXEEFlYb532QBOkdZUA
 SUPABASE_SECRET=your-service-role-key-here
 OPENCAGE_API_KEY=your-opencage-key-here
+AWS_ACCESS_KEY_ID=your-aws-access-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret-key
+AWS_REGION=your-region
+AWS_S3_BUCKET_NAME=your-bucket-name
+NEXT_PUBLIC_PROTOMAPS_API_KEY=your-protomaps-key
 ```
 
 **Note:** 
@@ -184,6 +200,11 @@ NEXT_PUBLIC_SUPABASE_URL=https://yizmvkfkgahyoqeznvki.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlpem12a2ZrZ2FoeW9xZXpudmtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjQ4NzIsImV4cCI6MjA3NTEwMDg3Mn0.cHeCjiv7NEPHO6EzU0hD2JaWFXEEFlYb532QBOkdZUA
 SUPABASE_SECRET=your-service-role-key-here
 OPENCAGE_API_KEY=your-opencage-key-here
+AWS_ACCESS_KEY_ID=your-aws-access-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret-key
+AWS_REGION=your-region
+AWS_S3_BUCKET_NAME=your-bucket-name
+NEXT_PUBLIC_PROTOMAPS_API_KEY=your-protomaps-key
 ```
 
 **Note:** 
@@ -265,6 +286,11 @@ This will:
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlpem12a2ZrZ2FoeW9xZXpudmtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjQ4NzIsImV4cCI6MjA3NTEwMDg3Mn0.cHeCjiv7NEPHO6EzU0hD2JaWFXEEFlYb532QBOkdZUA` |
 | `SUPABASE_SECRET` | Your Supabase service role key (get from Supabase Dashboard → Settings → API → service_role) |
 | `OPENCAGE_API_KEY` | Your OpenCage API key (get from your OpenCage dashboard) |
+| `AWS_ACCESS_KEY_ID` | Your AWS IAM access key ID |
+| `AWS_SECRET_ACCESS_KEY` | Your AWS IAM secret access key |
+| `AWS_REGION` | The AWS region of your S3 bucket |
+| `AWS_S3_BUCKET_NAME` | The name of your S3 bucket |
+| `NEXT_PUBLIC_PROTOMAPS_API_KEY` | Your Protomaps key (get from maps.protomaps.com). Set it before the build |
 
 5. Select **Production**, **Preview**, and **Development** environments for each variable
 6. Click **Save**
@@ -275,13 +301,13 @@ This will:
 vercel --prod
 ```
 
-Or push to your main branch if you've connected a Git repository:
+Or merge the release PR into `release` if you've connected a Git repository. Production deploys
+from `release`, not from `main`, and nobody pushes to `release` directly. The production branch
+is a setting in the Vercel project, not in this repository, so whoever owns the Vercel account
+must check that it is `release`. Run the database migrations before the merge:
+[Production database migrations](../docs/contributing.md#production-database-migrations).
 
-```bash
-git push origin main
-```
-
-Vercel will automatically deploy on push.
+Vercel will automatically deploy when `release` changes.
 
 ### Option 2: Deploy via Vercel Dashboard (Web Interface)
 

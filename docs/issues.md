@@ -370,8 +370,10 @@ triggers on `Sprint-2` through `Sprint-5`, which do not exist on origin. `Labels
 
 Status as of October 7, 2026: partly done. `.github/workflows/ci.yaml` runs `webapp-tests`,
 `docs-build` and `hook-tests` on every push. `pr-checks.yaml` runs `conventions` and `pr-size`.
-`reviewer-gate.yaml` runs `reviewers` (#124, #125). The rulesets for `main` and `release` require
-`webapp-tests`, `docs-build`, `hook-tests`, `conventions` and `reviewers`. There is no deploy job
+`reviewer-gate.yaml` runs `reviewers` (#124, #125), which always passes and posts the result as the
+`reviewer-gate` status (#154). The rulesets for `main` and `release` require `webapp-tests`,
+`docs-build`, `hook-tests`, `conventions` and `reviewers`, not `reviewer-gate`, so the reviewer
+rule is not enforced until an admin changes them. There is no deploy job
 and no `Sprint-N` trigger. Remaining: lint and build steps (`webapp-tests` only runs `npm test`).
 
 #### 27. Record inspection edit history

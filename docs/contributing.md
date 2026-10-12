@@ -65,20 +65,173 @@ feature branch ──PR──> main ──PR──> release
 | Branch | Role | How it changes |
 | --- | --- | --- |
 | `<type>/<short-description>` | Feature branch. Always created from `main`. | You push to it. |
-| `main` | Development branch: all finished work lands here. Docs are deployed from it. | PR from a feature branch, squash merge. |
-| `release` | What gets released. It only ever holds code that was ready on `main`. | PR from `main`, merge commit. |
+| `main` | Sprint integration branch: every finished PR of the sprint lands here. Docs are deployed from it. | PR from a feature branch, squash merge. |
+| `release` | What gets released. It only ever holds code that was ready on `main`. Production deploys from it. | PR from `main`, merge commit. |
+
+There is no separate branch for each sprint. `main` collects the work of the sprint, and
+the sprint ends with one PR from `main` into `release`.
+
+The hosting project (Vercel) has its own production branch setting. It is not stored in this
+repository, so nobody can check it from here. The person who owns the hosting account must check
+that the production branch is `release`. If it is `main`, every merged PR goes live.
 
 Gamma makes each release (see [Project management](project-management.md)):
 
 1. Open a PR with base `release` and head `main`. Use a title like `(chore): release sprint 2`.
-2. Get the normal 2 approvals and green checks.
-3. Merge with a **merge commit**, so `release` and `main` stay in step and the next release PR
+2. Assign the Scrum Master of the sprint and at least one other person
+   (see [Scrum roles](project-management.md#scrum-roles)). The Scrum Master's approval is one of
+   the 2 required approvals. The `reviewer-gate` status needs every assignee to approve. **This
+   is not enforced yet:** the `main` and `release` rulesets require the `reviewers` check, which
+   always passes, and not the `reviewer-gate` status. Until a repo admin changes the required
+   check in both rulesets from `reviewers` to `reviewer-gate`, any 2 approvals merge the release
+   PR, so the Scrum Master has to check the status by hand before merging.
+3. Get the 2 approvals and green checks.
+4. Before the code is deployed, a human runs the new SQL migrations
+   (see [Production database migrations](#production-database-migrations)).
+5. Merge with a **merge commit**, so `release` and `main` stay in step and the next release PR
    has no conflicts.
-4. Publish the GitHub release from `release`.
+6. Tag the release on `main`, on the commit that was merged into `release`, for example
+   `sprint-2`. Publish the GitHub release from that tag. The notes list each story with its issue
+   and PRs, the number of CI tests, the known gaps and the feedback from the TA that the sprint
+   addressed.
 
 Never commit to `release` directly and never open a PR into it from any branch other than
 `main`. The `conventions` check fails the PR if you do. Hotfixes go through `main` like
 everything else.
+
+## Production database migrations
+
+Nothing applies the files in `webapp/supabase/migrations/` to production. CI has no migration
+job, and a deploy does not run them. A person runs each file by hand in the Supabase dashboard
+(SQL editor) on the production project. The app reads only the renamed tables (`sites_pa`,
+`questions`, ...) and the new columns (`protected_area_id`, `archived_at`). If the code is
+deployed before the SQL, every site and form query fails. So the SQL runs first.
+
+The person who runs it needs access to the production Supabase project. Do not run these files
+from the app.
+
+### Before you start
+
+1. Take a backup of the production database (Supabase dashboard > Database > Backups, or
+   `pg_dump`).
+2. Find out what production already has:
+
+   ```sql
+   select to_regclass('public."W26_sites-pa"') as old_sites,
+          to_regclass('public.sites_pa')       as new_sites,
+          to_regclass('public.people')         as people,
+          to_regclass('public.protected_areas') as protected_areas;
+   ```
+
+   A name that is not null exists. `old_sites` not null and `new_sites` null means the rename in
+   step 2 is still to do. Production may already have some of the later steps. Read the header
+   of a file before you run it again: most say that they are safe to run twice.
+3. Find functions and views that name a `W26_` table. The rename file rewrites only
+   `get_naturalness_distribution` and `get_top_sites_distribution`. Anything else in this result
+   breaks at step 2 and needs its own fix first.
+
+   ```sql
+   select proname from pg_proc
+   where pronamespace = 'public'::regnamespace and prosrc ilike '%W26\_%';
+   select viewname from pg_views
+   where schemaname = 'public' and definition ilike '%W26\_%';
+   ```
+4. Set the environment variables of the new build in the hosting project: see
+   [Deployment manual](Deployment-manual.md#environment-variables).
+   `NEXT_PUBLIC_PROTOMAPS_API_KEY` is baked in at build time, so it must exist before the build.
+
+### Cutover window
+
+Step 2 renames the `W26_` tables. The code that is live now breaks after the rename. The new code
+breaks before it. There is no way to avoid a short gap, so do it in a maintenance window, right
+before the deploy:
+
+1. Tell the stewards and admins that the app is down for a short time.
+2. Run steps 1 to 14 below, in order, in one sitting.
+3. Merge the release PR straight away ([Branch model](#branch-model)), so the new code deploys.
+4. Open the app and run the smoke test below. The window ends when it passes.
+
+The team agrees the time of the window. Alpha does not run the rename before that.
+
+### Order
+
+Run the files in this order.
+
+| Step | File | Note |
+| --- | --- | --- |
+| 0 | `20260925000000_local_app_schema.sql` | **Never run this on production.** It is only for a fresh local database: it creates the `W26_` tables, which production already has. It also enables row level security on `luperson` with no policy, so on production it would cut the F26 mobile app and the Google Sheet off from `luperson`. `create table if not exists` does not protect against this. |
+| 1 | `20261002000000_fix_questions_section_fk_name.sql` | Run only while `W26_questions` still exists. After the rename the file fails. It does nothing when the constraint already has the right name. |
+| 2 | `20261003000000_remove_w26_prefix.sql` | The rename. Do it in the cutover window. |
+| 3 | `20261004000000_create_user_model.sql` | Adds the trigger on `auth.users` and a `people` row for each existing login. Check the count after it (below). |
+| 4 | `20261004010000_create_protected_areas.sql` | Skip it if `protected_areas` already exists (the `protected_areas` result in the pre-check is not null). Also skip it if the table has a `folder` column, which means step 9 already ran. The header says safe to run twice, but after step 9 dropped `site_id` a second run fails on the `site_id` index. |
+| 5 | `20261005000000_profile_distinct_site_count.sql` | |
+| 6 | `20261005010000_create_socials.sql` | |
+| 7 | `20261005020000_gallery_read_policies.sql` | |
+| 8 | `20261006000000_create_kml_imports_bucket.sql` | |
+| 9 | `20261006010000_alter_protected_areas_for_kml_import.sql` | Drops 8 columns of `protected_areas`, including `site_id`. |
+| 10 | `20261008000000_create_site_page_fields.sql` | Needed for the site page fields. |
+| 11 | `20261008164223_delete_site.sql` | Adds `sites_pa.archived_at`. Every site query reads it. |
+| 12 | `20261009000000_archive_site_inspection_reports.sql` | Adds `form_responses.archived_at` and redefines the count and dashboard functions. |
+| 13 | `20261009120000_add_sites_pa_protected_area_id.sql` | Needed by the admin sites list, the map filter, and adding and editing a site. |
+| 14 | `20261009120100_sites_pa_protected_area_id_unique.sql` | If it fails, stop. Two sites share one protected area. Remove the extra link by hand, then run the file again. |
+
+Three more files come from PRs that are not merged yet. Run each one only after its PR is merged
+and the file is on `main`. All three run after step 14, in this order.
+
+| Step | File | PR | Note |
+| --- | --- | --- | --- |
+| 15 | `20261009130000_get_max_inspection_number.sql` | [#242](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/242) | Adds `get_max_inspection_number`. New reports get no inspection number until it exists, so run it before the #242 code deploys. |
+| 16 | `20261010000000_form_responses_select_policy.sql` | [#234](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/234) | Lets approved users read `form_responses`. Without it the galleries show no images. Check first: `select policyname from pg_policies where tablename = 'form_responses';` |
+| 17 | `20261010000100_require_approval_for_people_reads.sql` | [#238](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/238) | Only approved accounts (and the owner of a row) read `people`, `socials` and `site_stewards`. |
+
+If a PR merges with a different file name, use the name in the merged PR.
+
+### Checks
+
+Right after step 3, the counts must match:
+
+```sql
+select (select count(*) from auth.users) as logins,
+       (select count(*) from public.people where auth_user_id is not null) as people;
+```
+
+Before step 14, look for two sites that share a protected area:
+
+```sql
+select protected_area_id, count(*) from public.sites_pa
+where protected_area_id is not null group by 1 having count(*) > 1;
+```
+
+Smoke test after the deploy: `/sites` (list and map), a new report with a photo, the profile page,
+assigning a steward, archiving a site and a report, and the gallery.
+
+Then, in the app:
+
+1. An admin runs the KML import (Admin > Sites) to fill `protected_areas`.
+2. Admins link each site to a protected area.
+3. Check that admins and approved users have `app_metadata.role` and `app_metadata.authenticated`.
+
+If a query fails with `PGRST200` after a migration, run `notify pgrst, 'reload schema';` and try
+again.
+
+### Local and CLI-managed databases
+
+Two files were merged out of timestamp order: `20261005020000_gallery_read_policies.sql` (after
+the `20261006*` files) and `20261008000000_create_site_page_fields.sql` (after
+`20261008164223_delete_site.sql`). `supabase migration up` does not apply a file that is older
+than one it has already applied. A local database that was set up before these merged can miss
+the gallery policies or `site_page_fields`. Run this once:
+
+```bash
+supabase migration up --local --include-all
+```
+
+These commands are for local databases only. Never run `supabase db push` against production:
+there is no staging, and production is migrated by hand in the cutover window (above).
+`--include-all` would apply every file, including step 0 and the `W26_` rename, with no
+pre-checks. If a local database cannot be fixed, `supabase db reset` rebuilds it from the files.
+
+When a PR merges late, give its migration a timestamp later than every file on `main`.
 
 ## How this is enforced
 
@@ -128,8 +281,10 @@ goes through a pull request, and a PR needs all of these before it can merge:
   approve. Exactly 1 assignee fails the `reviewer-gate` status. A bot comment reminds assignees to
   read every changed file top to bottom before approving.
 - **All review conversations resolved.**
-- **Green checks:** `webapp-tests`, `mobile-tests`, `docs-build`, `hook-tests`,
-  `conventions` and `reviewer-gate` (branch name, PR title and every commit message).
+- **Green checks:** `webapp-tests`, `docs-build`, `hook-tests`, `conventions` (branch name,
+  PR title and every commit message) and `reviewers`. The rulesets still name `reviewers`, which
+  always passes. The `reviewer-gate` status carries the real result, and a repo admin must
+  require it instead (see the Scrum Master step in the release PR steps).
 
 **Squash merge only on `main`** (`release` takes merge commits only, see Branch model). Each PR lands on `main` as one commit, and the PR title is its
 message. That's why the PR title has to follow the `(<type>): <description>` format too.
@@ -238,7 +393,8 @@ the push fails and nothing is overwritten. The next run updates the diagrams.
 **The push token.** A push made with the default `GITHUB_TOKEN` does not start other workflows.
 The five required checks of the `main` ruleset are `webapp-tests`, `docs-build`, `hook-tests`
 (`ci.yaml`, on `push`), `conventions` (`pr-checks.yaml`) and `reviewers` (`reviewer-gate.yaml`,
-both on `pull_request`). None of them run on a commit pushed with `GITHUB_TOKEN`, so the PR
+both on `pull_request`). The `reviewers` job always passes. It posts its result as the
+`reviewer-gate` status. None of them run on a commit pushed with `GITHUB_TOKEN`, so the PR
 cannot merge. For this reason the workflow pushes only with a GitHub App token. A repo admin
 sets it up:
 
@@ -258,7 +414,7 @@ with out-of-date diagrams can still merge. To block it, the ruleset owner (Gamma
 `diagrams` and `diagrams-push` as required checks.
 
 **Approvals.** The `main` ruleset dismisses approvals on a new push, and the latest push must be
-approved by someone other than its author. The `reviewers` check counts approvals on the head
+approved by someone other than its author. The `reviewer-gate` status counts approvals on the head
 commit only. So a diagrams commit after an approval needs new approvals. Run
 `npm run diagrams` and commit the result before you ask for review, and the workflow has
 nothing to push.
