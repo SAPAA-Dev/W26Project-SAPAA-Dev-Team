@@ -230,6 +230,8 @@ describe("GET /api/gallery", () => {
       "image/webp",
     ]);
     expect(attachmentsIsMock).toHaveBeenCalledWith("form_responses.archived_at", null);
+    // M24: the admin gallery still shows photos from deactivated reports.
+    expect(attachmentsSelectMock.mock.calls[0][0]).not.toContain("is_active");
 
     expect(sitesInMock).toHaveBeenCalledWith("id", ["207", "208"]);
 

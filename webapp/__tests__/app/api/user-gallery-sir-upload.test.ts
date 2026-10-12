@@ -122,8 +122,12 @@ jest.mock("next/server", () => ({
       const attachmentsInMock = jest.fn().mockReturnValue({
         order: attachmentsOrderMock,
       });
-      const attachmentsIsMock = jest.fn().mockReturnValue({
+      const attachmentsActiveMock = jest.fn().mockReturnValue({
         in: attachmentsInMock,
+      });
+
+      const attachmentsIsMock = jest.fn().mockReturnValue({
+        eq: attachmentsActiveMock,
       });
   
       const attachmentsSelectMock = jest.fn().mockReturnValue({
@@ -173,6 +177,9 @@ jest.mock("next/server", () => ({
         "image/webp",
       ]);
       expect(attachmentsIsMock).toHaveBeenCalledWith("form_responses.archived_at", null);
+      // M24: deactivated reports' photos stay hidden from user-facing galleries.
+      expect(attachmentsSelectMock.mock.calls[0][0]).toContain("form_responses!inner (archived_at, is_active)");
+      expect(attachmentsActiveMock).toHaveBeenCalledWith("form_responses.is_active", true);
   
       expect(sitesInMock).toHaveBeenCalledWith("id", ["207", "208"]);
   
@@ -261,8 +268,12 @@ jest.mock("next/server", () => ({
       const attachmentsInMock = jest.fn().mockReturnValue({
         order: attachmentsOrderMock,
       });
-      const attachmentsIsMock = jest.fn().mockReturnValue({
+      const attachmentsActiveMock = jest.fn().mockReturnValue({
         in: attachmentsInMock,
+      });
+
+      const attachmentsIsMock = jest.fn().mockReturnValue({
+        eq: attachmentsActiveMock,
       });
   
       const attachmentsSelectMock = jest.fn().mockReturnValue({
@@ -325,8 +336,12 @@ jest.mock("next/server", () => ({
       const attachmentsInMock = jest.fn().mockReturnValue({
         order: attachmentsOrderMock,
       });
-      const attachmentsIsMock = jest.fn().mockReturnValue({
+      const attachmentsActiveMock = jest.fn().mockReturnValue({
         in: attachmentsInMock,
+      });
+
+      const attachmentsIsMock = jest.fn().mockReturnValue({
+        eq: attachmentsActiveMock,
       });
   
       const attachmentsSelectMock = jest.fn().mockReturnValue({
@@ -384,8 +399,12 @@ jest.mock("next/server", () => ({
       const attachmentsInMock = jest.fn().mockReturnValue({
         order: attachmentsOrderMock,
       });
-      const attachmentsIsMock = jest.fn().mockReturnValue({
+      const attachmentsActiveMock = jest.fn().mockReturnValue({
         in: attachmentsInMock,
+      });
+
+      const attachmentsIsMock = jest.fn().mockReturnValue({
+        eq: attachmentsActiveMock,
       });
   
       const attachmentsSelectMock = jest.fn().mockReturnValue({

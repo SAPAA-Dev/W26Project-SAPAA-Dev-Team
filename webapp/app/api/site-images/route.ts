@@ -151,9 +151,22 @@ export async function DELETE(request: Request) {
       throw new Error("Image row was not deleted");
     }
 
-    await deleteObjectsByKeys([imageRow.storage_key]);
+    let storageCleanupComplete = true;
 
-    return NextResponse.json({ deleted: true });
+    try {
+      await deleteObjectsByKeys([imageRow.storage_key]);
+    } catch (storageError) {
+      // The row is already gone, so a retry would get 404. Report the cleanup problem separately.
+      storageCleanupComplete = false;
+      console.error("Image S3 cleanup failed after database deletion.", {
+        table,
+        imageId,
+        storageKey: imageRow.storage_key,
+        error: storageError,
+      });
+    }
+
+    return NextResponse.json({ deleted: true, storageCleanupComplete });
   } catch (err) {
     console.error("site-images delete error:", err);
     return NextResponse.json(

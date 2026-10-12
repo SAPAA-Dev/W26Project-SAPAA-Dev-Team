@@ -51,7 +51,7 @@ export async function GET() {
 
     const role = user.app_metadata?.role;
     
-  // Archived reports keep their images for restore, but user galleries must hide them.
+  // Archived and deactivated reports keep their images for restore, but user galleries must hide them.
   const { data: attachments, error: attachmentsError } = await supabase
     .from("attachments")
     .select(`
@@ -66,9 +66,10 @@ export async function GET() {
       file_size_bytes,
       filename,
       site_id,
-      form_responses!inner (archived_at)
+      form_responses!inner (archived_at, is_active)
     `)
     .is("form_responses.archived_at", null)
+    .eq("form_responses.is_active", true)
     .in("content_type", ALLOWED_IMAGE_TYPES)
     .order("id", { ascending: false });
 

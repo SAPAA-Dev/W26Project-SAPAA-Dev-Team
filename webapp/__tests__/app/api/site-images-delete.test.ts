@@ -177,7 +177,7 @@ describe("DELETE /api/site-images (US 7.0.5)", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body).toEqual({ deleted: true });
+    expect(body).toEqual({ deleted: true, storageCleanupComplete: true });
     expect(deleteObjectsByKeys).toHaveBeenCalledWith([
       "inspections/207/3226/27/file1.jpg",
     ]);
@@ -187,7 +187,7 @@ describe("DELETE /api/site-images (US 7.0.5)", () => {
     );
   });
 
-  it("returns 500 after the row delete when the S3 delete fails (7.0.5 AT3)", async () => {
+  it("US 7.0.5 AT3: returns 200 with storageCleanupComplete false when the S3 delete fails after the row delete", async () => {
     mockAttachmentRow({ id: 14, storage_key: "inspections/207/3226/27/file1.jpg" });
     mockAttachmentDelete([{ id: 14 }]);
     (deleteObjectsByKeys as jest.Mock).mockRejectedValueOnce(new Error("S3 down"));
@@ -195,12 +195,16 @@ describe("DELETE /api/site-images (US 7.0.5)", () => {
     const response = await DELETE(deleteRequest("14"));
     const body = await response.json();
 
-    expect(response.status).toBe(500);
-    expect(body).toEqual({ error: "Failed to delete site image" });
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ deleted: true, storageCleanupComplete: false });
     expect(mockFrom).toHaveBeenCalledTimes(2);
     expect(deleteObjectsByKeys).toHaveBeenCalledWith([
       "inspections/207/3226/27/file1.jpg",
     ]);
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Image S3 cleanup failed after database deletion.",
+      expect.objectContaining({ storageKey: "inspections/207/3226/27/file1.jpg" })
+    );
   });
 
   it("returns 500 when the row delete fails", async () => {
@@ -233,7 +237,7 @@ describe("DELETE /api/site-images (US 7.0.5)", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body).toEqual({ deleted: true });
+    expect(body).toEqual({ deleted: true, storageCleanupComplete: true });
     expect(mockFrom).toHaveBeenNthCalledWith(1, "attachments");
     expect(mockFrom).toHaveBeenNthCalledWith(2, "attachments");
   });
@@ -246,7 +250,7 @@ describe("DELETE /api/site-images (US 7.0.5)", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body).toEqual({ deleted: true });
+    expect(body).toEqual({ deleted: true, storageCleanupComplete: true });
     expect(mockFrom).toHaveBeenNthCalledWith(1, "homepage_image_uploads");
     expect(mockFrom).toHaveBeenNthCalledWith(2, "homepage_image_uploads");
     expect(deleteObjectsByKeys).toHaveBeenCalledWith(["homepage/207/file2.jpg"]);

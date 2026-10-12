@@ -144,8 +144,12 @@ describe("GET /api/sites/[siteId]/gallery", () => {
       order: attachmentsOrderMock,
     });
 
-    const attachmentsIsMock = jest.fn().mockReturnValue({
+    const attachmentsActiveMock = jest.fn().mockReturnValue({
       in: attachmentsInMock,
+    });
+
+    const attachmentsIsMock = jest.fn().mockReturnValue({
+      eq: attachmentsActiveMock,
     });
 
     const attachmentsEqMock = jest.fn().mockReturnValue({
@@ -202,6 +206,9 @@ describe("GET /api/sites/[siteId]/gallery", () => {
 
     expect(attachmentsEqMock).toHaveBeenCalledWith("site_id", 207);
     expect(attachmentsIsMock).toHaveBeenCalledWith("form_responses.archived_at", null);
+    // M24: deactivated reports' photos stay hidden from user-facing galleries.
+    expect(attachmentsSelectMock.mock.calls[0][0]).toContain("form_responses!inner (archived_at, is_active)");
+    expect(attachmentsActiveMock).toHaveBeenCalledWith("form_responses.is_active", true);
     expect(attachmentsInMock).toHaveBeenCalledWith("content_type", [
       "image/jpeg",
       "image/png",
@@ -280,8 +287,12 @@ describe("GET /api/sites/[siteId]/gallery", () => {
       order: attachmentsOrderMock,
     });
 
-    const attachmentsIsMock = jest.fn().mockReturnValue({
+    const attachmentsActiveMock = jest.fn().mockReturnValue({
       in: attachmentsInMock,
+    });
+
+    const attachmentsIsMock = jest.fn().mockReturnValue({
+      eq: attachmentsActiveMock,
     });
 
     const attachmentsEqMock = jest.fn().mockReturnValue({
@@ -364,8 +375,12 @@ describe("GET /api/sites/[siteId]/gallery", () => {
       order: attachmentsOrderMock,
     });
 
-    const attachmentsIsMock = jest.fn().mockReturnValue({
+    const attachmentsActiveMock = jest.fn().mockReturnValue({
       in: attachmentsInMock,
+    });
+
+    const attachmentsIsMock = jest.fn().mockReturnValue({
+      eq: attachmentsActiveMock,
     });
 
     const attachmentsEqMock = jest.fn().mockReturnValue({
@@ -429,8 +444,12 @@ describe("GET /api/sites/[siteId]/gallery", () => {
       order: attachmentsOrderMock,
     });
 
-    const attachmentsIsMock = jest.fn().mockReturnValue({
+    const attachmentsActiveMock = jest.fn().mockReturnValue({
       in: attachmentsInMock,
+    });
+
+    const attachmentsIsMock = jest.fn().mockReturnValue({
+      eq: attachmentsActiveMock,
     });
 
     const attachmentsEqMock = jest.fn().mockReturnValue({

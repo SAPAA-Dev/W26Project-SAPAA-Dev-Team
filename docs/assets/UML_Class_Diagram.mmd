@@ -127,7 +127,7 @@ classDiagram
         class SiteImagesRoute {
             <<route /api/site-images>>
             +GET(siteid, responseid) items
-            +DELETE(id, kind) deleted
+            +DELETE(id, kind) deleted, storageCleanupComplete
         }
         class SiteGalleryRoute {
             <<route /api/sites/[siteId]/gallery>>
