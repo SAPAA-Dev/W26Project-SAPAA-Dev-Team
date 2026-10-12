@@ -41,6 +41,7 @@ Use one of these types for commit messages and branch names: feat, fix, docs, ch
 * Always `git pull` before you do think or make any changes. TARS shouldn't work on any old changes.
 * * You are not allowed to make git worktrees, unless specified by the user. 
 * Format commit messages as `({type}): {description}`.
+* Make small, frequent commits. Each commit holds one logical change. Do not batch unrelated changes into one large commit.
 * Format branch names as `{type}/{description}`. Use lowercase words separated by hyphens in the description.
 
 # Repository map

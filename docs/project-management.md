@@ -66,19 +66,19 @@ The full story set is in [User Stories](user-stories.md): 35 user stories in sev
 | Feature area | Sprint 1 | Sprint 2 | Sprint 3 | Sprint 4 | Sprint 5 | Unscheduled | Won't Have |
 |---|---|---|---|---|---|---|---|
 | 1 - People Management | - | 1.0.1 (5, M) ✓, 1.0.2 (3, M) ✓ | 1.0.3 (2, S), 1.0.4 (2, M) | 1.0.5 (5, C) | - | - | - |
-| 2 - Place Management | - | 2.0.2 (3, M) (partial), 2.0.3 (3, S) ✓, 2.0.4 (8, M), 2.0.5 (5, M), 2.0.6 (5, S), 2.0.10 (1, M) ✓ | 2.0.1 (8, S), 2.0.8 (3, M), 2.0.9 (5, M), 2.0.11 (5, M) | 2.0.12 (8, C), 2.0.13 (3, C) | - | - | - |
+| 2 - Place Management | - | 2.0.2 (3, M) ✓, 2.0.3 (3, S) ✓, 2.0.4 (8, M) ✓, 2.0.5 (5, M) ✓, 2.0.6 (5, S) (partial), 2.0.10 (1, M) ✓ | 2.0.1 (8, S), 2.0.8 (3, M), 2.0.9 (5, M), 2.0.11 (5, M) | 2.0.12 (8, C), 2.0.13 (3, C) | - | - | - |
 | 3 - Admin Persona | - | 3.0.2 (5, S) ✓ | - | 3.0.3 (8, M) | - | - | - |
 | 4 - General Features | - | 4.0.6 (1, M) ✓ | 4.0.2 (13, S), 4.0.4 (5, S), 4.0.5 (5, S), 4.0.7 (5, C) | - | - | - | - |
 | 5 - Access and Accounts | - | 5.0.4 (2, S) (partial) | 5.0.2 (2, M) | - | - | - | - |
 | 6 - Data and Places | - | - | 6.0.1 (5, M) | - | - | - | - |
-| 7 - Inspections and Media | - | 7.0.1 (2, C) ✓, 7.0.5 (5, S) ✓, 7.0.6 (5, S), 7.0.7 (5, M) ✓, 7.0.8 (5, S) | - | 7.0.3 (5, C) | - | - | 7.0.4 (5, W), 7.0.9 (5, W) |
+| 7 - Inspections and Media | - | 7.0.1 (2, C) ✓, 7.0.5 (5, S) ✓, 7.0.6 (5, S), 7.0.7 (5, M) ✓, 7.0.8 (5, S) ✓ | - | 7.0.3 (5, C) | - | - | 7.0.4 (5, W), 7.0.9 (5, W) |
 | **Points** | **0** | **63** | **60** | **29** | **0** | **0** | **10** |
 | **Planned velocity** | 0 | 63 | 60 | 29 | 30 (estimated) | - | - |
 
 Numbers in brackets: story points and MoSCoW priority (M = Must Have, S = Should Have, C = Could Have, W = Won't Have).
 
-✓ = done (merged on main, and the merged work covers each AT) as of October 7, 2026. Partial on
-that date: 2.0.2 and 5.0.4. See [Sprint 2 status](#sprint-2-status-as-of-october-7-2026).
+✓ = done (merged on main, and the merged work covers each AT) as of October 9, 2026. Partial on
+that date: 2.0.6 and 5.0.4. 7.0.6 is not verified. See [Sprint 2 status](#sprint-2-status-as-of-october-9-2026).
 
 The **Points** row gives the total story points that the team committed to each sprint. The
 **Planned velocity** row gives the story points that the team plans to finish in each sprint. For
@@ -103,10 +103,6 @@ polish, deployment and field-test fixes.
 (October 14):
 
 - 2.0.6 (map filter, Sprint 2) now comes before the map (2.0.1, Sprint 3).
-- 2.0.4 (Delete a Site, 8 points) is in Sprint 2, but the team has not agreed what happens
-  to the inspections and images of a deleted site.
-- 2.0.2 (Add New Sites, Sprint 2) suggests boundaries from the Alberta government KML (AT6), but
-  6.0.1 (site geometry from that source) is in Sprint 3.
 - **Dependencies that still hold.** 2.0.9 (GPX upload) shares Sprint 3 with 2.0.1
   (map with tracks) and still comes first, because Frank asked for GPS files in one of the
   first sprints. 6.0.1 (site geometry) is in the same sprint as 2.0.1, which uses it.
@@ -150,26 +146,41 @@ All releases are GitHub releases at 20:00 on the due date.
 
 ### Velocity re-estimate
 
-Re-estimated on October 7, 2026, from the Sprint 2 results so far. A story counts as done only
+Re-estimated on October 9, 2026, from the Sprint 2 results on `main`. A story counts as done only
 when its PR is merged on `main` and the merged work covers each AT of the story.
+
+**Formula.**
+
+- Done points = the sum of the story points of the stories that are Done.
+- Completion rate = Done points / Planned points.
+- Re-estimate of a sprint = Done points. Before the code freeze, this is the Done points so far.
+  The re-estimate is final after the freeze.
 
 | Sprint | Planned | Done / actual | Re-estimate |
 |---|---|---|---|
-| Sprint 2 | 63 | 30 done, 5 partial and 0 in review (as of October 7) | 30 |
+| Sprint 2 | 63 | 51 done, 7 partial (2.0.6 and 5.0.4) and 5 not verified (7.0.6), as of October 9 | 51 |
 | Sprint 3 | 60 | Not started | 60 |
 | Sprint 4 | 29 | Not started | 29 |
 | Sprint 5 | 30 (estimated) | Not started | 30 |
 
-Sprint 2 reached the 30-point re-estimate on October 7, when the last story PR in review merged. This is
-about half of the 63 planned points. The first week of Sprint 2 went to four setup dev tasks that
-have no story points (branch model, admin auth checks, the Invalid Identifier fix and the `W26_`
-rename) and to the two user model tasks of 1.0.1. Most story PRs merged only on October 5 to 7.
+Sprint 2 is at 51 of 63 points, so the completion rate is 51 / 63 = 0.81. On October 7 it was 30
+points. The other 21 points merged after that date. The first week of Sprint 2 went to
+four setup dev tasks that have no story points (branch model, admin auth checks, the Invalid
+Identifier fix and the `W26_` rename) and to the two user model tasks of 1.0.1. Most story PRs
+merged only on October 5 or later. The last 12 points are 2.0.6 (partial), 5.0.4 (partial) and 7.0.6 (not verified). If
+all three are accepted at the October 11 freeze, Sprint 2 ends at 63. The team recomputes the table
+after the freeze.
 
-Sprint 3 stays at 60 points. This is twice the Sprint 2 result. The team keeps 60 because the
-setup work is done, no Sprint 2 work is in the Sprint 3 plan, and the three map stories (2.0.1,
-2.0.9, 4.0.2) are one piece of work for one team. Sprint 3 is the sprint with the highest risk. If
-the team is behind at the mid-point (October 20), 4.0.7 (5, Could Have) moves to Sprint 4 first,
-then 4.0.5 (5, Should Have).
+Sprint 3 stays at 60 points. This is 60 / 51 = 1.18 times the Sprint 2 result on October 9. The
+team keeps 60 for these reasons:
+
+- The setup work is done, and no Sprint 2 work is in the Sprint 3 plan.
+- The base map, the protected area boundaries and the map filters
+  ([PR #159](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/159), [PR #161](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/161), [PR #166](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/166), [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167)) are already on `main`. 2.0.1 builds on them.
+- The map stories (2.0.1, 2.0.9, 4.0.2) are one piece of work for one team.
+
+Sprint 3 is the sprint with the highest risk. If the team is behind at the mid-point (October 20),
+4.0.7 (5, Could Have) moves to Sprint 4 first, then 4.0.5 (5, Should Have).
 
 Sprint 4 stays at 29 points and Sprint 5 at 30 points (no stories yet). No Sprint 2 carry-over is
 assumed. If work is not merged at the October 11 freeze, the Product Owner places it at the
@@ -220,71 +231,88 @@ divides its tasks between its members.
 The security stories were removed from the story list on September 25, so the access control work
 stays in the task list below until the team decides if it returns as stories.
 
-#### Sprint 2 status (as of October 7, 2026)
+#### Sprint 2 status (as of October 9, 2026)
 
 Sprint 2 is still in progress. The code freeze is October 11 and the release is October 13 at
-20:00. A story or task is **Done** when its PR is merged on `main` and the merged work covers each
-AT of the story. **Partial** means that a PR is merged, but some ATs are not covered yet. **Not
-verified** means that the issue is closed, but no PR, commit or comment shows the work. The test of
-each AT is in the [Traceability Matrix](traceability-matrix.md). A gap in the tests of a Done story
-is listed below the table. It does not change the status.
+20:00. This status was read from `main` at `7709e46` on October 9. CI passes on that commit: 92
+suites and 1167 tests. A story or task is **Done** when its PR is merged on `main` and the merged
+work covers each AT of the story. **Partial** means that a PR is merged, but some ATs are not
+covered yet. **Not verified** means that the issue is closed, but no PR, commit or comment shows the
+work. The test of each AT is in the [Traceability Matrix](traceability-matrix.md). A gap in the
+tests of a Done story is listed below the table. It does not change the status.
 
 | Status | Stories | Points |
 |---|---|---|
-| Done | 1.0.1, 1.0.2, 2.0.3, 2.0.10, 3.0.2, 4.0.6, 7.0.1, 7.0.5, 7.0.7 | 30 |
-| Partial | 2.0.2, 5.0.4 | 5 |
+| Done | 1.0.1, 1.0.2, 2.0.2, 2.0.3, 2.0.4, 2.0.5, 2.0.10, 3.0.2, 4.0.6, 7.0.1, 7.0.5, 7.0.7, 7.0.8 | 51 |
+| Partial | 2.0.6, 5.0.4 | 7 |
 | In review | - | 0 |
-| In progress | 2.0.6 | 5 |
-| Not started | 2.0.4, 2.0.5, 7.0.8 | 18 |
+| In progress | - | 0 |
+| Not started | - | 0 |
 | Not verified | 7.0.6 | 5 |
 | **Total** | **16 stories** | **63** |
 
 Test coverage of each acceptance test is in the [Traceability Matrix](traceability-matrix.md).
 
-- **Done.** 30 of the 63 committed points (9 of 16 stories). The setup dev tasks are also done: the branch model ([PR #125](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/125)), the admin auth checks ([PR #144](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/144)), the Invalid Identifier fix
+- **Done.** 51 of the 63 committed points (13 of 16 stories), up from 30 on October 7. Merged since
+  October 7: 2.0.4 ([PR #160](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/160), archive a site, then restore it or delete it for good), 2.0.5
+  ([PR #163](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/163)), 7.0.8 ([PR #165](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/165)), and the last two ATs of 2.0.2: AT6
+  in [PR #162](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/162) and AT1 in [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167). The task [#87](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/87) (the form keeps its current page, [PR #164](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/164)) and the setup dev tasks are also done: the branch model ([PR #125](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/125)),
+  the admin auth checks ([PR #144](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/144)), the Invalid Identifier fix
   ([PR #128](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/128)), the `W26_` rename ([PR #129](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/129)) and the two user model tasks of 1.0.1: create the
   model ([#74](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/74); [PR #116](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/116), and [PR #130](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/130), which reached `main` in [PR #129](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/129)) and
   migrate it ([#75](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/75); [PR #131](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/131)).
-- **Test gaps in Done stories.** 1.0.1 AT2 and AT5 and 1.0.2 AT5 have no test. Owner: Alpha.
-  7.0.5 AT4 and 7.0.7 AT3 have no test. Owner: Beta. The 7.0.7 AT2 test in
-  `__tests__/app/api/pdf.test.ts` that failed on `d18f3bd` passes on `main` now (CI on `576f93f`:
-  971 passed of 971).
-- **Partial.** 2.0.2: [PR #153](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/153) covers AT2 to AT5. AT1 (select a boundary) and AT6 (suggest
-  sites from the government KML) are open, because `protected_areas` has no rows yet. 5.0.4:
-  [PR #120](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/120) adds the admin navigation, with sign-out, to the admin site details page. The
-  profile, people, new-report and edit-report pages have no sign-out control (AT3). No change on
-  `main` handles the Back button after sign-out (AT2).
-- **In review.** No story PRs are in review. [PR #151](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/151) (1.0.2 AT3, blank name check), [PR #155](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/155) (7.0.1,
-  Steward PDF export) and [PR #150](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/150) (2.0.3, Admin view of inactive sites) merged on October 7. [PR #154](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/154)
-  (reviewer gate status), a dev fix, also merged.
-- **Still open before the October 11 freeze.** 2.0.6 has its data groundwork on `main` ([PR #132](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/132),
-  [PR #137](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/137), [PR #152](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/152)), but there is no map page for signed-in users and no county filter or site search on a
-  map (only the inherited admin dashboard heatmap). 2.0.4, 2.0.5 and 7.0.8
-  have no branch or PR. The 4.0.6 task [#87](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/87) (the form keeps its current page) has no PR. The release
-  ([#97](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/97), October 12) and the demo ([#98](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/98), October 14) are still ahead.
+- **Test gaps in Done stories.** 1.0.1 AT2 and AT5 and 1.0.2 AT5 have no test. Owner: Alpha. 2.0.2
+  AT5 has no test. Owner: Gamma. 4.0.6 AT2, 7.0.5 AT4 and 7.0.7 AT3 have no test. Owner: Beta.
+- **Partial.** 2.0.6 has the base map ([PR #159](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/159)), the protected area boundaries ([PR #161](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/161)), the type,
+  subtype and name filters ([PR #166](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/166)) and the county and status filters ([PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167)), on top of the data in
+  [PR #132](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/132), [PR #137](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/137) and [PR #152](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/152). AT1 is covered and AT2 is partly covered (the [Traceability Matrix](traceability-matrix.md) has the gap). AT3 is not: the search box narrows the map to the matching
+  areas, but nothing centres the map on the selected site (`SiteMap.tsx` has no `fitBounds` or
+  `flyTo` call). The map also draws protected areas, and [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167) adds the link from a site to its
+  area as a new column that the migration does not fill. A site is linked only when an Admin sets
+  its area. Owner: Beta. 5.0.4 has sign-out in the user menu, the admin menu and the profile page
+  ([PR #120](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/120), [PR #158](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/158)), but AT3 ("sign out from any page") is not met: two signed-in pages have no
+  sign-out control, `/terms` and `/api-docs`. Owner: Alpha.
+- **In review.** No story PRs are in review. [PR #154](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/154) (reviewer gate status), a dev fix, merged on
+  October 7.
+- **Still open before the October 11 freeze.** 2.0.6 AT3 (Beta) and the check of 7.0.6 (Gamma).
+  The code freeze ([#96](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/96), October 11), the release ([#97](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/97), October 12) and the demo
+  ([#98](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/98), October 14) are still ahead.
 - **7.0.6 is not verified.** [#66](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/66) and [#90](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/90) are closed as completed, but no PR, commit or comment
   shows the fix. [PR #148](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/148) adds 51 seed inspections to test the export above 50 reports, so it is
-  probably related. The story does not count as done until the owner team checks 7.0.6 AT1 to AT4.
+  probably related. No test checks 7.0.6 AT1, AT2 or AT4. The story does not count as done until the
+  owner team checks 7.0.6 AT1 to AT4.
 
 **Issue state does not match the evidence.** This list is a report only. The owner team corrects
 its issues.
 
 - [#66](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/66) (7.0.6) and [#90](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/90) are closed as completed with no PR or check. Owner: Gamma.
-- [#81](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/81) (2.0.4) and [#93](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/93) (7.0.8) are closed as duplicates, but no work exists. Their stories
-  [#58](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/58) and [#69](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/69) are open. Owner: Gamma.
-- [#67](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/67) (7.0.7) and [#91](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/91) are open, but [PR #146](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/146) merged on October 7. Its body says "Closes #42", so
-  GitHub did not close them. Owner: Beta.
-- [#88](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/88) (4.0.6) is open, but [PR #147](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/147) merged. [PR #147](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/147) closes the story [#63](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/63), not the task. Owner: Beta.
-- [#63](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/63) (4.0.6) is closed, but its task [#87](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/87) is open and not started. The story ATs are covered by
-  [PR #147](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/147). Owner: Beta.
-- [#56](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/56) (2.0.2) is closed as completed, but 2.0.2 AT1 and AT6 are not done ([PR #153](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/153) says so).
-  Owner: Gamma.
-- [#64](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/64) (5.0.4) and [#94](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/94) are closed as completed, but [PR #120](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/120) does not put sign-out on every
-  page (AT3), and nothing shows that AT2 was checked. Owner: Alpha.
-- [#95](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/95) was closed on September 30, but [#80](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/80), [#81](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/81), [#83](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/83), [#84](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/84), [#85](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/85), [#87](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/87) and [#93](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/93) have no PR
-  that refers to them. Owner: everyone.
-- [#73](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/73), [#79](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/79) and [#86](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/86) were closed as duplicates before their work merged in [PR #129](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/129), [PR #153](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/153) and
-  [PR #145](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/145). The close reason does not name the PR. Owners: Alpha ([#73](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/73)), Gamma ([#79](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/79), [#86](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/86)).
+- [#60](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/60) (2.0.6) and its task [#85](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/85) are closed as completed, but 2.0.6 AT3 is not done. Owner: Beta.
+- Six task issues were closed as duplicates, but their work merged in other PRs. The close reason does not name the PR:
+  [#79](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/79) ([PR #153](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/153), [PR #162](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/162), [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167)), [#81](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/81) ([PR #160](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/160)), [#82](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/82) ([PR #150](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/150)), [#86](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/86) ([PR #145](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/145)), [#92](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/92) ([PR #155](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/155)) and
+  [#93](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/93) ([PR #165](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/165)). Owners: Gamma ([#79](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/79), [#81](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/81), [#86](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/86), [#92](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/92), [#93](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/93)) and Beta ([#82](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/82)).
+- The map task issues [#83](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/83), [#84](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/84) and [#85](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/85) were closed with no closing PR. Their work merged in [PR #159](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/159), [PR #161](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/161), [PR #166](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/166) and
+  [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167). Owner: Beta.
+
+#### Sprint 1 TA feedback and revisions
+
+Sprint 1 scored full marks, and the TA gave no written corrections. The rows below are the TA's
+advice in the September 23 lab (see [Meeting Minutes](meeting-minutes.md)) and in the week 5 lab
+notes of September 30 (`docs/meetings/week5/Meeting_Notes.md`). Each row shows what the team did
+with the advice. **Done** means the change is on `main` or in the docs. **Partial** means that part
+of the advice is not applied yet. **Open** means that the team has not acted on it.
+
+| TA point | Date | Action taken | Evidence | Status |
+|---|---|---|---|---|
+| Remove "As a Developer" stories. | Sep 23 | The story set has no developer stories. DevOps and release work is in the task tables as Dev Task rows. The September 16 question to the TA, whether DevOps work can be a story, has no answer in the minutes. | [User Stories](user-stories.md); task tables below | Done |
+| Merge small stories and think at a higher level. | Sep 23 | Stories are grouped into seven feature areas and tied to charter projects. Two 1-point stories stay separate (2.0.10 and 4.0.6): each is its own item in charter project 1. | [Story map](#story-map); [User Stories](user-stories.md) | Partial |
+| Use the GitHub project board for the filtered issues. | Sep 23 | Sprint 2 stories and tasks are issues in the Sprint 2 milestone, on the SAPAA project board (for example [#54](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/54)). The Sprint 3 issues are on the board too (for example [#169](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/169)). | [Sprint 2](#sprint-2) | Done |
+| Present about 15 minutes of the most interesting stories to Frank. | Sep 23 | The team presented its stories and plan to Frank on September 25. | [Meeting Minutes](meeting-minutes.md) (September 25) | Done |
+| Ask Frank which behaviours the gamification should reward, and find metrics for them. Pitch a bounty board that gives more points for chosen sites. | Sep 23, Sep 30 | On October 9 the team showed Frank a gamification mock-up: top contributor, counties visited, variety of site types and subtypes, natural regions, a time dimension and the first reporter of a site. Frank said the direction is right. The bounty board is not a story. 2.0.12 (to-visit priority) is the related story. | `docs/meetings/week6/2026_10_09_meeting_frank.txt`; US 1.0.4 (Sprint 3), US 1.0.5 and US 2.0.12 (Sprint 4) | Partial |
+| Do not delete site data. Mark the site as deleted and hide it. | Sep 30 | A site can be archived (hidden, and it can be restored). An archived site can also be deleted for good. Frank asked for both levels on October 2 and approved them on October 9. | [PR #160](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/160); `docs/meetings/week5/2026_10_02 _meeting_Frank.txt`; `docs/meetings/week6/2026_10_09_meeting_frank.txt` | Done |
+| Generate the UML from the code base. | Sep 30 | A diagram generator rebuilds the diagrams on every PR. Sprint 3 adds a CI check that fails when a diagram SVG is out of date. | [PR #157](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/157); Sprint 3 task [#196](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/196) | Done |
+| Build the map in layers: a static layer of polygons from Alberta open data, a dynamic layer of GPX tracks, and a data layer. | Sep 30 | The team chose OpenStreetMap data because Google Maps does not allow caching tiles offline. This reason is the team's own research: the Sep 30 notes record it, but do not say who raised it. The base map uses MapLibre GL with a Protomaps basemap (OpenStreetMap data). The protected area boundaries are imported and drawn. The GPX track layer is planned for Sprint 3 (2.0.9 and 2.0.1). No story covers the data layer. | [PR #159](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/159); [PR #137](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/137); [PR #152](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/152); [PR #161](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/161); [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167) | Partial |
+| Ambiguity in a story should not change its points. A story is not complete until its details are clear. | Sep 30 | The plan lists unclear stories as open conflicts and marks MoSCoW as provisional (issue [#23](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/23)). Proposed: at the Sprint 3 planning on October 14, list the open questions of each story before the sprint starts. | [Story map](#story-map) | Open |
+| In standups, teammates should know what the others are doing. | Sep 23 | The teamwork model has an offline sync meeting and a rule to keep the team informed. The Sep 23 minutes record that the TA (Alex) will run an exercise where each member describes another member's work. They do not record that it took place. | [Teamwork model](#teamwork-model) | Partial |
 
 #### User stories
 
@@ -292,20 +320,20 @@ its issues.
 |:---:|:---:|:---:|
 |US 1.0.1 - Add User Profiles|5|Done ([#54](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/54); [PR #131](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/131), [PR #138](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/138), [PR #141](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/141), [PR #142](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/142))|
 |US 1.0.2 - Allow Editing Own Profile|3|Done ([#55](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/55); [PR #138](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/138), [PR #151](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/151))|
-|US 2.0.2 - Allow Admins to Add New Sites|3|Partial ([#56](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/56); AT2 to AT5 merged in [PR #153](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/153); AT1 and AT6 open, need `protected_areas` data)|
+|US 2.0.2 - Allow Admins to Add New Sites|3|Done ([#56](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/56); [PR #153](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/153), [PR #162](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/162), [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167))|
 |US 2.0.3 - Deactivate and Reactivate a Site|3|Done ([#57](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/57); [PR #150](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/150))|
-|US 2.0.4 - Delete a Site|8|Not started ([#58](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/58))|
-|US 2.0.5 - Update a Site|5|Not started ([#59](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/59))|
-|US 2.0.6 - Search and Filter Sites by County on the Map|5|In progress ([#60](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/60); data in [PR #132](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/132), [PR #137](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/137), [PR #152](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/152))|
+|US 2.0.4 - Delete a Site|8|Done ([#58](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/58); [PR #160](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/160))|
+|US 2.0.5 - Update a Site|5|Done ([#59](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/59); [PR #163](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/163))|
+|US 2.0.6 - Search and Filter Sites by County on the Map|5|Partial ([#60](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/60); [PR #159](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/159), [PR #161](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/161), [PR #166](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/166), [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167); data in [PR #132](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/132), [PR #137](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/137), [PR #152](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/152); AT3 open)|
 |US 2.0.10 - Add links to Site Page|1|Done ([#61](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/61); [PR #145](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/145))|
 |US 3.0.2 - Steward Designation|5|Done ([#62](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/62); [PR #133](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/133), [PR #139](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/139), [PR #140](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/140))|
 |US 4.0.6 - Demote Photo Identifier to optional field|1|Done ([#63](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/63); [PR #147](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/147))|
-|US 5.0.4 - Sign Out Properly|2|Partial ([#64](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/64); [PR #120](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/120) adds sign-out to the admin site details page; profile, people, new-report and edit-report pages have no sign-out; AT2 not checked)|
+|US 5.0.4 - Sign Out Properly|2|Partial ([#64](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/64); [PR #120](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/120), [PR #158](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/158))|
 |US 7.0.1 - Let Stewards Export Their Own Reports|2|Done ([#68](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/68); [PR #155](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/155))|
 |US 7.0.5 - Delete an Image and Clean Up After It|5|Done ([#65](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/65); [PR #148](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/148))|
 |US 7.0.6 - Export More Than 50 Site Inspection Reports|5|Not verified ([#66](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/66); no PR)|
 |US 7.0.7 - Hide Fields on a SIR Before Export|5|Done ([#67](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/67); [PR #146](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/146))|
-|US 7.0.8 - Delete a Site Inspection Report|5|Not started ([#69](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/69))|
+|US 7.0.8 - Delete a Site Inspection Report|5|Done ([#69](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/69); [PR #165](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/165))|
 
 **Sprint Velocity:** 63
 
@@ -322,22 +350,22 @@ its issues.
 |Profile page|US 1.0.1|Alpha (Saumya, Aaron)|Oct 6th|Done ([#76](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/76); [PR #138](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/138), [PR #141](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/141), [PR #142](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/142))|
 |Add Steward to site page and link to their profile|US 3.0.2|Alpha (Saumya, Aaron)|Oct 7th|Done ([#77](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/77); [PR #133](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/133), [PR #139](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/139), [PR #140](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/140))|
 |Edit profile/user info page and functionality|US 1.0.2|Alpha (Saumya, Aaron)|Oct 7th|Done ([#78](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/78); [PR #138](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/138), [PR #151](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/151))|
-|Add new site page and functionality|US 2.0.2|Gamma (Zanab, Chris, Jayden)|Oct 5th|Partial ([#79](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/79); [PR #153](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/153); AT1 and AT6 open)|
-|Edit existing site page fields|US 2.0.5|Gamma (Zanab, Chris, Jayden)|Oct 6th|Not started ([#80](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/80))|
-|Delete site button and confirmation|US 2.0.4|Gamma (Zanab, Chris, Jayden)|Oct 6th|Not started ([#81](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/81))|
+|Add new site page and functionality|US 2.0.2|Gamma (Zanab, Chris, Jayden)|Oct 5th|Done ([#79](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/79); [PR #153](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/153), [PR #162](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/162), [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167))|
+|Edit existing site page fields|US 2.0.5|Gamma (Zanab, Chris, Jayden)|Oct 6th|Done ([#80](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/80); [PR #163](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/163))|
+|Delete site button and confirmation|US 2.0.4|Gamma (Zanab, Chris, Jayden)|Oct 6th|Done ([#81](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/81); [PR #160](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/160))|
 |Deactivate/Activate button and confirmation|US 2.0.3|Beta (Abhinav, Alissa)|Oct 6th|Done ([#82](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/82); [PR #150](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/150))|
-|Set up map|US 2.0.6|Beta (Abhinav, Alissa)|Oct 7th|In progress ([#83](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/83); data in [PR #132](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/132), [PR #137](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/137), [PR #152](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/152))|
-|Add sites to the map|US 2.0.6|Beta (Abhinav, Alissa)|Oct 6th|Not started ([#84](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/84))|
-|Add Search and Filtering on Map view|US 2.0.6|Beta (Abhinav, Alissa)|Oct 7th|Not started ([#85](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/85))|
+|Set up map|US 2.0.6|Beta (Abhinav, Alissa)|Oct 7th|Done ([#83](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/83); [PR #159](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/159))|
+|Add sites to the map|US 2.0.6|Beta (Abhinav, Alissa)|Oct 6th|Partial ([#84](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/84); [PR #161](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/161), [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167); draws protected area boundaries, and a site shows only when linked to an area)|
+|Add Search and Filtering on Map view|US 2.0.6|Beta (Abhinav, Alissa)|Oct 7th|Partial ([#85](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/85); [PR #166](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/166), [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167); AT3 open)|
 |Add links to site page|US 2.0.10|Gamma (Zanab, Chris, Jayden)|Oct 7th|Done ([#86](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/86); [PR #145](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/145))|
-|Fix site inspection page resetting current page when app is exited temporarily|US 4.0.6|Beta (Abhinav, Alissa)|Oct 6th|Not started ([#87](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/87))|
+|Fix site inspection page resetting current page when app is exited temporarily|US 4.0.6|Beta (Abhinav, Alissa)|Oct 6th|Done ([#87](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/87); [PR #164](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/164))|
 |Change Photo Identifier field on SIR to not required|US 4.0.6|Beta (Abhinav, Alissa)|Oct 5th|Done ([#88](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/88); [PR #147](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/147))|
 |Add a delete option on images|US 7.0.5|Beta (Abhinav, Alissa)|Oct 7th|Done ([#89](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/89); [PR #148](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/148))|
 |Increase export limit to over 50|US 7.0.6|Gamma (Zanab, Chris, Jayden)|Oct 9th|Not verified ([#90](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/90); no PR)|
 |Screen to select hidden fields on SIR before export|US 7.0.7|Beta (Abhinav, Alissa)|Oct 9th|Done ([#91](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/91); [PR #146](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/146))|
 |Grant Steward permission to export PDFs|US 7.0.1|Gamma (Zanab, Chris, Jayden)|Oct 7th|Done ([#92](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/92); [PR #155](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/155))|
-|Delete site inspection report button and confirmation|US 7.0.8|Gamma (Zanab, Chris, Jayden)|Oct 7th|Not started ([#93](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/93))|
-|Fix logging out functionality outside the home page|US 5.0.4|Alpha (Saumya, Aaron)|Oct 5th|Partial ([#94](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/94); [PR #120](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/120) covers the admin site details page only; AT2 not checked)|
+|Delete site inspection report button and confirmation|US 7.0.8|Gamma (Zanab, Chris, Jayden)|Oct 7th|Done ([#93](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/93); [PR #165](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/165))|
+|Fix logging out functionality outside the home page|US 5.0.4|Alpha (Saumya, Aaron)|Oct 5th|Partial ([#94](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/94); [PR #120](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/120), [PR #158](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/158))|
 |Open a PR for each task and request 2 reviews|All US|Everyone|Oct 10th|In progress ([#95](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/95))|
 |Code freeze: all Sprint 2 PRs reviewed and merged|All US|Everyone|Oct 11th|In progress ([#96](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/96))|
 |Write the release notes and make the Sprint 2 release on GitHub|Release|Gamma (Zanab, Chris, Jayden)|Oct 12th|Not started ([#97](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/97))|
@@ -395,8 +423,10 @@ each AT is in the [Traceability Matrix](traceability-matrix.md).
   enters edit mode, sees which fields are shown or hidden, and saves. Other users cannot enter edit
   mode. Done when 2.0.5 AT1 to AT4 pass.
 - **Delete site button and confirmation** (US 2.0.4). Assignee: Gamma (Zanab, Chris, Jayden). The
-  Admin confirms the delete and sees how many inspections and images the delete affects. The team
-  must agree on what happens to those records before this task starts. Done when 2.0.4 AT1 to AT4
+  Admin confirms the delete and sees how many inspections and images the delete affects. The
+  site is archived first, and an Admin can restore it or delete it for good from the archive. Deleting
+  for good removes the site and its steward link. Its reports, answers and photos stay in the
+  database, detached from the site (`site_id` set to null) ([PR #160](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/160)). Done when 2.0.4 AT1 to AT4
   pass.
 - **Deactivate/Activate button and confirmation** (US 2.0.3). Assignee: Beta (Abhinav, Alissa). An
   inactive site is not in site pickers or search, and its inspections can still be viewed. New sites
@@ -458,20 +488,20 @@ each AT is in the [Traceability Matrix](traceability-matrix.md).
 
 #### User stories
 
-|User Story|Story points|
-|:---:|:---:|
-|US 1.0.3 - Show history of Site Inspections on a Steward's Profile|2|
-|US 1.0.4 - Aggregate User Activity and Contributions on a user's profile|2|
-|US 2.0.1 - View Sites and Past Visits on an Interactive Map|8|
-|US 2.0.8 - View a Site's Details From the Map|3|
-|US 2.0.9 - Upload a GPX Track of a Site Visit|5|
-|US 2.0.11 - Show Safety Information for a Site|5|
-|US 4.0.2 - Offline and Online Map Layers|13|
-|US 4.0.4 - Edit My Previous Inspections|5|
-|US 4.0.5 - iNaturalist integration|5|
-|US 4.0.7 - Show the Top iNaturalist Observations for a Site|5|
-|US 5.0.2 - Reset a Forgotten Password|2|
-|US 6.0.1 - Store Each Site's Geometry From the Shared Source|5|
+|User Story|Story points|Issue|
+|:---:|:---:|:---:|
+|US 1.0.3 - Show history of Site Inspections on a Steward's Profile|2|[#169](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/169)|
+|US 1.0.4 - Aggregate User Activity and Contributions on a user's profile|2|[#170](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/170)|
+|US 2.0.1 - View Sites and Past Visits on an Interactive Map|8|[#171](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/171)|
+|US 2.0.8 - View a Site's Details From the Map|3|[#172](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/172)|
+|US 2.0.9 - Upload a GPX Track of a Site Visit|5|[#173](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/173)|
+|US 2.0.11 - Show Safety Information for a Site|5|[#174](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/174)|
+|US 4.0.2 - Offline and Online Map Layers|13|[#175](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/175)|
+|US 4.0.4 - Edit My Previous Inspections|5|[#176](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/176)|
+|US 4.0.5 - iNaturalist integration|5|[#177](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/177)|
+|US 4.0.7 - Show the Top iNaturalist Observations for a Site|5|[#178](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/178)|
+|US 5.0.2 - Reset a Forgotten Password|2|[#179](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/179)|
+|US 6.0.1 - Store Each Site's Geometry From the Shared Source|5|[#180](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/180)|
 
 **Sprint Velocity:** 60
 
@@ -481,8 +511,8 @@ makes the release on October 26. October 27 is spare time before the 20:00 deadl
 assigned to teams, not to people. Each team divides its tasks between its members. No Sprint 2 carry-over
 is assumed in this plan.
 
-GitHub issues for these tasks are created at the Sprint 3 planning on October 14. On October 7, the
-Sprint 3 milestone has no issues.
+The issues are in the Sprint 3 milestone: the stories are [#169](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/169) to [#180](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/180) and the tasks are
+[#181](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/181) to [#218](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/218).
 
 **Teams:** Red (Saumya, Chris), Blue (Aaron, Zanab, Abhinav), Green (Alissa, Jayden). See
 [Sprint 3 teams](#sprint-3-teams).
@@ -491,46 +521,46 @@ Sprint 3 milestone has no issues.
 
 #### Tasks
 
-|Task|Related US|Assignee|Due|
-|:---:|:---:|:---:|:---:|
-|Link each site to its boundary from the Alberta government KML and store a centre point (migration)|US 6.0.1|Blue (Aaron, Zanab, Abhinav)|Oct 16th|
-|Write the Sprint 3 test plan|Dev Task|Blue (Aaron, Zanab, Abhinav)|Oct 16th|
-|Review the schema of the site geometry columns, the GPX track table and the safety information fields|Dev Task|Green (Alissa, Jayden)|Oct 16th|
-|Show all active sites with their boundaries on a map page for signed-in users|US 2.0.1|Red (Saumya, Chris)|Oct 17th|
-|Create the GPX track table and file storage with access rules (migration)|US 2.0.9|Red (Saumya, Chris)|Oct 17th|
-|Add the safety information fields of a site, with Admin-only write access (migration)|US 2.0.11|Blue (Aaron, Zanab, Abhinav)|Oct 17th|
-|Link each inspection in the profile history to its SIR|US 1.0.3|Green (Alissa, Jayden)|Oct 17th|
-|Add "Forgot password" to the sign-in page and send a reset link|US 5.0.2|Green (Alissa, Jayden)|Oct 17th|
-|Choose the tile source and the offline tile cache|US 4.0.2|Red (Saumya, Chris)|Oct 18th|
-|Match sites in the KML import and list unmatched sites for an Admin|US 6.0.1|Blue (Aaron, Zanab, Abhinav)|Oct 18th|
-|Add a "View on map" link to the site page and highlight only the selected site|US 2.0.1|Red (Saumya, Chris)|Oct 19th|
-|GPX upload server action: check the extension, the GPX format, the track points and the size|US 2.0.9|Red (Saumya, Chris)|Oct 19th|
-|Cache geocoding results and stay under the OpenCage daily limit, with tests for 6.0.1|US 6.0.1|Blue (Aaron, Zanab, Abhinav)|Oct 19th|
-|Open a past SIR in edit mode, and check on the server that only its author can edit it|US 4.0.4|Blue (Aaron, Zanab, Abhinav)|Oct 19th|
-|Show activity aggregates on the profile and update them on a new SIR, with tests for 1.0.4|US 1.0.4|Green (Alissa, Jayden)|Oct 19th|
-|Add a CI check that fails when a diagram SVG does not match its Mermaid source|Dev Task|Red (Saumya, Chris)|Oct 20th|
-|Admin form and server action to save the safety information|US 2.0.11|Blue (Aaron, Zanab, Abhinav)|Oct 20th|
-|Hide the fields that a steward chose to hide in their past SIRs, with tests for 1.0.3|US 1.0.3|Green (Alissa, Jayden)|Oct 20th|
-|Verify a code, then set the new password, with tests for 5.0.2|US 5.0.2|Green (Alissa, Jayden)|Oct 20th|
-|Connect a user's iNaturalist account and read their observations|US 4.0.5|Green (Alissa, Jayden)|Oct 20th|
-|GPX upload control on the site page, with tests for 2.0.9|US 2.0.9|Red (Saumya, Chris)|Oct 21st|
-|Safety section on the site page, with tests for 2.0.11|US 2.0.11|Blue (Aaron, Zanab, Abhinav)|Oct 21st|
-|Open a site detail view when a site is selected on the map|US 2.0.8|Blue (Aaron, Zanab, Abhinav)|Oct 21st|
-|Block an edit that clears a required answer and list the missing questions|US 4.0.4|Blue (Aaron, Zanab, Abhinav)|Oct 21st|
-|Server route that reads the top 5 iNaturalist observations of a site, with a cache|US 4.0.7|Green (Alissa, Jayden)|Oct 21st|
-|Draw the uploaded GPX tracks on the map, with tests for 2.0.1|US 2.0.1|Red (Saumya, Chris)|Oct 22nd|
-|Download a map area for offline use and show its download status|US 4.0.2|Red (Saumya, Chris)|Oct 22nd|
-|"View SIRs" link from the site detail view, with tests for 2.0.8|US 2.0.8|Blue (Aaron, Zanab, Abhinav)|Oct 22nd|
-|Show the downloaded tiles offline and mark the missing tiles outside the downloaded area|US 4.0.2|Red (Saumya, Chris)|Oct 23rd|
-|Show saved edits everywhere the report is rendered, with tests for 4.0.4|US 4.0.4|Blue (Aaron, Zanab, Abhinav)|Oct 23rd|
-|Select iNaturalist photos in the SIR and autofill the identifier, with tests for 4.0.5|US 4.0.5|Green (Alissa, Jayden)|Oct 23rd|
-|iNaturalist section on the site page, with tests for 4.0.7|US 4.0.7|Green (Alissa, Jayden)|Oct 23rd|
-|Use live tiles when online, with tests for offline and online mode|US 4.0.2|Red (Saumya, Chris)|Oct 24th|
-|Update the traceability matrix for the Sprint 3 stories|Dev Task|Blue (Aaron, Zanab, Abhinav)|Oct 24th|
-|Open a PR for each task and request 2 reviews|All US|Everyone|Oct 24th|
-|Code freeze: all Sprint 3 PRs reviewed and merged|All US|Everyone|Oct 25th|
-|Write the release notes and make the Sprint 3 release on GitHub|Release|Red (Saumya, Chris)|Oct 26th|
-|Sprint 3 demo, review and retrospective|All US|Everyone|Oct 28th|
+|Task|Related US|Assignee|Due|Issue|
+|:---:|:---:|:---:|:---:|:---:|
+|Link each site to its boundary from the Alberta government KML and store a centre point (migration)|US 6.0.1|Blue (Aaron, Zanab, Abhinav)|Oct 16th|[#181](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/181)|
+|Write the Sprint 3 test plan|Dev Task|Blue (Aaron, Zanab, Abhinav)|Oct 16th|[#182](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/182)|
+|Review the schema of the site geometry columns, the GPX track table and the safety information fields|Dev Task|Green (Alissa, Jayden)|Oct 16th|[#183](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/183)|
+|Show all active sites with their boundaries on a map page for signed-in users|US 2.0.1|Red (Saumya, Chris)|Oct 17th|[#184](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/184)|
+|Create the GPX track table and file storage with access rules (migration)|US 2.0.9|Red (Saumya, Chris)|Oct 17th|[#185](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/185)|
+|Add the safety information fields of a site, with Admin-only write access (migration)|US 2.0.11|Blue (Aaron, Zanab, Abhinav)|Oct 17th|[#186](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/186)|
+|Link each inspection in the profile history to its SIR|US 1.0.3|Green (Alissa, Jayden)|Oct 17th|[#187](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/187)|
+|Add "Forgot password" to the sign-in page and send a reset link|US 5.0.2|Green (Alissa, Jayden)|Oct 17th|[#188](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/188)|
+|Choose the tile source and the offline tile cache|US 4.0.2|Red (Saumya, Chris)|Oct 18th|[#189](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/189)|
+|Match sites in the KML import and list unmatched sites for an Admin|US 6.0.1|Blue (Aaron, Zanab, Abhinav)|Oct 18th|[#190](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/190)|
+|Add a "View on map" link to the site page and highlight only the selected site|US 2.0.1|Red (Saumya, Chris)|Oct 19th|[#191](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/191)|
+|GPX upload server action: check the extension, the GPX format, the track points and the size|US 2.0.9|Red (Saumya, Chris)|Oct 19th|[#192](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/192)|
+|Cache geocoding results and stay under the OpenCage daily limit, with tests for 6.0.1|US 6.0.1|Blue (Aaron, Zanab, Abhinav)|Oct 19th|[#193](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/193)|
+|Open a past SIR in edit mode, and check on the server that only its author can edit it|US 4.0.4|Blue (Aaron, Zanab, Abhinav)|Oct 19th|[#194](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/194)|
+|Show activity aggregates on the profile and update them on a new SIR, with tests for 1.0.4|US 1.0.4|Green (Alissa, Jayden)|Oct 19th|[#195](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/195)|
+|Add a CI check that fails when a diagram SVG does not match its Mermaid source|Dev Task|Red (Saumya, Chris)|Oct 20th|[#196](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/196)|
+|Admin form and server action to save the safety information|US 2.0.11|Blue (Aaron, Zanab, Abhinav)|Oct 20th|[#197](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/197)|
+|Hide the fields that a steward chose to hide in their past SIRs, with tests for 1.0.3|US 1.0.3|Green (Alissa, Jayden)|Oct 20th|[#198](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/198)|
+|Verify a code, then set the new password, with tests for 5.0.2|US 5.0.2|Green (Alissa, Jayden)|Oct 20th|[#199](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/199)|
+|Connect a user's iNaturalist account and read their observations|US 4.0.5|Green (Alissa, Jayden)|Oct 20th|[#200](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/200)|
+|GPX upload control on the site page, with tests for 2.0.9|US 2.0.9|Red (Saumya, Chris)|Oct 21st|[#201](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/201)|
+|Safety section on the site page, with tests for 2.0.11|US 2.0.11|Blue (Aaron, Zanab, Abhinav)|Oct 21st|[#202](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/202)|
+|Open a site detail view when a site is selected on the map|US 2.0.8|Blue (Aaron, Zanab, Abhinav)|Oct 21st|[#203](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/203)|
+|Block an edit that clears a required answer and list the missing questions|US 4.0.4|Blue (Aaron, Zanab, Abhinav)|Oct 21st|[#204](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/204)|
+|Server route that reads the top 5 iNaturalist observations of a site, with a cache|US 4.0.7|Green (Alissa, Jayden)|Oct 21st|[#205](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/205)|
+|Draw the uploaded GPX tracks on the map, with tests for 2.0.1|US 2.0.1|Red (Saumya, Chris)|Oct 22nd|[#206](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/206)|
+|Download a map area for offline use and show its download status|US 4.0.2|Red (Saumya, Chris)|Oct 22nd|[#207](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/207)|
+|"View SIRs" link from the site detail view, with tests for 2.0.8|US 2.0.8|Blue (Aaron, Zanab, Abhinav)|Oct 22nd|[#208](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/208)|
+|Show the downloaded tiles offline and mark the missing tiles outside the downloaded area|US 4.0.2|Red (Saumya, Chris)|Oct 23rd|[#209](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/209)|
+|Show saved edits everywhere the report is rendered, with tests for 4.0.4|US 4.0.4|Blue (Aaron, Zanab, Abhinav)|Oct 23rd|[#210](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/210)|
+|Select iNaturalist photos in the SIR and autofill the identifier, with tests for 4.0.5|US 4.0.5|Green (Alissa, Jayden)|Oct 23rd|[#211](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/211)|
+|iNaturalist section on the site page, with tests for 4.0.7|US 4.0.7|Green (Alissa, Jayden)|Oct 23rd|[#212](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/212)|
+|Use live tiles when online, with tests for offline and online mode|US 4.0.2|Red (Saumya, Chris)|Oct 24th|[#213](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/213)|
+|Update the traceability matrix for the Sprint 3 stories|Dev Task|Blue (Aaron, Zanab, Abhinav)|Oct 24th|[#214](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/214)|
+|Open a PR for each task and request 2 reviews|All US|Everyone|Oct 24th|[#215](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/215)|
+|Code freeze: all Sprint 3 PRs reviewed and merged|All US|Everyone|Oct 25th|[#216](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/216)|
+|Write the release notes and make the Sprint 3 release on GitHub|Release|Red (Saumya, Chris)|Oct 26th|[#217](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/217)|
+|Sprint 3 demo, review and retrospective|All US|Everyone|Oct 28th|[#218](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/218)|
 
 #### Sprint 3 task details
 
@@ -541,8 +571,8 @@ The acceptance tests are in [User Stories](user-stories.md).
 
 - 6.0.1 (site boundary and centre point, October 16) comes before the map page (2.0.1), the
   boundaries on the map and the iNaturalist observations of a site (4.0.7).
-- The base map of 2.0.1 (October 17) comes before the site detail view (2.0.8), the GPX tracks on
-  the map (2.0.1 AT2) and the offline layers (4.0.2).
+- The map page of 2.0.1 (October 17) comes before the site detail view (2.0.8), the GPX tracks on
+  the map (2.0.1 AT2) and the offline layers (4.0.2). It builds on the base map of [PR #159](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/159).
 - The GPX track table (2.0.9, October 17) comes before the GPX upload and the tracks on the map.
 - Green reviews the schema of the new columns and tables (October 16) before their migrations
   merge. The review also records which SIR fields a steward can hide (1.0.3 AT3).
@@ -550,8 +580,9 @@ The acceptance tests are in [User Stories](user-stories.md).
 **Red (Saumya, Chris): map, GPX tracks, offline layers and the release**
 
 - **Show all active sites with their boundaries on a map page for signed-in users** (US 2.0.1).
-  Use Leaflet, which is already in `webapp/package.json`, and the geometry from 6.0.1. Done when
-  2.0.1 AT1 passes.
+  Use MapLibre GL and the Protomaps basemap from [PR #159](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/159). Build on the map in
+  `webapp/components/map/SiteMap.tsx`, which already draws the protected area boundaries
+  ([PR #161](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/161), [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167)), and use the geometry from 6.0.1. Done when 2.0.1 AT1 passes.
 - **Add a "View on map" link to the site page and highlight only the selected site** (US 2.0.1).
   Done when 2.0.1 AT3 and AT4 pass.
 - **Draw the uploaded GPX tracks on the map** (US 2.0.1). Draw a track as a line in a different
@@ -561,10 +592,13 @@ The acceptance tests are in [User Stories](user-stories.md).
   and Green has reviewed the schema.
 - **GPX upload server action** (US 2.0.9). Refuse a file without the .gpx extension, a file that is
   not valid GPX or has no track points, and a file above the stated maximum size. Save nothing when
-  a file is refused. Done when 2.0.9 AT2, AT3 and AT5 pass.
-- **GPX upload control on the site page** (US 2.0.9). Done when 2.0.9 AT1 to AT5 pass, including
-  the read-back of the same track points (AT4).
-- **Choose the tile source and the offline tile cache** (US 4.0.2). Compare the options and write
+  a file is refused. Accept several files in one upload and check each file on its own. Frank asked
+  for bulk upload at the October 9 meeting (`docs/meetings/week6/2026_10_09_meeting_frank.txt`).
+  Done when 2.0.9 AT2, AT3, AT5 and AT6 pass.
+- **GPX upload control on the site page** (US 2.0.9). Let the user choose one or several files.
+  Done when 2.0.9 AT1 to AT6 pass, including the read-back of the same track points (AT4).
+- **Choose the tile source and the offline tile cache** (US 4.0.2). The tile source is decided:
+  [PR #159](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/159) uses Protomaps with MapLibre GL. Choose the offline cache for those tiles and write
   the decision and its limits in the PR. Done when the team agrees on the approach.
 - **Download a map area for offline use and show its download status** (US 4.0.2). Done when 4.0.2
   AT1 passes.
@@ -578,8 +612,9 @@ The acceptance tests are in [User Stories](user-stories.md).
 **Blue (Aaron, Zanab, Abhinav): site geometry, site details, safety information and SIR edits**
 
 - **Link each site to its boundary and store a centre point** (US 6.0.1). This continues the KML
-  parser and import from [PR #137](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/137) and [PR #152](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/152). Done when 6.0.1 AT1 and AT2 pass and Green has
-  reviewed the schema.
+  parser and import from [PR #137](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/137) and [PR #152](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/152), and the site-to-area link that [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167) added.
+  That link is empty until an Admin sets it. This task fills it from the KML for the existing
+  sites. Done when 6.0.1 AT1 and AT2 pass and Green has reviewed the schema.
 - **Match sites in the KML import and list unmatched sites for an Admin** (US 6.0.1). Done when
   6.0.1 AT3 passes.
 - **Cache geocoding results and stay under the OpenCage daily limit** (US 6.0.1). Done when 6.0.1

@@ -176,6 +176,9 @@ The line below each story title names the one charter project that is the best m
 > 3. Given I upload a file named .gpx that is not valid GPX or has no track points, Then it is refused with a message and nothing is saved
 > 4. Given I uploaded a track, When the stored track is read back, Then it has the same track points as the uploaded file
 > 5. Given I choose a .gpx file larger than the stated maximum size, When I upload it, Then it is refused with a message that names the limit
+> 6. Given I choose several .gpx files at once, When I upload them, Then every valid file is saved and linked to that Site and to my account, and each refused file is listed with the reason
+
+*AT6 follows the October 9, 2026 client meeting, where Frank asked for bulk upload of GPX files (`docs/meetings/week6/2026_10_09_meeting_frank.txt`).*
 
 ### US 2.0.10 - Add links to Site Page | Story Points: 1
 *Charter project: 1 – Critical SIR-SAPAA Bug Fixes & Minor Enhancements*
