@@ -17,9 +17,9 @@ describe("User Image Gallery", () => {
     cy.viewport(1280, 720);
     cy.visit("http://localhost:3000/");
     cy.get("#email").click();
-    cy.get("#email").type("awayt7398@gmail.com");
+    cy.get("#email").type(Cypress.env('STEWARD_EMAIL'));
     cy.get("#password").click();
-    cy.get("#password").type("Throw4w4!");
+    cy.get("#password").type(Cypress.env('STEWARD_PASSWORD'));
     cy.get("button.font-bold").click();
     cy.wait(3000);
     dismissTutorialIfPresent();

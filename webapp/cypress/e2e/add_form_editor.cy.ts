@@ -25,8 +25,8 @@ function hamburgerNavigateTo(label: string) {
 describe('Admin Form Editor - Adding Questions', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/');
-    cy.get('#email').click().type('jason.liang5129@gmail.com');
-    cy.get('#password').click().type('123Abc@@');
+    cy.get('#email').click().type(Cypress.env('ADMIN_EMAIL'));
+    cy.get('#password').click().type(Cypress.env('ADMIN_PASSWORD'));
     cy.get('button.font-bold').click();
 
     // Dismiss the "first login" tutorial overlay if it appears
@@ -92,8 +92,8 @@ describe('Admin Form Editor - Adding Questions', () => {
 describe('User View - No Admin Form Editor', () => {
   it('should disallow users from accessing the admin panel', () => {
     cy.visit('http://localhost:3000/');
-    cy.get('#email').click().type('awayt7398@gmail.com');
-    cy.get('#password').click().type('Throw4w4!');
+    cy.get('#email').click().type(Cypress.env('STEWARD_EMAIL'));
+    cy.get('#password').click().type(Cypress.env('STEWARD_PASSWORD'));
     cy.get('button.font-bold').click();
 
     cy.wait(3000);

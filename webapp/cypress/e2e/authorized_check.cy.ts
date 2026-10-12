@@ -4,8 +4,8 @@ describe("Unauthorized user check", () => {
   beforeEach(() => {
     cy.visit("http://localhost:3000/");
     
-    cy.get("#email").type("dapeh66701@qvmao.com");
-    cy.get("#password").type("Password5!");
+    cy.get("#email").type(Cypress.env('UNAPPROVED_EMAIL'));
+    cy.get("#password").type(Cypress.env('UNAPPROVED_PASSWORD'));
     cy.contains("Sign In").click();
   });
 

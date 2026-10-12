@@ -16,6 +16,10 @@ jest.mock('@/utils/supabase/client', () => ({
     auth: {
       getSession: jest.fn(async () => ({ data: { session: mockSession }, error: null })),
       getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'user-123', app_metadata: { authenticated: true } } } }),
+      getSession: jest.fn().mockResolvedValue({
+        data: { session: { user: { id: 'user-123', email: 'steward@example.com', app_metadata: { authenticated: true }, user_metadata: {} } } },
+        error: null,
+      }),
       onAuthStateChange: jest.fn((callback) => {
         // Immediately call with authenticated user
         callback('SIGNED_IN', { user: { id: 'user-123', app_metadata: { authenticated: true } } });
@@ -197,6 +201,17 @@ describe('SiteDetailScreen', () => {
   });
 
   describe('Header and Site Information', () => {
+    it('does not print the signed-in user to the browser console', async () => {
+      const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      render(<SiteDetailScreen />);
+      await waitFor(() => {
+        expect(screen.getByText('Aspen Grove Reserve')).toBeInTheDocument();
+      });
+      const logged = JSON.stringify(logSpy.mock.calls);
+      logSpy.mockRestore();
+      expect(logged).not.toContain('steward@example.com');
+    });
+
     it('should display site name', async () => {
       render(<SiteDetailScreen />);
       await waitFor(() => {

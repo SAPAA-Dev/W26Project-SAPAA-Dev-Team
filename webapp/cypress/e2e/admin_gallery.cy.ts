@@ -15,8 +15,8 @@ function dismissTutorialIfPresent() {
 describe("Admin Image Gallery", () => {
   beforeEach(() => {
     cy.visit("http://localhost:3000/");
-    cy.get("#email").click().type("jason.liang5129@gmail.com");
-    cy.get("#password").click().type("123Abc@@");
+    cy.get("#email").click().type(Cypress.env('ADMIN_EMAIL'));
+    cy.get("#password").click().type(Cypress.env('ADMIN_PASSWORD'));
     cy.get("button.font-bold").click();
 
     cy.wait(3000);

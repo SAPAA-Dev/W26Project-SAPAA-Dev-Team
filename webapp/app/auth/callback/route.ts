@@ -7,7 +7,12 @@ import { cookies } from 'next/headers';
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/sites';
+  // `next` is appended to the host, so accept only a same-site path. "//x", "/\x" and
+  // ".evil.com" would otherwise send a freshly signed-in user to another host.
+  const nextParam = searchParams.get('next');
+  const next = nextParam?.startsWith('/') && !nextParam.startsWith('//') && !nextParam.includes('\\')
+    ? nextParam
+    : '/sites';
 
   if (code) {
     const cookieStore = await cookies();

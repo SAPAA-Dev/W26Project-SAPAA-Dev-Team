@@ -16,8 +16,8 @@ describe('Admin Form Editor - Editing Questions', () => {
   beforeEach(() => {
     cy.viewport(1280, 720);
     cy.visit('http://localhost:3000/');
-    cy.get('#email').click().type('jason.liang5129@gmail.com');
-    cy.get('#password').click().type('123Abc@@');
+    cy.get('#email').click().type(Cypress.env('ADMIN_EMAIL'));
+    cy.get('#password').click().type(Cypress.env('ADMIN_PASSWORD'));
     cy.get('button.font-bold').click();
 
     cy.wait(3000);
@@ -164,8 +164,8 @@ describe('Admin Form Editor - Editing Questions', () => {
 describe('User View - No Admin Form Editor', () => {
   it('should disallow users from accessing the admin panel that contains the form editor', () => {
     cy.visit('http://localhost:3000/');
-    cy.get('#email').click().type('awayt7398@gmail.com');
-    cy.get('#password').click().type('Throw4w4!');
+    cy.get('#email').click().type(Cypress.env('STEWARD_EMAIL'));
+    cy.get('#password').click().type(Cypress.env('STEWARD_PASSWORD'));
     cy.get('button.font-bold').click();
 
     cy.wait(3000);

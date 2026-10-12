@@ -47,8 +47,8 @@ describe('Admin Edit Site Profile', () => {
 
   function loginAsAdmin() {
     cy.visit('http://localhost:3000/');
-    cy.get('#email').type('jason.liang5129@gmail.com', { force: true });
-    cy.get('#password').type('123Abc@@', { force: true });
+    cy.get('#email').type(Cypress.env('ADMIN_EMAIL'), { force: true });
+    cy.get('#password').type(Cypress.env('ADMIN_PASSWORD'), { force: true });
     cy.get('button.font-bold').click({ force: true });
 
     cy.wait(3000);
@@ -121,8 +121,8 @@ describe('Admin Edit Site Profile', () => {
 describe('Non-Admin Cannot Edit Site Profile', () => {
   it('should not show the admin panel or edit buttons to steward users', () => {
     cy.visit('http://localhost:3000/');
-    cy.get('#email').type('awayt7398@gmail.com', { force: true });
-    cy.get('#password').type('Throw4w4!', { force: true });
+    cy.get('#email').type(Cypress.env('STEWARD_EMAIL'), { force: true });
+    cy.get('#password').type(Cypress.env('STEWARD_PASSWORD'), { force: true });
     cy.get('button.font-bold').click({ force: true });
 
     cy.wait(3000);

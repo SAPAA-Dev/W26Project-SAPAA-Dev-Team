@@ -27,8 +27,8 @@ function dismissTutorialIfPresent() {
   }
   
   describe('Logout Flow', () => {
-    const adminEmail = 'jason.liang5129@gmail.com';
-    const adminPassword = '123Abc@@';
+    const adminEmail = Cypress.env('ADMIN_EMAIL');
+    const adminPassword = Cypress.env('ADMIN_PASSWORD');
   
     it('user is redirected to login screen on logout', () => {
       login(adminEmail, adminPassword);

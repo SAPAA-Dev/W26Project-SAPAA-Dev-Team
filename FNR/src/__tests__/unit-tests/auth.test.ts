@@ -233,6 +233,26 @@ describe('Auth module full', () => {
     });
   });
 
+  describe('OAuth token logging', () => {
+    it.each([
+      ['Google', loginWithGoogle, 'https://redirect#access_token=secret-access&refresh_token=secret-refresh'],
+      ['Microsoft', loginWithMicrosoft, 'https://redirect#access_token=secret-access&refresh_token=secret-refresh'],
+      ['Microsoft without a token', loginWithMicrosoft, 'https://redirect?state=secret-access'],
+    ])('never logs the callback URL or tokens (%s)', async (_label, loginFn, url) => {
+      const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      (supabase.auth.signInWithOAuth as jest.Mock).mockResolvedValue({ data: { url: 'https://oauth' }, error: null });
+      (WebBrowser.openAuthSessionAsync as jest.Mock).mockResolvedValue({ type: 'success', url });
+      (supabase.auth.setSession as jest.Mock).mockResolvedValue({ data: { session: { user: { id: '1', email: 'a@b.com' } } }, error: null });
+
+      await loginFn();
+
+      const logged = JSON.stringify([...logSpy.mock.calls, ...errorSpy.mock.calls]);
+      expect(logged).not.toContain('secret-access');
+      expect(logged).not.toContain('secret-refresh');
+    });
+  });
+
   describe('getAuthState', () => {
     it('returns authenticated user', async () => {
       (supabase.auth.getSession as jest.Mock).mockResolvedValue({ data: { session: { user: { id: '1', email: 'a@b.com', app_metadata: { role: 'admin' } } } } });

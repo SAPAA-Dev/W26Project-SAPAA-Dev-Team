@@ -21,8 +21,8 @@ describe('Admin Disable Site Profile', () => {
 
   function loginAsAdmin() {
     cy.visit('http://localhost:3000/');
-    cy.get('#email').type('jason.liang5129@gmail.com');
-    cy.get('#password').type('123Abc@@');
+    cy.get('#email').type(Cypress.env('ADMIN_EMAIL'));
+    cy.get('#password').type(Cypress.env('ADMIN_PASSWORD'));
     cy.get('button.font-bold').click();
 
     cy.wait(3000);
@@ -97,8 +97,8 @@ describe('Admin Disable Site Profile', () => {
     cy.task('setSiteActive', { namesite: DISABLE_TEST_SITE, is_active: false });
 
     cy.visit('http://localhost:3000/');
-    cy.get('#email').type('jason.liang5129@gmail.com');
-    cy.get('#password').type('123Abc@@');
+    cy.get('#email').type(Cypress.env('ADMIN_EMAIL'));
+    cy.get('#password').type(Cypress.env('ADMIN_PASSWORD'));
     cy.get('button.font-bold').click();
 
     cy.wait(3000);
@@ -147,8 +147,8 @@ describe('Admin Disable Site Profile', () => {
 describe('Non-Admin Cannot Disable Site Profile', () => {
   it('should not expose the admin panel or visibility toggle to steward users', () => {
     cy.visit('http://localhost:3000/');
-    cy.get('#email').type('awayt7398@gmail.com');
-    cy.get('#password').type('Throw4w4!');
+    cy.get('#email').type(Cypress.env('STEWARD_EMAIL'));
+    cy.get('#password').type(Cypress.env('STEWARD_PASSWORD'));
     cy.get('button.font-bold').click();
 
     cy.wait(3000);

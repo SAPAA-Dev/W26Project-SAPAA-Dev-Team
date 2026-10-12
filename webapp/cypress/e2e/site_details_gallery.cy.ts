@@ -80,9 +80,9 @@ const homePageItemsForSelectedSite = [
 function loginWithCurrentPattern() {
   cy.visit("http://localhost:3000/");
   cy.get("#email").click();
-  cy.get("#email").type("jason.liang5129@gmail.com");
+  cy.get("#email").type(Cypress.env('ADMIN_EMAIL'));
   cy.get("#password").click();
-  cy.get("#password").type("123Abc@@");
+  cy.get("#password").type(Cypress.env('ADMIN_PASSWORD'));
   cy.get("button.font-bold").click();
   cy.get("button.text-white").click();
   cy.url().should("include", "/sites");

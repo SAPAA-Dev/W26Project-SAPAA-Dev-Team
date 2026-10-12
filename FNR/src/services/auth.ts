@@ -126,23 +126,18 @@ export async function loginWithGoogle(): Promise<{ success: boolean; error?: str
       return { success: false, error: 'No OAuth URL returned from Supabase' };
     }
 
-    console.log('OAuth URL from Supabase:', data.url);
-
     const result = await WebBrowser.openAuthSessionAsync(
       data.url,
       redirectUrl
     );
 
     console.log('WebBrowser result type:', result.type);
-    console.log('WebBrowser result:', JSON.stringify(result, null, 2));
 
     if (result.type === 'success') {
       if (!result.url) {
         return { success: false, error: 'No URL in success result' };
       }
 
-      console.log('Success URL:', result.url);
-      
       // Parse the URL to get tokens
       const url = new URL(result.url);
       const params = new URLSearchParams(url.hash.substring(1) || url.search);
@@ -223,24 +218,18 @@ export async function loginWithMicrosoft(): Promise<{ success: boolean; error?: 
       return { success: false, error: 'No OAuth URL returned from Supabase' };
     }
 
-    console.log('OAuth URL from Supabase:', data.url);
-
     const result = await WebBrowser.openAuthSessionAsync(
       data.url,
       redirectUrl
     );
 
     console.log('WebBrowser result type:', result.type);
-    console.log('WebBrowser full result:', JSON.stringify(result, null, 2));
 
     if (result.type === 'success') {
       if (!result.url) {
         return { success: false, error: 'No URL in success result' };
       }
 
-      console.log('Success URL:', result.url);
-      console.log('URL length:', result.url.length);
-      
       // Parse URL - Azure/Microsoft might return tokens differently
       let accessToken = null;
       let refreshToken = null;
@@ -249,18 +238,13 @@ export async function loginWithMicrosoft(): Promise<{ success: boolean; error?: 
       try {
         // Try parsing as full URL
         const url = new URL(result.url);
-        console.log('URL pathname:', url.pathname);
-        console.log('URL hash:', url.hash);
-        console.log('URL search:', url.search);
-        
+
         // Check hash params first (most common for OAuth)
         if (url.hash) {
           const hashParams = new URLSearchParams(url.hash.substring(1));
           accessToken = hashParams.get('access_token');
           refreshToken = hashParams.get('refresh_token');
           error_description = hashParams.get('error_description');
-          
-          console.log('Hash params:', Array.from(hashParams.entries()));
         }
         
         // If no tokens in hash, check query params
@@ -269,8 +253,6 @@ export async function loginWithMicrosoft(): Promise<{ success: boolean; error?: 
           accessToken = queryParams.get('access_token');
           refreshToken = queryParams.get('refresh_token');
           error_description = error_description || queryParams.get('error_description');
-          
-          console.log('Query params:', Array.from(queryParams.entries()));
         }
         
         // Microsoft sometimes uses 'code' instead of tokens directly
@@ -329,7 +311,6 @@ export async function loginWithMicrosoft(): Promise<{ success: boolean; error?: 
 
       if (!accessToken) {
         console.error('No access token in URL params');
-        console.error('Full URL for debugging:', result.url);
         return { success: false, error: 'No access token received from Microsoft' };
       }
 
