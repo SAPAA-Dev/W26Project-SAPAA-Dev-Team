@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import FormEditorPage from '../../app/admin/form-editor/page';
 import * as formActions from '../../utils/form-actions';
 
@@ -10,17 +10,20 @@ jest.mock('next/navigation', () => ({
 }));
 
 // Mock next/image
-jest.mock('next/image', () => (props: any) => <img {...props} alt={props.alt} />);
+jest.mock('next/image', () => function MockImage(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+  // eslint-disable-next-line @next/next/no-img-element -- test mock of next/image
+  return <img {...props} alt={props.alt} />;
+});
 
 // Mock components
-jest.mock('../../app/admin/AdminNavBar', () => () => <div>AdminNavBarMock</div>);
-jest.mock('../../components/ProtectedRoute', () => ({ children, requireAdmin }: any) => (
-  <div data-testid="protected-route" data-require-admin={requireAdmin?.toString()}>{children}</div>
-));
+jest.mock('../../app/admin/AdminNavBar', () => function MockAdminNavBar() { return <div>AdminNavBarMock</div>; });
+jest.mock('../../components/ProtectedRoute', () => function MockProtectedRoute({ children, requireAdmin }: { children: React.ReactNode; requireAdmin?: boolean }) {
+  return <div data-testid="protected-route" data-require-admin={requireAdmin?.toString()}>{children}</div>;
+});
 
 // Mock @dnd-kit
 jest.mock('@dnd-kit/core', () => ({
-  DndContext: ({ children }: any) => <div>{children}</div>,
+  DndContext: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   rectIntersection: jest.fn(),
   PointerSensor: jest.fn(),
   useSensor: jest.fn(() => ({})),
@@ -29,7 +32,7 @@ jest.mock('@dnd-kit/core', () => ({
 }));
 
 jest.mock('@dnd-kit/sortable', () => ({
-  SortableContext: ({ children }: any) => <div>{children}</div>,
+  SortableContext: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   verticalListSortingStrategy: jest.fn(),
   useSortable: jest.fn(() => ({
     attributes: {},
@@ -39,7 +42,7 @@ jest.mock('@dnd-kit/sortable', () => ({
     transition: null,
     isDragging: false,
   })),
-  arrayMove: jest.fn((arr: any[], from: number, to: number) => {
+  arrayMove: jest.fn((arr: unknown[], from: number, to: number) => {
     const result = [...arr];
     const [item] = result.splice(from, 1);
     result.splice(to, 0, item);
@@ -121,9 +124,9 @@ describe('FormEditorPage', () => {
     jest.clearAllMocks();
     (formActions.fetchFormSections as jest.Mock).mockResolvedValue(mockSections);
     (formActions.fetchFormQuestions as jest.Mock).mockResolvedValue(mockQuestions);
-    (formActions.saveQuestion as jest.Mock).mockResolvedValue(undefined);
+    (formActions.saveQuestion as jest.Mock).mockResolvedValue({ success: true });
     (formActions.toggleQuestionActive as jest.Mock).mockResolvedValue(undefined);
-    (formActions.addQuestion as jest.Mock).mockResolvedValue(undefined);
+    (formActions.addQuestion as jest.Mock).mockResolvedValue({ success: true });
   });
 
   // ─── Loading & Initial Render ───────────────────────────────────────
@@ -391,11 +394,21 @@ describe('FormEditorPage', () => {
 
     it('updates button from Hide to Show when toggled', async () => {
       render(<FormEditorPage />);
-      await waitFor(() => {
-        expect(screen.getByTestId('Site Name (Q1) Hide Button')).toBeInTheDocument();
-      });
+      await screen.findByTestId('Site Name (Q1) Hide Button');
+      // The page fetches the questions a second time on mount, because loadSections changes
+      // once activeSection is set (page.tsx loadSections/useEffect). If the toggle runs while
+      // that fetch is in flight, its stale result overwrites the optimistic update.
+      // Wait until every fetch the page has started has settled before toggling.
+      const fetchQuestions = formActions.fetchFormQuestions as jest.Mock;
+      let settled = 0;
+      while (settled !== fetchQuestions.mock.calls.length) {
+        settled = fetchQuestions.mock.calls.length;
+        await act(async () => {
+          await Promise.all(fetchQuestions.mock.results.map((r) => r.value));
+        });
+      }
 
-      fireEvent.click(screen.getByTestId('Site Name (Q1) Hide Button'));
+      fireEvent.click(await screen.findByTestId('Site Name (Q1) Hide Button'));
 
       await waitFor(() => {
         expect(screen.getByTestId('Site Name (Q1) Show Button')).toBeInTheDocument();
@@ -577,7 +590,59 @@ describe('FormEditorPage', () => {
         expect(screen.getByText(/Failed to add question/)).toBeInTheDocument();
       });
     });
-    
+
+    it('shows the returned error and keeps the editor open when options are not saved', async () => {
+      (formActions.saveQuestion as jest.Mock).mockResolvedValue({
+        success: false,
+        error: 'Some answer options were not saved. Try again.',
+      });
+
+      render(<FormEditorPage />);
+      await waitFor(() => {
+        expect(screen.getByText('Site Name (Q1)')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getAllByTestId('edit-question-button')[0]);
+      fireEvent.click(screen.getByTestId('save-question-button'));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Failed to save question: Some answer options were not saved. Try again.')
+        ).toBeInTheDocument();
+      });
+      expect(screen.getByTestId('edit-question-title')).toBeInTheDocument();
+      expect(screen.queryByText('Question saved successfully')).not.toBeInTheDocument();
+    });
+
+    it('shows the returned error when a question is not added', async () => {
+      (formActions.addQuestion as jest.Mock).mockResolvedValue({
+        success: false,
+        error: 'The question was not added. Try again.',
+      });
+
+      render(<FormEditorPage />);
+      await waitFor(() => {
+        expect(screen.getByText('Site Name (Q1)')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /Add Question/i }));
+      fireEvent.change(screen.getByTestId('add-question-title'), {
+        target: { value: 'Failing Question (Q70)' },
+      });
+      fireEvent.change(screen.getByTestId('add-question-key'), {
+        target: { value: 'Q70_Fail' },
+      });
+      fireEvent.click(screen.getByTestId('save-new-question'));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Failed to add question: The question was not added. Try again.')
+        ).toBeInTheDocument();
+      });
+      expect(screen.getByTestId('add-question-title')).toBeInTheDocument();
+      expect(screen.queryByText('Question added successfully')).not.toBeInTheDocument();
+    });
+
     it('shows alert when toggling question visibility fails', async () => {
       (formActions.toggleQuestionActive as jest.Mock).mockRejectedValue(new Error('Toggle failed'));
       const alertSpy = jest.spyOn(window, 'alert').mockImplementation();

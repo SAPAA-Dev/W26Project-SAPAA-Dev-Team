@@ -17,6 +17,7 @@ type ChainableQuery = {
   is: jest.Mock;
   order: jest.Mock;
   in: jest.Mock;
+  range: jest.Mock;
 };
 
 // A chainable query whose awaited value is the result itself, like the supabase client.
@@ -27,6 +28,7 @@ function chainableQuery(result: { data: unknown; error: unknown }): ChainableQue
   query.is = jest.fn(() => query);
   query.order = jest.fn(() => query);
   query.in = jest.fn(() => query);
+  query.range = jest.fn(() => query);
   return query;
 }
 
@@ -34,7 +36,7 @@ function mockSignedIn(signedIn: boolean) {
   (createClient as jest.Mock).mockResolvedValue({
     auth: {
       getUser: jest.fn().mockResolvedValue({
-        data: { user: signedIn ? { id: 'caller-uuid' } : null },
+        data: { user: signedIn ? { id: 'caller-uuid', app_metadata: { role: 'steward', authenticated: true } } : null },
         error: null,
       }),
     },
@@ -87,6 +89,20 @@ describe('getAllSiteReports', () => {
       'Sign in to view inspection reports.'
     );
     expect(createServerSupabase).not.toHaveBeenCalled();
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it('rejects a signed-in user an admin has not approved', async () => {
+    (createClient as jest.Mock).mockResolvedValue({
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: { user: { id: 'caller-uuid', app_metadata: { role: 'steward', authenticated: false } } },
+          error: null,
+        }),
+      },
+    });
+
+    await expect(getAllSiteReports()).rejects.toThrow('Sign in to view inspection reports.');
     expect(mockFrom).not.toHaveBeenCalled();
   });
 
@@ -183,6 +199,25 @@ describe('getAllSiteReports', () => {
     expect(reports[0].submitterName).toBeNull();
     expect(mockFrom).toHaveBeenCalledTimes(1);
     expect(mockFrom).not.toHaveBeenCalledWith('people');
+  });
+
+  it('reads past the 1000-row limit until a short page comes back', async () => {
+    const page = (n: number, start: number) =>
+      Array.from({ length: n }, (_, i) => ({ ...reportRows[2], id: start + i }));
+    const pages = [page(1000, 0), page(1000, 1000), page(3, 2000)];
+    const responsesQuery = chainableQuery({ data: null, error: null });
+    responsesQuery.range = jest.fn(() => Promise.resolve({ data: pages.shift(), error: null }));
+    mockFrom.mockReturnValue(responsesQuery);
+
+    const reports = await getAllSiteReports();
+
+    expect(reports).toHaveLength(2003);
+    expect(reports[2002].id).toBe(2002);
+    expect(responsesQuery.range).toHaveBeenNthCalledWith(1, 0, 999);
+    expect(responsesQuery.range).toHaveBeenNthCalledWith(2, 1000, 1999);
+    expect(responsesQuery.range).toHaveBeenNthCalledWith(3, 2000, 2999);
+    // A stable tie-breaker so no report is skipped or repeated between pages.
+    expect(responsesQuery.order).toHaveBeenCalledWith('id', { ascending: false });
   });
 
   it('returns the database error when the report query fails', async () => {

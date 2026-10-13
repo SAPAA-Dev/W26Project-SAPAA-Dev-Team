@@ -9,7 +9,7 @@ name: Diagrams
 # it applies the patch that `diagrams` made, and only to docs/assets and docs/images.
 on:
   pull_request:
-    branches: [main, release]
+    branches: [main, release, 'sprint-*']
     types: [opened, reopened, synchronize]
 
 concurrency:

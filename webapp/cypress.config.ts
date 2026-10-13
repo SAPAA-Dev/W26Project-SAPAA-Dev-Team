@@ -8,7 +8,7 @@ dotenv.config({ path: path.resolve(__dirname, ".env") });
 export default defineConfig({
   projectId: '9drph3',
   e2e: {
-    setupNodeEvents(on, config) {
+    setupNodeEvents(on) {
       on('task', {
         async cleanupTestQuestion(questionText: string) {
           const supabase = createServerSupabase();
@@ -31,7 +31,7 @@ export default defineConfig({
             .eq("namesite", namesite)
             .single();
           if (site) {
-            const update: any = { namesite: originalName, ab_county: originalCountyId };
+            const update: { namesite: string; ab_county: number | null; is_active?: boolean } = { namesite: originalName, ab_county: originalCountyId };
             if (originalIsActive !== undefined) update.is_active = originalIsActive;
             await supabase
               .from("sites_pa")
@@ -44,7 +44,7 @@ export default defineConfig({
           const supabase = createServerSupabase();
           const { data } = await supabase
             .from("sites_pa")
-            .select("id, namesite, ab_county, is_active")
+            .select("id, namesite, ab_county, is_active, protected_area_id")
             .eq("namesite", namesite)
             .single();
           return data;
@@ -62,6 +62,26 @@ export default defineConfig({
               .update({ is_active })
               .eq("id", site.id);
           }
+          return null;
+        },
+        // Cleanup for sites a spec creates (add_site, deactivate_site). Only names that start with "E2E Added".
+        async deleteAddedSites() {
+          const supabase = createServerSupabase();
+          await supabase.from("sites_pa").delete().like("namesite", "E2E Added%");
+          return null;
+        },
+        async getReport(inspectionNo: string) {
+          const supabase = createServerSupabase();
+          const { data } = await supabase
+            .from("form_responses")
+            .select("id, site_id, is_active, archived_at, answers(count)")
+            .eq("inspection_no", inspectionNo)
+            .single();
+          return data;
+        },
+        async restoreReport(inspectionNo: string) {
+          const supabase = createServerSupabase();
+          await supabase.from("form_responses").update({ archived_at: null, is_active: true }).eq("inspection_no", inspectionNo);
           return null;
         },
       });

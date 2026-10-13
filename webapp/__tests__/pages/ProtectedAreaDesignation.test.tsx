@@ -1,11 +1,11 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import MainContent from '../../app/detail/[namesite]/new-report/MainContent';
+import MainContent, { type ResponseValue } from '../../app/detail/[namesite]/new-report/MainContent';
 
 const mockGetQuestionsOnline = jest.fn();
 
 jest.mock('@/utils/supabase/queries', () => ({
-  getQuestionsOnline: (...args: any[]) => mockGetQuestionsOnline(...args),
+  getQuestionsOnline: (...args: unknown[]) => mockGetQuestionsOnline(...args),
 }));
 
 const designationProtectedAreaQuestions = [
@@ -36,9 +36,9 @@ async function renderDesignationProtectedAreaMainContent(mockOnChange: jest.Mock
   mockGetQuestionsOnline.mockResolvedValue(designationProtectedAreaQuestions);
 
   function ControlledMainContent() {
-    const [responses, setResponses] = React.useState<Record<number, any>>({});
+    const [responses, setResponses] = React.useState<Record<number, ResponseValue>>({});
 
-    const handleChange = (nextResponses: Record<number, any>) => {
+    const handleChange = (nextResponses: Record<number, ResponseValue>) => {
       setResponses(nextResponses);
       mockOnChange(nextResponses);
     };

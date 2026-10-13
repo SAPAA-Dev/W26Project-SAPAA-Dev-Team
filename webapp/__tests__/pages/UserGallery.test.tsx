@@ -30,7 +30,7 @@ jest.mock('@/utils/supabase/client', () => ({
   }),
 }));
 
-jest.mock("@/components/HeaderDropdown", () => () => <div>UserNavBarMock</div>);
+jest.mock("@/components/HeaderDropdown", () => function MockHeaderDropdown() { return <div>UserNavBarMock</div>; });
 jest.mock("@/components/ProtectedRoute", () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => <>{children}</>,

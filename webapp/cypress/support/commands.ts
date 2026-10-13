@@ -36,6 +36,7 @@ Cypress.Commands.add('setSelection', { prevSubject: 'element' }, (subject, start
 export {};
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace -- custom command types must extend the global Cypress namespace
   namespace Cypress {
     interface Chainable {
       setSelection(start: number, end: number): Chainable<JQuery<HTMLElement>>;

@@ -7,9 +7,7 @@ import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import Link from "next/link";
 import { 
-  LayoutDashboard, 
   FileText, 
-  TrendingUp, 
   Calendar,
   Search,
   MapPin,
@@ -56,7 +54,7 @@ type GalleryItem = {
 
 export default function Dashboard() {
   const router = useRouter();
-  const supabaseClient = createClient();
+  createClient();
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState("");
   const [stats, setStats] = useState<{
@@ -67,8 +65,8 @@ export default function Dashboard() {
     lastInspectionDate: null,
   });
   const [items, setItems] = useState<GalleryItem[]>([]);
-  const [naturalnessData, setNaturalnessData] = useState([]);
-  const [siteData, setSiteData] = useState([]);
+  const [naturalnessData, setNaturalnessData] = useState<Awaited<ReturnType<typeof getNaturalnessDistribution>>>([]);
+  const [siteData, setSiteData] = useState<Awaited<ReturnType<typeof getTopSitesDistribution>>>([]);
   const [points, setPoints] = useState<HeatPoint[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
 
@@ -82,8 +80,8 @@ export default function Dashboard() {
         getTopSitesDistribution(),
       ]);
       setStats({ totalInspections: total, lastInspectionDate: lastDate });
-      setNaturalnessData(naturalness as any);
-      setSiteData(topSites as any);
+      setNaturalnessData(naturalness);
+      setSiteData(topSites);
     } catch (error) {
       console.error('Error loading stats:', error);
     } finally {
@@ -101,8 +99,6 @@ export default function Dashboard() {
     setPoints([]); // Clear map immediately
 
     try {
-      console.log(`Searching for: "${keyword}"`);
-      
       const response = await fetch(`/api/heatmap?keyword=${encodeURIComponent(keyword)}`);
       
       if (!response.ok) {
@@ -111,8 +107,6 @@ export default function Dashboard() {
       
       const data = await response.json();
       const raw = data.data || [];
-      
-      console.log(`Found ${raw.length} sites`);
 
       if (raw.length === 0) {
         alert(`No sites found matching "${keyword}"`);
@@ -127,8 +121,6 @@ export default function Dashboard() {
         const site = raw[i];
         
         try {
-          console.log(`📍 Geocoding ${i + 1}/${raw.length}: ${site.namesite}`);
-          
           const geoResponse = await fetch(`/api/geocode?q=${encodeURIComponent(site.namesite)}`);
           
           if (!geoResponse.ok) {
@@ -145,7 +137,6 @@ export default function Dashboard() {
               weight: site.count,
               namesite: site.namesite,
             });
-            console.log(`Geocoded: ${site.namesite}`);
           }
           
           // Small delay to avoid rate limiting
@@ -158,17 +149,15 @@ export default function Dashboard() {
         }
       }
 
-      console.log(`Successfully geocoded ${coords.length}/${raw.length} sites`);
-      
       if (coords.length === 0) {
         alert(`Found ${raw.length} sites, but couldn't determine their locations.`);
       }
       
       setPoints(coords);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Search error:", error);
-      alert(`Search failed: ${error.message}`);
+      alert(`Search failed: ${(error as Error).message}`);
       setPoints([]); // Clear map on error
     } finally {
       setSearchLoading(false);
@@ -206,7 +195,7 @@ export default function Dashboard() {
 
 
   useEffect(() => {
-    console.log("⚡ useEffect running - about to call fetchStats");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial stats fetch on mount; fetchStats sets the loading flag before awaiting
     fetchStats();
   }, []);
 
@@ -228,11 +217,11 @@ export default function Dashboard() {
         }
 
         const allItems = [
-          ...(data.items || []).map((item: any) => ({
+          ...(data.items || []).map((item: GalleryItem & { created_at?: string | null }) => ({
             ...item,
             _sortDate: item.created_at ?? item.date ?? "",
           })),
-          ...(data1.items || []).map((item: any) => ({
+          ...(data1.items || []).map((item: GalleryItem & { created_at?: string | null }) => ({
             ...item,
             _sortDate: item.date ?? item.created_at ?? "",
           })),
@@ -378,10 +367,10 @@ export default function Dashboard() {
                 <div className="w-40 h-40 sm:w-48 sm:h-48 flex-shrink-0">
                   <Pie
                     data={{
-                      labels: naturalnessData.map((i: any) => i.naturalness_score || 'Unknown'),
+                      labels: naturalnessData.map((i) => i.naturalness_score || 'Unknown'),
                       datasets: [{
-                        data: naturalnessData.map((i: any) => i.count),
-                        backgroundColor: naturalnessData.map((i: any) => {
+                        data: naturalnessData.map((i) => i.count),
+                        backgroundColor: naturalnessData.map((i) => {
                           const score = (i.naturalness_score || '').toLowerCase();
                           if (score.includes('great') || score.includes('excellent')) return '#1C7C4D';
                           if (score.includes('good')) return '#4caf50';
@@ -398,7 +387,7 @@ export default function Dashboard() {
                   />
                 </div>
                 <ul className="flex flex-col gap-2 min-w-[180px]">
-                  {naturalnessData.map((i: any) => {
+                  {naturalnessData.map((i) => {
                     const score = (i.naturalness_score || '').toLowerCase();
                     const color =
                       score.includes('great') || score.includes('excellent') ? '#1C7C4D' :
@@ -434,9 +423,9 @@ export default function Dashboard() {
                 <div className="w-40 h-40 sm:w-48 sm:h-48 flex-shrink-0">
                   <Pie
                     data={{
-                      labels: siteData.map((i: any) => i.namesite || 'Unknown'),
+                      labels: siteData.map((i) => i.namesite || 'Unknown'),
                       datasets: [{
-                        data: siteData.map((i: any) => i.count),
+                        data: siteData.map((i) => i.count),
                         backgroundColor: ['#ffb74d', '#4caf50', '#2196f3', '#9c27b0', '#f44336'],
                         borderWidth: 2,
                         borderColor: '#ffffff'
@@ -446,7 +435,7 @@ export default function Dashboard() {
                   />
                 </div>
                 <ul className="flex flex-col gap-2 min-w-[180px]">
-                  {siteData.map((i: any, index: number) => (
+                  {siteData.map((i, index: number) => (
                     <li key={i.namesite} className="flex items-center gap-2 text-sm text-[#254431]">
                       <span
                         className="w-3 h-3 rounded-sm flex-shrink-0"
@@ -507,7 +496,7 @@ export default function Dashboard() {
               {points.length > 0 && (
                 <p className="text-sm text-[#7A8075] mt-3 flex items-start sm:items-center gap-2 leading-relaxed">
                   <MapPin className="w-4 h-4" />
-                  Found {points.length} location{points.length !== 1 ? 's' : ''} for "{keyword}"
+                  Found {points.length} location{points.length !== 1 ? 's' : ''} for &quot;{keyword}&quot;
                 </p>
               )}
             </div>

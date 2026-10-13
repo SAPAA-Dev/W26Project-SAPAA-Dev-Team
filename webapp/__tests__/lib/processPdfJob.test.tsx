@@ -38,7 +38,7 @@ describe('processPdfJob', () => {
           single: mockSelect,
         }),
       }),
-      update: (fields: any) => {
+      update: (fields: unknown) => {
         mockUpdate(fields);
         return { eq: jest.fn().mockResolvedValue({ error: null }) };
       },

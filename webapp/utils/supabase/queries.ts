@@ -1,6 +1,5 @@
 'use server';
 
-import { UniqueIdentifier } from '@dnd-kit/core';
 import { createServerSupabase, createClient } from './server';
 import { deleteObjectsByKeys } from '../media/s3Delete';
 import { isAllowedStorageKey } from '../media/storageKeys';
@@ -11,6 +10,12 @@ import {
 } from '../../lib/map/boundaries';
 
 import { SITE_PAGE_FIELDS } from '@/lib/sitePageFields';
+import {
+  getAttachmentsByResponseId,
+  getReportQuestionKeyMap,
+  reduceAnswers,
+  type FormResponseRow,
+} from '@/lib/pdf/reportQueries';
 
 export interface SiteSummary {
   id: number;
@@ -127,7 +132,17 @@ export interface SiteReportSummary {
   submitterName: string | null;
 }
 
-let keyMapPromise: Promise<Record<string, number>> | null = null;
+// The untyped client types a many-to-one embed as an array; at runtime it is one object.
+interface SiteRow {
+  id: number;
+  namesite: string;
+  ab_county: number | null;
+  is_active: boolean | null;
+  archived_at: string | null;
+  protected_area_id?: number | null;
+  ab_counties: { county: string } | null;
+  form_responses: Array<{ inspection_date: string | null; created_at: string | null; archived_at: string | null }> | null;
+}
 
 function getLatestInspectionDate(
   responses: Array<{
@@ -165,6 +180,7 @@ export async function uploadSiteInspectionAnswers(batchArray: SupabaseAnswer[]) 
 }
 
 export async function getQuestionResponseType() {
+  await requireApprovedCaller(READ_DENIED);
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
@@ -176,14 +192,15 @@ export async function getQuestionResponseType() {
     throw new Error(error.message || 'Failed to fetch question response types');
   }
 
-  return (data ?? []).map((q: any) => ({
+  return (data ?? []).map((q) => ({
     question_id: q.id,
     obs_value: q.obs_value,
     obs_comm: q.obs_comm,
   }));
 }
 
-export async function getNextFormInspectionNumber() {
+// Not exported: only addSiteInspectionReport calls it, after its caller check.
+async function getNextFormInspectionNumber() {
   const supabase = createServerSupabase();
   const currentYear = new Date().getFullYear();
   // The database compares the numbers, so "2026-1000" follows "2026-999" and the
@@ -237,17 +254,20 @@ export async function addSiteInspectionReport(siteId: number, inspectionDate: st
 }
 
 const REPORT_WRITE_DENIED = 'You are not allowed to change this report.';
+// queries.ts is 'use server', so the browser can call each exported read with any arguments.
+const READ_DENIED = 'Only approved users can view this data.';
+const REPORT_VIEW_DENIED = 'You are not allowed to view this report.';
 
 // Report writes run with the service role, so each one checks the caller first.
 // Only the report owner or an approved admin may change a report, and an archived
 // report changes only through the admin archive actions.
-async function requireReportWriter(responseId: number): Promise<{
+async function requireReportWriter(responseId: number, errorMessage = REPORT_WRITE_DENIED): Promise<{
   isAdmin: boolean;
   userId: string;
   siteId: number;
   createdAt: string | null;
 }> {
-  const caller = await requireApprovedCaller(REPORT_WRITE_DENIED);
+  const caller = await requireApprovedCaller(errorMessage);
   validateResponseId(responseId);
 
   const supabase = createServerSupabase();
@@ -260,7 +280,7 @@ async function requireReportWriter(responseId: number): Promise<{
 
   if (error) throw new Error(error.message || 'Failed to check the report owner');
   if (!data || (!caller.isAdmin && data.user_id !== caller.userId)) {
-    throw new Error(REPORT_WRITE_DENIED);
+    throw new Error(errorMessage);
   }
   return { ...caller, siteId: data.site_id, createdAt: data.created_at ?? null };
 }
@@ -337,6 +357,7 @@ export async function getCurrentUserUid() {
 }
 
 export async function getCurrentSiteId(siteName: string) {
+  await requireApprovedCaller(READ_DENIED);
   const supabase = await createServerSupabase();
 
   const { data, error } = await supabase
@@ -354,56 +375,8 @@ export async function getCurrentSiteId(siteName: string) {
   return data?.id;
 }
 
-export async function addSiteInspection(namesite: string, responses: Record<number, any>): Promise<{ inspectno: string; id: number } | null> {
-  const supabase = createServerSupabase();
-
-  try {
-    const currentYear = new Date().getFullYear();
-
-    const { data: latestInspections, error: fetchError } = await supabase
-      .from('sites_list_fnr')
-      .select('inspectno')
-      .eq('namesite', namesite);
-
-    if (fetchError) throw new Error(fetchError.message || 'Failed to fetch latest inspection');
-
-    let nextNumber = 1;
-    if (latestInspections && latestInspections.length > 0) {
-      const latestInspectno = latestInspections[0].inspectno;
-      const currentNumber = parseInt(latestInspectno.split('-')[1], 10);
-      nextNumber = currentNumber + 1;
-    }
-
-    const newInspectno = `${currentYear}-${nextNumber}`;
-    const inspectionData: any = {
-      namesite,
-      inspectno: newInspectno,
-      inspectdate: new Date().toISOString().split('T')[0],
-    };
-
-    if (responses[31] !== undefined && responses[31] !== null && responses[31] !== '') {
-      inspectionData.naturalness_score = responses[31];
-    }
-    if (responses[32] !== undefined && responses[32] !== null && responses[32] !== '') {
-      inspectionData.naturalness_details = responses[32];
-    }
-
-    const { data: insertedData, error: insertError } = await supabase
-      .from('sites_list_fnr')
-      .insert([inspectionData])
-      .select('id, inspectno')
-      .single();
-
-    if (insertError) throw new Error(insertError.message || 'Failed to insert inspection');
-
-    return insertedData;
-  } catch (error) {
-    console.error('Error adding site inspection:', error);
-    throw error;
-  }
-}
-
 export async function getQuestionsOnline(): Promise<question[]> {
+  await requireApprovedCaller(READ_DENIED);
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
@@ -434,7 +407,21 @@ export async function getQuestionsOnline(): Promise<question[]> {
     throw new Error(error.message || 'Failed to fetch questions');
   }
 
-  return (data ?? []).map((q: any) => ({
+  interface QuestionOnlineRow {
+    id: number;
+    subtext: string | null;
+    question_type: string;
+    is_required: boolean | null;
+    section_id: number;
+    form_question: string | null;
+    autofill_key: string | null;
+    question_options: Array<{ option_text: string }> | null;
+    formorder: number | null;
+    form_sections: { title: string | null; description: string | null; header: string | null } | null;
+  }
+
+  // The untyped client types a many-to-one embed as an array; at runtime it is one object.
+  return ((data ?? []) as unknown as QuestionOnlineRow[]).map((q) => ({
     id: q.id,
     text: q.subtext,
     title: q.form_question,
@@ -442,7 +429,8 @@ export async function getQuestionsOnline(): Promise<question[]> {
     is_required: q.is_required ?? null,
     section: q.section_id,
     autofill_key: q.autofill_key ?? null,
-    answers: q.question_options?.map((opt: any) => opt.option_text) ?? null,
+    // question.answers is declared non-null, but a question without options still yields null here.
+    answers: (q.question_options?.map((opt) => opt.option_text) ?? null) as string[],
     formorder: q.formorder ?? null,
     sectionTitle: q.form_sections?.title ?? null,
     sectionDescription: q.form_sections?.description ?? null,
@@ -450,12 +438,15 @@ export async function getQuestionsOnline(): Promise<question[]> {
   }));
 }
 
-export async function isSteward(userEmail: string): Promise<boolean> {
+// Checks only the signed-in user, so the browser cannot test other email addresses.
+export async function isSteward(): Promise<boolean> {
+  const caller = await requireApprovedCaller(READ_DENIED);
+  if (!caller.email) return false;
   const supabase = createServerSupabase();
   const { data, error } = await supabase
     .from('luperson')
     .select('id')
-    .eq('email', userEmail)
+    .eq('email', caller.email)
     .maybeSingle();
 
   if (error) throw error;
@@ -463,6 +454,7 @@ export async function isSteward(userEmail: string): Promise<boolean> {
 }
 
 export async function getSitesOnline(): Promise<SiteSummary[]> {
+  await requireApprovedCaller(READ_DENIED);
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
@@ -476,7 +468,12 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
       ab_counties (
         county
       ),
-      form_responses (
+      latest_dated:form_responses (
+        inspection_date,
+        created_at,
+        archived_at
+      ),
+      latest_undated:form_responses (
         inspection_date,
         created_at,
         archived_at
@@ -484,12 +481,26 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
     `)
     .or('is_active.eq.true,is_active.is.null')
     .is('archived_at', null)
+    // Only the newest report sets the date of a site. A report without an inspection date
+    // uses its created_at, so fetch the newest report of each kind instead of every report.
+    .is('latest_dated.archived_at', null)
+    .not('latest_dated.inspection_date', 'is', null)
+    .order('inspection_date', { referencedTable: 'latest_dated', ascending: false })
+    .limit(1, { referencedTable: 'latest_dated' })
+    .is('latest_undated.archived_at', null)
+    .is('latest_undated.inspection_date', null)
+    .order('created_at', { referencedTable: 'latest_undated', ascending: false })
+    .limit(1, { referencedTable: 'latest_undated' })
     .order('namesite', { ascending: true });
 
   if (error) throw new Error(error.message || 'Failed to fetch sites');
 
-  return (data ?? []).map((site: any, i: number) => {
-    const responses = site.form_responses ?? [];
+  type OnlineSiteRow = Omit<SiteRow, 'form_responses'> & {
+    latest_dated: SiteRow['form_responses'];
+    latest_undated: SiteRow['form_responses'];
+  };
+  return ((data ?? []) as unknown as OnlineSiteRow[]).map((site) => {
+    const responses = [...(site.latest_dated ?? []), ...(site.latest_undated ?? [])];
     const latestDate = getLatestInspectionDate(responses);
 
     return {
@@ -513,13 +524,13 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
  */
 async function requireApprovedCaller(
   errorMessage = 'You must be signed in to view site boundaries.'
-): Promise<{ isAdmin: boolean; userId: string }> {
+): Promise<{ isAdmin: boolean; userId: string; email: string | null }> {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   const user = data.user;
   const approved = !error && user?.app_metadata?.authenticated === true;
   if (!approved || !user) throw new Error(errorMessage);
-  return { isAdmin: user.app_metadata?.role === 'admin', userId: user.id };
+  return { isAdmin: user.app_metadata?.role === 'admin', userId: user.id, email: user.email ?? null };
 }
 
 function countyFromEmbed(
@@ -617,7 +628,7 @@ export async function getAllSites(): Promise<SiteSummary[]> {
 
   if (error) throw new Error(error.message || 'Failed to fetch sites');
 
-  return (data ?? []).map((site: any) => {
+  return ((data ?? []) as unknown as SiteRow[]).map((site) => {
     const responses = site.form_responses ?? [];
     const latestDate = getLatestInspectionDate(responses);
 
@@ -1123,7 +1134,7 @@ export async function getArchivedSites(): Promise<SiteSummary[]> {
 
   if (error) throw new Error(error.message || 'Failed to fetch archived sites');
 
-  return (data ?? []).map((site: any) => {
+  return ((data ?? []) as unknown as SiteRow[]).map((site) => {
     const responses = site.form_responses ?? [];
     const latestDate = getLatestInspectionDate(responses);
 
@@ -1208,6 +1219,7 @@ export async function toggleSiteActive(
 }
 
 export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
+  await requireApprovedCaller(READ_DENIED);
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
@@ -1233,7 +1245,7 @@ export async function getSiteByName(namesite: string): Promise<SiteSummary[]> {
 
   if (error) throw new Error(error.message || 'Failed to fetch site');
 
-  return (data ?? []).map((site: any) => {
+  return ((data ?? []) as unknown as SiteRow[]).map((site) => {
     const responses = site.form_responses ?? [];
     const latestDate = getLatestInspectionDate(responses);
 
@@ -1285,7 +1297,7 @@ export async function getSiteByNameAdmin(
     throw new Error(error.message || 'Failed to fetch site');
   }
   //Convert database row into the site summary used by the page
-  return (data ?? []).map((site: any) => {
+  return ((data ?? []) as unknown as SiteRow[]).map((site) => {
     const responses = site.form_responses ?? [];
     const latestDate = getLatestInspectionDate(responses);
 
@@ -1436,6 +1448,7 @@ export async function getSiteLinks(siteId: number): Promise<SiteLinks> {
 }
 
 export async function getInspectionDetailsOnline(namesite: string): Promise<InspectionDetail[]> {
+  await requireApprovedCaller(READ_DENIED);
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
@@ -1446,7 +1459,7 @@ export async function getInspectionDetailsOnline(namesite: string): Promise<Insp
 
   if (error) throw new Error(error.message || 'Failed to fetch inspection details');
 
-  return (data ?? []).map((insp: any, i: number) => ({
+  return ((data ?? []) as unknown as Omit<InspectionDetail, 'id'>[]).map((insp, i) => ({
     id: i + 1,
     namesite: insp.namesite,
     _type: insp._type,
@@ -1532,67 +1545,6 @@ export async function insertHomepageImageUpload(rows: Array<{
   return data;
 }
 
-export async function getReportQuestionKeyMap() {
-  if (!keyMapPromise) {
-    keyMapPromise = (async () => {
-      const supabase = createServerSupabase();
-      const { data, error } = await supabase
-        .from('questions')
-        .select('id, "question key"')
-        .in('"question key"', ['Q31_Naturalness', 'Q32_Natural_Comm', 'Q13_FirstandLastNameForGuests']);
-      if (error) throw new Error(error.message);
-      return Object.fromEntries((data ?? []).map((q: any) => [q['question key'], q.id]));
-    })();
-  }
-  return keyMapPromise;
-}
-
-// Answer reduction for better user viewing on frontend
-function reduceAnswers(
-  rawAnswers: any[],
-  keyMap: { naturalnessId: number; naturalnessDetailsId: number; stewardId: number }
-): { answers: FormAnswer[]; naturalness: string | null; naturalnessDetails: string | null; steward: string | null } {
-  const answers: FormAnswer[] = Object.values(
-    (rawAnswers ?? []).reduce((acc: any, a: any) => {
-      const qid = a.question_id;
-      if (!acc[qid]) {
-        acc[qid] = {
-          question_id: qid,
-          question_text: a.questions?.form_question ?? `Question ${qid}`,
-          obs_value: [],
-          obs_comm: null,
-          section_id: a.questions?.section_id ?? null,
-          section_title: a.questions?.form_sections?.title ?? null,
-        };
-      }
-      if (a.obs_value === 'Other' && a.obs_comm) {
-        acc[qid].obs_comm = a.obs_comm;
-      } else if (a.obs_value) {
-        acc[qid].obs_value.push(a.obs_value);
-      } else if (a.obs_comm) {
-        acc[qid].obs_comm = a.obs_comm;
-      }
-      return acc;
-    }, {})
-  )
-    .map((a: any) => ({ ...a, obs_value: a.obs_value.length > 0 ? a.obs_value.join('; ') : null }))
-    .sort((a: any, b: any) => (a.section_id ?? 0) - (b.section_id ?? 0) || a.question_id - b.question_id);
-
-  const naturalness = answers.find(a => a.question_id === keyMap.naturalnessId)?.obs_value ?? null;
-  const naturalnessDetails =
-    answers.find(a => a.question_id === keyMap.naturalnessDetailsId)?.obs_value ??
-    answers.find(a => a.question_id === keyMap.naturalnessDetailsId)?.obs_comm ??
-    null;
-  const steward = answers.find(a => a.question_id === keyMap.stewardId)?.obs_comm ?? null;
-
-  return {
-    answers: answers.filter(a => a.question_id !== keyMap.naturalnessId && a.question_id !== keyMap.stewardId),
-    naturalness,
-    naturalnessDetails,
-    steward,
-  };
-}
-
 // Admin viewing for sites, difference is the is_active flag so that admin can see all reports
 export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(FormResponse & { is_active: boolean })[]> {
   await requireApprovedAdmin();
@@ -1630,7 +1582,7 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
 
   if (error) throw new Error(error.message || 'Failed to fetch form responses');
 
-  return (data ?? []).map((r: any) => {
+  return ((data ?? []) as unknown as (FormResponseRow & { is_active: boolean | null })[]).map((r) => {
     const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.answers, ids);
     return {
       id: r.id,
@@ -1649,6 +1601,7 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
 
 // User viewing for sites, uses is_active flag to prevent users from viewing disabled responses
 export async function getFormResponsesBySite(siteName: string): Promise<FormResponse[]> {
+  await requireApprovedCaller(READ_DENIED);
   const supabase = createServerSupabase();
 
   const { data: siteData, error: siteError } = await supabase
@@ -1668,7 +1621,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
 
   // Page past the PostgREST max_rows limit (1000) so older reports are not cut off.
   const PAGE_SIZE = 1000;
-  const data: any[] = [];
+  const data: FormResponseRow[] = [];
   for (let from = 0; ; from += PAGE_SIZE) {
     const { data: page, error } = await supabase
       .from('form_responses')
@@ -1689,11 +1642,11 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
       .range(from, from + PAGE_SIZE - 1);
 
     if (error) throw new Error(error.message || 'Failed to fetch form responses');
-    data.push(...(page ?? []));
+    data.push(...((page ?? []) as unknown as FormResponseRow[]));
     if (!page || page.length < PAGE_SIZE) break;
   }
 
-  return data.map((r: any) => {
+  return data.map((r) => {
     const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.answers, ids);
     return {
       id: r.id,
@@ -1711,26 +1664,33 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
 
 // Any signed-in user can see current reports, but archived reports are admin-only.
 export async function getAllSiteReports(): Promise<SiteReportSummary[]> {
-  const session = await createClient();
-  const { data: { user }, error: userError } = await session.auth.getUser();
-  if (userError || !user) throw new Error('Sign in to view inspection reports.');
+  await requireApprovedCaller('Sign in to view inspection reports.');
 
   const supabase = createServerSupabase();
 
-  const { data, error } = await supabase
-    .from('form_responses')
-    .select(`
-      id, user_id, inspection_no, inspection_date, created_at, site_id,
-      sites_pa (
-        id, namesite, archived_at, is_active
-      )
-    `)
-    .eq('is_active', true)
-    .is('archived_at', null)
-    .order('inspection_date', { ascending: false, nullsFirst: false })
-    .order('created_at', { ascending: false });
+  // Page past the PostgREST max_rows limit (1000) so reports past the first 1000 are not cut off.
+  const PAGE_SIZE = 1000;
+  const data: unknown[] = [];
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data: page, error } = await supabase
+      .from('form_responses')
+      .select(`
+        id, user_id, inspection_no, inspection_date, created_at, site_id,
+        sites_pa (
+          id, namesite, archived_at, is_active
+        )
+      `)
+      .eq('is_active', true)
+      .is('archived_at', null)
+      .order('inspection_date', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+      .range(from, from + PAGE_SIZE - 1);
 
-  if (error) throw new Error(error.message || 'Failed to fetch inspection reports');
+    if (error) throw new Error(error.message || 'Failed to fetch inspection reports');
+    data.push(...(page ?? []));
+    if (!page || page.length < PAGE_SIZE) break;
+  }
 
   interface SiteReportRow {
     id: number;
@@ -1783,7 +1743,9 @@ export async function getAllSiteReports(): Promise<SiteReportSummary[]> {
 
 // Returns raw answers for a single response shaped as Record<questionId, value>
 // ready to drop straight into the form's `responses` state.
-export async function getFormResponseById(responseId: number): Promise<Record<string | number, any>> {
+export async function getFormResponseById(responseId: number): Promise<Record<string | number, string | string[]>> {
+  // The answers go only to the owner or an admin, and never for an archived report.
+  await requireReportWriter(responseId, REPORT_VIEW_DENIED);
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
@@ -1800,11 +1762,11 @@ export async function getFormResponseById(responseId: number): Promise<Record<st
 
   if (error) throw new Error(error.message || 'Failed to fetch response answers');
 
-  const map: Record<string | number, any> = {}; // 2. Update local map type
+  const map: Record<string | number, string | string[]> = {}; // 2. Update local map type
 
   for (const row of data ?? []) {
     const qid: number = row.question_id;
-    const questionType: string = (row as any).questions?.question_type ?? '';
+    const questionType: string = (row as unknown as { questions: { question_type: string } | null }).questions?.question_type ?? '';
 
     if (row.obs_value === 'Other' && row.obs_comm) {
       if (!map[qid]) map[qid] = [];
@@ -1817,7 +1779,7 @@ export async function getFormResponseById(responseId: number): Promise<Record<st
     } else if (row.obs_value) {
         if (questionType === 'checkbox' || questionType === 'multi' || questionType === 'selectall') {
           if (!map[qid]) map[qid] = [];
-          map[qid].push(row.obs_value);
+          (map[qid] as string[]).push(row.obs_value);
         } else {
           map[qid] = row.obs_value;
         }
@@ -1830,34 +1792,13 @@ export async function getFormResponseById(responseId: number): Promise<Record<st
 }
 
 
-// Fetches all attachments rows for a given response_id
-export async function getAttachmentsByResponseId(responseId: number): Promise<Array<{
-  id: number;
-  question_id: number | null;
-  storage_key: string | null;
-  filename: string | null;
-  content_type: string | null;
-  file_size_bytes: number | null;
-  caption: string | null;
-  identifier: string | null;
-  site_id: number | null;
-}>> {
-  const supabase = createServerSupabase();
-
-  const { data, error } = await supabase
-    .from('attachments')
-    .select('id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier, site_id')
-    .eq('response_id', responseId);
-
-  if (error) throw new Error(error.message || 'Failed to fetch attachments');
-  return data ?? [];
-}
-
 // Updates caption and identifier for an existing attachments row
 export async function updateAttachmentMetadata(
   attachmentId: number,
   fields: { caption?: string | null; identifier?: string | null }
 ) {
+  // Check the caller before the service-role read below.
+  await requireApprovedCaller(REPORT_WRITE_DENIED);
   const supabase = createServerSupabase();
 
   // Only the owner of the attachment's report, or an admin, may change it.
@@ -1919,6 +1860,7 @@ export async function updateSiteInspectionAnswers(
 }
 
 export async function getResponseOwnerId(responseId: number): Promise<string | null> {
+  await requireApprovedCaller(READ_DENIED);
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
@@ -1933,6 +1875,7 @@ export async function getResponseOwnerId(responseId: number): Promise<string | n
 }
 
 export async function getSiteIdForResponse(responseId: number): Promise<number | null> {
+  await requireApprovedCaller(READ_DENIED);
   const supabase = createServerSupabase();
   const { data, error } = await supabase
     .from('form_responses')
@@ -1941,10 +1884,11 @@ export async function getSiteIdForResponse(responseId: number): Promise<number |
     .is('archived_at', null)
     .single();
   if (error || !data) return null;
-  return (data as any).site_id ?? null;
+  return data.site_id ?? null;
 }
 
 export async function getTotalInspectionCount(): Promise<number> {
+  await requireApprovedCaller(READ_DENIED);
   const supabase = createServerSupabase();
   // Dashboard totals include only reports that are still in normal use.
   const { count, error } = await supabase
@@ -1956,6 +1900,7 @@ export async function getTotalInspectionCount(): Promise<number> {
 }
 
 export async function getLastInspectionDate(): Promise<string | null> {
+  await requireApprovedCaller(READ_DENIED);
   const supabase = createServerSupabase();
   const { data, error } = await supabase
     .from('form_responses')
@@ -1969,6 +1914,7 @@ export async function getLastInspectionDate(): Promise<string | null> {
 }
 
 export async function getDateOfVisitQuestionId() {
+  await requireApprovedCaller(READ_DENIED);
   const supabase = createServerSupabase();
   const { data, error } = await supabase
     .from('questions')
@@ -1983,7 +1929,7 @@ export async function getNaturalnessDistribution(): Promise<{ naturalness_score:
   const supabase = createServerSupabase();
   const { data, error } = await supabase.rpc('get_naturalness_distribution');
   if (error) throw new Error(error.message);
-  return (data ?? []).map((r: any) => ({
+  return (data ?? []).map((r: { naturalness_score: string; count: number | string }) => ({
     naturalness_score: r.naturalness_score,
     count: Number(r.count),
   }));
@@ -1994,120 +1940,8 @@ export async function getTopSitesDistribution(): Promise<{ namesite: string; cou
   const supabase = createServerSupabase();
   const { data, error } = await supabase.rpc('get_top_sites_distribution');
   if (error) throw new Error(error.message);
-  return (data ?? []).map((r: any) => ({
+  return (data ?? []).map((r: { namesite: string; count: number | string }) => ({
     namesite: r.namesite,
     count: Number(r.count),
   }));
-}
-
-export async function getSitesByNames(siteNames: string[]): Promise<Array<{
-  id: number;
-  namesite: string;
-  ab_county: number | null;
-  ab_counties: { county: string } | null;
-}>> {
-  const supabase = createServerSupabase();
-  const { data, error } = await supabase
-    .from('sites_pa')
-    .select('id, namesite, ab_county, ab_counties(county)')
-    .in('namesite', siteNames)
-    .order('namesite', { ascending: true }); 
-  if (error) throw new Error(error.message || 'Failed to fetch sites');
-  return (data ?? []) as any;
-}
-
-export async function getFormResponsesForSiteIds(
-  siteIds: number[],
-  keyMap: Record<string, number>
-): Promise<Map<number, FormResponse[]>> {
-  const supabase = createServerSupabase();
-  const PAGE_SIZE = 1000;
-  const allRows: any[] = [];
-  let page = 0;
-  
-  while (true) {
-    const from = page * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-    const { data, error } = await supabase
-      .from('form_responses')
-      .select(`
-        id, site_id, user_id, created_at, inspection_date, inspection_no,
-        answers (
-          question_id, obs_value, obs_comm,
-          questions ( id, form_question, section_id,
-            form_sections!questions_section_id_fkey ( id, title ) )
-        )
-      `)
-      .in('site_id', siteIds)
-      .eq('is_active', true)
-      .is('archived_at', null)
-      .order('id', { ascending: false }) 
-      .order('inspection_date', { ascending: false })
-      .range(from, to);
-
-    if (error) throw new Error(error.message || 'Failed to fetch form responses');
-    
-    allRows.push(...(data ?? []));
-    if (!data || data.length < PAGE_SIZE) break; // last page reached
-    page++;
-  }
-
-  const ids = {
-    naturalnessId: Number(keyMap['Q31_Naturalness']),
-    naturalnessDetailsId: Number(keyMap['Q32_Natural_Comm']),
-    stewardId: Number(keyMap['Q13_FirstandLastNameForGuests']),
-  };
-
-  const bySite = new Map<number, FormResponse[]>();
-  for (const r of allRows) {
-    const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.answers, ids);
-    const formResponse: FormResponse = {
-      id: r.id,
-      user_id: r.user_id ?? null,
-      created_at: r.created_at,
-      inspection_date: r.inspection_date ?? null,
-      inspection_no: r.inspection_no,
-      naturalness_score: naturalness,
-      naturalness_details: naturalnessDetails,
-      steward,
-      answers,
-    };
-    const list = bySite.get(r.site_id) ?? [];
-    list.push(formResponse);
-    bySite.set(r.site_id, list);
-  }
-  return bySite;
-}
-
-export async function getAttachmentsForResponseIds(responseIds: number[]): Promise<Array<{
-  id: number;
-  response_id: number;
-  question_id: number | null;
-  storage_key: string | null;
-  filename: string | null;
-  content_type: string | null;
-  file_size_bytes: number | null;
-  caption: string | null;
-  identifier: string | null;
-}>> {
-  if (responseIds.length === 0) return [];
-  const supabase = createServerSupabase();
-  const CHUNK = 300;
-  const PAGE_SIZE = 1000; // PostgREST max_rows: page so a chunk with many photos is not cut off
-  const out: any[] = [];
-  for (let i = 0; i < responseIds.length; i += CHUNK) {
-    const chunk = responseIds.slice(i, i + CHUNK);
-    for (let from = 0; ; from += PAGE_SIZE) {
-      const { data, error } = await supabase
-        .from('attachments')
-        .select('id, response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier')
-        .in('response_id', chunk)
-        .order('id', { ascending: true })
-        .range(from, from + PAGE_SIZE - 1);
-      if (error) throw new Error(error.message || 'Failed to fetch attachments');
-      out.push(...(data ?? []));
-      if (!data || data.length < PAGE_SIZE) break;
-    }
-  }
-  return out;
 }

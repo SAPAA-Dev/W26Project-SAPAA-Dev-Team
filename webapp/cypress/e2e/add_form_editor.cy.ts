@@ -83,7 +83,7 @@ describe('Admin Form Editor - Adding Questions', () => {
       cy.contains('I have read and agree to the terms and conditions').click();
       cy.contains('Continue to Form').click();
       cy.contains('Q10');
-      cy.contains('Question Test');``
+      cy.contains('Question Test');
 
   });
 });

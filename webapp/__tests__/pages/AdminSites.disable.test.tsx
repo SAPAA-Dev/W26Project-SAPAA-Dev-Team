@@ -21,11 +21,14 @@ jest.mock('@/utils/supabase/queries', () => ({
 }));
 
 // Mock next/image
-jest.mock('next/image', () => (props: any) => <img {...props} alt={props.alt} />);
+jest.mock('next/image', () => function MockImage(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+  // eslint-disable-next-line @next/next/no-img-element -- test mock of next/image
+  return <img {...props} alt={props.alt} />;
+});
 
 // Mock components
-jest.mock('../../app/admin/AdminNavBar', () => () => <div>AdminNavBarMock</div>);
-jest.mock('@/components/ProtectedRoute', () => ({ children }: any) => <div>{children}</div>);
+jest.mock('../../app/admin/AdminNavBar', () => function MockAdminNavBar() { return <div>AdminNavBarMock</div>; });
+jest.mock('@/components/ProtectedRoute', () => function MockProtectedRoute({ children }: { children: React.ReactNode }) { return <div>{children}</div>; });
 
 describe('AdminSitesPage – Disable Site (US 2.0.3)', () => {
   const mockPush = jest.fn();
@@ -175,6 +178,60 @@ describe('AdminSitesPage – Disable Site (US 2.0.3)', () => {
     await waitFor(() => {
       expect(screen.queryByText('Inactive')).not.toBeInTheDocument();
     });
+  });
+
+  it.each([
+    ['refuses', 'Only approved admins can manage sites.'],
+    ['fails', 'Failed to update site status'],
+  ])('keeps a site inactive and shows the error when the server %s the reactivation (2.0.3 AT3)', async (_label, message) => {
+    const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue([
+      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, is_active: false, inspectdate: new Date().toISOString() },
+    ]);
+    (supabaseQueries.getCounties as jest.Mock).mockResolvedValue([{ id: 10, county: 'CountyA' }]);
+    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue({ ok: true });
+    (supabaseQueries.toggleSiteActive as jest.Mock).mockRejectedValue(new Error(message));
+
+    render(<AdminSitesPage />);
+    await waitFor(() => screen.getByText('Alpha'));
+
+    fireEvent.click(screen.getByTestId('edit-site-button-1'));
+    await waitFor(() => screen.getByTestId('edit-site-modal'));
+    fireEvent.click(screen.getByTestId('edit-site-active-toggle'));
+    fireEvent.click(screen.getByTestId('edit-site-save-button'));
+
+    await waitFor(() => expect(alertSpy).toHaveBeenCalledWith(message));
+    expect(supabaseQueries.toggleSiteActive).toHaveBeenCalledWith(1, true);
+    // The modal stays open, and the card still shows the old state.
+    expect(screen.getByTestId('edit-site-modal')).toBeInTheDocument();
+    expect(screen.getByText('Inactive')).toBeInTheDocument();
+    alertSpy.mockRestore();
+  });
+
+  it('shows the saved name when the name saves but the status change fails (2.0.3 AT3)', async () => {
+    const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue([
+      { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, is_active: false, inspectdate: new Date().toISOString() },
+    ]);
+    (supabaseQueries.getCounties as jest.Mock).mockResolvedValue([{ id: 10, county: 'CountyA' }]);
+    (supabaseQueries.updateSite as jest.Mock).mockResolvedValue({ ok: true });
+    (supabaseQueries.toggleSiteActive as jest.Mock).mockRejectedValue(new Error('Failed to update site status'));
+
+    render(<AdminSitesPage />);
+    await waitFor(() => screen.getByText('Alpha'));
+
+    fireEvent.click(screen.getByTestId('edit-site-button-1'));
+    await waitFor(() => screen.getByTestId('edit-site-modal'));
+    const nameInput = screen.getByDisplayValue('Alpha');
+    fireEvent.change(nameInput, { target: { value: 'Alpha Renamed' } });
+    fireEvent.click(screen.getByTestId('edit-site-active-toggle'));
+    fireEvent.click(screen.getByTestId('edit-site-save-button'));
+
+    await waitFor(() => expect(alertSpy).toHaveBeenCalledWith('Failed to update site status'));
+    // The rename reached the database, so the list shows it; the status did not change.
+    expect(screen.getAllByText('Alpha Renamed').length).toBeGreaterThan(0);
+    expect(screen.getByText('Inactive')).toBeInTheDocument();
+    alertSpy.mockRestore();
   });
 
   it('does not call toggleSiteActive when visibility is unchanged (2.0.3 AT1)', async () => {

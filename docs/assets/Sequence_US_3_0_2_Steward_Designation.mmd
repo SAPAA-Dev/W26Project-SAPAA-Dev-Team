@@ -48,7 +48,7 @@ sequenceDiagram
     participant Server as Server actions<br/>utils/steward-actions.ts
     participant DB as Supabase DB
 
-    Note over Admin,DB: Covers US 3.0.2. All steps are on main as of October 7, 2026 (#133, #139).
+    Note over Admin,DB: Covers US 3.0.2. All steps are on main as of October 11, 2026 (#133, #139, #238, #240).
 
     Admin->>AdminSite: Open site and select 'Assign steward' or 'Change'<br/>(shown when app_metadata.role = admin)
     Admin->>AdminSite: Type part of a name
@@ -74,16 +74,22 @@ sequenceDiagram
         AdminSite-->>Admin: Show error
     else Caller is Admin
         Server->>DB: UPSERT site_stewards {site_id, steward_id, assigned_by, assigned_at}<br/>ON CONFLICT site_id (service role, replaces old steward)
-        DB-->>Server: Saved
-        Server-->>AdminSite: {success:true}
-        AdminSite-->>Admin: Show new steward (AT 2)
+        alt Database error
+            DB-->>Server: Error (logged on the server)
+            Server-->>AdminSite: {success:false, error:'The steward was not assigned. Try again.'}
+            AdminSite-->>Admin: Show error
+        else Saved
+            DB-->>Server: Saved
+            Server-->>AdminSite: {success:true}
+            AdminSite-->>Admin: Show new steward (AT 2)
+        end
     end
 
     Steward->>Pages: Open site page or steward profile
-    Note right of Pages: middleware.ts redirects to /login when there is no user.
+    Note right of Pages: middleware.ts redirects to /login when there is no user.<br/>An unapproved user gets only /sites (other pages redirect there)<br/>and 403 for a server action.
     Pages->>Server: getSiteSteward(siteId) on site page /<br/>getSitesForSteward(personId) on profile
-    Server->>Server: Session client. RLS select policy allows<br/>any authenticated user. No approval check.
-    Server->>DB: site_stewards join people(id, display_name) by site_id /<br/>join sites_pa(namesite) by steward_id
+    Server->>Server: Session client. No check in the action. RLS select policy<br/>on site_stewards and people allows approved users only<br/>(20261010000100_require_approval_for_people_reads.sql).
+    Server->>DB: site_stewards join people(id, display_name) by site_id /<br/>join sites_pa(namesite, archived_at, is_active) by steward_id
     DB-->>Server: Steward or stewarded sites
     Server-->>Pages: Data with steward
     Pages-->>Steward: Show 'Steward: {name}' linked to /people/{id},<br/>and 'Steward of' on the profile (AT 3)

@@ -159,6 +159,71 @@ describe('ProfilePage', () => {
     }
   });
 
+  it('shows the local day for a report that only has a created_at timestamp', async () => {
+    const previousZone = process.env.TZ;
+    process.env.TZ = 'America/Edmonton';
+    fetchMock.mockResolvedValue({
+      ok: true,
+      // 03:30 UTC on Sep 12 is 21:30 on Sep 11 in Alberta.
+      json: async () => ({ ...profilePayload, history: [{ ...profilePayload.history[0], inspectionDate: '2026-09-12T03:30:00+00:00' }] }),
+    });
+    try {
+      render(<ProfilePage />);
+
+      expect(await screen.findByText('Sep 11, 2026')).toBeInTheDocument();
+      expect(screen.queryByText('Sep 12, 2026')).not.toBeInTheDocument();
+    } finally {
+      process.env.TZ = previousZone;
+    }
+  });
+
+  describe('inspection history paging', () => {
+    const historyPage = (page: number, ids: number[]) => ({
+      ...profilePayload,
+      history: ids.map((id) => ({ ...profilePayload.history[0], id, siteName: `Site ${id}` })),
+      pagination: { page, pageSize: 10, total: 12 },
+    });
+
+    it('hides the paging controls when every report fits on one page', async () => {
+      render(<ProfilePage />);
+      await screen.findByRole('heading', { name: 'Jamie Rivera' });
+      expect(screen.queryByRole('navigation', { name: 'Inspection history pages' })).not.toBeInTheDocument();
+    });
+
+    it('loads the next page from the API and disables the button at each end', async () => {
+      fetchMock
+        .mockResolvedValueOnce({ ok: true, json: async () => historyPage(1, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) })
+        .mockResolvedValueOnce({ ok: true, json: async () => historyPage(2, [11, 12]) });
+      render(<ProfilePage personId="42" />);
+
+      const previous = await screen.findByRole('button', { name: 'Previous page of inspection history' });
+      expect(previous).toBeDisabled();
+      expect(screen.getByText('Showing 1–10 of 12 reports.')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Next page of inspection history' }));
+
+      expect(await screen.findByText('Site 11')).toBeInTheDocument();
+      expect(fetchMock).toHaveBeenLastCalledWith('/api/profile?personId=42&page=2');
+      expect(screen.queryByText('Site 1')).not.toBeInTheDocument();
+      expect(screen.getByText('Showing 11–12 of 12 reports.')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Next page of inspection history' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Previous page of inspection history' })).toBeEnabled();
+    });
+
+    it('keeps the current page and shows an error when the next page fails', async () => {
+      fetchMock
+        .mockResolvedValueOnce({ ok: true, json: async () => historyPage(1, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) })
+        .mockResolvedValueOnce({ ok: false, json: async () => ({ error: 'Unable to load inspection history.' }) });
+      render(<ProfilePage />);
+
+      fireEvent.click(await screen.findByRole('button', { name: 'Next page of inspection history' }));
+
+      expect(await screen.findByRole('alert')).toHaveTextContent('Unable to load inspection history.');
+      expect(screen.getByText('Site 1')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Jamie Rivera' })).toBeInTheDocument();
+    });
+  });
+
   it.each(['', '   '])('blocks saving when the name is %j (1.0.2 AT3)', async (name) => {
     render(<ProfilePage />);
 
@@ -240,8 +305,13 @@ describe('ProfilePage', () => {
     expect(screen.getByRole('heading', { name: 'Jamie R.' })).toBeInTheDocument();
   });
 
-  it('shows the saved values again after a reload (1.0.1 AT5)', async () => {
-    const stored = { ...profilePayload.profile, displayName: 'Jamie R.', skills: ['Bird ID', 'Mosses'] };
+  it('shows the saved values again after a reload (1.0.1 AT5, 1.0.2 AT4, 1.0.2 AT6)', async () => {
+    const stored = {
+      ...profilePayload.profile,
+      displayName: 'Jamie R.',
+      skills: ['Bird ID', 'Mosses'],
+      focusAreas: ['Wetlands', 'Grasslands'],
+    };
     fetchMock
       .mockResolvedValueOnce({ ok: true, json: async () => profilePayload })
       .mockResolvedValueOnce({ ok: true, json: async () => ({ profile: stored }) })
@@ -251,9 +321,13 @@ describe('ProfilePage', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }));
     fireEvent.change(screen.getByLabelText('Display name'), { target: { value: 'Jamie R.' } });
     fireEvent.change(screen.getByLabelText(/^Skills/), { target: { value: 'Bird ID, Mosses' } });
+    fireEvent.change(screen.getByLabelText(/^Focus areas/), { target: { value: 'Wetlands, Grasslands' } });
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'jamie@example.com' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(await screen.findByText('Profile saved.')).toBeInTheDocument();
+    const body = JSON.parse(fetchMock.mock.calls[1][1].body);
+    expect(body.skills).toEqual(['Bird ID', 'Mosses']);
+    expect(body.focusAreas).toEqual(['Wetlands', 'Grasslands']);
 
     // A reload mounts the page again, and it reads the profile from the server.
     unmount();
@@ -261,6 +335,7 @@ describe('ProfilePage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Jamie R.' })).toBeInTheDocument();
     expect(screen.getByText('Mosses')).toBeInTheDocument();
+    expect(screen.getByText('Grasslands')).toBeInTheDocument();
     expect(fetchMock).toHaveBeenLastCalledWith('/api/profile');
   });
 

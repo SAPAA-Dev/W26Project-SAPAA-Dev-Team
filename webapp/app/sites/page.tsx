@@ -6,19 +6,16 @@
 import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSitesOnline, getTotalInspectionCount, getProtectedAreaBoundaries, SiteSummary } from '@/utils/supabase/queries';
-import { Award, Search, MapPin, Calendar, Home, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, LayoutGrid, Map as MapIcon } from 'lucide-react';
+import { Search, MapPin, Calendar, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, LayoutGrid, Map as MapIcon } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import Image from 'next/image';
 import { Suspense } from "react";
 import { SubmissionToast } from "./SubmissionToast";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import UploadImages from "@/components/UploadImages";
-import { logout } from "@/services/auth";
 import dynamic from 'next/dynamic';
 import { sitesDashboardSteps } from '@/components/TutorialOverlay';
 import UserNavBar from "@/components/HeaderDropdown";
-import HelpMenu from '@/components/HelpMenu';
-import { siteDetailSteps } from '@/components/TutorialOverlay';
 import type { BoundaryFeature, BoundaryFeatureCollection } from '@/lib/map/boundaries';
 import { boundaryFilterOptions, countyFilterOptions, defaultMapStatuses, filterBoundaryCollection, matchesCountyFilter } from '@/lib/map/boundaryFilters';
 import MapAreaFilters from '@/components/map/MapAreaFilters';
@@ -88,7 +85,7 @@ async function getCurrentUser(): Promise<{ email: string; role: string; name: st
       name,
       avatar
     };
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -107,7 +104,6 @@ export default function HomeClient() {
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name:string; avatar:string } | null>(null);
   const [userLoading, setUserLoading] = useState(true);
   const [totalResponses, setTotalResponses] = useState<number>(0);
-  const [menuOpen, setMenuOpen] = useState(false); 
   const [activeTooltip, setActiveTooltip] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
   const [selectedAreaTypes, setSelectedAreaTypes] = useState<ReadonlySet<string> | null>(null);
@@ -203,7 +199,7 @@ export default function HomeClient() {
       try {
         const user = await getCurrentUser();
         setCurrentUser(user);
-      } catch (err) {
+      } catch {
         setCurrentUser(null);
       } finally {
         setUserLoading(false);
@@ -267,11 +263,13 @@ export default function HomeClient() {
     ).length;
     
     return { totalSites, totalInspections, totalResponses, activeThisYear, needsAttention };
-  }, [sites]);
+  }, [sites, totalResponses]);
 
+  // Middleware answers an unapproved user's data requests with 403, so the load fails for
+  // them. ProtectedRoute wraps the error too, so they see "Awaiting Admin Approval" instead.
   if (error) {
     return (
-      
+      <ProtectedRoute>
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
           <div className="w-16 h-16 bg-[#FEE2E2] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -287,6 +285,7 @@ export default function HomeClient() {
           </button>
         </div>
       </div>
+      </ProtectedRoute>
     );
   }
 

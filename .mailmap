@@ -1,0 +1,34 @@
+# One name and email for each person in `git shortlog` and `git log --use-mailmap`.
+# Format: Canonical Name <canonical@email> Commit Name <commit@email>
+
+# Fall 2026 team
+Saumya Patel <snp050106@gmail.com> Saumya Patel <159504605+snp05016@users.noreply.github.com>
+Saumya Patel <snp050106@gmail.com> snp05016 <snp05016@users.noreply.github.com>
+Christopher Lamers <me@lamersc.com> lamersc <me@lamersc.com>
+Christopher Lamers <me@lamersc.com> lamersc <lamersc@users.noreply.github.com>
+Alissa Pepino <alissapepino@gmail.com> AlissaPepino <alissapepino@gmail.com>
+Alissa Pepino <alissapepino@gmail.com> amp <132785751+AlissaPepino@users.noreply.github.com>
+Aaron <chiuaaron6a07@gmail.com> Aaronplayz14 <chiuaaron6a07@gmail.com>
+Aaron <chiuaaron6a07@gmail.com> Aaronplayz14 <Aaronplayz14@users.noreply.github.com>
+Aaron <chiuaaron6a07@gmail.com> Aaron <40146941+Aaronplayz14@users.noreply.github.com>
+Abhinav Bhattarai <bhattar5@ualberta.ca> abhinav-bhattarai8 <bhattar5@ualberta.ca>
+Abhinav Bhattarai <bhattar5@ualberta.ca> abhinav-bhattarai8 <abhinav-bhattarai8@users.noreply.github.com>
+Jayden Ngo <168603719+jaydonos@users.noreply.github.com> jaydonos <168603719+jaydonos@users.noreply.github.com>
+Jayden Ngo <168603719+jaydonos@users.noreply.github.com> jaydonos <jaydonos@users.noreply.github.com>
+Zanab Akbar <110348647+Zanab-Akbar@users.noreply.github.com> Zanab-Akbar <110348647+Zanab-Akbar@users.noreply.github.com>
+
+# Winter 2026 team and earlier
+Raiyana Rahman <raiyana2@ualberta.ca> Raiyana Rahman <156195362+raiyana2@users.noreply.github.com>
+Vishal Sivakumar <145065036+vishalsivakumar2809@users.noreply.github.com> vishalsivakumar2809 <vishalsivakumar2809@users.noreply.github.com>
+Braden Woods <bwoodsy12@gmail.com> bwoodsy <bwoodsy12@gmail.com>
+Jason Liang <jason.liang5129@gmail.com> zliang12 <jason.liang5129@gmail.com>
+Jason Liang <jason.liang5129@gmail.com> Jason Liang <94155740+JasonLiang5129@users.noreply.github.com>
+Jason Liang <jason.liang5129@gmail.com> JasonLiang5129 <94155740+JasonLiang5129@users.noreply.github.com>
+Harveer Deol <harveerdeol53@gmail.com> harveerdeol <harveerdeol53@gmail.com>
+Harveer Deol <harveerdeol53@gmail.com> HarveerDeol <HarveerDeol@users.noreply.github.com>
+Akib Zaman Choudhury <akibzama@ualbert.ca> Akib424 <akibzama@ualbert.ca>
+Akib Zaman Choudhury <akibzama@ualbert.ca> Akib Zaman Choudhury <145165683+Akib424@users.noreply.github.com>
+Zoe Prefontaine <zprefont@ualberta.ca> Zoe <zprefont@ualberta.ca>
+Zoe Prefontaine <zprefont@ualberta.ca> HumanThePersons <zprefont@ualberta.ca>
+Mehrdad Matin <mehrdad.mpanah@gmail.com> MehrdadMatin <mehrdad.mpanah@gmail.com>
+SAPAA-Dev <devteams@sapaastewards.com> SAPAA-Dev <SAPAA-Dev@users.noreply.github.com>

@@ -34,7 +34,7 @@ export function erLines(schema, cfg) {
     for (const col of t.columns.values()) {
       if (!col.fk || !(shown.has(col.fk.table) || cfg.external[col.fk.table])) continue;
       const parent = col.notNull ? '||' : '|o';
-      const child = col.pk || col.unique ? 'o|' : 'o{';
+      const child = (col.pk && !col.compositePk) || col.unique ? 'o|' : 'o{';
       lines.push(`${erName(col.fk.table, cfg)} ${parent}--${child} ${erName(t.name, cfg)} : "${col.name}"`);
     }
   }
@@ -69,7 +69,7 @@ export function modelLines(schema, project, root, cfg) {
       const parent = c.fk && cfg.tables[c.fk.table];
       if (!parent) continue;
       const pm = c.notNull ? '"1"' : '"0..1"';
-      const cm = c.pk || c.unique ? '"0..1"' : '"0..*"';
+      const cm = (c.pk && !c.compositePk) || c.unique ? '"0..1"' : '"0..*"';
       rels.push(c.fk.onDelete === 'cascade'
         ? `${parent} ${pm} *-- ${cm} ${cls} : ${c.name}`
         : `${parent} ${pm} <-- ${cm} ${cls} : ${c.name}`);

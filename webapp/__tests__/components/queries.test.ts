@@ -1,8 +1,9 @@
 import * as queries from "../../utils/supabase/queries";
-import { createServerSupabase } from "../../utils/supabase/server";
+import { createClient, createServerSupabase } from "../../utils/supabase/server";
 
 jest.mock("../../utils/supabase/server", () => ({
   createServerSupabase: jest.fn(),
+  createClient: jest.fn(),
 }));
 
 describe("Supabase site functions", () => {
@@ -13,9 +14,31 @@ describe("Supabase site functions", () => {
     (createServerSupabase as jest.Mock).mockReturnValue({
       from: mockFrom,
     });
+    // The read actions check for an approved caller first (#251).
+    (createClient as jest.Mock).mockResolvedValue({
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: { user: { id: "u1", app_metadata: { role: "steward", authenticated: true } } },
+          error: null,
+        }),
+      },
+    });
   });
 
   describe("getSitesOnline", () => {
+    // Every filter of the sites query returns the query, which resolves to the result.
+    function sitesQuery(result: unknown, is = jest.fn().mockReturnThis()) {
+      return {
+        select: jest.fn().mockReturnThis(),
+        or: jest.fn().mockReturnThis(),
+        is,
+        not: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        then: (resolve: (value: unknown) => unknown) => resolve(result),
+      };
+    }
+
     it("returns mapped sites on success", async () => {
       const mockData = [
         {
@@ -24,7 +47,8 @@ describe("Supabase site functions", () => {
           ab_county: 10,
           is_active: true,
           ab_counties: { county: "County1" },
-          form_responses: [{ created_at: "2025-11-30" }],
+          latest_dated: [],
+          latest_undated: [{ created_at: "2025-11-30" }],
         },
         {
           id: 2,
@@ -32,17 +56,13 @@ describe("Supabase site functions", () => {
           ab_county: null,
           is_active: true,
           ab_counties: null,
-          form_responses: [],
+          latest_dated: [],
+          latest_undated: [],
         },
       ];
 
       const mockIs = jest.fn().mockReturnThis();
-      mockFrom.mockReturnValueOnce({
-        select: jest.fn().mockReturnThis(),
-        or: jest.fn().mockReturnThis(),
-        is: mockIs,
-        order: jest.fn().mockResolvedValue({ data: mockData, error: null }),
-      });
+      mockFrom.mockReturnValueOnce(sitesQuery({ data: mockData, error: null }, mockIs));
 
       const result = await queries.getSitesOnline();
 
@@ -54,12 +74,7 @@ describe("Supabase site functions", () => {
     });
 
     it("throws error if Supabase returns error", async () => {
-      mockFrom.mockReturnValueOnce({
-        select: jest.fn().mockReturnThis(),
-        or: jest.fn().mockReturnThis(),
-        is: jest.fn().mockReturnThis(),
-        order: jest.fn().mockResolvedValue({ data: null, error: { message: "Failed" } }),
-      });
+      mockFrom.mockReturnValueOnce(sitesQuery({ data: null, error: { message: "Failed" } }));
 
       await expect(queries.getSitesOnline()).rejects.toThrow("Failed");
     });

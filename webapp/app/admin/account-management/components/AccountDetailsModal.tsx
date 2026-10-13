@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { User } from "../../../../utils/admin-actions";
 import { X, Mail, Lock, Shield, Trash2, Save, Eye, EyeOff } from "lucide-react";
 
+export type AccountFormData = { email: string; password?: string; role: string; authenticated?: boolean };
+
 export default function AccountDetailsModal({
   visible,
   user,
@@ -14,7 +16,7 @@ export default function AccountDetailsModal({
   visible: boolean;
   user: User | null;
   onClose: () => void;
-  onSave: (data: { email: string; password?: string; role: string; authenticated?: boolean }) => void;
+  onSave: (data: AccountFormData) => void;
   onDelete?: (id: string) => void;
 }) {
   const [email, setEmail] = useState("");
@@ -27,6 +29,7 @@ export default function AccountDetailsModal({
 
   useEffect(() => {
     if (user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- resets the form fields whenever the selected user changes
       setEmail(user.email);
       setRole(user.role);
       setAuthenticated(user.authenticated);
@@ -55,7 +58,7 @@ export default function AccountDetailsModal({
       return;
     }
 
-    const payload: any = { email, role, authenticated };
+    const payload: AccountFormData = { email, role, authenticated };
     if (password) payload.password = password;
 
     onSave(payload);

@@ -53,6 +53,8 @@ export const MODELS = {
     homepage_image_uploads: 'HomepageImageUpload',
     S26_pdf_jobs: 'PdfJob',
     protected_areas: 'ProtectedArea',
+    site_page_fields: 'SitePageField',
+    luperson: 'LegacyPerson',
   },
   // Exported TypeScript types that have no table.
   types: [{ class: 'PdfOptions', module: 'webapp/lib/pdf/types.ts', name: 'PdfOptions' }],
@@ -76,9 +78,9 @@ export const SERVICES = {
       { class: 'InspectionQueries', module: q,
         include: ['addSiteInspectionReport', 'uploadSiteInspectionAnswers', 'insertInspectionAttachments',
           'rollbackSiteInspectionSubmission', 'setFormResponseActive', 'getFormResponsesBySite',
-          'getFormResponsesBySiteAdmin', 'getFormResponseById', 'getAttachmentsByResponseId',
+          'getFormResponsesBySiteAdmin', 'getFormResponseById',
           'updateAttachmentMetadata', 'updateSiteInspectionAnswers', 'getResponseOwnerId',
-          'getSiteIdForResponse', 'getFormResponsesForSiteIds', 'getAttachmentsForResponseIds',
+          'getSiteIdForResponse',
           'getSiteInspectionReportDeleteImpact', 'archiveSiteInspectionReport', 'restoreSiteInspectionReport',
           'permanentlyDeleteSiteInspectionReport', 'getArchivedSiteInspectionReports'] },
       { class: 'HomepageImageActions', module: q, include: ['insertHomepageImageUpload'] },
@@ -97,6 +99,7 @@ export const SERVICES = {
       { class: 'PdfStatusRoute', module: 'webapp/app/api/pdf/status/[jobId]/route.ts' },
       { class: 'PdfJobProcessor', module: 'webapp/lib/pdf/processPdfJob.ts' },
       { class: 'PdfDataFetcher', module: 'webapp/lib/pdf/pdfDataFetcher.ts' },
+      { class: 'PdfReportQueries', module: 'webapp/lib/pdf/reportQueries.ts' },
       { class: 'GeocodeRoute', module: 'webapp/app/api/geocode/route.ts' },
     ],
     MobileApp: [

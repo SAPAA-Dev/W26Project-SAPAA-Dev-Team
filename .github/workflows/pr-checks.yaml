@@ -2,7 +2,7 @@ name: PR checks
 
 on:
   pull_request:
-    branches: [main, release]
+    branches: [main, release, 'sprint-*']
     types: [opened, edited, synchronize, reopened]
 
 concurrency:

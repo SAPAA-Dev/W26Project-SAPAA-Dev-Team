@@ -48,7 +48,7 @@ sequenceDiagram
     participant Loader as Import server action<br/>importProtectedAreasFromStorage<br/>(utils/kml-import-actions.ts)
     participant DB as Supabase DB<br/>protected_areas
     participant Pages as Map and admin pages
-    participant Geo as /api/geocode route<br/>(no auth check today)
+    participant Geo as /api/geocode route<br/>(approved admin only)
     participant OC as OpenCage API
 
     Note over Admin,OC: Covers US 6.0.1. The KML/KMZ import exists (#152). The Admin uploads the SAPAA-Map .kml/.kmz export.<br/>sites_pa has no geometry columns. The boundaries are in protected_areas, keyed by UNIQUE (folder, fid).<br/>"(proposed)" = the step is not in the code today.
@@ -105,6 +105,7 @@ sequenceDiagram
 
     opt A site has no point and fallback geocoding is used (AT 4)
         Pages->>Geo: GET /api/geocode?q=site name (exists. Today the only caller is<br/>admin/dashboard/page.tsx, which geocodes every site by name in a loop)
+        Geo->>Geo: Check approved admin. 401 or 403 otherwise (exists)
         Geo->>Geo: Look for a cached result for this name (proposed)
         alt Cached result exists
             Geo-->>Pages: lat, lng from the cache. No OpenCage request
@@ -113,14 +114,17 @@ sequenceDiagram
             alt Count has reached the daily limit of 2,500
                 Geo-->>Pages: No result. No OpenCage request
             else Count is less than the limit
-                Geo->>OC: Geocode request. Add 1 to the count for today (proposed)
+                Geo->>OC: Geocode request, 8 s timeout (exists). Add 1 to the count for today (proposed)
                 alt External API returns a result
                     OC-->>Geo: lat, lng
                     Geo->>Geo: Store the result in the cache (proposed)
                     Geo-->>Pages: { latitude, longitude }
-                else External API refuses the request or its quota is exhausted
-                    OC-->>Geo: Error or no result
-                    Geo-->>Pages: { coords: null }
+                else No match
+                    OC-->>Geo: No result
+                    Geo-->>Pages: { latitude: null, longitude: null }
+                else External API refuses the request, times out or its quota is exhausted
+                    OC-->>Geo: Error
+                    Geo-->>Pages: 500 with the error message
                 end
             end
         end

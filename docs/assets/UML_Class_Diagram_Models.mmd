@@ -16,10 +16,15 @@ classDiagram
     %%   of an existing table is in a second block of that class below the
     %%   markers, with [NEW x.y.z]. Mermaid joins both blocks. When a migration
     %%   adds the column or the table, the generator removes the proposed item.
-    %% - Legacy tables are left out on purpose: luperson, sites_list_fnr,
+    %% - LegacyPerson (luperson) is shown because isSteward in queries.ts reads it.
+    %%   The migrations make only id and email. The production columns are not
+    %%   in the repository (see ER_Diagram_Legacy.mmd).
+    %% - Legacy tables left out on purpose: sites_list_fnr,
     %%   sites_detail_fnr_test and sites_report_fnr_test. See ER_Diagram.mmd.
     %% - ActivityStats and SirSummary have no table. The server calculates them.
-    %%   GET /api/profile returns ActivityStats as stats.
+    %%   GET /api/profile returns ActivityStats as stats. US 1.0.5 (proposed for
+    %%   Sprint 4) adds calculated metrics to it, not a points table. See
+    %%   docs/user-model.md, "Gamification proposal".
     %% - INatObservation has no table. It comes from the iNaturalist API.
     %% - PdfOptions has no table. It is kept in S26_pdf_jobs.request_payload.
     %% - OfflineMapArea has no table. It is in the web app, in browser storage.
@@ -214,6 +219,22 @@ classDiagram
         +area_ha: number?
     }
 
+    class SitePageField {
+        <<table site_page_fields>>
+        +site_id: number
+        +field_key: string
+        +value: string?
+        +is_visible: boolean
+        +updated_by: string?
+        +updated_at: timestamp
+    }
+
+    class LegacyPerson {
+        <<table luperson>>
+        +id: number
+        +email: string
+    }
+
     class PdfOptions {
         <<type in webapp/lib/pdf/types.ts>>
         +dateFrom: string?
@@ -245,14 +266,12 @@ classDiagram
     Question "0..1" <-- "0..*" Attachment : question_id
     Site "0..1" <-- "0..*" Attachment : site_id
     Site "0..1" *-- "0..*" HomepageImageUpload : site_id
+    Site "1" *-- "0..*" SitePageField : site_id
     %% END GENERATED: models
 
     class Site {
-        +boundary: polygon [NEW 6.0.1]
         +latitude: number [NEW 6.0.1]
         +longitude: number [NEW 6.0.1]
-        +sapaaweb: string [NEW 2.0.10]
-        +inatmap: string [NEW 2.0.10]
     }
 
     class GpxTrack {
@@ -282,6 +301,9 @@ classDiagram
         +inspectionCount: number
         +distinctSiteCount: number
         +activity_counts: Map [NEW 1.0.4]
+        +countyCount: number [NEW 1.0.5]
+        +siteVarietyCount: number [NEW 1.0.5]
+        +sitesFirstReported: number [NEW 1.0.5]
     }
 
     class SirSummary {
@@ -303,24 +325,6 @@ classDiagram
         +status: string
         +storage_path: string
         +error: string
-        +created_at: timestamp
-    }
-
-    class ActivityPointValue {
-        <<new table activity_point_values, 1.0.5>>
-        +site_id: number
-        +activity: string
-        +points: number
-    }
-
-    class ActivityPointEntry {
-        <<new table activity_points, 1.0.5>>
-        +id: number
-        +user_id: string
-        +site_id: number
-        +activity: string
-        +source_id: number
-        +points: number
         +created_at: timestamp
     }
 
@@ -362,10 +366,7 @@ classDiagram
         +status: string
     }
 
-    Site "1" *-- "0..*" SitePageField : site_id
     Site "1" *-- "0..*" GpxTrack : site_id
-    SitePageField "0..*" --> "0..1" Person : provided_by_steward_id
-    SitePageField "0..*" --> "0..1" FormResponse : source_response_id
     Person "1" .. "0..*" ProfileHiddenQuestion : user_id = auth_user_id
     ProfileHiddenQuestion "0..*" --> "1" Question : question_id
     Person "1" .. "0..*" GpxTrack : user_id = auth_user_id
@@ -377,17 +378,14 @@ classDiagram
     ExportJob ..> HomepageImageUpload : zips files
     ExportJob ..> GpxTrack : zips files
     ExportJob ..> PdfJob : zips completed PDFs
-    Site "1" --> "0..*" ActivityPointValue : site_id
-    Person "1" .. "0..*" ActivityPointEntry : user_id = auth_user_id
-    Site "1" --> "0..*" ActivityPointEntry : site_id
     Site "1" --> "0..1" SiteSafety : site_id
     Site "1" --> "0..1" SitePriority : site_id
     PdfJob ..> PdfOptions : request_payload
     INatObservation ..> Site : found in the boundary
 
-    note for Site "US 2.0.4: deleting a Site deletes its SIRs, answers, attachments,<br>homepage images, GPX tracks, Site fields, point records, safety and priority rows.<br>Today the database also deletes its site_stewards row (on delete cascade).<br>Related S3 files are deleted; protected_areas rows and Person records are kept."
-    note for SitePageField "US 2.0.5: provided_by_steward_id records the steward who supplied the value.<br>source_response_id optionally records the SIR from which it came."
+    note for Site "US 2.0.4 (built): archiveSite sets archived_at and hides the Site. Nothing else changes.<br>permanentlyDeleteSite works only on an archived Site. It deletes the sites_pa row.<br>SIRs, attachments and homepage images stay with site_id set to null. S3 files stay.<br>site_stewards and site_page_fields rows go by on delete cascade. Person rows stay."
+    note for SitePageField "US 2.0.5 and 2.0.10 (built): one row for each field of webapp/lib/sitePageFields.ts.<br>sapaa_website and inaturalist hold the Site links. A hidden field keeps its value."
     note for Attachment "US 4.0.6: the identifier column can already be null. The story changes the app validation.<br>US 7.0.8: an Attachment with response_id is owned by that SIR and is deleted with it."
-    note for ActivityPointEntry "Person.activity_points (the total) exists. This per-event table is still proposed (1.0.5)."
-    note for ProfileHiddenQuestion "user_id, GpxTrack.user_id and ActivityPointEntry.user_id are auth.users ids.<br>Person.auth_user_id links them to a Person. There is no FK between them."
+    note for Person "activity_points exists, but nothing writes it. The US 1.0.5 proposal<br>calculates its metrics from form_responses and sites_pa (ActivityStats)."
+    note for ProfileHiddenQuestion "user_id and GpxTrack.user_id are auth.users ids.<br>Person.auth_user_id links them to a Person. There is no FK between them."
     note for ProtectedArea "US 6.0.1: the KML import (webapp/utils/kml-import-actions.ts) upserts rows on (folder, fid).<br>sites_pa.protected_area_id is an optional link to protected_areas.id. Null means no link."

@@ -25,9 +25,10 @@ describe('Admin Edit Site Profile', () => {
   let originalCountyId: number | null = null;
 
   before(() => {
-    cy.task('getSiteInfo', TEST_SITE_NAME).then((site: any) => {
-      if (site) {
-        originalCountyId = site.ab_county;
+    cy.task('getSiteInfo', TEST_SITE_NAME).then((site) => {
+      const row = site as { ab_county: number | null } | null;
+      if (row) {
+        originalCountyId = row.ab_county;
       }
     });
   });

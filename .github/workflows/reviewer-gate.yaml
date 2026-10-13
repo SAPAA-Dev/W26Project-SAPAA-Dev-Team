@@ -7,7 +7,7 @@ name: Reviewer gate
 # runs pile up on the commit and keep blocking after the PR is approved.
 on:
   pull_request:
-    branches: [main, release]
+    branches: [main, release, 'sprint-*']
     types: [opened, reopened, synchronize, assigned, unassigned, ready_for_review]
   pull_request_review:
     types: [submitted, dismissed]

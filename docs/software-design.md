@@ -1,6 +1,6 @@
 # Software Design
 
-This page shows the high-level design of the SAPAA system: the architecture, the data, the key interactions, the user interface, and the technologies. The diagrams mark the parts that are proposed. The other parts show the code on `main` as of October 9, 2026. Sprint 2 is still in progress: the code freeze is October 11 and the release is October 13. A proposed part does not exist in the code. It is a design proposal for a user story, not a decision.
+This page shows the high-level design of the SAPAA system: the architecture, the data, the key interactions, the user interface, and the technologies. The diagrams mark the parts that are proposed. The other parts show the code on `main` as of October 11, 2026 (9009d0d). Sprint 2 is still in progress: the release is October 13. Some steps name a change on the `fix/alpha-code-quality` branch, which merges in the same Sprint 2 pull request set. A proposed part does not exist in the code. It is a design proposal for a user story, not a decision.
 
 ### How the diagrams are generated
 
@@ -30,7 +30,7 @@ The legend in the diagram explains the shapes. A rectangle is a component in thi
 The system has five layers:
 
 1. **Client layer.** Admins and stewards use the web app in a browser. Stewards use the StewardLog mobile app (`FNR/`). The mobile app keeps an offline copy of site data in expo-sqlite (`FNR/src/services/database.ts`). The Google Sheets script (`googleSheets/code.gs`) was removed from the repository in c7f7cb4 (#118).
-2. **Application layer.** The Next.js web app (`webapp/`) runs on Vercel. `webapp/middleware.ts` refreshes the session and sends a signed-out user to `/login`. Pages and server actions call Supabase with supabase-js (`webapp/utils/supabase/`). The server actions include the steward assignment (`webapp/utils/steward-actions.ts`) and the KML import (`webapp/utils/kml-import-actions.ts`). API route handlers (`webapp/app/api/`) make presigned S3 URLs, delete images, return the profile data, call the OpenCage API, and start the PDF job (`webapp/lib/pdf/processPdfJob.ts`). The mobile app has no server of its own. It calls Supabase directly.
+2. **Application layer.** The Next.js web app (`webapp/`) runs on Vercel. `webapp/middleware.ts` refreshes the session and sends a signed-out user to `/login`. It also blocks a user that an admin has not approved: that user can load only `/sites`, which shows the "Awaiting Admin Approval" screen. Other pages redirect to `/sites`, and an API call or a server action gets 403 (#238, #240). See [API Documentation: Middleware](api-documentation.md#middleware). Pages and server actions call Supabase with supabase-js (`webapp/utils/supabase/`). The server actions include the steward assignment (`webapp/utils/steward-actions.ts`) and the KML import (`webapp/utils/kml-import-actions.ts`). API route handlers (`webapp/app/api/`) make presigned S3 URLs, delete images, return the profile data, call the OpenCage API, and start the PDF job (`webapp/lib/pdf/processPdfJob.ts`). The mobile app has no server of its own. It calls Supabase directly.
 3. **Data and storage layer.** One Supabase project holds the PostgreSQL database, Supabase Auth, the private Storage bucket `kml-imports` for KML uploads, and three Edge Functions (`get-users`, `add-user`, `delete-user`) that the mobile admin screens call (`FNR/src/services/adminAuth.ts`). The source of the Edge Functions is not in this repository. An AWS S3 bucket holds inspection photos and PDF files. The browser uploads a photo directly to S3 with a presigned URL. See [Media Storage Architecture](aws-architecture.md).
 4. **External services.** Supabase Auth signs users in with Google, Microsoft Azure, and GitHub OAuth (`webapp/services/auth.ts`, `webapp/app/login/actions.ts`, `FNR/src/services/auth.ts`). The web app and the mobile app get coordinates from the OpenCage Geocoding API. The site map (`webapp/components/map/SiteMap.tsx`) uses MapLibre GL with a Protomaps basemap style from `api.protomaps.com`. The Protomaps key is in `NEXT_PUBLIC_PROTOMAPS_API_KEY`. The heat map on the admin dashboard still uses Leaflet with OpenStreetMap tiles. The mobile map shows a Google My Maps embed. The iNaturalist API is proposed for US 4.0.5 and US 4.0.7.
 5. **Build and documentation tooling.** GitHub Actions runs the Jest tests, the hook tests, and the MkDocs build on each push (`.github/workflows/ci.yaml`). On each pull request, it runs the PR checks, the labeler, the reviewer gate, and the diagram update (`.github/workflows/diagrams.yaml`). On a push to `main`, it publishes this site to GitHub Pages (`.github/workflows/gh-pages.yaml`).
@@ -46,14 +46,15 @@ For details about how images are stored and retrieved, see the
 
 ## Interfaces
 
-The system has four kinds of interface. Each page of the web app calls a server action in `webapp/utils/` for most reads and writes. An admin server action checks the caller on the server before it creates the service-role client. Some write actions in `queries.ts` still have no caller check (backlog item 4 in [Issues](issues.md)). An action calls Supabase with supabase-js. Some actions call a SQL function with `supabase.rpc`, so that a count or a change runs in one transaction. An API route handler in `webapp/app/api/` serves the calls that a server action does not fit: the profile, the image delete, the PDF job, the geocoder and the presigned S3 URLs. The browser then sends a photo straight to S3 with the presigned URL. The mobile app skips this layer and calls Supabase directly.
+The system has four kinds of interface. Each page of the web app calls a server action in `webapp/utils/` for most reads and writes. An admin server action checks the caller on the server before it creates the service-role client. The report write actions check that the caller owns the report or is an admin. The read actions in `queries.ts` check for an approved caller (GitHub #251), so no exported read in `queries.ts` is left without a caller check. The service-role reads that only the PDF job needs live in `webapp/lib/pdf/reportQueries.ts`, a server-only module that is not a server action, so the browser cannot call them (GitHub #268, see [API Documentation](api-documentation.md#2-server-actions)). An action calls Supabase with supabase-js. Some actions call a SQL function with `supabase.rpc`, so that a count or a change runs in one transaction. An API route handler in `webapp/app/api/` serves the calls that a server action does not fit: the profile, the image lists and the image delete, the PDF job, the geocoder, the heat map and the presigned S3 URLs. The browser then sends a photo straight to S3 with the presigned URL. The mobile app skips this layer and calls Supabase directly.
 
 | Interface | Where it is documented |
 | --- | --- |
-| API routes and server actions, with inputs, outputs and the auth rule of each | [API Documentation](api-documentation.md) |
-| SQL functions (RPC), with parameters, return value, security and grants | [Database RPC functions](api-documentation.md#6-database-rpc-functions) |
+| API routes and server actions, with inputs, outputs, errors and the caller check of each | [API Documentation](api-documentation.md) |
+| Who can read and write each table and bucket (row level security, by role) | [Access matrix](api-documentation.md#4-access-matrix) |
+| SQL functions (RPC), with parameters, return value, security and grants | [Database RPC functions](api-documentation.md#3-database-rpc-functions) |
 | Tables, columns and row level security of profiles, stewards and contact details | [User Model](user-model.md) |
-| Route handlers with an OpenAPI description, tried out in the browser | `/api-docs` (Swagger). It does not list every route yet. See [API Documentation](api-documentation.md). |
+| Route handlers with an OpenAPI description, tried out in the browser | `/api-docs` (Swagger), from `webapp/lib/swagger.ts`. It lists every route under `/api`. |
 | Images and PDF files in S3 | [Media Storage Architecture](aws-architecture.md) |
 
 The [UML class diagram](#uml-class-diagram) lists the exported server actions that the generator finds in the code.
@@ -79,13 +80,17 @@ We kept the hard delete next to the archive for these reasons:
 
 We did not build a separate suppress level. The team notes call it redundant, and deactivating a site (US 2.0.3) already hides it from stewards.
 
+### Won't Have: audio recordings on a SIR (US 7.0.9)
+
+US 7.0.9 (record audio during a site inspection and play it back) is Won't Have for Fall 2026 (see [Project Management](project-management.md)). It has no design in this document and no table, route or diagram. If a later team builds it, the existing photo flow is the nearest pattern: a presigned S3 upload in a folder of the report, a row that links the file to `form_responses`, the owner-or-admin check of `requireReportWriter`, and the S3 cleanup on report rollback and permanent delete.
+
 ---
 
 ## Database schema (ER diagrams)
 
 The ER diagrams show the tables, the columns, and the relations in the database. They show which data each app owns, and where the two inspection systems do not share data. This is important before a change to a query or to the schema.
 
-One Supabase database holds two inspection systems. The web app uses its own tables (for example `form_responses`, `sites_pa`, and `S26_pdf_jobs`). Sprint 2 added the user model (`people`, `site_stewards`, `socials`) and `protected_areas` for the KML import. The migration `20261003000000_remove_w26_prefix.sql` removed the `W26_` prefix from the table names. The mobile app (StewardLog) uses the legacy tables. The web app and the mobile app both read two legacy tables. The web app reads `luperson` to find if an email belongs to a steward. It reads `sites_report_fnr_test` for the heat map on the admin dashboard (`webapp/app/api/heatmap/route.ts`). The two apps also call the same database functions for the dashboard charts (`get_naturalness_distribution` and `get_top_sites_distribution`). `luperson` is the only table that both apps use. Except for these shared tables and functions, inspection data that one system writes does not show in the other system.
+One Supabase database holds two inspection systems. The web app uses its own tables (for example `form_responses`, `sites_pa`, and `S26_pdf_jobs`). Sprint 2 added the user model (`people`, `site_stewards`, `socials`) and `protected_areas` for the KML import. The migration `20261003000000_remove_w26_prefix.sql` removed the `W26_` prefix from the table names. The mobile app (StewardLog) uses the legacy tables. The web app and the mobile app both read two legacy tables. The web app reads `luperson` to find if the email of the signed-in user belongs to a steward. It reads `sites_report_fnr_test` for the heat map on the admin dashboard (`webapp/app/api/heatmap/route.ts`). The two apps also call the same database functions for the dashboard charts (`get_naturalness_distribution` and `get_top_sites_distribution`). `luperson` is the only table that both apps use. Except for these shared tables and functions, inspection data that one system writes does not show in the other system.
 
 The web app diagram is generated from `webapp/supabase/migrations/`. It shows each table and column that the migrations make. The legacy diagram shows only the tables and columns that the code reads or writes. A column type is "unknown" when the code does not show it.
 
@@ -145,6 +150,26 @@ The class diagrams show the main code modules and data models, and the calls bet
 
 The sequence diagrams show the key interaction scenarios: the order of the calls between the user, the apps, Supabase, S3, and the external services. This makes clear which part does each step, and what each story adds to the code. Each diagram names the user stories that it covers. A step with "(proposed)" does not exist in the code today. The diagrams show the server-side permission checks that the user stories need. Some of these checks are not in the code today.
 
+### Sign-in, sign-up and admin approval
+
+Purpose: This diagram shows how a user signs up or signs in with a password or OAuth, how the middleware holds an unapproved user, and how an admin approves the account. Stories: the inherited sign-in flow, with the approval gate of #238 and #240.
+
+[Mermaid source](assets/Sequence_Auth_Sign_In_Sign_Up_and_Admin_Approval.mmd)
+
+![Sign-in, sign-up and admin approval sequence diagram](images/Sequence_Auth_Sign_In_Sign_Up_and_Admin_Approval.svg)
+
+[Open the diagram at full size](images/Sequence_Auth_Sign_In_Sign_Up_and_Admin_Approval.svg)
+
+### Submit a Site Inspection Report with photos
+
+Purpose: This diagram shows how the new-report page saves a SIR, its answers and its photos, which server check each step makes, and how a failed step rolls the report back. Stories: the inherited SIR submission, with the caller checks of #242 and the S3 cleanup of #148.
+
+[Mermaid source](assets/Sequence_SIR_Submission_With_Photos.mmd)
+
+![Submit a Site Inspection Report with photos sequence diagram](images/Sequence_SIR_Submission_With_Photos.svg)
+
+[Open the diagram at full size](images/Sequence_SIR_Submission_With_Photos.svg)
+
 ### US 1.0.1, 1.0.3, 1.0.4: Add User Profiles / Show history of Site Inspections on a Steward's Profile / Aggregate User Activity and Contributions on a user's profile
 
 Purpose: This diagram shows how a Steward opens a profile, and how the server gets the details, SIR history, and totals again on each load. Stories: US 1.0.1 – Add User Profiles, US 1.0.3 – Show history of Site Inspections on a Steward's Profile, US 1.0.4 – Aggregate User Activity and Contributions on a user's profile.
@@ -167,7 +192,7 @@ Purpose: This diagram shows how a Steward saves profile changes, and how the ser
 
 ### US 1.0.5: Earn Points for Inspection Activity
 
-Purpose: This diagram shows how the server gives points only after a SIR submission or a photo upload succeeds, and how the profile shows the total. Stories: US 1.0.5 – Earn Points for Inspection Activity.
+Purpose: This diagram shows the proposed design for Sprint 4: the profile and a scoreboard show contribution metrics that the server calculates from the reports, with no points table. It follows the [Gamification proposal](user-model.md#gamification-proposal). Stories: US 1.0.5 – Earn Points for Inspection Activity.
 
 [Mermaid source](assets/Sequence_US_1_0_5_Activity_Points.mmd)
 

@@ -12,6 +12,8 @@ import {
 
 export default function SiteSteward({ siteId, isAdmin }: { siteId: number; isAdmin: boolean }) {
   const [steward, setSteward] = useState<StewardOption | null>(null);
+  // A failed lookup is not the same as no steward, so it gets its own message.
+  const [loadFailed, setLoadFailed] = useState(false);
   const [editing, setEditing] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<StewardOption[]>([]);
@@ -20,7 +22,9 @@ export default function SiteSteward({ siteId, isAdmin }: { siteId: number; isAdm
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    getSiteSteward(siteId).then(setSteward).catch(() => setSteward(null));
+    getSiteSteward(siteId)
+      .then((found) => { setSteward(found); setLoadFailed(false); })
+      .catch(() => { setSteward(null); setLoadFailed(true); });
   }, [siteId]);
 
   async function search(e: React.FormEvent) {
@@ -49,6 +53,7 @@ export default function SiteSteward({ siteId, isAdmin }: { siteId: number; isAdm
         return;
       }
       setSteward(person);
+      setLoadFailed(false);
       setEditing(false);
       setQuery("");
       setResults([]);
@@ -71,6 +76,8 @@ export default function SiteSteward({ siteId, isAdmin }: { siteId: number; isAdm
               {steward.displayName}
             </Link>
           </span>
+        ) : loadFailed ? (
+          <span>The steward could not be loaded.</span>
         ) : (
           <span>No steward assigned</span>
         )}

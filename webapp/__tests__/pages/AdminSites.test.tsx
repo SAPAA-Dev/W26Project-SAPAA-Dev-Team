@@ -1,10 +1,8 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import AdminSitesPage, { daysSince, formatAgeBadge, getInspectionStatus } from '../../app/admin/sites/page';
+import AdminSitesPage, { daysSince } from '../../app/admin/sites/page';
 import * as supabaseQueries from '@/utils/supabase/queries';
 import { useRouter } from 'next/navigation';
-import AdminNavBar from '../../app/admin/AdminNavBar';
-import ProtectedRoute from '@/components/ProtectedRoute';
 
 // Mock next/router
 jest.mock('next/navigation', () => ({
@@ -20,14 +18,24 @@ jest.mock('@/utils/supabase/queries', () => ({
   updateSite: jest.fn().mockResolvedValue({ ok: true }),
   toggleSiteActive: jest.fn().mockResolvedValue(undefined),
   getTotalInspectionCount: jest.fn().mockResolvedValue(0),
+  createSite: jest.fn(),
+  findSitesWithName: jest.fn().mockResolvedValue([]),
+  getSiteSuggestions: jest.fn().mockResolvedValue([]),
 }));
 
 // Mock next/image
-jest.mock('next/image', () => (props: any) => <img {...props} alt={props.alt} />);
+jest.mock('next/image', () => function MockImage(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+  // eslint-disable-next-line @next/next/no-img-element -- test mock of next/image
+  return <img {...props} alt={props.alt} />;
+});
 
 // Mock components
-jest.mock('../../app/admin/AdminNavBar', () => () => <div>AdminNavBarMock</div>);
-jest.mock('@/components/ProtectedRoute', () => ({ children }: any) => <div>{children}</div>);
+jest.mock('../../app/admin/AdminNavBar', () => function AdminNavBarMock() {
+  return <div>AdminNavBarMock</div>;
+});
+jest.mock('@/components/ProtectedRoute', () => function ProtectedRouteMock({ children }: { children: React.ReactNode }) {
+  return <div>{children}</div>;
+});
 jest.mock('@/components/PdfExportModal', () => () => null);
 
 describe('AdminSitesPage', () => {
@@ -112,9 +120,6 @@ describe('AdminSitesPage', () => {
     // Wait for the sort to complete and verify order
     await waitFor(() => {
       const buttons = screen.getAllByRole('button');
-      const siteButtons = buttons.filter(btn =>
-        btn.textContent?.includes('Alpha') || btn.textContent?.includes('Beta')
-      );
       // Verify Alpha appears before or at same position as Beta after sorting
       const alphaIndex = buttons.findIndex(btn => btn.textContent?.includes('Alpha'));
       const betaIndex = buttons.findIndex(btn => btn.textContent?.includes('Beta'));
@@ -148,6 +153,48 @@ describe('AdminSitesPage', () => {
       fireEvent.click(userViewButtons[0]);
       expect(mockPush).toHaveBeenCalledWith('/detail/Alpha');
     }
+  });
+
+  describe('US 2.0.2 AT5: a new site in the search results', () => {
+    const alpha = { id: 1, namesite: 'Alpha', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: '1900-01-01' };
+    const bearCreek = { id: 2, namesite: 'Bear Creek', county: null, ab_county: null, is_active: true, inspectdate: null };
+
+    const addSiteAndSearch = async () => {
+      render(<AdminSitesPage />);
+      await waitFor(() => screen.getByText('Alpha'));
+
+      fireEvent.click(screen.getByRole('button', { name: /Add Site/i }));
+      fireEvent.change(screen.getByPlaceholderText('Enter site name'), { target: { value: 'Bear Creek' } });
+      fireEvent.click(screen.getByTestId('add-site-save-button'));
+      await waitFor(() => expect(supabaseQueries.createSite).toHaveBeenCalledWith('Bear Creek', null, null));
+
+      fireEvent.change(screen.getByPlaceholderText(/Search by site name or county/i), { target: { value: 'bear' } });
+    };
+
+    it('US 2.0.2 AT5: shows a site that was just added when the admin searches for it', async () => {
+      (supabaseQueries.getAllSites as jest.Mock)
+        .mockResolvedValueOnce([alpha])
+        .mockResolvedValue([alpha, bearCreek]);
+      (supabaseQueries.createSite as jest.Mock).mockResolvedValue({ ok: true });
+
+      await addSiteAndSearch();
+
+      expect(await screen.findByText('Bear Creek')).toBeInTheDocument();
+      expect(screen.queryByText('Alpha')).not.toBeInTheDocument();
+    });
+
+    it('US 2.0.2 AT5: a refused create adds nothing to the search results', async () => {
+      (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue([alpha]);
+      (supabaseQueries.createSite as jest.Mock).mockResolvedValue({ ok: false, error: 'Only admins can edit sites.' });
+      const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+
+      await addSiteAndSearch();
+
+      expect(alertSpy).toHaveBeenCalledWith('Only admins can edit sites.');
+      expect(supabaseQueries.getAllSites).toHaveBeenCalledTimes(1);
+      expect(screen.getByText(/Try adjusting your search or filters/i)).toBeInTheDocument();
+      alertSpy.mockRestore();
+    });
   });
 
   it('renders AdminNavBar inside ProtectedRoute', async () => {

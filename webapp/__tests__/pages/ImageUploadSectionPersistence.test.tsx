@@ -1,11 +1,11 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import MainContent from "../../app/detail/[namesite]/new-report/MainContent";
+import MainContent, { type ResponseValue } from "../../app/detail/[namesite]/new-report/MainContent";
 
 const mockGetQuestionsOnline = jest.fn();
 
 jest.mock("@/utils/supabase/queries", () => ({
-  getQuestionsOnline: (...args: any[]) => mockGetQuestionsOnline(...args),
+  getQuestionsOnline: (...args: unknown[]) => mockGetQuestionsOnline(...args),
 }));
 
 const START_QUESTION_ID = 101;
@@ -46,9 +46,9 @@ async function renderImagePersistenceForm(mockOnChange: jest.Mock = jest.fn()) {
   mockGetQuestionsOnline.mockResolvedValue(sectionPersistenceQuestions);
 
   function ControlledMainContent() {
-    const [responses, setResponses] = React.useState<Record<number, any>>({});
+    const [responses, setResponses] = React.useState<Record<number, ResponseValue>>({});
 
-    const handleChange = (nextResponses: Record<number, any>) => {
+    const handleChange = (nextResponses: Record<number, ResponseValue>) => {
       setResponses(nextResponses);
       mockOnChange(nextResponses);
     };
@@ -98,8 +98,8 @@ describe("W26 US 2.0.2 - Image Metadata", () => {
     jest.clearAllMocks();
     localStorage.clear();
 
-    (global.URL.createObjectURL as any) = jest.fn(() => PREVIEW_URL);
-    (global.URL.revokeObjectURL as any) = jest.fn();
+    global.URL.createObjectURL = jest.fn(() => PREVIEW_URL);
+    global.URL.revokeObjectURL = jest.fn();
     jest.spyOn(global.crypto, "randomUUID").mockReturnValue(FIXED_IMAGE_ID);
   });
 

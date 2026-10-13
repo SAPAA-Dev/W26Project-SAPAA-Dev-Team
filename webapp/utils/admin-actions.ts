@@ -2,6 +2,7 @@
 
 import { supabaseAdmin } from '../utils/supabase/admin';
 import { createClient } from './supabase/server';
+import type { AdminUserAttributes, User as AuthUser } from '@supabase/supabase-js';
 
 export interface User {
   id: string;
@@ -21,18 +22,30 @@ async function isApprovedAdmin(): Promise<boolean> {
 }
 
 const NOT_ADMIN_ERROR = 'Only admins can manage user accounts.';
+const USERS_PER_PAGE = 1000;
+
+function errorMessage(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
+}
 
 export async function getAllUsers(): Promise<User[]> {
   if (!(await isApprovedAdmin())) return [];
 
-  const { data, error } = await supabaseAdmin.auth.admin.listUsers();
+  // listUsers returns one page, 50 users by default, so read every page.
+  const users: AuthUser[] = [];
+  for (let page = 1; ; page++) {
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: USERS_PER_PAGE });
 
-  if (error) {
-    console.error('Failed to list users', error);
-    return [];
+    if (error) {
+      console.error('Failed to list users', error);
+      return [];
+    }
+
+    users.push(...data.users);
+    if (data.users.length < USERS_PER_PAGE) break;
   }
 
-  return data.users.map((u) => ({
+  return users.map((u) => ({
     id: u.id,
     email: u.email ?? '',
     role: u.app_metadata?.role ?? 'steward',
@@ -46,7 +59,7 @@ export async function addUser(newUser: { email: string; password: string; role?:
 
     const { email, password, role = 'steward', authenticated = false } = newUser;
 
-    const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    const { error } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
       app_metadata: { role, authenticated }
@@ -55,9 +68,9 @@ export async function addUser(newUser: { email: string; password: string; role?:
     if (error) return { success: false, error: error.message };
 
     return { success: true };
-  } catch (e: any) {
+  } catch (e) {
     console.error('Add user failed', e);
-    return { success: false, error: e.message };
+    return { success: false, error: errorMessage(e) };
   }
 }
 
@@ -69,9 +82,9 @@ export async function deleteUser(userId: string) {
 
     if (error) return { success: false, error: error.message };
     return { success: true };
-  } catch (e: any) {
+  } catch (e) {
     console.error('Delete user failed', e);
-    return { success: false, error: e.message };
+    return { success: false, error: errorMessage(e) };
   }
 }
 
@@ -89,7 +102,7 @@ export async function updateUser(data: { id: string; email: string; password?: s
 
     // The admin update replaces app_metadata, so keep the existing keys (such as the
     // provider entries) and only change the role and the approval flag.
-    const attrs: any = {
+    const attrs: AdminUserAttributes = {
       email,
       app_metadata: { ...existing.user.app_metadata, role, authenticated }
     };
@@ -101,8 +114,8 @@ export async function updateUser(data: { id: string; email: string; password?: s
     if (error) return { success: false, error: error.message };
 
     return { success: true, data: updatedUser };
-  } catch (e: any) {
+  } catch (e) {
     console.error('Update user failed', e);
-    return { success: false, error: e.message };
+    return { success: false, error: errorMessage(e) };
   }
 }

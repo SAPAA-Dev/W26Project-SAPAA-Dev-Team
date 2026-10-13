@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import UserNavBar, { navigate } from '@/components/HeaderDropdown';
+import UserNavBar from '@/components/HeaderDropdown';
 import * as auth from '@/services/auth';
 import * as HeaderDropdown from '@/components/HeaderDropdown';      
 
@@ -56,7 +56,7 @@ describe('UserNavBar - logout button', () => {
   });
 
   it('calls logout() when logout button is clicked', async () => {
-    (auth.logout as jest.Mock).mockResolvedValueOnce(undefined);
+    (auth.logout as jest.Mock).mockResolvedValueOnce({ success: true });
     await act(async () => { render(<UserNavBar />); });
     openMenu();
 
@@ -67,8 +67,8 @@ describe('UserNavBar - logout button', () => {
     });
   });
 
-  it('redirects to /login after logout', async () => {
-    (auth.logout as jest.Mock).mockResolvedValueOnce(undefined);
+  it('redirects to /login after logout (5.0.4 AT1)', async () => {
+    (auth.logout as jest.Mock).mockResolvedValueOnce({ success: true });
     await act(async () => { render(<UserNavBar />); });
     openMenu();
 
@@ -103,8 +103,20 @@ describe('UserNavBar - logout button', () => {
     expect(push).toHaveBeenCalledWith('/profile');
   });
 
+  it('keeps the user on the page and shows an error when sign-out fails (5.0.4 AT1)', async () => {
+    (auth.logout as jest.Mock).mockResolvedValueOnce({ success: false, error: 'Network down' });
+    await act(async () => { render(<UserNavBar />); });
+    openMenu();
+
+    fireEvent.click(screen.getByText('Logout'));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/sign-out failed/i);
+    expect(navigateSpy).not.toHaveBeenCalled();
+    expect(screen.getByText('Logout')).toBeInTheDocument();
+  });
+
   it('closes the menu when logout is clicked', async () => {
-    (auth.logout as jest.Mock).mockResolvedValueOnce(undefined);
+    (auth.logout as jest.Mock).mockResolvedValueOnce({ success: true });
     await act(async () => { render(<UserNavBar />); });
     openMenu();
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Document, Page, View, Text, Image } from '@react-pdf/renderer';
 import { styles } from './styles';
-import { PdfReportData, PdfSiteData, PdfAttachment, FormAnswer, PdfOptions } from './types';
+import { PdfReportData, PdfSiteData, PdfAttachment, FormAnswer } from './types';
 import path from 'path';
 
 function groupAnswersBySection(answers: FormAnswer[]) {
@@ -39,6 +39,7 @@ function CoverPage({ data, pageSize }: { data: PdfReportData; pageSize: 'LETTER'
   return (
     <Page size={pageSize} style={styles.page}>
       <View style={styles.coverPage}>
+        {/* eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image has no alt prop */}
         <Image style={styles.coverLogo} src={logoPath} />
 
         <Text style={styles.coverTitle}>Site Inspection Report</Text>
@@ -99,7 +100,7 @@ function CoverPage({ data, pageSize }: { data: PdfReportData; pageSize: 'LETTER'
 
       <View style={styles.coverFooter}>
         <Text style={styles.footerText}>
-          Stewards of Alberta's Protected Areas Association (sapaastewards.com)
+          Stewards of Alberta&apos;s Protected Areas Association (sapaastewards.com)
         </Text>
       </View>
     </Page>
@@ -194,6 +195,7 @@ function SiteHeader({ site }: { site: PdfSiteData }) {
         <Text style={styles.siteName}>{site.siteName}</Text>
         {site.county && <Text style={styles.county}>{site.county}</Text>}
       </View>
+      {/* eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image has no alt prop */}
       <Image style={styles.logo} src={logoPath} />
     </View>
   );
@@ -290,6 +292,7 @@ function AttachmentGallery({ attachments }: { attachments: PdfAttachment[] }) {
       <View style={styles.attachmentGrid}>
         {withImages.map((att, idx) => (
           <View key={idx} style={styles.attachmentItem} wrap={false}>
+            {/* eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image has no alt prop */}
             <Image
               style={styles.attachmentImage}
               src={`data:${att.contentType};base64,${att.imageBuffer!.toString('base64')}`}

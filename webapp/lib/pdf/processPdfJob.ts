@@ -1,5 +1,5 @@
 import { createServerSupabase } from '@/utils/supabase/server';
-import { renderToBuffer } from '@react-pdf/renderer';
+import { renderToBuffer, type DocumentProps } from '@react-pdf/renderer';
 import React from 'react';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { InspectionReportDocument } from './inspectionReport';
@@ -36,7 +36,7 @@ export async function processPdfJob(jobId: string) {
     const reportData = await fetchReportData(request);
 
     const element = React.createElement(InspectionReportDocument, { data: reportData });
-    const buffer = await renderToBuffer(element as any);
+    const buffer = await renderToBuffer(element as unknown as React.ReactElement<DocumentProps>);
 
     const dateStr = new Date().toISOString().split('T')[0];
     const filename =

@@ -116,6 +116,41 @@ describe('Site Inspection Report archive queries (US 7.0.8)', () => {
     });
   });
 
+  it('refuses a steward archive with no database call, so the report stays listed (7.0.8 AT2)', async () => {
+    mockCaller('steward');
+
+    await expect(archiveSiteInspectionReport(41)).rejects.toThrow('Only approved admins can manage reports.');
+    expect(mockRpc).not.toHaveBeenCalled();
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['does not exist', 'Site Inspection Report 41 does not exist'],
+    ['is already archived', 'Site Inspection Report 41 is already archived'],
+  ])('returns the database error when the report %s (7.0.8 AT2)', async (_label, message) => {
+    mockRpc.mockResolvedValue({ data: null, error: { message } });
+
+    await expect(archiveSiteInspectionReport(41)).rejects.toThrow(message);
+  });
+
+  it.each([
+    ['does not exist', 'Site Inspection Report 41 does not exist'],
+    ['is not archived', 'Site Inspection Report 41 must be archived before it can be permanently deleted'],
+  ])('removes no images when the report %s (7.0.8 AT3)', async (_label, message) => {
+    mockRpc.mockResolvedValue({ data: null, error: { message } });
+
+    await expect(permanentlyDeleteSiteInspectionReport(41)).rejects.toThrow(message);
+    expect(deleteObjectsByKeys).not.toHaveBeenCalled();
+  });
+
+  it('refuses a steward delete before any images are removed (7.0.8 AT3)', async () => {
+    mockCaller('steward');
+
+    await expect(permanentlyDeleteSiteInspectionReport(41)).rejects.toThrow('Only approved admins can manage reports.');
+    expect(mockRpc).not.toHaveBeenCalled();
+    expect(deleteObjectsByKeys).not.toHaveBeenCalled();
+  });
+
   it('keeps the S3 files of a deactivated or archived report (7.0.5 AT4)', async () => {
     const mockIs = jest.fn().mockResolvedValue({ error: null });
     const mockUpdate = jest.fn().mockReturnValue({

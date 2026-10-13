@@ -19,12 +19,13 @@ jest.mock('@/utils/supabase/queries', () => ({
 
 jest.mock('next/image', () => {
   function MockImage(props: { alt: string }) {
+    // eslint-disable-next-line @next/next/no-img-element -- test mock of next/image
     return <img alt={props.alt} />;
   }
   return MockImage;
 });
 jest.mock('../../app/admin/AdminNavBar', () => () => null);
-jest.mock('@/components/ProtectedRoute', () => ({ children }: { children: React.ReactNode }) => <>{children}</>);
+jest.mock('@/components/ProtectedRoute', () => function MockProtectedRoute({ children }: { children: React.ReactNode }) { return <>{children}</>; });
 jest.mock('@/components/PdfExportModal', () => () => null);
 jest.mock('@/components/PdfExportsDropdown', () => () => null);
 

@@ -101,6 +101,7 @@ export default function UploadImages() {
     e.preventDefault();
     setDragging(false);
     addFiles(e.dataTransfer.files);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- addFiles is recreated each render; keeps the first-render instance (state setters plus first-render `today`) as before
   }, []);
 
   const updateField = (field: keyof FileEntry, value: unknown) => {
@@ -378,6 +379,7 @@ export default function UploadImages() {
 
                     {/* Image preview */}
                     <div className="w-full lg:w-96 flex-shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- local blob: preview URL from URL.createObjectURL, not served via next/image */}
                       <img
                         src={current.preview}
                         alt={current.file.name}

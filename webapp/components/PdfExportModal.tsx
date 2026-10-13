@@ -81,6 +81,7 @@ export default function PdfExportModal({
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- resets the site selection each time the modal opens
       setSelectedSiteNames(siteNames ?? []);
       setSiteSearch('');
     } else {
@@ -259,7 +260,7 @@ export default function PdfExportModal({
     setError(null);
 
     try {
-      let body: any;
+      let body: Record<string, unknown>;
       const apiOptions = {
         dateFrom: options.dateFrom || undefined,
         dateTo: options.dateTo || undefined,

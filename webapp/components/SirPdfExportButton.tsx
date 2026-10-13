@@ -60,6 +60,7 @@ export default function SirPdfExportButton({ responseId }: { responseId: number 
     } catch {
       // Keep polling on transient network errors.
     }
+    // eslint-disable-next-line react-hooks/purity -- runs inside the async polling callback, not during render
     if (Date.now() - startedAt >= MAX_POLL_MS) {
       fail('PDF export timed out. Try again later.');
       return;

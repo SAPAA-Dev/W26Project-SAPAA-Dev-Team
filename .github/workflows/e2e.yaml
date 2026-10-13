@@ -1,0 +1,82 @@
+name: E2E
+
+# Cypress specs against a throwaway local Supabase (migrations + supabase/seed.sql +
+# scripts/e2e_seed.js). Runs on PRs into main/release and by hand only, to save Actions minutes.
+on:
+  pull_request:
+    branches: [main, release]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  cypress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: webapp
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+      # The map is not under test, so it needs no real Protomaps key.
+      NEXT_PUBLIC_PROTOMAPS_API_KEY: ci-placeholder
+      # Specs run in CI: they need only the seeded users, sites, boundaries and report from
+      # scripts/e2e_seed.js. All passed locally on 2026-10-12.
+      # Not run here, with reasons:
+      #   add_form_editor, hide_form_editor, modify_form_editor, edit_site_inspection_form,
+      #   full_form_fill_persistence, required_questions_submit_block, image_caption_upload,
+      #   image_upload, image_upload_section_persistence: need the production inspection form
+      #   (sections like WhoRYou/Close, question keys like Q11) or report id 3237.
+      #   admin_media_management: needs real uploaded images ("Ski Trails") in S3.
+      #   Not tried against the local seed yet: admin_gallery, user_gallery, site_details_gallery
+      #   (API stubs), rich_text_editor, edit_site_profile, disable_site_profile, pdf_export,
+      #   homepage_image_upload (seeded Riverlot 56 site, no S3 upload).
+      E2E_SPECS: cypress/e2e/logout.cy.ts,cypress/e2e/profile.cy.ts,cypress/e2e/authorized_check.cy.ts,cypress/e2e/add_site.cy.ts,cypress/e2e/archive_report.cy.ts,cypress/e2e/deactivate_site.cy.ts,cypress/e2e/map_filter.cy.ts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: webapp/package-lock.json
+      - uses: supabase/setup-cli@v3.0.1
+        with:
+          version: 2.118.0
+
+      # Only the services the app uses: Postgres, Auth, PostgREST and the Kong gateway.
+      - name: Start local Supabase (applies migrations and seed.sql)
+        run: supabase start -x studio,postgres-meta,edge-runtime,storage-api,imgproxy,logflare,vector,mailpit,realtime,supavisor
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-${{ runner.os }}-${{ hashFiles('webapp/package-lock.json') }}
+      - run: npm ci
+
+      # Creates the E2E users and rows, and exports the local URL/keys and CYPRESS_* logins.
+      - name: Seed E2E data
+        run: node scripts/e2e_seed.js >> "$GITHUB_ENV"
+
+      - run: npm run build
+
+      - uses: cypress-io/github-action@v7.4.6
+        with:
+          working-directory: webapp
+          install: false
+          browser: electron
+          start: npx next start -p 3000
+          wait-on: http://localhost:3000/login
+          wait-on-timeout: 120
+          spec: ${{ env.E2E_SPECS }}
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: webapp/cypress/screenshots
+          if-no-files-found: ignore

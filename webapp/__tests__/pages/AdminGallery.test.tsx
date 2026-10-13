@@ -3,7 +3,9 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import GalleryPage from "../../app/admin/gallery/page";
 
-jest.mock("../../app/admin/AdminNavBar", () => () => <div>AdminNavBarMock</div>);
+jest.mock("../../app/admin/AdminNavBar", () => function AdminNavBarMock() {
+  return <div>AdminNavBarMock</div>;
+});
 jest.mock("@/components/ProtectedRoute", () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -183,6 +185,48 @@ describe("AdminGalleryPage", () => {
       "https://example.com/Riverlot56NA-2026-01-31-RaiyanaRahman-SkiTrails-aa05346a.jpg"
     );
     expect(fullImageLink).toHaveAttribute("target", "_blank");
+  });
+
+  async function openSkiTrailsImage() {
+    render(<GalleryPage />);
+    await waitFor(() => {
+      expect(screen.queryByText("Loading gallery...")).not.toBeInTheDocument();
+    });
+    fireEvent.click(screen.getAllByAltText("Ski Trails")[0].closest("button")!);
+    fireEvent.click(screen.getByTestId("delete-image-img-1"));
+    fireEvent.click(screen.getByTestId("confirm-delete-image-img-1"));
+  }
+
+  it("US 7.0.5 AT1: a deleted image leaves the gallery and the other images stay", async () => {
+    mockFetchSuccess();
+
+    await openSkiTrailsImage();
+
+    // The homepage upload with the same identifier stays. Only the SIR image (aa05346a) goes.
+    const sirImageShown = () =>
+      screen.queryAllByAltText("Ski Trails").some((image) => image.getAttribute("src")?.includes("aa05346a"));
+    await waitFor(() => expect(sirImageShown()).toBe(false));
+    expect(global.fetch).toHaveBeenCalledWith("/api/site-images?id=img-1&kind=attachments", { method: "DELETE" });
+    expect(screen.getAllByAltText("Ski Trails")).toHaveLength(1);
+    expect(screen.getAllByAltText("Broken Tree Trunk").length).toBeGreaterThan(0);
+    expect(screen.queryByRole("link", { name: "Open full image in new tab" })).not.toBeInTheDocument();
+  });
+
+  it("US 7.0.5 AT1: keeps the image in the gallery when the server refuses the delete", async () => {
+    mockFetchSuccess();
+    const listFetch = (global.fetch as jest.Mock).getMockImplementation()!;
+    (global.fetch as jest.Mock).mockImplementation((url: string, init?: RequestInit) =>
+      init?.method === "DELETE"
+        ? Promise.resolve({ ok: false, status: 403, json: async () => ({ error: "Forbidden" }) })
+        : listFetch(url)
+    );
+
+    await openSkiTrailsImage();
+
+    expect(await screen.findByText("Delete failed. Try again.")).toBeInTheDocument();
+    expect(
+      screen.getAllByAltText("Ski Trails").some((image) => image.getAttribute("src")?.includes("aa05346a"))
+    ).toBe(true);
   });
 
   it("shows empty state when API returns no images", async () => {

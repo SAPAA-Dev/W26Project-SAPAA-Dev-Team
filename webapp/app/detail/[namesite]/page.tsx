@@ -16,7 +16,6 @@ import {
 import { getCurrentUserUid } from "@/utils/supabase/queries";
 import { daysSince } from "@/app/sites/page";
 import { 
-    Home,
     ArrowLeft, 
     MapPin, 
     Calendar, 
@@ -109,7 +108,6 @@ async function getCurrentUser(): Promise<{ email: string; role: string; name: st
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
     if (sessionError || !session?.user) {
-      console.log('No session or session error');
       return null;
     }
     
@@ -125,7 +123,7 @@ async function getCurrentUser(): Promise<{ email: string; role: string; name: st
       avatar,
       approved: session.user.app_metadata?.authenticated === true,
     };
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -181,7 +179,7 @@ export default function SiteDetailScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>('by-date');
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set());
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [userLoading, setUserLoading] = useState(true);
+  const [, setUserLoading] = useState(true);
 
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
@@ -190,8 +188,6 @@ export default function SiteDetailScreen() {
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name:string; avatar:string; approved: boolean } | null>(null);
   const [forceTutorial, setForceTutorial] = useState(false);
-
-  const [menuOpen, setMenuOpen] = useState(false); 
 
   const handleStartTutorial = useCallback(() => {
     setForceTutorial(false);
@@ -208,7 +204,7 @@ export default function SiteDetailScreen() {
           try {
             const user = await getCurrentUser();
             setCurrentUser(user);
-          } catch (err) {
+          } catch {
             setCurrentUser(null);
           } finally {
             setUserLoading(false);
@@ -312,11 +308,11 @@ export default function SiteDetailScreen() {
         }
 
         const allItems = [
-          ...(data.items || []).map((item: any) => ({
+          ...(data.items || []).map((item: GalleryItem & { created_at?: string | null }) => ({
             ...item,
             _sortDate: item.created_at ?? item.date ?? "",
           })),
-          ...(data1.items || []).map((item: any) => ({
+          ...(data1.items || []).map((item: GalleryItem & { created_at?: string | null }) => ({
             ...item,
             _sortDate: item.date ?? item.created_at ?? "",
           })),
@@ -459,7 +455,11 @@ export default function SiteDetailScreen() {
   const toggleInspection = (id: number) => {
     setExpandedInspections(prev => {
       const newSet = new Set(prev);
-      newSet.has(id) ? newSet.delete(id) : newSet.add(id);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
       return newSet;
     });
   };
@@ -467,7 +467,11 @@ export default function SiteDetailScreen() {
   const toggleQuestion = (questionId: string) => {
     setExpandedQuestions(prev => {
       const newSet = new Set(prev);
-      newSet.has(questionId) ? newSet.delete(questionId) : newSet.add(questionId);
+      if (newSet.has(questionId)) {
+        newSet.delete(questionId);
+      } else {
+        newSet.add(questionId);
+      }
       return newSet;
     });
   };
@@ -941,6 +945,7 @@ export default function SiteDetailScreen() {
                         onClick={() => setSelectedImage(item)}
                         className="group relative block w-full h-56 sm:h-64 bg-[#F7F2EA] overflow-hidden"
                       >
+                        {/* eslint-disable-next-line @next/next/no-img-element -- S3 presigned URL, not served via next/image */}
                         <img
                           src={item.imageUrl}
                           alt={item.identifier|| item.filename || "Inspection image"}
@@ -1007,6 +1012,7 @@ export default function SiteDetailScreen() {
 
               <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] flex-1 min-h-0">
                 <div className="bg-black flex items-center justify-center min-h-[220px] sm:min-h-[300px] lg:min-h-0 max-h-[40vh] sm:max-h-[50vh] lg:max-h-none overflow-auto">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- S3 presigned URL, not served via next/image */}
                   <img
                     src={selectedImage.imageUrl}
                     alt={selectedImage.identifier || selectedImage.filename || "Inspection image"}

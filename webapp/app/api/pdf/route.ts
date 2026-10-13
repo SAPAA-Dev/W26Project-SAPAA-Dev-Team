@@ -21,14 +21,14 @@ function parseHiddenQuestionIds(value: unknown): number[] {
   return value.filter((id): id is number => typeof id === 'number' && Number.isInteger(id));
 }
 
-function parseRequest(body: any): PdfRequest {
+function parseRequest(body: Record<string, unknown> | null): PdfRequest {
   if (!body || !body.mode) {
     throw new Error('Missing mode in request body');
   }
 
   const options: PdfOptions = {
     ...DEFAULT_OPTIONS,
-    ...body.options,
+    ...(body.options as Partial<PdfOptions> | undefined),
   };
 
   if (options.maxImagesPerInspection < 0 || options.maxImagesPerInspection > 20) {

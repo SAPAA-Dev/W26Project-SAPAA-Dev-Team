@@ -15,7 +15,8 @@ jest.mock("next/navigation", () => ({
 
 jest.mock("next/image", () => ({
   __esModule: true,
-  default: (props: any) => {
+  default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
+    // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text -- mock of next/image renders a plain img
     return <img {...props} />;
   },
 }));
@@ -60,21 +61,13 @@ jest.mock("@/utils/supabase/server", () => ({
   createClient: jest.fn(),
 }));
 
-jest.mock("../../components/ProtectedRoute", () => ({ children }: any) => <div>{children}</div>);
+jest.mock("../../components/ProtectedRoute", () => function MockProtectedRoute({ children }: { children: React.ReactNode }) { return <div>{children}</div>; });
 jest.mock("@/app/sites/page", () => ({
   daysSince: jest.fn((date: string) => {
     const days = Math.floor((Date.now() - new Date(date).getTime()) / (24 * 60 * 60 * 1000));
     return Number.isNaN(days) ? 0 : days;
   }),
 }));
-
-const mockRouter = {
-  push: jest.fn(),
-};
-
-const mockParams = {
-  namesite: "Riverlot%2056%20(NA)",
-};
 
 const mockSite = {
   id: 1,

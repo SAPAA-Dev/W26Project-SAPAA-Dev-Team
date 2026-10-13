@@ -119,7 +119,7 @@ describe("site page fields (US 2.0.5)", () => {
     expect(mockUserFrom).toHaveBeenCalledWith("site_page_fields");
   });
 
-  it("US 2.0.10: getSiteLinks shows the default links for a site with no saved rows (M2)", async () => {
+  it("US 2.0.10 AT1: getSiteLinks shows the default links for a site with no saved rows (M2)", async () => {
     mockUserFrom.mockReturnValue({
       select: jest.fn().mockReturnValue({ eq: jest.fn().mockResolvedValue({ data: [], error: null }) }),
     });
@@ -130,7 +130,7 @@ describe("site page fields (US 2.0.5)", () => {
     });
   });
 
-  it("US 2.0.10: getSiteLinks keeps a link the admin cleared or hid empty (M2)", async () => {
+  it("US 2.0.10 AT1: getSiteLinks keeps a link the admin cleared or hid empty (M2)", async () => {
     mockUserFrom.mockReturnValue({
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockResolvedValue({

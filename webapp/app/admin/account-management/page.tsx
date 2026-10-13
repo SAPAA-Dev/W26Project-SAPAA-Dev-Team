@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { getAllUsers, addUser, updateUser, deleteUser, User } from "../../../utils/admin-actions";
-import AccountDetailsModal from "./components/AccountDetailsModal";
-import { ArrowLeft, Search, UserPlus, Users, Filter, Mail, Shield, ChevronDown, Clock, CheckCircle } from "lucide-react";
+import AccountDetailsModal, { AccountFormData } from "./components/AccountDetailsModal";
+import { ArrowLeft, Search, UserPlus, Users, Filter, Shield, ChevronDown, Clock, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import AdminNavBar from "../../admin/AdminNavBar";
 import ProtectedRoute from "../../../components/ProtectedRoute";
@@ -28,6 +28,7 @@ export default function AccountManagementPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial fetch on mount; loadUsers sets the loading flag before awaiting
     loadUsers();
   }, []);
 
@@ -51,15 +52,15 @@ export default function AccountManagementPage() {
     displayedUsers = displayedUsers.filter((u) => u.authenticated);
   }
 
-  const handleAddUser = async (data: any) => {
-    const result = await addUser(data);
+  const handleAddUser = async (data: AccountFormData) => {
+    const result = await addUser(data as Parameters<typeof addUser>[0]);
     if (!result.success) return alert(result.error || "Failed to add user");
 
     setAddModalVisible(false);
     loadUsers();
   };
 
-  const handleUpdateUser = async (data: any) => {
+  const handleUpdateUser = async (data: AccountFormData) => {
     if (!editUser) return;
 
     const payload = {

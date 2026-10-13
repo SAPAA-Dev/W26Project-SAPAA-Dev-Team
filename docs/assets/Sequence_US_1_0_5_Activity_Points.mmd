@@ -1,5 +1,5 @@
 ---
-title: "US 1.0.5: Earn Points for Inspection Activity"
+title: "US 1.0.5: Earn Points for Inspection Activity (proposed: calculated contribution metrics)"
 config:
   theme: base
   sequence:
@@ -42,45 +42,33 @@ config:
 sequenceDiagram
     autonumber off
     actor Steward
-    participant Page as Web pages<br/>new-report, UploadImages,<br/>profile
-    participant Server as Server actions<br/>utils/supabase/queries.ts
-    participant Points as ActivityPointsService<br/>(proposed)
+    participant Page as Profile page and<br/>scoreboard page (proposed)
     participant Profile as Profile route<br/>GET /api/profile
-    participant DB as Supabase DB<br/>activity_points,<br/>activity_point_values (proposed)
+    participant Metrics as ContributionMetrics<br/>(proposed)
+    participant DB as Supabase DB<br/>form_responses, sites_pa,<br/>people
 
-    Note over Steward,DB: Covers US 1.0.5. No points exist in the code today.<br/>"(proposed)" = the step is not in the code today.
+    Note over Steward,DB: Covers US 1.0.5. Proposed for Sprint 4. "(proposed)" = the step is not in the code today.<br/>Design: docs/user-model.md, "Gamification proposal". The metrics are calculated.<br/>No points table. people.activity_points stays unused. The acceptance tests of US 1.0.5 still name points.
 
-    Note over Steward,DB: Points for a SIR (AT 1)
-    Steward->>Page: Submit a new SIR for a Site
-    Page->>Server: addSiteInspectionReport, uploadSiteInspectionAnswers,<br/>insertInspectionAttachments (exist)
-    alt Submission fails
-        Page->>Server: rollbackSiteInspectionSubmission(responseId) (exists)
-        Page-->>Steward: Show error. No points are given
-    else Submission succeeds
-        Page->>Points: awardActivityPoints('sir_submitted', responseId) (proposed)
-        Points->>Points: Read the caller from the session
-        Points->>DB: Read form_responses row. Check user_id is the caller. Get site_id
-        Points->>DB: Read points for this Site and activity from activity_point_values
-        Points->>DB: Insert one row in activity_points<br/>(unique on activity and source id, so a retry does not add twice)
-        Page-->>Steward: SIR saved
-    end
+    Note over Steward,DB: Metrics on a profile
+    Steward->>Page: Open a profile
+    Page->>Profile: fetch GET /api/profile?personId (exists)
+    Profile->>DB: Count active reports that are not archived, and distinct sites (exists)
+    Profile->>Metrics: getContributionMetrics(personId, period) (proposed)
+    Metrics->>DB: Distinct sites_pa.ab_county of the reports (counties visited)
+    Metrics->>DB: Distinct site types and subtypes (site variety, column not decided)
+    Metrics->>DB: Sites where the person has the earliest active report (site explorer)
+    DB-->>Metrics: Counts
+    Metrics-->>Profile: Metrics
+    Profile-->>Page: stats with the new metrics (proposed)
+    Page-->>Steward: Show the metrics
 
-    Note over Steward,DB: Points for a photo (AT 2)
-    Steward->>Page: Choose a photo for a Site in UploadImages
-    Page->>Page: POST /api/s3/presign-homepage-images, then PUT the file to S3 (exists)
-    Page->>Server: insertHomepageImageUpload(rows) (exists)
-    Server->>DB: Insert homepage_image_uploads row (exists)
-    Server->>Points: awardActivityPoints('photo_uploaded', uploadId) (proposed)
-    Points->>DB: Check the upload row belongs to the caller, then insert one row in activity_points
+    Note over Steward,DB: Scoreboard (top contributor)
+    Steward->>Page: Open the scoreboard, choose a metric and all time or last year (proposed)
+    Page->>Metrics: getScoreboard(metric, period) (proposed)
+    Metrics->>Metrics: Read the caller from the session. Approved users only
+    Metrics->>DB: Rank people by the metric, in one SQL query
+    DB-->>Metrics: Ranked people
+    Metrics-->>Page: Ranked list
+    Page-->>Steward: Show the scoreboard
 
-    Note over Steward,DB: Show the total (AT 3)
-    Steward->>Page: Open my profile
-    Page->>Profile: fetch GET /api/profile (exists)
-    Profile->>Points: getActivityPointsTotal(userId) (proposed)
-    Points->>DB: Sum points in activity_points for the user
-    DB-->>Points: Total
-    Points-->>Profile: Total
-    Profile-->>Page: profile with the total (proposed)
-    Page-->>Steward: Show the current total
-
-    Note over Steward,DB: The server reads the user id from the session and the site and points from the database.<br/>The browser does not send a user id or a points value.<br/>Open questions: who sets the points for each Site and activity, the default when<br/>a Site has no value, and if points are removed when a SIR or photo is deleted (US 7.0.5, 7.0.8).
+    Note over Steward,DB: The counts are calculated on each read, so no stored value can become incorrect.<br/>An archived or deactivated report does not count.<br/>Open questions for the client: what makes two sites "different",<br/>and if a report of a permanently deleted site still counts.

@@ -4,7 +4,7 @@
 %% webapp/lib/pdf/*.ts, webapp/utils/admin-actions.ts, webapp/utils/media/s3Delete.ts,
 %% webapp/utils/kml-import-actions.ts, webapp/lib/map/kmlImport.ts, webapp/scripts/local_*.js,
 %% FNR/src/services/*.ts, FNR/src/screens/*.tsx, .github/workflows/*.yaml
-%% Checked against origin/main 7709e46 on October 9, 2026. The googleSheets/ client was removed in c7f7cb4.
+%% Checked against origin/main 9009d0d on October 11, 2026. The googleSheets/ client was removed in c7f7cb4.
 flowchart TB
     subgraph Legend["Legend"]
         direction LR
@@ -24,7 +24,7 @@ flowchart TB
     end
 
     subgraph AppLayer["2. Application layer: Vercel"]
-        Next["Next.js 16 web app, webapp/<br/>pages, server actions,<br/>middleware.ts refreshes the session and sends<br/>signed-out users to /login (also /api;<br/>not /login, /signup, /auth, /error)<br/>handlers /auth/callback, /auth/confirm"]
+        Next["Next.js 16 web app, webapp/<br/>pages, server actions,<br/>middleware.ts refreshes the session and sends<br/>signed-out users to /login (also /api;<br/>not /login, /signup, /auth, /error).<br/>Approval gate: an unapproved user gets GET /sites only,<br/>other pages redirect to /sites, API and POST get 403<br/>handlers /auth/callback, /auth/confirm"]
         Api["API route handlers<br/>webapp/app/api/<br/>S3 presign, galleries and image delete, profile,<br/>PDF, geocode, heatmap, OpenAPI"]
         KmlImport["KML import server action, US 6.0.1<br/>utils/kml-import-actions.ts<br/>parser lib/map/kmlImport.ts"]
         PdfJob["PDF job<br/>lib/pdf/processPdfJob.ts<br/>runs after the response"]

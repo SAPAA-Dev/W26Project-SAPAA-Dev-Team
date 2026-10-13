@@ -19,6 +19,10 @@ The Scrum Master and the Product Owner change each sprint.
 | Sprint 4 | Abhinav | Zanab |
 | Sprint 5 | Alissa | Abhinav |
 
+The team decided at Meeting #0 (September 16, see [Meeting Minutes](meeting-minutes.md)) that the
+roles rotate each sprint. Each sprint has a different pair, so 6 of the 7 members hold a role
+during the term.
+
 ### Scrum Master
 
 The Scrum Master runs the Scrum ceremonies, removes impediments and makes sure that the team follows the Scrum
@@ -30,36 +34,53 @@ The Product Owner defines the product backlog items and sets their priority from
 Product Owner is the voice of the customer and makes sure that the development team builds a product that meets the
 expectations of the customer.
 
+### Sprint 2 role outputs
+
+Only the work that GitHub or the minutes record is listed.
+
+- **Scrum Master, Aaron.** Submitted reviews on 51 pull requests of other members, more than any
+  other member. Committed the week 5 lab notes and the October 2 and October 9 client transcripts
+  ([PR #126](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/126), [PR #127](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/127), [PR #168](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/168)). Owns the open action to get the TA's
+  answer on DevOps stories (Meeting #8). From Sprint 3, the Scrum Master also reviews the
+  `sprint-N` to `main` PR (see [Contributing](contributing.md#branch-model)).
+- **Product Owner, Chris.** Submitted reviews on 40 pull requests of other members. Raised the
+  Google Maps offline terms with Frank on October 2 and owned the release schedule recommendation,
+  which the team discussed with Frank on October 9. Assigned to the Sprint 2 release notes
+  ([#97](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/97)) and the demo and retrospective ([#98](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/98)), both open on October 11. The Sprint 2 and
+  Sprint 3 backlog issues (50 and 51 issues) were written by Saumya, not by the Product Owner.
 
 ## Sprint 2 contributions
 
-This table counts the 54 pull requests merged after the Sprint 1 release (September 29, 2026) up to October 9, 2026:
-52 merged into `main`, and 2 stacked PRs (#130, #134) that reached `main` through #129 and #133. The counts come
-from `gh pr list --state merged` and the commit history. They do not include work that has no pull request, such as
-the client meetings, the lab sessions and the pair work before a merge.
+This table counts the 71 pull requests merged after the Sprint 1 release (the `sprint-1` tag,
+September 29, 2026, 5:15 PM MDT) up to the code freeze on October 11, 2026: 69 merged into `main`,
+and 2 stacked PRs (#130, #134) that reached `main` through #129 and #133. The counts come from
+`gh pr list --state merged`, `gh pr view` and the commit history. They do not include work that has
+no pull request, such as the client meetings, the lab sessions and the pair work before a merge.
 
-- **Coding** counts the pull requests that the member authored and that are not documentation. It includes CI and
-  migration changes.
+- **Coding** counts the pull requests that the member authored and that are not documentation. It includes CI,
+  test-only and migration changes.
 - **Testing** counts the coding pull requests that add or change a test file (`__tests__`, Cypress or `.test.`).
 - **Reviews** counts the pull requests of other members on which the member submitted a review. The Copilot reviewer
   is not counted.
 - **Documentation** counts the pull requests whose title starts with `(docs)`.
+- **Issues** counts the GitHub issues that the member opened from September 30 to October 11.
 
-| Member | Mini-team | Coding (PRs) | Testing | Reviews | Documentation | Management |
-|--------|-----------|--------------|---------|---------|---------------|------------|
-| Saumya | Alpha | 17: user model migrations, steward server actions and profile links, `W26_` rename, CI reviewer gate and release branch checks, diagram generator, sign-out on every page | 10 of 17 | 9 | 10: user model proposal, Oct 2 client deck and talk track, Sprint 2 status and Sprint 3 plan | Oct 2 client update ([PR #122](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/122), [PR #123](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/123)) |
-| Aaron | Alpha | 2: admin navigation on the site page, profile page with inspection history | 2 of 2 | 37 | 3: week 5 notes, Oct 2 and Oct 9 meeting transcripts | Scrum Master, Sprint 2 |
-| Alissa | Beta | 4: field selection for PDF export, optional photo identifier, protected area map search, linking sites to protected areas | 4 of 4 | 7 | None merged | None merged |
-| Abhinav | Beta | 5: KML parser, mapping data in the database, Protomaps and MapLibre basemap, site boundaries, form keeps its section | 5 of 5 | 17 | 1: Oct 2 transcript file name | None merged |
-| Chris | Gamma | 4: release branch, `app_metadata` checks, image delete with local S3, steward PDF download | 3 of 4 | 34 | 1: removed the git co-author instruction from `AGENTS.md` | Product Owner, Sprint 2 |
-| Jayden | Gamma | 3: admin view of inactive sites, archive and delete sites, archive and delete reports | 3 of 3 | 12 | None merged | None merged. Planned: the Sprint 2 release notes ([#97](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/97)) and the retrospective ([#98](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/98)), both not started on October 9 |
-| Zanab | Gamma | 4: site links, add a site, map area suggestions, show, hide and edit site page fields | 4 of 4 | 1 | None merged | None merged. Planned: the same items as Jayden |
+| Member | Mini-team | Coding (PRs) | Testing | Reviews | Documentation | Issues | Management |
+|--------|-----------|--------------|---------|---------|---------------|--------|------------|
+| Saumya | Alpha | 28: user model migrations, steward server actions and profile links, `W26_` rename, CI reviewer gate and release branch checks, diagram generator, sign-out on every page, and the October 10 and 11 fixes (CI build and type check, map search, PDF export paging, auth gaps, caller checks, test labels) | 21 of 28 | 9 | 16: user model proposal, Oct 2 client deck and talk track, Sprint 2 status and Sprint 3 plan, minutes, interfaces, release runbook, diagrams, Oct 9 deck | 52: the Sprint 2 and Sprint 3 story and task issues | Oct 2 and Oct 9 client updates ([PR #122](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/122), [PR #123](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/123), [PR #250](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/250)) |
+| Aaron | Alpha | 2: admin navigation on the site page, profile page with inspection history | 2 of 2 | 51 | 3: week 5 notes, Oct 2 and Oct 9 meeting transcripts | 0 | Scrum Master, Sprint 2 |
+| Alissa | Beta | 4: field selection for PDF export, optional photo identifier, protected area map search, linking sites to protected areas | 4 of 4 | 9 | None merged | 0 | None recorded |
+| Abhinav | Beta | 5: KML parser, mapping data in the database, Protomaps and MapLibre basemap, site boundaries, form keeps its section | 5 of 5 | 28 | 1: Oct 2 transcript file name | 0 | None recorded |
+| Chris | Gamma | 4: release branch, `app_metadata` checks, image delete with local S3, steward PDF download | 3 of 4 | 40 | 1: removed the git co-author instruction from `AGENTS.md` | 0 | Product Owner, Sprint 2 |
+| Jayden | Gamma | 3: admin view of inactive sites, archive and delete sites, archive and delete reports | 3 of 3 | 15 | None merged | 0 | None recorded. Assigned the code freeze issue ([#96](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/96)), open on October 11 |
+| Zanab | Gamma | 4: site links, add a site, map area suggestions, show, hide and edit site page fields | 4 of 4 | 4 | None merged | 0 | None recorded |
 
-Jayden and Zanab have no merged documentation or management work in Sprint 2 yet.
+Saumya authored 44 of the 71 pull requests, including all 17 that merged on October 10 and 11
+(#234 to #250). Alissa, Jayden and Zanab have no merged documentation in Sprint 2.
 
 ### Merged pull requests by member
 
-- **Saumya**: code [#119](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/119), [#124](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/124), [#125](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/125), [#128](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/128), [#129](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/129), [#131](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/131), [#132](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/132), [#133](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/133), [#134](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/134), [#139](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/139), [#140](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/140), [#141](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/141), [#142](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/142), [#151](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/151), [#154](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/154), [#157](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/157), [#158](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/158); documentation [#111](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/111), [#112](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/112), [#115](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/115), [#116](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/116), [#118](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/118), [#122](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/122), [#123](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/123), [#130](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/130), [#143](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/143), [#156](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/156).
+- **Saumya**: code [#119](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/119), [#124](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/124), [#125](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/125), [#128](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/128), [#129](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/129), [#131](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/131), [#132](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/132), [#133](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/133), [#134](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/134), [#139](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/139), [#140](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/140), [#141](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/141), [#142](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/142), [#151](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/151), [#154](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/154), [#157](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/157), [#158](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/158), [#234](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/234), [#235](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/235), [#236](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/236), [#237](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/237), [#238](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/238), [#239](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/239), [#240](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/240), [#241](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/241), [#242](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/242), [#243](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/243), [#249](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/249); documentation [#111](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/111), [#112](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/112), [#115](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/115), [#116](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/116), [#118](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/118), [#122](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/122), [#123](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/123), [#130](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/130), [#143](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/143), [#156](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/156), [#244](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/244), [#245](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/245), [#246](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/246), [#247](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/247), [#248](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/248), [#250](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/250).
 - **Aaron**: code [#120](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/120), [#138](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/138); documentation [#126](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/126), [#127](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/127), [#168](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/168).
 - **Alissa**: code [#146](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/146), [#147](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/147), [#166](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/166), [#167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167); documentation none.
 - **Abhinav**: code [#137](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/137), [#152](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/152), [#159](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/159), [#161](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/161), [#164](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/164); documentation [#136](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/136).

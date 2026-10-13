@@ -250,7 +250,7 @@ erDiagram
     people ||--o{ site_stewards : "steward_id"
     auth_users |o--o{ site_stewards : "assigned_by"
     people ||--o| socials : "person_id"
-    sites_pa ||--o| site_page_fields : "site_id"
+    sites_pa ||--o{ site_page_fields : "site_id"
     auth_users |o--o{ site_page_fields : "updated_by"
 
     class ab_counties,sites_pa,form_sections,question_keys,questions,question_options,form_responses,answers,attachments,homepage_image_uploads,S26_pdf_jobs,people,site_stewards,protected_areas,socials,site_page_fields web

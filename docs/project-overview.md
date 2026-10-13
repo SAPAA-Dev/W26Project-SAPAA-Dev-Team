@@ -19,8 +19,9 @@ so that the application is ready for public release. The [user stories](user-sto
 
 Version 2.0 starts the client's vision of People Management and Place Management, with a smaller scope this term. The
 steward profile stories (US 1.0.1 to US 1.0.5) are the base for People Management. With these stories, stewards can see
-steward profiles and edit their own profile. A profile shows the inspection history, the activity statistics and the
-points of the steward. The new site profiles and the site map are a first step toward Place Management. Simple
+steward profiles and edit their own profile. A profile shows the inspection history and the activity statistics of the
+steward. The planned gamification (US 1.0.5, Sprint 4) adds contribution metrics and a scoreboard
+that are calculated from the reports, not stored points. The new site profiles and the site map are a first step toward Place Management. Simple
 gamification increases steward engagement.
 
 The primary user is the Admin, who needs a reliable system that does not need manual data handling and that still gives
@@ -65,7 +66,7 @@ focus of SAPAA.
 - **People Management:** A planned client capability to support and track the community of volunteer stewards,
 including the activity history of each steward, for future volunteer recognition. This term, the steward profile stories
 (US 1.0.1 to US 1.0.5) are the first part of it: steward profiles, editing of a steward's own profile, inspection
-history, activity statistics and points.
+history, activity statistics and contribution metrics.
 
 - **Photo Identifier:** A text field on each photo in a SIR that identifies the photo. It is required today. US 4.0.6 makes it optional.
 - **Place Management:** A planned client capability to show where a Site is and what activity occurred there, as an

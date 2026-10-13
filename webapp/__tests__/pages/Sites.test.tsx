@@ -59,6 +59,14 @@ jest.mock('@/utils/supabase/queries', () => ({
   getProtectedAreaBoundaries: () => mockGetProtectedAreaBoundaries(),
 }));
 
+// The first-visit tutorial starts 800 ms after load and takes focus. On a slow run it
+// opened in the middle of a test and the keys went to the tour, not to the search box.
+jest.mock('@/components/TutorialOverlay', () => ({
+  ...jest.requireActual('@/components/TutorialOverlay'),
+  __esModule: true,
+  default: () => null,
+}));
+
 jest.mock('@/components/map/SiteMap', () => ({
   __esModule: true,
   default: function MockSiteMap({
@@ -105,13 +113,6 @@ const mockSites = [
     inspectdate: new Date(Date.now() - 800 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 800 days ago (needs review)
   },
 ];
-
-const mockAdminUser = {
-  user: {
-    email: 'admin@example.com',
-    app_metadata: { role: 'admin', authenticated: true  },
-  },
-};
 
 const mockStewardUser = {
   user: {
@@ -167,6 +168,22 @@ describe('HomeClient', () => {
         expect(screen.getByText('Unable to Load Sites')).toBeInTheDocument();
       });
       expect(screen.getByText('Network error')).toBeInTheDocument();
+    });
+
+    it('shows Awaiting Admin Approval, not the load error, to an unapproved user', async () => {
+      // Middleware answers an unapproved user's server action with 403, so the load fails.
+      mockGetSession.mockResolvedValue({
+        data: { session: { user: { ...mockStewardUser.user, app_metadata: { role: 'steward', authenticated: false } } } },
+        error: null,
+      });
+      mockGetSitesOnline.mockRejectedValue(new Error('An unexpected response was received from the server.'));
+
+      render(<HomeClient />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Awaiting Admin Approval')).toBeInTheDocument();
+      });
+      expect(screen.queryByText('Unable to Load Sites')).not.toBeInTheDocument();
     });
 
     it('should show retry button on error', async () => {
@@ -717,6 +734,42 @@ it('filters the map by type, subtype and name, and keeps the search text across 
   // The area is on the map and in the search matches list (2.0.6 AT3)
   expect(screen.getAllByText('Pembina River').length).toBeGreaterThan(0);
   expect(screen.queryByRole('button', { name: /^sort$/i })).not.toBeInTheDocument();
+});
+
+it('US 2.0.6 AT2: clearing a county filter shows every active area again', async () => {
+  const user = userEvent.setup();
+  const inCounty = (feature: ReturnType<typeof mapFeature>, county: string) => ({
+    ...feature,
+    properties: { ...feature.properties, county },
+  });
+  mockGetProtectedAreaBoundaries.mockResolvedValue({
+    type: 'FeatureCollection',
+    features: [
+      inCounty(mapFeature(1, 'Pembina River', 'NA', null, 'Pembina River Natural Area', true), 'Parkland County'),
+      inCounty(mapFeature(2, 'Jasper', 'WPP', null, 'Jasper National Park', true), 'Jasper County'),
+      inCounty(mapFeature(3, 'Hidden Site', 'NA', null, 'Hidden Site Natural Area', false), 'Jasper County'),
+    ],
+  });
+
+  render(<HomeClient />);
+  await screen.findByText('Elk Island National Park');
+  await user.click(screen.getByRole('button', { name: 'Map View' }));
+  await screen.findByText('2 protected areas found');
+
+  await user.click(screen.getByRole('button', { name: 'Filter' }));
+  const countySection = screen.getByRole('region', { name: 'County' });
+  await user.click(within(countySection).getByRole('checkbox', { name: 'Jasper County' }));
+
+  const map = screen.getByTestId('site-map');
+  expect(within(map).getByText('Pembina River')).toBeInTheDocument();
+  expect(within(map).queryByText('Jasper')).not.toBeInTheDocument();
+
+  await user.click(within(countySection).getByRole('button', { name: 'Select all' }));
+
+  expect(within(map).getByText('Pembina River')).toBeInTheDocument();
+  expect(within(map).getByText('Jasper')).toBeInTheDocument();
+  expect(within(map).queryByText('Hidden Site')).not.toBeInTheDocument();
+  expect(screen.getByText('2 protected areas found')).toBeInTheDocument();
 });
 
 it('US 2.0.6 AT3: offers the map matches and centres the map on the chosen one', async () => {

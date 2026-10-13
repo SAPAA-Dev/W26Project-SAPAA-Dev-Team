@@ -15,7 +15,7 @@ jest.mock("../../utils/supabase/server", () => ({
 // A chainable query builder whose final await resolves to `result`.
 function builder(result: unknown) {
   const b: Record<string, jest.Mock> & { then?: unknown } = {};
-  for (const m of ["select", "ilike", "order", "limit", "eq", "upsert", "maybeSingle"]) {
+  for (const m of ["select", "ilike", "order", "limit", "eq", "upsert", "maybeSingle", "overrideTypes"]) {
     b[m] = jest.fn(() => b);
   }
   b.then = (resolve: (v: unknown) => unknown) => Promise.resolve(result).then(resolve);
@@ -87,10 +87,14 @@ describe("steward-actions", () => {
       );
     });
 
-    it("returns the database error", async () => {
+    it("returns a generic message and logs the database error on the server", async () => {
       setup("admin");
-      serviceFrom.mockReturnValue(builder({ error: { message: "fk violation" } }));
-      expect(await assignSiteSteward(7, 3)).toEqual({ success: false, error: "fk violation" });
+      const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      const databaseError = { message: 'insert violates foreign key constraint "site_stewards_steward_id_fkey"' };
+      serviceFrom.mockReturnValue(builder({ error: databaseError }));
+      expect(await assignSiteSteward(7, 3)).toEqual({ success: false, error: "The steward was not assigned. Try again." });
+      expect(consoleSpy).toHaveBeenCalledWith("assignSiteSteward failed", databaseError);
+      consoleSpy.mockRestore();
     });
   });
 

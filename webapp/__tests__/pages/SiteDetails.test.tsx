@@ -1,10 +1,8 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import SiteDetailScreen from '../../app/detail/[namesite]/page';
 import * as supabaseQueries from '@/utils/supabase/queries';
-import * as sitesPage from '@/app/sites/page';
 
 // Mock dependencies
 jest.mock('next/navigation');
@@ -30,12 +28,14 @@ jest.mock('@/utils/supabase/client', () => ({
 }));
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: (props: any) => {
-    // eslint-disable-next-line jsx-a11y/alt-text
+  default: function MockImage(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+    // eslint-disable-next-line jsx-a11y/alt-text, @next/next/no-img-element -- test mock of next/image
     return <img {...props} />;
   },
 }));
-jest.mock('../../components/ProtectedRoute', () => ({ children }: any) => <div>{children}</div>);
+jest.mock('../../components/ProtectedRoute', () => function ProtectedRouteMock({ children }: { children: React.ReactNode }) {
+  return <div>{children}</div>;
+});
 
 
 // Mock daysSince from sites page
@@ -197,6 +197,60 @@ describe('SiteDetailScreen', () => {
       render(<SiteDetailScreen />);
 
       expect(await screen.findByTestId('site-steward-edit')).toBeInTheDocument();
+    });
+  });
+
+  describe('Site page edit mode (US 2.0.5)', () => {
+    const adminSession = { user: { email: 'a@example.com', app_metadata: { role: 'admin', authenticated: true }, user_metadata: {} } };
+    afterEach(() => { mockSession = null; });
+
+    it('US 2.0.5 AT1: shows the edit site page button to an admin', async () => {
+      mockSession = adminSession;
+      render(<SiteDetailScreen />);
+
+      fireEvent.click(await screen.findByTestId('edit-site-page-button'));
+      expect(screen.getByTestId('site-page-editor')).toBeInTheDocument();
+    });
+
+    it('US 2.0.5 AT2: hides the edit site page button from a steward', async () => {
+      render(<SiteDetailScreen />);
+
+      expect(await screen.findByText('Aspen Grove Reserve')).toBeInTheDocument();
+      expect(screen.queryByTestId('edit-site-page-button')).not.toBeInTheDocument();
+    });
+
+    it('US 2.0.5 AT4: after a save, the site page shows the new link and drops the hidden one', async () => {
+      mockSession = adminSession;
+      (supabaseQueries.getSiteLinks as jest.Mock)
+        .mockResolvedValueOnce({ sapaaWebsiteUrl: 'https://sapaastewards.com/', iNaturalistUrl: 'https://www.inaturalist.org/' })
+        .mockResolvedValue({ sapaaWebsiteUrl: 'https://example.org/aspen', iNaturalistUrl: null });
+      (supabaseQueries.updateSitePageFields as jest.Mock).mockResolvedValue({ ok: true });
+      render(<SiteDetailScreen />);
+
+      expect(await screen.findByText('inaturalist.org')).toBeInTheDocument();
+      fireEvent.click(screen.getByTestId('edit-site-page-button'));
+      fireEvent.click(screen.getByTestId('site-page-save-button'));
+
+      expect(await screen.findByText('example.org/…')).toBeInTheDocument();
+      expect(screen.queryByText('inaturalist.org')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('site-page-editor')).not.toBeInTheDocument();
+    });
+
+    it('US 2.0.5 AT4: keeps the old links when the save is refused', async () => {
+      mockSession = adminSession;
+      (supabaseQueries.getSiteLinks as jest.Mock).mockResolvedValue({
+        sapaaWebsiteUrl: 'https://sapaastewards.com/',
+        iNaturalistUrl: 'https://www.inaturalist.org/',
+      });
+      (supabaseQueries.updateSitePageFields as jest.Mock).mockResolvedValue({ ok: false, error: 'Only admins can edit sites.' });
+      render(<SiteDetailScreen />);
+
+      fireEvent.click(await screen.findByTestId('edit-site-page-button'));
+      fireEvent.click(screen.getByTestId('site-page-save-button'));
+
+      expect(await screen.findByText('Only admins can edit sites.')).toBeInTheDocument();
+      expect(screen.getByText('inaturalist.org')).toBeInTheDocument();
+      expect(supabaseQueries.getSiteLinks).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -482,20 +536,18 @@ describe('SiteDetailScreen', () => {
         expect(screen.getByText(/Inspection Reports/i)).toBeInTheDocument();
       });
 
-      const inspectionButtons = screen.getAllByRole('button');
-      const dateButton = inspectionButtons.find(btn => btn.textContent?.includes('June'));
+      const [dateButton] = screen.getAllByTestId('expand-inspection-button');
+      expect(dateButton).toHaveTextContent('June');
 
-      if (dateButton) {
-        fireEvent.click(dateButton);
-        await waitFor(() => {
-          expect(screen.getByText('Site is in good condition')).toBeInTheDocument();
-        });
+      fireEvent.click(dateButton);
+      await waitFor(() => {
+        expect(screen.getByText('Site is in good condition')).toBeInTheDocument();
+      });
 
-        fireEvent.click(dateButton);
-        await waitFor(() => {
-          expect(screen.queryByText('Site is in good condition')).not.toBeInTheDocument();
-        });
-      }
+      fireEvent.click(dateButton);
+      await waitFor(() => {
+        expect(screen.queryByText('Site is in good condition')).not.toBeInTheDocument();
+      });
     });
   });
 
@@ -525,17 +577,19 @@ describe('SiteDetailScreen', () => {
 
     it('should expand question details on click', async () => {
       render(<SiteDetailScreen />);
-      await waitFor(() => {
-        const compareButton = screen.getByRole('button', { name: /Compare by Question/i });
-        fireEvent.click(compareButton);
-      });
-      await waitFor(() => {
-        const questionButtons = screen.queryAllByText(/responses? across inspections/i);
-        if (questionButtons.length > 0) {
-          const parent = questionButtons[0].closest('button');
-          if (parent) fireEvent.click(parent);
-        }
-      });
+      fireEvent.click(await screen.findByRole('button', { name: /Compare by Question/i }));
+
+      // Q61 was answered in all three inspections.
+      const question = await screen.findByRole('button', { name: /Agricultural Activities \(Q61\)/ });
+      expect(question).toHaveTextContent('3 responses across inspections');
+      expect(screen.queryByText('Some degradation visible')).not.toBeInTheDocument();
+      expect(screen.queryByText('Vegetation sparse')).not.toBeInTheDocument();
+
+      fireEvent.click(question);
+
+      expect(screen.getByText('Domestic Animal Grazing; Land Clearing')).toBeInTheDocument();
+      expect(screen.getByText('Some degradation visible')).toBeInTheDocument();
+      expect(screen.getByText('Vegetation sparse')).toBeInTheDocument();
     });
 
     it('should display answers with dates when question expanded', async () => {
@@ -544,19 +598,16 @@ describe('SiteDetailScreen', () => {
         const compareButton = screen.getByRole('button', { name: /Compare by Question/i });
         fireEvent.click(compareButton);
       });
-      await waitFor(() => {
-        const questionButtons = screen.queryAllByText(/responses? across inspections/i);
-        if (questionButtons.length > 0) {
-          const parent = questionButtons[0].closest('button');
-          if (parent) fireEvent.click(parent);
-        }
-      });
-      await waitFor(() => {
-        const dateElement = screen.queryByText(/June 15, 2024|March 10, 2024|December 1, 2023/);
-        if (dateElement) {
-          expect(dateElement).toBeInTheDocument();
-        }
-      }, { timeout: 2000 });
+      const [questionCount] = await screen.findAllByText(/responses? across inspections/i);
+      const questionButton = questionCount.closest('button');
+      expect(questionButton).not.toBeNull();
+      // The compare view shows each answer with the inspection date in numeric US format.
+      const inspectionDates = /^(6\/15\/2024|3\/10\/2024|12\/1\/2023)$/;
+      expect(screen.queryAllByText(inspectionDates)).toHaveLength(0);
+
+      fireEvent.click(questionButton!);
+
+      expect(await screen.findAllByText(inspectionDates)).not.toHaveLength(0);
     });
   });
 

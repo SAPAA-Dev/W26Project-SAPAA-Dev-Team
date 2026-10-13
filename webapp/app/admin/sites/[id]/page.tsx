@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   getFormResponsesBySiteAdmin,
@@ -205,7 +205,7 @@ export default function AdminSiteDetails() {
         (item.storage_key || "").toLowerCase().includes(lowerQuery)
       );
     });
-  }, [galleryItems, searchQuery]);
+  }, [galleryItems, searchQuery, site?.namesite]);
 
       useEffect(() => {
         if (selectedImage) {
@@ -271,8 +271,8 @@ export default function AdminSiteDetails() {
         if (!res1.ok) throw new Error(data1.error || "Failed to load homepage-images");
 
         const allItems = [
-          ...(data.items || []).map((item: any) => ({ ...item, kind: "attachments", _sortDate: item.created_at ?? item.date ?? "" })),
-          ...(data1.items || []).map((item: any) => ({ ...item, kind: "homepage_image_uploads", _sortDate: item.date ?? item.created_at ?? "" })),
+          ...(data.items || []).map((item: Omit<GalleryItem, "kind"> & { created_at?: string | null }) => ({ ...item, kind: "attachments" as const, _sortDate: item.created_at ?? item.date ?? "" })),
+          ...(data1.items || []).map((item: Omit<GalleryItem, "kind"> & { created_at?: string | null }) => ({ ...item, kind: "homepage_image_uploads" as const, _sortDate: item.date ?? item.created_at ?? "" })),
         ].sort((a, b) => new Date(b._sortDate).getTime() - new Date(a._sortDate).getTime());
          
         setGalleryItems(allItems || []);
@@ -409,7 +409,7 @@ export default function AdminSiteDetails() {
   const toggleInspection = (id: number) => {
     setExpandedInspections(prev => {
       const newSet = new Set(prev);
-      newSet.has(id) ? newSet.delete(id) : newSet.add(id);
+      if (newSet.has(id)) newSet.delete(id); else newSet.add(id);
       return newSet;
     });
   };
@@ -417,7 +417,7 @@ export default function AdminSiteDetails() {
   const toggleQuestion = (questionId: string) => {
     setExpandedQuestions(prev => {
       const newSet = new Set(prev);
-      newSet.has(questionId) ? newSet.delete(questionId) : newSet.add(questionId);
+      if (newSet.has(questionId)) newSet.delete(questionId); else newSet.add(questionId);
       return newSet;
     });
   };
@@ -431,9 +431,9 @@ export default function AdminSiteDetails() {
       setInspections(prev =>
         prev.map(ins => ins.id === response.id ? { ...ins, is_active: newActive } : ins)
       );
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error toggling form response:', err);
-      alert(`Failed to update status: ${err.message}`);
+      alert(`Failed to update status: ${(err as Error).message}`);
     } finally {
       setTogglingId(null);
     }
@@ -525,9 +525,9 @@ export default function AdminSiteDetails() {
   
       setEditingResponse(null);
       setEditAnswers([]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error saving:', err);
-      alert(`Failed to save changes: ${err.message}`);
+      alert(`Failed to save changes: ${(err as Error).message}`);
     } finally {
       setIsSaving(false);
     }
@@ -1200,6 +1200,7 @@ export default function AdminSiteDetails() {
                         onClick={() => setSelectedImage(item)}
                         className="group relative block w-full h-56 sm:h-64 bg-[#F7F2EA] overflow-hidden"
                       >
+                        {/* eslint-disable-next-line @next/next/no-img-element -- S3 presigned URL, not served via next/image */}
                         <img
                           src={item.imageUrl}
                           alt={item.identifier|| item.filename || "Inspection image"}
@@ -1266,6 +1267,7 @@ export default function AdminSiteDetails() {
 
             <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] flex-1 min-h-0">
               <div className="bg-black flex items-center justify-center min-h-[220px] sm:min-h-[300px] lg:min-h-0 max-h-[40vh] sm:max-h-[50vh] lg:max-h-none overflow-auto">
+                {/* eslint-disable-next-line @next/next/no-img-element -- S3 presigned URL, not served via next/image */}
                 <img
                   src={selectedImage.imageUrl}
                   alt={selectedImage.identifier || selectedImage.filename || "Inspection image"}

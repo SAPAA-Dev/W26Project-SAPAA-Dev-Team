@@ -1,12 +1,12 @@
 "use client";
 
-import { logout } from "@/services/auth";
+import { useSignOut } from "@/hooks/useSignOut";
 import { usePathname } from "next/navigation";
 import { Mail, LogOut, BadgeInfo, Images, House, ShieldUser, UserRound, ClipboardList} from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
 
-import React, { useState, Suspense, useCallback, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 
@@ -28,7 +28,6 @@ async function getCurrentUser(): Promise<{ email: string; role: string; name: st
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
     if (sessionError || !session?.user) {
-      console.log('No session or session error');
       return null;
     }
     
@@ -43,7 +42,7 @@ async function getCurrentUser(): Promise<{ email: string; role: string; name: st
       name,
       avatar
     };
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -61,12 +60,14 @@ export default function UserNavBar({ onStartTutorial }: UserNavBarProps) {
 
     const router = useRouter();
 
+    const { signOut, error: signOutError } = useSignOut(() => navigate('/login'));
+
     useEffect(() => {
     const fetchUser = async () => {
         try {
         const user = await getCurrentUser();
         setCurrentUser(user);
-        } catch (err) {
+        } catch {
         setCurrentUser(null);
         } 
     };
@@ -241,9 +242,7 @@ export default function UserNavBar({ onStartTutorial }: UserNavBarProps) {
                 <div className="py-1.5">
                 <button
                     onClick={async () => {
-                    setMenuOpen(false);
-                    await logout();
-                    navigate('/login');
+                    if (await signOut()) setMenuOpen(false);
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#fdf0f0] transition-colors"
                 >
@@ -252,6 +251,9 @@ export default function UserNavBar({ onStartTutorial }: UserNavBarProps) {
                     </span>
                     <span className="text-sm font-medium text-[#c0392b]">Logout</span>
                 </button>
+                {signOutError && (
+                    <p role="alert" className="px-4 pb-2 text-xs text-[#c0392b]">{signOutError}</p>
+                )}
                 </div>
 
             </div>

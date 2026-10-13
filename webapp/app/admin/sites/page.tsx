@@ -3,7 +3,7 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAllSites, getArchivedSites, getCounties, getProtectedAreaChoices, updateSite, toggleSiteActive, createSite, getTotalInspectionCount, getProtectedAreaBoundaries, SiteSummary, County, ProtectedAreaChoice, SiteDeleteImpact, archiveSite, getSiteDeleteImpact } from '@/utils/supabase/queries';
-import { Search, MapPin, Calendar, Leaf, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Settings, Edit, Pencil, ArrowLeft, Download, Plus, Upload, LayoutGrid, Map as MapIcon, Archive } from 'lucide-react';
+import { Search, MapPin, Calendar, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Edit, Pencil, ArrowLeft, Download, Plus, Upload, LayoutGrid, Map as MapIcon, Archive } from 'lucide-react';
 import EditSiteModal from './components/EditSiteModal';
 import AddSiteModal from './components/AddSiteModal';
 import Image from 'next/image';
@@ -242,7 +242,7 @@ export default function AdminSitesPage() {
     ).length;
     
     return { totalSites, totalInspections, totalResponses, activeThisYear, needsAttention };
-  }, [sites]);
+  }, [sites, totalResponses]);
 
   const handleSaveSite = async (data: { id: number; namesite: string; ab_county: number | null; is_active: boolean; protected_area_id: number | null }) => {
     setSaving(true);
@@ -250,17 +250,19 @@ export default function AdminSitesPage() {
       const currentSite = sites.find((s) => s.id === data.id);
       const result = await updateSite(data.id, data.namesite, data.ab_county, data.protected_area_id);
       if (!result.ok) throw new Error(result.error);
-      if (currentSite && currentSite.is_active !== data.is_active) {
-        await toggleSiteActive(data.id, data.is_active);
-      }
+      // The name, county and area are saved now, so show them even if the status change fails.
       const countyObj = counties.find((c) => c.id === data.ab_county);
       setSites((prev) =>
         prev.map((s) =>
           s.id === data.id
-            ? { ...s, namesite: data.namesite, ab_county: data.ab_county, county: countyObj?.county ?? null, is_active: data.is_active, protected_area_id: data.protected_area_id }
+            ? { ...s, namesite: data.namesite, ab_county: data.ab_county, county: countyObj?.county ?? null, protected_area_id: data.protected_area_id }
             : s
         )
       );
+      if (currentSite && currentSite.is_active !== data.is_active) {
+        await toggleSiteActive(data.id, data.is_active);
+        setSites((prev) => prev.map((s) => (s.id === data.id ? { ...s, is_active: data.is_active } : s)));
+      }
       setEditSite(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to update site');

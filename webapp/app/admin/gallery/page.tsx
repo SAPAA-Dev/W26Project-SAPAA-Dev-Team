@@ -7,7 +7,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import DeleteImageButton from "@/components/DeleteImageButton";
 import type { ImageKind } from "@/components/DeleteImageButton";
 import Image from "next/image";
-import { Loader2, MapPin, FileText, ImageIcon, X, Maximize2, Search, ArrowLeft, Calendar } from "lucide-react";
+import { Loader2, MapPin, ImageIcon, X, Maximize2, Search, ArrowLeft, Calendar } from "lucide-react";
 import { useRouter } from 'next/navigation';
 
 type GalleryItem = {
@@ -69,14 +69,14 @@ export default function GalleryPage() {
         }
 
         const allItems = [
-          ...(data.items || []).map((item: any) => ({
+          ...(data.items || []).map((item: Omit<GalleryItem, "kind"> & { created_at?: string | null }) => ({
             ...item,
-            kind: "attachments",
+            kind: "attachments" as const,
             _sortDate: item.created_at ?? item.date ?? "",
           })),
-          ...(data1.items || []).map((item: any) => ({
+          ...(data1.items || []).map((item: Omit<GalleryItem, "kind"> & { created_at?: string | null }) => ({
             ...item,
-            kind: "homepage_image_uploads",
+            kind: "homepage_image_uploads" as const,
             _sortDate: item.date ?? item.created_at ?? "",
           })),
         ].sort((a, b) => new Date(b._sortDate).getTime() - new Date(a._sortDate).getTime());
@@ -225,6 +225,7 @@ export default function GalleryPage() {
                     onClick={() => setSelectedImage(item)}
                     className="group relative block w-full h-56 sm:h-64 bg-[#F7F2EA] overflow-hidden"
                   >
+                    {/* eslint-disable-next-line @next/next/no-img-element -- S3 presigned URL, not served via next/image */}
                     <img
                       src={item.imageUrl}
                       alt={item.identifier || item.caption ||item.filename || "Inspection image"}
@@ -287,6 +288,7 @@ export default function GalleryPage() {
 
               <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] flex-1 min-h-0">
                 <div className="bg-black flex items-center justify-center min-h-[220px] sm:min-h-[300px] lg:min-h-0 max-h-[40vh] sm:max-h-[50vh] lg:max-h-none overflow-auto">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- S3 presigned URL, not served via next/image */}
                   <img
                     src={selectedImage.imageUrl}
                     alt={selectedImage.identifier || selectedImage.caption || selectedImage.filename || "Inspection image"}

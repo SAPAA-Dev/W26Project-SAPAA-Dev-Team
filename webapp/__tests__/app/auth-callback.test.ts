@@ -37,7 +37,7 @@ function callback(query: string) {
   return GET({
     url: `http://localhost:3000/auth/callback?code=abc${query}`,
     headers: { get: () => null },
-  } as any) as any;
+  } as unknown as Parameters<typeof GET>[0]) as unknown as Promise<{ location: string }>;
 }
 
 describe('OAuth callback next parameter', () => {

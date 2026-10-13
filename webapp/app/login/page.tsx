@@ -24,7 +24,7 @@ export default function LoginPage() {
       }
     };
     checkSession();
-  }, []);
+  }, [router]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +61,7 @@ export default function LoginPage() {
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      onSubmit(e as any);
+      onSubmit(e as unknown as React.FormEvent);
     }
   };
 
@@ -96,7 +96,7 @@ export default function LoginPage() {
             </h1>
 
             <p className="text-lg leading-relaxed text-[#E4EBE4] max-w-lg">
-              Continue your vital work monitoring Alberta's protected areas. 
+              Continue your vital work monitoring Alberta&apos;s protected areas. 
               Access your site inspections, track changes over time, and contribute to preserving our natural heritage.
             </p>
           </div>
@@ -128,7 +128,7 @@ export default function LoginPage() {
           </div>
 
           <div className="relative z-10 text-sm text-[#86A98A]">
-            Stewards of Alberta's Protected Areas Association · Alberta, Canada
+            Stewards of Alberta&apos;s Protected Areas Association · Alberta, Canada
           </div>
         </div>
 
@@ -285,7 +285,7 @@ export default function LoginPage() {
 
             <div className="mt-8 text-center">
               <p className="text-[#7A8075]">
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <a
                   href="/signup"
                   className="font-bold text-[#356B43] hover:text-[#254431] underline underline-offset-2 transition-colors"
@@ -297,7 +297,7 @@ export default function LoginPage() {
 
             <div className="mt-8 pt-6 border-t-2 border-[#E4EBE4]">
               <p className="text-xs text-center text-[#7A8075] leading-relaxed">
-                By signing in, you agree to help protect Alberta's natural spaces 
+                By signing in, you agree to help protect Alberta&apos;s natural spaces 
                 and contribute to the conservation of our protected areas.
               </p>
             </div>

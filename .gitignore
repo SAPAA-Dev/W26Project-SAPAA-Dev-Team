@@ -190,5 +190,8 @@ ruvector.db
 
 # macOS
 .DS_Store
+# Finder duplicate copies, for example "page 2.tsx" or "queries 12.ts"
+* [0-9].*
+* [0-9][0-9].*
 .agents/.claude-flow/
 tars.svg

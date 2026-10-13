@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 
@@ -43,7 +43,7 @@ jest.mock('@/utils/supabase/queries', () => ({
   getSiteByNameAdmin: (name: string) => mockGetSiteByName(name),
   getFormResponsesBySiteAdmin: (name: string) => mockGetFormResponsesBySiteAdmin(name),
   setFormResponseActive: (id: number, isActive: boolean) => mockSetFormResponseActive(id, isActive),
-  updateSiteInspectionAnswers: (id: number, batch: any[]) => mockUpdateSiteInspectionAnswers(id, batch),
+  updateSiteInspectionAnswers: (id: number, batch: unknown[]) => mockUpdateSiteInspectionAnswers(id, batch),
   getSiteInspectionReportDeleteImpact: (id: number) => mockGetReportDeleteImpact(id),
   archiveSiteInspectionReport: (id: number) => mockArchiveReport(id),
 }));
@@ -1154,5 +1154,22 @@ describe('Integration Tests', () => {
     });
     expect(screen.getByTestId('archive-report-button-102')).toBeInTheDocument();
   });
-  
+
+  it('keeps the report on the site page and shows the error when the archive fails (7.0.8 AT2)', async () => {
+    mockArchiveReport.mockRejectedValue(new Error('Site Inspection Report 101 is already archived'));
+    const user = userEvent.setup();
+    render(<AdminSiteDetails />);
+
+    await screen.findByText(/Inspection Reports \(2\)/);
+    await user.click(screen.getByTestId('archive-report-button-101'));
+    await screen.findByText('3 answers will be preserved');
+    await user.click(screen.getByTestId('confirm-archive-report'));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Site Inspection Report 101 is already archived');
+    expect(mockArchiveReport).toHaveBeenCalledWith(101);
+    expect(screen.getByRole('dialog', { name: 'Archive Site Inspection Report' })).toBeInTheDocument();
+    expect(screen.getByTestId('archive-report-button-101')).toBeInTheDocument();
+    expect(screen.getByText(/Inspection Reports \(2\)/)).toBeInTheDocument();
+  });
+
 });

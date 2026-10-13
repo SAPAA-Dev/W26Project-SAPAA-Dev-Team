@@ -1,26 +1,38 @@
 "use client";
 
-import { MapContainer, TileLayer, useMap, Marker, Popup, CircleMarker } from "react-leaflet";
+import { MapContainer, TileLayer, useMap, Popup, CircleMarker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useRef } from "react";
 
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+// leaflet.heat attaches heatLayer to L at runtime; @types/leaflet does not declare it.
+type LeafletWithHeat = typeof L & {
+  heatLayer?: (latlngs: number[][], options: Record<string, unknown>) => L.Layer;
+};
+
+interface MapPoint {
+  latitude: number;
+  longitude: number;
+  weight?: number;
+  namesite?: string;
+}
+
 interface MapProps {
-  points: any[];
+  points: MapPoint[];
   showHeatmap?: boolean;
 }
 
 export default function Map({ points, showHeatmap = true }: MapProps) {
   function Heatmap() {
     const map = useMap();
-    const heatLayerRef = useRef<any>(null);
+    const heatLayerRef = useRef<L.Layer | null>(null);
 
     useEffect(() => {
       const initHeatmap = async () => {
@@ -31,12 +43,12 @@ export default function Map({ points, showHeatmap = true }: MapProps) {
         if (!points || points.length === 0 || !showHeatmap) return;
 
         try {
-          if (typeof window !== 'undefined' && !(L as any).heatLayer) {
+          if (typeof window !== 'undefined' && !(L as LeafletWithHeat).heatLayer) {
             await import('leaflet.heat');
           }
         } catch { return; }
 
-        if (typeof (L as any).heatLayer !== 'function') return;
+        if (typeof (L as LeafletWithHeat).heatLayer !== 'function') return;
 
         const heatData = points
           .filter(p => p && typeof p.latitude === 'number' && typeof p.longitude === 'number' &&
@@ -46,7 +58,7 @@ export default function Map({ points, showHeatmap = true }: MapProps) {
         if (heatData.length === 0) return;
 
         try {
-          heatLayerRef.current = (L as any).heatLayer(heatData, {
+          heatLayerRef.current = (L as LeafletWithHeat).heatLayer!(heatData, {
             radius: 40,
             blur: 25,
             maxZoom: 18,
@@ -59,13 +71,14 @@ export default function Map({ points, showHeatmap = true }: MapProps) {
         } catch {}
 
         try {
-          const bounds = L.latLngBounds(points.map(p => [p.latitude, p.longitude]));
+          const bounds = L.latLngBounds(points.map(p => [p.latitude, p.longitude] as [number, number]));
           map.fitBounds(bounds, { padding: [50, 50], maxZoom: 10 });
         } catch {}
       };
 
       initHeatmap();
       return () => { if (heatLayerRef.current) { try { map.removeLayer(heatLayerRef.current); } catch {} } };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- points/showHeatmap are fixed per Heatmap instance (it is redefined each render); kept listed so the effect stays correct if Heatmap is hoisted
     }, [points, map, showHeatmap]);
 
     return null;
@@ -82,6 +95,7 @@ export default function Map({ points, showHeatmap = true }: MapProps) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
+      {/* eslint-disable-next-line react-hooks/static-components -- Heatmap is redefined each render on purpose so it remounts and rebuilds the heat layer from the latest points */}
       <Heatmap />
 
       {/* One small green dot per site, on top of the heat blob */}

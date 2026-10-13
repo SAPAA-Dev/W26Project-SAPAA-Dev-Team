@@ -2,7 +2,6 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import EditReportPage from '@/app/detail/[namesite]/edit-report/[responseId]/page';
 import * as queries from '@/utils/supabase/queries';
-import { devNull } from 'os';
 
 // - Navigation
 jest.mock('@/components/HeaderDropdown', () => () => null);
@@ -14,7 +13,8 @@ jest.mock('next/navigation', () => ({
 // - Next Image
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: (props: any) => <img {...props} />,
+  // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text -- mock of next/image renders a plain img
+  default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />,
 }));
 
 // - Queries
@@ -548,7 +548,7 @@ export const mockQuestions = [
     },
   ];
 
-const mockResponses: Record<string | number, any> = {
+const mockResponses: Awaited<ReturnType<typeof queries.getFormResponseById>> = {
     1:  "4 = Great",
     4:  "1",
     6:  [
@@ -622,6 +622,17 @@ describe('W26 US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         (queries.getResponseOwnerId as jest.Mock).mockResolvedValue('different-user');
         render(<EditReportPage />);
         await waitFor(() => expect(screen.getByText('Access Denied')).toBeInTheDocument());
+    });
+
+    it('shows access denied when the server refuses the answers of the report (#251)', async () => {
+        (queries.getFormResponseById as jest.Mock).mockRejectedValue(
+          new Error('You are not allowed to view this report.')
+        );
+        const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        render(<EditReportPage />);
+        await waitFor(() => expect(screen.getByText('Access Denied')).toBeInTheDocument());
+        expect(screen.queryByText('Edit Inspection Report')).not.toBeInTheDocument();
+        errorSpy.mockRestore();
     });
 
     it("all previous responses are filled correctly", async () => {
@@ -803,7 +814,7 @@ describe('W26 US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         const answersArray = (queries.updateSiteInspectionAnswers as jest.Mock).mock.calls[0][1];
       
         // Find the answer for question 32 (email)
-        const emailAnswer = answersArray.find((a: any) => a.question_id === 32);
+        const emailAnswer = answersArray.find((a: { question_id: number }) => a.question_id === 32);
         expect(emailAnswer).toBeDefined();
         expect(emailAnswer.obs_comm).toBe('newemail@gmail.com');
     });

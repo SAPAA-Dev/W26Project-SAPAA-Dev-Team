@@ -28,6 +28,14 @@ describe("SiteSteward", () => {
     expect(await screen.findByText("No steward assigned")).toBeInTheDocument();
   });
 
+  it("shows an error, not 'No steward assigned', when the steward lookup fails", async () => {
+    (getSiteSteward as jest.Mock).mockRejectedValue(new Error("network"));
+    render(<SiteSteward siteId={7} isAdmin={false} />);
+
+    expect(await screen.findByText("The steward could not be loaded.")).toBeInTheDocument();
+    expect(screen.queryByText("No steward assigned")).not.toBeInTheDocument();
+  });
+
   it("lets an admin search and assign a steward (3.0.2 AT1, AT2)", async () => {
     (getSiteSteward as jest.Mock).mockResolvedValue({ id: 3, displayName: "Ann Lee" });
     (searchStewards as jest.Mock).mockResolvedValue([{ id: 4, displayName: "Bo Chan" }]);

@@ -4,24 +4,6 @@ import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 
-interface Attachment {
-  id: string;
-  response_id: string;
-  question_id: string;
-  caption?: string | null;
-  identifier?: string | null;
-  date?: string | null;
-  storage_key: string;
-  content_type: string;
-  file_size_bytes?: number | null;
-  filename: string;
-  site_id: string;
-
-  site?: {
-    namesite: string;
-  } | null;
-}
-
 // AWS configuration
 const REGION = process.env.AWS_REGION!;
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
@@ -49,7 +31,6 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const role = user.app_metadata?.role;
     
   // Archived and deactivated reports keep their images for restore, but user galleries must hide them.
   const { data: attachments, error: attachmentsError } = await supabase

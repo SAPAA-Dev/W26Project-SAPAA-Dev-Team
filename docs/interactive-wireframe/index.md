@@ -113,6 +113,19 @@ The team must decide how to fix these differences. This page does not change the
 * Admin: Sites has a "Site Visibility" field (Public or Stewards Only) in the "Add Site" form. No story asks for this field.
 * US 2.0.12 and US 2.0.13: the stories say that the Admin enters the points and sees the reminder on the Site. The wireframe puts the "Priority" form and the reminder on the Admin: Sites list, the same as "Update" for US 2.0.5. The stories do not give the calculation of the to-visit priority, so the Site Report shows the priority as a placeholder bar.
 
+### Screens in the code that the wireframe does not draw
+
+The team built these screens after the wireframe review. The prototype has no page for them. This
+list describes them in text, from the code on `main` as of October 11, 2026.
+
+| Screen | Where | What it shows |
+|---|---|---|
+| KML import (US 6.0.1) | Admin: Sites, `components/KmlImportModal.tsx` | A dialog to choose a `.kml` or `.kmz` file. The browser uploads it to the private `kml-imports` bucket, then the server imports the protected areas and shows the counts of rows saved and skipped, and the warnings. |
+| Archived sites (US 2.0.4) | `/admin/sites/archived` | The archived sites, newest first, with "Restore" and "Permanently delete site". The delete shows the count of linked records first. |
+| Archived reports (US 7.0.8) | `/admin/reports/archived` | The archived Site Inspection Reports, with "Restore" and a permanent delete. |
+| Assign a steward (US 3.0.2) | Site page, `SiteSteward.tsx` | For an admin: "Assign steward" or "Change", a name search, and "No people match that name." when nothing matches. For others: "Steward: name", linked to the profile. |
+| Awaiting Admin Approval | `/sites`, `components/ProtectedRoute.tsx` | For a signed-in user that an admin has not approved: a message that an admin must approve the account, and "Sign Out". |
+
 ## Client feedback
 
 The client reviewed the wireframes in the client meeting on Friday, September 25, 2026, and said that they are acceptable. See the [meeting minutes](../meeting-minutes.md). The client asked for no changes.

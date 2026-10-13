@@ -56,41 +56,48 @@ docs/local-setup
 
 ## Branch model
 
-Three kinds of branch, and `main` keeps its name:
+Four kinds of branch, and `main` keeps its name:
 
 ```text
-feature branch ──PR──> main ──PR──> release
+feature branch ──PR──> sprint-N ──PR──> main ──PR──> release
 ```
 
 | Branch | Role | How it changes |
 | --- | --- | --- |
-| `<type>/<short-description>` | Feature branch. Always created from `main`. | You push to it. |
-| `main` | Sprint integration branch: every finished PR of the sprint lands here. Docs are deployed from it. | PR from a feature branch, squash merge. |
+| `<type>/<short-description>` | Feature branch. Created from the branch of the current sprint, `sprint-N`. | You push to it. |
+| `sprint-N` | Sprint branch, for example `sprint-2`. Every finished PR of sprint N lands here. | PR from a feature branch, squash merge. |
+| `main` | Holds only the work of finished sprints. Docs are deployed from it, and each GitHub release is built from it. | One PR from `sprint-N` at the end of the sprint. |
 | `release` | What gets released. It only ever holds code that was ready on `main`. Production deploys from it. | PR from `main`, merge commit. |
 
-There is no separate branch for each sprint. `main` collects the work of the sprint, and
-the sprint ends with one PR from `main` into `release`.
+Each sprint has its own branch, `sprint-N`, made from `main`. Feature branches start from it, and
+their PRs go into it. At the end of the sprint, one PR merges `sprint-N` into `main`. The Scrum
+Master of the sprint reviews that PR (see [Scrum roles](project-management.md#scrum-roles)). The
+GitHub ruleset allows branch names that start with `sprint-`. Every sprint ends with a GitHub
+release built from `main` (step 7 below). `sprint-2` is the first sprint branch. The Sprint 2 work
+before it merged straight into `main`.
 
 The hosting project (Vercel) has its own production branch setting. It is not stored in this
 repository, so nobody can check it from here. The person who owns the hosting account must check
 that the production branch is `release`. If it is `main`, every merged PR goes live.
 
-Gamma makes each release (see [Project management](project-management.md)):
+The team that owns Platform / CI/CD / releases in the sprint makes the release (see
+[Project management](project-management.md)):
 
-1. Open a PR with base `release` and head `main`. Use a title like `(chore): release sprint 2`.
-2. Assign the Scrum Master of the sprint and at least one other person
+1. Merge `sprint-N` into `main` with one PR that the Scrum Master of the sprint reviews.
+2. Open a PR with base `release` and head `main`. Use a title like `(chore): release sprint 2`.
+3. Assign the Scrum Master of the sprint and at least one other person
    (see [Scrum roles](project-management.md#scrum-roles)). The Scrum Master's approval is one of
    the 2 required approvals. The `reviewer-gate` status needs every assignee to approve. **This
    is not enforced yet:** the `main` and `release` rulesets require the `reviewers` check, which
    always passes, and not the `reviewer-gate` status. Until a repo admin changes the required
    check in both rulesets from `reviewers` to `reviewer-gate`, any 2 approvals merge the release
    PR, so the Scrum Master has to check the status by hand before merging.
-3. Get the 2 approvals and green checks.
-4. Before the code is deployed, a human runs the new SQL migrations
+4. Get the 2 approvals and green checks.
+5. Before the code is deployed, a human runs the new SQL migrations
    (see [Production database migrations](#production-database-migrations)).
-5. Merge with a **merge commit**, so `release` and `main` stay in step and the next release PR
+6. Merge with a **merge commit**, so `release` and `main` stay in step and the next release PR
    has no conflicts.
-6. Tag the release on `main`, on the commit that was merged into `release`, for example
+7. Tag the release on `main`, on the commit that was merged into `release`, for example
    `sprint-2`. Publish the GitHub release from that tag. The notes list each story with its issue
    and PRs, the number of CI tests, the known gaps and the feedback from the TA that the sprint
    addressed.
@@ -147,7 +154,7 @@ breaks before it. There is no way to avoid a short gap, so do it in a maintenanc
 before the deploy:
 
 1. Tell the stewards and admins that the app is down for a short time.
-2. Run steps 1 to 14 below, in order, in one sitting.
+2. Run steps 1 to 20 below, in order, in one sitting.
 3. Merge the release PR straight away ([Branch model](#branch-model)), so the new code deploys.
 4. Open the app and run the smoke test below. The window ends when it passes.
 
@@ -174,16 +181,15 @@ Run the files in this order.
 | 12 | `20261009000000_archive_site_inspection_reports.sql` | Adds `form_responses.archived_at` and redefines the count and dashboard functions. |
 | 13 | `20261009120000_add_sites_pa_protected_area_id.sql` | Needed by the admin sites list, the map filter, and adding and editing a site. |
 | 14 | `20261009120100_sites_pa_protected_area_id_unique.sql` | If it fails, stop. Two sites share one protected area. Remove the extra link by hand, then run the file again. |
+| 15 | `20261009130000_get_max_inspection_number.sql` | From [PR #242](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/242). Adds `get_max_inspection_number`. New reports get no inspection number until it exists. |
+| 16 | `20261010000000_form_responses_select_policy.sql` | From [PR #234](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/234). Lets approved users read `form_responses`. Without it the galleries show no images. Check first: `select policyname from pg_policies where tablename = 'form_responses';` |
+| 17 | `20261010000100_require_approval_for_people_reads.sql` | From [PR #238](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/238). Only approved accounts (and the owner of a row) read `people`, `socials` and `site_stewards`. |
+| 18 | `20261011000000_revoke_public_execute_on_report_functions.sql` | From `fix/alpha-code-quality`. Run it after step 15. Only the service role can then call `get_distinct_inspected_site_count` and `get_max_inspection_number`. |
+| 19 | `20261011010000_revoke_public_execute_on_dashboard_functions.sql` | From `fix/gamma-sprint-2-gaps`. Run it after step 12. Revokes execute on `get_naturalness_distribution` and `get_top_sites_distribution` from `public` and `anon`. `authenticated` keeps it, because the StewardLog admin dashboard calls both functions after sign-in. |
+| 20 | `20261012000000_add_question_atomically.sql` | From `fix/form-editor-save-errors` (#273). Run it after step 2. Adds `add_question_atomically`, for the service role only. Until it exists, adding a question in the form editor fails. |
 
-Three more files come from PRs that are not merged yet. Run each one only after its PR is merged
-and the file is on `main`. All three run after step 14, in this order.
-
-| Step | File | PR | Note |
-| --- | --- | --- | --- |
-| 15 | `20261009130000_get_max_inspection_number.sql` | [#242](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/242) | Adds `get_max_inspection_number`. New reports get no inspection number until it exists, so run it before the #242 code deploys. |
-| 16 | `20261010000000_form_responses_select_policy.sql` | [#234](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/234) | Lets approved users read `form_responses`. Without it the galleries show no images. Check first: `select policyname from pg_policies where tablename = 'form_responses';` |
-| 17 | `20261010000100_require_approval_for_people_reads.sql` | [#238](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/238) | Only approved accounts (and the owner of a row) read `people`, `socials` and `site_stewards`. |
-
+PRs #234, #238 and #242 are merged on `main`. Steps 18 to 20 come from the Sprint 2 fix branches,
+which merge into `main` with the `sprint-2` PR. Run each step only when its file is on `main`.
 If a PR merges with a different file name, use the name in the merged PR.
 
 ### Checks
@@ -262,6 +268,35 @@ gets you past your own machine: CI runs the same script on every commit in a PR,
 badly named commit will still fail the PR. Fix it with `git commit --amend` or an interactive
 rebase, then force-push your branch.
 
+## CI
+
+| Workflow | Runs on | Jobs and checks |
+| --- | --- | --- |
+| `ci.yaml` | Every push to any branch, and by hand | `webapp-tests`: `npm ci`, `npx tsc --noEmit`, `npm run test:ci`, `npm run build`, then `npm run lint -- --max-warnings 0`. `docs-build`: `mkdocs build --clean`. `hook-tests`: `sh .githooks/test-hooks.sh`. |
+| `pr-checks.yaml` | PRs into `main`, `release` and `sprint-*` | `conventions` (branch name, PR title, commit messages) and `pr-size`. |
+| `reviewer-gate.yaml` | PRs into `main`, `release` and `sprint-*`, and reviews | `reviewers`, which posts the `reviewer-gate` status. |
+| `diagrams.yaml` | PRs into `main`, `release` and `sprint-*` | See [The diagrams workflow](#the-diagrams-workflow). |
+| `e2e.yaml` | PRs into `main` and `release`, and by hand | `cypress`: runs `cypress/e2e/logout.cy.ts` and `cypress/e2e/profile.cy.ts` against a local Supabase that it starts in the job (the migrations, `supabase/seed.sql` and `scripts/e2e_seed.js`). |
+
+Rules of the gates:
+
+- **Lint blocks.** Any ESLint error or warning fails `webapp-tests`. Run `npx eslint .` in
+  `webapp/` before you push.
+- **Coverage blocks.** `npm run test:ci` is `jest --coverage`. It fails when the global coverage
+  falls below `coverageThreshold` in `webapp/jest.config.ts` (statements 83, branches 72,
+  functions 77, lines 85 percent). Run `npm run test:ci` in `webapp/` before you push.
+- **Known problem.** `webapp-tests` runs `npm run test:ci` before the lint step, and the test run
+  writes `webapp/coverage/`. `eslint.config.mjs` does not ignore that folder, so ESLint reports an
+  unused `eslint-disable` directive in `coverage/lcov-report/block-navigation.js`, and
+  `--max-warnings 0` fails the job. Until `coverage/**` is added to the ignores, delete
+  `webapp/coverage/` before you run ESLint locally.
+- **E2E runs only some specs.** The other Cypress specs need production data, real S3 images or
+  an app fix. The comment in `e2e.yaml` names each excluded spec and the reason. `cypress` is not a
+  required check. To save Actions minutes, it does not run on PRs into `sprint-*`.
+
+As of October 11, 2026, GitHub Actions has not run since October 10, because the account's Actions
+payments failed. Until it runs again, the results of these gates come from local runs only.
+
 ## GitHub rules
 
 These are enforced on GitHub itself, not just locally.
@@ -299,7 +334,7 @@ why in the PR.
 **Large PRs.** When a PR changes more than 500 lines, it gets a `large-pr` label and a
 comment suggesting you split it. The number of lines does not include changes in `docs/`,
 `webapp/package-lock.json` or `FNR/package-lock.json`. The number includes changes in all
-other lockfiles, for example the root `package-lock.json` and `deno.lock`. It's only a nudge
+other lockfiles, for example the root `package-lock.json`. It's only a nudge
 and never blocks the merge.
 
 **Code owners.** `.github/CODEOWNERS` auto-requests reviewers based on the files a PR
@@ -368,8 +403,8 @@ Rules:
 
 ### The diagrams workflow
 
-`.github/workflows/diagrams.yaml` runs when a PR into `main` or `release` is opened, reopened
-or updated. It has two jobs:
+`.github/workflows/diagrams.yaml` runs when a PR into `main`, `release` or a `sprint-*` branch is
+opened, reopened or updated. It has two jobs:
 
 | Job | Token | What it does |
 | --- | --- | --- |

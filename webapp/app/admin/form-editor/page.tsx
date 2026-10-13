@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from 'next/navigation';
 import {
   Plus,
   GripVertical,
   Pencil,
-  Trash2,
   Save,
   X,
   Loader2,
@@ -51,7 +50,6 @@ import {
   reorderQuestions,
   type FormSection,
   type FormQuestion,
-  type QuestionOption,
 } from "@/utils/form-actions";
 
 const QUESTION_TYPES = [
@@ -65,6 +63,10 @@ const QUESTION_TYPES = [
 function getTypeIcon(type: string) {
   const found = QUESTION_TYPES.find((t) => t.value === type.trim());
   return found?.icon ?? FileText;
+}
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
 }
 
 function getTypeLabel(type: string) {
@@ -123,35 +125,42 @@ export default function FormEditorPage() {
   }, []);
 
   // ─── Data Fetching ───────────────────────────────────────────────
-  const loadSections = useCallback(async () => {
-    try {
-      const data = await fetchFormSections();
-      setSections(data);
-      if (data.length > 0 && activeSection === null) {
-        setActiveSection(data[0].id);
-      }
-    } catch (err: any) {
-      setError(err.message);
-    }
-  }, [activeSection]);
+  // Counts question loads. Only the newest load may set the questions, so an older
+  // response that arrives late cannot overwrite newer state, such as an optimistic toggle.
+  const questionsRequest = useRef(0);
 
   const loadQuestions = useCallback(async () => {
+    const request = ++questionsRequest.current;
     try {
       const data = await fetchFormQuestions();
-      setQuestions(data);
-    } catch (err: any) {
-      setError(err.message);
+      if (request === questionsRequest.current) setQuestions(data);
+    } catch (err) {
+      if (request === questionsRequest.current) setError(errorMessage(err));
     }
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+    async function loadSections() {
+      try {
+        const data = await fetchFormSections();
+        if (cancelled) return;
+        setSections(data);
+        if (data.length > 0) setActiveSection((current) => current ?? data[0].id);
+      } catch (err) {
+        if (!cancelled) setError(errorMessage(err));
+      }
+    }
     async function loadData() {
       setLoading(true);
       await Promise.all([loadSections(), loadQuestions()]);
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     }
     loadData();
-  }, [loadSections, loadQuestions]);
+    return () => {
+      cancelled = true;
+    };
+  }, [loadQuestions]);
 
   // ─── Derived State ───────────────────────────────────────────────
   const currentQuestions = questions
@@ -173,12 +182,17 @@ export default function FormEditorPage() {
       if (question.subtext == '') {
         question.subtext = null;
       }
-      await saveQuestion(question);
+      const result = await saveQuestion(question);
+      if (!result.success) {
+        // Keep the editor open so the admin can try again.
+        setError("Failed to save question: " + result.error);
+        return;
+      }
       await loadQuestions();
       setEditingQuestion(null);
       showSuccess("Question saved successfully");
-    } catch (err: any) {
-      setError("Failed to save question: " + err.message);
+    } catch (err) {
+      setError("Failed to save question: " + errorMessage(err));
     } finally {
       setSaving(false);
     }
@@ -186,13 +200,15 @@ export default function FormEditorPage() {
 
   const handleToggleActive = async (id: number, currentStatus: boolean) => {
     try {
+      // A load that started before this toggle returns the old status, so drop it.
+      questionsRequest.current++;
       // Optimistic Update
       setQuestions(prev => 
         prev.map(q => q.id === id ? { ...q, is_active: !currentStatus } : q)
       );
       
       await toggleQuestionActive(id, currentStatus);
-    } catch (err) {
+    } catch {
       // Revert on error
       loadQuestions(); 
       alert("Could not update question status.");
@@ -211,12 +227,16 @@ export default function FormEditorPage() {
     setSaving(true);
     setError(null);
     try {
-      await addQuestion(activeSection, newQuestion);
+      const result = await addQuestion(activeSection, newQuestion);
+      if (!result.success) {
+        setError("Failed to add question: " + result.error);
+        return;
+      }
       await loadQuestions();
       setShowAddQuestion(false);
       showSuccess("Question added successfully");
-    } catch (err: any) {
-      setError("Failed to add question: " + err.message);
+    } catch (err) {
+      setError("Failed to add question: " + errorMessage(err));
     } finally {
       setSaving(false);
     }
@@ -271,9 +291,9 @@ export default function FormEditorPage() {
       }));
 
       await reorderQuestions(updates);
-    } catch (err: any) {
+    } catch (err) {
       setQuestions(prevQuestions);
-      setError("Failed to reorder: " + err.message);
+      setError("Failed to reorder: " + errorMessage(err));
     }
   };
 
@@ -645,8 +665,6 @@ function SortableQuestionCard({
     zIndex: isDragging ? 50 : undefined,
   };
 
-  const TypeIcon = getTypeIcon(question.question_type);
-
   if (isEditing && editingQuestion) {
     return (
       <div ref={setNodeRef} style={style}>
@@ -694,7 +712,7 @@ function SortableQuestionCard({
               : "bg-[#E4EBE4] text-[#356B43]"
           }`}
         >
-          <TypeIcon className="w-4 h-4" />
+          {React.createElement(getTypeIcon(question.question_type), { className: "w-4 h-4" })}
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-[#254431] truncate">

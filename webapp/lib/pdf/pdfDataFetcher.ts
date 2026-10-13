@@ -1,12 +1,11 @@
+import { getFormResponsesBySite, getSiteByName } from '@/utils/supabase/queries';
 import {
-  getFormResponsesBySite,
   getAttachmentsByResponseId,
-  getSiteByName,
   getSitesByNames,
   getFormResponsesForSiteIds,
   getAttachmentsForResponseIds,
   getReportQuestionKeyMap,
-} from '@/utils/supabase/queries';
+} from './reportQueries';
 import { createServerSupabase } from '@/utils/supabase/server';
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -278,13 +277,14 @@ async function fetchSingleResponse(responseId: number, options: PdfOptions): Pro
   const { data: siteData, error: siteError } = await supabase
     .from('sites_pa')
     .select(`namesite, ab_counties (county)`)
-    .eq('id', (responseData as any).site_id)
+    .eq('id', responseData.site_id)
     .single();
 
   if (siteError || !siteData) throw new Error('Site not found for response');
 
-  const siteName = (siteData as any).namesite;
-  const county = (siteData as any).ab_counties?.county ?? null;
+  const site = siteData as unknown as { namesite: string; ab_counties: { county: string | null } | null };
+  const siteName = site.namesite;
+  const county = site.ab_counties?.county ?? null;
 
   const allResponses = await getFormResponsesBySite(siteName);
   const singleOnly = allResponses.filter((r) => r.id === responseId);

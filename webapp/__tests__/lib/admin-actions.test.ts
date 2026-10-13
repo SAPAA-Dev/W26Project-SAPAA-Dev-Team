@@ -72,6 +72,41 @@ describe("admin-actions", () => {
         { id: "u1", email: "a@b.com", role: "admin", authenticated: true },
       ]);
     });
+
+    // Admin route auth checks (Sprint 2 dev task): the accounts page must list every user.
+    it("reads every page of users, not only the first", async () => {
+      mockCaller("admin");
+      const page = (count: number, offset: number) =>
+        Array.from({ length: count }, (_, index) => ({
+          id: `u${offset + index}`,
+          email: `u${offset + index}@b.com`,
+          app_metadata: { role: "steward", authenticated: true },
+        }));
+      mockListUsers
+        .mockResolvedValueOnce({ data: { users: page(1000, 0) }, error: null })
+        .mockResolvedValueOnce({ data: { users: page(2, 1000) }, error: null });
+
+      const users = await getAllUsers();
+
+      expect(users).toHaveLength(1002);
+      expect(users[1001].id).toBe("u1001");
+      expect(mockListUsers).toHaveBeenNthCalledWith(1, { page: 1, perPage: 1000 });
+      expect(mockListUsers).toHaveBeenNthCalledWith(2, { page: 2, perPage: 1000 });
+    });
+
+    it("returns nothing when a later page fails, so no partial list shows", async () => {
+      mockCaller("admin");
+      const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      mockListUsers
+        .mockResolvedValueOnce({
+          data: { users: Array.from({ length: 1000 }, (_, index) => ({ id: `u${index}`, app_metadata: {} })) },
+          error: null,
+        })
+        .mockResolvedValueOnce({ data: { users: [] }, error: { message: "boom" } });
+
+      expect(await getAllUsers()).toEqual([]);
+      errorSpy.mockRestore();
+    });
   });
 
   describe("addUser", () => {

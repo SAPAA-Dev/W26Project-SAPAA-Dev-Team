@@ -1,13 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import SignupPage from '../../app/signup/page';
 import AccountManagementPage from '../../app/admin/account-management/page';
 import * as auth from '@/services/auth';
 import * as adminActions from '../../utils/admin-actions';
-import * as useAuthHook from '@/hooks/useAuth';
 import * as nextNavigation from 'next/navigation';
-import * as supabaseClient from '@/utils/supabase/client';
 
 // Mock modules
 jest.mock('next/navigation', () => ({
@@ -33,11 +30,14 @@ jest.mock('../../utils/admin-actions', () => ({
 }));
 
 jest.mock('@/utils/supabase/client');
-jest.mock('next/image', () => (props: any) => <img {...props} alt={props.alt} />);
-jest.mock('../../app/admin/AdminNavBar', () => () => <div>AdminNavBarMock</div>);
-jest.mock('../../components/ProtectedRoute', () => ({ children, requireAdmin }: any) => <div>{children}</div>);
+jest.mock('next/image', () => function MockImage(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+  // eslint-disable-next-line @next/next/no-img-element -- mock of next/image renders a plain img
+  return <img {...props} alt={props.alt} />;
+});
+jest.mock('../../app/admin/AdminNavBar', () => function MockAdminNavBar() { return <div>AdminNavBarMock</div>; });
+jest.mock('../../components/ProtectedRoute', () => function MockProtectedRoute({ children }: { children: React.ReactNode }) { return <div>{children}</div>; });
 jest.mock('../../app/admin/account-management/components/AccountDetailsModal', () => {
-  return function MockModal({ visible, user, onClose, onSave, onDelete }: any) {
+  return function MockModal({ visible, user, onClose, onSave }: React.ComponentProps<typeof import('../../app/admin/account-management/components/AccountDetailsModal').default>) {
     if (!visible) return null;
     return (
       <div data-testid="account-details-modal">

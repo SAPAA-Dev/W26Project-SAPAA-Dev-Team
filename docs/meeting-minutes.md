@@ -9,6 +9,46 @@ are the previous team's records. We keep them for reference.
 
 The TA (Alex) is CC'd on all client communication, including all client meeting invitations and emails.
 
+### Template
+
+Each Fall 2026 meeting uses this table. Write "Not recorded" when a value is not known.
+
+| Field | Details |
+|-------|---------|
+| **Company** | SAPAA |
+| **Project** | SAPAA SIR |
+| **Date** | |
+| **Time** | |
+| **Location** | |
+| **Attendees** | |
+| **Absentees** | |
+| **Minute-taker** | |
+| **Source** | Notes, transcript or deck that the entry comes from |
+
+The sections after the table are: Agenda, Summary, Key Discussions & Decisions, Status of previous
+action items (when there are any), Action Items with an owner for each item, and Next Meeting
+Agenda.
+
+### Attendance
+
+P = present, L = late, A = absent. Alex (TA) attended Meetings #0, #1, #3, #6 and #8. The notes of
+Meeting #6 are titled "MEETING WITH ALEX". Frank (client)
+attended Meetings #4, #5, #7 and #9. For Meetings #5 to #9 the sources did not record every member.
+Saumya confirmed on October 11 that all seven members attended them.
+
+| Meeting | Date | Chris | Aaron | Saumya | Alissa | Zanab | Abhinav | Jayden |
+|---|---|---|---|---|---|---|---|---|
+| #0 Lab with TA | Sep 16 | P | P | P | P | P | P | P |
+| #1 Handover call | Sep 18 | P | P | P | P | P | P | P |
+| #2 Working session | Sep 19 | L | P | P | P | A | P | P |
+| #3 Lab with TA | Sep 23 | P | P | P | P | P | P | P |
+| #4 Client meeting | Sep 25 | P | P | P | P | P | P | P |
+| #5 Field trip | Sep 26 | P | P | P | P | P | P | P |
+| #6 Lab with TA | Sep 30 | P | P | P | P | P | P | P |
+| #7 Client meeting | Oct 2 | P | P | P | P | P | P | P |
+| #8 Lab with TA | Oct 7 | P | P | P | P | P | P | P |
+| #9 Client meeting | Oct 9 | P | P | P | P | P | P | P |
+
 ### Sprint 1
 
 ---
@@ -23,6 +63,8 @@ The TA (Alex) is CC'd on all client communication, including all client meeting 
 | **Time** | 9:30 AM – 10:00 AM MDT |
 | **Location** | Online |
 | **Attendees** | Chris, Aaron, Saumya, Alissa, Zanab, Abhinav, Jayden, and Alex (TA) |
+| **Absentees** | None |
+| **Minute-taker** | Not recorded |
 
 ##### Agenda
 
@@ -43,8 +85,8 @@ Introduction to Sprint 1 deliverables. Alex went over the course docs, expectati
 
 ##### Action Items
 
-- Record rotating Scrum roles in the teamwork document.
-- Schedule a call with SAPAA volunteers (Saumya)
+- Record rotating Scrum roles in the teamwork document (Team).
+- Schedule a call with SAPAA volunteers (Saumya).
 
 ---
 
@@ -58,6 +100,8 @@ Introduction to Sprint 1 deliverables. Alex went over the course docs, expectati
 | **Time** | 6:30 PM – 7:30 PM MDT |
 | **Location** | Online |
 | **Attendees** | Saumya, Chris, Zanab, Abhinav, Alissa, Aaron, Jayden, plus Alex, our TA for Fall 2026, Vishal, Harveer, Raiyana from the Winter 2026 team and Mehrdad from the Fall 2025 team |
+| **Absentees** | None |
+| **Minute-taker** | Not recorded. The transcript is `docs/meetings/week3/week3.txt`. |
 
 ##### Agenda
 
@@ -102,6 +146,8 @@ Onboarding call with the two previous teams to understand the existing codebase,
 | **Time** | 2:49 PM – 7:27 PM MDT |
 | **Location** | Online, with some members in person at ETLC |
 | **Attendees** | Saumya, Abhinav, Alissa, Aaron, Jayden, Chris (joined later). Zanab absent, at work. |
+| **Absentees** | Zanab (at work) |
+| **Minute-taker** | Not recorded |
 
 ##### Agenda
 
@@ -169,6 +215,8 @@ Long working session covering repository setup, a first pass at user stories, an
 | **Time** | 9:30 AM – 10:00 AM MDT |
 | **Location** | Online |
 | **Attendees** | Chris, Aaron, Saumya, Alissa, Zanab, Abhinav, Jayden, and Alex (TA) |
+| **Absentees** | None |
+| **Minute-taker** | Not recorded |
 
 ##### Agenda
 
@@ -196,10 +244,10 @@ Alex's advice:
 
 ##### Action Items
 
-- Narrow down user stories, grouping ones that are overly specific
-- Write down Top 10 user stories to excite Frank and include in the slides for Friday's meeting
-- Remove "As a Developer" user stories
-- Make slides for Friday's meeting
+- Narrow down user stories, grouping ones that are overly specific (Team).
+- Write down Top 10 user stories to excite Frank and include in the slides for Friday's meeting (Team).
+- Remove "As a Developer" user stories (Team).
+- Make slides for Friday's meeting (Team).
 
 ---
 
@@ -213,6 +261,8 @@ Alex's advice:
 | **Time** | 3:35 PM – 5:00 PM MDT |
 | **Location** | Online |
 | **Attendees** | Frank (client), Chris, Aaron, Saumya, Alissa, Zanab, Abhinav, Jayden, Mehrdad from the Fall 2025 team. |
+| **Absentees** | None |
+| **Minute-taker** | Not recorded. The transcript is `docs/meetings/week4/meeting_25th_frank_team.txt`. |
 
 ##### Agenda
 
@@ -259,9 +309,11 @@ The team presented its user stories and plan. Frank asked for every story to be 
 | **Company** | SAPAA |
 | **Project** | SAPAA SIR |
 | **Date** | September 26, 2026 |
-| **Time** | Not recorded in the source — team to confirm |
+| **Time** | Not recorded |
 | **Location** | River Lot 56 |
-| **Attendees** | Frank (client) and Chris are named as present in the [October 2](meetings/week5/2026_10_02%20_meeting_Frank.txt) and [October 9](meetings/week6/2026_10_09_meeting_frank.txt) transcripts. Attendance of the other members is not recorded in the source — team to confirm. |
+| **Attendees** | Frank (client), Chris, Aaron, Saumya, Alissa, Zanab, Abhinav, Jayden. Frank and Chris are named as present in the [October 2](meetings/week5/2026_10_02%20_meeting_Frank.txt) and [October 9](meetings/week6/2026_10_09_meeting_frank.txt) transcripts. Attendance confirmed by Saumya, Oct 11. |
+| **Absentees** | None |
+| **Minute-taker** | Not recorded. No notes were taken. |
 | **Source** | No transcript or notes exist for the trip. This entry uses the action items of Meeting #4 and what Frank and the team said about the trip on October 2 and October 9. |
 
 ##### Agenda
@@ -301,10 +353,12 @@ The team walked River Lot 56 with Frank. Frank showed how he fills in the site i
 |-------|---------|
 | **Company** | SAPAA |
 | **Project** | SAPAA SIR |
-| **Date** | September 30, 2026 (the source is undated; team to confirm) |
-| **Time** | Not recorded in the source — team to confirm |
-| **Location** | Not recorded in the source — team to confirm |
-| **Attendees** | Alex (TA) is named in the notes. Attendance of the members is not recorded in the source — team to confirm. |
+| **Date** | September 30, 2026. The notes are undated. They were committed on October 2 in `80372a5` ([PR #126](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/126)), and the only lab between the September 23 lab and October 2 is the Wednesday lab of September 30. |
+| **Time** | 9:30 AM (the weekly lab slot from Meeting #0; not recorded in the notes) |
+| **Location** | Online (as recorded for the labs of Meetings #0 and #3; not recorded in the notes) |
+| **Attendees** | Chris, Aaron, Saumya, Alissa, Zanab, Abhinav, Jayden, and Alex (TA). The notes are titled "MEETING WITH ALEX". Attendance confirmed by Saumya, Oct 11. |
+| **Absentees** | None |
+| **Minute-taker** | No minute-taker; rebuilt from the week 5 notes by Saumya on Oct 11. Aaron committed the notes ([PR #126](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/126)). |
 | **Source** | [Meeting notes, week 5](meetings/week5/Meeting_Notes.md) (added in [PR #126](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/126)) |
 
 ##### Agenda
@@ -329,9 +383,9 @@ TA advice:
 How we addressed it:
 
 - Gamification questions: on October 2 Alissa asked Frank which actions should earn points. Frank asked for a mockup of simple gamification built from existing data. The team showed the mockup on October 9: top contributor, most counties, site variety and first reporter. Frank accepted the direction (Meeting #7 and Meeting #9). The aggregate totals are planned as US 1.0.4 in Sprint 3 ([Project Management](project-management.md)).
-- Bounty board: not raised with Frank in the October 2 or October 9 transcripts. This is still open.
+- Bounty board: not raised with Frank in the October 2 or October 9 transcripts. Deferred to Sprint 4: Frank asked for gamification built from existing data (on October 9: "use the data that you have"), and a bounty board needs a points value for each chosen site, which is the to-visit priority of 2.0.12 in Sprint 4. Aaron asks Frank about it at the October 16 client meeting ([Project Management](project-management.md#sprint-1-ta-feedback-and-revisions)).
 - Automated UML: [PR #157](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/157) adds a diagram generator that builds the ER and UML class diagrams from the migrations and the TypeScript and updates them on every PR.
-- Story clarity and points: no change is recorded in the issues or PRs. Team to confirm.
+- Story clarity and points: no change was made in Sprint 2. The points of the Sprint 2 stories are the same as in the Sprint 1 release (tag `sprint-1`, September 29), which came before this advice. From the October 14 planning, each Sprint 3 story gets an "Open questions" list before work starts, owned by Aaron ([Open questions before pointing](project-management.md#open-questions-before-pointing)).
 - Soft delete: sites are archived instead of deleted, with a separate admin hard delete ([#81](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/81), [PR #160](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/160)). Reports are archived before they can be deleted ([#93](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/93), [PR #165](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/165)). Frank approved this on October 9.
 
 ##### Action Items
@@ -351,9 +405,11 @@ Not recorded in the source. The next meeting was the weekly client meeting on Oc
 | **Company** | SAPAA |
 | **Project** | SAPAA SIR |
 | **Date** | October 2, 2026 |
-| **Time** | Not recorded in the source — team to confirm |
-| **Location** | Not recorded in the source — team to confirm |
-| **Attendees** | Frank (client), Chris, Alissa, Abhinav, Jayden and Zanab (each speaks in the transcript), and Saumya (presents the deck, per the [talk track](meetings/week5/SAPAA-2026-10-02-script.md)). Attendance of Aaron and anyone else is not recorded in the source — team to confirm. |
+| **Time** | Not recorded |
+| **Location** | Not recorded |
+| **Attendees** | Frank (client), Chris, Aaron, Saumya, Alissa, Zanab, Abhinav, Jayden. Chris, Alissa, Abhinav, Jayden and Zanab each speak in the transcript, and Saumya presents the deck (per the [talk track](meetings/week5/SAPAA-2026-10-02-script.md)). Attendance confirmed by Saumya, Oct 11. |
+| **Absentees** | None |
+| **Minute-taker** | No minute-taker; rebuilt from the transcript by Saumya on Oct 11. Aaron committed the transcript ([PR #126](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/126)) and the meeting log ([PR #127](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/127)). |
 | **Source** | [Raw transcript](meetings/week5/2026_10_02%20_meeting_Frank.txt), [deck](meetings/week5/SAPAA-2026-10-02.pdf) and [talk track](meetings/week5/SAPAA-2026-10-02-script.md) |
 
 ##### Agenda
@@ -409,32 +465,54 @@ Weekly client meeting. The team presented the Sprint 2 plan against the charter.
 |-------|---------|
 | **Company** | SAPAA |
 | **Project** | SAPAA SIR |
-| **Date** | October 7, 2026 (the weekly Wednesday 9:30 AM lab slot from Meeting #0) |
-| **Time** | Not recorded — team to confirm |
-| **Location** | Not recorded — team to confirm |
-| **Attendees** | Not recorded — team to confirm |
-| **Source** | No notes or transcript were recorded. |
+| **Date** | October 7, 2026 |
+| **Time** | 9:30 AM (the weekly lab slot from Meeting #0) |
+| **Location** | Online (as recorded for the labs of Meetings #0 and #3; not recorded for this lab) |
+| **Attendees** | Chris, Aaron, Saumya, Alissa, Zanab, Abhinav, Jayden, and Alex (TA). Attendance confirmed by Saumya, Oct 11. |
+| **Absentees** | None |
+| **Minute-taker** | No minute-taker; rebuilt from the repository record by Saumya on Oct 11. No notes were taken. |
+| **Source** | Reconstructed from the repository record on Oct 11; no notes were taken. |
 
 ##### Agenda
 
-Not recorded.
+Sprint 2 check-in against the work that the October 2 deck promised for October 7
+(slide 13 of the [talk track](meetings/week5/SAPAA-2026-10-02-script.md)).
 
 ##### Summary
 
-Not recorded. No notes or transcript were recorded for this lab.
+The entry lists the real state of each October 7 item from the git history. It does not record
+what was said, because no notes or transcript exist. Times are MDT. At the start of the lab
+(9:30 AM), three of the seven items had merged work on `main`.
 
 ##### Key Discussions & Decisions
 
-Not recorded.
+Not recorded. The October 7 items from the deck, and their state on October 7:
+
+| Item | Issue | Merged before the lab | Merged later on October 7 | Merged after October 7 |
+|---|---|---|---|---|
+| The steward shown on each site page | [#77](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/77) | [PR #133](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/133) (Oct 4), [PR #139](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/139) (Oct 5), [PR #140](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/140) (Oct 5) | - | - |
+| Edit your own profile | [#78](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/78) | [PR #138](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/138) (Oct 5) | [PR #151](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/151) (blank name check, 3:53 PM) | - |
+| Search the map by county | [#85](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/85) | - | - | [PR #166](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/166) and [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167) (Oct 9), [PR #241](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/241) (Oct 10) |
+| Website and iNaturalist links on site pages | [#86](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/86) | [PR #145](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/145) (Oct 5) | - | - |
+| Delete photos | [#89](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/89) | - | [PR #148](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/148) (12:10 PM) | - |
+| Delete reports | [#93](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/93) | - | - | [PR #165](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/165) (Oct 9) |
+| Stewards can export their own reports | [#92](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/92) | - | [PR #155](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/155) (3:55 PM) | - |
 
 ##### Action Items
 
-- Fill in this entry from members' memory and any notes (Aaron, the Sprint 2 Scrum Master), before the October 14 lab.
-- Record Alex's answer on whether DevOps and release work can be written as user stories ([#22](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/22)), or ask him at the October 14 lab (Aaron).
+Not recorded. The git history shows what was due next:
+
+- The October 9 items of the deck: export more than 50 reports ([#90](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/90)) and hide private
+  fields before export ([#91](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/91)). [PR #146](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/146) (hidden fields) merged on October 7 at
+  12:10 PM. The 7.0.6 paging and tests merged on October 10 ([PR #237](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/237)).
+- Record Alex's answer on whether DevOps and release work can be written as user stories, or ask
+  him at the October 14 lab (Aaron). The question was first raised on September 19 (Meeting #2).
+  [#22](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/22) is about confirming the sprint dates with the TA, and it is closed. Its
+  description also mentions the DevOps question, but no answer is recorded there.
 
 ##### Next Meeting Agenda
 
-Not recorded.
+- Weekly client meeting on October 9 (Meeting #9).
 
 ---
 
@@ -445,9 +523,11 @@ Not recorded.
 | **Company** | SAPAA |
 | **Project** | SAPAA SIR |
 | **Date** | October 9, 2026 |
-| **Time** | Not recorded in the source — team to confirm |
-| **Location** | Not recorded in the source — team to confirm |
-| **Attendees** | Frank (client), Chris, Abhinav, Alissa and Zanab (each speaks in the transcript), and Saumya (presents the deck). Attendance of Aaron, Jayden and anyone else is not recorded in the source — team to confirm. |
+| **Time** | Not recorded |
+| **Location** | Not recorded |
+| **Attendees** | Frank (client), Chris, Aaron, Saumya, Alissa, Zanab, Abhinav, Jayden. Chris, Abhinav, Alissa and Zanab each speak in the transcript, and Saumya presents the deck. Attendance confirmed by Saumya, Oct 11. |
+| **Absentees** | None |
+| **Minute-taker** | No minute-taker; rebuilt from the transcript by Saumya on Oct 11. Aaron committed the transcript ([PR #168](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/168)). |
 | **Source** | [Raw transcript](meetings/week6/2026_10_09_meeting_frank.txt). The transcript ends before the meeting does. |
 
 ##### Agenda
@@ -479,6 +559,34 @@ The team showed that version 1.1 is nearly built and that everything is merged o
 - Frank offered about 100 of his own GPX files as samples and asked about bulk upload. The team will support uploading several files from the start.
 - Linking sites to protected areas: some KML areas share site names, and one site such as Lakeland has three boundaries. The sites in the app have a type in brackets in the name, for example Riverlot 56 (NA), so only fuzzy matching is possible. The team proposes automatic matching plus a manual link option. Frank's advice: the KML format is a system concern, not a user concern. Expect about 90 percent to match automatically and clean up the other 10 percent by hand.
 - Frank advised the team to leave the client with a project close summary and a graceful exit, because the next contract goes to the team that did. He asked Abhinav a mock interview question on release management and discussed the answer.
+
+##### Status of previous action items
+
+The action items of Meeting #7 (October 2), checked against this transcript, GitHub and the git
+history. "Not recorded" means that no source shows the result.
+
+| Action item (owner) | Status on October 9 | Evidence |
+|---|---|---|
+| Write up the map recommendation with the reasons and send it to Frank (Abhinav and Alissa) | Presented at this meeting. The decision document was in the team's Google Docs, not in the repository. | This transcript; new action item below |
+| Add an enhancement to Frank's list to accept or convert non-GPX tracks (Saumya) | Not recorded | - |
+| Make contact with Frank's GIS contact (Saumya; Frank to send the contact) | Not recorded | - |
+| Connect with Frank on LinkedIn (Everyone) | Not recorded | - |
+| Bring a release schedule recommendation (Chris) | Discussed at this meeting: the team demos each release to Frank until he trusts the process. The written release process merged on October 11. | This transcript; [PR #246](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/246) |
+| Bring a gamification mockup (Team) | Done. Shown at this meeting. | This transcript |
+| Ask Harveer for the description of the Edit Report bug (Saumya) | Not recorded | - |
+| Describe version 3.0 in more detail (Frank) | Not recorded | - |
+
+The work due before this meeting (slide 13 of the October 2 deck):
+
+| Item | Issue | Merged on `main` |
+|---|---|---|
+| Authentication checks on admin pages and actions | [#71](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/71) | [PR #144](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/144) (Oct 5) |
+| Supaview fix: Invalid Identifier and the `W26_` rename | [#72](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/72), [#73](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/73) | [PR #128](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/128) and [PR #129](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/129) (Oct 3) |
+| Sign-out fix | [#94](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/94) | [PR #120](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/120) (Oct 2), [PR #158](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/158) (Oct 8) |
+| The form keeps its page | [#87](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/87) | [PR #164](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/164) (Oct 9) |
+| Admins can add a site | [#79](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/79) | [PR #153](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/153) (Oct 6) |
+| Map set-up | [#83](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/83) | [PR #159](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/159) (Oct 8) |
+| Steward profiles | [#75](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/75), [#76](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/76) | [PR #131](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/131) (Oct 3), [PR #138](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/138) (Oct 5) |
 
 ##### Action Items
 

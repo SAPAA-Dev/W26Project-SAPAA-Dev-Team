@@ -20,7 +20,7 @@ jest.mock('@aws-sdk/client-s3', () => ({
   GetObjectCommand: jest.fn().mockImplementation((input) => ({ input })),
 }));
 jest.mock('@aws-sdk/s3-request-presigner', () => ({
-  getSignedUrl: (...args: any[]) => mockGetSignedUrl(...args),
+  getSignedUrl: (...args: unknown[]) => mockGetSignedUrl(...args),
 }));
 
 function makeParams(jobId: string) {

@@ -15,10 +15,10 @@ import {
 import { createClient } from '@/utils/supabase/client';
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, AlertCircle, Pencil } from "lucide-react";
+import { ArrowLeft, AlertCircle } from "lucide-react";
 import UserNavBar from "@/components/HeaderDropdown";
 import Image from "next/image";
-import MainContent, { ExistingAttachment, LocalImage } from "../../new-report/MainContent";
+import MainContent, { ExistingAttachment, LocalImage, type ResponseValue } from "../../new-report/MainContent";
 import StickyFooter from "../../new-report/Footer";
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -43,9 +43,23 @@ interface Question {
   text: string | null;
   question_type: string;
   section: number;
-  answers: any[];
+  answers: string[];
   formorder?: number | null;
   is_required?: boolean | null;
+}
+
+// One item returned by GET /api/site-images
+interface SiteImageItem {
+  id: number;
+  question_id: number | null;
+  storage_key: string | null;
+  filename: string | null;
+  content_type: string | null;
+  file_size_bytes: number | null;
+  caption: string | null;
+  identifier: string | null;
+  site_id: number | null;
+  imageUrl: string;
 }
 
 interface SupabaseAnswerRow {
@@ -70,12 +84,12 @@ export default function EditReportPage() {
   const namesite = decodeURIComponent(params.namesite as string);
   const responseId = Number(params.responseId);
 
-  const [responses, setResponses] = useState<Record<number | string, any>>({});
+  const [responses, setResponses] = useState<Record<number | string, ResponseValue>>({});
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentUser, setCurrentUser] = useState<{
     id?: string; email: string; role: string; name: string; avatar: string;
   } | null>(null);
-  const [isStewardUser, setIsStewardUser] = useState(false);
+  const [, setIsStewardUser] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -139,7 +153,7 @@ export default function EditReportPage() {
         setResponses(existingAnswers);
         const { items = [] } = await siteImagesRes.json();
   
-        const hydrated: ExistingAttachment[] = items.map((a: any) => ({
+        const hydrated: ExistingAttachment[] = items.map((a: SiteImageItem) => ({
           id:              a.id,
           question_id:     a.question_id ?? 0,
           storage_key:     a.storage_key ?? '',
@@ -161,7 +175,7 @@ export default function EditReportPage() {
         setOriginalAttachmentMeta(metaSnapshot);
   
         if (user?.email) {
-          const stewardStatus = await isSteward(user.email);
+          const stewardStatus = await isSteward();
           setIsStewardUser(stewardStatus);
         }
   
@@ -264,7 +278,7 @@ export default function EditReportPage() {
     });
   };
 
-  const isLocalImageArray = (value: any): value is LocalImage[] => {
+  const isLocalImageArray = (value: unknown): value is LocalImage[] => {
     return (
       Array.isArray(value) &&
       value.length > 0 &&
@@ -274,7 +288,7 @@ export default function EditReportPage() {
   };
 
   const getMissingImageMetadataDetails = (
-    currentResponses: Record<number | string, any>,
+    currentResponses: Record<number | string, ResponseValue>,
     questionNumberMap: Record<number, string>
   ): string[] => {
     const details: string[] = [];
@@ -300,58 +314,6 @@ export default function EditReportPage() {
     }
 
     return details;
-  };
-
-  // Returns the site_id for the current response (needed for S3 key + attachment insert)
-  const getSiteId = async (): Promise<number | null> => {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from('form_responses')
-      .select('site_id')
-      .eq('id', responseId)
-      .single();
-    if (error || !data) return null;
-    return (data as any).site_id ?? null;
-  };
-
-  // Upload a single local image to S3 via the presigned-URL API route.
-  // Returns the S3 storage key on success.
-  const uploadImageToS3 = async (
-    localImage: LocalImage,
-    questionId: number,
-    siteId: number
-  ): Promise<string> => {
-    // 1. Get a presigned upload URL from our API route
-    const res = await fetch('/api/upload-url', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        filename: localImage.file.name,
-        contentType: localImage.file.type,
-        fileSize: localImage.file.size,
-        responseId,
-        questionId,
-        siteId,
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error ?? 'Failed to get upload URL');
-    }
-
-    const { uploadUrl, key } = await res.json();
-
-    // 2. PUT the file directly to S3
-    const putRes = await fetch(uploadUrl, {
-      method: 'PUT',
-      body: localImage.file,
-      headers: { 'Content-Type': localImage.file.type },
-    });
-
-    if (!putRes.ok) throw new Error('S3 upload failed');
-
-    return key as string;
   };
 
   // ── Submit handler ────────────────────────────────────────────────────────
@@ -405,9 +367,9 @@ export default function EditReportPage() {
         const isCommType = questionConfig?.obs_comm == 1;
 
         if (Array.isArray(answer)) {
-          answer.forEach((subAnswer: any) => {
+          answer.forEach((subAnswer) => {
             const isOther = subAnswer === 'Other';
-            const commValue = isOther ? ((responses as Record<string, any>)[`${questionId}_comm`] ?? null) : null;
+            const commValue = isOther ? ((responses as Record<string, string | undefined>)[`${questionId}_comm`] ?? null) : null;
             answersArray.push({
               question_id: Number(questionId),
               obs_value: isValueType ? String(subAnswer) : null,
@@ -424,7 +386,7 @@ export default function EditReportPage() {
         
       }
       const dateOfVisitQuestionId = await getDateOfVisitQuestionId();
-      const inspectionDate = responses[dateOfVisitQuestionId];
+      const inspectionDate = responses[dateOfVisitQuestionId] as string;
       await updateSiteInspectionAnswers(responseId, answersArray, inspectionDate);
 
       // 3. Update metadata for any existing attachments that changed

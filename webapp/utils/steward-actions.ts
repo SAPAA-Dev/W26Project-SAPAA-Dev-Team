@@ -15,6 +15,11 @@ export interface StewardedSite {
 
 type ActionResult = { success: true } | { success: false; error: string };
 
+// PostgREST embeds a to-one relation as one object (or null). Without generated database types
+// the client cannot know that, so overrideTypes states the shape of each embed.
+type EmbeddedPerson = { id: number; display_name: string } | null;
+type EmbeddedSite = { namesite: string; archived_at: string | null; is_active: boolean | null } | null;
+
 async function getAdminUserId(): Promise<string | null> {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
@@ -61,7 +66,11 @@ export async function assignSiteSteward(siteId: number, personId: number): Promi
       { onConflict: 'site_id' }
     );
 
-  if (error) return { success: false, error: error.message };
+  // The database error can name tables and constraints, so it stays in the server log.
+  if (error) {
+    console.error('assignSiteSteward failed', error);
+    return { success: false, error: 'The steward was not assigned. Try again.' };
+  }
   return { success: true };
 }
 
@@ -72,10 +81,11 @@ export async function getSiteSteward(siteId: number): Promise<StewardOption | nu
     .from('site_stewards')
     .select('people(id, display_name)')
     .eq('site_id', siteId)
-    .maybeSingle();
+    .maybeSingle()
+    .overrideTypes<{ people: EmbeddedPerson }, { merge: false }>();
 
   if (error) throw new Error(error.message);
-  const person = data?.people as unknown as { id: number; display_name: string } | null;
+  const person = data?.people;
   return person ? { id: person.id, displayName: person.display_name } : null;
 }
 
@@ -85,17 +95,18 @@ export async function getSitesForSteward(personId: number): Promise<StewardedSit
   const { data, error } = await supabase
     .from('site_stewards')
     .select('site_id, sites_pa(namesite, archived_at, is_active)')
-    .eq('steward_id', personId);
+    .eq('steward_id', personId)
+    .overrideTypes<Array<{ site_id: number; sites_pa: EmbeddedSite }>, { merge: false }>();
 
   if (error) throw new Error(error.message);
   return (data ?? [])
     // Archived sites are hidden from the app.
-    .filter((row) => !(row.sites_pa as unknown as { archived_at: string | null } | null)?.archived_at)
+    .filter((row) => !row.sites_pa?.archived_at)
     .map((row) => ({
       siteId: row.site_id,
-      namesite: (row.sites_pa as unknown as { namesite: string } | null)?.namesite ?? '',
+      namesite: row.sites_pa?.namesite ?? '',
       // A deactivated site stays on the profile, but its page cannot be opened.
-      isActive: (row.sites_pa as unknown as { is_active: boolean | null } | null)?.is_active !== false,
+      isActive: row.sites_pa?.is_active !== false,
     }));
 }
 

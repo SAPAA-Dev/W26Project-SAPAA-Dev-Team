@@ -4,9 +4,9 @@ interface MockProps {
   children: string;
   components?: {
     a?: (props: { href: string; children: string }) => React.ReactElement;
-    [key: string]: any;
+    [key: string]: unknown;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // Lightweight Jest mock for react-markdown (ESM-only in production).

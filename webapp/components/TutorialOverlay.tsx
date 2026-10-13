@@ -182,6 +182,7 @@ export default function TutorialOverlay({
 
   useEffect(() => {
     if (forceRun) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- restarts the tour when forceRun flips on
       setStepIndex(0);
       setRun(true);
       return;

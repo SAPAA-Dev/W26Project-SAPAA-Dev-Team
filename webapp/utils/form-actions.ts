@@ -1,8 +1,6 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
 import { createServerSupabase, createClient as createUserClient } from './supabase/server';
-import { Truck } from 'lucide-react';
 
 // Every write below runs with the service role, so each one checks the caller
 // first. The check reads the signed-in session, never a value the caller sends.
@@ -41,13 +39,6 @@ export interface FormQuestion {
   question_key_id: number | null;
   formorder: number | null;
   options: QuestionOption[];
-}
-
-interface questionOptions {
-  question_id: number;
-  option_text: string;
-  is_active: boolean;
-  position: number;
 }
 
 // ─── Form Editor Queries ─────────────────────────────────────────────
@@ -92,7 +83,7 @@ export async function fetchFormQuestions(): Promise<FormQuestion[]> {
   if (error) throw new Error("Failed to load questions: " + error.message);
   
 
-  return (data || []).map((q: any) => ({
+  return (data || []).map((q: Omit<FormQuestion, 'is_required' | 'options'> & { is_required: boolean | null; question_options: QuestionOption[] | null }) => ({
     id: q.id,
     form_question: q.form_question,
     subtext: q.subtext,
@@ -103,7 +94,7 @@ export async function fetchFormQuestions(): Promise<FormQuestion[]> {
     autofill_key: q.autofill_key,
     question_key_id: q.question_key_id,
     formorder: q.formorder ?? null,
-    options: (q.question_options || []).filter((o: any) => o.is_active),
+    options: (q.question_options || []).filter((o: QuestionOption) => o.is_active),
   }));
 }
 
@@ -111,7 +102,7 @@ export async function getMaxFormOrder(): Promise<number> {
   await requireApprovedAdmin();
   const supabase = createServerSupabase();
 
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("questions")
     .select("formorder")
     .order("formorder", { ascending: false })
@@ -122,10 +113,14 @@ export async function getMaxFormOrder(): Promise<number> {
 }
 
 
-export async function saveQuestion(question: FormQuestion): Promise<void> {
+// Returned, not thrown: Next.js hides the message of an error thrown by a server action in production.
+export type FormActionResult = { success: true } | { success: false; error: string };
+
+export async function saveQuestion(question: FormQuestion): Promise<FormActionResult> {
   await requireApprovedAdmin();
   const supabase = createServerSupabase();
 
+  // 1. Update the question
   const { error: editingError } = await supabase
     .from("questions")
     .update({
@@ -139,49 +134,55 @@ export async function saveQuestion(question: FormQuestion): Promise<void> {
     .eq("id", question.id);
 
   if (editingError) {
-    console.error("Error updating question:", editingError);
-    throw new Error(editingError.message);
+    console.error("saveQuestion: question update failed:", editingError);
+    return { success: false, error: "The question was not saved. Try again." };
   }
 
-  // Soft-delete options that were removed
+  const optionsNotSaved = { success: false, error: "Some answer options were not saved. Try again." } as const;
+
+  // 2. Soft-delete options that were removed. This runs before step 3, or it could
+  // also deactivate an option that step 3 has just inserted.
   const existingOptionIds = question.options
     .filter((o) => o.id > 0)
     .map((o) => o.id);
 
   if (existingOptionIds.length > 0) {
-    await supabase
+    const { error: softDeleteError } = await supabase
       .from("question_options")
       .update({ is_active: false })
       .eq("question_id", question.id)
       .eq("is_active", true)
       .not("id", "in", `(${existingOptionIds.join(",")})`);
+
+    if (softDeleteError) {
+      console.error(`saveQuestion: option soft delete failed for question ${question.id}:`, softDeleteError);
+      return optionsNotSaved;
+    }
   }
 
-  // 3. Upsert options with the correct position
-  // We use the index in the .map() or forEach() to set the order
-  for (let i = 0; i < question.options.length; i++) {
-    const opt = question.options[i];
-    
-    if (opt.id > 0) {
-      // Update existing option with new text, active status, AND position
-      await supabase
+  // 3. Update or insert each option, with its index as its position
+  const optionResults = await Promise.all(question.options.map((opt, i) =>
+    opt.id > 0
+      ? supabase
         .from("question_options")
-        .update({ 
-          option_text: opt.option_text, 
-          is_active: opt.is_active, // Matches your 'X' button logic
-          position: i 
-        })
-        .eq("id", opt.id);
-    } else {
-      // Insert new option with the current index as position
-      await supabase.from("question_options").insert({
+        .update({ option_text: opt.option_text, is_active: opt.is_active, position: i })
+        .eq("id", opt.id)
+      : supabase.from("question_options").insert({
         question_id: question.id,
         option_text: opt.option_text,
         is_active: true,
         position: i,
-      });
-    }
+      })
+  ));
+
+  const failures = optionResults.flatMap((result, i) =>
+    result.error ? [{ option: question.options[i].option_text, error: result.error }] : []
+  );
+  if (failures.length > 0) {
+    console.error(`saveQuestion: option update/insert failed for question ${question.id}:`, failures);
+    return optionsNotSaved;
   }
+  return { success: true };
 }
 
 // Admin should only be able to toggle question visibility and never delete questions (request from client)
@@ -206,123 +207,47 @@ export async function addQuestion(
     options: string[];
     question_key: string;
   }
-): Promise<void> {
+): Promise<FormActionResult> {
   await requireApprovedAdmin();
   const supabase = createServerSupabase();
 
-  // create query to insert a row into question_keys
-    // id: autogenerated
-    // category: foreign key to questions_category that frank chooses from a dropdown maybe
-    // question key: typed in by frank depending on what he wants but MUST be in the right format (e.g. Q52_Biological)
-    // comment: TRUE or FALSE based on whether the question has a textbox option
-    // definition: i think this can be left NULL
+  // 1. Work out the derived columns.
+  // category: the first digit of the question number, so "Biological Observations (Q52)" gives "5".
   const questionNumber = newQuestion.form_question.split('(Q')[1]?.replace(')', '') ?? '';
   const category = questionNumber.charAt(0) || null;
+  // comment: the question has a text box.
+  const comment = newQuestion.question_type === "text" || newQuestion.question_type === "image";
+  const hasOptions = newQuestion.question_type === "option" || newQuestion.question_type === "selectall";
+  // obs_value and obs_comm: true for the answer columns the question uses, otherwise null.
+  const obsValue = hasOptions || !comment ? true : null;
+  const obsComm = hasOptions || comment ? true : null;
 
-  let comment = false;
-  if (newQuestion.question_type === "text" || newQuestion.question_type === "image") {
-    comment = true;
+  // 2. Insert the question_keys row, the questions row (at the end of the form) and its options
+  // in one transaction, so a failed step leaves no orphan question_keys row behind.
+  const { error } = await supabase.rpc("add_question_atomically", {
+    p_section_id: sectionId,
+    p_form_question: newQuestion.form_question,
+    p_subtext: newQuestion.subtext,
+    p_question_type: newQuestion.question_type,
+    p_is_required: newQuestion.is_required,
+    p_question_key: newQuestion.question_key,
+    p_category: category,
+    p_comment: comment,
+    p_obs_value: obsValue,
+    p_obs_comm: obsComm,
+    p_options: hasOptions ? newQuestion.options : [],
+  });
+
+  if (error) {
+    console.error("addQuestion: add_question_atomically failed:", JSON.stringify(error));
+    return {
+      success: false,
+      error: error.code === "23505"
+        ? "This question key or one of its options already exists."
+        : "The question was not added. Try again.",
+    };
   }
-
-  // Create question key first
-  const { data: keyData, error: keyError } = await supabase
-    .from("question_keys")
-    .insert({
-      category: category,
-      "question key": newQuestion.question_key,
-      comment: comment,
-      definition: null,
-    })
-    .select("id")
-    .single();
-
-  if (keyError) {
-    console.error("Supabase keyError:", JSON.stringify(keyError));
-    throw new Error(keyError.message);
-  }
-
-  // create query to insert a row into questions
-  // 	id: autogenerated i think
-  // 	form_question: typed in by frank but should be in the right format (e.g. Biological Observations (Q52))
-  // 	question key: foreign key to question_keys' question key column
-  // 	obs_value: TRUE if question has no textbox, NULL otherwise (except in some cases)
-  // 	obs_comm: TRUE if question has textbox, NULL otherwise
-  // 	question_key_id: foreign key to question_keys's id column
-  // 	question_type: determined by which option frank selected
-  // 	is_active: set to TRUE
-  // 	section_id: based on which section the question was added to
-  // 	is_required: TRUE or FALSE based on whether the checkbox is clicked
-  // 	subtext: typed in by frank
-  // 	autofill_key: i think just set this to NULL
-  // 	formorder: determined by where the new question is placed in (might be messy because need to update formorder for all subsequent questions)
-
-  let question_obs_value = null;
-  let question_obs_comm = null;
-  if (newQuestion.question_type === "option" || newQuestion.question_type === "selectall") {
-    question_obs_value = true;
-    question_obs_comm = true;
-  }
-  else if (comment) {
-    question_obs_comm = true;
-  }
-  else {
-    question_obs_value = true;
-  }
-
-  // Next, create question
-  const { data: questionData, error: questionError } = await supabase
-    .from("questions")
-    .insert({
-      form_question: newQuestion.form_question,
-      "question key": newQuestion.question_key,
-      obs_value: question_obs_value,
-      obs_comm: question_obs_comm,
-      question_key_id: keyData.id,
-      question_type: newQuestion.question_type,
-      is_active: true,
-      section_id: sectionId,
-      is_required: newQuestion.is_required,
-      subtext: newQuestion.subtext,
-      autofill_key: null,
-      formorder: (await getMaxFormOrder()) + 1,
-    })
-    .select("id")
-    .single();
-
-  if (questionError) {
-    console.error("Supabase keyError:", JSON.stringify(questionError));
-    throw new Error(questionError.message);
-  }
-
-  // if the question has multiple choices, create query to insert however many rows into question_options as necessary
-  // 	id: autogenerated i think
-  // 	question_id: foreign key to questions' id column
-  //  option_text: whatever frank types in as the text
-  //  is_active: set to TRUE
-  //  position: the relative position of this question option to the other question options in the question (if that makes sense)
-
-  // if the question has multiple choices, create query to insert however many rows into question_options as necessary
-
-  if (newQuestion.question_type === "option" || newQuestion.question_type === "selectall") {
-    let optionsArray: questionOptions[] = [];
-    for (const option of newQuestion.options) {
-      optionsArray.push({
-          question_id: questionData.id,
-          option_text: option,
-          is_active: true,
-          position: newQuestion.options.indexOf(option)
-      });
-    }
-
-    const { data: optionsData, error: optionsError } = await supabase
-    .from("question_options")
-    .insert(optionsArray);
-
-    if (optionsError) {
-      console.error("Supabase keyError:", JSON.stringify(optionsError));
-      throw new Error(optionsError.message);
-    }
-  }
+  return { success: true };
 }
 
 export async function reorderQuestions(

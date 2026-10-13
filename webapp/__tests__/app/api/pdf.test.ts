@@ -22,7 +22,7 @@ jest.mock('@/lib/pdf/processPdfJob', () => ({
   processPdfJob: jest.fn(),
 }));
 
-function makeRequest(body: any): NextRequest {
+function makeRequest(body: unknown): NextRequest {
   return {
     json: jest.fn().mockResolvedValue(body),
   } as unknown as NextRequest;
@@ -279,6 +279,22 @@ describe('POST /api/pdf', () => {
     );
   });
 
+  it('US 7.0.6 AT3: refuses a steward bulk export of more than 50 reports and creates no job', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
+    const siteNames = Array.from({ length: 60 }, (_, i) => `Site ${i}`);
+    const selectedResponseIds = Array.from({ length: 60 }, (_, i) => i + 1);
+
+    const multiSite = await POST(makeRequest({ mode: 'multi-site', siteNames }));
+    const site = await POST(
+      makeRequest({ mode: 'site', siteName: 'Elk Island', options: { selectedResponseIds } })
+    );
+
+    expect(multiSite.status).toBe(403);
+    expect(site.status).toBe(403);
+    expect(mockJobInsert).not.toHaveBeenCalled();
+    expect(processPdfJob).not.toHaveBeenCalled();
+  });
+
   it('kicks off processPdfJob with the created jobId', async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: 'u1', app_metadata: { role: 'admin', authenticated: true } } },
@@ -353,7 +369,7 @@ describe('POST /api/pdf', () => {
     expect(processPdfJob).not.toHaveBeenCalled();
   });
 
-  it('returns 403 when a steward requests site mode (7.0.1 AT2)', async () => {
+  it('returns 403 when a steward requests site mode (7.0.1 AT2, 7.0.6 AT3)', async () => {
     mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
 
     const res = await POST(makeRequest({ mode: 'site', siteName: 'Elk Island' }));
@@ -365,7 +381,7 @@ describe('POST /api/pdf', () => {
     expect(mockServiceFrom).not.toHaveBeenCalled();
   });
 
-  it('returns 403 when a steward requests multi-site mode (7.0.1 AT2)', async () => {
+  it('returns 403 when a steward requests multi-site mode (7.0.1 AT2, 7.0.6 AT3)', async () => {
     mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
 
     const res = await POST(makeRequest({ mode: 'multi-site', siteNames: ['Site A', 'Site B'] }));

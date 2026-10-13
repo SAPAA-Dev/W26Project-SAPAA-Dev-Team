@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, within, act } from '@testing-library/react';
 import NewReportPage from '../../app/detail/[namesite]/new-report/page';
-import MainContent from '../../app/detail/[namesite]/new-report/MainContent';
+import MainContent, { type ResponseValue } from '../../app/detail/[namesite]/new-report/MainContent';
 import StickyFooter from '../../app/detail/[namesite]/new-report/Footer';
 
 // --- Mock setup ---
@@ -16,7 +16,10 @@ jest.mock('next/navigation', () => ({
   usePathname: () => '/detail/Test%20Site/new-report',
 }));
 
-jest.mock('next/image', () => (props: any) => <img {...props} alt={props.alt} />);
+jest.mock('next/image', () => function MockImage(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+  // eslint-disable-next-line @next/next/no-img-element -- mock of next/image renders a plain img
+  return <img {...props} alt={props.alt} />;
+});
 
 const mockGetQuestionsOnline = jest.fn();
 const mockIsSteward = jest.fn();
@@ -31,16 +34,16 @@ const mockGetDateOfVisitQuestionId = jest.fn();
 const mockRollbackSiteInspectionSubmission = jest.fn();
 
 jest.mock('@/utils/supabase/queries', () => ({
-  getQuestionsOnline: (...args: any[]) => mockGetQuestionsOnline(...args),
-  isSteward: (...args: any[]) => mockIsSteward(...args),
-  getCurrentUserUid: (...args: any[]) => mockGetCurrentUserUid(...args),
-  getCurrentSiteId: (...args: any[]) => mockGetCurrentSiteId(...args),
-  addSiteInspectionReport: (...args: any[]) => mockAddSiteInspectionReport(...args),
-  getQuestionResponseType: (...args: any[]) => mockGetQuestionResponseType(...args),
-  uploadSiteInspectionAnswers: (...args: any[]) => mockUploadSiteInspectionAnswers(...args),
-  getSitesOnline: (...args: any[]) => mockGetSitesOnline(...args),
-  getDateOfVisitQuestionId: (...args: any[]) => mockGetDateOfVisitQuestionId(...args),
-  rollbackSiteInspectionSubmission: (...args: any[]) => mockRollbackSiteInspectionSubmission(...args),
+  getQuestionsOnline: (...args: unknown[]) => mockGetQuestionsOnline(...args),
+  isSteward: (...args: unknown[]) => mockIsSteward(...args),
+  getCurrentUserUid: (...args: unknown[]) => mockGetCurrentUserUid(...args),
+  getCurrentSiteId: (...args: unknown[]) => mockGetCurrentSiteId(...args),
+  addSiteInspectionReport: (...args: unknown[]) => mockAddSiteInspectionReport(...args),
+  getQuestionResponseType: (...args: unknown[]) => mockGetQuestionResponseType(...args),
+  uploadSiteInspectionAnswers: (...args: unknown[]) => mockUploadSiteInspectionAnswers(...args),
+  getSitesOnline: (...args: unknown[]) => mockGetSitesOnline(...args),
+  getDateOfVisitQuestionId: (...args: unknown[]) => mockGetDateOfVisitQuestionId(...args),
+  rollbackSiteInspectionSubmission: (...args: unknown[]) => mockRollbackSiteInspectionSubmission(...args),
 }));
 
 const mockGetUser = jest.fn();
@@ -239,14 +242,6 @@ const closeQuestions = [
 
 // --- Helpers ---
 
-function setupStewardMocks() {
-  mockGetUser.mockResolvedValue({ data: { user: stewardUser }, error: null });
-  mockIsSteward.mockResolvedValue(true);
-  mockGetQuestionsOnline.mockResolvedValue(personalInfoQuestions);
-  mockGetCurrentUserUid.mockResolvedValue('user-1');
-  mockGetCurrentSiteId.mockResolvedValue('site-1');
-}
-
 function setupGuestMocks() {
   mockGetUser.mockResolvedValue({ data: { user: guestUser }, error: null });
   mockIsSteward.mockResolvedValue(false);
@@ -267,9 +262,9 @@ function setupWhereUGoMocks() {
 async function renderBeThereMainContent(mockOnChange: jest.Mock) {
   mockGetQuestionsOnline.mockResolvedValue(beThereQuestions);
   function ControlledMainContent() {
-    const [responses, setResponses] = React.useState<Record<number, any>>({});
+    const [responses, setResponses] = React.useState<Record<number, ResponseValue>>({});
 
-    const handleChange = (nextResponses: Record<number, any>) => {
+    const handleChange = (nextResponses: Record<number, ResponseValue>) => {
       setResponses(nextResponses);
       mockOnChange(nextResponses);
     };
@@ -581,7 +576,7 @@ describe('W26 US 1.0.5 - Add Details Regarding the Overview of my Visit', () => 
     mockGetQuestionsOnline.mockResolvedValue(multiSectionQuestions);
 
     function ControlledForm() {
-      const [responses, setResponses] = React.useState<Record<number, any>>({});
+      const [responses, setResponses] = React.useState<Record<number, ResponseValue>>({});
       const [isOnLastSection, setIsOnLastSection] = React.useState(false);
 
       return (
@@ -639,7 +634,7 @@ describe('W26 US 1.0.5 - Add Details Regarding the Overview of my Visit', () => 
     mockGetQuestionsOnline.mockResolvedValue(multiSectionQuestions);
 
     function ControlledForm() {
-      const [responses, setResponses] = React.useState<Record<number, any>>({});
+      const [responses, setResponses] = React.useState<Record<number, ResponseValue>>({});
       const [sectionState, setSectionState] = React.useState<{
         canGoPrevious: boolean;
         canGoNext: boolean;
@@ -1191,7 +1186,7 @@ describe('W26 US 1.0.26 - Persist Site Inspection Form Draft', () => {
     fireEvent.click(screen.getByRole('button', { name: /Review & Submit/i }));
 
     await waitFor(() => expect(mockUploadSiteInspectionAnswers).toHaveBeenCalled());
-    const questionIds = mockUploadSiteInspectionAnswers.mock.calls[0][0].map((row: any) => row.question_id);
+    const questionIds = mockUploadSiteInspectionAnswers.mock.calls[0][0].map((row: { question_id: number }) => row.question_id);
     expect(questionIds).toEqual([1]);
   });
 
@@ -1767,8 +1762,8 @@ describe('W26 US 1.0.28 - Autofill Form Fields from User Account', () => {
     siteName = 'Test Site'
   ) {
     function ControlledMainContent() {
-      const [responses, setResponses] = React.useState<Record<number, any>>({});
-      const handleChange = (next: Record<number, any>) => {
+      const [responses, setResponses] = React.useState<Record<number, ResponseValue>>({});
+      const handleChange = (next: Record<number, ResponseValue>) => {
         setResponses(next);
         mockOnChange(next);
       };
@@ -1776,7 +1771,7 @@ describe('W26 US 1.0.28 - Autofill Form Fields from User Account', () => {
         <MainContent
           responses={responses}
           onResponsesChange={handleChange}
-          currentUser={currentUser as any}
+          currentUser={currentUser as React.ComponentProps<typeof MainContent>['currentUser']}
           siteName={siteName}
         />
       );
@@ -1955,9 +1950,9 @@ function createMockFile(name: string, size: number = 1024, type: string = 'image
 async function renderPhotographyMainContent(mockOnChange: jest.Mock) {
   mockGetQuestionsOnline.mockResolvedValue(photographyQuestions);
   function ControlledMainContent() {
-    const [responses, setResponses] = React.useState<Record<number, any>>({});
+    const [responses, setResponses] = React.useState<Record<number, ResponseValue>>({});
 
-    const handleChange = (nextResponses: Record<number, any>) => {
+    const handleChange = (nextResponses: Record<number, ResponseValue>) => {
       setResponses(nextResponses);
       mockOnChange(nextResponses);
     };
@@ -1983,8 +1978,8 @@ describe('W26 US 1.0.16 - Add Photography Captured During Visit', () => {
     jest.clearAllMocks();
     localStorage.clear();
     uuidCounter = 0;
-    (global.URL.createObjectURL as any) = jest.fn(() => 'blob:fake-preview');
-    (global.URL.revokeObjectURL as any) = jest.fn();
+    global.URL.createObjectURL = jest.fn(() => 'blob:fake-preview');
+    global.URL.revokeObjectURL = jest.fn();
     jest.spyOn(global.crypto, 'randomUUID').mockImplementation(() => `uuid-${uuidCounter++}` as `${string}-${string}-${string}-${string}-${string}`);
   });
 

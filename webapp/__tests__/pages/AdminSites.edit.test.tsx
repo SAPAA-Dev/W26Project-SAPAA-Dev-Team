@@ -24,11 +24,14 @@ jest.mock('@/utils/supabase/queries', () => ({
 }));
 
 // Mock next/image
-jest.mock('next/image', () => (props: any) => <img {...props} alt={props.alt} />);
+jest.mock('next/image', () => function MockImage(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+  // eslint-disable-next-line @next/next/no-img-element -- test mock of next/image
+  return <img {...props} alt={props.alt} />;
+});
 
 // Mock components
-jest.mock('../../app/admin/AdminNavBar', () => () => <div>AdminNavBarMock</div>);
-jest.mock('@/components/ProtectedRoute', () => ({ children }: any) => <div>{children}</div>);
+jest.mock('../../app/admin/AdminNavBar', () => function MockAdminNavBar() { return <div>AdminNavBarMock</div>; });
+jest.mock('@/components/ProtectedRoute', () => function MockProtectedRoute({ children }: { children: React.ReactNode }) { return <div>{children}</div>; });
 
 describe('AdminSitesPage – Edit Site (US 2.0.5)', () => {
   const mockPush = jest.fn();

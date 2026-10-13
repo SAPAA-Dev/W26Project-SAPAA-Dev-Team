@@ -148,18 +148,50 @@ describe("Supabase Auth Module", () => {
   });
 
   describe("logout", () => {
-    it("logs out successfully", async () => {
-      mockSignOut.mockResolvedValue({});
-      await expect(authModule.logout()).resolves.toBeUndefined();
+    it("logs out successfully (5.0.4 AT1)", async () => {
+      mockSignOut.mockResolvedValue({ error: null });
+      await expect(authModule.logout()).resolves.toEqual({ success: true });
       expect(mockSignOut).toHaveBeenCalled();
     });
 
-    it("handles logout failure", async () => {
+    it("returns the error that Supabase returns instead of reporting success (5.0.4 AT1)", async () => {
+      mockSignOut.mockResolvedValue({ error: { message: "Network down" } });
+      const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      await expect(authModule.logout()).resolves.toEqual({ success: false, error: "Network down" });
+      consoleSpy.mockRestore();
+    });
+
+    it("returns an error when signOut throws (5.0.4 AT1)", async () => {
       mockSignOut.mockRejectedValue(new Error("Fail"));
       const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-      await authModule.logout();
+      await expect(authModule.logout()).resolves.toEqual({ success: false, error: "Fail" });
       expect(consoleSpy).toHaveBeenCalledWith("Logout failed", expect.any(Error));
       consoleSpy.mockRestore();
+    });
+  });
+
+  describe("subscribeToAuth", () => {
+    it("calls the subscriber once per sign-in", async () => {
+      let emit: (event: string, session: unknown) => void = () => {};
+      mockOnAuthStateChange.mockImplementation((handler) => {
+        emit = handler;
+        return { data: { subscription: { unsubscribe: jest.fn() } } };
+      });
+      mockGetSession.mockResolvedValue({ data: { session: null } });
+      const callback = jest.fn();
+      const unsubscribe = authModule.subscribeToAuth(callback);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      callback.mockClear();
+
+      const user = { id: "1", email: "a@b.com" };
+      mockSignInWithPassword.mockResolvedValue({ data: { user }, error: null });
+      await authModule.login("a@b.com", "pass123");
+      // Supabase emits SIGNED_IN for the same sign-in.
+      emit("SIGNED_IN", { user });
+
+      expect(callback).toHaveBeenCalledTimes(1);
+      expect(callback).toHaveBeenCalledWith({ isAuthenticated: true, user });
+      unsubscribe();
     });
   });
 });

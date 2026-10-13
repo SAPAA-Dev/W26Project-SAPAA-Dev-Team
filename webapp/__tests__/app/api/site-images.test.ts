@@ -105,10 +105,10 @@ describe("GET /api/site-images", () => {
       },
     ];
 
-    const queryBuilder: any = {
+    const queryBuilder = {
       is: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
-      then: jest.fn((resolve: any) =>
+      then: jest.fn((resolve: (value: unknown) => unknown) =>
         resolve({
           data: attachmentsData,
           error: null,
@@ -173,10 +173,10 @@ describe("GET /api/site-images", () => {
       },
     ];
 
-    const queryBuilder: any = {
+    const queryBuilder = {
       is: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
-      then: jest.fn((resolve: any) =>
+      then: jest.fn((resolve: (value: unknown) => unknown) =>
         resolve({
           data: attachmentsData,
           error: null,
@@ -239,10 +239,10 @@ describe("GET /api/site-images", () => {
       },
     ];
 
-    const queryBuilder: any = {
+    const queryBuilder = {
       is: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
-      then: jest.fn((resolve: any) =>
+      then: jest.fn((resolve: (value: unknown) => unknown) =>
         resolve({
           data: attachmentsData,
           error: null,
@@ -293,10 +293,10 @@ describe("GET /api/site-images", () => {
       error: null,
     });
 
-    const queryBuilder: any = {
+    const queryBuilder = {
       is: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
-      then: jest.fn((resolve: any) =>
+      then: jest.fn((resolve: (value: unknown) => unknown) =>
         resolve({
           data: [],
           error: null,
@@ -323,10 +323,10 @@ describe("GET /api/site-images", () => {
       error: null,
     });
 
-    const queryBuilder: any = {
+    const queryBuilder = {
       is: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
-      then: jest.fn((resolve: any) =>
+      then: jest.fn((resolve: (value: unknown) => unknown) =>
         resolve({
           data: null,
           error: { message: "Failed to fetch attachments" },
@@ -367,10 +367,10 @@ describe("GET /api/site-images", () => {
       },
     ];
 
-    const queryBuilder: any = {
+    const queryBuilder = {
       is: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
-      then: jest.fn((resolve: any) =>
+      then: jest.fn((resolve: (value: unknown) => unknown) =>
         resolve({
           data: attachmentsData,
           error: null,
@@ -406,10 +406,10 @@ describe("GET /api/site-images", () => {
   it("never signs a row whose key is outside the image folders", async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
 
-    const queryBuilder: any = {
+    const queryBuilder = {
       is: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
-      then: jest.fn((resolve: any) =>
+      then: jest.fn((resolve: (value: unknown) => unknown) =>
         resolve({
           data: [
             { id: 14, storage_key: "inspections/207/3235/27/file1.jpg" },

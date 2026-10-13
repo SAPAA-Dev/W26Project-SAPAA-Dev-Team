@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-describe("Unauthorized user check", () => {
+describe("Unauthorized user check (US 3.0.8, #5)", () => {
   beforeEach(() => {
     cy.visit("http://localhost:3000/");
     

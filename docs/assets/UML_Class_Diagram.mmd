@@ -40,7 +40,7 @@ classDiagram
             +signup(email, password) success, error, needsConfirmation
             +signInWithGoogle() success, error
             +signInWithMicrosoft() success, error
-            +logout() void [CHANGE 5.0.4]
+            +logout() success, error [CHANGE 5.0.4]
         }
         class SiteQueries {
             <<webapp/utils/supabase/queries.ts>>
@@ -73,13 +73,10 @@ classDiagram
             +getFormResponsesBySite(siteName) FormResponse[] [CHANGE 1.0.3, 7.0.4]
             +getFormResponsesBySiteAdmin(siteName) list of FormResponse and is_active
             +getFormResponseById(responseId) Record
-            +getAttachmentsByResponseId(responseId) list of id, question_id, storage_key, filename, content_type, ...
             +updateAttachmentMetadata(attachmentId, fields) void
             +updateSiteInspectionAnswers(responseId, batchArray, inspectionDate) any [CHANGE 4.0.4]
             +getResponseOwnerId(responseId) string or null
             +getSiteIdForResponse(responseId) number or null
-            +getFormResponsesForSiteIds(siteIds, keyMap) Map
-            +getAttachmentsForResponseIds(responseIds) list of id, response_id, question_id, storage_key, filename, ...
             +getSiteInspectionReportDeleteImpact(responseId) SiteInspectionReportDeleteImpact
             +archiveSiteInspectionReport(responseId) SiteInspectionReportArchiveResult
             +restoreSiteInspectionReport(responseId) SiteInspectionReportRestoreResult
@@ -153,9 +150,18 @@ classDiagram
             <<webapp/lib/pdf/pdfDataFetcher.ts>>
             +fetchReportData(request) PdfReportData [CHANGE 7.0.7]
         }
+        class PdfReportQueries {
+            <<webapp/lib/pdf/reportQueries.ts>>
+            +getReportQuestionKeyMap() Record
+            +reduceAnswers(rawAnswers, keyMap) answers, naturalness, naturalnessDetails, steward
+            +getAttachmentsByResponseId(responseId) list of id, question_id, storage_key, filename, content_type, ...
+            +getSitesByNames(siteNames) list of id, namesite, ab_county, ab_counties
+            +getFormResponsesForSiteIds(siteIds, keyMap) Map
+            +getAttachmentsForResponseIds(responseIds) list of id, response_id, question_id, storage_key, filename, ...
+        }
         class GeocodeRoute {
             <<route /api/geocode>>
-            +GET(q) coords, latitude, longitude [CHANGE 6.0.1]
+            +GET(q) latitude, longitude [CHANGE 6.0.1]
         }
     }
 
@@ -174,28 +180,22 @@ classDiagram
             +updatePassword(newPassword) void [NEW 5.0.2]
         }
 
-        class AuthorizationService {
-            <<new: server-side access control>>
-            +getCurrentUser() AuthenticatedUser
-            +requireAuthenticatedUser() AuthenticatedUser
-            +requireAdmin() AuthenticatedUser
-            +requireOwner(ownerId) AuthenticatedUser
+        class AccessChecks {
+            <<logical grouping: private helpers, one copy in each file>>
+            +requireApprovedAdmin(message) void
+            +requireApprovedCaller(message) ApprovedCaller
+            +requireReportWriter(responseId) ApprovedCaller, siteId, createdAt
+            +isApprovedAdmin() boolean
+            +getAdminUserId() string or null
         }
 
-        class AuthenticatedUser {
-            <<trusted server session value>>
-            +id: string
-            +role: Admin or Steward
-        }
-
-        class SiteQueries {
-            +getSiteMapData() Site[] [NEW 2.0.1]
-            +getUnmatchedKmlSites() ProtectedArea[] [NEW 2.0.2]
-            +deleteSite(siteId) void [NEW 2.0.4]
+        class ApprovedCaller {
+            <<value from the server session>>
+            +userId: string
+            +isAdmin: boolean
         }
 
         class InspectionQueries {
-            +deleteFormResponse(responseId) void [NEW 7.0.8]
             +getSirSummary(fromDate, toDate) SirSummary [NEW 7.0.3]
         }
 
@@ -204,10 +204,10 @@ classDiagram
             +setHiddenQuestions(questionIds) void
         }
 
-        class ActivityPointsService {
-            <<new 1.0.5: server actions>>
-            +awardActivityPoints(activity, sourceId) void
-            +getActivityPointsTotal(userId) number
+        class ContributionMetrics {
+            <<new 1.0.5, proposed for Sprint 4: calculated, no table>>
+            +getContributionMetrics(personId, period) ActivityStats
+            +getScoreboard(metric, period) ranked people
         }
 
         class SiteSafetyPriorityActions {
@@ -237,7 +237,7 @@ classDiagram
 
         class NewReportPage {
             <<webapp/app/detail/[namesite]/new-report/page.tsx>>
-            +handleSubmit() void [CHANGE 4.0.5, 1.0.5]
+            +handleSubmit() void [CHANGE 4.0.5]
             +uploadFileToS3(uploadUrl, file) void
             +selectINaturalistPhotos(inatUsername) photos [NEW 4.0.5]
         }
@@ -281,30 +281,30 @@ classDiagram
     }
 
     note for InspectionQueries "CHANGE 1.0.3: getFormResponsesBySite removes answers that the steward hides.<br>CHANGE 7.0.4: it also returns the question key of each answer.<br>The site page groups answers by that key. There is no separate query."
-    note for AuthorizationService "Every protected server action gets the caller from the server session.<br>Admin checks must use a role that the user cannot change. Browser UI checks are not trusted.<br>The role is in app_metadata (role = admin, authenticated = true). RLS reads it too.<br>Today each file has its own copy of the admin check. AuthorizationService replaces these copies."
-    note for SiteQueries "US 2.0.8 uses Site, getSiteByName and getFormResponsesBySite.<br>deleteSite removes the Site's SIRs, answers, attachments, homepage images,<br>GPX tracks and other Site-owned rows; their S3 files are also removed."
+    note for AccessChecks "Not a module. Each helper is a private function that reads the caller from the server session.<br>requireApprovedAdmin: queries.ts and form-actions.ts. requireApprovedCaller, requireReportWriter: queries.ts.<br>isApprovedAdmin: admin-actions.ts and kml-import-actions.ts. getAdminUserId: steward-actions.ts.<br>Approved = app_metadata.authenticated true. Admin = app_metadata.role admin. RLS reads the same keys.<br>The route handlers have inline copies. middleware.ts also blocks unapproved users (403 or redirect to /sites)."
+    note for SiteQueries "US 2.0.8 uses Site, getSiteByName and getFormResponsesBySite.<br>US 2.0.4: archiveSite hides a Site. permanentlyDeleteSite deletes only an archived sites_pa row.<br>SIRs, attachments and homepage images stay with no site. S3 files stay.<br>US 2.0.1: getProtectedAreaBoundaries. US 2.0.2: getSiteSuggestions."
     note for ExportRoutes "POST /api/export calls createExportJob.<br>GET /api/export/status/[jobId] calls getExportJobStatus.<br>getExportJobStatus returns the URL only to an Admin or the job creator.<br>The ZIP includes inspection images, homepage images, GPX files and completed PDFs."
     note for PdfDataFetcher "CHANGE 7.0.7: removes the answers of options.hiddenQuestionIds.<br>CHANGE 7.0.6: processPdfJob reads the SIRs in batches.<br>The cause of the 50 SIR limit is an open question."
-    note for ActivityPointsService "awardActivityPoints reads the caller from the session.<br>It checks the source row belongs to the caller and reads site_id from it."
+    note for ContributionMetrics "Proposed (docs/user-model.md, Gamification proposal). Counts from form_responses and sites_pa:<br>inspections, counties, site variety, first report of a Site. All time or the last year.<br>No points are stored. people.activity_points stays unused."
     note for NewReportPage "NEW 4.0.5: the browser calls iNaturalist. handleSubmit copies<br>each chosen photo to S3 through /api/s3/presign.<br>insertInspectionAttachments writes inat_observation_id.<br>CHANGE 4.0.6: photo identifier is optional and does not block submission.<br>PresignRoute also accepts an empty identifier."
     note for GeocodeRoute "US 6.0.1 AT 4: results are cached and requests stay under 2,500 per day.<br>Open question: where the cache and the daily count are stored."
 
     WebAuthService --> SupabaseBackend : Auth
-    AuthorizationService --> SupabaseBackend : trusted session and role
-    AuthorizationService --> AuthenticatedUser : returns trusted caller
-    SiteQueries --> AuthorizationService : Admin for writes
-    InspectionQueries --> AuthorizationService : Admin or owner
-    ProfileRoute --> AuthorizationService : signed-in user, owner for PATCH
-    HiddenQuestionActions --> AuthorizationService : owner
-    StewardActions --> AuthorizationService : Admin for assign
-    KmlImportActions --> AuthorizationService : Admin
-    SiteSafetyPriorityActions --> AuthorizationService : Admin for writes
-    GpxTrackActions --> AuthorizationService : signed-in user
-    SiteImagesRoute --> AuthorizationService : Admin for DELETE
-    PdfRoute --> AuthorizationService : owner or Admin
-    PdfStatusRoute --> AuthorizationService : job creator or Admin
-    SiteSafetyPriorityActions --> AuthorizationService : signed-in user for reads
-    ExportRoutes --> AuthorizationService : Admin
+    AccessChecks --> SupabaseBackend : auth.getUser(), app_metadata
+    AccessChecks --> ApprovedCaller : returns
+    SiteQueries --> AccessChecks : requireApprovedAdmin for writes, requireApprovedCaller for boundaries
+    InspectionQueries --> AccessChecks : requireReportWriter (owner or Admin), requireApprovedAdmin for archive and delete
+    ProfileRoute --> SupabaseBackend : inline check, approved user for GET, RLS for PATCH
+    HiddenQuestionActions --> AccessChecks : owner (proposed)
+    StewardActions --> AccessChecks : getAdminUserId for search and assign
+    KmlImportActions --> AccessChecks : isApprovedAdmin
+    HomepageImageActions --> AccessChecks : requireApprovedCaller
+    SiteSafetyPriorityActions --> AccessChecks : Admin for writes (proposed)
+    GpxTrackActions --> AccessChecks : approved user (proposed)
+    SiteImagesRoute --> SupabaseBackend : inline Admin check for DELETE
+    PdfRoute --> SupabaseBackend : inline check, owner or Admin
+    PdfStatusRoute --> SupabaseBackend : inline check, job creator only
+    ExportRoutes --> AccessChecks : Admin (proposed)
     SiteQueries --> SupabaseBackend : web app tables
     InspectionQueries --> SupabaseBackend : web app tables
     ProfileRoute --> SupabaseBackend : people, socials, form_responses
@@ -337,13 +337,14 @@ classDiagram
     GeocodeRoute --> OpenCageApi : geocodes
     StewardLogGeocoder --> OpenCageApi : geocodes from the phone
     OfflineMapService --> MapTileServer : downloads tiles
-    NewReportPage --> ActivityPointsService : after a successful submit
-    HomepageImageActions --> ActivityPointsService : after a successful insert
     HomepageImageActions --> SupabaseBackend : homepage_image_uploads
-    ActivityPointsService --> SupabaseBackend : activity_points
-    ProfileRoute --> ActivityPointsService : points total
+    ContributionMetrics --> SupabaseBackend : reads form_responses, sites_pa
+    ProfileRoute --> ContributionMetrics : metrics (proposed)
     SiteSafetyPriorityActions --> SupabaseBackend : site_safety, site_priority
     SiteObservationsPanel --> INaturalistApi : top 5 observations
     PdfJobProcessor --> PdfDataFetcher : reads SIRs
-    PdfDataFetcher --> InspectionQueries : reads SIRs and attachments
-    InspectionQueries --> S3Delete : rollback deletes files, CHANGE 7.0.8 deleteFormResponse
+    PdfDataFetcher --> InspectionQueries : reads the SIRs of one site
+    PdfDataFetcher --> PdfReportQueries : reads SIRs, sites and attachments
+    InspectionQueries --> PdfReportQueries : key map, answers, rollback attachments
+    PdfReportQueries --> SupabaseBackend : service role, server-only module, no caller check
+    InspectionQueries --> S3Delete : rollback and permanentlyDeleteSiteInspectionReport delete files

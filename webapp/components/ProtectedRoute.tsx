@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { createClient } from '@/utils/supabase/client';
-import { logout } from '@/services/auth';
+import { useSignOut } from '@/hooks/useSignOut';
 import { Loader2, ShieldAlert, Clock } from 'lucide-react';
 
 async function getCurrentUserRole(): Promise<string | null> {
@@ -48,7 +48,7 @@ export default function ProtectedRoute({
 }) {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
+  const { signOut, error: signOutError } = useSignOut(() => router.push('/login'));
   const [userRole, setUserRole] = useState<string | null>(null);
   const [roleLoading, setRoleLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
@@ -107,17 +107,17 @@ export default function ProtectedRoute({
             Your account has been created successfully, but an administrator needs to review and approve your access before you can use the application.
           </p>
           <p className="text-sm text-[#7A8075] mb-6">
-            You'll receive an email notification once you've been approved. This typically happens within 24 hours.
+            You&apos;ll receive an email notification once you&apos;ve been approved. This typically happens within 24 hours.
           </p>
           <button
-            onClick={async () => {
-              await logout();
-              router.push('/login');
-            }}
+            onClick={signOut}
             className="w-full bg-gradient-to-r from-[#356B43] to-[#254431] text-white font-semibold px-6 py-3 rounded-xl hover:shadow-lg transition-all"
           >
             Sign Out
           </button>
+          {signOutError && (
+            <p role="alert" className="mt-3 text-sm text-[#B91C1C]">{signOutError}</p>
+          )}
         </div>
       </div>
     );

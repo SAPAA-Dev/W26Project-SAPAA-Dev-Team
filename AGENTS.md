@@ -65,10 +65,10 @@ CI uses Node 22. Run commands in the directory of the change.
 | `.agents/hooks/` | `node --test .agents/hooks/guard.test.mjs` | - | - |
 
 Known failures on `main`. Do not fix them unless the task says so. Your change must not add new failures:
-* `webapp/`: `npm run lint` has about 342 errors. `npx tsc --noEmit` has 5 errors in `__tests__/`.
+* `webapp/`: none. `npm run lint -- --max-warnings 0` and `npx tsc --noEmit` pass, and CI blocks on both.
 * `FNR/`: `npx tsc --noEmit` has about 50 errors.
 
-Never run Cypress, native mobile builds, `webapp/temp-supabase.py`, or `googleSheets/code.gs`. They write to production or need a human.
+Never run Cypress, native mobile builds, or `googleSheets/code.gs`. They write to production or need a human.
 
 # Rules you must read
 * You are not allowed to make git worktrees, unless specified by the user. 

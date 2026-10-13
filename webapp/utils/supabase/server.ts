@@ -29,9 +29,15 @@ export async function createClient() {
           return cookieStore.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
+          // Cookies can't be set once the response is sent (Server Components, and the PDF
+          // job that runs in after()). Middleware refreshes the session, so skipping is safe.
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // Read-only cookie store.
+          }
         },
       },
     }

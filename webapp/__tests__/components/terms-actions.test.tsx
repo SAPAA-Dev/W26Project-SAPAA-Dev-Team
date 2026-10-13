@@ -1,8 +1,9 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
 import NewReportPage from "../../app/detail/[namesite]/new-report/page";
+import { isSteward } from "@/utils/supabase/queries";
 
 const mockRouterBack = jest.fn();
 const mockPush = jest.fn();
@@ -15,12 +16,13 @@ jest.mock("next/navigation", () => ({
 
 jest.mock("next/image", () => ({
   __esModule: true,
-  default: (props: any) => <img {...props} />,
+  // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text -- mock of next/image renders a plain img
+  default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />,
 }));
 
 jest.mock("next/link", () => ({
   __esModule: true,
-  default: ({ children, href }: any) => {
+  default: ({ children, href }: { children: React.ReactNode; href: string | { pathname?: string | null } }) => {
     const resolvedHref =
       typeof href === "object" && href !== null
         ? href.pathname ?? "/"
@@ -215,12 +217,10 @@ describe("NewReportPage – Liability / Verification Popup", () => {
 
   describe("Steward user – popup bypassed", () => {
     beforeEach(() => {
-      const { isSteward } = require("@/utils/supabase/queries");
       (isSteward as jest.Mock).mockResolvedValue(true);
     });
 
     afterEach(() => {
-      const { isSteward } = require("@/utils/supabase/queries");
       (isSteward as jest.Mock).mockResolvedValue(false);
     });
 
@@ -305,7 +305,6 @@ describe("NewReportPage – Liability / Verification Popup", () => {
     });
 
     it("steward users do not see the terms link because the popup is hidden", async () => {
-      const { isSteward } = require("@/utils/supabase/queries");
       (isSteward as jest.Mock).mockResolvedValueOnce(true);
       render(<NewReportPage />);
       await waitForFormReady();

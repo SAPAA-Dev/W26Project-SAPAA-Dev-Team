@@ -42,42 +42,51 @@ config:
 sequenceDiagram
     autonumber off
     actor Steward
-    participant Page as SIR page<br/>PdfExportModal
+    participant Page as SIR on the Site page<br/>SirPdfExportButton
     participant Api as API routes<br/>/api/pdf
     participant Job as Background job<br/>processPdfJob
     participant DB as Supabase DB
     participant S3 as AWS S3
 
-    Note over Steward,S3: Covers US 7.0.1. The PDF job flow exists for Admins.<br/>"(proposed)" = the step is not in the code today.
+    Note over Steward,S3: Covers US 7.0.1. Built in PR #155 (closes #68). All steps exist on main as of October 11, 2026.
 
-    Steward->>Page: Select Export PDF on own SIR (proposed for stewards)
-    Page->>Api: POST /api/pdf {mode single, responseId,<br/>includeImages true}
-    Api->>DB: getResponseOwnerId(responseId)<br/>(exists, call from /api/pdf proposed)
-    DB-->>Api: Owner user_id
-    Api->>Api: Allow owner or Admin (proposed)<br/>Today: only app_metadata.role admin and authenticated
-    alt Caller did not submit the SIR (AT 2)
-        Api-->>Page: 403. No job is made
-        Page-->>Steward: Show "not allowed"
-    else Caller owns the SIR
-        Api->>DB: Insert S26_pdf_jobs row, status pending
+    Steward->>Page: Select Export PDF on own SIR<br/>(shown to the submitter and to Admins)
+    Page->>Api: POST /api/pdf {mode single, responseId,<br/>options includeImages true, hiddenQuestionIds []}
+    Api->>Api: auth.getUser(). Approved Admin or approved steward?
+    alt Not approved, or not Admin or steward
+        Api-->>Page: 403 'Forbidden - steward or admin access required'
+    else Steward
+        alt mode is site or multi-site
+            Api-->>Page: 403 'Forbidden - stewards can only export their own reports'
+        else hiddenQuestionIds is not empty (US 7.0.7 AT4)
+            Api-->>Page: 403 'Forbidden - only admins can hide fields on export'
+        else
+            Api->>DB: form_responses.user_id of responseId (service role)
+            DB-->>Api: Owner user_id or no row
+            alt Caller did not submit the SIR (AT 2)
+                Api-->>Page: 403 'Forbidden - you can only export reports you submitted'.<br/>No job is made
+                Page-->>Steward: Show the error under the button
+            end
+        end
+    end
+    opt Caller is Admin, or the steward owns the SIR
+        Api->>DB: Insert S26_pdf_jobs row, status pending (signed-in client, RLS: created_by = caller)
         Api-->>Page: 202 with jobId
         Api->>Job: after(): processPdfJob(jobId)
         Job->>DB: fetchReportData: answers and attachments
-        Job->>S3: Get photos with presigned GET
+        Job->>S3: Get photos
         Job->>Job: Render PDF (lib/pdf/inspectionReport)
+        loop Every 2.5 s, at most 3 minutes
+            Page->>Api: GET /api/pdf/status/{jobId}
+            Api->>DB: Read job. RLS returns it only to its creator. The route checks created_by again
+            Api-->>Page: status, and downloadUrl when complete
+        end
         alt Render or upload fails
             Job->>DB: Set job failed with error
-            Page-->>Steward: Show Failed to Steward (proposed). PdfExportsDropdown<br/>is admin-only today, and PdfJobWatcher ignores failed jobs
+            Page-->>Steward: Show the error under the button
         else PDF is made
             Job->>S3: Put PDF
             Job->>DB: Set job complete with storage_path
-            Page->>DB: PdfJobWatcher polls every 3 s
-            DB-->>Page: Job is complete
-            Page->>Api: GET /api/pdf/status/{jobId}
-            Api->>DB: Read job. RLS returns the job only to its creator<br/>(exists in local schema, else 404)
-            Api-->>Page: Presigned download URL
-            Page-->>Steward: Download PDF with same answers<br/>and photos as SIR page (AT 1, AT 3)
+            Page-->>Steward: PdfJobWatcher (root layout) downloads the PDF<br/>with the same answers and photos as the SIR page (AT 1, AT 3)
         end
     end
-
-    Note over Page,Job: includeImages is false by default today.<br/>AT 3 needs photos, so the request must set it.<br/>Today /api/pdf/route.ts does not read the owner. It checks only app_metadata.role === 'admin'<br/>and app_metadata.authenticated === true.

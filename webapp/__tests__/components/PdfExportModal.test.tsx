@@ -505,7 +505,7 @@ describe('PdfExportModal', () => {
   });
 
   it('shows loading state during export', async () => {
-    let resolveExport: (value: any) => void;
+    let resolveExport: (value: unknown) => void;
     const exportPromise = new Promise((resolve) => {
       resolveExport = resolve;
     });

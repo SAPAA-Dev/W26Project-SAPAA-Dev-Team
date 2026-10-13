@@ -122,6 +122,72 @@ export const openApiSpec = {
         },
       },
 
+      Socials: {
+        type: "object",
+        description: "Contact details of a person. Every field can be null.",
+        properties: {
+          email: { type: "string", nullable: true, example: "jane@example.org" },
+          phone: { type: "string", nullable: true, example: null },
+          website: { type: "string", nullable: true, example: "https://example.org" },
+          instagram: { type: "string", nullable: true, example: null },
+          facebook: { type: "string", nullable: true, example: null },
+          x: { type: "string", nullable: true, example: null },
+          linkedin: { type: "string", nullable: true, example: null },
+        },
+      },
+
+      ProfileResponse: {
+        type: "object",
+        properties: {
+          profile: {
+            type: "object",
+            properties: {
+              id: { type: "integer", example: 12 },
+              displayName: { type: "string", example: "Jane Doe" },
+              skills: { type: "array", items: { type: "string" }, example: ["Botany"] },
+              focusAreas: { type: "array", items: { type: "string" }, example: ["Wetlands"] },
+              socials: { $ref: "#/components/schemas/Socials" },
+              role: {
+                type: "string",
+                enum: ["Admin", "Steward"],
+                description: "For display only. It never authorizes a request.",
+              },
+            },
+          },
+          isOwner: { type: "boolean", example: false },
+          stats: {
+            type: "object",
+            description: "Counts of the active reports that are not archived.",
+            properties: {
+              inspectionCount: { type: "integer", example: 14 },
+              distinctSiteCount: { type: "integer", example: 5 },
+            },
+          },
+          history: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                id: { type: "integer", example: 301 },
+                siteId: { type: "integer", nullable: true, example: 44 },
+                siteName: { type: "string", example: "Elk Island Provincial Park" },
+                siteArchived: { type: "boolean", example: false },
+                siteInactive: { type: "boolean", example: false },
+                inspectionDate: { type: "string", nullable: true, example: "2026-09-30" },
+              },
+            },
+          },
+          pagination: {
+            type: "object",
+            properties: {
+              page: { type: "integer", example: 1 },
+              pageSize: { type: "integer", example: 10 },
+              total: { type: "integer", example: 14 },
+            },
+          },
+        },
+      },
+
       PdfOptions: {
         type: "object",
         description: "Optional configuration for PDF generation",
@@ -329,6 +395,52 @@ export const openApiSpec = {
           },
         },
       },
+      delete: {
+        summary: "Delete one image and its S3 object",
+        tags: ["Gallery for Image uploads through SITE INSPECTION form"],
+        description:
+          "Deletes one attachments or homepage_image_uploads row, then its S3 object. Admin only. When the S3 delete fails after the row is deleted, the response is 200 with storageCleanupComplete false.",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "id",
+            in: "query",
+            required: true,
+            schema: { type: "integer" },
+            description: "The id of the image row",
+            example: 88,
+          },
+          {
+            name: "kind",
+            in: "query",
+            required: false,
+            schema: { type: "string", enum: ["attachments", "homepage_image_uploads"], default: "attachments" },
+            description: "The table of the image row",
+          },
+        ],
+        responses: {
+          "200": {
+            description: "The row is deleted",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    deleted: { type: "boolean", example: true },
+                    storageCleanupComplete: { type: "boolean", example: true },
+                  },
+                },
+              },
+            },
+          },
+          "400": { description: "Provide a valid image kind, or Provide a numeric attachment id", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+          "401": { description: "Unauthorized", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+          "403": { description: "Forbidden - not an approved admin", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+          "404": { description: "Attachment not found, or Homepage image not found", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+          "422": { description: "The image is stored outside the image folders and cannot be deleted here", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+          "500": { description: "Failed to delete site image", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+        },
+      },
     },
 
     "/api/sites/{siteId}/gallery": {
@@ -450,7 +562,7 @@ export const openApiSpec = {
         summary: "Get homepage image uploads for a specific site",
         tags: ["Gallery for Image uploads from Homepage"],
         description:
-          "Returns homepage image uploads for a specific site, including metadata and signed image URLs. Admin only.",
+          "Returns homepage image uploads for a specific site, including metadata and signed image URLs. Any signed-in user. RLS returns rows only to approved users.",
         parameters: [
           {
             name: "siteId",
@@ -525,14 +637,6 @@ export const openApiSpec = {
           },
           "401": {
             description: "Unauthorized",
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/ErrorResponse" },
-              },
-            },
-          },
-          "403": {
-            description: "Forbidden - admin access required",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/ErrorResponse" },
@@ -786,7 +890,7 @@ export const openApiSpec = {
         summary: "Get all homepage image uploads",
         tags: ["User Gallery"],
         description:
-          "Returns all homepage image uploads with metadata and signed S3 URLs, ordered by date descending. Requires authentication.",
+          "Returns all homepage image uploads with metadata and signed S3 URLs, ordered by date descending. The items have no storage_key. Requires authentication. RLS returns rows only to approved users.",
         security: [{ bearerAuth: [] }],
         responses: {
           "200": {
@@ -822,7 +926,7 @@ export const openApiSpec = {
         summary: "Get all inspection image attachments",
         tags: ["User Gallery"],
         description:
-          "Returns all inspection image attachments (JPEG, PNG, WebP) across all sites, with resolved site names and signed S3 URLs. Ordered by id descending. Requires authentication.",
+          "Returns the inspection image attachments (JPEG, PNG, WebP) of active reports that are not archived, across all sites, with resolved site names and signed S3 URLs. Ordered by id descending. The items have no storage_key. Requires authentication. RLS returns rows only to approved users.",
         security: [{ bearerAuth: [] }],
         responses: {
           "200": {
@@ -922,7 +1026,7 @@ export const openApiSpec = {
           },
           "403": {
             description:
-              "Forbidden - not an approved admin or steward, a steward requested site or multi-site mode, or a steward requested a report they did not submit",
+              "Forbidden - not an approved admin or steward, a steward requested site or multi-site mode, a steward sent hiddenQuestionIds (only admins can hide fields), or a steward requested a report they did not submit",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/ErrorResponse" },
@@ -991,6 +1095,169 @@ export const openApiSpec = {
               },
             },
           },
+        },
+      },
+    },
+    "/api/profile": {
+      get: {
+        summary: "Get a profile with its counts and one page of inspection history",
+        tags: ["Profiles"],
+        description:
+          "Returns the profile of personId, or of the caller when personId is not sent. Approved users only. A page has 10 reports. A page that is not a positive number reads page 1, and a page above 100000 reads page 100000. A page after the last report returns an empty history with the real total.",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: "personId", in: "query", required: false, schema: { type: "integer" }, example: 12 },
+          { name: "page", in: "query", required: false, schema: { type: "integer", default: 1 }, example: 1 },
+        ],
+        responses: {
+          "200": {
+            description: "The profile",
+            content: { "application/json": { schema: { $ref: "#/components/schemas/ProfileResponse" } } },
+          },
+          "401": { description: "Sign in to view profiles.", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+          "403": { description: "Your account is waiting for admin approval.", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+          "404": { description: "Profile not found. personId is not a whole number, is larger than a bigint, or no person has that id.", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+          "500": { description: "Unable to load this profile, or Unable to load inspection history", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+          "503": { description: "The people table does not exist yet", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+        },
+      },
+      patch: {
+        summary: "Edit your own profile",
+        tags: ["Profiles"],
+        description:
+          "Updates the profile of the caller with the signed-in client, so row level security and the column grants on people and socials apply. Without socials, the stored contact details do not change.",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["displayName", "skills", "focusAreas"],
+                properties: {
+                  displayName: { type: "string", minLength: 1, maxLength: 29, example: "Jane Doe" },
+                  skills: { type: "array", maxItems: 12, items: { type: "string", minLength: 1, maxLength: 40 }, example: ["Botany"] },
+                  focusAreas: { type: "array", maxItems: 12, items: { type: "string", minLength: 1, maxLength: 40 }, example: ["Wetlands"] },
+                  socials: {
+                    $ref: "#/components/schemas/Socials",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "200": {
+            description: "The saved profile. socials is present only when the request sent it.",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    profile: {
+                      type: "object",
+                      properties: {
+                        id: { type: "integer" },
+                        displayName: { type: "string" },
+                        skills: { type: "array", items: { type: "string" } },
+                        focusAreas: { type: "array", items: { type: "string" } },
+                        socials: { $ref: "#/components/schemas/Socials" },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "400": { description: "Invalid profile update (not JSON), or the rule that a field breaks. When socials is sent, email is required.", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+          "401": { description: "Sign in to edit your profile.", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+          "404": { description: "Profile not found.", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+          "500": {
+            description:
+              "Unable to save your profile. Or the name, skills and focus areas were saved but the contact details were not; then the body also has profile.",
+            content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } },
+          },
+          "503": { description: "The people table does not exist yet", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+        },
+      },
+    },
+
+    "/api/geocode": {
+      get: {
+        summary: "Get the coordinates of a place name",
+        tags: ["Maps"],
+        description: "Calls the OpenCage Geocoding API. The handler has no caller check. The middleware requires an approved session.",
+        parameters: [
+          { name: "q", in: "query", required: true, schema: { type: "string" }, example: "Elk Island Provincial Park" },
+        ],
+        responses: {
+          "200": {
+            description: "The coordinates, or coords null when OpenCage finds nothing",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    latitude: { type: "number", example: 53.5731 },
+                    longitude: { type: "number", example: -112.8583 },
+                    coords: { type: "object", nullable: true, example: null },
+                  },
+                },
+              },
+            },
+          },
+          "400": { description: "Missing q param", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+          "500": { description: "The OpenCage or network error message", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+        },
+      },
+    },
+
+    "/api/heatmap": {
+      get: {
+        summary: "Count site reports whose name contains a keyword",
+        tags: ["Maps"],
+        description:
+          "Reads the view sites_report_fnr_test with the signed-in client and counts the rows of each site name. Without keyword, data is empty. The handler has no caller check.",
+        parameters: [
+          { name: "keyword", in: "query", required: false, schema: { type: "string" }, example: "park" },
+        ],
+        responses: {
+          "200": {
+            description: "Counts by site name, highest first. message is No sites found when nothing matches.",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    data: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          namesite: { type: "string", example: "Elk Island Provincial Park" },
+                          count: { type: "integer", example: 15 },
+                        },
+                      },
+                    },
+                    message: { type: "string", example: "No sites found" },
+                  },
+                },
+              },
+            },
+          },
+          "400": { description: "The Supabase error message", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+          "500": { description: "The exception message", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+        },
+      },
+    },
+
+    "/api/openapi": {
+      get: {
+        summary: "Get this OpenAPI document",
+        tags: ["Documentation"],
+        description: "Returns webapp/lib/swagger.ts as JSON. /api-docs reads it.",
+        responses: {
+          "200": { description: "The OpenAPI 3.0 document", content: { "application/json": { schema: { type: "object" } } } },
         },
       },
     },

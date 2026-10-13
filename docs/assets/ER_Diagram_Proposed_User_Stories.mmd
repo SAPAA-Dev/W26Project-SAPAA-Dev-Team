@@ -19,6 +19,10 @@ erDiagram
 
     %% Stories that need no new table or column:
     %% - US 1.0.4 activity stats: count form_responses and answers.
+    %% - US 1.0.5 (proposed for Sprint 4): calculated contribution metrics and a
+    %%   scoreboard from form_responses and sites_pa (docs/user-model.md,
+    %%   "Gamification proposal"). No points table. people.activity_points exists
+    %%   and stays unused until the client decides on points.
     %% - US 2.0.3 deactivate and reactivate: sites_pa.is_active exists.
     %% - US 2.0.4 delete a site: built. sites_pa.archived_at hides a site (archive_site).
     %%   A permanent delete (permanently_delete_site) removes the sites_pa row and its
@@ -29,22 +33,25 @@ erDiagram
     %% - US 4.0.4 edit own SIR: the edit page exists; ownership is user_id.
     %% - US 4.0.6 optional identifier: attachments.identifier can be NULL.
     %% - US 5.0.2 password reset, US 5.0.4 sign out: Supabase Auth.
-    %% - US 7.0.1 steward PDF export: S26_pdf_jobs exists; the access rule
-    %%   changes.
+    %% - US 7.0.1 steward PDF export: built (PR #155). S26_pdf_jobs exists; /api/pdf
+    %%   lets a steward export a SIR they submitted.
     %% - US 7.0.3 all-SIR summary, US 7.0.4 one question across years:
     %%   queries on answers, grouped by the question key (Q-number).
     %% - US 4.0.7 top iNaturalist observations: live call to iNaturalist.
     %% - US 7.0.6 export more than 50 SIRs, US 7.0.7 hide fields: S26_pdf_jobs
     %%   request_payload keeps selectedResponseIds and hiddenQuestionIds.
-    %% - US 7.0.8 delete a SIR: delete the form_responses row with its
-    %%   answers and attachments rows in one transaction.
+    %% - US 7.0.8 delete a SIR: built. form_responses.archived_at hides a SIR
+    %%   (archive_site_inspection_report). A permanent delete
+    %%   (permanently_delete_site_inspection_report) removes the archived row with
+    %%   its answers and attachments in one transaction, then the S3 files.
     %% - US 7.0.5 delete an image: delete the attachments or
     %%   homepage_image_uploads row and the S3 object.
 
     %% US 6.0.1 AT 4: fallback geocoding results are cached and OpenCage
     %% requests stay under 2,500 per day. Where the cache and the daily count
     %% are stored is not decided. See the OPEN QUESTIONS box.
-    %% The role store is raw_app_meta_data. See the OPEN QUESTIONS box.
+    %% The role store is decided: raw_app_meta_data (role, authenticated). Only the
+    %% server writes it (PR #144). RLS and every server check read it.
     %% The KML is loaded into protected_areas (folder, fid). A Site links to one
     %% protected_areas row through sites_pa.protected_area_id (unique, nullable).
     %% The polygon is protected_areas.geometry, so sites_pa has no boundary column.
@@ -60,8 +67,6 @@ erDiagram
     }
 
     OPEN_QUESTIONS["OPEN QUESTIONS: NOT DECIDED"] {
-        text role_store "Where the Admin or Steward role is kept: raw_app_meta_data"
-        text role_store_need "Sequence diagrams need a role that the user cannot change"
         text geocode_cache "US 6.0.1 AT 4: store for cached OpenCage results"
         text geocode_daily_count "US 6.0.1 AT 4: store for the daily request count, limit 2,500"
     }
@@ -72,7 +77,7 @@ erDiagram
         text display_name "US 1.0.1, 1.0.2"
         text_array skills "US 1.0.1, 1.0.2"
         text_array focus_areas "US 1.0.1, 1.0.2"
-        integer activity_points "US 1.0.5: users cannot edit it"
+        integer activity_points "unused; US 1.0.5 proposal calculates metrics"
         text inat_username "NEW US 4.0.5"
     }
 
@@ -143,22 +148,6 @@ erDiagram
         timestamptz created_at
     }
 
-    activity_point_values["NEW activity_point_values (US 1.0.5)"] {
-        bigint site_id PK, FK
-        text activity PK "sir_submitted, photo_uploaded"
-        integer points
-    }
-
-    activity_points["NEW activity_points (US 1.0.5)"] {
-        bigint id PK
-        uuid user_id FK "auth.users.id"
-        bigint site_id FK
-        text activity
-        bigint source_id "response or upload id, unique with activity"
-        integer points
-        timestamptz created_at
-    }
-
     site_safety["NEW site_safety (US 2.0.11)"] {
         bigint site_id PK, FK
         text nearest_hospital "NULL = not recorded"
@@ -183,6 +172,7 @@ erDiagram
         uuid user_id FK "US 1.0.3, 4.0.4, 7.0.1"
         date inspection_date "US 7.0.3, 7.0.4"
         boolean is_active "US 7.0.5: files stay when false"
+        timestamptz archived_at "US 7.0.8: NULL = visible"
     }
 
     answers["EXISTING answers"] {
@@ -255,9 +245,6 @@ erDiagram
     auth_users |o--o{ homepage_image_uploads : "user_id"
     auth_users ||--o{ S26_pdf_jobs : "created_by"
     auth_users ||--o{ export_jobs : "created_by"
-    sites_pa ||--o{ activity_point_values : "site_id"
-    sites_pa ||--o{ activity_points : "site_id"
-    auth_users ||--o{ activity_points : "user_id"
     sites_pa ||--o| site_safety : "site_id"
     sites_pa ||--o| site_priority : "site_id"
 
@@ -266,7 +253,7 @@ erDiagram
     classDef question fill:#ffe344,stroke:#d4ba24,stroke-width:2px,color:#111
 
     class auth_users,people,socials,site_stewards,protected_areas,ab_counties,sites_pa,site_page_fields,form_responses,answers,questions,attachments,homepage_image_uploads,S26_pdf_jobs existing
-    class profile_hidden_questions,gpx_tracks,export_jobs,activity_point_values,activity_points,site_safety,site_priority proposed
+    class profile_hidden_questions,gpx_tracks,export_jobs,site_safety,site_priority proposed
     class OPEN_QUESTIONS question
 
     %% text_array means the PostgreSQL type text[].

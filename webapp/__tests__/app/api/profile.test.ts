@@ -19,7 +19,7 @@ type QueryResult = Record<string, unknown>;
 
 function makeQuery(result: QueryResult) {
   const query: Record<string, unknown> = {};
-  ['select', 'eq', 'is', 'order', 'range', 'update'].forEach((method) => {
+  ['select', 'eq', 'is', 'order', 'range', 'overrideTypes', 'update'].forEach((method) => {
     query[method] = jest.fn(() => query);
   });
   query.maybeSingle = jest.fn(async () => result);
@@ -78,6 +78,22 @@ describe('/api/profile', () => {
 
       expect(response.status).toBe(404);
       expect(mockAdminFrom).not.toHaveBeenCalled();
+    });
+
+    it.each(['9223372036854775808', '99999999999999999999999'])(
+      'answers 404 for a personId %s that is larger than a bigint',
+      async (personId) => {
+        const response = await GET(makeRequest({ personId }) as never);
+
+        expect(response.status).toBe(404);
+        expect(mockAdminFrom).not.toHaveBeenCalled();
+      },
+    );
+
+    it('looks up the largest bigint personId', async () => {
+      await GET(makeRequest({ personId: '9223372036854775807' }) as never);
+
+      expect(mockAdminFrom).toHaveBeenCalledWith('people');
     });
 
     it('answers 503 only when the people table is missing', async () => {
@@ -144,7 +160,7 @@ describe('/api/profile', () => {
         count: 3,
       };
       const responsesQuery: Record<string, unknown> = { ...responsesResult };
-      ['select', 'eq', 'is', 'order', 'range'].forEach((method) => {
+      ['select', 'eq', 'is', 'order', 'range', 'overrideTypes'].forEach((method) => {
         responsesQuery[method] = jest.fn(() => responsesQuery);
       });
       mockAdminFrom.mockImplementation((table: string) =>
@@ -167,6 +183,92 @@ describe('/api/profile', () => {
         { id: 10, siteId: 7, siteName: 'Elk Island', siteArchived: false, siteInactive: true, inspectionDate: '2026-08-15' },
         { id: 9, siteId: null, siteName: 'Unknown site', siteArchived: false, siteInactive: false, inspectionDate: '2026-08-01' },
       ]);
+    });
+
+    describe('page', () => {
+      // A form_responses query whose final await gives `result`.
+      function responsesQuery(result: Record<string, unknown>) {
+        const query: Record<string, unknown> = { ...result };
+        ['select', 'eq', 'is', 'order', 'range', 'overrideTypes'].forEach((method) => {
+          query[method] = jest.fn(() => query);
+        });
+        return query;
+      }
+
+      function mockResponses(...queries: Record<string, unknown>[]) {
+        const peopleQuery = makeQuery({ data: PERSON, error: null });
+        mockAdminFrom.mockImplementation((table: string) =>
+          table === 'form_responses' ? queries.shift() : peopleQuery
+        );
+      }
+
+      it('reads the requested page', async () => {
+        const page = responsesQuery({ data: [], error: null, count: 14 });
+        mockResponses(page);
+
+        const response = await GET(makeRequest({ personId: '42', page: '2' }) as never);
+
+        expect(response.status).toBe(200);
+        expect(page.range).toHaveBeenCalledWith(10, 19);
+        expect((await response.json()).pagination).toEqual({ page: 2, pageSize: 10, total: 14 });
+      });
+
+      it.each(['abc', '0', '-3'])('reads the first page for page=%s, as before', async (value) => {
+        const page = responsesQuery({ data: [], error: null, count: 14 });
+        mockResponses(page);
+
+        const response = await GET(makeRequest({ personId: '42', page: value }) as never);
+
+        expect(response.status).toBe(200);
+        expect(page.range).toHaveBeenCalledWith(0, 9);
+      });
+
+      it('caps a huge page so PostgREST never gets an offset like 1e+21', async () => {
+        const page = responsesQuery({ data: [], error: null, count: 14 });
+        mockResponses(page);
+
+        await GET(makeRequest({ personId: '42', page: '99999999999999999999' }) as never);
+
+        const [from] = (page.range as jest.Mock).mock.calls[0];
+        expect(Number.isSafeInteger(from)).toBe(true);
+        expect(String(from)).not.toContain('e');
+      });
+
+      it('answers 200 with an empty history for a page past the last report', async () => {
+        // PostgREST refuses an offset past the last row with PGRST103 and sends no count.
+        const page = responsesQuery({ data: null, error: { code: 'PGRST103', message: 'Requested range not satisfiable' }, count: null });
+        const total = responsesQuery({ data: null, error: null, count: 14 });
+        mockResponses(page, total);
+
+        const response = await GET(makeRequest({ personId: '42', page: '5' }) as never);
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(total.select).toHaveBeenCalledWith('id', { count: 'exact', head: true });
+        expect(total.is).toHaveBeenCalledWith('archived_at', null);
+        expect(body.history).toEqual([]);
+        expect(body.pagination).toEqual({ page: 5, pageSize: 10, total: 14 });
+        expect(body.stats.inspectionCount).toBe(14);
+      });
+
+      it('still answers 500 when the history query fails for another reason', async () => {
+        mockResponses(responsesQuery({ data: null, error: { code: 'XX000', message: 'boom' }, count: null }));
+
+        const response = await GET(makeRequest({ personId: '42', page: '5' }) as never);
+
+        expect(response.status).toBe(500);
+      });
+
+      it('answers 500 when the count after PGRST103 fails', async () => {
+        mockResponses(
+          responsesQuery({ data: null, error: { code: 'PGRST103', message: 'Requested range not satisfiable' }, count: null }),
+          responsesQuery({ data: null, error: { code: 'XX000', message: 'boom' }, count: null }),
+        );
+
+        const response = await GET(makeRequest({ personId: '42', page: '5' }) as never);
+
+        expect(response.status).toBe(500);
+      });
     });
 
     it('returns the person\'s contact details, with blanks as null (1.0.1 AT1)', async () => {

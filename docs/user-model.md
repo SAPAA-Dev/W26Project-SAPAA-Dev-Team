@@ -2,7 +2,7 @@
 
 Status: **applied**. Approved in PR #116 (Aaron and lamersc, 2026-09-30). Migrated by PR #131
 (closes #75) in `webapp/supabase/migrations/20261004000000_create_user_model.sql`. Contact details
-added by PR #142. Status as of October 7, 2026.
+added by PR #142. Reads limited to approved users by PR #238. Status as of October 11, 2026.
 
 This model is used by US 1.0.1 (profiles), US 1.0.2 (edit own profile) and US 3.0.2 (steward
 designation). It also keeps a field for US 1.0.5 (activity points, Sprint 4).
@@ -39,18 +39,20 @@ person without a login can be added later without a schema change.
 
 | Table | Key | Columns | Who can read | Who can write |
 |---|---|---|---|---|
-| `people` | `id` (bigint identity) | `auth_user_id` (unique, nullable, references `auth.users`), `display_name` (1 to 29 characters after trim), `skills`, `focus_areas`, `activity_points`, `created_at`, `updated_at` | Signed-in users. | A user updates only their own row, and only `display_name`, `skills` and `focus_areas`. The sign-up trigger inserts rows. |
-| `site_stewards` | `site_id` (references `sites_pa`) | `steward_id` (references `people`), `assigned_by` (references `auth.users`), `assigned_at` | Signed-in users. | No user policy. Only the admin server action `assignSiteSteward` writes it, with the service-role client. |
-| `socials` | `person_id` (references `people`) | `email`, `phone`, `website`, `instagram`, `facebook`, `x`, `linkedin`, `updated_at`. All optional. Links must start with `https://`. | Signed-in users. | A user inserts or updates only the row of their own person record. |
+| `people` | `id` (bigint identity) | `auth_user_id` (unique, nullable, references `auth.users`), `display_name` (1 to 29 characters after trim), `skills`, `focus_areas`, `activity_points`, `created_at`, `updated_at` | Approved users. A user who is not approved reads only their own row. | A user updates only their own row, and only `display_name`, `skills` and `focus_areas`. The sign-up trigger inserts rows. |
+| `site_stewards` | `site_id` (references `sites_pa`) | `steward_id` (references `people`), `assigned_by` (references `auth.users`), `assigned_at` | Approved users. | No user policy. Only the admin server action `assignSiteSteward` writes it, with the service-role client. |
+| `socials` | `person_id` (references `people`) | `email`, `phone`, `website`, `instagram`, `facebook`, `x`, `linkedin`, `updated_at`. All optional in the table. `PATCH /api/profile` requires `email` when it saves contact details (US 1.0.2 AT3). Links must start with `https://`. | Approved users. A user who is not approved reads only their own row. | A user inserts or updates only the row of their own person record. |
 
 The profile does not read the email or phone in `auth.users`. The contact email in
-`socials.email` is optional and separate from the login email (#142). `GET /api/profile` reads
-`people` and embeds `socials` with the service-role client. See
-[API Documentation](api-documentation.md).
+`socials.email` is optional and separate from the login email (#142). `GET /api/profile` checks that
+the caller is approved, then reads `people` and embeds `socials` with the service-role client. See
+[API Documentation](api-documentation.md). The profile page shows the inspection history 10
+reports at a time, with Previous and Next buttons. The rules for every table, by role, are in the
+[Access matrix](api-documentation.md#4-access-matrix).
 
 `luperson` is not linked. In the review of PR #116, lamersc asked to drop it from this model,
-because the mobile app has not changed in two years. The web app only uses `luperson` to check if
-an email belongs to a steward. If backlog item 38 imports legacy people later, it adds a link
+because the mobile app has not changed in two years. The web app only uses `luperson` in
+`isSteward()`, which checks if the email of the signed-in user belongs to a steward. If backlog item 38 imports legacy people later, it adds a link
 column then.
 
 ## SQL
@@ -62,6 +64,13 @@ The source of truth is the migration files. This page does not copy the SQL.
 | `webapp/supabase/migrations/20261004000000_create_user_model.sql` | Creates `people` and `site_stewards`, the RLS policies and the column grants. Adds the `people_set_updated_at` trigger (function `set_updated_at()`) and the sign-up trigger `create_person_on_signup` (function `create_person_for_new_user()`, execute revoked from `public`, `anon` and `authenticated`). Gives every existing user a person record. |
 | `webapp/supabase/migrations/20261005000000_profile_distinct_site_count.sql` | Creates `get_distinct_inspected_site_count(p_user_id uuid)` (#78). |
 | `webapp/supabase/migrations/20261005010000_create_socials.sql` | Creates `socials`, its RLS policies and column grants (#142). |
+| `webapp/supabase/migrations/20261009000000_archive_site_inspection_reports.sql` | Redefines `get_distinct_inspected_site_count` so that archived reports are not counted (#165). |
+| `webapp/supabase/migrations/20261010000100_require_approval_for_people_reads.sql` | Replaces the read policies of `people`, `socials` and `site_stewards`. Approved users read all rows. A user who is not approved reads only their own `people` and `socials` rows, so that `PATCH /api/profile` can read the row back (#238). |
+| `webapp/supabase/migrations/20261011000000_revoke_public_execute_on_report_functions.sql` | Revokes execute on `get_distinct_inspected_site_count` and `get_max_inspection_number` from `public`, `anon` and `authenticated`, so that only the service role can call them. Before it, Postgres and Supabase gave execute to every role by default, so a request with the anon key could call them. Safe to run twice. |
+
+The other tables are not part of this model. Their rules, for example `protected_areas`
+(`20261004010000`, `20261006010000`) and the read policies of the gallery tables
+(`20261005020000`), are in the [Access matrix](api-documentation.md#4-access-matrix).
 
 A human runs the same files in the Supabase dashboard for production, after
 `20261003000000_remove_w26_prefix.sql` (see the header comment of each migration). Every step is safe to run
@@ -80,8 +89,8 @@ returns both counts in `stats`.
 
 | Field | How it is calculated |
 |---|---|
-| `inspectionCount` | The number of active `form_responses` rows for the user. |
-| `distinctSiteCount` | The SQL function `get_distinct_inspected_site_count(p_user_id uuid)`. It counts the distinct `site_id` values of the active `form_responses` rows for the user. The migration grants execute to `service_role`, and the route calls it with the service-role client (#78). |
+| `inspectionCount` | The number of `form_responses` rows for the user that are active and not archived (`is_active` is true and `archived_at` is null). |
+| `distinctSiteCount` | The SQL function `get_distinct_inspected_site_count(p_user_id uuid)`. It counts the distinct `site_id` values of the same rows. Only `service_role` can execute it, and the route calls it with the service-role client (#78). |
 
 The inspection count is the same as this query:
 
@@ -89,7 +98,7 @@ The inspection count is the same as this query:
 select count(*)
 from public.form_responses responses
 join public.people person on person.auth_user_id = responses.user_id
-where person.id = $1 and responses.is_active;
+where person.id = $1 and responses.is_active and responses.archived_at is null;
 ```
 
 ## Migration of current users
@@ -114,7 +123,7 @@ No existing table is changed, so no data can be lost.
 | # | Question | Decision | Source |
 |---|---|---|---|
 | 1 | Which model? | Option D: a `people` table with its own id. | Approved by Aaron and lamersc in PR #116. Applied in #131. |
-| 2 | Can other users see contact info? | Yes. All `socials` fields are visible to signed-in users. A user fills in only the fields they want to show. | Decided in #142. |
+| 2 | Can other users see contact info? | Yes. All `socials` fields are visible to approved users. A user who is not approved sees only their own. A user fills in only the fields they want to show. | Decided in #142. Limited to approved users by #238 (`20261010000100_require_approval_for_people_reads.sql`). |
 | 3 | Where is `role` stored? | In `app_metadata`, which only the server can write. Only admin server actions write `site_stewards`, with the same admin check as the other admin actions. | Approved in PR #116. All checks moved to `app_metadata` by PR #144 (closes GitHub #71). |
 | 4 | Separate profile email? | Yes. An optional contact email in `socials.email`, separate from the login email in `auth.users`. | Changed in #142. lamersc's review of PR #116 first said no. |
 | 5 | How many stewards per site? | One. A new assignment replaces the old one (`site_id` is the primary key). | US 3.0.2 AT2 (#62). If the client wants more, change the key to `(site_id, steward_id)`. |
@@ -123,7 +132,10 @@ No existing table is changed, so no data can be lost.
 
 ## Gamification proposal
 
-Status: **proposed**. Nothing in this section is built. The client asked for a simple gamification
+Status: **proposed for Sprint 4**. Nothing in this section is built. This is the current design of US
+1.0.5. The [proposed ER diagram](software-design.md#proposed-schema-for-the-user-stories), the
+[US 1.0.5 sequence diagram](software-design.md#us-105-earn-points-for-inspection-activity) and the
+services class diagram show it: calculated metrics and a scoreboard, with no points table. The client asked for a simple gamification
 that uses the data that already exists, and he asked to see how it flows, what a user sees and which
 stats are shown ([Oct 2 meeting](<meetings/week5/2026_10_02 _meeting_Frank.txt>), lines 891 to 940).
 The TA asked us to start from the behaviours that we want to reward, and suggested a bounty board

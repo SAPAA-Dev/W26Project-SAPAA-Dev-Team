@@ -3,6 +3,13 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
 import NewReportPage from "../../app/detail/[namesite]/new-report/page";
+import * as queries from "@/utils/supabase/queries";
+import {
+  uploadSiteInspectionAnswers,
+  getQuestionsOnline,
+  getQuestionResponseType,
+  addSiteInspectionReport,
+} from "@/utils/supabase/queries";
 
 const PRIVATE = {
   uid:    "uid-123",
@@ -29,12 +36,13 @@ jest.mock("next/navigation", () => ({
 
 jest.mock("next/image", () => ({
   __esModule: true,
-  default: (props: any) => <img {...props} />,
+  // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text -- mock of next/image renders a plain img
+  default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />,
 }));
 
 jest.mock("next/link", () => ({
   __esModule: true,
-  default: ({ children, href }: any) => {
+  default: ({ children, href }: { children: React.ReactNode; href: string | { pathname?: string | null } }) => {
     const resolvedHref =
       typeof href === "object" && href !== null ? href.pathname ?? "/" : href;
     return <a href={resolvedHref}>{children}</a>;
@@ -90,19 +98,12 @@ afterAll(() => {
 
 // Clear mock call history between tests
 beforeEach(() => {
-  const queries = require("@/utils/supabase/queries");
-  Object.values(queries).forEach((fn: any) => {
-    if (typeof fn?.mockClear === "function") fn.mockClear();
+  Object.values(queries).forEach((fn: unknown) => {
+    if (jest.isMockFunction(fn)) fn.mockClear();
   });
 });
 
 async function submitForm() {
-  const {
-    uploadSiteInspectionAnswers,
-    getQuestionsOnline,
-    getQuestionResponseType,
-  } = require("@/utils/supabase/queries");
-
   const questions = [
     {
       id: 1,
@@ -259,7 +260,6 @@ describe("Private user info – never submitted to the database", () => {
 
   describe("uid scoping", () => {
     it("the uid is not sent to addSiteInspectionReport - the server reads it from the session", async () => {
-      const { addSiteInspectionReport } = require("@/utils/supabase/queries");
       const rows = await submitForm();
 
       expect(addSiteInspectionReport as jest.Mock).toHaveBeenCalledWith(

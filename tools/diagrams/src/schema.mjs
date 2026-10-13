@@ -34,7 +34,8 @@ function applyConstraint(schema, table, c, colName) {
       col(cols[0]).notNull = true;
       break;
     case 'CONSTR_PRIMARY':
-      for (const n of cols) Object.assign(col(n), { pk: true, notNull: true });
+      // A column of a composite key is not unique alone, so it is not one-to-one.
+      for (const n of cols) Object.assign(col(n), { pk: true, notNull: true, compositePk: cols.length > 1 });
       break;
     case 'CONSTR_UNIQUE':
       if (cols.length === 1) col(cols[0]).unique = true;

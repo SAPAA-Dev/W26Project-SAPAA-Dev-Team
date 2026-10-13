@@ -32,6 +32,7 @@ function login(email: string, password: string) {
   cy.get('#email').click().type(email);
   cy.get('#password').click().type(password, { log: false });
   cy.get('button.font-bold').click();
+  cy.url().should('include', '/sites');
   cy.wait(3000);
   dismissTutorialIfPresent();
 }
@@ -59,8 +60,8 @@ function restHeaders(token: string) {
   return { apikey: env('SUPABASE_ANON_KEY'), Authorization: `Bearer ${token}` };
 }
 
-describe('Profile on a real database', () => {
-  it('keeps saved profile edits after signing out and back in (1.0.2 AT5)', () => {
+describe('Profile on a real database (US 1.0.2)', () => {
+  it('US 1.0.2 AT5: keeps saved profile edits after signing out and back in', () => {
     const email = env('PROFILE_USER_A_EMAIL');
     const password = env('PROFILE_USER_A_PASSWORD');
     const stamp = Date.now().toString();
@@ -87,7 +88,7 @@ describe('Profile on a real database', () => {
     cy.get('[data-testid="profile-contact"]').should('contain', contactEmail);
   });
 
-  it('does not let one user change another user\'s profile (1.0.2 AT2)', () => {
+  it('US 1.0.2 AT2: does not let one user change another user\'s profile', () => {
     const emailA = env('PROFILE_USER_A_EMAIL');
     const passwordA = env('PROFILE_USER_A_PASSWORD');
     const emailB = env('PROFILE_USER_B_EMAIL');

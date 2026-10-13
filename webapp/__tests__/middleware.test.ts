@@ -3,7 +3,7 @@ function withCookies<T extends object>(response: T): T {
   const jar = new Map<string, { name: string; value: string }>();
   const cookies = {
     getAll: () => [...jar.values()],
-    set: (nameOrCookie: any, value?: string) => {
+    set: (nameOrCookie: string | { name: string; value: string }, value?: string) => {
       const cookie = typeof nameOrCookie === 'string' ? { name: nameOrCookie, value: value! } : nameOrCookie;
       jar.set(cookie.name, cookie);
     },
@@ -44,52 +44,52 @@ function makeRequest(path: string, method = 'GET') {
     method,
     nextUrl: { pathname: url.pathname, clone: () => new URL(url.toString()) },
     cookies: { getAll: () => [], set: jest.fn() },
-  } as any;
+  } as unknown as Parameters<typeof middleware>[0];
 }
 
 const unapproved = { id: 'u1', app_metadata: { role: 'steward', authenticated: false } };
 const approved = { id: 'u2', app_metadata: { role: 'steward', authenticated: true } };
 
 describe('middleware approval gate (US 3.0.8, #5)', () => {
-  it('redirects a signed-out user to /login', async () => {
+  it('redirects a signed-out user to /login (5.0.4 AT1)', async () => {
     signedInAs(null);
-    const res: any = await middleware(makeRequest('/sites'));
+    const res = await middleware(makeRequest('/sites'));
     expect(res).toEqual({ type: 'redirect', location: 'http://localhost/login' });
   });
 
   it('lets an approved user through', async () => {
     signedInAs(approved);
-    const res: any = await middleware(makeRequest('/detail/Some%20Site'));
+    const res = await middleware(makeRequest('/detail/Some%20Site'));
     expect(res).toEqual({ type: 'next' });
   });
 
   it('lets an unapproved user load /sites, which shows the awaiting-approval screen', async () => {
     signedInAs(unapproved);
-    const res: any = await middleware(makeRequest('/sites'));
+    const res = await middleware(makeRequest('/sites'));
     expect(res).toEqual({ type: 'next' });
   });
 
   it('redirects an unapproved user from another page to /sites', async () => {
     signedInAs(unapproved);
-    const res: any = await middleware(makeRequest('/detail/Some%20Site?tab=reports'));
+    const res = await middleware(makeRequest('/detail/Some%20Site?tab=reports'));
     expect(res).toEqual({ type: 'redirect', location: 'http://localhost/sites' });
   });
 
   it('treats a user with no approval flag as unapproved', async () => {
     signedInAs({ id: 'u3', app_metadata: {} });
-    const res: any = await middleware(makeRequest('/profile'));
+    const res = await middleware(makeRequest('/profile'));
     expect(res).toEqual({ type: 'redirect', location: 'http://localhost/sites' });
   });
 
   it('returns 403 to an unapproved user calling an API route', async () => {
     signedInAs(unapproved);
-    const res: any = await middleware(makeRequest('/api/profile'));
+    const res = await middleware(makeRequest('/api/profile'));
     expect(res.status).toBe(403);
   });
 
   it('returns 403 to an unapproved user posting a server action, even on /sites', async () => {
     signedInAs(unapproved);
-    const res: any = await middleware(makeRequest('/sites', 'POST'));
+    const res = await middleware(makeRequest('/sites', 'POST'));
     expect(res.status).toBe(403);
   });
 
@@ -97,14 +97,14 @@ describe('middleware approval gate (US 3.0.8, #5)', () => {
     'lets an unapproved user reach %s',
     async (path) => {
       signedInAs(unapproved);
-      const res: any = await middleware(makeRequest(path));
+      const res = await middleware(makeRequest(path));
       expect(res).toEqual({ type: 'next' });
     }
   );
 
   it.each(['/loginfoo', '/errors'])('does not treat %s as an auth page', async (path) => {
     signedInAs(unapproved);
-    const res: any = await middleware(makeRequest(path));
+    const res = await middleware(makeRequest(path));
     expect(res).toEqual({ type: 'redirect', location: 'http://localhost/sites' });
   });
 
@@ -113,13 +113,13 @@ describe('middleware approval gate (US 3.0.8, #5)', () => {
     ['a 403', '/api/profile', 'GET'],
   ])('keeps a rotated auth cookie on %s', async (_name, path, method) => {
     signedInAs(unapproved, true);
-    const res: any = await middleware(makeRequest(path, method));
+    const res = await middleware(makeRequest(path, method));
     expect(res.cookies.getAll()).toEqual([expect.objectContaining({ name: 'sb-auth', value: 'rotated' })]);
   });
 
   it('keeps a rotated auth cookie on the redirect to /login', async () => {
     signedInAs(null, true);
-    const res: any = await middleware(makeRequest('/sites'));
+    const res = await middleware(makeRequest('/sites'));
     expect(res.cookies.getAll()).toEqual([expect.objectContaining({ name: 'sb-auth', value: 'rotated' })]);
   });
 });

@@ -1,0 +1,104 @@
+---
+title: "Sign-in, sign-up and admin approval"
+config:
+  theme: base
+  sequence:
+    actorMargin: 75
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 40
+    noteMargin: 16
+    mirrorActors: false
+    width: 190
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor User
+    actor Admin
+    participant Pages as Browser pages<br/>/signup, /login,<br/>services/auth.ts
+    participant MW as middleware.ts
+    participant Routes as Route handlers<br/>/auth/confirm, /auth/callback
+    participant Auth as Supabase Auth
+    participant DB as Supabase DB<br/>people
+    participant AdminPage as Account Management<br/>utils/admin-actions.ts
+
+    Note over User,AdminPage: Covers sign-up, sign-in and the approval gate. All steps exist on main as of October 11, 2026.<br/>Role and approval are in app_metadata (role, authenticated). Only the server can write app_metadata.
+
+    alt Sign up with email and password
+        User->>Pages: Enter email and password on /signup
+        Pages->>Pages: signup(): the email has @, the password has 6 characters or more
+        Pages->>Auth: supabase.auth.signUp(email, password,<br/>emailRedirectTo /auth/confirm)
+        Auth->>DB: Trigger create_person_on_signup inserts a people row
+        Auth-->>Pages: User. No role and no approval flag are set
+        User->>Routes: Open the link in the confirmation email
+        Routes->>Auth: GET /auth/confirm: exchangeCodeForSession(code)
+        Routes-->>User: Redirect to /sites, or to /auth/auth-code-error
+    else Sign in with Google or Microsoft (OAuth)
+        User->>Pages: Select Google or Microsoft on /login or /signup
+        Pages->>Auth: signInWithOAuth(provider, redirectTo /auth/callback)
+        Auth-->>User: Provider sign-in, then redirect to /auth/callback?code
+        User->>Routes: GET /auth/callback
+        Routes->>Auth: exchangeCodeForSession(code)
+        opt User made less than 10 s ago and has no app_metadata.authenticated
+            Routes->>Auth: Service role: updateUserById, app_metadata<br/>{authenticated: false, role: existing or steward}
+        end
+        Routes-->>User: Redirect to next (same-site path only) or /sites
+    else Sign in with email and password
+        User->>Pages: Enter email and password on /login
+        Pages->>Auth: signInWithPassword
+        Auth-->>Pages: Session cookies
+        Pages-->>User: Go to /sites
+    end
+
+    User->>MW: Any request
+    MW->>Auth: getUser()
+    alt No user
+        MW-->>User: Redirect to /login (not for /login, /signup, /auth, /error)
+    else app_metadata.authenticated is not true
+        alt GET /sites
+            MW-->>User: Page loads. ProtectedRoute shows "Awaiting Admin Approval" and a Sign Out button
+        else Other GET page
+            MW-->>User: Redirect to /sites
+        else /api/* or a non-GET request (server action)
+            MW-->>User: 403 'Your account is awaiting admin approval.'
+        end
+    else Approved
+        MW-->>User: Request continues. The route or action checks the caller again
+    end
+
+    Note over Admin,AdminPage: Approval
+    Admin->>AdminPage: Open /admin/account-management. getAllUsers()
+    AdminPage->>AdminPage: isApprovedAdmin(): auth.getUser(), role admin and authenticated true
+    AdminPage->>Auth: Service role: listUsers, 1000 users a page, until a page is not full
+    Admin->>AdminPage: Approve the user, choose the role
+    AdminPage->>Auth: updateUser(): service role updateUserById,<br/>app_metadata {...existing, role, authenticated: true}
+    Auth-->>AdminPage: Saved
+    Note over User,MW: The new app_metadata is in the session token after it refreshes.<br/>Then the middleware lets the user through.

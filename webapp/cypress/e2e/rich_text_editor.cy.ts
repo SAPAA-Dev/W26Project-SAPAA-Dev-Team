@@ -40,7 +40,7 @@ describe('Rich Text Editor - Formatting', () => {
 
     cy.get('[data-testid="edit-question-subtext"]')
       .invoke('val')
-      .then((val) => {
+      .then(() => {
         cy.get('[data-testid="edit-question-subtext"]')
           .setSelection(0, testText.length);
       });

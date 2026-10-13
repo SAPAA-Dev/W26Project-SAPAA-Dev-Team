@@ -50,6 +50,19 @@ Consistency is critical. Every page must follow the patterns described here so t
 | `/admin/sites/[id]` | AdminSiteDetails | Site management |
 | `/admin/gallery` | GalleryPage | Admin image gallery with search and filtering |
 | `/admin/form-editor` | FormEditorPage | Form section and question editor |
+| `/` | Home | Redirects to `/login` |
+| `/profile` | ProfilePage | Profile of the signed-in user, with the edit form (US 1.0.1, 1.0.2) |
+| `/people/[personId]` | ProfilePage | Read-only profile of another person (US 1.0.1) |
+| `/reports` | ReportsPage | All current inspection reports, with the site and the submitter |
+| `/admin/sites/archived` | ArchivedSitesPage | Archived sites: restore or delete permanently (US 2.0.4) |
+| `/admin/reports/archived` | ArchivedReportsPage | Archived reports: restore or delete permanently (US 7.0.8) |
+| `/api-docs` | ApiDocsPage | Swagger UI for the API routes |
+| `/error` | ErrorPage | Error page after a failed server sign-in |
+| `/auth/auth-code-error` | AuthCodeErrorPage | Error page after a failed OAuth or email confirmation |
+
+Every route except `/login`, `/signup`, `/auth/*` and `/error` needs a session (`webapp/middleware.ts`). A user that an admin has not approved can open only `/sites`, which shows the "Awaiting Admin Approval" screen of `ProtectedRoute`. Other pages redirect to `/sites`.
+
+The interactive wireframe does not draw these screens of the code: the KML import modal on Admin: Sites (US 6.0.1), the archived sites and archived reports lists, the "Assign steward" control on the Site page (US 3.0.2), and the "Awaiting Admin Approval" screen. The [wireframe page](interactive-wireframe/index.md#screens-in-the-code-that-the-wireframe-does-not-draw) describes them in text.
 
 ---
 
@@ -1280,7 +1293,10 @@ When editing an existing report, previously uploaded images are shown with a loc
 | `attachments` | Photos attached to form responses |
 | `form_sections` | Form section metadata |
 | `ab_counties` | County/region lookup |
-| `protected_areas` | Alberta protected area boundaries from Alberta Open Data (`global_id`, `site_id`, `geometry`, `label_point`). An import script fills it. Signed-in users can only read it |
+| `protected_areas` | Protected area boundaries from the SAPAA-Map KML or KMZ export (`folder`, `fid`, `name`, `area_type`, `geometry`). A row is unique on `(folder, fid)`. The admin KML import fills it (`importProtectedAreasFromStorage`). Signed-in users can only read it. `20261006010000_alter_protected_areas_for_kml_import.sql` dropped the old Alberta Open Data columns (`global_id`, `site_id`, `label_point` and others) |
+| `people`, `socials`, `site_stewards` | Profiles, contact details and the steward of each site. See [User Model](user-model.md) |
+| `site_page_fields` | The links and other fields that an admin shows or hides on a site page (US 2.0.5, 2.0.10) |
+| `homepage_image_uploads` | Photos uploaded from the site page, outside a report |
 
 ### 20.2 Postgres RPC Functions
 
@@ -1288,12 +1304,14 @@ Aggregate queries are implemented as Supabase RPC functions to avoid complex cli
 
 | Function | Description |
 |---|---|
-| `get_naturalness_distribution()` | Returns normalised naturalness score buckets with counts from `answers` |
-| `get_top_sites_distribution()` | Returns top 5 active sites by inspection count from `form_responses` and `sites_pa` |
+| `get_naturalness_distribution()` | Returns each stored `Q31_Naturalness` answer with its count, from active reports that are not archived |
+| `get_top_sites_distribution()` | Returns the 5 sites with the most active reports that are not archived |
+
+All the database functions are in [API Documentation](api-documentation.md#3-database-rpc-functions).
 
 ### 20.3 Naturalness Score Normalisation
 
-Raw `obs_value` data for naturalness is inconsistently stored (e.g., "4 - Great", "4 = Great", "Great"). The RPC uses `ILIKE` pattern matching with a `CASE` statement to normalise these into five canonical buckets: Great, Good, Passable, Terrible, and Cannot Answer.
+Raw `obs_value` data for naturalness is inconsistently stored (e.g., "4 - Great", "4 = Great", "Great"). `get_naturalness_distribution` does not normalise it: it groups by the stored text (`20261009000000_archive_site_inspection_reports.sql`). So one score can show as more than one bucket on the dashboard chart.
 
 ---
 

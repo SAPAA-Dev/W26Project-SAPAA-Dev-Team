@@ -1,22 +1,18 @@
 "use client";
 
-import { getQuestionsOnline, isSteward, addSiteInspectionReport, getSitesOnline, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers, insertInspectionAttachments, rollbackSiteInspectionSubmission, getInspectionDetailsOnline, getLastInspectionDate, getDateOfVisitQuestionId} from '@/utils/supabase/queries';
+import { getQuestionsOnline, isSteward, addSiteInspectionReport, getCurrentUserUid, getCurrentSiteId, getQuestionResponseType, uploadSiteInspectionAnswers, insertInspectionAttachments, rollbackSiteInspectionSubmission, getDateOfVisitQuestionId} from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/client';
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useParams, useRouter, usePathname } from "next/navigation";
 import { 
   ArrowLeft, 
-  User, 
-  ChevronRight, 
   ShieldCheck, 
-  AlertCircle,
-  Loader2,
-  List
+  AlertCircle
 } from "lucide-react";
 import Image from "next/image";
 import UserNavBar from "@/components/HeaderDropdown";
-import MainContent from "./MainContent";
+import MainContent, { type ResponseValue } from "./MainContent";
 import StickyFooter from "./Footer";
 
 export async function getCurrentUser() {
@@ -42,7 +38,7 @@ interface Question {
   text: string | null;
   question_type: string;
   section: number;
-  answers: any[];
+  answers: string[];
   formorder?: number | null;
   is_required?: boolean | null;
 }
@@ -68,7 +64,7 @@ interface ImageWithMeta {
 
 interface StoredInspectionDraft {
   version: 1;
-  responses: Record<number, any>;
+  responses: Record<number, ResponseValue>;
   activeSection: number | null;
   hasAccepted: boolean;
 }
@@ -106,7 +102,7 @@ export default function NewReportPage() {
   // A ref, not state: the steward check reads it when its fetch resolves, so a
   // slow fetch cannot reopen a popup that a restored draft already closed.
   const hasDismissedVerificationRef = useRef(false);
-  const [responses, setResponses] = useState<Record<number, any>>({});
+  const [responses, setResponses] = useState<Record<number, ResponseValue>>({});
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name: string; avatar: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -165,7 +161,7 @@ export default function NewReportPage() {
         setCurrentUser(user);
         
         if (user?.email) {
-          const stewardStatus = await isSteward(user.email);
+          const stewardStatus = await isSteward();
           setIsStewardUser(stewardStatus);
 
           if (!stewardStatus && !hasDismissedVerificationRef.current) {
@@ -241,7 +237,7 @@ export default function NewReportPage() {
           if (isStoredInspectionDraft(parsed)) {
             storedDraft = parsed;
           } else if (isPlainObject(parsed) && !('version' in parsed)) {
-            storedDraft = { version: 1, responses: parsed, activeSection: null, hasAccepted: false };
+            storedDraft = { version: 1, responses: parsed as Record<number, ResponseValue>, activeSection: null, hasAccepted: false };
           } else {
             // Anything else would be read as answers and break the submission.
             throw new Error('The saved inspection draft has an unknown shape.');
@@ -269,6 +265,7 @@ export default function NewReportPage() {
             })
           );
 
+          // eslint-disable-next-line react-hooks/set-state-in-effect -- restores the saved draft once its storage key is known; localStorage is only readable after mount
           setResponses(normalizedResponses);
           setRestoredActiveSection(typeof storedDraft.activeSection === 'number' ? storedDraft.activeSection : null);
           setHasDroppedDraftPhotos(droppedPhotos);
@@ -326,7 +323,7 @@ export default function NewReportPage() {
 
 
 
-  const handleResponsesChange = (newResponses: Record<number, any>) => {
+  const handleResponsesChange = (newResponses: Record<number, ResponseValue>) => {
 
 
     setResponses(newResponses);
@@ -370,7 +367,7 @@ export default function NewReportPage() {
   };
 
   const getMissingImageMetadataDetails = (
-    currentResponses: Record<number, any>,
+    currentResponses: Record<number, ResponseValue>,
     questionNumberMap: Record<number, string>
   ): string[] => {
     const details: string[] = [];
@@ -466,7 +463,7 @@ export default function NewReportPage() {
 }
 
 
-  const isImageWithMetaArray = (value: any): value is ImageWithMeta[] => {
+  const isImageWithMetaArray = (value: unknown): value is ImageWithMeta[] => {
     return (
       Array.isArray(value) &&
       value.length > 0 &&
@@ -512,7 +509,7 @@ export default function NewReportPage() {
     try {
       const siteId = await getCurrentSiteId(namesite);
       const dateOfVisitQuestionId = await getDateOfVisitQuestionId();
-      const inspectionDate = responses[dateOfVisitQuestionId];
+      const inspectionDate = responses[dateOfVisitQuestionId] as string;
       siteInspectionReportId = (await addSiteInspectionReport(siteId, inspectionDate)).id;
 
       // We need to figure out whether the answer to each question should be placed in the obs_value or obs_comm column in Supabase
@@ -527,7 +524,7 @@ export default function NewReportPage() {
 
       // Initialize an array to hold all the objects/dictionaries that represent each row in the answers table
       //what goes into answers table: response_id, question_id, obs_value, obs_comm
-      let answersArray: SupabaseAnswer[] = [];  
+      const answersArray: SupabaseAnswer[] = [];  
 
 
       //what goes into attachments table: response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier
@@ -620,7 +617,7 @@ export default function NewReportPage() {
             const isValueType = questionConfig?.obs_value == 1;
             const isCommType = questionConfig?.obs_comm == 1;
             
-            const commValue = (responses as Record<string, any>)[`${questionId}_comm`] ?? null;
+            const commValue = (responses as Record<string, string | undefined>)[`${questionId}_comm`] ?? null;
             
             if (Array.isArray(answer)) {
                 answer.forEach(subAnswer => {

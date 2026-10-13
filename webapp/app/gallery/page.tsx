@@ -4,7 +4,7 @@
 import { useEffect, useState, useMemo } from "react";
 import UserNavBar from "@/components/HeaderDropdown";
 import Image from "next/image";
-import { Loader2, MapPin, FileText, ImageIcon, X, Maximize2, Search, ArrowLeft, Calendar, User } from "lucide-react";
+import { Loader2, MapPin, ImageIcon, X, Maximize2, Search, ArrowLeft, Calendar } from "lucide-react";
 import { useRouter } from 'next/navigation';
 
 
@@ -64,13 +64,13 @@ export default function GalleryPage() {
         }
 
         const allItems = [
-          ...(data.items || []).map((item: any) => {
+          ...(data.items || []).map((item: GalleryItem & { created_at?: string | null }) => {
             return {
               ...item,
               _sortDate: item.date ?? item.created_at ?? "",
             };
           }),
-          ...(data1.items || []).map((item: any) => {
+          ...(data1.items || []).map((item: GalleryItem & { created_at?: string | null }) => {
             return {
               ...item,
               _sortDate: item.date ?? item.created_at ?? "",
@@ -220,6 +220,7 @@ export default function GalleryPage() {
                     onClick={() => setSelectedImage(item)}
                     className="group relative block w-full h-56 sm:h-64 bg-[#F7F2EA] overflow-hidden"
                   >
+                    {/* eslint-disable-next-line @next/next/no-img-element -- S3 presigned URL, not served via next/image */}
                     <img
                       src={item.imageUrl}
                       alt={item.identifier || item.caption ||item.filename || "Inspection image"}
@@ -282,6 +283,7 @@ export default function GalleryPage() {
 
               <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] flex-1 min-h-0">
                 <div className="bg-black flex items-center justify-center min-h-[220px] sm:min-h-[300px] lg:min-h-0 max-h-[40vh] sm:max-h-[50vh] lg:max-h-none overflow-auto">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- S3 presigned URL, not served via next/image */}
                   <img
                     src={selectedImage.imageUrl}
                     alt={selectedImage.identifier || selectedImage.caption || selectedImage.filename || "Inspection image"}

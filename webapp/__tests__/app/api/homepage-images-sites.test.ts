@@ -27,7 +27,7 @@ jest.mock("@aws-sdk/s3-request-presigner", () => ({
 }));
 
 const makeParams = (siteId: string) =>
-  ({ params: Promise.resolve({ siteId }) } as any);
+  ({ params: Promise.resolve({ siteId }) });
 
 describe("GET /api/homepage-images/[siteId]", () => {
   const mockGetUser = jest.fn();

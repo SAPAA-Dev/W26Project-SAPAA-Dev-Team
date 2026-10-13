@@ -9,6 +9,10 @@ const PAGE_SIZE = 10;
 const MAX_TAGS = 12;
 const MAX_TAG_LENGTH = 40;
 const MAX_DISPLAY_NAME_LENGTH = 29;
+const MAX_BIGINT = BigInt('9223372036854775807');
+// A larger page would reach PostgREST as an offset like "1e+21", which it cannot read. Any page
+// this high is past the last report anyway, so it gets the empty page below.
+const MAX_PAGE = 100_000;
 
 type ProfileRow = {
   id: number;
@@ -77,12 +81,12 @@ export async function GET(request: NextRequest) {
 
   const requestedId = request.nextUrl.searchParams.get('personId');
   // people.id is a bigint. Anything else cannot match a row, so answer 404 instead of letting
-  // PostgREST fail on the cast.
-  if (requestedId !== null && !/^\d+$/.test(requestedId)) {
+  // PostgREST fail on the cast with a 500.
+  if (requestedId !== null && (!/^\d+$/.test(requestedId) || BigInt(requestedId) > MAX_BIGINT)) {
     return NextResponse.json({ error: 'Profile not found.' }, { status: 404 });
   }
   const pageValue = Number.parseInt(request.nextUrl.searchParams.get('page') ?? '1', 10);
-  const page = Number.isFinite(pageValue) && pageValue > 0 ? pageValue : 1;
+  const page = Number.isFinite(pageValue) && pageValue > 0 ? Math.min(pageValue, MAX_PAGE) : 1;
   const admin = createServerSupabase();
   const profileQuery = admin.from('people').select(PROFILE_WITH_SOCIALS_SELECT);
   const { data, error } = requestedId
@@ -122,26 +126,40 @@ export async function GET(request: NextRequest) {
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
-  // Count sites in the database because loading every report only to count it is slow.
   // Archived reports stay saved for restore, but they do not belong in profile history.
-  const [{ data: inspections, error: inspectionsError, count }, { data: siteCount, error: siteCountError }] =
+  const activeReports = (columns: string, options: { count: 'exact'; head?: boolean }) =>
+    admin
+      .from('form_responses')
+      .select(columns, options)
+      .eq('user_id', profile.auth_user_id)
+      .eq('is_active', true)
+      .is('archived_at', null);
+
+  // Count sites in the database because loading every report only to count it is slow.
+  const [historyResult, { data: siteCount, error: siteCountError }] =
     await Promise.all([
-      admin
-        .from('form_responses')
-        .select('id, site_id, inspection_date, created_at, sites_pa(id, namesite, archived_at, is_active)', { count: 'exact' })
-        .eq('user_id', profile.auth_user_id)
-        .eq('is_active', true)
-        .is('archived_at', null)
+      activeReports('id, site_id, inspection_date, created_at, sites_pa(id, namesite, archived_at, is_active)', { count: 'exact' })
         .order('inspection_date', { ascending: false, nullsFirst: false })
-        .range(from, to),
+        .range(from, to)
+        .overrideTypes<InspectionRow[], { merge: false }>(),
       admin.rpc('get_distinct_inspected_site_count', { p_user_id: profile.auth_user_id }),
     ]);
+
+  let { data: inspections, error: inspectionsError, count } = historyResult;
+  // PostgREST refuses an offset past the last report with PGRST103 and sends no count. That page
+  // is empty, so count the reports on their own and answer with an empty history.
+  if (inspectionsError?.code === 'PGRST103') {
+    const totalResult = await activeReports('id', { count: 'exact', head: true });
+    inspections = [];
+    inspectionsError = totalResult.error;
+    count = totalResult.count;
+  }
 
   if (inspectionsError || siteCountError) {
     return NextResponse.json({ error: 'Unable to load inspection history.' }, { status: 500 });
   }
 
-  const history = ((inspections ?? []) as unknown as InspectionRow[]).map((inspection) => ({
+  const history = (inspections ?? []).map((inspection) => ({
     id: inspection.id,
     siteId: inspection.site_id,
     siteName: inspection.sites_pa?.namesite ?? 'Unknown site',

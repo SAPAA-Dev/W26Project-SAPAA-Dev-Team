@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-
 jest.mock("next/server", () => ({
   NextResponse: {
     json: jest.fn((body, init) => ({
@@ -86,12 +84,15 @@ function makePresignRequest(body: object) {
 
 
 
-async function parseBody(res: any): Promise<any> {
+type GalleryItem = { site_id: string; site_name?: string; imageUrl?: string };
+type ParsedBody = { uploadUrl: string; key: string; error: string; items: GalleryItem[] };
+
+async function parseBody(res: { json(): Promise<unknown>; text(): Promise<string> }): Promise<ParsedBody> {
   try {
-    return await res.json();
+    return (await res.json()) as ParsedBody;
   } catch {
     const text = await res.text();
-    return JSON.parse(text);
+    return JSON.parse(text) as ParsedBody;
   }
 }
 
@@ -224,7 +225,7 @@ describe("Acceptance Test 1 – Images are stored in AWS S3", () => {
       siteId: 207,
     });
 
-    const res = await POST(req as any);
+    const res = await POST(req);
     const body = await parseBody(res);
 
     expect(res.status).toBe(200);
@@ -255,7 +256,7 @@ describe("Acceptance Test 1 – Images are stored in AWS S3", () => {
       siteId: 207,
     });
 
-    const [res1, res2] = await Promise.all([POST(req1 as any), POST(req2 as any)]);
+    const [res1, res2] = await Promise.all([POST(req1), POST(req2)]);
     const [body1, body2] = await Promise.all([parseBody(res1), parseBody(res2)]);
 
     expect(body1.key).not.toBe(body2.key);
@@ -271,7 +272,7 @@ describe("Acceptance Test 1 – Images are stored in AWS S3", () => {
       siteId: 207,
     });
 
-    const res = await POST(req as any);
+    const res = await POST(req);
     const body = await parseBody(res);
 
     expect(res.status).toBe(400);
@@ -288,7 +289,7 @@ describe("Acceptance Test 1 – Images are stored in AWS S3", () => {
       siteId: 207,
     });
 
-    const res = await POST(req as any);
+    const res = await POST(req);
     const body = await parseBody(res);
 
     expect(res.status).toBe(400);
@@ -307,7 +308,7 @@ describe("Acceptance Test 1 – Images are stored in AWS S3", () => {
       siteId: 207,
     });
 
-    const res = await POST(req as any);
+    const res = await POST(req);
     expect(res.status).toBe(401);
   });
 
@@ -324,7 +325,7 @@ describe("Acceptance Test 1 – Images are stored in AWS S3", () => {
         siteId: 207,
       });
 
-      const res = await POST(req as any);
+      const res = await POST(req);
       expect(res.status).toBe(200);
     }
   });
@@ -353,7 +354,7 @@ describe("Acceptance Test 2 – Image metadata is stored in the database", () =>
       siteId: 99,
     });
 
-    const res = await POST(req as any);
+    const res = await POST(req);
     const body = await parseBody(res);
 
     expect(body.key).toMatch(/^inspections\/99\/42\/7\//);
@@ -368,7 +369,7 @@ describe("Acceptance Test 2 – Image metadata is stored in the database", () =>
       siteId: 207,
     });
 
-    const res = await POST(req as any);
+    const res = await POST(req);
     const body = await parseBody(res);
 
     expect(res.status).toBe(400);
@@ -384,7 +385,7 @@ describe("Acceptance Test 2 – Image metadata is stored in the database", () =>
       siteId: 207,
     });
 
-    const res = await POST(req as any);
+    const res = await POST(req);
     const body = await parseBody(res);
 
     expect(res.status).toBe(400);
@@ -400,7 +401,7 @@ describe("Acceptance Test 2 – Image metadata is stored in the database", () =>
       questionId: 27,
     });
 
-    const res = await POST(req as any);
+    const res = await POST(req);
     const body = await parseBody(res);
 
     expect(res.status).toBe(400);
@@ -432,8 +433,8 @@ describe("Acceptance Test 2 – Image metadata is stored in the database", () =>
     const res = await GET();
     const body = await parseBody(res);
 
-    const item1 = body.items.find((i: any) => i.site_id === "site-1");
-    const item2 = body.items.find((i: any) => i.site_id === "site-2");
+    const item1 = body.items.find((i) => i.site_id === "site-1");
+    const item2 = body.items.find((i) => i.site_id === "site-2");
 
     expect(item1?.site_name).toBe("Riverlot 56 (NA)");
     expect(item2?.site_name).toBe("Cooking Lake");
@@ -459,7 +460,7 @@ describe("Acceptance Test 3 – Uploaded images are accessible through the appli
     const body = await parseBody(res);
 
     expect(res.status).toBe(200);
-    body.items.forEach((item: any) => {
+    body.items.forEach((item) => {
       expect(item.imageUrl).toBeTruthy();
       expect(item.imageUrl).toContain("s3.amazonaws.com");
     });
@@ -528,7 +529,7 @@ describe("Acceptance Test 3 – Uploaded images are accessible through the appli
       siteId: 207,
     });
 
-    await POST(req as any);
+    await POST(req);
 
     expect(mockGetSignedUrl).toHaveBeenCalledWith(
       expect.anything(),

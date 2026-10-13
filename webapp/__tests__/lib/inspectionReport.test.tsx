@@ -11,6 +11,7 @@ jest.mock('@react-pdf/renderer', () => {
     Page: Box,
     View: Box,
     Text: Box,
+    // eslint-disable-next-line @next/next/no-img-element -- mock of the @react-pdf/renderer Image renders a plain img
     Image: () => <img alt="" />,
     StyleSheet: { create: (s: unknown) => s },
   };

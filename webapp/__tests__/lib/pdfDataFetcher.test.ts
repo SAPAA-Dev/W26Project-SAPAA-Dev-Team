@@ -10,13 +10,16 @@ const mockGetAttachmentsForResponseIds = jest.fn();
 const mockGetReportQuestionKeyMap = jest.fn();
 
 jest.mock('@/utils/supabase/queries', () => ({
-  getSiteByName: (...args: any[]) => mockGetSiteByName(...args),
-  getFormResponsesBySite: (...args: any[]) => mockGetFormResponsesBySite(...args),
-  getAttachmentsByResponseId: (...args: any[]) => mockGetAttachmentsByResponseId(...args),
-  getSitesByNames: (...args: any[]) => mockGetSitesByNames(...args),
-  getFormResponsesForSiteIds: (...args: any[]) => mockGetFormResponsesForSiteIds(...args),
-  getAttachmentsForResponseIds: (...args: any[]) => mockGetAttachmentsForResponseIds(...args),
-  getReportQuestionKeyMap: (...args: any[]) => mockGetReportQuestionKeyMap(...args),
+  getSiteByName: (...args: unknown[]) => mockGetSiteByName(...args),
+  getFormResponsesBySite: (...args: unknown[]) => mockGetFormResponsesBySite(...args),
+}));
+
+jest.mock('@/lib/pdf/reportQueries', () => ({
+  getAttachmentsByResponseId: (...args: unknown[]) => mockGetAttachmentsByResponseId(...args),
+  getSitesByNames: (...args: unknown[]) => mockGetSitesByNames(...args),
+  getFormResponsesForSiteIds: (...args: unknown[]) => mockGetFormResponsesForSiteIds(...args),
+  getAttachmentsForResponseIds: (...args: unknown[]) => mockGetAttachmentsForResponseIds(...args),
+  getReportQuestionKeyMap: (...args: unknown[]) => mockGetReportQuestionKeyMap(...args),
 }));
 
 const mockSupabaseFrom = jest.fn();
@@ -333,7 +336,7 @@ describe('fetchReportData', () => {
     expect(response10.answers.map((answer) => answer.question_id)).toEqual([1, 2]);
   });
 
-  it('exports the full SIR when no fields are hidden (7.0.7 AT5)', async () => {
+  it('exports the full SIR when no fields are hidden (7.0.7 AT5, 7.0.6 AT2)', async () => {
     const request: PdfRequest = {
       mode: 'site',
       siteName: 'Elk Island',
@@ -482,6 +485,35 @@ describe('fetchReportData', () => {
 
     expect(result.sites.flatMap((site) => site.responses)).toHaveLength(51);
     expect(result.sites.map((site) => site.responses.length)).toEqual([17, 17, 17]);
+  });
+
+  it('US 7.0.6 AT1: a multi-site export fails, with no partial data, when the report query fails mid-way', async () => {
+    mockGetSitesByNames.mockResolvedValue([{ id: 1, namesite: 'Site A', ab_county: null, ab_counties: null }]);
+    mockGetFormResponsesForSiteIds.mockRejectedValue(new Error('canceling statement due to statement timeout'));
+
+    await expect(
+      fetchReportData({ mode: 'multi-site', siteNames: ['Site A'], options: { ...DEFAULT_OPTIONS, includeImages: true } })
+    ).rejects.toThrow('canceling statement due to statement timeout');
+    expect(mockGetAttachmentsForResponseIds).not.toHaveBeenCalled();
+  });
+
+  it('US 7.0.6 AT1: a multi-site export fails instead of leaving out photos when the photo query fails', async () => {
+    mockGetSitesByNames.mockResolvedValue([{ id: 1, namesite: 'Site A', ab_county: null, ab_counties: null }]);
+    mockGetFormResponsesForSiteIds.mockResolvedValue(new Map([[1, manyResponses(51)]]));
+    mockGetAttachmentsForResponseIds.mockRejectedValue(new Error('Failed to fetch attachments'));
+
+    await expect(
+      fetchReportData({ mode: 'multi-site', siteNames: ['Site A'], options: { ...DEFAULT_OPTIONS, includeImages: true } })
+    ).rejects.toThrow('Failed to fetch attachments');
+  });
+
+  it('US 7.0.6 AT2: a site export fails instead of giving reports without their answers when the report query fails', async () => {
+    mockGetFormResponsesBySite.mockRejectedValue(new Error('Failed to fetch form responses'));
+
+    await expect(
+      fetchReportData({ mode: 'site', siteName: 'Elk Island', options: DEFAULT_OPTIONS })
+    ).rejects.toThrow('Failed to fetch form responses');
+    expect(mockGetAttachmentsByResponseId).not.toHaveBeenCalled();
   });
 
   it('throws when no sites match in multi-site mode', async () => {

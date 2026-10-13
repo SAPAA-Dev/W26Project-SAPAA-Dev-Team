@@ -1,0 +1,90 @@
+---
+title: "Submit a Site Inspection Report with photos"
+config:
+  theme: base
+  sequence:
+    actorMargin: 75
+    boxMargin: 12
+    diagramMarginX: 45
+    diagramMarginY: 30
+    messageMargin: 40
+    noteMargin: 16
+    mirrorActors: false
+    width: 190
+    height: 90
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#69a8ef"
+    primaryBorderColor: "#333333"
+    primaryTextColor: "#111111"
+    actorBkg: "#69a8ef"
+    actorBorder: "#333333"
+    actorTextColor: "#111111"
+    actorLineColor: "#555555"
+    signalColor: "#333333"
+    signalTextColor: "#111111"
+    activationBkgColor: "#cdd3db"
+    activationBorderColor: "#cdd3db"
+    noteBkgColor: "#ffe344"
+    noteBorderColor: "#d4ba24"
+    noteTextColor: "#111111"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#555555"
+    labelTextColor: "#111111"
+    loopTextColor: "#111111"
+    altBackground: "#ffffff"
+  themeCSS: |
+    .actor-line {
+      stroke-dasharray: 10 10 !important;
+      stroke-width: 1.25px !important;
+    }
+---
+sequenceDiagram
+    autonumber off
+    actor Steward
+    participant Page as New report page<br/>/detail/[namesite]/new-report
+    participant Actions as Server actions<br/>utils/supabase/queries.ts
+    participant Presign as POST /api/s3/presign
+    participant DB as Supabase DB
+    participant S3 as AWS S3
+
+    Note over Steward,S3: Covers the SIR submission (inherited, changed in Sprint 2 by #148 and #242). All steps exist on main as of October 11, 2026.<br/>The server actions use the service role, so each write checks the caller first.
+
+    Steward->>Page: Select Submit
+    Page->>Page: Check the required questions and the photo fields<br/>(caption, date, photographer). Stop and show the missing items
+    Page->>Actions: getCurrentSiteId(namesite), getDateOfVisitQuestionId()
+    Actions->>DB: Active site that is not archived
+    Page->>Actions: addSiteInspectionReport(siteId, inspectionDate)
+    Actions->>Actions: requireApprovedCaller. The owner is the caller, not a browser value
+    Actions->>DB: Site is active and not archived?
+    Actions->>DB: rpc get_max_inspection_number(year)
+    Actions->>DB: Insert form_responses {site_id, user_id, inspection_no, inspection_date}
+    DB-->>Page: responseId
+
+    loop Each photo
+        Page->>Presign: {filename, contentType, fileSize, siteId, responseId,<br/>questionId, siteName, date, photographer, identifier}
+        Presign->>Presign: Signed in? Type JPEG, PNG or WebP? At most 10 MB?<br/>Key inspections/siteId/responseId/questionId/file?
+        Presign-->>Page: uploadUrl (180 s), key, generatedFilename
+        Page->>S3: PUT the file with uploadUrl
+    end
+
+    Page->>Actions: uploadSiteInspectionAnswers(answers)
+    Actions->>Actions: requireReportWriter(responseId): owner or Admin, report not archived
+    Actions->>DB: Insert answers
+    Page->>Actions: insertInspectionAttachments(rows)
+    Actions->>Actions: requireReportWriter. Each key must be in the folder<br/>of its site, report and question
+    Actions->>DB: Insert attachments
+
+    alt Every step succeeds
+        Page->>Page: Remove the saved draft
+        Page-->>Steward: Go to /sites?submitted=true
+    else A step fails after the report was made
+        Page->>Actions: rollbackSiteInspectionSubmission(responseId)
+        Actions->>Actions: requireReportWriter. The report must be less than 30 minutes old
+        Actions->>DB: Read the attachment rows of the report
+        Actions->>DB: Delete attachments, answers, then form_responses
+        Actions->>S3: deleteObjectsByKeys(keys of the attachment rows)
+        Page-->>Steward: The page logs the error and enables Submit again.<br/>It shows no error message. The draft stays
+    end
+
+    Note over Page,S3: The rollback deletes only the S3 files that have an attachment row.<br/>A photo that reached S3 before insertInspectionAttachments failed stays in S3 with no row.

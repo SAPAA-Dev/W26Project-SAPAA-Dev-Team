@@ -1,7 +1,18 @@
 import {
   addSiteInspectionReport,
   getCurrentSiteId,
-  getNextFormInspectionNumber,
+  getDateOfVisitQuestionId,
+  getFormResponseById,
+  getFormResponsesBySite,
+  getInspectionDetailsOnline,
+  getLastInspectionDate,
+  getQuestionResponseType,
+  getQuestionsOnline,
+  getResponseOwnerId,
+  getSiteByName,
+  getSiteIdForResponse,
+  getTotalInspectionCount,
+  isSteward,
   insertHomepageImageUpload,
   insertInspectionAttachments,
   uploadSiteInspectionAnswers,
@@ -26,7 +37,8 @@ type Builder = Record<string, jest.Mock> & { then: Promise<Result>['then'] };
 // A chainable stand-in for the Supabase query builder. Awaiting it returns `result`.
 function builder(result: Result): Builder {
   const query = {
-    then: (resolve: any, reject: any) => Promise.resolve(result).then(resolve, reject),
+    then: (resolve?: (value: Result) => unknown, reject?: (reason: unknown) => unknown) =>
+      Promise.resolve(result).then(resolve, reject),
   } as Builder;
   for (const method of ['select', 'insert', 'update', 'delete', 'eq', 'is', 'in', 'like', 'or', 'order', 'limit', 'single', 'maybeSingle']) {
     query[method] = jest.fn(() => query);
@@ -67,28 +79,42 @@ describe('report write server actions', () => {
     mockCaller(OWNER);
   });
 
+  // getNextFormInspectionNumber is private, so these go through the action that calls it.
   describe('getNextFormInspectionNumber (M20)', () => {
     const year = new Date().getFullYear();
 
+    async function submittedNumber(): Promise<unknown> {
+      queue('sites_pa', { data: { id: 7 }, error: null });
+      const insert = queue('form_responses', { data: { id: 99 }, error: null });
+      await addSiteInspectionReport(7, '2026-10-01');
+      return insert.insert.mock.calls[0][0].inspection_no;
+    }
+
     it('starts at 001 when the year has no reports yet', async () => {
-      await expect(getNextFormInspectionNumber()).resolves.toBe(`${year}-001`);
+      await expect(submittedNumber()).resolves.toBe(`${year}-001`);
     });
 
     it('asks the database for the highest number, so 1000+ reports in a year still count', async () => {
       mockRpc.mockResolvedValue({ data: 1000, error: null });
-      await expect(getNextFormInspectionNumber()).resolves.toBe(`${year}-1001`);
+      await expect(submittedNumber()).resolves.toBe(`${year}-1001`);
       expect(mockRpc).toHaveBeenCalledWith('get_max_inspection_number', { p_year: year });
-      expect(mockFrom).not.toHaveBeenCalledWith('form_responses');
     });
 
     it('pads the next number to three digits', async () => {
       mockRpc.mockResolvedValue({ data: 4, error: null });
-      await expect(getNextFormInspectionNumber()).resolves.toBe(`${year}-005`);
+      await expect(submittedNumber()).resolves.toBe(`${year}-005`);
     });
 
     it('throws when the lookup fails, so no report is saved without a number', async () => {
       mockRpc.mockResolvedValue({ data: null, error: { message: 'boom' } });
-      await expect(getNextFormInspectionNumber()).rejects.toThrow('boom');
+      queue('sites_pa', { data: { id: 7 }, error: null });
+      await expect(addSiteInspectionReport(7, '2026-10-01')).rejects.toThrow('boom');
+      expect(mockFrom).not.toHaveBeenCalledWith('form_responses');
+    });
+
+    it('is not exported, so the browser cannot call it as a server action', async () => {
+      const queries: Record<string, unknown> = await import('../../utils/supabase/queries');
+      expect(queries.getNextFormInspectionNumber).toBeUndefined();
     });
   });
 
@@ -165,6 +191,14 @@ describe('report write server actions', () => {
       expect(mockFrom).toHaveBeenCalledTimes(2);
     });
 
+    it('refuses an unapproved caller before reading the attachment', async () => {
+      mockCaller(OWNER, 'steward', false);
+      await expect(updateAttachmentMetadata(9, { caption: 'x', identifier: null })).rejects.toThrow(
+        'You are not allowed to change this report.'
+      );
+      expect(mockFrom).not.toHaveBeenCalled();
+    });
+
     it.each([
       ['the owner', OWNER, 'steward'],
       ['an approved admin', ADMIN, 'admin'],
@@ -178,7 +212,7 @@ describe('report write server actions', () => {
         caption: 'Pond',
         identifier: 'A1',
         storage_key: 'pdf-exports/x.pdf',
-      } as any);
+      } as Parameters<typeof updateAttachmentMetadata>[1]);
 
       expect(update.update).toHaveBeenCalledWith({ caption: 'Pond', identifier: 'A1' });
       expect(update.eq).toHaveBeenCalledWith('id', 9);
@@ -285,6 +319,111 @@ describe('report write server actions', () => {
     });
   });
 
+  describe('getFormResponseById (#251)', () => {
+    const answerRows = [{ question_id: 3, obs_value: 'Good', obs_comm: null, questions: { question_type: 'radio' } }];
+
+    it('refuses a signed-out caller before reading', async () => {
+      mockCaller(null);
+      await expect(getFormResponseById(41)).rejects.toThrow('You are not allowed to view this report.');
+      expect(mockFrom).not.toHaveBeenCalled();
+    });
+
+    it('refuses an unapproved owner before reading', async () => {
+      mockCaller(OWNER, 'steward', false);
+      await expect(getFormResponseById(41)).rejects.toThrow('You are not allowed to view this report.');
+      expect(mockFrom).not.toHaveBeenCalled();
+    });
+
+    it("refuses another user's report and reads no answers", async () => {
+      mockCaller(OTHER);
+      queueReport(OWNER);
+      await expect(getFormResponseById(41)).rejects.toThrow('You are not allowed to view this report.');
+      expect(mockFrom).not.toHaveBeenCalledWith('answers');
+    });
+
+    it('refuses an archived report to its owner and reads no answers', async () => {
+      // The owner check skips archived reports, so an archived report comes back empty.
+      const report = queue('form_responses', { data: null, error: null });
+      await expect(getFormResponseById(41)).rejects.toThrow('You are not allowed to view this report.');
+      expect(report.is).toHaveBeenCalledWith('archived_at', null);
+      expect(mockFrom).not.toHaveBeenCalledWith('answers');
+    });
+
+    it.each([
+      ['the owner', OWNER, 'steward'],
+      ['an approved admin', ADMIN, 'admin'],
+    ])('returns the answers to %s', async (_label, id, role) => {
+      mockCaller(id, role);
+      queueReport(OWNER);
+      const answers = queue('answers', { data: answerRows, error: null });
+
+      await expect(getFormResponseById(41)).resolves.toEqual({ 3: 'Good' });
+      expect(answers.eq).toHaveBeenCalledWith('response_id', 41);
+    });
+  });
+
+  describe('isSteward (#251)', () => {
+    it('refuses a signed-out caller before reading', async () => {
+      mockCaller(null);
+      await expect(isSteward()).rejects.toThrow('Only approved users can view this data.');
+      expect(mockFrom).not.toHaveBeenCalled();
+    });
+
+    it('checks the email of the signed-in user only', async () => {
+      (createClient as jest.Mock).mockResolvedValue({
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: { id: OWNER, email: 'ann@example.com', app_metadata: { authenticated: true } } },
+            error: null,
+          }),
+        },
+      });
+      const lookup = queue('luperson', { data: { id: 5 }, error: null });
+
+      await expect(isSteward()).resolves.toBe(true);
+      expect(lookup.eq).toHaveBeenCalledWith('email', 'ann@example.com');
+    });
+
+    it('returns false when the signed-in user is not in luperson', async () => {
+      queue('luperson', { data: null, error: null });
+      await expect(isSteward()).resolves.toBe(false);
+    });
+  });
+
+  describe('read actions callable from the browser (#251)', () => {
+    const reads: Array<[string, () => Promise<unknown>]> = [
+      ['getQuestionResponseType', () => getQuestionResponseType()],
+      ['getCurrentSiteId', () => getCurrentSiteId('Duck Lake')],
+      ['getQuestionsOnline', () => getQuestionsOnline()],
+      ['getSiteByName', () => getSiteByName('Duck Lake')],
+      ['getInspectionDetailsOnline', () => getInspectionDetailsOnline('Duck Lake')],
+      ['getFormResponsesBySite', () => getFormResponsesBySite('Duck Lake')],
+      ['getResponseOwnerId', () => getResponseOwnerId(41)],
+      ['getSiteIdForResponse', () => getSiteIdForResponse(41)],
+      ['getTotalInspectionCount', () => getTotalInspectionCount()],
+      ['getLastInspectionDate', () => getLastInspectionDate()],
+      ['getDateOfVisitQuestionId', () => getDateOfVisitQuestionId()],
+    ];
+
+    it.each(reads)('%s refuses a signed-out caller before reading', async (_name, read) => {
+      mockCaller(null);
+      await expect(read()).rejects.toThrow('Only approved users can view this data.');
+      expect(mockFrom).not.toHaveBeenCalled();
+    });
+
+    it.each(reads)('%s refuses an unapproved caller before reading', async (_name, read) => {
+      mockCaller(OWNER, 'steward', false);
+      await expect(read()).rejects.toThrow('Only approved users can view this data.');
+      expect(mockFrom).not.toHaveBeenCalled();
+    });
+
+    it.each(reads)('%s reads for an approved steward', async (_name, read) => {
+      // The mocked tables are empty, so some reads end in "not found". The check passed if the read ran.
+      await read().catch(() => undefined);
+      expect(mockFrom).toHaveBeenCalled();
+    });
+  });
+
   describe('insertHomepageImageUpload (H3)', () => {
     const row = {
       storage_key: `homepage-image-uploads/7/${OWNER}/DuckLake-2026-10-01-Ann-A1-uuid.jpg`,
@@ -298,7 +437,7 @@ describe('report write server actions', () => {
 
     it('saves the upload under the signed-in user, not an id the browser sends', async () => {
       const insert = queue('homepage_image_uploads', { data: null, error: null });
-      await insertHomepageImageUpload([{ ...row, user_id: OTHER } as any]);
+      await insertHomepageImageUpload([{ ...row, user_id: OTHER } as Parameters<typeof insertHomepageImageUpload>[0][number]]);
       expect(insert.insert).toHaveBeenCalledWith([{ ...row, user_id: OWNER }]);
     });
 

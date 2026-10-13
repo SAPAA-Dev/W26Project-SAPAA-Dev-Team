@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signup, resendConfirmation, signInWithGoogle, signInWithMicrosoft } from '@/services/auth';
-import { Mail, Lock, Loader2, CheckCircle, Eye, EyeOff, Leaf, Shield, ShieldCheck, Users } from 'lucide-react';
+import { Mail, Lock, Loader2, CheckCircle, Eye, EyeOff, Leaf, ShieldCheck } from 'lucide-react';
 import { Smartphone, History } from "lucide-react";
 import Image from 'next/image';
 
@@ -105,14 +105,14 @@ export default function SignupPage() {
             </div>
 
             <h1 className="text-5xl font-bold leading-tight mb-6">
-              Protect Alberta's
+              Protect Alberta&apos;s
               <span className="block text-[#86A98A] mt-2">
                 Natural Heritage
               </span>
             </h1>
 
             <p className="text-lg leading-relaxed text-[#E4EBE4] max-w-lg">
-              Join a community of dedicated stewards tracking and preserving Alberta's protected areas. 
+              Join a community of dedicated stewards tracking and preserving Alberta&apos;s protected areas. 
               Create an account to view SAPAA site inspections and naturalness scores.
             </p>
           </div>
@@ -145,7 +145,7 @@ export default function SignupPage() {
           </div>
 
           <div className="relative z-10 text-sm text-[#86A98A]">
-            Stewards of Alberta's Protected Areas Association · Alberta, Canada
+            Stewards of Alberta&apos;s Protected Areas Association · Alberta, Canada
           </div>
         </div>
 
@@ -168,7 +168,7 @@ export default function SignupPage() {
                 Create Account
               </h1>
               <p className="text-lg text-[#7A8075]">
-                Join the community of Alberta's environmental stewards.
+                Join the community of Alberta&apos;s environmental stewards.
               </p>
             </div>
 
@@ -390,7 +390,7 @@ export default function SignupPage() {
               One more step to go
             </h2>
             <p className="text-[#7A8075] text-center leading-relaxed mb-6">
-              We've sent a confirmation link to{' '}
+              We&apos;ve sent a confirmation link to{' '}
               <span className="font-semibold text-[#1E2520]">{email}</span>.{' '}
               After verifying, your account will be reviewed for access.
             </p>
@@ -437,14 +437,14 @@ export default function SignupPage() {
             </button>
 
             <p className="text-center text-xs text-[#7A8075] mt-4">
-              Didn't receive an email?{' '}
+              Didn&apos;t receive an email?{' '}
               
               <button className="text-[#1C7C4D] font-medium hover:underline"
                 onClick={async () => {
                   try{
                     await  resendConfirmation(email);
                   } catch (err){
-                    console.log(err)
+                    console.error(err)
                   }
               }}>
                 Resend confirmation

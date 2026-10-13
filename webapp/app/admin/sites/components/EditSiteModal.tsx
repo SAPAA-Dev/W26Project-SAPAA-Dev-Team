@@ -33,6 +33,7 @@ export default function EditSiteModal({
 
   useEffect(() => {
     if (site) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- re-seeds the edit form whenever the target site or county list changes
       setNamesite(site.namesite);
       const match = counties.find((c) => c.id === site.ab_county) ?? null;
       setSelectedCounty(match);

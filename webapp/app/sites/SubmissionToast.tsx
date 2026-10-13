@@ -13,6 +13,7 @@ export function SubmissionToast() {
 
   useEffect(() => {
     if (searchParams.get("submitted") === "true") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- shows the toast in response to the URL flag, which is only known after navigation
       setText("Report Submitted!");
       setDescription("Your site inspection has been recorded!");
       setVisible(true);
@@ -38,6 +39,7 @@ export function SubmissionToast() {
       const t = setTimeout(() => setVisible(false), 3000);
       return () => clearTimeout(t);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-run when the query flags change; re-running on pathname could re-show the toast
   }, [searchParams]);
 
   if (!visible) return null;

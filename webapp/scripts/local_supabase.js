@@ -1,10 +1,11 @@
-//* eslint-disable @typescript-eslint/no-require-imports -- CJS dev script loaded with require() */
+/* eslint-disable @typescript-eslint/no-require-imports -- CommonJS script run directly by node */
 const { execFileSync, spawn } = require('node:child_process');
 const { existsSync } = require('node:fs');
 const path = require('node:path');
 const dotenv = require('dotenv');
 const { createClient } = require('@supabase/supabase-js');
 const { ensureLocalS3 } = require('./local_s3');
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 const webappDir = path.resolve(__dirname, '..');
 const supabaseDir = path.join(webappDir, 'supabase');

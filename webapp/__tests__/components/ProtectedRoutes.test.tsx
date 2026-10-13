@@ -4,6 +4,7 @@ import ProtectedRoute from '../../components/ProtectedRoute'; // adjust path
 import * as useAuthHook from '@/hooks/useAuth';
 import * as nextNavigation from 'next/navigation';
 import * as supabaseClient from '@/utils/supabase/client';
+import * as auth from '@/services/auth';
 
 jest.mock('@/hooks/useAuth');
 jest.mock('next/navigation', () => ({
@@ -13,6 +14,7 @@ jest.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(), 
 }));
 jest.mock('@/utils/supabase/client');
+jest.mock('@/services/auth', () => ({ logout: jest.fn() }));
 
 describe('ProtectedRoute Component', () => {
   let pushMock: jest.Mock;
@@ -51,7 +53,7 @@ describe('ProtectedRoute Component', () => {
     expect(screen.getByText('Loading...')).toHaveClass('font-medium');
   });
 
-  it('redirects to login if not authenticated', async () => {
+  it('redirects to login if not authenticated (5.0.4 AT1)', async () => {
     mockUseAuth(false, false);
     mockSupabaseSession();
 
@@ -166,6 +168,7 @@ describe('ProtectedRoute Component', () => {
   });
 
   it('allows user to sign out from approval pending screen', async () => {
+    (auth.logout as jest.Mock).mockResolvedValue({ success: true });
     mockUseAuth(true, false);
     mockSupabaseSession('steward', false);
 
@@ -175,11 +178,24 @@ describe('ProtectedRoute Component', () => {
       </ProtectedRoute>
     );
 
-    await waitFor(() => {
-      const signOutBtn = screen.getByRole('button', { name: /Sign Out/i });
-      fireEvent.click(signOutBtn);
-      expect(pushMock).toHaveBeenCalledWith('/login');
-    });
+    fireEvent.click(await screen.findByRole('button', { name: /Sign Out/i }));
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/login'));
+  });
+
+  it('stays on the approval pending screen with an error when sign-out fails (5.0.4 AT1)', async () => {
+    (auth.logout as jest.Mock).mockResolvedValue({ success: false, error: 'Network down' });
+    mockUseAuth(true, false);
+    mockSupabaseSession('steward', false);
+
+    render(
+      <ProtectedRoute>
+        <div>Children Content</div>
+      </ProtectedRoute>
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: /Sign Out/i }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/sign-out failed/i);
+    expect(pushMock).not.toHaveBeenCalled();
   });
 
   it('renders children if authenticated is true', async () => {

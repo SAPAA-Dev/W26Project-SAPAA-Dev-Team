@@ -26,7 +26,10 @@ jest.mock('@/utils/supabase/client', () => ({
 }));
 
 // Mock next/image
-jest.mock('next/image', () => (props: any) => <img {...props} alt={props.alt} />);
+jest.mock('next/image', () => function MockImage(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+  // eslint-disable-next-line @next/next/no-img-element -- mock of next/image renders a plain img
+  return <img {...props} alt={props.alt} />;
+});
 
 describe('LoginPage', () => {
   const mockPush = jest.fn();

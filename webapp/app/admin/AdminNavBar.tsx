@@ -4,12 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Archive, Home, LayoutDashboard, Users, MapPin, FileEdit, LogOut, ClipboardList } from "lucide-react";
-import { logout } from "@/services/auth";
+import { useSignOut } from "@/hooks/useSignOut";
 import { navigate } from "@/components/HeaderDropdown";
 
 export default function AdminNavBar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { signOut, error: signOutError } = useSignOut(() => navigate("/login"));
 
   const navItems = [
     { name: "Dashboard", href: "/admin/dashboard", icon: <LayoutDashboard className="w-4 h-4 text-[#555]" />, description: "View analytics and stats" },
@@ -92,9 +93,7 @@ export default function AdminNavBar() {
             <div className="py-1.5 border-t border-black/[0.07]">
               <button
                 onClick={async () => {
-                  setMenuOpen(false);
-                  await logout();
-                  navigate("/login");
+                  if (await signOut()) setMenuOpen(false);
                 }}
                 className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#fdf0f0] transition-colors"
               >
@@ -103,6 +102,9 @@ export default function AdminNavBar() {
                 </span>
                 <span className="text-sm font-medium text-[#c0392b]">Logout</span>
               </button>
+              {signOutError && (
+                <p role="alert" className="px-4 pb-2 text-xs text-[#c0392b]">{signOutError}</p>
+              )}
             </div>
 
           </div>

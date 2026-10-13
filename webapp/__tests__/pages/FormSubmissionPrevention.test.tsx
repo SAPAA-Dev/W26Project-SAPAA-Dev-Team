@@ -14,7 +14,10 @@ jest.mock('next/navigation', () => ({
   usePathname: () => '/detail/Test%20Site/new-report',
 }));
 
-jest.mock('next/image', () => (props: any) => <img {...props} alt={props.alt} />);
+jest.mock('next/image', () => function MockImage(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+  // eslint-disable-next-line @next/next/no-img-element -- test mock of next/image
+  return <img {...props} alt={props.alt} />;
+});
 
 const mockGetQuestionsOnline = jest.fn();
 const mockIsSteward = jest.fn();
@@ -29,17 +32,17 @@ const mockGetDateOfVisitQuestionId = jest.fn();
 const mockRollbackSiteInspectionSubmission = jest.fn();
 
 jest.mock('@/utils/supabase/queries', () => ({
-  getQuestionsOnline: (...args: any[]) => mockGetQuestionsOnline(...args),
-  isSteward: (...args: any[]) => mockIsSteward(...args),
-  getCurrentUserUid: (...args: any[]) => mockGetCurrentUserUid(...args),
-  getCurrentSiteId: (...args: any[]) => mockGetCurrentSiteId(...args),
-  addSiteInspectionReport: (...args: any[]) => mockAddSiteInspectionReport(...args),
-  getQuestionResponseType: (...args: any[]) => mockGetQuestionResponseType(...args),
-  uploadSiteInspectionAnswers: (...args: any[]) => mockUploadSiteInspectionAnswers(...args),
-  getSitesOnline: (...args: any[]) => mockGetSitesOnline(...args),
-  insertInspectionAttachments: (...args: any[]) => mockInsertInspectionAttachments(...args),
-  getDateOfVisitQuestionId: (...args: any[]) => mockGetDateOfVisitQuestionId(...args),
-  rollbackSiteInspectionSubmission: (...args: any[]) => mockRollbackSiteInspectionSubmission(...args),
+  getQuestionsOnline: (...args: unknown[]) => mockGetQuestionsOnline(...args),
+  isSteward: (...args: unknown[]) => mockIsSteward(...args),
+  getCurrentUserUid: (...args: unknown[]) => mockGetCurrentUserUid(...args),
+  getCurrentSiteId: (...args: unknown[]) => mockGetCurrentSiteId(...args),
+  addSiteInspectionReport: (...args: unknown[]) => mockAddSiteInspectionReport(...args),
+  getQuestionResponseType: (...args: unknown[]) => mockGetQuestionResponseType(...args),
+  uploadSiteInspectionAnswers: (...args: unknown[]) => mockUploadSiteInspectionAnswers(...args),
+  getSitesOnline: (...args: unknown[]) => mockGetSitesOnline(...args),
+  insertInspectionAttachments: (...args: unknown[]) => mockInsertInspectionAttachments(...args),
+  getDateOfVisitQuestionId: (...args: unknown[]) => mockGetDateOfVisitQuestionId(...args),
+  rollbackSiteInspectionSubmission: (...args: unknown[]) => mockRollbackSiteInspectionSubmission(...args),
 }));
 
 const mockGetUser = jest.fn();

@@ -1,24 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SAPAA web app
 
-## Getting Started
+The web app for the Stewards of Alberta's Protected Areas Association (SAPAA). Volunteer
+stewards fill in site inspection reports for protected areas, attach photos, and look back at
+earlier reports. Admins manage sites, users, the inspection form and the report data, and
+export reports.
 
-First, run the development server:
+## Stack
+
+* Next.js 16 (App Router) with React 19 and TypeScript
+* Supabase for auth and the Postgres database
+* AWS S3 for inspection photos (served with presigned URLs)
+* Tailwind CSS and MUI for the UI, MapLibre and Leaflet for maps, Chart.js for the dashboard
+* `@react-pdf/renderer` for PDF exports
+* Jest and Testing Library for unit tests, Cypress for E2E tests
+
+## Install
+
+Needs Node.js 22 (the version CI uses).
+
+```bash
+cd webapp
+npm install
+```
+
+## Environment variables
+
+Copy `.env.example` to `.env.local` and fill in the values. `.env.local` is gitignored. Never
+commit real values. [docs/Deployment-manual.md](../docs/Deployment-manual.md) explains
+where each value comes from.
+
+## Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`npm run dev` runs `scripts/local_supabase.js`. It starts a local Supabase (needs Docker and the
+Supabase CLI), applies the migrations, loads `supabase/seed.sql`, creates the seed admin and
+steward accounts, starts LocalStack for S3 (needs the `lstk` CLI), and then starts `next dev`
+on [http://localhost:3000](http://localhost:3000) with the local URLs and keys.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+To run against a hosted Supabase project instead, set the variables in `.env.local` and run
+`npx next dev`. There is only one hosted Supabase project and it holds production data.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+For deployment, see [docs/Deployment-manual.md](../docs/Deployment-manual.md).
+
+## Tests and checks
+
+Run these in `webapp/` before you open a PR. CI blocks on all of them.
+
+```bash
+npm test                          # Jest unit tests
+npm run test:ci                   # Jest with coverage, as CI runs it
+npm run lint -- --max-warnings 0  # ESLint
+npx tsc --noEmit                  # type check
+```
+
+Jest tests mock Supabase and S3, so they never touch real data.
+
+See [docs/contributing.md](../docs/contributing.md) for branches, commits and the PR process.
+
+## Database rule tests
+
+See `npm run test:db` (added by #272).
 
 ## Cypress tests
 
@@ -26,17 +70,33 @@ The e2e specs read test account logins from `Cypress.env()`. Copy `cypress.env.e
 `cypress.env.json` (gitignored) and fill in an approved admin, an approved steward and an
 unapproved account. Never commit real passwords, and never use production accounts.
 
-## Learn More
+### Run E2E locally (same as the `E2E` GitHub workflow)
 
-To learn more about Next.js, take a look at the following resources:
+Needs Docker and the Supabase CLI. The seed script creates local-only test users and prints the env.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+cd webapp
+supabase start -x studio,postgres-meta,edge-runtime,storage-api,imgproxy,logflare,vector,mailpit,realtime,supavisor
+node scripts/e2e_seed.js > .env.e2e        # .env* is gitignored
+set -a && . ./.env.e2e && set +a
+npm run build && npx next start -p 3000 &
+npx cypress run --spec "$(grep -o 'cypress/e2e/[^ ]*' ../.github/workflows/e2e.yaml | tail -1)"
+supabase stop
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+CI runs only the specs listed in `E2E_SPECS` in `.github/workflows/e2e.yaml`. Most others need the
+production inspection form, fixed report ids or S3, which the local seed does not have. The comment
+above `E2E_SPECS` gives the reason for each excluded spec.
 
-## Deploy on Vercel
+### Database rule tests
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`__tests__/db/rls.test.ts` checks the row level security policies and function grants on the local
+Supabase, signed in as the seeded users with the publishable key. It runs the seed script itself.
+Without `SUPABASE_LOCAL_URL` it skips, so `npm test` and CI need no database.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+cd webapp
+supabase start -x studio,postgres-meta,edge-runtime,storage-api,imgproxy,logflare,vector,mailpit,realtime,supavisor
+npm run test:db      # sets SUPABASE_LOCAL_URL=http://127.0.0.1:54321 unless you set it
+supabase stop
+```

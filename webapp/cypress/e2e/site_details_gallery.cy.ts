@@ -1,3 +1,4 @@
+import type { Interception } from 'cypress/types/net-stubbing';
 /// <reference types="cypress" />
 
 function dismissTutorialIfPresent() {
@@ -140,11 +141,11 @@ describe("Site Details Image Gallery", () => {
   it("gallery displays only site-scoped image data for the selected detail page", () => {
     openFirstSiteDetailWithGalleryStub();
   
-    cy.get("@getSiteGallery").then((interception: any) => {
+    cy.get("@getSiteGallery").then((interception: Interception) => {
       expect(interception.request.url).to.match(/\/api\/sites\/\d+\/gallery$/);
     });
   
-    cy.get("@getHomepageSiteGallery").then((interception: any) => {
+    cy.get("@getHomepageSiteGallery").then((interception: Interception) => {
       expect(interception.request.url).to.match(/\/api\/homepage-images\/\d+$/);
     });
   

@@ -1,9 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import AccountManagementPage from '../../app/admin/account-management/page';
 import * as adminActions from '../../utils/admin-actions';
-import { useRouter } from 'next/navigation';
 
 // Mock next/router
 jest.mock('next/navigation', () => ({
@@ -19,18 +17,23 @@ jest.mock('../../utils/admin-actions', () => ({
 }));
 
 // Mock next/image
-jest.mock('next/image', () => (props: any) => <img {...props} alt={props.alt} />);
+jest.mock('next/image', () => function MockImage(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+  // eslint-disable-next-line @next/next/no-img-element -- test mock of next/image
+  return <img {...props} alt={props.alt} />;
+});
 
 // Mock components
-jest.mock('../../app/admin/AdminNavBar', () => () => <div>AdminNavBarMock</div>);
-jest.mock('../../components/ProtectedRoute', () => ({ children, requireAdmin }: any) => <div>{children}</div>);
-jest.mock('../../app/admin/account-management/components/AccountDetailsModal', () => ({ visible, user, onClose, onSave, onDelete }: any) => (
+jest.mock('../../app/admin/AdminNavBar', () => function MockAdminNavBar() { return <div>AdminNavBarMock</div>; });
+jest.mock('../../components/ProtectedRoute', () => function MockProtectedRoute({ children }: { children: React.ReactNode }) { return <div>{children}</div>; });
+jest.mock('../../app/admin/account-management/components/AccountDetailsModal', () => function MockAccountDetailsModal({ user, onClose, onDelete }: { user: { id: string } | null; onClose: () => void; onDelete: (id: string) => void }) {
+  return (
   <div>
     <div>AccountDetailsModalMock</div>
     <button onClick={onClose}>Close Modal</button>
     {user && <button onClick={() => onDelete(user.id)}>Delete User</button>}
   </div>
-));
+  );
+});
 
 describe('AccountManagementPage', () => {
   const mockUsers = [

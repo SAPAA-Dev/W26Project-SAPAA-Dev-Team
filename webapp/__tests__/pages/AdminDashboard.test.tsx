@@ -1,6 +1,7 @@
 // __tests__/pages/AdminDashboard.test.tsx
 import React from "react";
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import * as queries from "@/utils/supabase/queries";
 
 // Must mock these BEFORE importing Dashboard
 jest.mock('@/utils/supabase/queries', () => ({
@@ -27,10 +28,13 @@ jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
 }));
 
-jest.mock("../../app/admin/dashboard/components/Map", () => () => <div>MapMock</div>);
-jest.mock("next/image", () => (props: any) => <img {...props} alt={props.alt} />);
-jest.mock("../../app/admin/AdminNavBar", () => () => <div>AdminNavBarMock</div>);
-jest.mock("@/components/ProtectedRoute", () => ({ children }: any) => <div>{children}</div>);
+jest.mock("../../app/admin/dashboard/components/Map", () => function MockMap() { return <div>MapMock</div>; });
+jest.mock("next/image", () => function MockImage(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+  // eslint-disable-next-line @next/next/no-img-element -- test mock of next/image
+  return <img {...props} alt={props.alt} />;
+});
+jest.mock("../../app/admin/AdminNavBar", () => function MockAdminNavBar() { return <div>AdminNavBarMock</div>; });
+jest.mock("@/components/ProtectedRoute", () => function MockProtectedRoute({ children }: { children: React.ReactNode }) { return <div>{children}</div>; });
 
 // Mock Chart.js to prevent canvas errors in jsdom
 jest.mock('react-chartjs-2', () => ({
@@ -52,11 +56,10 @@ describe("Dashboard", () => {
     jest.clearAllMocks();
 
     // Re-apply mocks after clearAllMocks since it resets mock implementations
-    const queries = require('@/utils/supabase/queries');
-    queries.getTotalInspectionCount.mockResolvedValue(5);
-    queries.getLastInspectionDate.mockResolvedValue('2025-11-30T00:00:00Z');
-    queries.getNaturalnessDistribution.mockResolvedValue([{ naturalness_score: 'Good', count: 3 }]);
-    queries.getTopSitesDistribution.mockResolvedValue([{ namesite: 'Alpha', count: 5 }]);
+    jest.mocked(queries.getTotalInspectionCount).mockResolvedValue(5);
+    jest.mocked(queries.getLastInspectionDate).mockResolvedValue('2025-11-30T00:00:00Z');
+    jest.mocked(queries.getNaturalnessDistribution).mockResolvedValue([{ naturalness_score: 'Good', count: 3 }]);
+    jest.mocked(queries.getTopSitesDistribution).mockResolvedValue([{ namesite: 'Alpha', count: 5 }]);
 
     global.fetch = jest.fn().mockImplementation((url: string) => {
       if (url.includes("/api/homepage-images")) {

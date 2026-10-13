@@ -1,15 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { ChevronRight, Upload, Image as ImageIcon, Loader2, Lock } from "lucide-react";
+import { Image as ImageIcon, Loader2, Lock } from "lucide-react";
 import { getQuestionsOnline } from '@/utils/supabase/queries';
 import MarkdownText from "@/components/MarkdownText";
-
-interface Answer {
-  id?: number;
-  text?: string;
-  [key: string]: any;
-}
 
 interface Question {
   id: number;
@@ -27,8 +21,8 @@ interface Question {
 }
 
 interface MainContentProps {
-  responses: Record<number, any>;
-  onResponsesChange: (responses: Record<number, any>) => void;
+  responses: Record<number, ResponseValue>;
+  onResponsesChange: (responses: Record<number, ResponseValue>) => void;
   onSectionStateChange?: (state: {
     activeSection: number | null;
     lastSection: number | null;
@@ -79,6 +73,10 @@ export interface LocalImage {
   previewUrl: string;
 }
 
+// One answer in the responses map: text/option/date/site answers, select-all
+// choices, the agreement checkbox, or locally-picked images.
+export type ResponseValue = string | string[] | boolean | LocalImage[];
+
 export default function MainContent({
   responses,
   onResponsesChange,
@@ -86,7 +84,6 @@ export default function MainContent({
   siteName,
   currentUser,
   existingAttachments = [],
-  onExistingAttachmentsChange,
   restoredActiveSection = null,
 }: MainContentProps) {
   const [activeSection, setActiveSection] = useState<number | null>(null);
@@ -120,7 +117,8 @@ export default function MainContent({
     return () => {
       Object.values(responses).forEach((value) => {
         if (Array.isArray(value)) {
-          value.forEach((item: any) => {
+          // Only image answers hold objects; string items have no previewUrl.
+          (value as LocalImage[]).forEach((item) => {
             if (item?.previewUrl && item?.file) {
               // Only revoke locally-created object URLs (local images have a `file` prop)
               URL.revokeObjectURL(item.previewUrl);
@@ -129,13 +127,14 @@ export default function MainContent({
         }
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- unmount-only cleanup; adding responses would revoke live preview URLs on every answer change
   }, []);
 
   // Autofill known fields (name, email, etc.) on first load
   useEffect(() => {
     if (questions.length === 0 || hasAutofilled.current) return;
 
-    const autofilled: Record<number, any> = {};
+    const autofilled: Record<number, ResponseValue> = {};
     const autofillValues: Record<string, string | undefined> = {
       user_email: currentUser?.email,
       user_name: currentUser?.name,
@@ -158,7 +157,7 @@ export default function MainContent({
     }
 
     hasAutofilled.current = true;
-  }, [questions, responses]);
+  }, [questions, responses, currentUser?.email, currentUser?.name, currentUser?.phone, onResponsesChange, siteName, today]);
 
   // ── Section / question organisation ────────────────────────────────────────
   const questionsBySection = questions.reduce((acc, question) => {
@@ -197,6 +196,7 @@ export default function MainContent({
     if (sections.length === 0 || activeSection !== null) return;
 
     if (restoredActiveSection !== null && sections.includes(restoredActiveSection)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- picks the initial section once questions load; deriving it in render would change when activeSection is set
       setActiveSection(restoredActiveSection);
       return;
     }
@@ -204,11 +204,13 @@ export default function MainContent({
     setActiveSection(sections[0]);
   }, [activeSection, restoredActiveSection, sections]);
 
+  // eslint-disable-next-line react-hooks/refs -- keeps the stable goToPreviousSection callback pointing at the latest section state
   goToPreviousSectionRef.current = () => {
     if (!canGoPrevious) return;
     setActiveSection(sections[currentSectionIndex - 1]);
   };
 
+  // eslint-disable-next-line react-hooks/refs -- keeps the stable goToNextSection callback pointing at the latest section state
   goToNextSectionRef.current = () => {
     if (!canGoNext) return;
     setActiveSection(sections[currentSectionIndex + 1]);
@@ -263,26 +265,13 @@ export default function MainContent({
 
   const currentQuestions = questionsBySection[currentSection ?? 1] || [];
 
-  const handleResponse = (questionId: number, value: any) => {
+  const handleResponse = (questionId: number, value: ResponseValue) => {
     onResponsesChange({ ...responses, [questionId]: value });
   };
 
   // ── Existing-attachment helpers ─────────────────────────────────────────────
   const existingForQuestion = (questionId: number): ExistingAttachment[] =>
     existingAttachments.filter((a) => a.question_id === questionId);
-
-  const updateExistingField = (
-    attachmentId: number,
-    field: 'caption' | 'identifier',
-    value: string
-  ) => {
-    if (!onExistingAttachmentsChange) return;
-    onExistingAttachmentsChange(
-      existingAttachments.map((a) =>
-        a.id === attachmentId ? { ...a, [field]: value } : a
-      )
-    );
-  };
 
   // ── Render ──────────────────────────────────────────────────────────────────
   const renderQuestionInput = (question: Question) => {
@@ -322,7 +311,7 @@ export default function MainContent({
                 type="button"
                 onClick={() => {
                   const newResponses = { ...responses };
-                  delete (newResponses as Record<string, any>)[`${question.id}_comm`];
+                  delete (newResponses as Record<string, ResponseValue>)[`${question.id}_comm`];
                   delete newResponses[question.id];
                   onResponsesChange(newResponses);
                 }}
@@ -342,7 +331,7 @@ export default function MainContent({
                   typeof answer === 'object' && answer !== null
                     ? (answer as { text: string }).text
                     : String(answer);
-                const selectedAnswers = Array.isArray(response) ? response : [];
+                const selectedAnswers = Array.isArray(response) ? (response as string[]) : [];
                 const isChecked = selectedAnswers.includes(answerText);
                 return (
                   <label
@@ -354,7 +343,7 @@ export default function MainContent({
                       value={answerText}
                       checked={isChecked}
                       onChange={(e) => {
-                        const currentSelections = Array.isArray(response) ? [...response] : [];
+                        const currentSelections = Array.isArray(response) ? [...(response as string[])] : [];
                         if (e.target.checked) {
                           handleResponse(question.id, [...currentSelections, answerText]);
                         } else {
@@ -362,7 +351,7 @@ export default function MainContent({
                           const newSelections = currentSelections.filter((item) => item !== answerText);
                           const newResponses = { ...responses, [question.id]: newSelections };
                           if (answerText === 'Other') {
-                            delete (newResponses as Record<string, any>)[`${question.id}_comm`];
+                            delete (newResponses as Record<string, ResponseValue>)[`${question.id}_comm`];
                           }
                           onResponsesChange(newResponses);
                         }
@@ -377,13 +366,13 @@ export default function MainContent({
               })}
         
               {/* Other free-text - only when Other is checked */}
-              {Array.isArray(response) && response.includes('Other') && (
+              {Array.isArray(response) && (response as string[]).includes('Other') && (
                 <div className="ml-2 pl-4 border-l-2 border-[#356B43]/30">
                   <label className="block text-sm font-semibold text-[#254431] mb-1">
-                    Please specify "Other":
+                    Please specify &quot;Other&quot;:
                   </label>
                   <textarea
-                    value={(responses as Record<string, any>)[`${question.id}_comm`] ?? ''}
+                    value={(responses as Record<string, string | undefined>)[`${question.id}_comm`] ?? ''}
                     onChange={(e) =>
                       onResponsesChange({ ...responses, [`${question.id}_comm`]: e.target.value })
                     }
@@ -408,7 +397,7 @@ export default function MainContent({
       case 'text\n':
         return (
           <textarea
-            value={response || ''}
+            value={(response as string) || ''}
             onChange={(e) => handleResponse(question.id, e.target.value)}
             data-testid={`question-input-${question.id}`}
             placeholder="Enter your response here..."
@@ -440,7 +429,7 @@ export default function MainContent({
             <div className="relative">
               <input
                 type="text"
-                value={response || ''}
+                value={(response as string) || ''}
                 onChange={(e) => {
                   if (!isLockedSiteName) {
                     handleResponse(question.id, e.target.value);
@@ -474,7 +463,7 @@ export default function MainContent({
           <div className="space-y-2">
             <input
               type="date"
-              value={response || ''}
+              value={(response as string) || ''}
               max={today}
               onChange={(e) => handleResponse(question.id, e.target.value)}
               className="w-full px-4 py-3 border-2 border-[#E4EBE4] rounded-xl focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] font-medium placeholder:text-[#7A8075]"
@@ -613,6 +602,7 @@ export default function MainContent({
                 >
                   {/* Preview */}
                   <div className="w-20 h-20 rounded-lg overflow-hidden bg-[#F7F2EA] flex-shrink-0 relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- S3 presigned URL, not served via next/image */}
                     <img
                       src={image.previewUrl}
                       alt={image.filename ?? 'Uploaded image'}
@@ -652,6 +642,7 @@ export default function MainContent({
                 >
                   <div className="flex gap-3">
                     <div className="w-24 h-24 rounded-lg overflow-hidden bg-[#F7F2EA] flex-shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- local blob: object URL preview, not supported by next/image */}
                       <img
                         src={image.previewUrl}
                         alt={image.file.name}

@@ -1,18 +1,19 @@
 "use client";
 
 import React from "react";
+import type { ResponseValue } from "./MainContent";
 
 interface Question {
   id: number;
   text: string | null;
   question_type: string;
   section: number;
-  answers: any[];
+  answers: unknown[];
 }
 
 interface StickyFooterProps {
   questions?: Question[];
-  responses?: Record<number, any>;
+  responses?: Record<number, ResponseValue>;
   onSubmit?: () => void;
   onPreviousSection?: () => void;
   onNextSection?: () => void;

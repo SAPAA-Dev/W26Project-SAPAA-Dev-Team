@@ -12,15 +12,18 @@ jest.mock('next/navigation', () => ({
 }));
 
 // Mock next/image
-jest.mock('next/image', () => (props: any) => <img {...props} alt={props.alt} />);
+jest.mock('next/image', () => function MockImage(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+  // eslint-disable-next-line @next/next/no-img-element -- test mock of next/image
+  return <img {...props} alt={props.alt} />;
+});
 
 // Mock components
-jest.mock('../../app/admin/AdminNavBar', () => () => <div>AdminNavBarMock</div>);
-jest.mock('../../components/ProtectedRoute', () => ({ children }: any) => <div>{children}</div>);
+jest.mock('../../app/admin/AdminNavBar', () => function MockAdminNavBar() { return <div>AdminNavBarMock</div>; });
+jest.mock('../../components/ProtectedRoute', () => function MockProtectedRoute({ children }: { children: React.ReactNode }) { return <div>{children}</div>; });
 
 // Mock @dnd-kit
 jest.mock('@dnd-kit/core', () => ({
-  DndContext: ({ children }: any) => <div>{children}</div>,
+  DndContext: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   rectIntersection: jest.fn(),
   PointerSensor: jest.fn(),
   useSensor: jest.fn(() => ({})),
@@ -29,7 +32,7 @@ jest.mock('@dnd-kit/core', () => ({
 }));
 
 jest.mock('@dnd-kit/sortable', () => ({
-  SortableContext: ({ children }: any) => <div>{children}</div>,
+  SortableContext: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   verticalListSortingStrategy: jest.fn(),
   useSortable: jest.fn(() => ({
     attributes: {},
@@ -39,7 +42,7 @@ jest.mock('@dnd-kit/sortable', () => ({
     transition: null,
     isDragging: false,
   })),
-  arrayMove: jest.fn((arr: any[], from: number, to: number) => {
+  arrayMove: jest.fn((arr: unknown[], from: number, to: number) => {
     const result = [...arr];
     const [item] = result.splice(from, 1);
     result.splice(to, 0, item);
@@ -232,7 +235,7 @@ describe('Admin Hide/Show Questions on Site Inspection Form', () => {
   describe('Hidden questions still appear in past reports', () => {
     it('getFormResponseById still returns answers for hidden questions', async () => {
       // Past report has answers for all questions including the one being hidden
-      const pastReportAnswers: Record<number, any> = {
+      const pastReportAnswers: Record<number, string> = {
         101: 'My Site',
         102: 'Good',
         103: 'Looks great',
