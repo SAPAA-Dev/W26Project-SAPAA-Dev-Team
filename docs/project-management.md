@@ -143,8 +143,11 @@ From Sprint 3, each sprint has its own branch, `sprint-N` (for example `sprint-3
    reviews it (Sprint 2: Aaron; Sprint 3: Jayden).
 3. Every sprint ends with a GitHub release built from `main`.
 
-The steps are in [Contributing](contributing.md#branch-model). In Sprint 2, the PRs merged straight
-into `main`. The `sprint-2` branch was made on October 11 at `9009d0d`, the same commit as `main`.
+The steps are in [Contributing](contributing.md#branch-model). In Sprint 2, the PRs before #253
+merged straight into `main`. The `sprint-2` branch was made on October 11 at `9009d0d`, the same
+commit as `main`. The later PRs (#253 to #262 and #276) merged into `sprint-2`. [#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284)
+merged `sprint-2` into `main` on October 13 (squash commit `ceb5188`), and [#285](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/285) merged
+`main` into `release`.
 
 ### Milestones
 
@@ -297,10 +300,31 @@ divides its tasks between its members.
 The security stories were removed from the story list on September 25, so the access control work
 stays in the task list below until the team decides if it returns as stories.
 
+#### Sprint 2 release (October 13, 2026)
+
+- **Merges.** PRs #253 to #262 and #276 merged into `sprint-2`. [#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284) merged `sprint-2`
+  into `main` on October 13 (squash commit `ceb5188`). [#285](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/285) merged `main` into
+  `release`. The branches `chore/sprint-2-integration`, `sprint-2` and `test/fix-test-case-error`
+  no longer exist.
+- **Release.** The GitHub release
+  [`sprint-2`](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/releases/tag/sprint-2) was
+  published on October 13. The release notes issue ([#97](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/97)) and the code freeze issue
+  ([#96](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/96)) are closed.
+- **Checks.** GitHub Actions cannot run, because the organisation's billing failed, so #284 and #285
+  were merged with an admin bypass. The CI job list was run locally on `main` at `ceb5188` and
+  passed: `tsc --noEmit`, `npm run test:ci` (111 suites, 1524 tests passed, 5 skipped, 0 failed),
+  `npm run build`, ESLint with `--max-warnings 0`, `.githooks/test-hooks.sh`,
+  `npm run diagrams:check` and `mkdocs build --clean`.
+- **Carry-over.** Three follow-ups were not finished before the release and moved to the Sprint 3
+  milestone: [#265](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/265), [#266](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/266) and [#270](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/270). See [Sprint 3](#sprint-3).
+  Six Sprint 2 follow-ups ([#267](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/267), [#268](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/268), [#269](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/269), [#272](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/272),
+  [#273](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/273) and [#274](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/274)) and the demo ([#98](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/98)) are still open in the Sprint 2
+  milestone.
+
 #### Sprint 2 status (as of October 11, 2026)
 
-This status was read from `main` at `9009d0d` on October 11, the code freeze. The release is
-October 13 at 20:00. A story or task is **Done** when its PR is merged on `main` and the merged work
+This status was read from `main` at `9009d0d` on October 11, the code freeze. The release was made
+on October 13, see [Sprint 2 release](#sprint-2-release-october-13-2026). A story or task is **Done** when its PR is merged on `main` and the merged work
 covers each AT of the story. The test of each AT is in the
 [Traceability Matrix](traceability-matrix.md). A gap in the tests of a Done story is listed below
 the table. It does not change the status.
@@ -308,21 +332,21 @@ the table. It does not change the status.
 **Tests.** A full local Jest run on `9009d0d` passes: 103 suites and 1367 tests. CI did not run on
 the commits from `e39cc8f` (PR #243) to `9009d0d`, because GitHub did not start the jobs: the
 account's Actions payments failed. The last CI run that ran the tests was on `2cf69c6` on
-October 10 (96 suites, 1235 tests, all passed). The CI status must be checked again before the
-release.
+October 10 (96 suites, 1235 tests, all passed). CI has not run since. The local checks of the
+release are under [Sprint 2 release](#sprint-2-release-october-13-2026).
 
-**Sprint 2 fix branches.** After the freeze, the fix branches of Alpha, Beta and Gamma,
-`fix/report-read-caller-checks` (#251) and the CI branches were merged into
-`chore/sprint-2-integration` for the `sprint-2` PR. They change no story status. On `848fc22` of
-that branch, local runs give: ESLint 0 problems (with no `webapp/coverage/` folder, see the known
-problem in [Contributing](contributing.md#ci)), `tsc` 0 errors, and `npm run test:ci` 110 suites
-and 1485 tests, all passed, with coverage of statements 84.26%, branches 73.38%, functions 78.28%
-and lines 86.77%. These are local results: GitHub Actions has not run since October 10.
+**Sprint 2 fixes after the freeze.** The fixes of Alpha, Beta and Gamma, the caller checks on the
+report read actions (#251, fixed by [PR #259](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/259)) and the CI changes were merged into
+`sprint-2` as PRs #253 to #262 and #276. They change no story status. They are on `main` since
+[#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284). On `main` at `ceb5188`, local runs give `tsc` 0 errors, ESLint 0 problems,
+`npm run build` passing, and `npm run test:ci` 111 suites passed (1 skipped) and 1524 tests passed
+(5 skipped, 0 failed), with coverage of statements 85.06%, branches 74%, functions 78.61% and lines
+87.56%. These are local results: GitHub Actions has not run since October 10.
 
-**Quality gates** on that branch ([Contributing](contributing.md#ci)): lint fails the
+**Quality gates** on `main` ([Contributing](contributing.md#ci)): lint fails the
 `webapp-tests` job on any problem (`--max-warnings 0`), `npm run test:ci` fails below the
-coverage thresholds in `webapp/jest.config.ts`, `e2e.yaml` runs the sign-out and profile Cypress
-specs against a local Supabase on PRs into `main` and `release`, and the PR checks, the reviewer
+coverage thresholds in `webapp/jest.config.ts`, `e2e.yaml` runs seven Cypress specs against a
+local Supabase on PRs into `main` and `release`, and the PR checks, the reviewer
 gate and the diagrams workflow also run on PRs into `sprint-*`.
 
 | Status | Stories | Points |
@@ -344,12 +368,12 @@ gate and the diagrams workflow also run on PRs into `sprint-*`.
       Winter 2026 team). [PR #237](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/237) (October 10) makes the export read past the
       PostgREST limit of 1000 rows and adds tests for AT1 (a 60-report and a 51-report export, a
       60-site request), AT4 (a failed export of 51 reports writes only to the job table) and
-      paging. AT3 was already tested. The Gamma fix branch adds AT2 (51 reports have the same
+      paging. AT3 was already tested. [PR #258](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/258) adds AT2 (51 reports have the same
       answers in the export as on the site page) and a 60-report steward refusal for AT3.
 - **Work merged on October 10 and 11** ([PR #234](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/234) to [PR #250](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/250)). Besides the three stories above:
-    - CI runs the build, the type check and lint ([PR #235](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/235)). On `main`, lint reports its
-      errors but does not fail the job. The CI branches make lint and coverage blocking (see
-      **Quality gates** above).
+    - CI runs the build, the type check and lint ([PR #235](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/235)). At the freeze, lint
+      reported its errors on `main` but did not fail the job. [PR #262](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/262) makes lint blocking
+      and [PR #260](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/260) adds the coverage gate (see **Quality gates** above).
     - Fixes: gallery reads and a safe image delete ([PR #234](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/234)), drafts that restore
       reliably ([PR #236](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/236), #87), profile save errors, approved-only reads and steward search
       ([PR #238](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/238)), archived and inactive sites ([PR #239](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/239)), auth gaps in the middleware, the OAuth
@@ -360,19 +384,20 @@ gate and the diagrams workflow also run on PRs into `sprint-*`.
       decisions ([PR #245](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/245)), the release process and the production migration runbook
       ([PR #246](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/246)), diagrams ([PR #247](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/247)), this status ([PR #248](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/248)) and the October 9
       client slides ([PR #250](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/250)).
-    - Manual steps before the release: PR #234 and PR #238 each add a migration that a person runs
+    - Manual steps in production: PR #234 and PR #238 each add a migration that a person runs
       in production. PR #240 asks for the passwords of the three Cypress test accounts to be
       rotated. See [Production database migrations](contributing.md#production-database-migrations).
 - **Test gaps in Done stories.** On `main` at `9009d0d`, one AT had no test (2.0.2 AT5) and 15
-  were tested only in part. The fix branches add tests for 2.0.2 AT5, 2.0.5 AT1, AT2 and AT4, 2.0.6
-  AT2 and 7.0.6 AT2. On `chore/sprint-2-integration` every AT has a test, and 10 ATs are tested
-  only in part, for example 7.0.5 AT1: no test renders a report after an image delete. The list is
-  in the [coverage summary](traceability-matrix.md#coverage-summary).
+  were tested only in part. The fixes after the freeze add tests for 2.0.2 AT5, 2.0.5 AT1, AT2 and
+  AT4, 2.0.6 AT2 and 7.0.6 AT2. On `main` at `ceb5188` every AT has a test, and 5 ATs are tested
+  only in part (2.0.3 AT4, 2.0.4 AT3, 7.0.1 AT3, 7.0.5 AT1 and AT3), for example 7.0.5 AT1: no test
+  renders a report after an image delete. The list is in the
+  [coverage summary](traceability-matrix.md#coverage-summary).
 - **Known limit of 2.0.6.** The map draws protected areas. [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167) links a site to its area
   with a new column that the migration does not fill. A site shows on the map only when an Admin
   links it. Sprint 3 task [#181](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/181) fills the link from the KML.
-- **Still open.** The code freeze issue ([#96](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/96)) is open, the release
-  ([#97](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/97), October 12) and the demo ([#98](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/98), October 14) are ahead.
+- **Still open.** The code freeze issue ([#96](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/96)) and the release issue ([#97](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/97)) are
+  closed. The demo, review and retrospective ([#98](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/98), October 14) are ahead.
 
 **Issue state does not match the evidence.** This list is a report only. The owner team corrects
 its issues.
@@ -475,17 +500,19 @@ client emails, so he sees the client's answers directly.
 |Delete site inspection report button and confirmation|US 7.0.8|Gamma (Zanab, Chris, Jayden)|Oct 7th|Done ([#93](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/93); [PR #165](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/165))|
 |Fix logging out functionality outside the home page|US 5.0.4|Alpha (Saumya, Aaron)|Oct 5th|Done ([#94](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/94); [PR #120](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/120), [PR #158](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/158), [PR #238](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/238))|
 |Open a PR for each task and request 2 reviews|All US|Everyone|Oct 10th|Done ([#95](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/95), closed on September 29, before the work started. Each story and task has a merged PR)|
-|Code freeze: all Sprint 2 PRs reviewed and merged|All US|Everyone|Oct 11th|Done on `main` at `9009d0d`; the issue is still open ([#96](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/96))|
-|Write the release notes and make the Sprint 2 release on GitHub|Release|Gamma (Zanab, Chris, Jayden)|Oct 12th|Not started ([#97](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/97))|
+|Code freeze: all Sprint 2 PRs reviewed and merged|All US|Everyone|Oct 11th|Done on `main` at `9009d0d`; the issue is closed ([#96](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/96))|
+|Write the release notes and make the Sprint 2 release on GitHub|Release|Gamma (Zanab, Chris, Jayden)|Oct 12th|Done ([#97](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/97) is closed; [#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284), [#285](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/285) and the [`sprint-2` release](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/releases/tag/sprint-2), published on October 13)|
 |Sprint 2 demo, review and retrospective|All US|Everyone|Oct 14th|Not started ([#98](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/98))|
 
 #### Other issues in the Sprint 2 milestone
 
-The Sprint 2 milestone has 17 more issues. They are not in the task table because they are not
+The Sprint 2 milestone has 13 more issues. They are not in the task table because they are not
 Sprint 2 stories or tasks: one is a removed story, four are Sprint 1 documentation checks that
 were moved to Sprint 2, one ([#252](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/252))
-tracks the fixes from the Sprint 2 rubric review, and 11 (#263 to #270 and #272 to #274) are the
-Sprint 2 rubric follow-ups.
+tracks the fixes from the Sprint 2 rubric review, and 7 (#263, #267, #268, #269, #272, #273 and
+#274) are the Sprint 2 rubric follow-ups. Four other follow-ups ([#264](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/264), [#265](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/265),
+[#266](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/266) and [#270](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/270)) are now in the Sprint 3 milestone. #265, #266 and #270 were
+not finished before the release (see [Sprint 3](#sprint-3)).
 
 | Issue | Title | State | Why it is not a Sprint 2 task |
 |---|---|---|---|
@@ -494,18 +521,14 @@ Sprint 2 rubric follow-ups.
 | [#19](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/19) | Add the September 19 transcript to the repo | Closed (October 9), no closing note | Sprint 1 documentation. The transcript is not in the repository: `docs/meetings/week3/week3.txt` is the September 18 handover call. |
 | [#20](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/20) | Sanity check the four findings the whole plan rests on | Closed (September 29) | Sprint 1 discovery. The last comment says that no result is recorded for the four claims. |
 | [#23](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/23) | Get Frank to confirm priorities before we commit to the MoSCoW | Closed (September 29) | Client question. The last comment says that the MoSCoW order is not confirmed, so the MoSCoW stays provisional. |
-| [#252](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/252) | Close the Sprint 2 rubric review gaps | Open | Tracks the fix PRs into `sprint-2` from the Sprint 2 rubric review. They change no story status. |
-| [#263](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/263) | Merge the Sprint 2 PRs through sprint-2 and close out the sprint | Open | Sprint 2 rubric follow-up. |
-| [#264](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/264) | Minute the Oct 14 lab, Sprint 2 retro and Sprint 3 planning | Open | Sprint 2 rubric follow-up. |
-| [#265](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/265) | Give every open TA feedback row a plan or a reason | Open | Sprint 2 rubric follow-up. |
-| [#266](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/266) | Re-estimate velocity per sprint and fix the planning mismatches | Open | Sprint 2 rubric follow-up. |
-| [#267](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/267) | Remove leftover files, placeholder config and debug logs | Open | Sprint 2 rubric follow-up. |
-| [#268](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/268) | Move the PDF-only queries out of the use server file and page all-reports | Open | Sprint 2 rubric follow-up. |
-| [#269](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/269) | Run the Cypress specs locally and add E2E specs for 2.0.2 and 7.0.8 | Open | Sprint 2 rubric follow-up. |
-| [#270](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/270) | Fix the wrong traceability matrix rows and add missing failure tests | Open | Sprint 2 rubric follow-up. |
-| [#272](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/272) | Test the database access rules against the local Supabase | Open | Sprint 2 rubric follow-up. |
-| [#273](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/273) | Stop the form editor reporting saved when option writes fail | Open | Sprint 2 rubric follow-up. |
-| [#274](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/274) | Add E2E specs for 2.0.3 and 2.0.6 and a 2.0.3 AT3 failure test | Open | Sprint 2 rubric follow-up. |
+| [#252](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/252) | Close the Sprint 2 rubric review gaps | Closed | Tracks the fix PRs into `sprint-2` from the Sprint 2 rubric review. They change no story status. |
+| [#263](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/263) | Merge the Sprint 2 PRs through sprint-2 and close out the sprint | Closed | Sprint 2 rubric follow-up. |
+| [#267](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/267) | Remove leftover files, placeholder config and debug logs | Open. [PR #278](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/278) is merged on `main`. | Sprint 2 rubric follow-up. |
+| [#268](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/268) | Move the PDF-only queries out of the use server file and page all-reports | Open. [PR #279](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/279) is merged on `main`. | Sprint 2 rubric follow-up. |
+| [#269](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/269) | Run the Cypress specs locally and add E2E specs for 2.0.2 and 7.0.8 | Open. [PR #282](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/282) is merged on `main`. | Sprint 2 rubric follow-up. |
+| [#272](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/272) | Test the database access rules against the local Supabase | Open. [PR #282](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/282) is merged on `main`. | Sprint 2 rubric follow-up. |
+| [#273](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/273) | Stop the form editor reporting saved when option writes fail | Open. [PR #280](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/280) is merged on `main`. | Sprint 2 rubric follow-up. |
+| [#274](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/274) | Add E2E specs for 2.0.3 and 2.0.6 and a 2.0.3 AT3 failure test | Open. [PR #282](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/282) is merged on `main`. | Sprint 2 rubric follow-up. |
 
 #### Sprint 2 task details
 
@@ -646,16 +669,20 @@ each AT is in the [Traceability Matrix](traceability-matrix.md).
 The sprint starts on October 14, after the Sprint 2 demo, review and retrospective. All Sprint 3
 work is finished and merged by **October 25** (code freeze), two days before the deadline. Red
 makes the release on October 26. October 27 is spare time before the 20:00 deadline. Tasks are
-assigned to teams, not to people. Each team divides its tasks between its members. No Sprint 2 carry-over
-is assumed in this plan.
+assigned to teams, not to people. Each team divides its tasks between its members. Three Sprint 2
+follow-ups carried over to this sprint: #265, #266 and #270 (see the table below).
 
 The issues are in the Sprint 3 milestone: the stories are [#169](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/169) to [#180](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/180) and the tasks are
 [#181](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/181) to [#218](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/218).
-The milestone also has three issues that are not story tasks:
+The milestone also has seven issues that are not story tasks:
 
 | Issue | Title | State |
 |---|---|---|
-| [#251](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/251) | Report read actions in queries.ts don't check the caller | Open. The fix is on `chore/sprint-2-integration`, see [Issues Backlog](issues.md). |
+| [#251](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/251) | Report read actions in queries.ts don't check the caller | Closed. Fixed by [PR #259](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/259), on `main` since #284. See [Issues Backlog](issues.md). |
+| [#264](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/264) | Minute the Oct 14 lab, Sprint 2 retro and Sprint 3 planning | Open |
+| [#265](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/265) | Give every open TA feedback row a plan or a reason | Open. Carried over from Sprint 2. |
+| [#266](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/266) | Re-estimate velocity per sprint and fix the planning mismatches | Open. Carried over from Sprint 2. |
+| [#270](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/270) | Fix the wrong traceability matrix rows and add missing failure tests | Open. Carried over from Sprint 2. |
 | [#271](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/271) | Use one shared admin check and one S3 client | Open |
 | [#275](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/275) | Make S3 enforce the photo upload size and type limits | Open |
 
