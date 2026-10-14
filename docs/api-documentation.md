@@ -1,11 +1,11 @@
 # API Documentation
 
 *The Fall 2026 section is the reference for every route handler, server action and database
-function of the web app. It was checked on October 11, 2026 against `chore/sprint-2-integration`
-at `848fc22`: `main` at `9009d0d` plus the Sprint 2 fix branches (`fix/alpha-code-quality`,
-`fix/alpha-approval-screen-on-sites`, `fix/beta-sprint-2-gaps`, `fix/gamma-sprint-2-gaps`,
-`fix/report-read-caller-checks` and the CI branches). The Winter 2026 section is inherited. The
-Fall 2025 routes are now in the Fall 2026 section.*
+function of the web app. It describes `main` at `ceb5188`, the Sprint 2 release, merged in
+[#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284) on October 13, 2026. It was
+checked on October 11 and 12 against the Sprint 2 fix branches that #284 brought into `main`. The
+caller checks of `queries.ts` were checked again on `main` at `ceb5188`. The Winter 2026 section is
+inherited. The Fall 2025 routes are now in the Fall 2026 section.*
 
 ## API Documentation From Fall 2026
 
@@ -487,17 +487,19 @@ copy.
 
 "No caller check" means that the action has no check of its own. Only the
 [middleware](#middleware) stands in front of it. GitHub issue #251 listed 13 read actions in
-`queries.ts` with no caller check. `fix/report-read-caller-checks` adds a check to each of them,
-changes `isSteward` and `getFormResponseById`, and deletes `addSiteInspection`. The issue closes
-when that branch reaches `main`. `getSitesOnline` was not on the #251 list but the browser calls it,
-so it checks the caller too. Issue #268 moved the PDF-only reads out of `queries.ts` into
-`webapp/lib/pdf/reportQueries.ts`, a server-only module that is not a server action (see
+`queries.ts` with no caller check. [PR #259](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/259)
+added a check to each of them, changed `isSteward` and `getFormResponseById`, and deleted
+`addSiteInspection`. Issue #251 is closed, and the fix is on `main` since #284. `getSitesOnline`
+was not on the #251 list but the browser calls it, so it checks the caller too.
+[PR #279](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/279) (issue #268) moved the
+PDF-only reads out of `queries.ts` into `webapp/lib/pdf/reportQueries.ts`, a server-only module
+that is not a server action (see
 [Server-only report reads](#server-only-report-reads-webapplibpdfreportqueriests)), and made
-`getNextFormInspectionNumber` private. No exported function in `queries.ts` now reads data without a
-caller check: each one calls `requireApprovedAdmin`, `requireApprovedCaller` or `requireReportWriter`
-first, or reads with the signed-in client under RLS (`getCurrentUserUid`, `getSitePageFields`,
-`getSiteLinks`, and the sign-in check of `getAllSiteReports`). Unless the table says otherwise, an
-action throws an `Error` with the database message when a query fails.
+`getNextFormInspectionNumber` private. No exported function in `queries.ts` on `main` reads data
+without a caller check: each one calls `requireApprovedAdmin`, `requireApprovedCaller` or
+`requireReportWriter` first, or reads with the signed-in client under RLS (`getCurrentUserUid`,
+`getSitePageFields` and `getSiteLinks`). Unless the table says otherwise, an action throws an
+`Error` with the database message when a query fails.
 
 #### Site inspection reports (`webapp/utils/supabase/queries.ts`)
 
@@ -516,7 +518,7 @@ action throws an `Error` with the database message when a query fails.
 | `permanentlyDeleteSiteInspectionReport` | `requireApprovedAdmin` | `responseId` | `{impact, storageCleanupComplete}`. The database delete runs first, then the S3 delete. An S3 failure is logged and gives `storageCleanupComplete: false`. | The same first two messages, or the database message (no report, or not archived). |
 | `getArchivedSiteInspectionReports` | `requireApprovedAdmin` | None | A list of `{id, inspectionNo, inspectionDate, createdAt, isActive, archivedAt, siteId, siteName, submitterId, submitterName}`, newest archive first. | `Only approved admins can manage reports.` |
 | `getFormResponsesBySiteAdmin` | `requireApprovedAdmin` | `siteName` | The reports of the site that are not archived, active and inactive, with `is_active`. | `Only admins can edit sites.`, `Site not found`. |
-| `getAllSiteReports` | Signed-in user. No approval check. | None | A list of `SiteReportSummary`: active reports that are not archived, with site and submitter. It reads in pages of 1000 rows until a short page, so no report past the first 1000 is cut off. | `Sign in to view inspection reports.` |
+| `getAllSiteReports` | `requireApprovedCaller` | None | A list of `SiteReportSummary`: active reports that are not archived, with site and submitter. It reads in pages of 1000 rows until a short page, so no report past the first 1000 is cut off. | `Sign in to view inspection reports.` |
 | `getFormResponsesBySite` | `requireApprovedCaller` | `siteName` | The active reports of the site that are not archived, with their answers. | `Only approved users can view this data.`, `Site not found` |
 | `getFormResponseById` | `requireReportWriter`: the owner of the report or an approved admin, never an archived report | `responseId` | The answers of the report as `{questionId: value}`. | `You are not allowed to view this report.` (signed out, not approved, another user's report, archived or missing report), `A valid report ID is required.` |
 | `getResponseOwnerId` | `requireApprovedCaller` | `responseId` | The `user_id` of a report that is not archived, or `null`. | `Only approved users can view this data.` |
