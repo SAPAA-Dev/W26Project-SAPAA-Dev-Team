@@ -608,6 +608,96 @@ The work due before this meeting (slide 13 of the October 2 deck):
 
 ---
 
+# October 16, 2026 – Meeting #10: Client meeting with Frank
+
+| Field | Details |
+|---|---|
+| Company | SAPAA |
+| Project | SAPAA SIR |
+| Date | October 16, 2026 |
+| Time | 3:35pm |
+| Location | Offline, Google Meets |
+| Attendees | Frank (client), Chris, Aaron, Saumya, Alissa, Zanab, Jayden, Abhinav |
+| Absentees | Not recorded |
+| Minute-taker | No minute-taker; rebuilt from the transcript. |
+| Source | Raw transcript. The transcript continues after the meeting ends; the post-meeting chatter is excluded. |
+
+## Agenda
+
+1. Sprint 2 status and the Sprint 3 plan.
+2. The map decision: which map and why.
+3. Live demo of the current build.
+4. Client feedback and questions.
+5. Frank's presentation on versions 4 and 5 (proof of concept).
+6. Round table and next steps.
+
+## Summary
+
+The team reported that Sprint 2 is finished, with every planned issue done plus some extra bug fixes. They presented the Sprint 3 plan and demoed the app. Frank was positive and asked for three changes: colour-coded map markers, dropdowns for skills and focus areas, and stewards who do not need an account. Frank then presented the roadmap for versions 4 and 5 (asset and work management for organizations that own a site) and asked the team to build a working proof of concept by the end of the semester.
+
+## Key Discussions & Decisions
+
+### Sprint 3 plan
+- Link sites to government (protected area) boundaries and show all sites on one map, with inspections linked to the map.
+- Load and store GPX files as well as KML. The parser is working so far and already handles some edge cases but only works for KML/KMZ
+- Password reset. Today a reset has to go through Frank, so this is a quality-of-life change.
+- Offline map download: a user downloads a region while online and still sees their location when offline (date in the transcript is unclear, possibly the 22nd).
+- Gamification and scoreboard.
+- Create a test plan, so fixed issues do not come back.
+- UI cleanup, ensuring responsive pages for mobile use
+- iNaturalist: Frank said to save the iNaturalist integrated features for the proof of concept. His suggestions from the field trip to allow users to choose image uploads from their iNaturalist account, and that each site shows the top 5 observations will not be implemented this sprint.
+- Safety information: Frank said not to worry about the safety fields for now. He will follow up later.
+- Sprints 4 and 5 have room for Frank's requests once he has tried the app. Will likely be POC related
+- Explained Map decision to Frank (using Protomaps for tiling with OpenStreetMap data)
+
+### Client feedback on Demo of Sprint 2 features
+- Frank liked what he saw and the direction of the work.
+- **Map colours:** The map should use colour coding like the website, for example to tell provincial parks from recreation areas. The team had already planned this and expects it next sprint.
+- **Skills and focus areas:** These are free text for now. Frank wants dropdowns with an "Other" option, similar-match suggestions while typing, and editable values. No admin approval is needed, and skills stay self-declared.
+- **Stewards:** Stewards currently need an account. The team will let an admin add a steward with a name, email and phone number and no account. Frank said the essential point is that a person can be listed on the site.
+- **Testing access:** Frank will get a link and login for the pre-production site. It holds only test data and does not touch production. He wants the team to try to break it, because each break becomes a new test case.
+
+### Frank's presentation: versions 4 and 5
+- Versions 2 and 3 are about reporting by visitors and stewards. Versions 4 and 5 are for organizations that own or manage an area, such as a Crown lease holder, who check what needs doing: is a sign still there, what condition is the gate in, does it need a work order?
+- Example: someone drives 100 km and sees a sign but cannot tell whether another sign blew down earlier. The work shifts from reporting to asset management.
+- High-level requirements:
+  - **Legal structure:** Crown lease, permit or ownership. It will hold little at first but must be in the data model.
+  - **Tailored management:** Each site and organization has different needs.
+  - **Person management:** Per-site roles and sub-administrators.
+  - **Media and GIS assets:** Records for benches, gates, shelters, signs and trails, with condition and work orders.
+  - **Volunteer and work management.**
+  - **In-depth biophysical monitoring:** iNaturalist first. Frank raised the concern that a large number of observations could use up the free storage allocation.
+- Difficulty poll: person management was called the easiest (Jayden, Aaron). The legal structure was called the least clear (Jayden, Zanab). Aaron named biophysical monitoring the hardest.
+- Beyond versions 4 and 5 (a roadmap of two to three years, not needed by Christmas): volunteer capacity, other data sources such as Merlin and NatureWatch, a "knowledge keeper" content role, land beyond public land (for example Edmonton Area Land Trust), and expansion beyond Alberta.
+- **Proof of concept:** The team builds a working proof of concept by the end of the semester, not a production system. It should build on the existing app and database. The goal is to find out quickly if the idea is bad.
+- Frank will assemble an advisory panel from sites such as Wagner and Riverlot 56. The proof of concept follows a more agile approach than the waterfall used for versions 2 and 3.
+- The next semester's team starts from the proof of concept. Frank wants to be able to tell organizations "here is the app, go use it."
+- The team's recommendation should say whether an existing work-order tool could be bought instead of built.
+
+## Action Items
+
+### Fixes and changes to the current implementation (requested by Frank)
+- Add colour coding to map markers to match the website, so provincial parks, recreation areas and other types can be told apart (Team, next sprint).
+- Change skills and focus areas from free text to dropdowns with an "Other" option, similar-match suggestions while typing, and editing of entered values. No admin approval and no blocking of new skills (Team).
+- Let admins add a steward by name, email and phone number without an account, and show these on the site page (Team).
+
+### Other
+- Release to the public version early next week (Team).
+- Send Frank the link and login for the pre-production site (Team).
+- Review Frank's version 4 and 5 document and prepare questions and proposed focus areas for the proof of concept (Team, before next Friday).
+- Email Frank about weekend options for the December field trip (Saumya).
+- Put together the advisory panel for the proof of concept (Frank).
+- Check last week's open items with Frank: the sample GPX files, Supaview, and column G of his list (Saumya and Frank).
+
+## Next Meeting Agenda
+
+- Release of the new version, with the release status.
+- The team's questions and focus areas for the version 4 and 5 proof of concept.
+- Sprint 3 progress: linking sites to boundaries, GPX upload and offline maps.
+- Frank's UI feedback and results from his testing.
+
+Next meeting: Friday, October 23, 2026.
+
 ## Winter 2026 (previous team)
 
 ### Winter 2026 Sprint 1
