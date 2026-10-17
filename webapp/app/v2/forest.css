@@ -1,0 +1,254 @@
+/* Boreal: the SAPAA brand system, taken from the week 6 client deck.
+   Every prototype shares these tokens; variants only change surfaces and navigation. */
+.v2 {
+  /* Palette (deck hex values) */
+  --canopy: #122a1c;      /* deepest forest, hero scrims, dark chrome */
+  --forest: #1b3a2a;      /* primary surfaces, primary buttons */
+  --forest-2: #2a4a38;    /* hover / raised on dark */
+  --moss: #4f9d69;        /* recent, success */
+  --sage: #a9bfa3;        /* text on dark, borders on dark */
+  --lichen: #7f9a86;      /* muted labels */
+  --shale: #5b6b61;       /* secondary text on light (5.5:1 on birch) */
+  --birch: #f4f1e8;       /* paper, text on dark */
+  --birch-2: #ebe7da;     /* sunken paper */
+  --bark: #d9d5c7;        /* hairlines on birch */
+  --honey: #e9b44c;       /* accent: eyebrows, CTA on dark, due */
+  --clay: #d08a55;        /* overdue (fills) */
+  --clay-ink: #9a5a2b;    /* overdue as text on light */
+  --lake: #3fa9ae;        /* water, info */
+  --sky: #6c8cc4;
+
+  /* Status (never colour alone: always paired with a label or icon) */
+  --st-recent: var(--moss);
+  --st-due: var(--honey);
+  --st-overdue: var(--clay);
+  --st-never: var(--lichen);
+  /* Status as TEXT on light surfaces (fills above are too light for 4.5:1) */
+  --st-recent-ink: #2f6b43;
+  --st-due-ink: #8a6210;
+  --st-overdue-ink: #9a5a2b;
+  --st-never-ink: #4f6155;
+
+  /* Naturalness 1 (poor) to 4 (excellent): one forest ramp, pale to deep. Never a status colour, so
+     "Fair" can't read as "Due". Read it through NATURALNESS_COLOR in _components/site/Naturalness.tsx. */
+  --nat-1: #c2cfb9;
+  --nat-2: #8fab88;
+  --nat-3: #4f7d5d;
+  --nat-4: var(--forest);
+
+  /* Semantic roles, light by default */
+  --bg: var(--birch);
+  --bg-sunken: var(--birch-2);
+  --surface: #fbfaf5;
+  --ink: var(--canopy);
+  --ink-2: var(--shale);
+  --line: var(--bark);
+  --accent: var(--forest);
+  --on-accent: var(--birch);
+
+  --radius-s: 8px;
+  --radius-m: 14px;
+  --radius-l: 22px;
+  --dur: 220ms;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+
+  /* Motion. Enter with --dur-N, leave with --dur-N-out (about 65%): exits are quicker than entrances.
+     Motion (JS) spring for sheets and shared layout: { type: 'spring', stiffness: 420, damping: 38 }. */
+  --dur-1: 120ms; /* press, hover */
+  --dur-2: 200ms; /* state change */
+  --dur-3: 320ms; /* enter, sheet */
+  --dur-1-out: 80ms;
+  --dur-2-out: 130ms;
+  --dur-3-out: 210ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Bottom navigation. --nav-h mirrors NAV_HEIGHT in _components/BottomNav.tsx.
+     --nav-clear is the space a page leaves at its bottom so nothing hides behind the bar (phone) or pill (md+). */
+  --nav-h: 60px;
+  --nav-clear: calc(var(--nav-h) + var(--safe-b));
+
+  font-family: 'Avenir Next', var(--font-nunito), 'Avenir', system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ranger station runs on the dark canopy */
+.v2[data-theme='night'] {
+  --bg: var(--canopy);
+  --bg-sunken: #0d2015;
+  --surface: var(--forest);
+  --ink: var(--birch);
+  --ink-2: var(--sage);
+  --line: #2f4d3c;
+  --accent: var(--honey);
+  --on-accent: var(--canopy);
+  --clay-ink: #e3a274;
+  --st-recent-ink: #7fc796;
+  --st-due-ink: var(--honey);
+  --st-overdue-ink: #e3a274;
+  --st-never-ink: var(--sage);
+  color-scheme: dark;
+}
+
+.v2 .num { font-variant-numeric: tabular-nums; }
+/* No one-word last lines: headings balance, body copy avoids orphans. */
+.v2 :is(h1, h2, h3) { text-wrap: balance; }
+.v2 p { text-wrap: pretty; }
+/* Legacy globals force DM Sans 600 on headings; the prototype uses its own type. */
+.v2 :is(h1, h2, h3, h4, h5, h6) { font-family: inherit; }
+.v2 .eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--honey);
+}
+
+/* The legacy globals force white inputs with !important; the prototype owns its fields. */
+.v2 input,
+.v2 textarea,
+.v2 select {
+  color: var(--ink) !important;
+  background-color: var(--surface) !important;
+  font: inherit;
+}
+/* When a field sets its own colours, drop the legacy !important rules and let Tailwind win. */
+.v2 :is(input, textarea, select)[class*='bg-'] { background-color: revert-layer !important; }
+.v2 :is(input, textarea, select)[class*='text-'] { color: revert-layer !important; }
+.v2 input::placeholder,
+.v2 textarea::placeholder { color: var(--lichen) !important; } /* lighter than any value, so it never reads as one */
+.v2 input:focus,
+.v2 textarea:focus { color: var(--ink) !important; }
+
+/* :where keeps this at zero specificity so Tailwind rounded-* utilities still shape the ring. */
+:where(.v2) :focus-visible {
+  outline: 2px solid var(--honey);
+  outline-offset: 2px;
+}
+.v2 button, .v2 a { touch-action: manipulation; cursor: pointer; }
+
+/* md+: the nav is a 56px pill floating max(16px, safe area) off the bottom edge; leave room for both plus a gap. */
+@media (min-width: 768px) {
+  .v2 { --nav-clear: calc(56px + max(16px, var(--safe-b)) + 16px); }
+}
+
+/* ---------------------------------------------------------------- motion utilities
+   .lift   cards: hover rises 2px and a soft shadow fades in (an opacity change on a pseudo-element, never an
+           animated box-shadow); press settles to .985. Hover only on devices that really hover.
+   .press  buttons, chips, tabs: scale(.97) while pressed. Tune per element with [--press-scale:.99].
+   Both also transition colours, so don't add Tailwind transition-* utilities next to them. */
+@layer components {
+  /* Anchors the shadow layer. Layered so any position utility (absolute, fixed, sticky) still wins. */
+  .v2 .lift { position: relative; }
+}
+.v2 :is(.lift, .press) {
+  transition-property: transform, color, background-color, border-color, opacity;
+  transition-duration: var(--dur-2-out);
+  transition-timing-function: var(--ease-out);
+}
+.v2 .lift::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 12px 28px -8px rgba(18, 42, 28, 0.24);
+  opacity: 0;
+  transition: opacity var(--dur-2-out) var(--ease-out);
+}
+@media (hover: hover) {
+  .v2 .lift:hover::after { opacity: 1; transition-duration: var(--dur-2); }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .v2 .lift:hover { transform: translateY(-2px); transition-duration: var(--dur-2); }
+}
+.v2 .lift:active { transform: scale(0.985); transition-duration: var(--dur-1); }
+.v2 .press:active:not(:disabled, [aria-disabled='true']) {
+  transform: scale(var(--press-scale, 0.97));
+  transition-duration: var(--dur-1);
+}
+
+/* ---------------------------------------------------------------- scroll-driven motion (CSS only, zero JS)
+   .reveal        fades and rises 12px as it enters the viewport. Use on below-the-fold sections, not on rows.
+   .hero-timeline on a hero: names its scroll-out progress --hero for the two classes below.
+   .hero-deepen   a canopy layer over the photo that darkens as the hero scrolls away.
+   .hero-drift    hero content that sinks slightly and fades as the hero scrolls away.
+   .trunk-grow    a vertical line that grows from the top as its box scrolls past (site report timeline).
+   Unsupported browsers and reduced motion get the finished state with no animation. */
+.v2 .hero-timeline { view-timeline: --hero block; }
+.v2 .hero-deepen { opacity: 0; }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* A fixed 120px range: anything 120px above the viewport bottom is fully shown, so nothing rests half-faded
+       (pages leave at least that much below their last section). */
+    .v2 .reveal {
+      animation: v2-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 120px;
+    }
+    .v2 .hero-deepen {
+      animation: v2-deepen linear both;
+      animation-timeline: --hero;
+      animation-range: exit 0% exit 100%;
+    }
+    .v2 .hero-drift {
+      animation: v2-drift linear both;
+      animation-timeline: --hero;
+      animation-range: exit 0% exit 100%;
+    }
+    /* The tip rides about 200px above the viewport bottom (clear of the phone CTA and tab bar) and the line
+       completes once the list's end is 120px up, which every page's bottom padding allows. */
+    .v2 .trunk-grow {
+      transform-origin: top;
+      animation: v2-grow linear both;
+      animation-timeline: view();
+      animation-range: entry-crossing 200px entry-crossing calc(100% + 120px);
+    }
+  }
+}
+@keyframes v2-reveal { from { opacity: 0; transform: translateY(12px); } }
+@keyframes v2-deepen { to { opacity: 0.55; } }
+@keyframes v2-drift { to { opacity: 0.35; transform: translateY(24px); } }
+@keyframes v2-grow { from { transform: scaleY(0); } }
+
+/* ---------------------------------------------------------------- horizontal rails
+   .edge-fade with data-more-start / data-more-end fades whichever edge has more content. */
+@property --fade-s { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@property --fade-e { syntax: '<length>'; inherits: false; initial-value: 0px; }
+.v2 .edge-fade {
+  --fade-s: 0px;
+  --fade-e: 0px;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--fade-s), #000 calc(100% - var(--fade-e)), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 var(--fade-s), #000 calc(100% - var(--fade-e)), transparent);
+  transition: --fade-s var(--dur-2) var(--ease-out), --fade-e var(--dur-2) var(--ease-out);
+  scrollbar-width: none;
+}
+.v2 .edge-fade::-webkit-scrollbar { display: none; }
+.v2 .edge-fade[data-more-start] { --fade-s: 40px; }
+.v2 .edge-fade[data-more-end] { --fade-e: 40px; }
+
+/* ---------------------------------------------------------------- long lists
+   .cv-row on each <li> of a long list: off-screen rows skip layout and paint (cheap phones, 200+ sites).
+   Paint containment would clip an outside focus ring, so rows draw theirs inside. */
+.v2 .cv-row { content-visibility: auto; contain-intrinsic-size: auto 89px; }
+.v2 .cv-row :focus-visible { outline-offset: -2px; }
+
+/* ---------------------------------------------------------------- forest details (one per surface)
+   .hairline-treeline  a 1px spruce skyline used as a section divider. Decorative: add aria-hidden. */
+.v2 .hairline-treeline {
+  height: 10px;
+  background-color: var(--lichen);
+  opacity: 0.6;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='10' viewBox='0 0 120 10'%3E%3Cpath d='M0 9.5H6L8.5 4.5L11 9.5H19.5L22.5 1.5L25.5 9.5H29.25L31 5.5L32.75 9.5H55.75L58 3.5L60.25 9.5H64.25L67.5 0.5L70.75 9.5H92.5L94.5 4.5L96.5 9.5H101.4L104 2.5L106.6 9.5H120' fill='none' stroke='%23000' stroke-width='1' stroke-linejoin='round'/%3E%3C/svg%3E") repeat-x left bottom / 120px 10px;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='10' viewBox='0 0 120 10'%3E%3Cpath d='M0 9.5H6L8.5 4.5L11 9.5H19.5L22.5 1.5L25.5 9.5H29.25L31 5.5L32.75 9.5H55.75L58 3.5L60.25 9.5H64.25L67.5 0.5L70.75 9.5H92.5L94.5 4.5L96.5 9.5H101.4L104 2.5L106.6 9.5H120' fill='none' stroke='%23000' stroke-width='1' stroke-linejoin='round'/%3E%3C/svg%3E") repeat-x left bottom / 120px 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2 *, .v2 *::before, .v2 *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
