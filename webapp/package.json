@@ -36,6 +36,7 @@
     "leaflet.heat": "^0.2.0",
     "lucide-react": "^0.554.0",
     "maplibre-gl": "^6.13.0",
+    "motion": "^14.3.0",
     "next": "^16.2.2",
     "next-swagger-doc": "^0.4.1",
     "nodemon": "^3.1.11",
