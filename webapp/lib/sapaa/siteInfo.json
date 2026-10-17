@@ -1,0 +1,519 @@
+[
+  {
+    "key": "sapaa",
+    "names": ["SAPAA", "Stewards of Alberta's Protected Areas Association"],
+    "designation": null,
+    "source": "sapaa",
+    "summary": "Stewards of Alberta's Protected Areas Association (SAPAA) is a non-partisan, non-profit society formed in 2000 to support volunteers in the province's Volunteer Stewards Program, which began in 1987. Stewards look after Natural Areas, Ecological Reserves, Wildland and Provincial Parks and other protected places, and anyone can send SAPAA a site inspection report on what they find.",
+    "highlights": [
+      { "kind": "history", "text": "Formed in 2000; Volunteer Stewards Program since 1987" },
+      { "kind": "access", "text": "Open to anyone interested in stewardship" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Beehive",
+    "names": ["Beehive Natural Area"],
+    "designation": "NA",
+    "source": "sapaa",
+    "summary": "Beehive Natural Area lies between the Oldman River and the British Columbia border, about 45 km north of the Crowsnest Pass area, and takes its name from the rounded mountain near its centre. Its habitats run from the Oldman River's alluvial plains up to alpine tundra and cliffs, and include old-growth spruce–fir forest believed to be more than 1,000 years old.",
+    "highlights": [
+      { "kind": "area", "text": "6,764 ha · Alpine and Subalpine regions" },
+      { "kind": "habitat", "text": "Old-growth spruce–fir forest over 1,000 years old" },
+      { "kind": "access", "text": "The Great Divide Trail crosses the site near treeline" },
+      { "kind": "access", "text": "Backcountry camping, hiking, fishing and riding are listed" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/beehive-na/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Bilby",
+    "names": ["Bilby Natural Area"],
+    "designation": "NA",
+    "source": "sapaa",
+    "summary": "Bilby Natural Area covers about 121 ha southeast of Onoway, with Kilini Creek winding through sedge meadows and beaver ponds in its northwest corner. Most of the site is upland aspen–balsam poplar forest, with willow wetlands, black spruce peatland and grassy meadows. Volunteers have stewarded it since the early 1980s, and work in 2024 repaired much of the off-highway-vehicle damage seen in 2020.",
+    "highlights": [
+      { "kind": "area", "text": "121 ha · Dry Mixedwood region" },
+      { "kind": "wildlife", "text": "Beaver ponds host Blue-winged Teal and Great Blue Heron" },
+      { "kind": "access", "text": "Enter from Range Road 14, or Range Road 15 south of the tracks" },
+      { "kind": "history", "text": "Named for a 1912 rail stop meant to be called Wilby" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/bilby-na/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Bob Creek",
+    "names": ["Bob Creek Wildland Provincial Park", "Bob Creek Wildland", "Whaleback"],
+    "designation": "WPP",
+    "source": "sapaa",
+    "summary": "SAPAA's page on the neighbouring Black Creek Heritage Rangeland describes Bob Creek Wildland Provincial Park as the large park to its north and west, which together protect the Whaleback, considered Alberta's last remaining area of wilderness montane habitat. The Whaleback is named for ridges that look like the spine of a beached humpback whale. SAPAA notes that motorized recreation has damaged the park's streams and riparian areas.",
+    "highlights": [
+      { "kind": "habitat", "text": "Relatively undisturbed montane and subalpine habitat" },
+      { "kind": "history", "text": "Bison hunting grounds, then cattle ranching since about 1880" },
+      { "kind": "access", "text": "Trails cross streams more often than the land can sustain" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/medium-black-creek-hr/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Bow Valley",
+    "names": ["Bow Valley Wildland Provincial Park", "Bow Valley Wildland Park"],
+    "designation": "WPP",
+    "source": "albertaparks",
+    "summary": "Bow Valley Wildland protects alpine and subalpine landscapes at the north end of Kananaskis Country, about 85 km west of Calgary, and includes the former Yamnuska Natural Area. Its wildlife corridors connect Banff National Park and Kananaskis Country. Geological features include the McDonald thrust fault, spring-fed fens and glacial landforms such as drumlins and eskers.",
+    "highlights": [
+      { "kind": "area", "text": "37,478 ha · Montane, Alpine and Subalpine" },
+      { "kind": "habitat", "text": "Rare species include the yellow lady's slipper orchid" },
+      { "kind": "access", "text": "Mt. Yamnuska's cliffs have popular climbing routes" },
+      { "kind": "history", "text": "Established in 1998, expanded in 2001" }
+    ],
+    "sourceUrl": "https://www.albertaparks.ca/parks/kananaskis/bow-valley-wpp/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Clyde Fen",
+    "names": ["Clyde Fen Natural Area", "Clyde Fen Candidate Natural Area"],
+    "designation": "NA",
+    "source": "sapaa",
+    "summary": "Clyde Fen is a roughly 119 ha fen protected as a Candidate Natural Area since 1990, with the Alberta Native Plant Council as its volunteer steward since 1992. It holds Alberta's most southerly recorded pitcher plants, along with sundews, bladderworts and two rare orchids. A 2001 fire turned much of the treed fen into shrub fen, which is slowly growing back.",
+    "highlights": [
+      { "kind": "area", "text": "119 ha · Dry Mixedwood · Protective Notation" },
+      { "kind": "habitat", "text": "Rare orchids: bog adder's mouth and Loesel's twayblade" },
+      { "kind": "wildlife", "text": "Yellow-bellied Flycatchers have bred here" },
+      { "kind": "history", "text": "May plant counts held here most years since 1995" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/clyde-fen-na/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Coyote Lake",
+    "names": ["Coyote Lake Natural Area"],
+    "designation": "NA",
+    "source": "sapaa",
+    "summary": "Coyote Lake, about 100 km west of Edmonton, sits where aspen parkland, boreal forest and foothills meet, which gives it high plant and bird diversity. Rolling ground holds tamarack–black spruce peatland, sedge meadows and sloughs, with aspen, balsam poplar and white spruce on the uplands. The area began with land donated by homesteaders Doris and Eric Hopkins, and Nature Conservancy of Canada land nearby adds to it.",
+    "highlights": [
+      { "kind": "area", "text": "About 1,230 ha under OC and PNT notations" },
+      { "kind": "wildlife", "text": "Red-necked Grebes and Common Loons nest; herons feed" },
+      { "kind": "habitat", "text": "Home to a rare duckweed, Wolffia columbiana" },
+      { "kind": "access", "text": "Trails reach the lakeshore, meadows and mixedwood forest" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/coyote-lake-na/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Don Getty",
+    "names": ["Don Getty Wildland Provincial Park", "Don Getty Wildland Park"],
+    "designation": "WPP",
+    "source": "albertaparks",
+    "summary": "Don Getty Wildland is a set of parcels that add ecological integrity to protected areas around Kananaskis Country. It includes Forget-Me-Not Ridge, with wide views and one of the deepest known caves in Alberta, and well-preserved periglacial features such as stone stripes and polygons. Cataract Creek is one of Alberta's best walk-in trout streams.",
+    "highlights": [
+      { "kind": "area", "text": "62,775 ha · Montane, Subalpine and Upper Foothills" },
+      { "kind": "access", "text": "Random backcountry camping only; no facilities" },
+      { "kind": "access", "text": "No motorized vehicles in the park" }
+    ],
+    "sourceUrl": "https://www.albertaparks.ca/parks/kananaskis/don-getty-wpp/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Dunvegan West",
+    "names": ["Dunvegan West Wildland Provincial Park", "Dunvegan West Wildland Park"],
+    "designation": "WPP",
+    "source": "albertaparks",
+    "summary": "Dunvegan West runs along the south bank of the Peace River from Dunvegan to the British Columbia border, mixing grassland, aspen forest and steep-sided creek valleys. Many of its plants and birds are more typical of the parkland far to the south, and cacti grow on some of the driest sites. The park also has hoodoos and fossil beds.",
+    "highlights": [
+      { "kind": "area", "text": "20,968 ha · Dry Mixedwood and Peace River Parkland" },
+      { "kind": "wildlife", "text": "Bald and golden eagles and falcons nest on the cliffs" },
+      { "kind": "wildlife", "text": "Garter snakes den along the river" },
+      { "kind": "access", "text": "Limited road access; OHVs on existing trails only" }
+    ],
+    "sourceUrl": "https://www.albertaparks.ca/parks/north/dunvegan-west-wpp/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Elbow-Sheep",
+    "names": ["Elbow-Sheep Wildland Provincial Park", "Elbow Sheep"],
+    "designation": "WPP",
+    "source": "albertaparks",
+    "summary": "Elbow-Sheep Wildland lies in Kananaskis Country southwest of Bragg Creek, along the Forestry Trunk Road. Its open grassy slopes, dense forest, deep valleys and peaks make prime habitat for elk, mountain sheep, cougar, grizzly bear and mountain goat, and it has some of Alberta's finest trail riding.",
+    "highlights": [
+      { "kind": "area", "text": "79,998 ha · Montane, Alpine and Subalpine" },
+      { "kind": "access", "text": "Access on foot, by mountain bike or on horseback only" }
+    ],
+    "sourceUrl": "https://www.albertaparks.ca/parks/kananaskis/elbow-sheep-wpp/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Fort Assiniboine Sandhills",
+    "names": ["Fort Assiniboine Sandhills Wildland Provincial Park", "Fort Assiniboine Sandhills Wildland Park"],
+    "designation": "WPP",
+    "source": "albertaparks",
+    "summary": "Designated in 1997, Fort Assiniboine Sandhills lies along the Athabasca River, roughly 40 km northwest of Barrhead. It pairs upland dunes of jack pine–lichen forest and fens with riverside forests of spruce and poplar. More than 435 plant species have been recorded, including rare species and old-growth mixedwood over 160 years old.",
+    "highlights": [
+      { "kind": "area", "text": "7,903 ha · Central Mixedwood region" },
+      { "kind": "wildlife", "text": "Sandhill cranes nest in the fens" },
+      { "kind": "access", "text": "Three staging areas lead to more than 80 km of trails" }
+    ],
+    "sourceUrl": "https://www.albertaparks.ca/parks/central/fort-assiniboine-sandhills-wpp/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Grand Rapids",
+    "names": ["Grand Rapids Wildland Provincial Park", "Grand Rapids Wildland Park"],
+    "designation": "WPP",
+    "source": "albertaparks",
+    "summary": "Grand Rapids Wildland protects the nationally significant Rapids Reach of the Athabasca River, upstream from Fort McMurray. The river is deeply cut into bedrock for the whole length of the park, in places by more than 150 m, and its forested slopes are critical moose winter range.",
+    "highlights": [
+      { "kind": "area", "text": "26,332 ha · Central Mixedwood region" },
+      { "kind": "wildlife", "text": "Walleye, Arctic grayling, goldeye and pike" },
+      { "kind": "access", "text": "By boat or float plane in summer, snowmobile in winter" },
+      { "kind": "history", "text": "Historic Grand Rapids Portage Trail, with a campsite" }
+    ],
+    "sourceUrl": "https://www.albertaparks.ca/parks/north/grand-rapids-wpp/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Halfmoon Lake",
+    "names": ["Halfmoon Lake Natural Area", "Half Moon Lake"],
+    "designation": "NA",
+    "source": "sapaa",
+    "summary": "Halfmoon Lake Natural Area has sandy, rolling ground with open jack pine woods and mixed spruce–aspen forest, grading into sedge fens and treed fen near the lake. The land has never been ploughed or settled, so its original plant communities are a useful reference. Volunteers, including the Rainbow Equitation Society, have co-stewarded it for more than 45 years.",
+    "highlights": [
+      { "kind": "area", "text": "331 ha · Dry Mixedwood region" },
+      { "kind": "access", "text": "Public staging area at the east end" },
+      { "kind": "access", "text": "Fishing year-round; blueberry picking in season" },
+      { "kind": "history", "text": "Near Mile 42 of the Athabasca Landing Trail" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/halfmoon-lake-na/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Hand Hills",
+    "names": ["Hand Hills Ecological Reserve"],
+    "designation": "ER",
+    "source": "sapaa",
+    "summary": "About 30 km southeast of Drumheller, Hand Hills Ecological Reserve is part of the largest remaining fescue grassland in the world. It lies on the lower south slopes of the Hand Hills, with rough fescue grassland, moist meadows, shrub thickets and aspen woodland. Endangered Piping Plovers nest along Little Fish Lake at the reserve's edge.",
+    "highlights": [
+      { "kind": "area", "text": "2,229 ha · Northern Fescue region" },
+      { "kind": "wildlife", "text": "Ferruginous Hawks and Prairie Long-tailed Weasels" },
+      { "kind": "access", "text": "No motorized recreation" },
+      { "kind": "history", "text": "Designated during Alberta's Wildlife '87 push" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/hand-hills-er/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Hay-Zama Lakes",
+    "names": ["Hay-Zama Lakes Wildland Provincial Park", "Hay Zama Lakes", "Hay-Zama"],
+    "designation": "WPP",
+    "source": "albertaparks",
+    "summary": "Hay-Zama Lakes Wildland, northwest of High Level, is a mosaic of lakes, floodplains and deltas. It is a wetland of international significance, used by migrating waterfowl from three of the four North American flyways, and it is home to a herd of wood bison.",
+    "highlights": [
+      { "kind": "area", "text": "48,600 ha · Ramsar wetland" },
+      { "kind": "access", "text": "Limited road access" },
+      { "kind": "access", "text": "Can be almost entirely underwater in wet years" }
+    ],
+    "sourceUrl": "https://www.albertaparks.ca/parks/north/hay-zama-lakes-wpp/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Kakwa",
+    "names": ["Kakwa Wildland Provincial Park", "Kakwa Wildland Park"],
+    "designation": "WPP",
+    "source": "albertaparks",
+    "summary": "Kakwa Wildland is a remote, rugged park of more than 650 km² of forested valleys, creeks, lakes and mountains, named from the Cree word for porcupine. Kakwa Falls, at 30 m Alberta's tallest waterfall, is one of three falls in the park. It is part of the Kakwa-Willmore Interprovincial Park with Willmore Wilderness and BC's Kakwa Provincial Park.",
+    "highlights": [
+      { "kind": "area", "text": "64,928 ha · Alpine and Subalpine" },
+      { "kind": "wildlife", "text": "Woodland caribou, grizzly bears and lynx" },
+      { "kind": "access", "text": "About 100 km of trails, poorly marked" },
+      { "kind": "access", "text": "No cell phone reception" }
+    ],
+    "sourceUrl": "https://www.albertaparks.ca/parks/north/kakwa-wpp/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Kennedy Coulee",
+    "names": ["Kennedy Coulee Ecological Reserve"],
+    "designation": "ER",
+    "source": "sapaa",
+    "summary": "Kennedy Coulee Ecological Reserve sits on the Canada–US border about 160 km southeast of Lethbridge, joined to Milk River Natural Area. Springs and wetlands along Kennedy Creek support species such as the Short-horned Lizard, Prairie Rattlesnake, Golden Eagle and Pronghorn. The coulee's exposed Judith River Formation rocks are a rich source of fossils.",
+    "highlights": [
+      { "kind": "area", "text": "1,068 ha · Dry Mixedgrass region" },
+      { "kind": "wildlife", "text": "Weidemeyer's Admiral, a butterfly at risk in Canada" },
+      { "kind": "access", "text": "Travel in the reserve is on foot only" },
+      { "kind": "history", "text": "Grazing lease until 1978; protected in 1987" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/kennedy-coulee-er-milk-river-na/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Kimiwan Lake",
+    "names": ["Kimiwan Lake Natural Area", "Kimiwan Lake (PNT) Natural Area", "Kimiwan"],
+    "designation": "NA",
+    "source": "sapaa",
+    "summary": "In northwestern Alberta, Kimiwan Lake Natural Area protects just over 5,700 ha of lake and shoreline around the 4,200 ha Kimiwan Lake. The broad, shallow lake has no natural outlet, and most of its shore is marsh and mud flat with wide bands of cattail. It is recognized internationally as a key wetland for waterfowl and shorebirds.",
+    "highlights": [
+      { "kind": "area", "text": "5,720 ha · Protective Notation" },
+      { "kind": "wildlife", "text": "5,000+ Franklin's Gulls in midsummer, about 1% of the world's" },
+      { "kind": "habitat", "text": "Summer evaporation swings the water level" },
+      { "kind": "history", "text": "The name may mean rain lake in Cree" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/kimiwan-lake-pnt-natural-area/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Kootenay Plains",
+    "names": ["Kootenay Plains Ecological Reserve"],
+    "designation": "ER",
+    "source": "sapaa",
+    "summary": "Kootenay Plains Ecological Reserve covers about 34 km² of montane habitat in the North Saskatchewan River valley south of Abraham Lake. In the mountains' rain shadow it is relatively dry and warm, with grassland, open aspen and pine–spruce forest, and Douglas fir on west-facing slopes. The plains have long been important to Indigenous people, and several sundance lodges stand there.",
+    "highlights": [
+      { "kind": "area", "text": "3,439 ha · Montane and Subalpine" },
+      { "kind": "wildlife", "text": "Winter range for elk, mule deer, bighorn sheep and moose" },
+      { "kind": "access", "text": "Siffleur Falls trail: 4 km one way, moderate" },
+      { "kind": "access", "text": "No motorized vehicles in the reserve" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/kootenay-plains-er/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Lesser Slave Lake",
+    "names": ["Lesser Slave Lake Wildland Provincial Park", "Lesser Slave Lake Wildland Park"],
+    "designation": "WPP",
+    "source": "albertaparks",
+    "summary": "Lesser Slave Lake Wildland is on the north shore of Lesser Slave Lake, one of Alberta's largest lakes, about 50 km northwest of the town of Slave Lake. It protects fish spawning and rearing habitat, waterfowl staging areas and critical moose winter range.",
+    "highlights": [
+      { "kind": "area", "text": "3,581 ha · Central Mixedwood region" },
+      { "kind": "wildlife", "text": "Bald eagle and osprey nesting areas" }
+    ],
+    "sourceUrl": "https://www.albertaparks.ca/parks/north/lesser-slave-lake-wpp/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Milk River",
+    "names": ["Milk River Natural Area"],
+    "designation": "NA",
+    "source": "sapaa",
+    "summary": "Milk River Natural Area, beside Kennedy Coulee on the Canada–US border, protects rolling grassland cut by coulees, badlands and part of Milk River Canyon, the deepest canyon on the Canadian prairies. Springs, streams and oxbow lakes support hundreds of native species, including small populations of the Short-horned Lizard, Alberta's only native lizard. The site also has fossil and archaeological sites.",
+    "highlights": [
+      { "kind": "area", "text": "5,538 ha · Dry Mixedgrass region" },
+      { "kind": "access", "text": "Needs permission from the grazing lease holder" },
+      { "kind": "access", "text": "Roads are impassable after wet weather" },
+      { "kind": "habitat", "text": "Canada's only river draining to the Mississippi basin" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/kennedy-coulee-er-milk-river-na/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Northwest of Bruderheim",
+    "names": ["Northwest of Bruderheim Natural Area", "NW of Bruderheim"],
+    "designation": "NA",
+    "source": "sapaa",
+    "summary": "This Natural Area is two separate parcels of about 130 ha each, with jack pine sand dunes and open sandy plateaus on the uplands and wetlands in the low ground. Lowlands hold black spruce–tamarack, dwarf birch–willow shrubland and sedge–cotton grass meadows. Nearby oil and gas development and off-road vehicles are ongoing problems; the dry, sandy ground burns easily but recovers over several years.",
+    "highlights": [
+      { "kind": "area", "text": "259 ha · Dry Mixedwood region" },
+      { "kind": "habitat", "text": "Jack pine regrowing from seed after a 2009 fire" },
+      { "kind": "history", "text": "Bruderheim is German for brothers' home" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/northwest-of-bruderheim-na/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Opal",
+    "names": ["Opal Natural Area"],
+    "designation": "NA",
+    "source": "sapaa",
+    "summary": "Opal Natural Area, about 11 km northwest of Redwater, is four parcels of sandy ridges: two set aside by Order in Council and two by Protective Notation, over 620 ha in all. Open jack pine–lichen forest covers the uplands, with aspen groves, sedge–grass meadows, cattail ponds and black spruce fens in the hollows, giving good wildlife habitat.",
+    "highlights": [
+      { "kind": "area", "text": "Over 620 ha in four parcels" },
+      { "kind": "access", "text": "Cross-country skiing, backcountry hiking and hunting" },
+      { "kind": "history", "text": "The locality was called Rutherford until 1912" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/opal-na/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Peace River",
+    "names": ["Peace River Wildland Provincial Park", "Peace River Wildland Park"],
+    "designation": "WPP",
+    "source": "albertaparks",
+    "summary": "Peace River Wildland runs along the south bank of the Peace River south and west of the town of Peace River, and takes in 30 km of the Smoky River valley. It protects forest and grassland around the confluence of the two rivers, an important wildlife corridor for deer, elk and bears.",
+    "highlights": [
+      { "kind": "area", "text": "24,563 ha · Dry Mixedwood and Peace River Parkland" },
+      { "kind": "access", "text": "Limited road access; OHVs on existing trails only" }
+    ],
+    "sourceUrl": "https://www.albertaparks.ca/parks/north/peace-river-wpp/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Plateau Mountain",
+    "names": ["Plateau Mountain Ecological Reserve"],
+    "designation": "ER",
+    "source": "sapaa",
+    "summary": "Plateau Mountain Ecological Reserve covers a nearly flat high plateau in southern Kananaskis Country. At about 2,500 m it escaped the last Ice Age glaciers, and it is internationally known for its ice cave and patterned ground of permafrost, stone circles and frost boils. It is critical winter range for Rocky Mountain Bighorn Sheep.",
+    "highlights": [
+      { "kind": "area", "text": "2,323 ha · Alpine and Subalpine" },
+      { "kind": "habitat", "text": "Some lichens here are over 100,000 years old" },
+      { "kind": "access", "text": "Entering the ice cave needs a special permit" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/plateau-mountain-er/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Red Rock Coulee",
+    "names": ["Red Rock Coulee Natural Area"],
+    "designation": "NA",
+    "source": "sapaa",
+    "summary": "Red Rock Coulee Natural Area is known for large, round red sandstone concretions up to 2.5 m across, among the largest in the world and Alberta's best example of these formations. The site has steep, eroded coulees, hoodoos and a small upland of fescue–needlegrass grassland, draining west to Seven Persons Coulee and the South Saskatchewan River.",
+    "highlights": [
+      { "kind": "area", "text": "324 ha · Mixedgrass region" },
+      { "kind": "history", "text": "Concretions formed about 65 million years ago in ancient seas" },
+      { "kind": "access", "text": "Front-country hiking and wildlife viewing" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/red-rock-coulee-na/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Redwater",
+    "names": ["Redwater Natural Area", "Redwater Sandhills"],
+    "designation": "NA",
+    "source": "sapaa",
+    "summary": "SAPAA describes Redwater Natural Area as about 2,223 ha of rolling sandy terrain under jack pine forest, established in 1971. In 2012 it lost its natural area status and became a Provincial Recreation Area given over to ATV use, despite the Friends of Redwater Natural Area Society's work to contain the damage. The much smaller Redwater River Natural Area nearby keeps its status.",
+    "highlights": [
+      { "kind": "area", "text": "About 2,223 ha of jack pine sand hills" },
+      { "kind": "history", "text": "Natural Area from 1971 until 2012" },
+      { "kind": "access", "text": "Now a Provincial Recreation Area for ATVs" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/news/sapaa-newsletter-no-57-february-2026/the-sand-dune-natural-areas/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Riverlot 56",
+    "names": ["Riverlot 56 Natural Area", "River Lot 56"],
+    "designation": "NA",
+    "source": "sapaa",
+    "summary": "Riverlot 56 Natural Area is a natural refuge on the northwest edge of St. Albert, well used by locals for hiking, bird and plant watching, and winter skiing. It has upland aspen forest, ravine and streambed communities and open meadows, and borders the Sturgeon River to the west. Local groups have kept it for outdoor education and recreation since 1973.",
+    "highlights": [
+      { "kind": "area", "text": "105 ha · Central Parkland region" },
+      { "kind": "access", "text": "About 8 km of groomed cross-country ski trails" },
+      { "kind": "access", "text": "Self-guided trail with interpretive signs" },
+      { "kind": "history", "text": "Once set aside for Alberta's third university" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/river-lot-56-na/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Rock Lake-Solomon Creek",
+    "names": ["Rock Lake-Solomon Creek Wildland Provincial Park", "Rock Lake Solomon Creek"],
+    "designation": "WPP",
+    "source": "albertaparks",
+    "summary": "Rock Lake-Solomon Creek Wildland, about 70 km northwest of Hinton, is a backcountry park for hiking, horseback riding and fishing. Its best-known spots are Ogre Canyon near Brule, known for rock and ice climbing, and Moosehorn Lake, usually reached on horseback, with views of the Rocky Mountain front ranges.",
+    "highlights": [
+      { "kind": "access", "text": "Ogre Canyon road needs a high-clearance 4x4" },
+      { "kind": "access", "text": "Backcountry camping, skiing and riding listed" }
+    ],
+    "sourceUrl": "https://www.albertaparks.ca/parks/central/rock-lake-solomon-creek-wpp/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Rumsey",
+    "names": ["Rumsey Ecological Reserve"],
+    "designation": "ER",
+    "source": "sapaa",
+    "summary": "Rumsey Ecological Reserve, about 90 km southeast of Red Deer, protects the largest remaining tract of aspen parkland in Canada. Much of it is knob-and-kettle terrain; in wet years the kettles fill and become some of North America's most productive waterfowl habitat. There are no public roads, and travel is on foot only.",
+    "highlights": [
+      { "kind": "area", "text": "3,432 ha · Central Parkland region" },
+      { "kind": "wildlife", "text": "Sprague's Pipit, Upland Sandpiper and Baird's Sparrow" },
+      { "kind": "habitat", "text": "Plains rough fescue is the main upland plant" },
+      { "kind": "history", "text": "Designated during Alberta's Wildlife '87 push" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/rumsey-er-na/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Rumsey",
+    "names": ["Rumsey Natural Area"],
+    "designation": "NA",
+    "source": "sapaa",
+    "summary": "Rumsey Natural Area lies with the Rumsey Ecological Reserve about 90 km southeast of Red Deer; together they protect Canada's largest remaining tract of aspen parkland. The landscape has flat-topped hills, woodland along its northern edge and many wetlands. Oil and gas leases kept being sold here for 16 years despite the designation, until 2012.",
+    "highlights": [
+      { "kind": "area", "text": "14,922 ha · Central Parkland region" },
+      { "kind": "access", "text": "May be under a grazing lease that requires permission" },
+      { "kind": "wildlife", "text": "White-tailed deer, porcupines and Northern Leopard Frogs" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/rumsey-er-na/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Saskatoon Mountain",
+    "names": ["Saskatoon Mountain Natural Area"],
+    "designation": "NA",
+    "source": "sapaa",
+    "summary": "SAPAA lists Saskatoon Mountain, west of Grande Prairie, among its transferred and lost natural areas. It became a Natural Area in 1998; after the county raised concerns about off-highway-vehicle disturbance and a public consultation, it was converted to a Provincial Recreation Area in 2018.",
+    "highlights": [
+      { "kind": "history", "text": "Natural Area 1998–2018, now a Provincial Recreation Area" },
+      { "kind": "access", "text": "OHV use restricted to west of Range Road 92" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/transferred-lost-na/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Sherwood Park",
+    "names": ["Sherwood Park Natural Area"],
+    "designation": "NA",
+    "source": "sapaa",
+    "summary": "Sherwood Park Natural Area is a 68 ha site of gently rolling aspen forest and willow–sedge wetlands. Mature aspen and balsam poplar mix with patches of white spruce and birch, and Great Horned and Northern Saw-whet Owls live here year-round. Neighbouring landowners pushed to protect its virgin forest, and it became one of Alberta's first Natural Areas in 1971.",
+    "highlights": [
+      { "kind": "area", "text": "68 ha · Central Parkland region" },
+      { "kind": "access", "text": "2.7 km of trails from a lot on Range Road 231" },
+      { "kind": "history", "text": "Traces of the Old Edmonton Trail and survey markers" },
+      { "kind": "wildlife", "text": "White-tailed deer, coyotes, porcupines; moose at times" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/sherwood-park-na/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Stony Mountain",
+    "names": ["Stony Mountain Wildland Provincial Park", "Stony Mountain Wildland Park"],
+    "designation": "WPP",
+    "source": "albertaparks",
+    "summary": "Stony Mountain Wildland, south of Fort McMurray, preserves excellent examples of patterned and non-patterned fens and includes part of the range of a small caribou herd. Six provincially rare plants have been found near Maqua Lake, a few kilometres north of the park.",
+    "highlights": [
+      { "kind": "area", "text": "13,974 ha · Lower Boreal Highlands" },
+      { "kind": "access", "text": "Last 8 km or so by OHV or snowmobile" },
+      { "kind": "access", "text": "No designated campsite; random camping only" }
+    ],
+    "sourceUrl": "https://www.albertaparks.ca/parks/north/stony-mountain-wpp/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Wagner",
+    "names": ["Wagner Natural Area", "Wagner Bog"],
+    "designation": "NA",
+    "source": "sapaa",
+    "summary": "Wagner Natural Area is a 219 ha site just east of Spruce Grove on the south side of Highway 16, first protected for its rich, spring-fed calcareous fens. Calcium- and iron-rich springs feed patterned fens and marl ponds ringed by spruce and tamarack, and peat cores show the area has looked much the same for at least 4,000 years. The Wagner Natural Area Society has stewarded it since 1982.",
+    "highlights": [
+      { "kind": "area", "text": "219 ha · Central Parkland region" },
+      { "kind": "habitat", "text": "Orchids, carnivorous plants and 350+ vascular plant species" },
+      { "kind": "access", "text": "1.2 km Marl Pond Trail loop from the parking lot" },
+      { "kind": "history", "text": "Bought from farmer William Wagner in 1971" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/wagner-natural-area/",
+    "lastChecked": "2026-10-17"
+  },
+  {
+    "key": "Wainwright Dunes",
+    "names": ["Wainwright Dunes Ecological Reserve"],
+    "designation": "ER",
+    "source": "sapaa",
+    "summary": "Wainwright Dunes Ecological Reserve anchors the north end of the Parkland Dunes, which run about 50 km south to Sounding Lake, and borders CFB Wainwright. Its dunes, outwash and moraine rise up to 30 m and carry stunted aspen, low shrubs and grassland. With no recorded fire since the 1980s, shrubs are crowding out the dune grasslands.",
+    "highlights": [
+      { "kind": "area", "text": "2,821 ha · Central Parkland region" },
+      { "kind": "habitat", "text": "Rare plants include moss gentian and linear-leaved sundew" },
+      { "kind": "access", "text": "Foot only; nearest public road about 1.6 km away" },
+      { "kind": "history", "text": "Established in 1988, south of CFB Wainwright" }
+    ],
+    "sourceUrl": "https://sapaastewards.com/protected-areas/list-of-protected-areas/wainwright-dunes-er/",
+    "lastChecked": "2026-10-17"
+  }
+]
