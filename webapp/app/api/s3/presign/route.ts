@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { createClient, createServerSupabase } from "@/utils/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { generateFilename } from "@/utils/media/generateFilename";
 import { isAllowedStorageKey } from "@/utils/media/storageKeys";
+import { requireReportWriter } from "@/utils/supabase/queries";
 // AWS configuration
 const REGION = process.env.AWS_REGION!;
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
@@ -84,25 +85,16 @@ export async function POST(request: Request) {
       );
     }
 
-    // Only the report owner or an approved admin may upload into the report folder. The
-    // service-role read below bypasses RLS, so the caller check runs first.
-    const isAdmin =
-      user.app_metadata?.role === "admin" && user.app_metadata?.authenticated === true;
-
-    const supabaseAdmin = createServerSupabase();
-    const { data: report, error: reportError } = await supabaseAdmin
-      .from("form_responses")
-      .select("user_id")
-      .eq("id", responseId)
-      .is("archived_at", null)
-      .maybeSingle();
-
-    if (reportError) {
-      throw new Error(reportError.message || "Failed to check the report owner");
-    }
-
-    if (!report || (!isAdmin && report.user_id !== user.id)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // The service-role read inside requireReportWriter bypasses RLS, so it checks
+    // the caller first: only the report owner or an approved admin may upload.
+    // The denied message matches REPORT_WRITE_DENIED in utils/supabase/queries.ts.
+    try {
+      await requireReportWriter(responseId);
+    } catch (err) {
+      if (err instanceof Error && err.message === "You are not allowed to change this report.") {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      throw err;
     }
 
     //  Create S3 key

@@ -160,6 +160,7 @@ function mockAuthenticatedUser() {
           user: {
             id: "user-123",
             email: "user@example.com",
+            app_metadata: { authenticated: true },
           },
         },
         error: null,

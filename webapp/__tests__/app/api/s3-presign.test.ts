@@ -275,7 +275,7 @@ describe("POST /api/s3/presign", () => {
 
   it("puts the content type and content length into the signed command", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1", user_metadata: {} } },
+      data: { user: { id: "user-1", app_metadata: { authenticated: true }, user_metadata: {} } },
       error: null,
     });
     (getSignedUrl as jest.Mock).mockResolvedValueOnce(
@@ -300,7 +300,7 @@ describe("POST /api/s3/presign", () => {
 
   it("returns 403 when the report belongs to another user", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-2", app_metadata: { role: "steward" } } },
+      data: { user: { id: "user-2", app_metadata: { role: "steward", authenticated: true } } },
       error: null,
     });
     reportResult = { data: { user_id: "user-1" }, error: null };
@@ -320,7 +320,7 @@ describe("POST /api/s3/presign", () => {
 
   it("returns 403 when the report does not exist", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1", app_metadata: { role: "steward" } } },
+      data: { user: { id: "user-1", app_metadata: { role: "steward", authenticated: true } } },
       error: null,
     });
     reportResult = { data: null, error: null };
@@ -340,7 +340,7 @@ describe("POST /api/s3/presign", () => {
 
   it("gives the report owner an upload url", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1", app_metadata: { role: "steward" } } },
+      data: { user: { id: "user-1", app_metadata: { role: "steward", authenticated: true } } },
       error: null,
     });
     reportResult = { data: { user_id: "user-1" }, error: null };
@@ -394,6 +394,7 @@ describe("POST /api/s3/presign", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { authenticated: true },
           user_metadata: { full_name: "Raiyana Rahman" },
         },
       },
@@ -443,6 +444,7 @@ describe("POST /api/s3/presign", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { authenticated: true },
           user_metadata: { full_name: "Raiyana Rahman" },
         },
       },
@@ -491,6 +493,7 @@ describe("POST /api/s3/presign", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { authenticated: true },
           user_metadata: { full_name: "Raiyana Rahman" },
         },
       },
@@ -539,6 +542,7 @@ describe("POST /api/s3/presign", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { authenticated: true },
           user_metadata: { full_name: "Fallback User" },
         },
       },
@@ -586,6 +590,7 @@ describe("POST /api/s3/presign", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { authenticated: true },
           user_metadata: {},
         },
       },
@@ -636,6 +641,7 @@ describe("POST /api/s3/presign", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { authenticated: true },
           user_metadata: { full_name: "Raiyana Rahman" },
         },
       },
@@ -683,6 +689,7 @@ describe("POST /api/s3/presign", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { authenticated: true },
           user_metadata: {},
         },
       },
@@ -705,6 +712,7 @@ describe("POST /api/s3/presign", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { authenticated: true },
           user_metadata: { full_name: "Raiyana Rahman" },
         },
       },
@@ -747,7 +755,7 @@ describe("POST /api/s3/presign", () => {
     ["a negative id", { responseId: -1 }],
     ["a decimal id", { questionId: 2.5 }],
   ])("returns 400 for %s and signs nothing", async (_label, change) => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-1", app_metadata: { authenticated: true } } }, error: null });
 
     const request = new Request("http://localhost:3000/api/s3/presign", {
       method: "POST",
@@ -763,7 +771,7 @@ describe("POST /api/s3/presign", () => {
   });
 
   it("returns 400 when the metadata would put a folder into the key", async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-1", app_metadata: { authenticated: true } } }, error: null });
     (generateFilename as jest.Mock).mockReturnValue("Riverlot56-2026/../x-generated.jpg");
 
     const request = new Request("http://localhost:3000/api/s3/presign", {
