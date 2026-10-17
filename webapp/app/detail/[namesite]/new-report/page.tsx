@@ -446,6 +446,7 @@ export default function NewReportPage() {
     const putRes = await fetch(uploadUrl, {
       method: "PUT",
       mode: "cors", // explicit
+      headers: { "Content-Type": file.type },
       body: file,
     });
 

@@ -67,7 +67,7 @@ row level security.
 | `GET /api/sites/{siteId}/gallery` | Signed-in user (RLS) | Signed-in | [Site report gallery](#get-apisitessiteidgallery) |
 | `GET /api/homepage-images` | Admin | Signed-in | [Admin homepage gallery](#get-apihomepage-images) |
 | `GET /api/homepage-images/{siteId}` | Signed-in user (RLS) | Signed-in | [Site homepage images](#get-apihomepage-imagessiteid) |
-| `POST /api/s3/presign` | Signed-in user | None | [Presign a report photo](#post-apis3presign) |
+| `POST /api/s3/presign` | Report owner or admin | None | [Presign a report photo](#post-apis3presign) |
 | `POST /api/s3/presign-homepage-images` | Signed-in user | None | [Presign a homepage photo](#post-apis3presign-homepage-images) |
 | `GET /api/user-gallery/sir-upload` | Signed-in user (RLS) | Signed-in | [User report gallery](#get-apiuser-gallerysir-upload) |
 | `GET /api/user-gallery/homepage-upload` | Signed-in user (RLS) | Signed-in | [User homepage gallery](#get-apiuser-galleryhomepage-upload) |
@@ -313,12 +313,15 @@ approved users.
 
 #### POST /api/s3/presign
 
-Returns a presigned S3 `PUT` URL for one report photo. The URL is valid for 180 seconds.
+Returns a presigned S3 `PUT` URL for one report photo. The URL is valid for 180 seconds. The
+signature pins the `Content-Length`, so S3 refuses a body of a different size. The route checks
+the type before it signs. The browser sends the `Content-Type` header so S3 stores the correct
+object type.
 
 **Request body:** `filename`, `contentType` (`image/jpeg`, `image/png` or `image/webp`),
-`fileSize` (at most 10 MB), `siteId`, `responseId` and `questionId` (positive whole numbers),
-`siteName`, `date`, `photographer` (optional; the default is `user_metadata.full_name` or
-`UnknownUser`) and `identifier` (optional).
+`fileSize` (a positive whole number, at most 10 MB), `siteId`, `responseId` and `questionId`
+(positive whole numbers), `siteName`, `date`, `photographer` (optional; the default is
+`user_metadata.full_name` or `UnknownUser`) and `identifier` (optional).
 
 **Response:** `{"uploadUrl": "...", "key": "inspections/<siteId>/<responseId>/<questionId>/<file>",
 "generatedFilename": "<file>"}`.
@@ -327,16 +330,19 @@ Returns a presigned S3 `PUT` URL for one report photo. The URL is valid for 180 
 
 | Status | Body | When |
 |---|---|---|
-| 400 | `Invalid file data` | `filename` or `contentType` is missing. |
+| 400 | `Invalid file data` | `filename` or `contentType` is missing, or `fileSize` is not a positive whole number. |
 | 400 | `Missing ids` / `Invalid ids` | An id is missing, or is not a positive whole number. |
 | 400 | `Missing image metadata` | `siteName` or `date` is missing. |
 | 400 | `Unsupported file type` / `File too large` | The type or the size breaks the rule. |
 | 400 | `Invalid image metadata` | The made key is not in the folder of that site, report and question. |
 | 401 | `Unauthorized` | No signed-in user. |
-| 500 | `Failed to generate upload URL` | The body is not JSON, or signing failed. |
+| 403 | `Forbidden` | The report does not exist, or the caller is not its owner and is not an approved admin. |
+| 500 | `Failed to generate upload URL` | The body is not JSON, the owner check failed, or signing failed. |
 
-**Caller rule:** any signed-in user. The route does not check that the caller owns `responseId`.
-`insertInspectionAttachments` checks the owner and the key before it saves the row.
+**Caller rule:** only the report owner or an approved admin. The route reads
+`form_responses.user_id` for `responseId` and refuses any other caller with 403, so no one can
+upload into another user's report folder. `insertInspectionAttachments` checks the owner and the
+key again before it saves the row.
 
 #### POST /api/s3/presign-homepage-images
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createServerSupabase } from "@/utils/supabase/server";
 
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -69,11 +69,40 @@ export async function POST(request: Request) {
       );
     }
 
+    // The size is signed into the S3 command, so a missing or non-whole size must not slip through.
+    if (typeof fileSize !== "number" || !Number.isSafeInteger(fileSize) || fileSize <= 0) {
+      return NextResponse.json(
+        { error: "Invalid file data" },
+        { status: 400 }
+      );
+    }
+
     if (fileSize > MAX_SIZE) {
       return NextResponse.json(
         { error: "File too large" },
         { status: 400 }
       );
+    }
+
+    // Only the report owner or an approved admin may upload into the report folder. The
+    // service-role read below bypasses RLS, so the caller check runs first.
+    const isAdmin =
+      user.app_metadata?.role === "admin" && user.app_metadata?.authenticated === true;
+
+    const supabaseAdmin = createServerSupabase();
+    const { data: report, error: reportError } = await supabaseAdmin
+      .from("form_responses")
+      .select("user_id")
+      .eq("id", responseId)
+      .is("archived_at", null)
+      .maybeSingle();
+
+    if (reportError) {
+      throw new Error(reportError.message || "Failed to check the report owner");
+    }
+
+    if (!report || (!isAdmin && report.user_id !== user.id)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     //  Create S3 key
@@ -107,9 +136,13 @@ export async function POST(request: Request) {
 
 
     //Generate presigned URL
+    // ContentLength is signed, so S3 rejects a body of a different size. The S3 presigner
+    // marks Content-Type unsignable, so the type is enforced by the check above, not by S3.
     const command = new PutObjectCommand({
       Bucket: BUCKET,
       Key: key,
+      ContentType: contentType,
+      ContentLength: fileSize,
     });
 
     const uploadUrl = await getSignedUrl(s3, command, {

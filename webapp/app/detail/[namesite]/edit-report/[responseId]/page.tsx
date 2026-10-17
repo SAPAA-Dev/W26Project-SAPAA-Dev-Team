@@ -235,6 +235,7 @@ export default function EditReportPage() {
     const putRes = await fetch(uploadUrl, {
       method: "PUT",
       mode: "cors",
+      headers: { "Content-Type": file.type },
       body: file,
     });
     if (!putRes.ok) {

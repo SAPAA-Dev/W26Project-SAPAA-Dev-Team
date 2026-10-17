@@ -21,15 +21,29 @@ jest.mock("@aws-sdk/client-s3", () => ({
 
 jest.mock("@/utils/supabase/server", () => ({
   createClient: jest.fn(),
+  createServerSupabase: jest.fn(),
 }));
 
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createServerSupabase } from "@/utils/supabase/server";
 import { POST } from "../../app/api/s3/presign/route";
 import { GET } from "../../app/api/gallery/route";
 
 const mockGetSignedUrl = getSignedUrl as jest.Mock;
 const mockCreateClient = createClient as jest.Mock;
+const mockCreateServerSupabase = createServerSupabase as jest.Mock;
+
+// The report owner check reads form_responses with the service-role client.
+function mockReportOwner(userId = "user-123") {
+  mockCreateServerSupabase.mockReturnValue({
+    from: jest.fn(() => ({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      is: jest.fn().mockReturnThis(),
+      maybeSingle: jest.fn().mockResolvedValue({ data: { user_id: userId }, error: null }),
+    })),
+  });
+}
 
 
 
@@ -138,6 +152,7 @@ function makeGalleryFrom(options?: {
 
 
 function mockAuthenticatedUser() {
+  mockReportOwner();
   mockCreateClient.mockResolvedValue({
     auth: {
       getUser: jest.fn().mockResolvedValue({
@@ -155,6 +170,7 @@ function mockAuthenticatedUser() {
 }
 
 function mockAdminUser() {
+  mockReportOwner();
   mockCreateClient.mockResolvedValue({
     auth: {
       getUser: jest.fn().mockResolvedValue({

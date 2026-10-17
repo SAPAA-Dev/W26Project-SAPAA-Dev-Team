@@ -660,7 +660,7 @@ export const openApiSpec = {
         summary: "Generate a presigned S3 upload URL for inspection images",
         tags: ["Uploads"],
         description:
-          "Generates a short-lived presigned S3 URL for uploading an inspection attachment and returns the generated SAPAA filename.",
+          "Generates a short-lived presigned S3 URL for uploading an inspection attachment and returns the generated SAPAA filename. The signature pins the content length, so S3 refuses a body of a different size. The route checks the type before it signs. Only the report owner or an approved admin may request a URL for the report.",
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -762,6 +762,14 @@ export const openApiSpec = {
           },
           "401": {
             description: "Unauthorized",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" },
+              },
+            },
+          },
+          "403": {
+            description: "The report does not exist, or the caller is not its owner and is not an approved admin",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/ErrorResponse" },
