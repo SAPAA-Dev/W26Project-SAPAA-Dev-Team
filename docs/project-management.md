@@ -58,8 +58,8 @@ GPX tracks and the offline layers are one connected piece of work.
 
 ## Story map
 
-The full story set is in [User Stories](user-stories.md): 35 user stories in seven feature areas,
-162 story points, prioritised with MoSCoW. The set follows the September 25, 2026 client meeting
+The full story set is in [User Stories](user-stories.md): 40 user stories in seven feature areas,
+191 story points, prioritised with MoSCoW. The set follows the September 25, 2026 client meeting
 (see [Meeting Minutes](meeting-minutes.md)), plus later additions. Placement follows
 [User Story Summaries](user-stories-summaries.md).
 
@@ -69,10 +69,10 @@ The full story set is in [User Stories](user-stories.md): 35 user stories in sev
 | 2 - Place Management | - | 2.0.2 (3, M) ✓, 2.0.3 (3, S) ✓, 2.0.4 (8, M) ✓, 2.0.5 (5, M) ✓, 2.0.6 (5, S) ✓, 2.0.10 (1, M) ✓ | 2.0.1 (8, S), 2.0.8 (3, M), 2.0.9 (5, M), 2.0.11 (5, M) | 2.0.12 (8, C), 2.0.13 (3, C) | - | - | - |
 | 3 - Admin Persona | - | 3.0.2 (5, S) ✓ | - | 3.0.3 (8, M) | - | - | - |
 | 4 - General Features | - | 4.0.6 (1, M) ✓ | 4.0.2 (13, S), 4.0.4 (5, S), 4.0.5 (5, S), 4.0.7 (5, C) | - | - | - | - |
-| 5 - Access and Accounts | - | 5.0.4 (2, S) ✓ | 5.0.2 (2, M) | - | - | - | - |
+| 5 - Access and Accounts | - | 5.0.4 (2, S) ✓ | 5.0.2 (2, M) | 5.0.5 (8, M), 5.0.6 (5, M), 5.0.7 (8, M), 5.0.8 (5, M), 5.0.9 (3, M) | - | - | - |
 | 6 - Data and Places | - | - | 6.0.1 (5, M) | - | - | - | - |
 | 7 - Inspections and Media | - | 7.0.1 (2, C) ✓, 7.0.5 (5, S) ✓, 7.0.6 (5, S) ✓, 7.0.7 (5, M) ✓, 7.0.8 (5, S) ✓ | - | 7.0.3 (5, C) | - | - | 7.0.4 (5, W), 7.0.9 (5, W) |
-| **Committed points** | **0** | **63** | **60** | **29** | **0** | **0** | **10** |
+| **Committed points** | **0** | **63** | **60** | **58** | **0** | **0** | **10** |
 
 Numbers in brackets: story points and MoSCoW priority (M = Must Have, S = Should Have, C = Could Have, W = Won't Have).
 
@@ -81,15 +81,15 @@ freeze. All 16 Sprint 2 stories are done. See [Sprint 2 status](#sprint-2-status
 
 The **Committed points** row gives the story points of the stories placed in each sprint. The
 points that the team expects to finish in each sprint, from the Sprint 1 and Sprint 2 results, are
-in [Velocity re-estimate](#velocity-re-estimate). Sprint 4 has 5 stories (29 points) and no
-GitHub issues yet. The rest of the Sprint 4 capacity and all of Sprint 5 are kept open for the
-client's new requests.
+in [Velocity re-estimate](#velocity-re-estimate). Sprint 4 has 10 stories (58 points) and no
+GitHub issues yet. The client's new access-request stories use the capacity that the plan kept
+open in Sprint 4.
 
 By MoSCoW:
 
 | Priority | Stories | Points | Where |
 |---|---|---|---|
-| Must Have | 15 | 61 | 8 in Sprint 2, 6 in Sprint 3, 3.0.3 in Sprint 4 |
+| Must Have | 20 | 90 | 8 in Sprint 2, 6 in Sprint 3, 6 in Sprint 4 |
 | Should Have | 12 | 63 | 7 in Sprint 2, 5 in Sprint 3 |
 | Could Have | 6 | 28 | 7.0.1 in Sprint 2, 4.0.7 in Sprint 3, 4 in Sprint 4 (1.0.5, 2.0.12, 2.0.13, 7.0.3) |
 | Won't Have | 2 | 10 | Not planned (7.0.4, 7.0.9) |
@@ -158,7 +158,7 @@ All releases are GitHub releases at 20:00 on the due date.
 | Sprint 1 | Documentation and discovery: requirements, design, plan and teamwork | - | September 29, 2026 | 0 (documentation and discovery) | 0 |
 | Sprint 2 | Steward profiles, site administration, and SIR export and delete | October 11, 2026 | October 13, 2026 | 16 | 63 |
 | Sprint 3 | Interactive map with site geometry and GPX tracks, inspection history, iNaturalist and password reset | October 25, 2026 | October 27, 2026 | 12 | 60 |
-| Sprint 4 | Activity points, to-visit priority, export of all files and the all-SIR summary, and the client's new requests | November 15, 2026 | November 17, 2026 | 5 (no GitHub issues yet, on purpose) | 29 |
+| Sprint 4 | Activity points, to-visit priority, export of all files, the all-SIR summary, and integrated access requests | November 15, 2026 | November 17, 2026 | 10 | 58 |
 | Sprint 5 | New client requests, final polish, deployment and field-test fixes | November 29, 2026 | December 1, 2026 | 0 (not planned yet) | 0 |
 
 ### Velocity re-estimate
@@ -215,7 +215,7 @@ but one of them is reading week, and the plan counts no story work in reading we
 | Sprint | Dates | Working weeks | Arithmetic | Re-estimate | Committed | Difference | Plan |
 |---|---|---|---|---|---|---|---|
 | Sprint 3 | Oct 14 to Oct 27 | 2 | 4.07 × 7 × 2 | 57 | 60 | 3 over | Keep 60. See below. |
-| Sprint 4 | Oct 28 to Nov 17 | 2 (3 weeks minus reading week) | 4.07 × 7 × 2 | 57 | 29 | 28 free | The 28 points are kept for the client's new requests and any Sprint 3 carry-over. No Sprint 4 GitHub issues are made yet, on purpose. |
+| Sprint 4 | Oct 28 to Nov 17 | 2 (3 weeks minus reading week) | 4.07 × 7 × 2 | 57 | 58 | 1 over | Keep 58. The new access-request stories use the capacity that was reserved for client requests. |
 | Sprint 5 | Nov 18 to Dec 1 | 2 | 4.07 × 7 × 2 | 57 | 0 | 57 free | 30 points for new client stories. The other 27 are for deployment, final polish and fixes from the December field test. |
 
 If the team also works in reading week, Sprint 4 can take 4.07 × 7 × 3 = 85 points. The plan does
@@ -246,10 +246,10 @@ Red has 13 points per person, which is 1.3 times the highest team result of Spri
   They free Green, not Red.
 - If Red has not merged the map page ([#184](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/184)) and the GPX track table
   ([#185](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/185)), both due October 17, by October 20: the offline layer tasks of 4.0.2
-  ([#207](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/207), [#209](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/209), [#213](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/213)) move to Sprint 4, where 28 points are free. Blue (6.0 points
+  ([#207](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/207), [#209](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/209), [#213](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/213)) move to Sprint 4. This move would raise Sprint 4 from 58 to 71 points, so the Product Owner must move other work out first. Blue (6.0 points
   per person) takes the GPX upload tasks of 2.0.9 ([#192](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/192), [#201](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/201)).
-- If both moves happen, Sprint 3 ends at 60 − 5 − 5 − 13 = 37 points, and Sprint 4 has 29 + 23 =
-  52 points, under its re-estimate of 57.
+- If both moves happen, Sprint 3 ends at 60 − 5 − 5 − 13 = 37 points, and Sprint 4 has 58 + 23 =
+  81 points. This is 24 points above its re-estimate of 57, so the Product Owner must move work out of Sprint 4.
 
 The base map, the protected area boundaries, the map filters and the map search
 ([PR #159](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/159), [PR #161](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/161), [PR #166](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/166), [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167), [PR #241](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/241)) are already on `main`. 2.0.1 builds on
@@ -434,7 +434,7 @@ client emails, so he sees the client's answers directly.
 |---|---|---|---|---|
 | Remove "As a Developer" stories. | Sep 23 | The story set has no developer stories. DevOps and release work is in the task tables as Dev Task rows. The September 19 question to the TA, whether DevOps work can be a story, has no answer in the minutes. | [User Stories](user-stories.md); task tables below | Done |
 | Merge small stories and think at a higher level. | Sep 23 | Stories are grouped into seven feature areas and tied to charter projects. Two 1-point stories stay separate (2.0.10 and 4.0.6): each is its own item in charter project 1. | [Story map](#story-map); [User Stories](user-stories.md) | Decided: 2.0.10 and 4.0.6 stay separate, because each is its own charter item. Both are done. |
-| Write stories that touch Frank's pain points, well developed and exciting, not general. | Sep 23 | The team presented its stories to Frank on September 25. Frank asked for each story to be mapped to the charter projects on the SAPAA website. Each of the 35 stories now names its charter project. | [User Stories](user-stories.md); [Meeting Minutes](meeting-minutes.md) (September 25) | Done |
+| Write stories that touch Frank's pain points, well developed and exciting, not general. | Sep 23 | The team presented its stories to Frank on September 25. Frank asked for each story to be mapped to the charter projects on the SAPAA website. Each of the 40 stories now names its charter project. | [User Stories](user-stories.md); [Meeting Minutes](meeting-minutes.md) (September 25) | Done |
 | Frank may want geobounds for sites on a map. | Sep 23 | An Admin picks the boundary of a new site from the Alberta government KML ([PR #153](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/153), [PR #162](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/162)), and the map draws the protected area boundaries ([PR #161](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/161)). Linking each existing site to its boundary is US 6.0.1 in Sprint 3. | 2.0.2 AT1 and AT6; [#181](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/181) | Partial. Plan: Blue (Aaron, Zanab, Abhinav) links each existing site to its boundary in [#181](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/181), due October 16. |
 | Pitch the mobile app as a PWA, and check offline use (Android supports offline PWAs, iOS needs a check). | Sep 23 | Not pitched. On September 25 Frank said that he needs offline capability on the web app, and that offline is not in a charter project. The team planned offline map layers for the web app (US 4.0.2, Sprint 3) and no PWA story. | [Meeting Minutes](meeting-minutes.md) (September 25); US 4.0.2 | Decided: offline is built as web map layers, because Frank asked for offline on the web app |
 | Until Friday (September 25), write nothing new. | Sep 23 | Meeting #3 records the advice, but no source records whether the team stopped other writing until September 25. Meeting #4 does not mention it, and the git history cannot show what was written outside the repository. | - | Not verifiable: nothing recorded whether other writing stopped |
@@ -445,7 +445,7 @@ client emails, so he sees the client's answers directly.
 | Ask Frank which behaviours the gamification should reward, and find metrics for them. Pitch a bounty board that gives more points for chosen sites. | Sep 23, Sep 30 | On October 9 the team showed Frank a gamification mock-up: top contributor, counties visited, variety of site types and subtypes, natural regions, a time dimension and the first reporter of a site. Frank said the direction is right. The bounty board is deferred. It was not raised with Frank on October 2 or October 9. On October 2 Frank asked for simple gamification built from data that already exists (Meeting #7). On October 9, about the mock-up metrics, he said: "use the data that you have". A bounty board needs new data, a points value for each chosen site, which is the to-visit priority of 2.0.12 in Sprint 4. Plan: Aaron (Sprint 3 Product Owner) asks Frank at the October 16 client meeting whether the 2.0.12 priority should give more activity points (1.0.5), and records the answer in the minutes. | `docs/meetings/week6/2026_10_09_meeting_frank.txt`; US 1.0.4 (Sprint 3), US 1.0.5 and US 2.0.12 (Sprint 4) | Partial. Bounty board deferred to Sprint 4 (2.0.12, 1.0.5); question to Frank on October 16, owner Aaron |
 | Do not delete site data. Mark the site as deleted and hide it. | Sep 30 | A site can be archived (hidden, and it can be restored). An archived site can also be deleted for good. Frank asked for both levels on October 2 and approved them on October 9. | [PR #160](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/160); `docs/meetings/week5/2026_10_02 _meeting_Frank.txt`; `docs/meetings/week6/2026_10_09_meeting_frank.txt` | Done |
 | Generate the UML from the code base. | Sep 30 | A diagram generator builds the diagrams from the migrations and the TypeScript, and updates them on every PR into `main`, `release` or `sprint-*`. A check that fails when a diagram is out of date exists: `npm run diagrams:check` (`node tools/diagrams/src/cli.mjs check`). It does not run in CI yet: Sprint 3 task [#196](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/196) is still open. | [PR #157](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/157); [Contributing](contributing.md#diagrams) | Partial. Plan: Red (Saumya, Chris) adds the CI check in [#196](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/196), due October 20. |
-| Build the map in layers: a static layer of polygons from Alberta open data, a dynamic layer of GPX tracks, and a data layer. | Sep 30 | The team chose OpenStreetMap data because Google Maps does not allow caching tiles offline. This reason is the team's own research: the Sep 30 notes record it, but do not say who raised it. The base map uses MapLibre GL with a Protomaps basemap (OpenStreetMap data). The protected area boundaries are imported and drawn. The GPX track layer is planned for Sprint 3 (2.0.9 and 2.0.1). No story covers the data layer yet. It is a Sprint 4 candidate: it draws on top of the Sprint 3 map (2.0.1) and site geometry (6.0.1), no source records which data Frank wants it to show, and Sprint 4 has 28 free points. Plan: Aaron (Sprint 3 Product Owner) asks Frank which data the layer shows at the October 16 client meeting. Zanab (Sprint 4 Product Owner) brings it to Sprint 4 planning (October 28 lab) as a candidate story. | [PR #159](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/159); [PR #137](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/137); [PR #152](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/152); [PR #161](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/161); [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167) | Partial. Data layer: Sprint 4 candidate, question to Frank on October 16 (Aaron), story proposed on October 28 (Zanab) |
+| Build the map in layers: a static layer of polygons from Alberta open data, a dynamic layer of GPX tracks, and a data layer. | Sep 30 | The team chose OpenStreetMap data because Google Maps does not allow caching tiles offline. This reason is the team's own research: the Sep 30 notes record it, but do not say who raised it. The base map uses MapLibre GL with a Protomaps basemap (OpenStreetMap data). The protected area boundaries are imported and drawn. The GPX track layer is planned for Sprint 3 (2.0.9 and 2.0.1). No story covers the data layer yet. It was a Sprint 4 candidate, but the new access-request stories now leave Sprint 4 at 58 points, 1 point above its re-estimate. No source records which data Frank wants this layer to show. Plan: Aaron (Sprint 3 Product Owner) asks Frank which data the layer shows at the October 16 client meeting. Zanab (Sprint 4 Product Owner) brings it to Sprint 4 planning (October 28 lab), where adding it requires other work to move out. | [PR #159](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/159); [PR #137](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/137); [PR #152](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/152); [PR #161](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/161); [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167) | Partial. Data layer: Sprint 4 candidate with no free capacity, question to Frank on October 16 (Aaron), story proposed on October 28 (Zanab) |
 | Ambiguity in a story should not change its points. A story is not complete until its details are clear. | Sep 30 | The plan lists unclear stories as open conflicts and marks MoSCoW as provisional (issue [#23](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/23)). No change was made in Sprint 2: the points of the Sprint 2 stories are the same as in the Sprint 1 release (tag `sprint-1`, September 29), which came before this advice. The Sprint 3 plan now has an "open questions before pointing" step, owned by Aaron (Sprint 3 Product Owner) from the October 14 planning. | [Open questions before pointing](#open-questions-before-pointing) | Planned: October 14 planning, owner Aaron |
 
 #### User stories
@@ -877,13 +877,18 @@ The acceptance tests are in [User Stories](user-stories.md).
 |US 2.0.12 - Score a Site for To-Visit Priority|8|
 |US 2.0.13 - Flag Site Points That Are a Year Old|3|
 |US 3.0.3 - Export all digital files from SIR-SAPAA|8|
+|US 5.0.5 - Request Access During Email Sign-Up|8|
+|US 5.0.6 - Complete an Access Request With Google or Microsoft|5|
+|US 5.0.7 - Review and Decide Access Requests|8|
+|US 5.0.8 - Manage Access Terms|5|
+|US 5.0.9 - View My Access-Request Status|3|
 |US 7.0.3 - See All Inspections in One View|5|
 
-**Committed:** 29 points. **Re-estimate:** 57 points (see [Velocity re-estimate](#velocity-re-estimate)).
+**Committed:** 58 points. **Re-estimate:** 57 points (see [Velocity re-estimate](#velocity-re-estimate)).
 
-No Sprint 4 GitHub issues are made, on purpose. Sprint 4 is left open for the client's new
-requests: Frank said that he will describe version 3.0 during October. The 28 points between the
-committed points and the re-estimate are for those requests and for any Sprint 3 carry-over.
+No Sprint 4 GitHub issues are made yet. The five access-request stories are Frank's new
+version 3.0 request. They use the capacity that was reserved for new client requests. The sprint
+is now 1 point above the re-estimate, before any Sprint 3 carry-over.
 
 #### Tasks
 

@@ -344,6 +344,109 @@ The line below each story title names the one charter project that is the best m
 > 2. Given I signed out of the web app, When I press the browser Back button, Then no signed-in page is shown
 > 3. Given I am on any page of the web app, I can sign out without navigating to a specific page
 
+### US 5.0.5 - Request Access During Email Sign-Up | Story Points: 8
+*Charter project: 2b – Person Management*
+
+> As a **prospective user**, **I want** to request access while I create my account, **so that** I do not need to complete a separate website form.
+
+> **Acceptance Tests**
+
+> 1. Given I open the sign-up page, I see fields for:
+>    - Full name: required
+>    - Email: required
+>    - Phone: optional
+>    - Reason for access: required
+>    - Other details: optional
+>    - Password: required
+>    - Password confirmation: required
+> 2. Both access terms are visible and unchecked by default.
+> 3. I cannot submit the form until I accept both terms.
+> 4. Invalid or missing required values show clear errors.
+> 5. A valid submission creates an unapproved account and a linked pending access request.
+> 6. The request records which terms version I accepted and when I accepted it.
+> 7. The success message explains email verification and administrator approval.
+> 8. A partial failure does not report success. The user can safely resume or retry.
+> 9. The phone number and access details are not available to stewards or other applicants.
+> 10. Existing accounts are not changed and do not need to accept the new terms.
+> 11. Include the terms and conditions from [Say Hello to SIR-SAPAA!](https://sapaastewards.com/2026/03/13/say-hello-to-sir-sapaa/).
+
+### US 5.0.6 - Complete an Access Request With Google or Microsoft | Story Points: 5
+*Charter project: 2b – Person Management*
+
+> As a **prospective user**, **I want** to use Google or Microsoft while I request access, **so that** I can use my preferred sign-in method without bypassing the access process.
+
+> **Acceptance Tests**
+
+> 1. Google and Microsoft buttons remain available.
+> 2. After the first successful OAuth sign-in, an applicant without an access request is sent to the access-request form.
+> 3. The form uses the provider name and email when they are available.
+> 4. The applicant must still enter a reason and accept both terms.
+> 5. Phone and other details remain optional.
+> 6. The applicant cannot access protected application pages before completing the request and receiving approval.
+> 7. An applicant who leaves the form can return and continue the process.
+> 8. An existing approved OAuth user continues to use the application without accepting the new terms.
+> 9. An existing pending account is not automatically rejected or approved.
+> 10. A failed or cancelled OAuth sign-in does not create an access request.
+
+### US 5.0.7 - Review and Decide Access Requests | Story Points: 8
+*Charter project: 2b – Person Management*
+
+> As an **administrator**, **I want** to review each access request and approve or reject it, **so that** only eligible applicants receive access.
+
+> **Acceptance Tests**
+
+> 1. The account-management page has separate pending, approved, and rejected states.
+> 2. A pending request shows:
+>    - Full name
+>    - Email
+>    - Phone, when supplied
+>    - Reason for access
+>    - Other details, when supplied
+>    - The two accepted terms
+>    - Acceptance date
+>    - Request date
+> 3. An administrator can approve a pending request.
+> 4. Approval changes both the request status and the existing account approval flag.
+> 5. An administrator can reject a pending request.
+> 6. Rejection keeps application access disabled.
+> 7. The system records the administrator and time for each decision.
+> 8. A repeated approval or rejection does not create duplicate records.
+> 9. A non-admin cannot list requests, read private request details, approve, or reject.
+> 10. If part of a decision fails, the system reports the error and does not show a false final state.
+> 11. Legacy accounts without request data remain visible and manageable.
+
+### US 5.0.8 - Manage Access Terms | Story Points: 5
+*Charter project: 2b – Person Management*
+
+> As an **administrator**, **I want** to edit the two access terms from the administration page.
+
+> **Acceptance Tests**
+
+> 1. An administrator can view and edit both terms.
+> 2. Neither term can be saved as empty.
+> 3. A saved change becomes the active version for new access requests.
+> 4. Each access request keeps the version that the applicant accepted.
+> 5. Changing the terms does not require existing users to accept them again.
+> 6. A terms edit records the administrator and update time.
+> 7. A non-admin cannot read the editor or save changes.
+> 8. Failed updates leave the previous active terms unchanged.
+> 9. The sign-up and OAuth onboarding forms always show the active terms.
+
+### US 5.0.9 - View My Access-Request Status | Story Points: 3
+*Charter project: 2b – Person Management*
+
+> As an **applicant**, **I want** to know whether my request is pending, approved, or rejected, **so that** I understand why I cannot use the application.
+
+> **Acceptance Tests**
+
+> 1. A pending applicant sees a pending-review message.
+> 2. A rejected applicant sees a rejected status instead of the pending message.
+> 3. An approved applicant enters the application normally.
+> 4. An applicant can see only their own status.
+> 5. Private administrator information is not shown.
+> 6. A signed-out visitor cannot read a request status.
+> 7. Existing approved users do not see an onboarding or terms prompt.
+
 ---
 ## 6 - Data and Places
 ---
@@ -464,7 +567,7 @@ The line below each story title names the one charter project that is the best m
 
 ### Must Have
 
-*15 stories, 61 story points.*
+*20 stories, 90 story points.*
 
 | ID | Story | Points |
 |---|---|---|
@@ -481,6 +584,11 @@ The line below each story title names the one charter project that is the best m
 | US 3.0.3 | Export all digital files from SIR-SAPAA | 8 |
 | US 4.0.6 | Demote Photo Identifier to optional field | 1 |
 | US 5.0.2 | Reset a Forgotten Password | 2 |
+| US 5.0.5 | Request Access During Email Sign-Up | 8 |
+| US 5.0.6 | Complete an Access Request With Google or Microsoft | 5 |
+| US 5.0.7 | Review and Decide Access Requests | 8 |
+| US 5.0.8 | Manage Access Terms | 5 |
+| US 5.0.9 | View My Access-Request Status | 3 |
 | US 6.0.1 | Store Each Site's Geometry From the Shared Source | 5 |
 | US 7.0.7 | Hide Fields on a SIR Before Export | 5 |
 

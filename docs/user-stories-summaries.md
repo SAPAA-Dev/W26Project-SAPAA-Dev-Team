@@ -80,6 +80,16 @@ Sprint 1 has no user stories. It is documentation and discovery.
     - Admin views a reminder when site scores are one year old.
 - **US 3.0.3 - Export all digital files from SIR-SAPAA** (Charter 1)
     - Admin exports all images and digital files at once.
+- **US 5.0.5 - Request Access During Email Sign-Up** (Charter 2b)
+    - Prospective user requests access while creating an email and password account.
+- **US 5.0.6 - Complete an Access Request With Google or Microsoft** (Charter 2b)
+    - Prospective user completes the access request after Google or Microsoft sign-in.
+- **US 5.0.7 - Review and Decide Access Requests** (Charter 2b)
+    - Admin reviews private request details and approves or rejects access.
+- **US 5.0.8 - Manage Access Terms** (Charter 2b)
+    - Admin edits the two access terms for new requests.
+- **US 5.0.9 - View My Access-Request Status** (Charter 2b)
+    - Applicant sees whether a request is pending, approved, or rejected.
 - **US 7.0.3 - See All Inspections in One View** (Charter 1)
     - Admin views summary counts across all SIRs.
 
