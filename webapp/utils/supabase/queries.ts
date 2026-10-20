@@ -8,6 +8,7 @@ import {
   type BoundaryFeatureCollection,
   type ProtectedAreaBoundaryRow,
 } from '../../lib/map/boundaries';
+import { parseGpxTrackFile, type GpxTrackPoint } from '../../lib/map/gpxTrack';
 
 import { SITE_PAGE_FIELDS } from '@/lib/sitePageFields';
 import {
@@ -1332,6 +1333,85 @@ export async function getSitePageFields(siteId: number): Promise<SitePageFieldVa
     value: row.value,
     isVisible: row.is_visible,
   }));
+}
+
+// The bucket that 20261020000000_create_gpx_tracks.sql creates.
+const GPX_TRACKS_BUCKET = 'gpx-tracks';
+const GPX_READ_DENIED = 'Only approved stewards and admins can view GPX tracks.';
+
+// The gpx_tracks RLS policies allow only approved stewards and admins, and
+// these reads run with the service role, which bypasses RLS. requireApprovedCaller
+// checks only the approval flag, so the role is checked separately here.
+async function requireApprovedTrackReader(): Promise<void> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+  const user = data.user;
+  const role = user?.app_metadata?.role;
+  if (
+    error !== null
+    || !user
+    || user.app_metadata?.authenticated !== true
+    || (role !== 'steward' && role !== 'admin')
+  ) {
+    throw new Error(GPX_READ_DENIED);
+  }
+}
+
+export interface GpxTrackSummary {
+  id: number;
+  originalFileName: string;
+  trackPointCount: number;
+  createdAt: string;
+}
+
+export async function getGpxTracksBySite(siteId: number): Promise<GpxTrackSummary[]> {
+  await requireApprovedTrackReader();
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('gpx_tracks')
+    .select('id, original_file_name, track_point_count, created_at')
+    .eq('site_id', siteId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message || 'Failed to load the GPX tracks of a site');
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    originalFileName: row.original_file_name,
+    trackPointCount: row.track_point_count,
+    createdAt: row.created_at,
+  }));
+}
+
+export async function getGpxTrackPoints(trackId: number): Promise<GpxTrackPoint[]> {
+  await requireApprovedTrackReader();
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('gpx_tracks')
+    .select('id, storage_path')
+    .eq('id', trackId)
+    .single();
+
+  if (error !== null || data === null) {
+    throw new Error('The GPX track could not be found.');
+  }
+
+  const { data: file, error: downloadError } = await supabase.storage
+    .from(GPX_TRACKS_BUCKET)
+    .download(data.storage_path);
+
+  if (downloadError !== null || file === null) {
+    throw new Error('The stored GPX file could not be read.');
+  }
+
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  try {
+    return parseGpxTrackFile(bytes);
+  } catch (parseError) {
+    console.error('Failed to parse a stored GPX track', parseError);
+    throw new Error('The stored GPX file is not a valid track.');
+  }
 }
 
 // Only http and https links are saved, so a link like "javascript:..." can never reach the page.
