@@ -16,6 +16,15 @@ function jsonResponse(body: unknown, ok = true) {
   return { ok, status: ok ? 200 : 400, json: async () => body };
 }
 
+// window.location is non-configurable in jsdom, so the href setter is reached
+// through the jsdom impl object behind the Location wrapper.
+function spyOnLocationHrefSetter() {
+  const wrapper = window.location as unknown as Record<symbol, unknown>;
+  const implSymbol = Object.getOwnPropertySymbols(wrapper).find((symbol) => String(symbol) === 'Symbol(impl)');
+  const impl = wrapper[implSymbol as symbol] as object;
+  return jest.spyOn(Object.getPrototypeOf(impl), 'href', 'set').mockImplementation(() => undefined);
+}
+
 describe('ForgotPasswordPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -56,7 +65,9 @@ describe('ForgotPasswordPage', () => {
     expect(screen.queryByLabelText(/Verification Code/i)).not.toBeInTheDocument();
   });
 
-  it('verifies the code and shows the check-email message', async () => {
+  it('takes the user to the reset password page when the code is correct', async () => {
+    const hrefSpy = spyOnLocationHrefSetter();
+
     fetchMock
       .mockResolvedValueOnce(jsonResponse({ sent: true }))
       .mockResolvedValueOnce(jsonResponse({ verified: true }));
@@ -68,13 +79,9 @@ describe('ForgotPasswordPage', () => {
     fireEvent.change(await screen.findByLabelText(/Verification Code/i), { target: { value: '123456' } });
     fireEvent.click(screen.getByRole('button', { name: /Verify code/i }));
 
-    expect(await screen.findByText(/Check your email/i)).toBeInTheDocument();
-    await waitFor(() =>
-      expect(fetchMock).toHaveBeenLastCalledWith(
-        '/auth/password-reset/verify-code',
-        expect.objectContaining({ method: 'POST' }),
-      ),
-    );
+    await waitFor(() => expect(hrefSpy).toHaveBeenCalledWith('/reset-password'));
+    expect(screen.queryByText(/invalid or has expired/i)).not.toBeInTheDocument();
+    hrefSpy.mockRestore();
   });
 
   it('shows an error when the code is rejected', async () => {

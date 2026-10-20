@@ -29,13 +29,13 @@ describe('ResetPasswordPage', () => {
     mockSignOut.mockResolvedValue({ error: null });
   });
 
-  it('shows an expired-link message when there is no recovery session', async () => {
+  it('shows an expired session message when there is no recovery session', async () => {
     mockGetSession.mockResolvedValue({ data: { session: null } });
 
     render(<ResetPasswordPage />);
 
     expect(await screen.findByText(/Link expired/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Request a new link/i })).toHaveAttribute('href', '/forgot-password');
+    expect(screen.getByRole('link', { name: /Request a new code/i })).toHaveAttribute('href', '/forgot-password');
   });
 
   it('blocks a mismatched confirmation', async () => {
