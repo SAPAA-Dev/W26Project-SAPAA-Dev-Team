@@ -73,9 +73,8 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  // Supabase creates the six-digit code, sends it with the Magic Link template, and enforces
-  // the expiry and the attempt limit. The response is the same for a known and an unknown
-  // email, so it does not tell an attacker which addresses have accounts.
+  // Send code. Use signInWithOtp so the Magic Link template can contain {{ .Token }}.
+  // Response is the same for a known and an unknown email, so it does not tell an attacker which addresses have accounts.
   const client = createAnonSupabase();
   try {
     await client.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });

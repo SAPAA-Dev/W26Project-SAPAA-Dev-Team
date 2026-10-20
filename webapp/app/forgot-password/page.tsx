@@ -58,7 +58,7 @@ export default function ForgotPasswordPage() {
         setErr(body.error || 'That code is invalid or has expired.');
         return;
       }
-      setStage('sent');
+      window.location.href = '/reset-password';
     } catch {
       setErr('That code is invalid or has expired.');
     } finally {
@@ -105,12 +105,23 @@ export default function ForgotPasswordPage() {
             </div>
             <h1 className="text-2xl font-bold text-[#254431] mb-2">Check your email</h1>
             <p className="text-[#7A8075] mb-6">
-              We sent a password reset link to <span className="font-semibold text-[#254431]">{email}</span>.
-              Open the link to set a new password.
+              We sent a verification code to <span className="font-semibold text-[#254431]">{email}</span>.
+              Enter the code to set a new password.
             </p>
+            <button
+              type="button"
+              onClick={() => {
+                setStage('code');
+                setErr(null);
+                setNotice('Enter the six-digit code from your email.');
+              }}
+              className="block w-full bg-gradient-to-r from-[#356B43] to-[#254431] hover:from-[#254431] hover:to-[#356B43] text-white font-bold py-4 px-4 rounded-xl transition-all text-center mb-3"
+            >
+              Enter code
+            </button>
             <Link
               href="/login"
-              className="block w-full bg-gradient-to-r from-[#356B43] to-[#254431] hover:from-[#254431] hover:to-[#356B43] text-white font-bold py-4 px-4 rounded-xl transition-all text-center"
+              className="block w-full bg-[#F7F2EA] hover:bg-[#E4EBE4] text-[#254431] font-semibold py-4 px-4 rounded-xl transition-all text-center"
             >
               Back to Login
             </Link>

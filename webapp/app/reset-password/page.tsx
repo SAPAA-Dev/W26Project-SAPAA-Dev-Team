@@ -39,7 +39,7 @@ export default function ResetPasswordPage() {
     const { error } = await supabase.auth.updateUser({ password });
     if (error) {
       setBusy(false);
-      setErr(error.message || 'Could not update your password. Request a new reset link.');
+      setErr(error.message || 'Could not update your password. Request a new code.');
       return;
     }
     // Clear the recovery session so the user returns to login with the new password.
@@ -74,15 +74,15 @@ export default function ResetPasswordPage() {
               </div>
             </div>
             <h1 className="text-2xl font-bold text-[#254431] mb-2">Link expired</h1>
-            <p className="text-[#7A8075] mb-6">
-              This password reset link is invalid or has expired. Request a new one.
-            </p>
-            <Link
-              href="/forgot-password"
-              className="block w-full bg-gradient-to-r from-[#356B43] to-[#254431] hover:from-[#254431] hover:to-[#356B43] text-white font-bold py-4 px-4 rounded-xl transition-all text-center mb-3"
-            >
-              Request a new link
-            </Link>
+              <p className="text-[#7A8075] mb-6">
+                This session is invalid or has expired. Request a new code.
+              </p>
+              <Link
+                href="/forgot-password"
+                className="block w-full bg-gradient-to-r from-[#356B43] to-[#254431] hover:from-[#254431] hover:to-[#356B43] text-white font-bold py-4 px-4 rounded-xl transition-all text-center mb-3"
+              >
+                Request a new code
+              </Link>
             <Link
               href="/login"
               className="block w-full bg-[#F7F2EA] hover:bg-[#E4EBE4] text-[#254431] font-semibold py-4 px-4 rounded-xl transition-all text-center"

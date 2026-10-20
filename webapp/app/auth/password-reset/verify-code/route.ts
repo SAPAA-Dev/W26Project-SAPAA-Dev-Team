@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAnonSupabase, createClient } from '@/utils/supabase/server';
-import { requestOrigin } from '@/utils/requestOrigin';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CODE_PATTERN = /^\d{6}$/;
@@ -23,29 +23,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Enter the six-digit code from your email.' }, { status: 400 });
   }
 
-  // The non-persisting client discards the session that a correct code returns. This endpoint
-  // must not sign the user in; it only proves the code and then triggers the recovery email.
-  const client = createAnonSupabase();
-  const { data, error } = await client.auth.verifyOtp({ email, token: code, type: 'email' });
-  if (error || !data.session) {
+  const cookieStore = await cookies();
+  const response = NextResponse.json({ verified: true });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
+    }
+  );
+
+  const { error } = await supabase.auth.verifyOtp({ email, token: code, type: 'email' });
+  if (error) {
     return NextResponse.json(
       { error: 'That code is invalid or has expired. Request a new code and try again.' },
       { status: 400 },
     );
   }
 
-  // Only past this point, after Supabase accepted the code, does the reset link go out. The
-  // endpoint enforces the whole sequence, so no caller can reach this line without a valid code.
-  const sessionClient = await createClient();
-  const { error: resetError } = await sessionClient.auth.resetPasswordForEmail(email, {
-    redirectTo: `${requestOrigin(request)}/auth/callback?next=/reset-password`,
-  });
-  if (resetError) {
-    return NextResponse.json(
-      { error: 'We could not send the reset link. Request a new code and try again.' },
-      { status: 500 },
-    );
-  }
-
-  return NextResponse.json({ verified: true });
+  return response;
 }
