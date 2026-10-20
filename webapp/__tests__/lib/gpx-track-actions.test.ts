@@ -20,8 +20,6 @@ jest.mock('../../utils/supabase/server', () => ({
 
 import { saveGpxTrack } from '../../utils/gpx-track-actions';
 
-// The staged key inside the bucket is <user id>/<upload id>/<file name>.gpx,
-// with no bucket-name prefix, and caller-id is the user id of the mocked session.
 const VALID_PATH = 'caller-id/upload-1/site-visit.gpx';
 
 const VALID_GPX = `<?xml version="1.0" encoding="UTF-8"?>
@@ -33,7 +31,7 @@ const VALID_GPX = `<?xml version="1.0" encoding="UTF-8"?>
 </gpx>`;
 
 // jsdom has no TextEncoder, and the test files are ASCII.
-function gpxBytes(text: string): Uint8Array {
+function encode(text: string): Uint8Array {
   return Uint8Array.from(text, (character) => character.charCodeAt(0));
 }
 
@@ -67,7 +65,7 @@ beforeEach(() => {
   mockInsertSelect.mockImplementation(() => ({ single: mockInsertSingle }));
   mockInsertOk();
   mockRemove.mockResolvedValue({ error: null });
-  mockDownloadOk(gpxBytes(VALID_GPX));
+  mockDownloadOk(encode(VALID_GPX));
 });
 
 describe('saveGpxTrack (US 2.0.9)', () => {
@@ -236,8 +234,7 @@ describe('saveGpxTrack (US 2.0.9)', () => {
 
   it('refuses a file that is not valid GPX and saves nothing (AT3)', async () => {
     mockCaller('steward');
-    // A file named .gpx that holds no XML at all, for example a renamed photo.
-    mockDownloadOk(gpxBytes('this is not xml at all'));
+    mockDownloadOk(encode('this is not xml at all'));
 
     const result = await saveGpxTrack(7, VALID_PATH, 'site-visit.gpx');
 
@@ -248,7 +245,7 @@ describe('saveGpxTrack (US 2.0.9)', () => {
 
   it('refuses a valid GPX file with no track points and saves nothing (AT3)', async () => {
     mockCaller('steward');
-    mockDownloadOk(gpxBytes('<gpx><wpt lat="1" lon="2"/></gpx>'));
+    mockDownloadOk(encode('<gpx><wpt lat="1" lon="2"/></gpx>'));
 
     const result = await saveGpxTrack(7, VALID_PATH, 'site-visit.gpx');
 

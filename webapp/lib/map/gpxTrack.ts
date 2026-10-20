@@ -1,8 +1,7 @@
 import { DOMParser } from '@xmldom/xmldom';
 import { strFromU8 } from 'fflate';
 
-// The read-back of a saved track (US 2.0.9 AT4) returns these values, so the
-// points carry the data a map needs, not only the count.
+// A map read-back needs elevation and time, not only the count.
 export interface GpxTrackPoint {
   lat: number;
   lon: number;
@@ -40,8 +39,7 @@ function readChildNumber(element: Element, tagName: string): number | null {
 }
 
 /**
- * Reads a .gpx file into its track points. Waypoints (wpt) are not track
- * points, so they do not count.
+ * Waypoints (wpt) are not track points, so they do not count.
  */
 export function parseGpxTrackFile(bytes: Uint8Array): GpxTrackPoint[] {
   return parseGpxTrackText(strFromU8(bytes));

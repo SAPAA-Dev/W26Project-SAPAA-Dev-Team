@@ -12,19 +12,15 @@ export interface SaveGpxTrackResult {
 
 // Matches the bucket that 20261020000000_create_gpx_tracks.sql creates.
 const BUCKET = 'gpx-tracks';
-// The staged key inside the bucket is <user id>/<upload id>/<file name>.gpx.
-// There is no bucket-name prefix: storage.from(BUCKET) already scopes the key,
-// and the first folder must be the uploader, because the insert policy pins
-// ownership with storage.foldername(name)[1]. The service role bypasses RLS,
-// so the same rule is checked here against the session before any storage call.
+// The key has no bucket-name prefix: the insert policy pins ownership on the first folder.
 const STORAGE_PATH_PATTERN = /^([A-Za-z0-9._-]+)\/([A-Za-z0-9._-]+)\/([A-Za-z0-9._-]+)\.gpx$/i;
 // Matches the file_size_limit of the bucket. Checked again here so the parser
 // does not run on an object that the bucket limit did not catch.
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
-// The character filter of the upload control, applied again here because a
-// server action cannot trust its arguments. The cap lives here only; the
-// upload control sets none.
+// The upload control filters but sets no cap, and a server action cannot trust its arguments.
 const MAX_FILE_NAME_LENGTH = 200;
+// The marker keeps the .gpx tail on a cut name.
+const TRUNCATION_MARKER = '___.gpx';
 
 const NOT_APPROVED_ERROR = 'Sign in with an approved steward or admin account to upload a GPX track.';
 const NOT_OWNED_ERROR = 'The uploaded file does not belong to your account.';
@@ -59,8 +55,7 @@ export async function saveGpxTrack(
     return { success: false, error: NOT_APPROVED_ERROR };
   }
 
-  // A non-string argument throws on the string calls below, before the try
-  // block that removes the staged object, so refuse it here instead.
+  // A non-string would throw below, before the try block that removes the staged object.
   if (typeof originalFileName !== 'string') {
     return { success: false, error: EXTENSION_ERROR };
   }
@@ -72,9 +67,6 @@ export async function saveGpxTrack(
     return { success: false, error: EXTENSION_ERROR };
   }
 
-  // The marker keeps the .gpx tail on a cut name, so a steward still sees that
-  // the stored row is a GPX file.
-  const TRUNCATION_MARKER = '___.gpx';
   const sanitizedFileName = originalFileName.replace(/[^A-Za-z0-9._-]/g, '_');
   const safeOriginalFileName = sanitizedFileName.length <= MAX_FILE_NAME_LENGTH
     ? sanitizedFileName
@@ -82,8 +74,7 @@ export async function saveGpxTrack(
 
   const normalizedPath = storagePath.replace(/\\/g, '/');
   const pathMatch = STORAGE_PATH_PATTERN.exec(normalizedPath);
-  // A segment of '.' or '..' can move the object path, but a file name that
-  // only holds two dots, like visit..gpx, is a normal name.
+  // Only a whole '.' or '..' segment moves the path; visit..gpx is a normal name.
   if (
     pathMatch === null
     || normalizedPath.split('/').some((segment) => segment === '.' || segment === '..')
@@ -91,7 +82,6 @@ export async function saveGpxTrack(
     return { success: false, error: INVALID_PATH_ERROR };
   }
 
-  // A caller must not save, duplicate, or remove another user's staged object.
   if (pathMatch[1] !== uploader.id) {
     return { success: false, error: NOT_OWNED_ERROR };
   }
@@ -139,8 +129,7 @@ export async function saveGpxTrack(
       error: error instanceof GpxTrackError ? error.message : SAVE_FAILED_ERROR,
     };
   } finally {
-    // A refused file leaves nothing behind. A saved file stays in the bucket
-    // for read-back, so it is removed only when nothing was written.
+    // A saved file stays in the bucket for read-back.
     if (!saved) {
       const { error: removeError } = await supabase.storage.from(BUCKET).remove([normalizedPath]);
       if (removeError !== null) {

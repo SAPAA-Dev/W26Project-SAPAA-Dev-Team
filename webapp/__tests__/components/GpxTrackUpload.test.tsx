@@ -72,7 +72,6 @@ describe('GpxTrackUpload (US 2.0.9)', () => {
 
     await waitFor(() => expect(statusText(container, 0)).toContain('visit.gpx was saved.'));
     expect(mockUpload).toHaveBeenCalledTimes(1);
-    // The staged key has no bucket-name prefix and starts with the user id.
     expect(mockSave).toHaveBeenCalledWith(
       7,
       expect.stringMatching(/^user-uuid\/[^/]+\/visit\.gpx$/),
@@ -160,7 +159,6 @@ describe('GpxTrackUpload (US 2.0.9)', () => {
     await waitFor(() =>
       expect(statusText(container, 0)).toContain('visit.gpx was refused: The upload failed. Try again.')
     );
-    // The raw storage text stays in the log, not in the message.
     expect(statusText(container, 0)).not.toContain('bucket not reachable');
     expect(mockSave).not.toHaveBeenCalled();
   });

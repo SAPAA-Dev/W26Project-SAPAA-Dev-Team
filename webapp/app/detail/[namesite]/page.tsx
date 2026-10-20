@@ -665,7 +665,7 @@ export default function SiteDetailScreen() {
           </button>
         </div>
 
-        {/* GPX Track Upload (US 2.0.9) */}
+        {/* GPX Track Upload */}
         {canUploadGpxTracks(currentUser) && (
           <GpxTrackUpload siteId={site.id} />
         )}

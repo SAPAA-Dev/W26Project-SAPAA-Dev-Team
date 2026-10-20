@@ -41,10 +41,6 @@ function safeFileName(filename: string): string {
   return filename.replace(/[^A-Za-z0-9._-]/g, '_');
 }
 
-/**
- * The page renders this control only when canUploadGpxTracks says the signed-in
- * user may upload.
- */
 export default function GpxTrackUpload({ siteId }: { siteId: number }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
@@ -81,8 +77,6 @@ export default function GpxTrackUpload({ siteId }: { siteId: number }) {
     setBusy(true);
     setStatuses(files.map((file) => ({ fileName: file.name, state: 'saving' as const })));
 
-    // The staged path starts with the uploader's user id, so it comes from the
-    // session, not from a value another caller can choose.
     const supabase = createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError !== null || user === null) {
@@ -95,7 +89,6 @@ export default function GpxTrackUpload({ siteId }: { siteId: number }) {
       return;
     }
 
-    // Each file is sent on its own, so a refused file never blocks the rest.
     for (let index = 0; index < files.length; index += 1) {
       const file = files[index];
 
@@ -119,9 +112,8 @@ export default function GpxTrackUpload({ siteId }: { siteId: number }) {
         continue;
       }
 
-      // The staged key inside the bucket is <user id>/<upload id>/<file name>.gpx.
-      // There is no bucket-name prefix: .from(BUCKET) already scopes the key, and
-      // the first folder must be the uploader for the storage policies.
+      // .from(BUCKET) already scopes the key, and the first folder must be the
+      // uploader's user id for the storage policies.
       const path = `${user.id}/${uploadFolder()}/${safeFileName(file.name)}`;
 
       try {
@@ -130,7 +122,6 @@ export default function GpxTrackUpload({ siteId }: { siteId: number }) {
           .upload(path, file, { cacheControl: '3600', upsert: false, contentType: GPX_CONTENT_TYPE });
 
         if (uploadError) {
-          // The raw storage text can name internals, so it goes to the log only.
           console.error('The GPX bucket upload failed', uploadError);
           fail('The upload failed. Try again.');
           continue;
