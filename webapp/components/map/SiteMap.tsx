@@ -1,13 +1,23 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Map as MapLibreMap, Popup } from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@/components/map/enableMapLibreWorker';
-import { KeyRound } from 'lucide-react';
+import { Download, KeyRound } from 'lucide-react';
 import { boundaryBounds } from '@/lib/map/boundaries';
 import type { BoundaryFeature, BoundaryFeatureCollection } from '@/lib/map/boundaries';
+import { listRegions } from '@/lib/map/offline/tileCache';
+import type { SavedRegion } from '@/lib/map/offline/tileCache';
+import { mergeToDisjointRectangles } from '@/lib/map/offline/tileMath';
+import {
+  OFFLINE_MISS_MARKER,
+  makeTransformRequest,
+  releaseOfflineProtocol,
+  retainOfflineProtocol,
+} from '@/components/map/offlineProtocol';
+import OfflineSavePanel from '@/components/map/OfflineSavePanel';
 
 const STYLE_URL = 'https://api.protomaps.com/styles/v5/light/en.json';
 const CENTER: [number, number] = [-114.5, 54.5];
@@ -23,6 +33,16 @@ const OUTLINE_LAYER_ID = 'protected-areas-outline';
 
 const FILL_COLOR = '#356B43';
 const OUTLINE_COLOR = '#254431';
+
+const OFFLINE_REGIONS_SOURCE_ID = 'offline-regions';
+const OFFLINE_REGIONS_LAYER_ID = 'offline-regions-outline';
+const OFFLINE_REGIONS_COLOR = '#356B43';
+
+const OFFLINE_MASK_SOURCE_ID = 'offline-mask';
+const OFFLINE_MASK_LAYER_ID = 'offline-mask-fill';
+const OFFLINE_MASK_COLOR = '#F7F2EA';
+
+const MISSING_TILE_FLUSH_MS = 500;
 
 // The hover state is a boolean on the feature, so the map repaints one polygon
 // instead of every polygon.
@@ -152,20 +172,56 @@ export default function SiteMap({
   const mapRef = useRef<MapLibreMap | null>(null);
   const popupRef = useRef<Popup | null>(null);
   const hoveredFeatureRef = useRef<string | number | null>(null);
+  const missingTilesRef = useRef(0);
   const apiKey = readApiKey();
+  const styleUrl = `${STYLE_URL}?key=${encodeURIComponent(apiKey ?? '')}`;
+
+  const [isOnline, setIsOnline] = useState(() =>
+    typeof navigator === 'undefined' ? true : navigator.onLine
+  );
+  // transformRequest reads this ref, so the callback stays current without a new Map.
+  const onlineRef = useRef(isOnline);
+  const [missingTiles, setMissingTiles] = useState(0);
+  const [saveMode, setSaveMode] = useState(false);
+  const [savedRegions, setSavedRegions] = useState<SavedRegion[]>(() => listRegions());
+  // The panel render needs the instance, and a ref read during render is not allowed.
+  const [map, setMap] = useState<MapLibreMap | null>(null);
+
+  // A style reload is the only way to move in-flight resource requests to the
+  // other path, so the map swaps the style when the connection mode flips.
+  useEffect(() => {
+    const handleConnectionChange = () => {
+      const online = typeof navigator === 'undefined' ? true : navigator.onLine;
+      const previous = onlineRef.current;
+      onlineRef.current = online;
+      setIsOnline(online);
+      if (online !== previous) mapRef.current?.setStyle(styleUrl);
+    };
+
+    window.addEventListener('online', handleConnectionChange);
+    window.addEventListener('offline', handleConnectionChange);
+    return () => {
+      window.removeEventListener('online', handleConnectionChange);
+      window.removeEventListener('offline', handleConnectionChange);
+    };
+  }, [styleUrl]);
 
   useEffect(() => {
     if (!apiKey || !containerRef.current) return;
 
+    retainOfflineProtocol();
+
     const map = new MapLibreMap({
       container: containerRef.current,
-      style: `${STYLE_URL}?key=${encodeURIComponent(apiKey)}`,
+      style: styleUrl,
       center: CENTER,
       zoom: ZOOM,
       maxBounds: MAX_BOUNDS,
       renderWorldCopies: false,
+      transformRequest: makeTransformRequest(() => onlineRef.current),
     });
     mapRef.current = map;
+    setMap(map);
     popupRef.current = new Popup({ closeButton: false, closeOnClick: true });
 
     // The canvas keeps the size it had when the toggle revealed the map, so a
@@ -178,12 +234,14 @@ export default function SiteMap({
       popupRef.current = null;
       hoveredFeatureRef.current = null;
       mapRef.current = null;
+      setMap(null);
       observer.disconnect();
       // map.remove() also drops every source, layer and listener on the map, so
       // there is nothing else to detach here.
+      releaseOfflineProtocol();
       map.remove();
     };
-  }, [apiKey]);
+  }, [apiKey, styleUrl]);
 
   // The boundaries arrive after the map exists, so the data lives in its own effect.
   // The first set builds the source and the layers; a later set only replaces the data,
@@ -192,16 +250,53 @@ export default function SiteMap({
     const map = mapRef.current;
     if (!apiKey || map === null) return;
 
+    const clearHover = () => {
+      const hovered = hoveredFeatureRef.current;
+      if (hovered === null) return;
+      map.setFeatureState({ source: SOURCE_ID, id: hovered }, { hover: false });
+      hoveredFeatureRef.current = null;
+    };
+
+    const handleMouseMove = (event: MapLayerMouseEvent) => {
+      map.getCanvas().style.cursor = 'pointer';
+
+      const feature = event.features?.[0];
+      // generateId puts an id on every feature, so the hover state can name one.
+      if (feature === undefined || feature.id === undefined) return;
+      if (hoveredFeatureRef.current === feature.id) return;
+
+      clearHover();
+      hoveredFeatureRef.current = feature.id;
+      map.setFeatureState({ source: SOURCE_ID, id: feature.id }, { hover: true });
+    };
+
+    const handleMouseLeave = () => {
+      map.getCanvas().style.cursor = '';
+      clearHover();
+    };
+
+    const handleClick = (event: MapLayerMouseEvent) => {
+      const feature = event.features?.[0];
+      const popup = popupRef.current;
+      if (feature === undefined || popup === null) return;
+      popup
+        .setLngLat(event.lngLat)
+        .setDOMContent(createPopupContent(feature.properties))
+        .addTo(map);
+    };
+
+    // Layer listeners survive a style swap, so they are registered once for the
+    // life of the map. Re-adding them on every style.load would stack duplicates.
+    map.on('mousemove', FILL_LAYER_ID, handleMouseMove);
+    map.on('mouseleave', FILL_LAYER_ID, handleMouseLeave);
+    map.on('click', FILL_LAYER_ID, handleClick);
+
     const applyBoundaries = () => {
       if (!boundaries) return;
 
       const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
       if (source) {
-        const hovered = hoveredFeatureRef.current;
-        if (hovered !== null) {
-          map.setFeatureState({ source: SOURCE_ID, id: hovered }, { hover: false });
-          hoveredFeatureRef.current = null;
-        }
+        clearHover();
         map.getCanvas().style.cursor = '';
         popupRef.current?.remove();
         source.setData(boundaries);
@@ -231,58 +326,25 @@ export default function SiteMap({
           'line-width': ['case', HOVERED, 3, 2],
         },
       });
-
-      const clearHover = () => {
-        const hovered = hoveredFeatureRef.current;
-        if (hovered === null) return;
-        map.setFeatureState({ source: SOURCE_ID, id: hovered }, { hover: false });
-        hoveredFeatureRef.current = null;
-      };
-
-      const handleMouseMove = (event: MapLayerMouseEvent) => {
-        map.getCanvas().style.cursor = 'pointer';
-
-        const feature = event.features?.[0];
-        // generateId puts an id on every feature, so the hover state can name one.
-        if (feature === undefined || feature.id === undefined) return;
-        if (hoveredFeatureRef.current === feature.id) return;
-
-        clearHover();
-        hoveredFeatureRef.current = feature.id;
-        map.setFeatureState({ source: SOURCE_ID, id: feature.id }, { hover: true });
-      };
-
-      const handleMouseLeave = () => {
-        map.getCanvas().style.cursor = '';
-        clearHover();
-      };
-
-      const handleClick = (event: MapLayerMouseEvent) => {
-        const feature = event.features?.[0];
-        const popup = popupRef.current;
-        if (feature === undefined || popup === null) return;
-        popup
-          .setLngLat(event.lngLat)
-          .setDOMContent(createPopupContent(feature.properties))
-          .addTo(map);
-      };
-
-      map.on('mousemove', FILL_LAYER_ID, handleMouseMove);
-      map.on('mouseleave', FILL_LAYER_ID, handleMouseLeave);
-      map.on('click', FILL_LAYER_ID, handleClick);
     };
 
-    // A source or a layer can be added only once the style has loaded.
+    // A source or a layer can be added only once the style has loaded. A style
+    // swap drops them, so the same function also runs on style.load.
+    map.on('style.load', applyBoundaries);
+
     if (map.isStyleLoaded()) {
       applyBoundaries();
-      return;
+    } else {
+      map.once('load', applyBoundaries);
     }
 
-    map.once('load', applyBoundaries);
-
     return () => {
+      map.off('mousemove', FILL_LAYER_ID, handleMouseMove);
+      map.off('mouseleave', FILL_LAYER_ID, handleMouseLeave);
+      map.off('click', FILL_LAYER_ID, handleClick);
       // The effect above clears the ref before it removes the map, so this runs only
       // while the map is still alive.
+      map.off('style.load', applyBoundaries);
       if (mapRef.current !== null) mapRef.current.off('load', applyBoundaries);
     };
   }, [apiKey, boundaries]);
@@ -294,6 +356,183 @@ export default function SiteMap({
     const bounds = boundaryBounds(focusedArea.geometry);
     if (bounds !== null) map.fitBounds(bounds, { padding: 48, maxZoom: 13 });
   }, [apiKey, focusedArea]);
+
+  // The outlines show what the user saved, and a style swap drops them, so the
+  // apply function also runs on style.load.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!apiKey || map === null) return;
+
+    const collection = {
+      type: 'FeatureCollection' as const,
+      features: savedRegions.map((region) => ({
+        type: 'Feature' as const,
+        properties: { id: region.id },
+        geometry: {
+          type: 'Polygon' as const,
+          coordinates: [
+            [
+              [region.bounds.west, region.bounds.south],
+              [region.bounds.east, region.bounds.south],
+              [region.bounds.east, region.bounds.north],
+              [region.bounds.west, region.bounds.north],
+              [region.bounds.west, region.bounds.south],
+            ],
+          ],
+        },
+      })),
+    };
+
+    const applyOfflineRegions = () => {
+      const source = map.getSource(OFFLINE_REGIONS_SOURCE_ID) as GeoJSONSource | undefined;
+      if (source) {
+        source.setData(collection);
+        return;
+      }
+      // An empty list only clears an existing source, so an empty map adds nothing.
+      if (savedRegions.length === 0) return;
+      map.addSource(OFFLINE_REGIONS_SOURCE_ID, { type: 'geojson', data: collection });
+      map.addLayer({
+        id: OFFLINE_REGIONS_LAYER_ID,
+        type: 'line',
+        source: OFFLINE_REGIONS_SOURCE_ID,
+        paint: {
+          'line-color': OFFLINE_REGIONS_COLOR,
+          'line-width': 2,
+          'line-dasharray': [2, 2],
+        },
+      });
+    };
+
+    map.on('style.load', applyOfflineRegions);
+    if (map.isStyleLoaded()) applyOfflineRegions();
+
+    return () => {
+      map.off('style.load', applyOfflineRegions);
+    };
+  }, [apiKey, savedRegions]);
+
+  // The mask hides what has no tiles, and the holes are the saved areas.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!apiKey || map === null) return;
+
+    const outerRing = [
+      [-180, -85.0511],
+      [180, -85.0511],
+      [180, 85.0511],
+      [-180, 85.0511],
+      [-180, -85.0511],
+    ];
+
+    // The holes must not cross or nest, so the saved rectangles dissolve into
+    // disjoint pieces first.
+    const holes = mergeToDisjointRectangles(savedRegions.map((region) => region.bounds));
+
+    const maskGeometry =
+      isOnline || savedRegions.length === 0
+        ? null
+        : {
+            type: 'FeatureCollection' as const,
+            features: [
+              {
+                type: 'Feature' as const,
+                properties: {},
+                geometry: {
+                  type: 'Polygon' as const,
+                  coordinates: [
+                    outerRing,
+                    ...holes.map((hole) => [
+                      [hole.west, hole.south],
+                      [hole.east, hole.south],
+                      [hole.east, hole.north],
+                      [hole.west, hole.north],
+                      [hole.west, hole.south],
+                    ]),
+                  ],
+                },
+              },
+            ],
+          };
+
+    const applyOfflineMask = () => {
+      const source = map.getSource(OFFLINE_MASK_SOURCE_ID) as GeoJSONSource | undefined;
+      if (maskGeometry === null) {
+        if (map.getLayer(OFFLINE_MASK_LAYER_ID)) {
+          map.setLayoutProperty(OFFLINE_MASK_LAYER_ID, 'visibility', 'none');
+        }
+        return;
+      }
+
+      if (source) {
+        source.setData(maskGeometry);
+        map.setLayoutProperty(OFFLINE_MASK_LAYER_ID, 'visibility', 'visible');
+        return;
+      }
+
+      map.addSource(OFFLINE_MASK_SOURCE_ID, { type: 'geojson', data: maskGeometry });
+      // The mask sits above the basemap and below the app layers, so the
+      // protected areas and the dashed region outlines stay visible.
+      const layer = {
+        id: OFFLINE_MASK_LAYER_ID,
+        type: 'fill' as const,
+        source: OFFLINE_MASK_SOURCE_ID,
+        paint: {
+          'fill-color': OFFLINE_MASK_COLOR,
+          'fill-opacity': 1,
+        },
+      };
+      // The boundaries layers may not exist yet, so the search falls through
+      // to the region outline.
+      const beforeId = [FILL_LAYER_ID, OFFLINE_REGIONS_LAYER_ID].find((id) => map.getLayer(id));
+      if (beforeId === undefined) {
+        map.addLayer(layer);
+      } else {
+        map.addLayer(layer, beforeId);
+      }
+    };
+
+    map.on('style.load', applyOfflineMask);
+    if (map.isStyleLoaded()) applyOfflineMask();
+
+    return () => {
+      map.off('style.load', applyOfflineMask);
+    };
+  }, [apiKey, isOnline, savedRegions]);
+
+  // A tile miss fires a map error, so the badge count comes from the error event.
+  // The counter flushes on a timer because one view change misses many tiles at once.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!apiKey || map === null) return;
+
+    let flushTimer: number | null = null;
+
+    const handleError = (event: { error?: { message?: string } }) => {
+      if (onlineRef.current) return;
+      if (!event.error?.message?.includes(OFFLINE_MISS_MARKER)) return;
+      missingTilesRef.current += 1;
+      if (flushTimer !== null) return;
+      flushTimer = window.setTimeout(() => {
+        flushTimer = null;
+        setMissingTiles(missingTilesRef.current);
+      }, MISSING_TILE_FLUSH_MS);
+    };
+
+    const handleMoveEnd = () => {
+      missingTilesRef.current = 0;
+      setMissingTiles(0);
+    };
+
+    map.on('error', handleError);
+    map.on('moveend', handleMoveEnd);
+
+    return () => {
+      map.off('error', handleError);
+      map.off('moveend', handleMoveEnd);
+      if (flushTimer !== null) window.clearTimeout(flushTimer);
+    };
+  }, [apiKey]);
 
   if (!apiKey) {
     return (
@@ -345,6 +584,40 @@ export default function SiteMap({
       {status !== null && (
         <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-[#E4EBE4] bg-white/95 px-3 py-1.5 text-xs font-medium text-[#254431] shadow-sm">
           {status}
+        </div>
+      )}
+      {!saveMode && (
+        <button
+          type="button"
+          onClick={() => setSaveMode(true)}
+          className="pointer-events-auto absolute right-4 top-4 flex items-center gap-1.5 rounded-full border border-[#E4EBE4] bg-white/95 px-3 py-1.5 text-xs font-medium text-[#254431] shadow-sm"
+        >
+          <Download className="h-3.5 w-3.5" />
+          Save offline area
+        </button>
+      )}
+      {saveMode && map !== null && (
+        <div className="absolute inset-0 z-10">
+          <OfflineSavePanel
+            map={map}
+            styleUrl={styleUrl}
+            savedRegions={savedRegions}
+            onSaved={(region) => setSavedRegions((previous) => [...previous, region])}
+            onRegionRemoved={(id) =>
+              setSavedRegions((previous) => previous.filter((region) => region.id !== id))
+            }
+            onClose={() => setSaveMode(false)}
+          />
+        </div>
+      )}
+      {!isOnline && (
+        <div className="pointer-events-none absolute bottom-4 left-4 rounded-full border border-[#E4EBE4] bg-white/95 px-3 py-1.5 text-xs font-medium text-[#254431] shadow-sm">
+          <div>Offline map. Tiles outside saved areas are missing.</div>
+          {missingTiles > 0 && (
+            <div>
+              {missingTiles} {missingTiles === 1 ? 'tile' : 'tiles'} missing in this view.
+            </div>
+          )}
         </div>
       )}
     </div>
