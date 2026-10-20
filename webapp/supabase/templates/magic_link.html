@@ -1,4 +1,62 @@
-<h2>Your password reset code</h2>
-<p>Use this code to verify your email and continue resetting your SAPAA password:</p>
-<p style="font-size: 28px; font-weight: bold; letter-spacing: 6px;">{{ .Token }}</p>
-<p>This code expires in 10 minutes. If you did not request a password reset, you can ignore this email.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your SAPAA password reset code</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=DM+Sans:wght@600;700&display=swap">
+<style>
+  body { margin: 0; padding: 0; background-color: #F7F2EA; -webkit-text-size-adjust: 100%; }
+  .page { width: 100% !important; }
+  .card { width: 100% !important; }
+  .tile { width: 40px; height: 40px; line-height: 40px; }
+  .code { font-size: 32px !important; letter-spacing: 6px !important; }
+  @media only screen and (max-width: 600px) {
+    .card { border-radius: 12px !important; }
+    .pad { padding-left: 20px !important; padding-right: 20px !important; }
+    .code { font-size: 26px !important; }
+  }
+</style>
+</head>
+<body style="margin:0; padding:0; background-color:#F7F2EA; -webkit-text-size-adjust:100%;">
+<table role="presentation" class="page" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F7F2EA; border-collapse:collapse;">
+<tr>
+<td align="center" style="padding:32px 16px;">
+<table role="presentation" width="520" class="card" cellpadding="0" cellspacing="0" border="0" style="max-width:520px; background-color:#FFFFFF; border:2px solid #E4EBE4; border-radius:16px; border-collapse:collapse;">
+<tr>
+<td class="pad" style="padding:32px 32px 0 32px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+<tr>
+<td class="tile" align="center" valign="middle" style="width:40px; height:40px; background-color:#254431; border-radius:8px; font-family:'DM Sans', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size:22px; font-weight:700; color:#86A98A; line-height:40px;">S</td>
+<td style="padding-left:12px; font-family:'DM Sans', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size:12px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:#356B43;">SAPAA</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td class="pad" style="padding:20px 32px 0 32px;">
+<h1 style="margin:0; font-family:'DM Sans', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size:26px; font-weight:700; color:#254431; line-height:1.3;">Your password reset code</h1>
+<p style="margin:12px 0 0 0; font-family:'Inter', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size:16px; font-weight:400; color:#7A8075; line-height:1.6;">Use this code to verify your email and continue resetting your SAPAA password:</p>
+</td>
+</tr>
+<tr>
+<td class="pad" style="padding:24px 32px 0 32px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#E4EBE4; border:2px solid #86A98A; border-radius:12px; border-collapse:collapse;">
+<tr>
+<td align="center" class="code" style="padding:20px 16px; font-family:'DM Sans', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size:32px; font-weight:700; letter-spacing:6px; color:#254431;">{{ .Token }}</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td class="pad" style="padding:20px 32px 32px 32px;">
+<p style="margin:0; font-family:'Inter', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size:14px; font-weight:400; color:#7A8075; line-height:1.6;">This code expires in 10 minutes. If you did not request a password reset, you can ignore this email.</p>
+</td>
+</tr>
+</table>
+<p style="margin:20px 0 0 0; font-family:'Inter', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size:12px; font-weight:400; color:#7A8075; line-height:1.6;">SAPAA &middot; Site inspection reports</p>
+</td>
+</tr>
+</table>
+</body>
+</html>
