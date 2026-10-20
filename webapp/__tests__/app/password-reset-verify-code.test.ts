@@ -87,6 +87,20 @@ describe('POST /auth/password-reset/verify-code', () => {
     }
   });
 
+  it('keeps the browser host in development so the PKCE verifier cookie matches', async () => {
+    const previous = process.env.NODE_ENV;
+    (process.env as Record<string, string>).NODE_ENV = 'development';
+    try {
+      await POST(makeRequest({ email: 'e@example.com', code: '123456' }, { host: '127.0.0.1:3000' }) as never);
+
+      expect(mockResetPasswordForEmail).toHaveBeenCalledWith('e@example.com', {
+        redirectTo: 'http://127.0.0.1:3000/auth/callback?next=/reset-password',
+      });
+    } finally {
+      (process.env as Record<string, string>).NODE_ENV = previous ?? 'test';
+    }
+  });
+
   it('answers 500 when the reset link cannot be sent', async () => {
     mockResetPasswordForEmail.mockResolvedValue({ data: null, error: { message: 'smtp down' } });
 

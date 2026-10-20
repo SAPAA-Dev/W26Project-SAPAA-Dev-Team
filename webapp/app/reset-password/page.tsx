@@ -22,7 +22,7 @@ export default function ResetPasswordPage() {
     });
   }, []);
 
-  const onSubmit = async (event: React.FormEvent) => {
+  const onSubmit = async (event: React.SubmitEvent) => {
     event.preventDefault();
     if (password !== confirmPassword) {
       setErr('Passwords do not match');

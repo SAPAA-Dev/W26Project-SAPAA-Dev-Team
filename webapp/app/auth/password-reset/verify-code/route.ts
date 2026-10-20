@@ -1,21 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAnonSupabase, createClient } from '@/utils/supabase/server';
+import { requestOrigin } from '@/utils/requestOrigin';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CODE_PATTERN = /^\d{6}$/;
 
 function normaliseEmail(value: unknown) {
   return typeof value === 'string' ? value.trim().toLowerCase() : '';
-}
-
-// The recovery link must come back to this site. Behind a proxy, request.url is the internal
-// host, so the forwarded host wins, as in the auth callback route.
-function siteUrl(request: NextRequest) {
-  const forwardedHost = request.headers.get('x-forwarded-host');
-  if (process.env.NODE_ENV !== 'development' && forwardedHost) {
-    return `https://${forwardedHost}`;
-  }
-  return new URL(request.url).origin;
 }
 
 export async function POST(request: NextRequest) {
@@ -47,7 +38,7 @@ export async function POST(request: NextRequest) {
   // endpoint enforces the whole sequence, so no caller can reach this line without a valid code.
   const sessionClient = await createClient();
   const { error: resetError } = await sessionClient.auth.resetPasswordForEmail(email, {
-    redirectTo: `${siteUrl(request)}/auth/callback?next=/reset-password`,
+    redirectTo: `${requestOrigin(request)}/auth/callback?next=/reset-password`,
   });
   if (resetError) {
     return NextResponse.json(
