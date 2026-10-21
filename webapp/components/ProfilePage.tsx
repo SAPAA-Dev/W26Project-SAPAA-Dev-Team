@@ -227,9 +227,6 @@ function StatCard({ icon, label, value }: { icon: ReactNode; label: string; valu
 }
 
 function HistorySiteName({ inspection }: { inspection: HistoryItem }) {
-  if (inspection.siteId && !inspection.siteArchived && !inspection.siteInactive) {
-    return <Link href={`/detail/${encodeURIComponent(inspection.siteName)}`} className="hover:underline">{inspection.siteName}</Link>;
-  }
   return (
     <span>
       {inspection.siteName}
@@ -283,14 +280,32 @@ function InspectionHistory({
         <p className="py-8 text-sm text-[#5B655D]">No inspection reports recorded yet.</p>
       ) : (
         <ul className="mt-5 divide-y divide-[#E4EBE4]">
-          {history.map((inspection) => (
-            <li key={inspection.id} className="flex items-center justify-between gap-4 py-4">
-              <div>
+          {history.map((inspection) => {
+            const content = (
+              <>
                 <p className="font-semibold text-[#254431]"><HistorySiteName inspection={inspection} /></p>
                 <p className="mt-1 text-sm text-[#5B655D]">{formatDate(inspection.inspectionDate)}</p>
-              </div>
-            </li>
-          ))}
+              </>
+            );
+            const canOpenReport = inspection.siteId !== null
+              && !inspection.siteArchived
+              && !inspection.siteInactive;
+
+            return (
+              <li key={inspection.id}>
+                {canOpenReport ? (
+                  <Link
+                    href={`/detail/${encodeURIComponent(inspection.siteName)}?report=${inspection.id}`}
+                    className="block w-full rounded-lg py-4 hover:bg-[#F7F2EA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#356B43]"
+                  >
+                    {content}
+                  </Link>
+                ) : (
+                  <div className="py-4">{content}</div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
       {total > pageSize && (
