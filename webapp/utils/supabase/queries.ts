@@ -1,6 +1,7 @@
 'use server';
 
 import { createServerSupabase, createClient } from './server';
+import { refreshProtectedAreaLinks } from './siteLinks';
 import { deleteObjectsByKeys } from '../media/s3Delete';
 import { isAllowedStorageKey } from '../media/storageKeys';
 import {
@@ -746,6 +747,11 @@ async function updateSiteOrThrow(
     .eq('id', id);
 
   if (error) throw siteWriteError(error, 'Failed to update site');
+
+  // #181: a manual link or unlink changes the centre. shouldLink stays false so an
+  // unlink is not undone by the strict name match. The helper logs a failed lookup;
+  // the site write above already succeeded, so the action stays ok.
+  await refreshProtectedAreaLinks(supabase, false);
 }
 
 export async function createSite(
@@ -773,6 +779,9 @@ async function createSiteOrThrow(
     .insert({ namesite: name, ab_county, is_active: true, protected_area_id });
 
   if (error) throw siteWriteError(error, 'Failed to create site');
+
+  // #181: a new site whose exact name matches a KML area links here.
+  await refreshProtectedAreaLinks(supabase);
 }
 
 /**
