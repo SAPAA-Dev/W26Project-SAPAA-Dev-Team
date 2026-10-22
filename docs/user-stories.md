@@ -73,6 +73,17 @@ The line below each story title names the one charter project that is the best m
 > 2. Given I contribute a photo directly, When the upload succeeds, Then my activity points increase by the amount specified for uploading a photo for that site
 > 3. Given I have activity points, When I open my profile, Then the current total is shown
 
+### US 1.0.6 - Select and Edit Skills and Focus Areas | Story Points: 2
+*Charter project: 2b – Person Management*
+
+> As a **Steward**, **I want** to select and edit my skills and focus areas from an existing list, **so that** skill names and focus areas are consistent across the app
+
+> **Acceptance Tests**
+
+> 1. Given I edit my profile, When I open skills or focus areas, Then I can select values from dropdowns with an "Other" option
+> 2. Given I type a skill or focus area, Then similar existing values are suggested
+> 3. Given I have chosen a skill or focus area, When I edit it and save, Then the changed value appears on my profile
+
 ---
 ## 2 - Place Management
 ---
@@ -228,6 +239,16 @@ The line below each story title names the one charter project that is the best m
 > 3. Given the reminder is showing, When I save new points, Then the reminder is absent and the saved date is the new date
 > 4. Given I am a Steward, When I open the Site, Then the Admin reminder is not shown
 
+### US 2.0.14 - Match Map Marker Colours to the Website | Story Points: 2
+*Charter project: 2c – Map Management*
+
+> As a **Steward**, **I want** to see map marker colours that match the SAPAA website, **so that** I can tell site types apart
+
+> **Acceptance Tests**
+
+> 1. Given sites of different types are on the map, Then provincial parks, recreation areas and other site types use their matching SAPAA website marker colours
+> 2. Given a site type has a colour on the SAPAA website, When I view a marker for that type, Then its colour matches the website
+
 ---
 ## 3 - Admin Persona
 ---
@@ -253,6 +274,19 @@ The line below each story title names the one charter project that is the best m
 
 > 1. Extracting files -> Should zip files
 > 2. Extraction should include all images, at minimum
+
+### US 3.0.4 - Add a Steward Without an Account | Story Points: 3
+*Charter project: 2b – Person Management*
+
+> As a **Admin**, **I want** to add a steward by name, email and phone number without an account and show these details on a site page, **so that** a site can list its steward even when that person has no account
+
+> **Acceptance Tests**
+
+> 1. Given I am an Admin, When I add a steward with only a name, email and phone number, Then I can save the steward without a user account
+> 2. Given I have added a steward without an account, When I assign the steward to a site, Then I can click their name and view their contact info
+> 3. Given I save a steward without an account, Then the person does not need to sign up or sign in to be listed
+
+*Design suggestion: a Contacts table could store these details without an account link. The table design is not decided.*
 
 ---
 ## 4 - General Features
@@ -567,7 +601,7 @@ The line below each story title names the one charter project that is the best m
 
 ### Must Have
 
-*20 stories, 90 story points.*
+*19 stories, 85 story points.*
 
 | ID | Story | Points |
 |---|---|---|
@@ -580,7 +614,6 @@ The line below each story title names the one charter project that is the best m
 | US 2.0.8 | View a Site's Details From the Map | 3 |
 | US 2.0.9 | Upload a GPX Track of a Site Visit | 5 |
 | US 2.0.10 | Add links to Site Page | 1 |
-| US 2.0.11 | Show Safety Information for a Site | 5 |
 | US 3.0.3 | Export all digital files from SIR-SAPAA | 8 |
 | US 4.0.6 | Demote Photo Identifier to optional field | 1 |
 | US 5.0.2 | Reset a Forgotten Password | 2 |
@@ -594,7 +627,7 @@ The line below each story title names the one charter project that is the best m
 
 ### Should Have
 
-*12 stories, 63 story points.*
+*14 stories, 65 story points.*
 
 | ID | Story | Points |
 |---|---|---|
@@ -605,30 +638,35 @@ The line below each story title names the one charter project that is the best m
 | US 3.0.2 | Steward Designation | 5 |
 | US 4.0.2 | Offline and Online Map Layers | 13 |
 | US 4.0.4 | Edit My Previous Inspections | 5 |
-| US 4.0.5 | iNaturalist integration | 5 |
 | US 5.0.4 | Sign Out Properly | 2 |
 | US 7.0.5 | Delete an Image and Clean Up After It | 5 |
 | US 7.0.6 | Export More Than 50 Site Inspection Reports | 5 |
 | US 7.0.8 | Delete a Site Inspection Report | 5 |
 
+| US 1.0.6 | Select and Edit Skills and Focus Areas | 2 |
+| US 2.0.14 | Match Map Marker Colours to the Website | 2 |
+| US 3.0.4 | Add a Steward Without an Account | 3 |
+
 ### Could Have
 
-*6 stories, 28 story points.*
+*5 stories, 23 story points.*
 
 | ID | Story | Points |
 |---|---|---|
 | US 1.0.5 | Earn Points for Inspection Activity | 5 |
 | US 2.0.12 | Score a Site for To-Visit Priority | 8 |
 | US 2.0.13 | Flag Site Points That Are a Year Old | 3 |
-| US 4.0.7 | Show the Top iNaturalist Observations for a Site | 5 |
 | US 7.0.1 | Let Stewards Export Their Own Reports | 2 |
 | US 7.0.3 | See All Inspections in One View | 5 |
 
 ### Won't Have
 
-*2 stories, 10 story points.*
+*5 stories, 25 story points.*
 
 | ID | Story | Points |
 |---|---|---|
 | US 7.0.4 | Compare One Question Across Years | 5 |
 | US 7.0.9 | Record Audio During a Site Inspection | 5 |
+| US 4.0.5 | iNaturalist integration | 5 |
+| US 2.0.11 | Show Safety Information for a Site | 5 |
+| US 4.0.7 | Show the Top iNaturalist Observations for a Site | 5 |

@@ -135,7 +135,6 @@ Notes:
 | US 2.0.1 | AT1 to AT4 | Sites and past visits on the map (Sprint 3) | - | - | - | - | Not yet tested |
 | US 2.0.8 | AT1 to AT3 | Site details from the map (Sprint 3) | - | - | - | - | Not yet tested |
 | US 2.0.9 | AT1 to AT6 | GPX track upload, one file or several (Sprint 3) | - | - | - | - | Not yet tested |
-| US 2.0.11 | AT1 to AT4 | Safety information for a site (Sprint 3) | - | - | - | - | Not yet tested |
 
 Notes:
 
@@ -201,9 +200,6 @@ Notes:
 | US 4.0.6 | AT2 | No "required" note beside the Identifier field | `__tests__/pages/FormSubmissionPrevention.test.tsx:506` | Page | S | Yes | Pass |
 | US 4.0.2 | AT1 to AT4 | Offline and online map layers (Sprint 3) | - | - | - | - | Not yet tested |
 | US 4.0.4 | AT1 to AT4 | Edit my previous inspections (Sprint 3) | - | - | - | - | Not yet tested |
-| US 4.0.5 | AT1 to AT2 | iNaturalist integration (Sprint 3) | - | - | - | - | Not yet tested |
-| US 4.0.7 | AT1 to AT5 | Top iNaturalist observations for a site (Sprint 3) | - | - | - | - | Not yet tested |
-
 Notes:
 
 - 4.0.6 AT1: 'submits a report whose image has an empty Identifier' saves `identifier: null`. The
@@ -397,7 +393,7 @@ test.
 branches 74%, functions 78.61%, lines 87.56%. The run fails below the thresholds in
 `webapp/jest.config.ts` (statements 83, branches 72, functions 77, lines 85).
 
-Sprint 3 stories (1.0.3, 1.0.4, 2.0.1, 2.0.8, 2.0.9, 2.0.11, 4.0.2, 4.0.4, 4.0.5, 4.0.7, 5.0.2 and
+Sprint 3 stories (1.0.3, 1.0.4, 2.0.1, 2.0.8, 2.0.9, 4.0.2, 4.0.4, 5.0.2 and
 6.0.1) are not yet tested. Their rows are added AT by AT when the sprint starts.
 
 ## Known limits

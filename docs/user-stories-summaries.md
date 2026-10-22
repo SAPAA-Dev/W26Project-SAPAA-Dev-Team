@@ -55,16 +55,10 @@ Sprint 1 has no user stories. It is documentation and discovery.
     - Steward opens site details from the map.
 - **US 2.0.9 - Upload a GPX Track of a Site Visit** (Charter 2c)
     - Steward uploads a GPX track for a site visit.
-- **US 2.0.11 - Show Safety Information for a Site** (Charter 1)
-    - Steward views safety data for a site. Only Admin edits it.
 - **US 4.0.2 - Offline and Online Map Layers** (No charter, team request)
     - Steward uses map layers offline and online.
 - **US 4.0.4 - Edit My Previous Inspections** (Charter 1)
     - Steward edits own past inspections on the web.
-- **US 4.0.5 - iNaturalist integration** (Charter 3a)
-    - Steward selects images from an iNaturalist account in a SIR.
-- **US 4.0.7 - Show the Top iNaturalist Observations for a Site** (Charter 3a)
-    - Steward views up to 5 top iNaturalist observations for a site.
 - **US 5.0.2 - Reset a Forgotten Password** (Charter 1)
     - User resets a password without admin help.
 - **US 6.0.1 - Store Each Site's Geometry From the Shared Source** (Charter 2c)
@@ -93,6 +87,13 @@ Sprint 1 has no user stories. It is documentation and discovery.
 - **US 7.0.3 - See All Inspections in One View** (Charter 1)
     - Admin views summary counts across all SIRs.
 
+- **US 1.0.6 - Select and Edit Skills and Focus Areas** (Charter 2b)
+    - Instead of free text, select and edit skills and focus areas from a predetermined list. Include an option for 'Other'.
+- **US 2.0.14 - Match Map Marker Colours to the Website** (Charter 2c)
+    - See map marker colours that match the SAPAA website.
+- **US 3.0.4 - Add a Steward Without an Account** (Charter 2b)
+    - Add a steward by name, email and phone number without requiring them to have an account so that their details can be shown on a site page.
+
 ## Sprint 5
 
 No stories planned yet.
@@ -105,3 +106,10 @@ These stories are not planned for a sprint.
     - Steward compares answers for one question across years.
 - **US 7.0.9 - Record Audio During a Site Inspection** (Charter 1)
     - Steward records audio during a SIR and plays it back.
+
+- **US 2.0.11 - Show Safety Information for a Site** (Charter 1)
+    - Steward views safety data for a site. Only Admin edits it.
+- **US 4.0.5 - iNaturalist integration** (Charter 3a)
+    - Steward selects images from an iNaturalist account in a SIR.
+- **US 4.0.7 - Show the Top iNaturalist Observations for a Site** (Charter 3a)
+    - Steward views up to 5 top iNaturalist observations for a site.
