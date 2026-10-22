@@ -259,8 +259,8 @@ const READ_DENIED = 'Only approved users can view this data.';
 const REPORT_VIEW_DENIED = 'You are not allowed to view this report.';
 
 // Report writes run with the service role, so each one checks the caller first.
-// Only the report owner or an approved admin may change a report, and an archived
-// report changes only through the admin archive actions.
+// Only the report owner may change a report, and an archived report changes only
+// through the admin archive actions.
 async function requireReportWriter(responseId: number, errorMessage = REPORT_WRITE_DENIED): Promise<{
   isAdmin: boolean;
   userId: string;
@@ -1828,6 +1828,38 @@ export async function updateSiteInspectionAnswers(
 ) {
   await requireReportWriter(responseId);
   const supabase = createServerSupabase();
+
+  const { data: requiredQuestions, error: requiredQuestionsError } = await supabase
+    .from('questions')
+    .select('id, form_question, question_type')
+    .eq('is_active', true)
+    .eq('is_required', true);
+
+  if (requiredQuestionsError) {
+    throw new Error(requiredQuestionsError.message || 'Failed to validate required questions');
+  }
+
+  const missingRequiredQuestions = ((requiredQuestions ?? []) as Array<{
+    id: number;
+    form_question: string | null;
+    question_type: string;
+  }>).filter((question) => {
+    // Images are attachments, not answer rows. The edit page validates required
+    // image questions before it sends the answer update.
+    if (question.question_type.trim() === 'image') return false;
+
+    return !batchArray.some((answer) =>
+      answer.question_id === question.id &&
+      Boolean(answer.obs_value?.trim() || answer.obs_comm?.trim())
+    );
+  });
+
+  if (missingRequiredQuestions.length > 0) {
+    const labels = missingRequiredQuestions.map((question) =>
+      question.form_question?.trim() || `Question ${question.id}`
+    );
+    throw new Error(`Required questions are missing: ${labels.join(', ')}`);
+  }
 
   // Do not change answers while the report is in the archive.
   const { error: updateDateError } = await supabase

@@ -3,11 +3,13 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import EditReportPage from '@/app/detail/[namesite]/edit-report/[responseId]/page';
 import * as queries from '@/utils/supabase/queries';
 
+const mockPush = jest.fn();
+
 // - Navigation
 jest.mock('@/components/HeaderDropdown', () => () => null);
 jest.mock('next/navigation', () => ({
   useParams: jest.fn(() => ({ namesite: 'Test%20Site', responseId: '42' })),
-  useRouter: jest.fn(() => ({ push: jest.fn(), back: jest.fn() })),
+  useRouter: jest.fn(() => ({ push: mockPush, back: jest.fn() })),
 }));
 
 // - Next Image
@@ -730,7 +732,7 @@ describe('W26 US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         fireEvent.change(emailInput, { target: { value: '' } });
         expect((emailInput as HTMLTextAreaElement).value).toBe('');
 
-        fireEvent.click(screen.getByRole('button', { name: /Close/i }));
+        fireEvent.click(await screen.findByRole('button', { name: /Close/i }));
         
         // Attempt to submit
         const saveButton = screen.getByRole('button', { name: /Save Changes/i });
@@ -817,5 +819,22 @@ describe('W26 US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         const emailAnswer = answersArray.find((a: { question_id: number }) => a.question_id === 32);
         expect(emailAnswer).toBeDefined();
         expect(emailAnswer.obs_comm).toBe('newemail@gmail.com');
+    });
+
+    it('shows the saved report on its site page', async () => {
+        (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(mockQuestions);
+        (queries.getFormResponseById as jest.Mock).mockResolvedValue(mockResponses);
+
+        render(<EditReportPage />);
+        await waitFor(() => expect(screen.getByText('Edit Inspection Report')).toBeInTheDocument());
+
+        fireEvent.click(await screen.findByRole('button', { name: /Close/i }));
+        const saveButton = screen.getByRole('button', { name: /Save Changes/i });
+        await waitFor(() => expect(saveButton).toBeEnabled());
+        fireEvent.click(saveButton);
+
+        await waitFor(() =>
+          expect(mockPush).toHaveBeenCalledWith('/detail/Test%20Site?report=42')
+        );
     });
 });

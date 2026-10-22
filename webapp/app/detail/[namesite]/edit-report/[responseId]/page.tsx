@@ -454,10 +454,16 @@ export default function EditReportPage() {
           }
         }
       }
-      router.push(`/sites?edited=true`);
+      router.push(`/detail/${encodeURIComponent(namesite)}?report=${responseId}`);
     } catch (error) {
       console.error('Error saving report:', error);
-      // Optionally surface an error toast here
+      if (error instanceof Error && error.message.startsWith('Required questions are missing: ')) {
+        setMissingRequiredQuestionNumbers(
+          error.message.slice('Required questions are missing: '.length).split(', ')
+        );
+        setMissingImageMetadataDetails([]);
+        setShowRequiredPopup(true);
+      }
     } finally {
       setIsSaving(false);
     }

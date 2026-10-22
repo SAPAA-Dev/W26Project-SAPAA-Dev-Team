@@ -151,16 +151,14 @@ describe("rollbackSiteInspectionSubmission (US 7.0.5)", () => {
     expect(mockFrom).toHaveBeenCalledTimes(1);
   });
 
-  it("allows an approved admin to roll back another user's new report", async () => {
+  it("refuses an approved admin who does not own a new report", async () => {
     mockCaller("admin-uuid", "admin");
     mockReport();
-    mockSelect([]);
-    mockDelete();
-    mockDelete();
-    const responseDeleteEq = mockDelete();
 
-    await rollbackSiteInspectionSubmission(3226);
-
-    expect(responseDeleteEq).toHaveBeenCalledWith("id", 3226);
+    await expect(rollbackSiteInspectionSubmission(3226)).rejects.toThrow(
+      "You are not allowed to change this report."
+    );
+    expect(mockFrom).toHaveBeenCalledTimes(1);
+    expect(deleteObjectsByKeys).not.toHaveBeenCalled();
   });
 });
