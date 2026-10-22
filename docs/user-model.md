@@ -89,7 +89,7 @@ returns both counts in `stats`.
 
 | Field | How it is calculated |
 |---|---|
-| `inspectionCount` | The number of `form_responses` rows for the user that are active and not archived (`is_active` is true and `archived_at` is null). |
+| `inspectionCount` | The number of `form_responses` rows for the user that are active, not archived and still have a site (`is_active` is true, `archived_at` is null and `site_id` is not null). |
 | `distinctSiteCount` | The SQL function `get_distinct_inspected_site_count(p_user_id uuid)`. It counts the distinct `site_id` values of the same rows. Only `service_role` can execute it, and the route calls it with the service-role client (#78). |
 
 The inspection count is the same as this query:
@@ -98,7 +98,10 @@ The inspection count is the same as this query:
 select count(*)
 from public.form_responses responses
 join public.people person on person.auth_user_id = responses.user_id
-where person.id = $1 and responses.is_active and responses.archived_at is null;
+where person.id = $1
+  and responses.is_active
+  and responses.archived_at is null
+  and responses.site_id is not null;
 ```
 
 ## Migration of current users
@@ -151,7 +154,7 @@ table.
 
 | Metric | Behaviour it rewards | How it is calculated | Who asked |
 |---|---|---|---|
-| Inspections submitted | Keep inspecting. | Count the active, unarchived `form_responses` of the person. The profile already shows this as `inspectionCount`. | Client, Oct 2 |
+| Inspections submitted | Keep inspecting. | Count the active, unarchived `form_responses` of the person that still have a site. The profile already shows this as `inspectionCount`. | Client, Oct 2 |
 | Different counties visited | Visit sites in more of Alberta. | Count the distinct `sites_pa.ab_county` of the sites in the reports of the person. | Client, Oct 2 |
 | Site variety | Inspect different kinds of sites. | Count the distinct site types and subtypes in the reports of the person. The client also named the natural region. We still have to confirm which column holds each of them. | Client, Oct 2 and Oct 9 |
 | Site explorer | Be the first to report a site. | The person with the earliest active report of a site. | Oct 9 meeting |
@@ -173,5 +176,4 @@ Each ranking can cover all time or the last year, so that a new contributor can 
 2. Rewrite the acceptance tests of US 1.0.5 to match the chosen metrics. The story is about points today.
 3. Build the first version as US 1.0.5 in Sprint 4 (planned, see [Project Management](project-management.md)). The counts are calculated, like the inspection counts, so no stored value can become incorrect.
 
-Open questions for the client: what makes two sites "different", and whether a hard-deleted site
-(site not known) still counts toward a person's totals.
+Open question for the client: what makes two sites "different".

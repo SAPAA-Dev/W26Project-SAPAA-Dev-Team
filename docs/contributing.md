@@ -187,6 +187,7 @@ Run the files in this order.
 | 18 | `20261011000000_revoke_public_execute_on_report_functions.sql` | From `fix/alpha-code-quality`. Run it after step 15. Only the service role can then call `get_distinct_inspected_site_count` and `get_max_inspection_number`. |
 | 19 | `20261011010000_revoke_public_execute_on_dashboard_functions.sql` | From `fix/gamma-sprint-2-gaps`. Run it after step 12. Revokes execute on `get_naturalness_distribution` and `get_top_sites_distribution` from `public` and `anon`. `authenticated` keeps it, because the StewardLog admin dashboard calls both functions after sign-in. |
 | 20 | `20261012000000_add_question_atomically.sql` | From `fix/form-editor-save-errors` (#273). Run it after step 2. Adds `add_question_atomically`, for the service role only. Until it exists, adding a question in the form editor fails. |
+| 21 | `20261022000000_add_answer_visibility.sql` | Adds `answers.is_hidden`. Run it before deploying US 1.0.3. Existing answers stay visible. |
 
 PRs #234, #238 and #242 are merged on `main`. Steps 18 to 20 come from the Sprint 2 fix branches,
 which merge into `main` with the `sprint-2` PR. Run each step only when its file is on `main`.

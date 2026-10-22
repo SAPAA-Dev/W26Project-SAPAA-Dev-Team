@@ -74,7 +74,7 @@ describe('ProfilePage', () => {
     expect(routerMock.back).toHaveBeenCalled();
   });
 
-  it('lists reports of archived sites as plain text with an Archived badge, not links', async () => {
+  it('lists reports of unavailable sites as darkened text with an admin badge, not links', async () => {
     fetchMock.mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -83,7 +83,6 @@ describe('ProfilePage', () => {
           { id: 7, siteId: 5, siteName: 'Beaver Hills', siteArchived: false, siteInactive: false, inspectionDate: '2026-09-12' },
           { id: 8, siteId: 6, siteName: 'Duck Lake', siteArchived: true, siteInactive: false, inspectionDate: '2026-09-01' },
           { id: 10, siteId: 7, siteName: 'Elk Island', siteArchived: false, siteInactive: true, inspectionDate: '2026-08-15' },
-          { id: 9, siteId: null, siteName: 'Unknown site', siteArchived: false, siteInactive: false, inspectionDate: '2026-08-01' },
         ],
       }),
     });
@@ -97,13 +96,13 @@ describe('ProfilePage', () => {
     // An archived site is plain text with a badge.
     expect(screen.queryByRole('link', { name: /Duck Lake/ })).not.toBeInTheDocument();
     expect(screen.getByText('Duck Lake')).toBeInTheDocument();
-    expect(screen.getByTestId('archived-site-badge-8')).toHaveTextContent('Archived');
+    expect(screen.getByTestId('archived-site-badge-8')).toHaveTextContent('Archived by Admin');
+    expect(screen.getByTestId('unavailable-history-row-8')).toHaveClass('opacity-60');
     // US 2.0.3 (M25): a deactivated site's page shows an error, so it is plain text with a badge.
     expect(screen.queryByRole('link', { name: /Elk Island/ })).not.toBeInTheDocument();
-    expect(screen.getByTestId('inactive-site-badge-10')).toHaveTextContent('Inactive');
-    // A permanently deleted site stays plain text.
-    expect(screen.queryByRole('link', { name: /Unknown site/ })).not.toBeInTheDocument();
-    expect(screen.getByText('Unknown site')).toBeInTheDocument();
+    expect(screen.getByTestId('inactive-site-badge-10')).toHaveTextContent('Deactivated by Admin');
+    expect(screen.getByTestId('unavailable-history-row-10')).toHaveClass('opacity-60');
+    expect(screen.queryByText('Unknown site')).not.toBeInTheDocument();
   });
 
   it('opens an active-site inspection from the full history row (1.0.3 AT2)', async () => {

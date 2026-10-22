@@ -236,7 +236,7 @@ function HistorySiteName({ inspection }: { inspection: HistoryItem }) {
           className="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 align-middle"
         >
           <Archive className="h-3 w-3" />
-          Archived
+          Archived by Admin
         </span>
       )}
       {!inspection.siteArchived && inspection.siteInactive && (
@@ -244,7 +244,7 @@ function HistorySiteName({ inspection }: { inspection: HistoryItem }) {
           data-testid={`inactive-site-badge-${inspection.id}`}
           className="ml-2 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600 align-middle"
         >
-          Inactive
+          Deactivated by Admin
         </span>
       )}
     </span>
@@ -301,7 +301,12 @@ function InspectionHistory({
                     {content}
                   </Link>
                 ) : (
-                  <div className="py-4">{content}</div>
+                  <div
+                    data-testid={`unavailable-history-row-${inspection.id}`}
+                    className="py-4 opacity-60"
+                  >
+                    {content}
+                  </div>
                 )}
               </li>
             );
