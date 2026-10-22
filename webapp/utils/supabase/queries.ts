@@ -279,7 +279,7 @@ async function requireReportWriter(responseId: number, errorMessage = REPORT_WRI
     .maybeSingle();
 
   if (error) throw new Error(error.message || 'Failed to check the report owner');
-  if (!data || (!caller.isAdmin && data.user_id !== caller.userId)) {
+  if (!data || data.user_id !== caller.userId) {
     throw new Error(errorMessage);
   }
   return { ...caller, siteId: data.site_id, createdAt: data.created_at ?? null };

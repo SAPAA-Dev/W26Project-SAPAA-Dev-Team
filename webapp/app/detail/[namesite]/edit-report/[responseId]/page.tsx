@@ -185,8 +185,7 @@ export default function EditReportPage() {
         ]);
   
         const isOwner = ownerId != null && authUser?.id != null && ownerId === authUser.id;
-        const isAdmin = authUser?.app_metadata?.role === 'admin';
-        setIsAuthorized(isOwner || isAdmin);
+        setIsAuthorized(isOwner);
       } catch (err) {
         console.error('Error initializing edit page:', err);
       } finally {
