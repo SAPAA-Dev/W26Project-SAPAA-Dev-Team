@@ -543,27 +543,81 @@ function countyFromEmbed(
   return value.county ?? null;
 }
 
+interface ProtectedAreaLink {
+  county: string | null;
+  is_active: boolean | null;
+  site_name: string | null;
+  last_inspection_date: string | null;
+}
+
+interface SiteLinkResponseRow {
+  inspection_date?: string | null;
+  created_at?: string | null;
+  archived_at?: string | null;
+}
+
+interface SiteLinkRow {
+  protected_area_id: number | null;
+  is_active: boolean | null;
+  namesite: string | null;
+  ab_counties: { county: string } | { county: string }[] | null;
+  latest_dated: SiteLinkResponseRow[] | null;
+  latest_undated: SiteLinkResponseRow[] | null;
+}
+
 // ab_counties has row level security and no select policy for signed-in users.
-// The caller is already approved. This read returns only the link, the county, and is_active.
-async function readProtectedAreaLinks(): Promise<Map<number, { county: string | null; is_active: boolean | null }>> {
+// The caller is already approved. This read returns only the link, the county, the status,
+// the site name and the newest report of the linked site.
+async function readProtectedAreaLinks(): Promise<Map<number, ProtectedAreaLink>> {
   const supabase = createServerSupabase();
   const { data, error } = await supabase
     .from('sites_pa')
-    .select('protected_area_id, is_active, ab_counties(county)')
+    .select(`
+      protected_area_id,
+      is_active,
+      namesite,
+      ab_counties (
+        county
+      ),
+      latest_dated:form_responses (
+        inspection_date,
+        created_at,
+        archived_at
+      ),
+      latest_undated:form_responses (
+        inspection_date,
+        created_at,
+        archived_at
+      )
+    `)
     .not('protected_area_id', 'is', null)
     // An archived site is hidden from the app, so it must not give a map area a county or status.
-    .is('archived_at', null);
+    .is('archived_at', null)
+    // The same newest-report rule as getSitesOnline, so the popup date matches the Site card.
+    .is('latest_dated.archived_at', null)
+    .not('latest_dated.inspection_date', 'is', null)
+    .order('inspection_date', { referencedTable: 'latest_dated', ascending: false })
+    .limit(1, { referencedTable: 'latest_dated' })
+    .is('latest_undated.archived_at', null)
+    .is('latest_undated.inspection_date', null)
+    .order('created_at', { referencedTable: 'latest_undated', ascending: false })
+    .limit(1, { referencedTable: 'latest_undated' });
 
   if (error) throw new Error(error.message || 'Failed to fetch site links');
 
-  const links = new Map<number, { county: string | null; is_active: boolean | null }>();
-  for (const row of data ?? []) {
-    const areaId = row.protected_area_id as number | null;
+  const links = new Map<number, ProtectedAreaLink>();
+  for (const row of (data ?? []) as unknown as SiteLinkRow[]) {
+    const areaId = row.protected_area_id;
     if (areaId === null || links.has(areaId)) continue;
     links.set(areaId, {
-      county: countyFromEmbed(row.ab_counties as { county: string } | { county: string }[] | null),
+      county: countyFromEmbed(row.ab_counties),
       // A null is_active means active, the same as getSitesOnline and getAllSites.
-      is_active: (row.is_active as boolean | null) ?? true,
+      is_active: row.is_active ?? true,
+      site_name: row.namesite ?? null,
+      last_inspection_date: getLatestInspectionDate([
+        ...(row.latest_dated ?? []),
+        ...(row.latest_undated ?? []),
+      ]),
     });
   }
   return links;
@@ -591,6 +645,8 @@ export async function getProtectedAreaBoundaries(): Promise<BoundaryFeatureColle
       ...row,
       county: link?.county ?? null,
       is_active: link ? link.is_active : null,
+      site_name: link?.site_name ?? null,
+      last_inspection_date: link?.last_inspection_date ?? null,
     };
   });
 
