@@ -11,11 +11,12 @@ jest.mock("next/server", () => ({
 }));
 
 import { GET } from "@/app/api/gallery/route";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createServerSupabase } from "@/utils/supabase/server";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 jest.mock("@/utils/supabase/server", () => ({
-  createClient: jest.fn()
+  createClient: jest.fn(),
+  createServerSupabase: jest.fn(),
 }));
 
 jest.mock("@aws-sdk/client-s3", () => ({
@@ -42,6 +43,7 @@ describe("GET /api/gallery", () => {
       },
       from: mockFrom,
     });
+    (createServerSupabase as jest.Mock).mockReturnValue({ from: mockFrom });
   });
 
   it("returns 401 if user is not authenticated", async () => {

@@ -21,15 +21,17 @@ jest.mock("@aws-sdk/client-s3", () => ({
 
 jest.mock("@/utils/supabase/server", () => ({
   createClient: jest.fn(),
+  createServerSupabase: jest.fn(),
 }));
 
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createServerSupabase } from "@/utils/supabase/server";
 import { POST } from "../../app/api/s3/presign/route";
 import { GET } from "../../app/api/gallery/route";
 
 const mockGetSignedUrl = getSignedUrl as jest.Mock;
 const mockCreateClient = createClient as jest.Mock;
+const mockCreateServerSupabase = createServerSupabase as jest.Mock;
 
 
 
@@ -155,6 +157,7 @@ function mockAuthenticatedUser() {
 }
 
 function mockAdminUser() {
+  mockCreateServerSupabase.mockReturnValue({ from: makeGalleryFrom() });
   mockCreateClient.mockResolvedValue({
     auth: {
       getUser: jest.fn().mockResolvedValue({
@@ -494,6 +497,11 @@ describe("Acceptance Test 3 – Uploaded images are accessible through the appli
   });
 
   it("gallery returns 500 if the database query fails", async () => {
+    mockCreateServerSupabase.mockReturnValue({
+      from: makeGalleryFrom({
+        attachmentsError: { message: "DB connection failed" },
+      }),
+    });
     mockCreateClient.mockResolvedValue({
       auth: {
         getUser: jest.fn().mockResolvedValue({
@@ -507,9 +515,7 @@ describe("Acceptance Test 3 – Uploaded images are accessible through the appli
           error: null,
         }),
       },
-      from: makeGalleryFrom({
-        attachmentsError: { message: "DB connection failed" },
-      }),
+      from: makeGalleryFrom(),
     });
 
     const res = await GET();

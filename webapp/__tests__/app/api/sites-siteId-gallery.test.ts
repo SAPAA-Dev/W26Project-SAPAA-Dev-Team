@@ -9,11 +9,12 @@ jest.mock("next/server", () => ({
 }));
 
 import { GET } from "@/app/api/sites/[siteId]/gallery/route";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createServerSupabase } from "@/utils/supabase/server";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 jest.mock("@/utils/supabase/server", () => ({
   createClient: jest.fn(),
+  createServerSupabase: jest.fn(),
 }));
 
 jest.mock("@aws-sdk/client-s3", () => ({
@@ -39,6 +40,7 @@ describe("GET /api/sites/[siteId]/gallery", () => {
       },
       from: mockFrom,
     });
+    (createServerSupabase as jest.Mock).mockReturnValue({ from: mockFrom });
   });
 
   afterEach(() => {
@@ -104,7 +106,7 @@ describe("GET /api/sites/[siteId]/gallery", () => {
       data: {
         user: {
           id: "user-1",
-          app_metadata: { role: "steward" },
+          app_metadata: { role: "steward", authenticated: true },
         },
       },
       error: null,
@@ -207,7 +209,8 @@ describe("GET /api/sites/[siteId]/gallery", () => {
     expect(attachmentsEqMock).toHaveBeenCalledWith("site_id", 207);
     expect(attachmentsIsMock).toHaveBeenCalledWith("form_responses.archived_at", null);
     // M24: deactivated reports' photos stay hidden from user-facing galleries.
-    expect(attachmentsSelectMock.mock.calls[0][0]).toContain("form_responses!inner (archived_at, is_active)");
+    expect(attachmentsSelectMock.mock.calls[0][0]).toContain("form_responses!inner (");
+    expect(attachmentsSelectMock.mock.calls[0][0]).toContain("answers (question_id, is_hidden)");
     expect(attachmentsActiveMock).toHaveBeenCalledWith("form_responses.is_active", true);
     expect(attachmentsInMock).toHaveBeenCalledWith("content_type", [
       "image/jpeg",
@@ -248,6 +251,7 @@ describe("GET /api/sites/[siteId]/gallery", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { role: "steward", authenticated: true },
         },
       },
       error: null,
@@ -361,6 +365,7 @@ describe("GET /api/sites/[siteId]/gallery", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { role: "steward", authenticated: true },
         },
       },
       error: null,
@@ -416,6 +421,7 @@ describe("GET /api/sites/[siteId]/gallery", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { role: "steward", authenticated: true },
         },
       },
       error: null,

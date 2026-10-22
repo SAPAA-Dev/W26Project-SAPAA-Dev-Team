@@ -82,6 +82,7 @@ interface SupabaseAnswer {
   question_id: number;
   obs_value: string | null;
   obs_comm: string | null;
+  is_hidden?: boolean;
 }
 
 export interface FormResponse {
@@ -93,6 +94,9 @@ export interface FormResponse {
   naturalness_score: string | null;
   naturalness_details: string | null;  
   steward: string | null;
+  naturalness_hidden?: boolean;
+  naturalness_details_hidden?: boolean;
+  steward_hidden?: boolean;
   answers: FormAnswer[];
 }
 
@@ -116,6 +120,7 @@ export interface FormAnswer {
   obs_comm: string | null;
   section_id: number | null;
   section_title: string | null;
+  is_hidden?: boolean;
 }
 
 // One row of the all-reports page. siteName is null when the site was permanently
@@ -1659,7 +1664,7 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
     .select(`
       id, user_id, created_at, inspection_date, inspection_no, is_active,
       answers (
-        question_id, obs_value, obs_comm,
+        question_id, obs_value, obs_comm, is_hidden,
         questions ( id, form_question, section_id,
           form_sections!questions_section_id_fkey ( id, title ) )
       )
@@ -1672,7 +1677,15 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
   if (error) throw new Error(error.message || 'Failed to fetch form responses');
 
   return ((data ?? []) as unknown as (FormResponseRow & { is_active: boolean | null })[]).map((r) => {
-    const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.answers, ids);
+    const {
+      answers,
+      naturalness,
+      naturalnessDetails,
+      steward,
+      naturalnessHidden,
+      naturalnessDetailsHidden,
+      stewardHidden,
+    } = reduceAnswers(r.answers, ids);
     return {
       id: r.id,
       user_id: r.user_id ?? null,
@@ -1682,6 +1695,9 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
       naturalness_score: naturalness,
       naturalness_details: naturalnessDetails,
       steward,
+      naturalness_hidden: naturalnessHidden,
+      naturalness_details_hidden: naturalnessDetailsHidden,
+      steward_hidden: stewardHidden,
       is_active: r.is_active ?? true,
       answers,
     };
@@ -1690,7 +1706,7 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
 
 // User viewing for sites, uses is_active flag to prevent users from viewing disabled responses
 export async function getFormResponsesBySite(siteName: string): Promise<FormResponse[]> {
-  await requireApprovedCaller(READ_DENIED);
+  const caller = await requireApprovedCaller(READ_DENIED);
   const supabase = createServerSupabase();
 
   const { data: siteData, error: siteError } = await supabase
@@ -1717,7 +1733,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
       .select(`
         id, user_id, created_at, inspection_date, inspection_no,
         answers (
-          question_id, obs_value, obs_comm,
+          question_id, obs_value, obs_comm, is_hidden,
           questions ( id, form_question, section_id,
             form_sections!questions_section_id_fkey ( id, title ) )
         )
@@ -1736,7 +1752,19 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
   }
 
   return data.map((r) => {
-    const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.answers, ids);
+    const canReadHiddenAnswers = caller.isAdmin || r.user_id === caller.userId;
+    const rawAnswers = canReadHiddenAnswers
+      ? r.answers
+      : r.answers.filter((answer) => answer.is_hidden !== true);
+    const {
+      answers,
+      naturalness,
+      naturalnessDetails,
+      steward,
+      naturalnessHidden,
+      naturalnessDetailsHidden,
+      stewardHidden,
+    } = reduceAnswers(rawAnswers, ids);
     return {
       id: r.id,
       user_id: r.user_id ?? null,
@@ -1746,6 +1774,9 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
       naturalness_score: naturalness,
       naturalness_details: naturalnessDetails,
       steward,
+      naturalness_hidden: naturalnessHidden,
+      naturalness_details_hidden: naturalnessDetailsHidden,
+      steward_hidden: stewardHidden,
       answers,
     };
   });
@@ -1878,6 +1909,20 @@ export async function getFormResponseById(responseId: number): Promise<Record<st
   }
 
   return map;
+}
+
+export async function getHiddenQuestionIdsByResponseId(responseId: number): Promise<number[]> {
+  await requireReportWriter(responseId, REPORT_VIEW_DENIED);
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('answers')
+    .select('question_id')
+    .eq('response_id', responseId)
+    .eq('is_hidden', true);
+
+  if (error) throw new Error(error.message || 'Failed to fetch hidden answers');
+  return [...new Set((data ?? []).map((answer) => Number(answer.question_id)))];
 }
 
 

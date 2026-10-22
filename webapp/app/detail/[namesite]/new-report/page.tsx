@@ -49,6 +49,7 @@ interface SupabaseAnswer {
   question_id: number;
   obs_value: string | null;
   obs_comm: string | null;
+  is_hidden: boolean;
 }
 
 
@@ -67,6 +68,7 @@ interface StoredInspectionDraft {
   responses: Record<number, ResponseValue>;
   activeSection: number | null;
   hasAccepted: boolean;
+  hiddenQuestionIds?: number[];
 }
 
 // Drafts written before version 1 kept the answers at the top level of the
@@ -103,6 +105,7 @@ export default function NewReportPage() {
   // slow fetch cannot reopen a popup that a restored draft already closed.
   const hasDismissedVerificationRef = useRef(false);
   const [responses, setResponses] = useState<Record<number, ResponseValue>>({});
+  const [hiddenQuestionIds, setHiddenQuestionIds] = useState<Set<number>>(new Set());
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name: string; avatar: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -267,6 +270,11 @@ export default function NewReportPage() {
 
           // eslint-disable-next-line react-hooks/set-state-in-effect -- restores the saved draft once its storage key is known; localStorage is only readable after mount
           setResponses(normalizedResponses);
+          setHiddenQuestionIds(new Set(
+            (storedDraft.hiddenQuestionIds ?? []).filter(
+              (questionId): questionId is number => Number.isSafeInteger(questionId) && questionId > 0
+            )
+          ));
           setRestoredActiveSection(typeof storedDraft.activeSection === 'number' ? storedDraft.activeSection : null);
           setHasDroppedDraftPhotos(droppedPhotos);
 
@@ -308,6 +316,7 @@ export default function NewReportPage() {
       // Ticking the box is not enough: the disclaimer only counts as accepted
       // once the steward has pressed "Continue to Form" and the popup closed.
       hasAccepted: hasAccepted && !showVerification,
+      hiddenQuestionIds: [...hiddenQuestionIds],
     };
 
     try {
@@ -316,7 +325,7 @@ export default function NewReportPage() {
       // Storage is blocked or full: the draft is lost, but the form stays open.
       console.error('Could not save the inspection draft:', error);
     }
-  }, [responses, draftKey, isDraftLoaded, sectionNavigation.activeSection, restoredActiveSection, hasAccepted, showVerification]);
+  }, [responses, hiddenQuestionIds, draftKey, isDraftLoaded, sectionNavigation.activeSection, restoredActiveSection, hasAccepted, showVerification]);
 
 
 
@@ -607,6 +616,16 @@ export default function NewReportPage() {
                   });
               }
 
+              if (hiddenQuestionIds.has(Number(questionId))) {
+                answersArray.push({
+                  response_id: siteInspectionReportId!,
+                  question_id: Number(questionId),
+                  obs_value: null,
+                  obs_comm: null,
+                  is_hidden: true,
+                });
+              }
+
               // Do NOT put image data into answers
               continue;
             }
@@ -627,6 +646,7 @@ export default function NewReportPage() {
                         question_id: Number(questionId),
                         obs_value: isValueType ? String(subAnswer) : null,
                         obs_comm: isOther ? commValue : (isCommType ? String(subAnswer) : null),
+                        is_hidden: hiddenQuestionIds.has(Number(questionId)),
                     });
                 });
             } else {
@@ -636,6 +656,7 @@ export default function NewReportPage() {
                     question_id: Number(questionId),
                     obs_value: isValueType ? String(answer) : null,
                     obs_comm: isOther ? commValue : (isCommType ? String(answer) : null),
+                    is_hidden: hiddenQuestionIds.has(Number(questionId)),
                 });
             }
           }
@@ -925,6 +946,8 @@ export default function NewReportPage() {
         siteName={namesite}
         currentUser={currentUser}
         restoredActiveSection={restoredActiveSection}
+        hiddenQuestionIds={hiddenQuestionIds}
+        onHiddenQuestionIdsChange={setHiddenQuestionIds}
       />
 
 

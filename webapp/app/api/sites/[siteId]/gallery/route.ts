@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createServerSupabase } from "@/utils/supabase/server";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
@@ -18,6 +18,15 @@ const s3 = new S3Client({
 });
 
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+type ReportVisibility = {
+  user_id: string | null;
+  answers?: Array<{ question_id: number; is_hidden: boolean | null }> | null;
+};
+
+function getReportVisibility(value: ReportVisibility | ReportVisibility[] | null): ReportVisibility | null {
+  return Array.isArray(value) ? value[0] ?? null : value;
+}
 
 export async function GET(
   _req: Request,
@@ -44,9 +53,14 @@ export async function GET(
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (user.app_metadata?.authenticated !== true) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const admin = createServerSupabase();
 
     // Archived and deactivated reports keep their images for restore, but the site gallery must hide them.
-    const { data: attachments, error: attachmentsError } = await supabase
+    const { data: attachments, error: attachmentsError } = await admin
       .from("attachments")
       .select(`
         id,
@@ -58,7 +72,13 @@ export async function GET(
         filename,
         site_id,
         response_id,
-        form_responses!inner (archived_at, is_active)
+        question_id,
+        form_responses!inner (
+          archived_at,
+          is_active,
+          user_id,
+          answers (question_id, is_hidden)
+        )
       `)
       .eq("site_id", numericSiteId)
       .is("form_responses.archived_at", null)
@@ -73,14 +93,23 @@ export async function GET(
       );
     }
 
-    const { data: site } = await supabase
+    const { data: site } = await admin
       .from("sites_pa")
       .select("namesite")
       .eq("id", siteId)
       .single();
 
+    const visibleAttachments = (attachments || []).flatMap((attachment) => {
+      const report = getReportVisibility(attachment.form_responses);
+      const isHidden = report?.answers?.some(
+        (answer) => answer.question_id === attachment.question_id && answer.is_hidden === true
+      ) ?? false;
+      const canReadHidden = user.app_metadata?.role === "admin" || report?.user_id === user.id;
+      return isHidden && !canReadHidden ? [] : [{ attachment, isHidden }];
+    });
+
     const items = await Promise.all(
-      (attachments || []).map(async (attachment) => {
+      visibleAttachments.map(async ({ attachment, isHidden }) => {
         let imageUrl: string | null = null;
 
         try {
@@ -104,6 +133,7 @@ export async function GET(
           file_size_bytes: attachment.file_size_bytes,
           site_name: site?.namesite ?? null,
           response_id: attachment.response_id,
+          ...(isHidden ? { is_hidden: true } : {}),
           imageUrl,
         };
       })
