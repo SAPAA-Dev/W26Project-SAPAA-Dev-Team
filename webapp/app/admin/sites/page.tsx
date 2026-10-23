@@ -718,7 +718,7 @@ const handleCloseArchive = () => {
               boundariesLoading={boundariesLoading}
               boundariesError={boundariesError}
               focusedArea={focusedArea}
-              canEditBoundaryColors
+              canEditBoundaryColors={boundaries?.can_edit_colors === true}
               onSetBoundaryColor={handleSetBoundaryColor}
             />
           ) : (

@@ -75,6 +75,9 @@ export interface BoundaryFeature {
 export interface BoundaryFeatureCollection {
   type: 'FeatureCollection';
   features: BoundaryFeature[];
+  // Server-verified: true only for an approved admin. The map shows the color control
+  // from this value, never from the client session.
+  can_edit_colors?: boolean;
 }
 
 // The colors the map has always drawn when an admin has not chosen one.

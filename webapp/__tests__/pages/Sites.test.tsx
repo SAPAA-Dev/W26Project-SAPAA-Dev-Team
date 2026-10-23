@@ -57,8 +57,6 @@ jest.mock('@/utils/supabase/queries', () => ({
   getSitesOnline: () => mockGetSitesOnline(),
   getTotalInspectionCount: () => Promise.resolve(0),
   getProtectedAreaBoundaries: () => mockGetProtectedAreaBoundaries(),
-  setSiteBoundaryColor: jest.fn(),
-  setSiteTypeBoundaryColor: jest.fn(),
 }));
 
 // The first-visit tutorial starts 800 ms after load and takes focus. On a slow run it
@@ -75,16 +73,19 @@ jest.mock('@/components/map/SiteMap', () => ({
     boundaries,
     focusedArea,
     canEditBoundaryColors,
+    onSetBoundaryColor,
   }: {
     boundaries?: { features: Array<{ id: number; properties: { name: string } }> } | null;
     focusedArea?: { properties: { name: string } } | null;
     canEditBoundaryColors?: boolean;
+    onSetBoundaryColor?: unknown;
   }) {
     return (
       <ul
         data-testid="site-map"
         data-focused={focusedArea?.properties.name ?? ''}
         data-can-edit-colors={String(canEditBoundaryColors === true)}
+        data-can-set-color={String(typeof onSetBoundaryColor === 'function')}
       >
         {(boundaries?.features ?? []).map((feature) => (
           <li key={feature.id}>{feature.properties.name}</li>
@@ -744,41 +745,23 @@ it('filters the map by type, subtype and name, and keeps the search text across 
   expect(screen.queryByRole('button', { name: /^sort$/i })).not.toBeInTheDocument();
 });
 
-it('gives admins, and only admins, the boundary color control', async () => {
+it('never gives the user map the boundary color control', async () => {
   const user = userEvent.setup();
+  // Even if the server flag is true, the user-facing map must not pass the control.
   mockGetProtectedAreaBoundaries.mockResolvedValue({
     type: 'FeatureCollection',
     features: [mapFeature(1, 'Pembina River', 'NA', null, null, true)],
-  });
-
-  const steward = render(<HomeClient />);
-  await waitFor(() => expect(screen.getByText('Elk Island National Park')).toBeInTheDocument());
-  await user.click(screen.getByRole('button', { name: 'Map View' }));
-
-  await waitFor(() =>
-    expect(screen.getByTestId('site-map')).toHaveAttribute('data-can-edit-colors', 'false')
-  );
-
-  steward.unmount();
-  mockGetSession.mockResolvedValue({
-    data: {
-      session: {
-        user: {
-          ...mockStewardUser.user,
-          app_metadata: { role: 'admin', authenticated: true },
-        },
-      },
-    },
-    error: null,
+    can_edit_colors: true,
   });
 
   render(<HomeClient />);
   await waitFor(() => expect(screen.getByText('Elk Island National Park')).toBeInTheDocument());
   await user.click(screen.getByRole('button', { name: 'Map View' }));
 
-  await waitFor(() =>
-    expect(screen.getByTestId('site-map')).toHaveAttribute('data-can-edit-colors', 'true')
-  );
+  await waitFor(() => expect(screen.getByTestId('site-map')).toBeInTheDocument());
+  const map = screen.getByTestId('site-map');
+  expect(map).toHaveAttribute('data-can-edit-colors', 'false');
+  expect(map).toHaveAttribute('data-can-set-color', 'false');
 });
 
 it('US 2.0.6 AT2: clearing a county filter shows every active area again', async () => {

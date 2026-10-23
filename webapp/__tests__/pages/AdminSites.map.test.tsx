@@ -44,12 +44,18 @@ jest.mock('@/components/map/SiteMap', () => ({
   default: function MockSiteMap({
     boundaries,
     canEditBoundaryColors,
+    onSetBoundaryColor,
   }: {
     boundaries?: { features: Array<{ id: number; properties: { name: string } }> } | null;
     canEditBoundaryColors?: boolean;
+    onSetBoundaryColor?: unknown;
   }) {
     return (
-      <ul data-testid="site-map" data-can-edit-colors={String(canEditBoundaryColors === true)}>
+      <ul
+        data-testid="site-map"
+        data-can-edit-colors={String(canEditBoundaryColors === true)}
+        data-can-set-color={String(typeof onSetBoundaryColor === 'function')}
+      >
         {(boundaries?.features ?? []).map((feature) => (
           <li key={feature.id}>{feature.properties.name}</li>
         ))}
@@ -97,6 +103,7 @@ describe('Admin Sites map view', () => {
     queries.getProtectedAreaBoundaries.mockResolvedValue({
       type: 'FeatureCollection',
       features: [area(1, 'Pembina River'), area(2, 'Jasper')],
+      can_edit_colors: true,
     });
   });
 
@@ -117,10 +124,9 @@ describe('Admin Sites map view', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Map View' }));
 
-    expect(await screen.findByTestId('site-map')).toHaveAttribute(
-      'data-can-edit-colors',
-      'true'
-    );
+    const map = await screen.findByTestId('site-map');
+    expect(map).toHaveAttribute('data-can-edit-colors', 'true');
+    expect(map).toHaveAttribute('data-can-set-color', 'true');
   });
 
   it('reloads the map and the protected-area choices after a KML import', async () => {
@@ -132,6 +138,7 @@ describe('Admin Sites map view', () => {
     queries.getProtectedAreaBoundaries.mockResolvedValue({
       type: 'FeatureCollection',
       features: [area(1, 'Pembina River'), area(2, 'Jasper'), area(3, 'Wagner')],
+      can_edit_colors: true,
     });
     await user.click(screen.getByRole('button', { name: /Upload Site Data/ }));
     await user.click(screen.getByRole('button', { name: 'Finish import' }));

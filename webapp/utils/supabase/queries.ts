@@ -657,11 +657,15 @@ export async function getProtectedAreaBoundaries(): Promise<BoundaryFeatureColle
   });
 
   const collection = toBoundaryFeatureCollection(rows);
-  if (caller.isAdmin) return collection;
+  // The map shows the color control from this server-verified flag, not from the
+  // client session. A steward always gets false, even if the browser holds a stale role.
+  const can_edit_colors = caller.isAdmin;
+  if (caller.isAdmin) return { ...collection, can_edit_colors };
 
   return {
     type: 'FeatureCollection',
     features: collection.features.filter((feature) => feature.properties.is_active !== false),
+    can_edit_colors,
   };
 }
 

@@ -98,6 +98,7 @@ describe("getProtectedAreaBoundaries (US 2.0.6)", () => {
 
     expect(collection.features[0].properties.county).toBe("Parkland");
     expect(collection.features[0].properties.is_active).toBe(false);
+    expect(collection.can_edit_colors).toBe(true);
   });
 
   it("maps the admin-chosen boundary color into the feature", async () => {
@@ -227,6 +228,7 @@ describe("getProtectedAreaBoundaries (US 2.0.6)", () => {
     const collection = await queries.getProtectedAreaBoundaries();
 
     expect(collection.features).toEqual([]);
+    expect(collection.can_edit_colors).toBe(false);
   });
 
   it("rejects a user who is not approved and reads nothing", async () => {
