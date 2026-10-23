@@ -522,7 +522,7 @@ export default function AdminSiteDetails() {
     setIsSaving(true);
     try {
       const batchArray = editAnswers
-        .filter(a => a.obs_value || a.obs_comm)
+        .filter(a => a.is_hidden || a.obs_value || a.obs_comm)
         .map(a => ({
           question_id: a.question_id,
           obs_value: a.obs_value.trim() !== '' ? a.obs_value.trim() : null,
