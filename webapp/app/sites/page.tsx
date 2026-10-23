@@ -5,7 +5,7 @@
 
 import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getSitesOnline, getTotalInspectionCount, getProtectedAreaBoundaries, getGpxTracksBySite, getGpxTrackPoints, SiteSummary } from '@/utils/supabase/queries';
+import { getSitesOnline, getTotalInspectionCount, getProtectedAreaBoundaries, getGpxTracksForMap, SiteSummary } from '@/utils/supabase/queries';
 import { gpxTracksToLineFeatureCollection } from '@/lib/map/gpxTrack';
 import type { GpxTrackLineFeatureCollection } from '@/lib/map/gpxTrack';
 import { Search, MapPin, Calendar, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, LayoutGrid, Map as MapIcon } from 'lucide-react';
@@ -139,19 +139,13 @@ export default function HomeClient() {
   const [boundariesError, setBoundariesError] = useState<string | null>(null);
   const boundariesRequested = useRef(false);
   const [focusedArea, setFocusedArea] = useState<BoundaryFeature | null>(null);
-  // The protected area id of the selected site. The map highlights only this area,
-  // and the GPX tracks of its site are loaded for it.
+  // The protected area id of the selected site. The map highlights only this area.
   const [selectedAreaId, setSelectedAreaId] = useState<number | null>(null);
   // A ?site= link that arrived before the boundaries. The boundary load consumes it.
   const pendingSiteNameRef = useRef<string | null>(null);
+  // Every uploaded track, drawn on the map without a selection.
   const [gpxTracks, setGpxTracks] = useState<GpxTrackLineFeatureCollection | null>(null);
-
-  // The same case-insensitive join in every place a boundary's site_name is matched
-  // against a sites_pa name, so the highlight and the track lookup agree.
-  const siteByName = useCallback(
-    (siteName: string) => sites.find((item) => item.namesite.toLowerCase() === siteName.toLowerCase()),
-    [sites]
-  );
+  const gpxTracksRequested = useRef(false);
 
   // A new object, so selecting the same area again centres the map again.
   const selectArea = useCallback((area: BoundaryFeature) => {
@@ -201,39 +195,16 @@ export default function HomeClient() {
     selectSiteByName(boundaries, siteName);
   }, [boundaries, selectSiteByName]);
 
-  // The tracks belong to the selected site, so they load when the selection
-  // changes. A site without tracks, or a selection without a linked site, clears
-  // the lines instead of leaving the previous site's track on the map.
+  // The map draws every uploaded track, so the load runs once per visit, not per
+  // selection. A failure clears the lines instead of leaving old ones on the map.
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const area = boundaries?.features.find((feature) => feature.id === selectedAreaId);
-      const siteName = area?.properties.site_name ?? null;
-      const site = siteName === null ? undefined : siteByName(siteName);
-      if (site === undefined) {
-        if (!cancelled) setGpxTracks(null);
-        return;
-      }
+    if (viewMode !== 'map' || gpxTracksRequested.current) return;
+    gpxTracksRequested.current = true;
 
-      try {
-        const summaries = await getGpxTracksBySite(site.id);
-        const loaded = await Promise.all(
-          summaries.map(async (track) => ({
-            id: track.id,
-            originalFileName: track.originalFileName,
-            points: await getGpxTrackPoints(track.id),
-          }))
-        );
-        if (!cancelled) setGpxTracks(gpxTracksToLineFeatureCollection(loaded));
-      } catch {
-        if (!cancelled) setGpxTracks(null);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedAreaId, boundaries, siteByName]);
+    getGpxTracksForMap()
+      .then((tracks) => setGpxTracks(gpxTracksToLineFeatureCollection(tracks)))
+      .catch(() => setGpxTracks(null));
+  }, [viewMode]);
 
   const areaFilterOptions = useMemo(() => boundaryFilterOptions(boundaries), [boundaries]);
   const cardCountyOptions = useMemo(

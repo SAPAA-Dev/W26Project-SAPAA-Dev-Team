@@ -63,14 +63,12 @@ beforeAll(() => {
 // Mock getSitesOnline and getTotalInspectionCount queries
 const mockGetSitesOnline = jest.fn();
 const mockGetProtectedAreaBoundaries = jest.fn();
-const mockGetGpxTracksBySite = jest.fn();
-const mockGetGpxTrackPoints = jest.fn();
+const mockGetGpxTracksForMap = jest.fn().mockImplementation(() => Promise.resolve([]));
 jest.mock('@/utils/supabase/queries', () => ({
   getSitesOnline: () => mockGetSitesOnline(),
   getTotalInspectionCount: () => Promise.resolve(0),
   getProtectedAreaBoundaries: () => mockGetProtectedAreaBoundaries(),
-  getGpxTracksBySite: (siteId: number) => mockGetGpxTracksBySite(siteId),
-  getGpxTrackPoints: (trackId: number) => mockGetGpxTrackPoints(trackId),
+  getGpxTracksForMap: () => mockGetGpxTracksForMap(),
 }));
 
 // The first-visit tutorial starts 800 ms after load and takes focus. On a slow run it
@@ -988,21 +986,9 @@ describe('Map site selection and GPX tracks (US 2.0.1)', () => {
     mockGetSitesOnline.mockResolvedValue(mockSites);
     mockGetSession.mockResolvedValue({ data: { session: mockStewardUser }, error: null });
     mockGetProtectedAreaBoundaries.mockResolvedValue(linkedBoundaries());
-    mockGetGpxTrackPoints.mockResolvedValue(TWO_POINTS);
-    mockGetGpxTracksBySite.mockImplementation((siteId: string | number) =>
-      Promise.resolve(
-        String(siteId) === '1'
-          ? [
-              {
-                id: 11,
-                originalFileName: 'hike.gpx',
-                trackPointCount: 2,
-                createdAt: '2026-10-01T00:00:00Z',
-              },
-            ]
-          : []
-      )
-    );
+    mockGetGpxTracksForMap.mockResolvedValue([
+      { id: 11, originalFileName: 'hike.gpx', points: TWO_POINTS },
+    ]);
   });
 
   it('opens the map at the linked site when the site page sends ?site= (AT3)', async () => {
@@ -1017,17 +1003,20 @@ describe('Map site selection and GPX tracks (US 2.0.1)', () => {
       expect(siteMap).toHaveAttribute('data-tracks', '1');
     });
 
-    expect(mockGetGpxTracksBySite).toHaveBeenCalledWith('1');
+    expect(mockGetGpxTracksForMap).toHaveBeenCalledTimes(1);
   });
 
-  it('draws the tracks of a site picked on the map, and clears them when the selection moves (AT2, AT4)', async () => {
+  it('loads every track once when the map opens and keeps them when the selection moves (AT2, AT4)', async () => {
     const user = userEvent.setup();
     render(<HomeClient />);
 
     await screen.findByText('Elk Island National Park');
     await user.click(screen.getByRole('button', { name: /map view/i }));
     const siteMap = await screen.findByTestId('site-map');
-    expect(siteMap).toHaveAttribute('data-selected', '');
+    await waitFor(() => {
+      expect(siteMap).toHaveAttribute('data-tracks', '1');
+    });
+    expect(mockGetGpxTracksForMap).toHaveBeenCalledTimes(1);
 
     await user.click(screen.getByTestId('select-area-5'));
     await waitFor(() => {
@@ -1035,18 +1024,13 @@ describe('Map site selection and GPX tracks (US 2.0.1)', () => {
       expect(siteMap).toHaveAttribute('data-tracks', '1');
     });
 
+    // A site without tracks does not clear the map: the lines are not per selection.
     await user.click(screen.getByTestId('select-area-6'));
     await waitFor(() => {
       expect(siteMap).toHaveAttribute('data-selected', '6');
-      expect(siteMap).toHaveAttribute('data-tracks', '0');
+      expect(siteMap).toHaveAttribute('data-tracks', '1');
     });
-
-    // An unlinked boundary has no site, so the previous site's tracks go too.
-    await user.click(screen.getByTestId('select-area-7'));
-    await waitFor(() => {
-      expect(siteMap).toHaveAttribute('data-selected', '7');
-      expect(siteMap).toHaveAttribute('data-tracks', '0');
-    });
+    expect(mockGetGpxTracksForMap).toHaveBeenCalledTimes(1);
   });
 
   it('opens the map without a selection when the linked site has no boundary', async () => {
