@@ -23,14 +23,17 @@ describe('SignedOutGuard (5.0.4 AT2)', () => {
     await waitFor(() => expect(redirect).toHaveBeenCalledTimes(1));
   });
 
-  it('does nothing on public pages', async () => {
-    window.history.pushState({}, '', '/login');
-    const redirect = jest.fn();
-    getSession.mockResolvedValue({ data: { session: null } });
-    render(<SignedOutGuard redirect={redirect} />);
-    pageShow(true);
-    await new Promise((r) => setTimeout(r, 0));
-    expect(getSession).not.toHaveBeenCalled();
-    expect(redirect).not.toHaveBeenCalled();
-  });
+  it.each(['/login', '/forgot-password', '/reset-password'])(
+    'does nothing on the public page %s',
+    async (path) => {
+      window.history.pushState({}, '', path);
+      const redirect = jest.fn();
+      getSession.mockResolvedValue({ data: { session: null } });
+      render(<SignedOutGuard redirect={redirect} />);
+      pageShow(true);
+      await new Promise((r) => setTimeout(r, 0));
+      expect(getSession).not.toHaveBeenCalled();
+      expect(redirect).not.toHaveBeenCalled();
+    },
+  );
 });

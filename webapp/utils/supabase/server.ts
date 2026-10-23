@@ -14,6 +14,25 @@ export function createServerSupabase() {
 }
 
 /**
+ * Server-only anonymous client that keeps no session. Use it for the password reset
+ * code check: verifyOtp returns a session, and this client discards it instead of
+ * writing login cookies for a user who is only proving they own the email.
+ */
+export function createAnonSupabase() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    }
+  );
+}
+
+/**
  * Server client for user authentication with cookie handling.
  * Use this for routes that need to verify user sessions.
  */

@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
 // Same public paths as middleware.ts.
-const PUBLIC_PATHS = ['/login', '/signup', '/auth', '/error'];
+const PUBLIC_PATHS = ['/login', '/signup', '/forgot-password', '/reset-password', '/auth', '/error'];
 const goToLogin = () => window.location.replace('/login');
 
 // US 5.0.4 AT2: after sign-out, the Back button can restore a signed-in page from the
