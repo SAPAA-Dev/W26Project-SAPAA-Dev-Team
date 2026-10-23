@@ -327,8 +327,10 @@ describe('SiteMap (US 2.0.6)', () => {
       expect(sourceId).toBe(SOURCE_ID);
       expect(sourceSpec.type).toBe('geojson');
       expect(sourceSpec.data).toBe(COLLECTION);
-      // The hover state and the popup name one feature, so the source needs ids.
-      expect(sourceSpec.generateId).toBe(true);
+      // The collection carries the protected area id as feature.id. generateId would
+      // replace it with the feature index, so the source must not use it.
+      expect(sourceSpec.generateId).toBeUndefined();
+      expect(sourceSpec.data.features[0].id).toBe(COLLECTION.features[0].id);
 
       expect(mapInstance.addLayer).toHaveBeenCalledTimes(2);
 

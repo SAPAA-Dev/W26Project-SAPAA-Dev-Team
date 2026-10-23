@@ -502,7 +502,8 @@ export default function SiteMap({
       map.getCanvas().style.cursor = 'pointer';
 
       const feature = event.features?.[0];
-      // generateId puts an id on every feature, so the hover state can name one.
+      // The collection carries the protected area id as feature.id, so the hover
+      // state can name one feature.
       if (feature === undefined || feature.id === undefined) return;
       if (hoveredFeatureRef.current === feature.id) return;
 
@@ -548,7 +549,9 @@ export default function SiteMap({
 
       if (boundaries.features.length === 0) return;
 
-      map.addSource(SOURCE_ID, { type: 'geojson', data: boundaries, generateId: true });
+      // The collection carries the protected area id as feature.id. generateId would
+      // replace it with the feature index, so the source must not use it.
+      map.addSource(SOURCE_ID, { type: 'geojson', data: boundaries });
 
       map.addLayer({
         id: FILL_LAYER_ID,
