@@ -361,7 +361,7 @@ describe("POST /api/s3/presign", () => {
     expect(body.uploadUrl).toBe("https://signed-upload.example.com/owner");
   });
 
-  it("gives an approved admin an upload url for someone else's report", async () => {
+  it("refuses an approved admin who does not own the report", async () => {
     mockGetUser.mockResolvedValue({
       data: {
         user: {
@@ -372,10 +372,6 @@ describe("POST /api/s3/presign", () => {
       error: null,
     });
     reportResult = { data: { user_id: "user-1" }, error: null };
-    (getSignedUrl as jest.Mock).mockResolvedValueOnce(
-      "https://signed-upload.example.com/admin"
-    );
-
     const request = new Request("http://localhost:3000/api/s3/presign", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -385,8 +381,9 @@ describe("POST /api/s3/presign", () => {
     const response = await POST(request);
     const body = await response.json();
 
-    expect(response.status).toBe(200);
-    expect(body.uploadUrl).toBe("https://signed-upload.example.com/admin");
+    expect(response.status).toBe(403);
+    expect(body).toEqual({ error: "Forbidden" });
+    expect(getSignedUrl).not.toHaveBeenCalled();
   });
 
   it("returns upload url, key, and generatedFilename for jpeg", async () => {
