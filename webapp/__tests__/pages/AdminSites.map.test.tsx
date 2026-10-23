@@ -15,6 +15,8 @@ jest.mock('@/utils/supabase/queries', () => ({
   getProtectedAreaChoices: jest.fn(),
   getTotalInspectionCount: jest.fn(),
   getProtectedAreaBoundaries: jest.fn(),
+  setSiteBoundaryColor: jest.fn(),
+  setSiteTypeBoundaryColor: jest.fn(),
 }));
 
 jest.mock('next/image', () => {
@@ -41,11 +43,13 @@ jest.mock('@/components/map/SiteMap', () => ({
   __esModule: true,
   default: function MockSiteMap({
     boundaries,
+    canEditBoundaryColors,
   }: {
     boundaries?: { features: Array<{ id: number; properties: { name: string } }> } | null;
+    canEditBoundaryColors?: boolean;
   }) {
     return (
-      <ul data-testid="site-map">
+      <ul data-testid="site-map" data-can-edit-colors={String(canEditBoundaryColors === true)}>
         {(boundaries?.features ?? []).map((feature) => (
           <li key={feature.id}>{feature.properties.name}</li>
         ))}
@@ -105,6 +109,18 @@ describe('Admin Sites map view', () => {
 
     expect(await screen.findByText('2 protected areas found')).toBeInTheDocument();
     await waitFor(() => expect(screen.getByText('Jasper')).toBeInTheDocument());
+  });
+
+  it('lets an admin edit boundary colors in the map view', async () => {
+    const user = userEvent.setup();
+    render(<AdminSitesPage />);
+
+    await user.click(await screen.findByRole('button', { name: 'Map View' }));
+
+    expect(await screen.findByTestId('site-map')).toHaveAttribute(
+      'data-can-edit-colors',
+      'true'
+    );
   });
 
   it('reloads the map and the protected-area choices after a KML import', async () => {

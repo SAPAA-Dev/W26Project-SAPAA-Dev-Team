@@ -108,9 +108,11 @@ const COLLECTION: BoundaryFeatureCollection = {
       type: 'Feature',
       id: 1,
       properties: {
+        protected_area_id: 1,
         name: 'Wainwright Dunes',
         fid: 12,
         area_type: 'ER',
+        boundary_color: null,
         subtype: null,
         iucn: null,
         oc_no: null,
@@ -335,11 +337,21 @@ describe('SiteMap (US 2.0.6)', () => {
       expect(fill.id).toBe(FILL_LAYER_ID);
       expect(fill.type).toBe('fill');
       expect(fill.source).toBe(SOURCE_ID);
+      expect(fill.paint['fill-color']).toEqual([
+        'coalesce',
+        ['get', 'boundary_color'],
+        '#356B43',
+      ]);
 
       const outline = mapInstance.addLayer.mock.calls[1][0];
       expect(outline.id).toBe(OUTLINE_LAYER_ID);
       expect(outline.type).toBe('line');
       expect(outline.source).toBe(SOURCE_ID);
+      expect(outline.paint['line-color']).toEqual([
+        'coalesce',
+        ['get', 'boundary_color'],
+        '#254431',
+      ]);
     });
 
     it('waits for the load event when the style is not ready', () => {
@@ -750,6 +762,308 @@ describe('SiteMap (US 2.0.6)', () => {
       );
 
       expect(popupContent().querySelector('[data-view-sirs]')).toBeNull();
+    });
+
+    describe('boundary colors', () => {
+      function openPopup(properties: Record<string, unknown>): HTMLElement {
+        act(() =>
+          layerHandler('click')({
+            lngLat: { lng: -110.5, lat: 52.6 },
+            features: [{ id: 0, properties }],
+          })
+        );
+        return popupContent();
+      }
+
+      function expandColorControl(content: HTMLElement): void {
+        const expand = content.querySelector('[data-boundary-color-expand]') as HTMLButtonElement;
+        act(() => expand.click());
+      }
+
+      function colorButtons(content: HTMLElement) {
+        return {
+          site: content.querySelector('[data-boundary-color-site]') as HTMLButtonElement,
+          type: content.querySelector('[data-boundary-color-type]') as HTMLButtonElement,
+          input: content.querySelector('[data-boundary-color-input]') as HTMLInputElement,
+          status: content.querySelector('[data-boundary-color-status]') as HTMLElement,
+        };
+      }
+
+      it('shows no color control without the admin flag', () => {
+        render(<SiteMap boundaries={COLLECTION} />);
+
+        expect(
+          openPopup({ name: 'Pembina', area_type: 'NA', protected_area_id: 1 }).querySelector(
+            '[data-boundary-color-expand]'
+          )
+        ).toBeNull();
+      });
+
+      it('shows no color control when the callback is missing', () => {
+        render(<SiteMap boundaries={COLLECTION} canEditBoundaryColors />);
+
+        expect(
+          openPopup({ name: 'Pembina', area_type: 'NA', protected_area_id: 1 }).querySelector(
+            '[data-boundary-color-expand]'
+          )
+        ).toBeNull();
+      });
+
+      it('opens a collapsed color control below the boundary details', () => {
+        const onSet = jest.fn().mockResolvedValue({ ok: true });
+        render(
+          <SiteMap
+            boundaries={COLLECTION}
+            canEditBoundaryColors
+            onSetBoundaryColor={onSet}
+          />
+        );
+
+        const content = openPopup({
+          name: 'Pembina',
+          area_type: 'NA',
+          protected_area_id: 7,
+          acres: 10,
+          boundary_color: '#112233',
+        });
+        const boundarySection = content.children[1];
+        const expand = boundarySection.querySelector(
+          '[data-boundary-color-expand]'
+        ) as HTMLButtonElement;
+        const body = boundarySection.querySelector('[data-boundary-color-body]');
+        const { input } = colorButtons(content);
+
+        // The color block is the last child, after the optional details block.
+        expect(boundarySection.lastElementChild).toBe(expand.parentElement);
+        expect(body?.classList.contains('hidden')).toBe(true);
+        expect(expand.getAttribute('aria-expanded')).toBe('false');
+        expect(input.value).toBe('#112233');
+
+        expandColorControl(content);
+
+        expect(body?.classList.contains('hidden')).toBe(false);
+        expect(expand.getAttribute('aria-expanded')).toBe('true');
+      });
+
+      it('sets the color for the clicked protected area only', async () => {
+        const onSet = jest.fn().mockResolvedValue({ ok: true });
+        render(
+          <SiteMap
+            boundaries={COLLECTION}
+            canEditBoundaryColors
+            onSetBoundaryColor={onSet}
+          />
+        );
+
+        const content = openPopup({
+          name: 'Pembina',
+          area_type: 'NA',
+          protected_area_id: 9,
+          boundary_color: '#112233',
+        });
+        expandColorControl(content);
+        const { site, input, status } = colorButtons(content);
+
+        fireEvent.change(input, { target: { value: '#445566' } });
+        await act(async () => {
+          site.click();
+        });
+
+        expect(onSet).toHaveBeenCalledWith({
+          scope: 'site',
+          protectedAreaId: 9,
+          areaType: null,
+          color: '#445566',
+        });
+        expect(status.textContent).toBe('Saved.');
+      });
+
+      it('sets the color for the trimmed site type', async () => {
+        const onSet = jest.fn().mockResolvedValue({ ok: true });
+        render(
+          <SiteMap
+            boundaries={COLLECTION}
+            canEditBoundaryColors
+            onSetBoundaryColor={onSet}
+          />
+        );
+
+        const content = openPopup({
+          name: 'Pembina',
+          area_type: ' NA ',
+          protected_area_id: 9,
+          boundary_color: null,
+        });
+        expandColorControl(content);
+        const { type, input } = colorButtons(content);
+
+        fireEvent.change(input, { target: { value: '#00ff00' } });
+        await act(async () => {
+          type.click();
+        });
+
+        expect(onSet).toHaveBeenCalledWith({
+          scope: 'type',
+          protectedAreaId: 9,
+          areaType: 'NA',
+          color: '#00ff00',
+        });
+      });
+
+      it('disables the site button without an id and the type button without a type', () => {
+        const onSet = jest.fn().mockResolvedValue({ ok: true });
+        render(
+          <SiteMap
+            boundaries={COLLECTION}
+            canEditBoundaryColors
+            onSetBoundaryColor={onSet}
+          />
+        );
+
+        const content = openPopup({ name: 'Pembina', area_type: '  ' });
+        expandColorControl(content);
+        const { site, type } = colorButtons(content);
+
+        expect(site.disabled).toBe(true);
+        expect(type.disabled).toBe(true);
+      });
+
+      it('shows the error and re-enables the buttons when the save fails', async () => {
+        const onSet = jest.fn().mockResolvedValue({
+          ok: false,
+          error: 'The color could not be saved.',
+        });
+        render(
+          <SiteMap
+            boundaries={COLLECTION}
+            canEditBoundaryColors
+            onSetBoundaryColor={onSet}
+          />
+        );
+
+        const content = openPopup({
+          name: 'Pembina',
+          area_type: 'NA',
+          protected_area_id: 9,
+        });
+        expandColorControl(content);
+        const { site, type, status } = colorButtons(content);
+
+        await act(async () => {
+          site.click();
+        });
+
+        expect(status.textContent).toBe('The color could not be saved.');
+        expect(site.disabled).toBe(false);
+        expect(type.disabled).toBe(false);
+      });
+
+      it('disables both buttons while the save is in flight', async () => {
+        let resolveAction: (value: { ok: boolean }) => void = () => {};
+        const pending = new Promise<{ ok: boolean }>((resolve) => {
+          resolveAction = resolve;
+        });
+        const onSet = jest.fn().mockReturnValue(pending);
+        render(
+          <SiteMap
+            boundaries={COLLECTION}
+            canEditBoundaryColors
+            onSetBoundaryColor={onSet}
+          />
+        );
+
+        const content = openPopup({
+          name: 'Pembina',
+          area_type: 'NA',
+          protected_area_id: 9,
+        });
+        expandColorControl(content);
+        const { site, type } = colorButtons(content);
+
+        act(() => site.click());
+
+        expect(site.disabled).toBe(true);
+        expect(type.disabled).toBe(true);
+
+        await act(async () => {
+          resolveAction({ ok: true });
+        });
+
+        expect(site.disabled).toBe(false);
+      });
+
+      it('keeps the popup open for the boundaries update after a save', async () => {
+        const onSet = jest.fn().mockResolvedValue({ ok: true });
+        const { rerender } = render(
+          <SiteMap
+            boundaries={COLLECTION}
+            canEditBoundaryColors
+            onSetBoundaryColor={onSet}
+          />
+        );
+
+        const content = openPopup({
+          name: 'Pembina',
+          area_type: 'NA',
+          protected_area_id: 9,
+        });
+        expandColorControl(content);
+        const { site } = colorButtons(content);
+
+        await act(async () => {
+          site.click();
+        });
+
+        const setData = jest.fn();
+        mapInstance.getSource.mockReturnValue({ setData });
+        rerender(
+          <SiteMap
+            boundaries={{ ...COLLECTION }}
+            canEditBoundaryColors
+            onSetBoundaryColor={onSet}
+          />
+        );
+
+        expect(setData).toHaveBeenCalled();
+        expect(popupInstance.remove).not.toHaveBeenCalled();
+      });
+
+      it('closes the popup on a later update after a failed save', async () => {
+        const onSet = jest.fn().mockResolvedValue({
+          ok: false,
+          error: 'The color could not be saved.',
+        });
+        const { rerender } = render(
+          <SiteMap
+            boundaries={COLLECTION}
+            canEditBoundaryColors
+            onSetBoundaryColor={onSet}
+          />
+        );
+
+        const content = openPopup({
+          name: 'Pembina',
+          area_type: 'NA',
+          protected_area_id: 9,
+        });
+        expandColorControl(content);
+        const { site } = colorButtons(content);
+
+        await act(async () => {
+          site.click();
+        });
+
+        mapInstance.getSource.mockReturnValue({ setData: jest.fn() });
+        rerender(
+          <SiteMap
+            boundaries={{ ...COLLECTION }}
+            canEditBoundaryColors
+            onSetBoundaryColor={onSet}
+          />
+        );
+
+        expect(popupInstance.remove).toHaveBeenCalled();
+      });
     });
   });
 

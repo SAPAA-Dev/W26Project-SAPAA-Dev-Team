@@ -33,9 +33,11 @@ function feature(
     type: 'Feature',
     id,
     properties: {
+      protected_area_id: id,
       name,
       fid: id,
       area_type: areaType,
+      boundary_color: null,
       subtype,
       iucn: null,
       oc_no: null,

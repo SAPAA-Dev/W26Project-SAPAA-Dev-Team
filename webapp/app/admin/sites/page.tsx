@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAllSites, getArchivedSites, getCounties, getProtectedAreaChoices, updateSite, toggleSiteActive, createSite, getTotalInspectionCount, getProtectedAreaBoundaries, SiteSummary, County, ProtectedAreaChoice, SiteDeleteImpact, archiveSite, getSiteDeleteImpact } from '@/utils/supabase/queries';
+import { getAllSites, getArchivedSites, getCounties, getProtectedAreaChoices, updateSite, toggleSiteActive, createSite, getTotalInspectionCount, getProtectedAreaBoundaries, setSiteBoundaryColor, setSiteTypeBoundaryColor, SiteSummary, County, ProtectedAreaChoice, SiteDeleteImpact, archiveSite, getSiteDeleteImpact } from '@/utils/supabase/queries';
 import { Search, MapPin, Calendar, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Edit, Pencil, ArrowLeft, Download, Plus, Upload, LayoutGrid, Map as MapIcon, Archive } from 'lucide-react';
 import EditSiteModal from './components/EditSiteModal';
 import AddSiteModal from './components/AddSiteModal';
@@ -14,7 +14,8 @@ import PdfExportModal from '@/components/PdfExportModal';
 import PdfExportsDropdown from '@/components/PdfExportsDropdown';
 import KmlImportModal from '@/components/KmlImportModal';
 import ArchiveSiteModal from './components/ArchiveSiteModal';
-import type { BoundaryFeature, BoundaryFeatureCollection } from '@/lib/map/boundaries';
+import { applyBoundaryColor } from '@/lib/map/boundaries';
+import type { BoundaryColorRequest, BoundaryColorResult, BoundaryFeature, BoundaryFeatureCollection } from '@/lib/map/boundaries';
 import { boundaryFilterOptions, CARD_STATUS_OPTIONS, countyFilterOptions, defaultMapStatuses, filterBoundaryCollection, MAP_STATUS_OPTIONS, matchesActiveFilter, matchesCountyFilter, matchesSiteBoundaryFilter, SITE_BOUNDARY_OPTIONS } from '@/lib/map/boundaryFilters';
 import MapAreaFilters from '@/components/map/MapAreaFilters';
 import MapSearchInput from '@/components/map/MapSearchInput';
@@ -302,6 +303,24 @@ export default function AdminSitesPage() {
         .catch(() => setBoundariesError('Site boundaries could not load.'));
     }
   };
+
+  const handleSetBoundaryColor = useCallback(
+    async (request: BoundaryColorRequest): Promise<BoundaryColorResult> => {
+      const result =
+        request.scope === 'site'
+          ? await setSiteBoundaryColor(request.protectedAreaId, request.color)
+          : await setSiteTypeBoundaryColor(request.areaType ?? '', request.color);
+
+      if (result.ok) {
+        // A type color must also recolor features that the current filters hide.
+        setBoundaries((current) =>
+          current === null ? current : applyBoundaryColor(current, request)
+        );
+      }
+      return result;
+    },
+    []
+  );
 
   const handleOpenArchive = async (site: SiteSummary) => {
   setArchiveTarget(site);
@@ -699,6 +718,8 @@ const handleCloseArchive = () => {
               boundariesLoading={boundariesLoading}
               boundariesError={boundariesError}
               focusedArea={focusedArea}
+              canEditBoundaryColors
+              onSetBoundaryColor={handleSetBoundaryColor}
             />
           ) : (
             <>

@@ -5,7 +5,7 @@
 
 import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSitesOnline, getTotalInspectionCount, getProtectedAreaBoundaries, SiteSummary } from '@/utils/supabase/queries';
+import { getSitesOnline, getTotalInspectionCount, getProtectedAreaBoundaries, setSiteBoundaryColor, setSiteTypeBoundaryColor, SiteSummary } from '@/utils/supabase/queries';
 import { Search, MapPin, Calendar, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, LayoutGrid, Map as MapIcon } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import Image from 'next/image';
@@ -16,7 +16,8 @@ import UploadImages from "@/components/UploadImages";
 import dynamic from 'next/dynamic';
 import { sitesDashboardSteps } from '@/components/TutorialOverlay';
 import UserNavBar from "@/components/HeaderDropdown";
-import type { BoundaryFeature, BoundaryFeatureCollection } from '@/lib/map/boundaries';
+import { applyBoundaryColor } from '@/lib/map/boundaries';
+import type { BoundaryColorRequest, BoundaryColorResult, BoundaryFeature, BoundaryFeatureCollection } from '@/lib/map/boundaries';
 import { boundaryFilterOptions, countyFilterOptions, defaultMapStatuses, filterBoundaryCollection, matchesCountyFilter } from '@/lib/map/boundaryFilters';
 import MapAreaFilters from '@/components/map/MapAreaFilters';
 import MapSearchInput from '@/components/map/MapSearchInput';
@@ -128,6 +129,24 @@ export default function HomeClient() {
       .catch(() => setBoundariesError('Site boundaries could not load.'))
       .finally(() => setBoundariesLoading(false));
   }, [viewMode]);
+
+  const handleSetBoundaryColor = useCallback(
+    async (request: BoundaryColorRequest): Promise<BoundaryColorResult> => {
+      const result =
+        request.scope === 'site'
+          ? await setSiteBoundaryColor(request.protectedAreaId, request.color)
+          : await setSiteTypeBoundaryColor(request.areaType ?? '', request.color);
+
+      if (result.ok) {
+        // A type color must also recolor features that the current filters hide.
+        setBoundaries((current) =>
+          current === null ? current : applyBoundaryColor(current, request)
+        );
+      }
+      return result;
+    },
+    []
+  );
 
   const areaFilterOptions = useMemo(() => boundaryFilterOptions(boundaries), [boundaries]);
   const cardCountyOptions = useMemo(
@@ -556,6 +575,8 @@ export default function HomeClient() {
             boundariesLoading={boundariesLoading}
             boundariesError={boundariesError}
             focusedArea={focusedArea}
+            canEditBoundaryColors={currentUser?.role === 'admin'}
+            onSetBoundaryColor={handleSetBoundaryColor}
           />
         ) : (
         <div id="tutorial-site-list">
