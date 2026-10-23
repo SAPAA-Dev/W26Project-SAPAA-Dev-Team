@@ -362,9 +362,9 @@ The line below each story title names the one charter project that is the best m
 
 > **Acceptance Tests**
 
-> 1. Given I am on the sign-in page, When I select "Forgot password" and enter my email, Then a reset link is sent to that email
+> 1. Given I am on the sign-in page, When I select "Forgot password" and enter my email, Then an email is sent
 > 2. Given I requested to reset my password, I am asked to verify with a code before I can proceed to reset my password
-> 3. Given I received a reset link, When I open it and set a new password, Then I can sign in with the new password and not with the old one
+> 3. Given I set a new password, Then I can sign in with the new password and not with the old one
 > 4. No admin intervention is required at any step of resetting my password
 
 ### US 5.0.4 - Sign Out Properly | Story Points: 2

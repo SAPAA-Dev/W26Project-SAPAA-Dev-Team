@@ -91,3 +91,51 @@ export function parseGpxTrackText(gpxText: string): GpxTrackPoint[] {
 
   return points;
 }
+
+export interface GpxTrackForMap {
+  id: number;
+  originalFileName: string;
+  points: GpxTrackPoint[];
+}
+
+export interface GpxTrackLineFeature {
+  type: 'Feature';
+  properties: {
+    trackId: number;
+    fileName: string;
+  };
+  geometry: {
+    type: 'LineString';
+    coordinates: number[][];
+  };
+}
+
+export interface GpxTrackLineFeatureCollection {
+  type: 'FeatureCollection';
+  features: GpxTrackLineFeature[];
+}
+
+/**
+ * One LineString per track, so the map draws each uploaded file as its own line.
+ * A line needs two positions, so a track with one point is dropped, not drawn.
+ */
+export function gpxTracksToLineFeatureCollection(
+  tracks: ReadonlyArray<GpxTrackForMap>
+): GpxTrackLineFeatureCollection {
+  return {
+    type: 'FeatureCollection',
+    features: tracks
+      .filter((track) => track.points.length >= 2)
+      .map((track) => ({
+        type: 'Feature' as const,
+        properties: {
+          trackId: track.id,
+          fileName: track.originalFileName,
+        },
+        geometry: {
+          type: 'LineString' as const,
+          coordinates: track.points.map((point) => [point.lon, point.lat]),
+        },
+      })),
+  };
+}

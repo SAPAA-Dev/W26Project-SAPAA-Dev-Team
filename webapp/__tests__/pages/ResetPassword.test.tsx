@@ -29,7 +29,7 @@ describe('ResetPasswordPage', () => {
     mockSignOut.mockResolvedValue({ error: null });
   });
 
-  it('shows an expired session message when there is no recovery session', async () => {
+  it('5.0.2 AT2: shows an expired session message when there is no recovery session', async () => {
     mockGetSession.mockResolvedValue({ data: { session: null } });
 
     render(<ResetPasswordPage />);
@@ -38,7 +38,7 @@ describe('ResetPasswordPage', () => {
     expect(screen.getByRole('link', { name: /Request a new code/i })).toHaveAttribute('href', '/forgot-password');
   });
 
-  it('blocks a mismatched confirmation', async () => {
+  it('5.0.2 AT3: blocks a mismatched confirmation', async () => {
     render(<ResetPasswordPage />);
     fireEvent.change(await screen.findByLabelText(/^New Password$/i), { target: { value: 'abcdef' } });
     fireEvent.change(screen.getByLabelText(/^Confirm New Password$/i), { target: { value: 'different' } });
@@ -48,7 +48,7 @@ describe('ResetPasswordPage', () => {
     expect(mockUpdateUser).not.toHaveBeenCalled();
   });
 
-  it('blocks a password shorter than six characters', async () => {
+  it('5.0.2 AT3: blocks a password shorter than six characters', async () => {
     render(<ResetPasswordPage />);
     fireEvent.change(await screen.findByLabelText(/^New Password$/i), { target: { value: 'abc' } });
     fireEvent.change(screen.getByLabelText(/^Confirm New Password$/i), { target: { value: 'abc' } });
@@ -58,7 +58,7 @@ describe('ResetPasswordPage', () => {
     expect(mockUpdateUser).not.toHaveBeenCalled();
   });
 
-  it('updates the password, signs out, and shows success', async () => {
+  it('5.0.2 AT3, AT4: updates the password, signs out, and shows success', async () => {
     render(<ResetPasswordPage />);
     fireEvent.change(await screen.findByLabelText(/^New Password$/i), { target: { value: 'newpass123' } });
     fireEvent.change(screen.getByLabelText(/^Confirm New Password$/i), { target: { value: 'newpass123' } });
@@ -70,7 +70,7 @@ describe('ResetPasswordPage', () => {
     expect(screen.getByRole('link', { name: /Back to Login/i })).toHaveAttribute('href', '/login');
   });
 
-  it('shows an error when the update fails', async () => {
+  it('5.0.2 AT3: shows an error when the update fails', async () => {
     mockUpdateUser.mockResolvedValue({ data: null, error: { message: 'Password is too weak' } });
 
     render(<ResetPasswordPage />);

@@ -48,7 +48,7 @@ describe('LoginPage', () => {
     expect(screen.getByRole('button', { name: /Continue with Microsoft/i })).toBeInTheDocument();
   });
 
-  it('links to the password reset page', () => {
+  it('5.0.2 AT1: links to the password reset page', () => {
     render(<LoginPage />);
     expect(screen.getByRole('link', { name: /Forgot password\?/i })).toHaveAttribute('href', '/forgot-password');
   });

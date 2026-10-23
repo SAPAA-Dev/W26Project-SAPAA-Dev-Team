@@ -1,5 +1,6 @@
 import {
   GpxTrackError,
+  gpxTracksToLineFeatureCollection,
   parseGpxTrackFile,
   parseGpxTrackText,
 } from '../../lib/map/gpxTrack';
@@ -73,6 +74,76 @@ describe('parseGpxTrackText', () => {
 function encode(text: string): Uint8Array {
   return Uint8Array.from(text, (character) => character.charCodeAt(0));
 }
+
+describe('gpxTracksToLineFeatureCollection (US 2.0.1 AT2)', () => {
+  it('builds one LineString per track with lon/lat coordinates', () => {
+    const collection = gpxTracksToLineFeatureCollection([
+      { id: 7, originalFileName: 'walk.gpx', points: VALID_GPX_POINTS },
+    ]);
+
+    expect(collection).toEqual({
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: { trackId: 7, fileName: 'walk.gpx' },
+          geometry: {
+            type: 'LineString',
+            coordinates: [
+              [-113.4938, 53.5461],
+              [-113.501, 53.556],
+              [-113.52, 53.5702],
+            ],
+          },
+        },
+      ],
+    });
+  });
+
+  it('keeps the tracks apart, so every uploaded file is its own line', () => {
+    const collection = gpxTracksToLineFeatureCollection([
+      {
+        id: 1,
+        originalFileName: 'first.gpx',
+        points: [
+          { lat: 52, lon: -113, ele: null, time: null },
+          { lat: 52.1, lon: -113.1, ele: null, time: null },
+        ],
+      },
+      {
+        id: 2,
+        originalFileName: 'second.gpx',
+        points: [
+          { lat: 53, lon: -114, ele: null, time: null },
+          { lat: 53.1, lon: -114.1, ele: null, time: null },
+        ],
+      },
+    ]);
+
+    expect(collection.features).toHaveLength(2);
+    expect(collection.features[0].properties.trackId).toBe(1);
+    expect(collection.features[1].properties.trackId).toBe(2);
+  });
+
+  it('drops a track with fewer than two points, because a line needs two positions', () => {
+    const collection = gpxTracksToLineFeatureCollection([
+      {
+        id: 3,
+        originalFileName: 'one-point.gpx',
+        points: [{ lat: 52, lon: -113, ele: null, time: null }],
+      },
+    ]);
+
+    expect(collection.features).toHaveLength(0);
+  });
+
+  it('returns an empty collection for no tracks', () => {
+    expect(gpxTracksToLineFeatureCollection([])).toEqual({
+      type: 'FeatureCollection',
+      features: [],
+    });
+  });
+});
 
 describe('parseGpxTrackFile', () => {
   it('reads the same points from bytes as from text (AT4)', () => {

@@ -2,7 +2,9 @@
 
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAllSites, getArchivedSites, getCounties, getProtectedAreaChoices, updateSite, toggleSiteActive, createSite, getTotalInspectionCount, getProtectedAreaBoundaries, setSiteBoundaryColor, setSiteTypeBoundaryColor, SiteSummary, County, ProtectedAreaChoice, SiteDeleteImpact, archiveSite, getSiteDeleteImpact } from '@/utils/supabase/queries';
+import { getAllSites, getArchivedSites, getCounties, getProtectedAreaChoices, updateSite, toggleSiteActive, createSite, getTotalInspectionCount, getProtectedAreaBoundaries, setSiteBoundaryColor, setSiteTypeBoundaryColor, getGpxTracksForMap, SiteSummary, County, ProtectedAreaChoice, SiteDeleteImpact, archiveSite, getSiteDeleteImpact } from '@/utils/supabase/queries';
+import { gpxTracksToLineFeatureCollection } from '@/lib/map/gpxTrack';
+import type { GpxTrackLineFeatureCollection } from '@/lib/map/gpxTrack';
 import { Search, MapPin, Calendar, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Edit, Pencil, ArrowLeft, Download, Plus, Upload, LayoutGrid, Map as MapIcon, Archive } from 'lucide-react';
 import EditSiteModal from './components/EditSiteModal';
 import AddSiteModal from './components/AddSiteModal';
@@ -107,6 +109,18 @@ export default function AdminSitesPage() {
   const [boundariesError, setBoundariesError] = useState<string | null>(null);
   const boundariesRequested = useRef(false);
   const [focusedArea, setFocusedArea] = useState<BoundaryFeature | null>(null);
+
+  const [gpxTracks, setGpxTracks] = useState<GpxTrackLineFeatureCollection | null>(null);
+  const gpxTracksRequested = useRef(false);
+
+  useEffect(() => {
+    if (viewMode !== 'map' || gpxTracksRequested.current) return;
+    gpxTracksRequested.current = true;
+
+    getGpxTracksForMap()
+      .then((tracks) => setGpxTracks(gpxTracksToLineFeatureCollection(tracks)))
+      .catch(() => setGpxTracks(null));
+  }, [viewMode]);
 
   useEffect(() => {
     if (viewMode !== 'map' || boundariesRequested.current) return;
@@ -720,6 +734,7 @@ const handleCloseArchive = () => {
               focusedArea={focusedArea}
               canEditBoundaryColors={boundaries?.can_edit_colors === true}
               onSetBoundaryColor={handleSetBoundaryColor}
+              gpxTracks={gpxTracks}
             />
           ) : (
             <>

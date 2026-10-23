@@ -17,6 +17,7 @@ jest.mock('@/utils/supabase/queries', () => ({
   getProtectedAreaBoundaries: jest.fn(),
   setSiteBoundaryColor: jest.fn(),
   setSiteTypeBoundaryColor: jest.fn(),
+  getGpxTracksForMap: jest.fn(),
 }));
 
 jest.mock('next/image', () => {
@@ -45,16 +46,19 @@ jest.mock('@/components/map/SiteMap', () => ({
     boundaries,
     canEditBoundaryColors,
     onSetBoundaryColor,
+    gpxTracks,
   }: {
     boundaries?: { features: Array<{ id: number; properties: { name: string } }> } | null;
     canEditBoundaryColors?: boolean;
     onSetBoundaryColor?: unknown;
+    gpxTracks?: { features: unknown[] } | null;
   }) {
     return (
       <ul
         data-testid="site-map"
         data-can-edit-colors={String(canEditBoundaryColors === true)}
         data-can-set-color={String(typeof onSetBoundaryColor === 'function')}
+        data-tracks={gpxTracks?.features.length ?? 0}
       >
         {(boundaries?.features ?? []).map((feature) => (
           <li key={feature.id}>{feature.properties.name}</li>
@@ -105,6 +109,16 @@ describe('Admin Sites map view', () => {
       features: [area(1, 'Pembina River'), area(2, 'Jasper')],
       can_edit_colors: true,
     });
+    queries.getGpxTracksForMap.mockResolvedValue([
+      {
+        id: 11,
+        originalFileName: 'hike.gpx',
+        points: [
+          { lat: 53.5461, lon: -113.4938, ele: null, time: null },
+          { lat: 53.556, lon: -113.501, ele: null, time: null },
+        ],
+      },
+    ]);
   });
 
   it('US 2.0.6: counts protected areas, not sites, in the map view', async () => {
@@ -127,6 +141,16 @@ describe('Admin Sites map view', () => {
     const map = await screen.findByTestId('site-map');
     expect(map).toHaveAttribute('data-can-edit-colors', 'true');
     expect(map).toHaveAttribute('data-can-set-color', 'true');
+  });
+
+  it('loads every uploaded track when the map opens, like the steward view', async () => {
+    const user = userEvent.setup();
+    render(<AdminSitesPage />);
+    await user.click(await screen.findByRole('button', { name: 'Map View' }));
+
+    const siteMap = await screen.findByTestId('site-map');
+    await waitFor(() => expect(siteMap).toHaveAttribute('data-tracks', '1'));
+    expect(queries.getGpxTracksForMap).toHaveBeenCalledTimes(1);
   });
 
   it('reloads the map and the protected-area choices after a KML import', async () => {

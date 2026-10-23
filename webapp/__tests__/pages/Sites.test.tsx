@@ -6,13 +6,23 @@ import HomeClient, { daysSince } from '../../app/sites/page';
 
 // Mock Next.js router
 const mockPush = jest.fn();
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
-  usePathname: () => '/sites',
-  useSearchParams: () => new URLSearchParams(),
-}));
+jest.mock('next/navigation', () => {
+  // The factory holds the params, so a test can swap them before render.
+  let searchParams = new URLSearchParams();
+  return {
+    useRouter: () => ({
+      push: mockPush,
+    }),
+    usePathname: () => '/sites',
+    useSearchParams: () => searchParams,
+    __setSearchParams: (query: string) => {
+      searchParams = new URLSearchParams(query);
+    },
+    __resetSearchParams: () => {
+      searchParams = new URLSearchParams();
+    },
+  };
+});
 
 // Mock Next.js Image component
 jest.mock('next/image', () => ({
@@ -53,10 +63,12 @@ beforeAll(() => {
 // Mock getSitesOnline and getTotalInspectionCount queries
 const mockGetSitesOnline = jest.fn();
 const mockGetProtectedAreaBoundaries = jest.fn();
+const mockGetGpxTracksForMap = jest.fn().mockImplementation(() => Promise.resolve([]));
 jest.mock('@/utils/supabase/queries', () => ({
   getSitesOnline: () => mockGetSitesOnline(),
   getTotalInspectionCount: () => Promise.resolve(0),
   getProtectedAreaBoundaries: () => mockGetProtectedAreaBoundaries(),
+  getGpxTracksForMap: () => mockGetGpxTracksForMap(),
 }));
 
 // The first-visit tutorial starts 800 ms after load and takes focus. On a slow run it
@@ -74,11 +86,17 @@ jest.mock('@/components/map/SiteMap', () => ({
     focusedArea,
     canEditBoundaryColors,
     onSetBoundaryColor,
+    selectedAreaId,
+    onBoundarySelect,
+    gpxTracks,
   }: {
     boundaries?: { features: Array<{ id: number; properties: { name: string } }> } | null;
     focusedArea?: { properties: { name: string } } | null;
     canEditBoundaryColors?: boolean;
     onSetBoundaryColor?: unknown;
+    selectedAreaId?: number | null;
+    onBoundarySelect?: (areaId: number) => void;
+    gpxTracks?: { features: unknown[] } | null;
   }) {
     return (
       <ul
@@ -86,9 +104,22 @@ jest.mock('@/components/map/SiteMap', () => ({
         data-focused={focusedArea?.properties.name ?? ''}
         data-can-edit-colors={String(canEditBoundaryColors === true)}
         data-can-set-color={String(typeof onSetBoundaryColor === 'function')}
+        data-selected={selectedAreaId ?? ''}
+        data-tracks={gpxTracks?.features.length ?? 0}
       >
         {(boundaries?.features ?? []).map((feature) => (
-          <li key={feature.id}>{feature.properties.name}</li>
+          <li key={feature.id}>
+            {feature.properties.name}
+            {typeof onBoundarySelect === 'function' && (
+              <button
+                type="button"
+                data-testid={`select-area-${feature.id}`}
+                onClick={() => onBoundarySelect(feature.id)}
+              >
+                select {feature.properties.name}
+              </button>
+            )}
+          </li>
         ))}
       </ul>
     );
@@ -925,4 +956,115 @@ it('should maintain search state while sorting', async () => {
   });
 });
 
+});
+describe('Map site selection and GPX tracks (US 2.0.1)', () => {
+  const navigationMocks = jest.requireMock('next/navigation') as {
+    __setSearchParams: (query: string) => void;
+    __resetSearchParams: () => void;
+  };
+
+  const TWO_POINTS = [
+    { lat: 53.5461, lon: -113.4938, ele: null, time: null },
+    { lat: 53.556, lon: -113.501, ele: null, time: null },
+  ];
+
+  function linkedAreaFeature(id: number, areaName: string, siteName: string | null) {
+    return {
+      type: 'Feature' as const,
+      id,
+      properties: {
+        name: areaName,
+        fid: id,
+        area_type: 'NA',
+        subtype: null,
+        iucn: null,
+        oc_no: null,
+        acres: null,
+        hectares: null,
+        oc_date: null,
+        date_est: null,
+        oc_name: null,
+        notes: null,
+        county: null,
+        is_active: siteName === null ? null : true,
+        site_name: siteName,
+        last_inspection_date: null,
+      },
+      geometry: { type: 'MultiPolygon' as const, coordinates: [] },
+    };
+  }
+
+  function linkedBoundaries() {
+    return {
+      type: 'FeatureCollection' as const,
+      features: [
+        linkedAreaFeature(5, 'Elk Island', 'Elk Island National Park'),
+        linkedAreaFeature(6, 'Banff', 'Banff National Park'),
+        linkedAreaFeature(7, 'Gooseberry', null),
+      ],
+    };
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    navigationMocks.__resetSearchParams();
+    mockGetSitesOnline.mockResolvedValue(mockSites);
+    mockGetSession.mockResolvedValue({ data: { session: mockStewardUser }, error: null });
+    mockGetProtectedAreaBoundaries.mockResolvedValue(linkedBoundaries());
+    mockGetGpxTracksForMap.mockResolvedValue([
+      { id: 11, originalFileName: 'hike.gpx', points: TWO_POINTS },
+    ]);
+  });
+
+  it('opens the map at the linked site when the site page sends ?site= (AT3)', async () => {
+    navigationMocks.__setSearchParams('site=Elk Island National Park');
+
+    render(<HomeClient />);
+
+    const siteMap = await screen.findByTestId('site-map');
+    await waitFor(() => {
+      expect(siteMap).toHaveAttribute('data-selected', '5');
+      expect(siteMap).toHaveAttribute('data-focused', 'Elk Island');
+      expect(siteMap).toHaveAttribute('data-tracks', '1');
+    });
+
+    expect(mockGetGpxTracksForMap).toHaveBeenCalledTimes(1);
+  });
+
+  it('loads every track once when the map opens and keeps them when the selection moves (AT2, AT4)', async () => {
+    const user = userEvent.setup();
+    render(<HomeClient />);
+
+    await screen.findByText('Elk Island National Park');
+    await user.click(screen.getByRole('button', { name: /map view/i }));
+    const siteMap = await screen.findByTestId('site-map');
+    await waitFor(() => {
+      expect(siteMap).toHaveAttribute('data-tracks', '1');
+    });
+    expect(mockGetGpxTracksForMap).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByTestId('select-area-5'));
+    await waitFor(() => {
+      expect(siteMap).toHaveAttribute('data-selected', '5');
+      expect(siteMap).toHaveAttribute('data-tracks', '1');
+    });
+
+    // A site without tracks does not clear the map: the lines are not per selection.
+    await user.click(screen.getByTestId('select-area-6'));
+    await waitFor(() => {
+      expect(siteMap).toHaveAttribute('data-selected', '6');
+      expect(siteMap).toHaveAttribute('data-tracks', '1');
+    });
+    expect(mockGetGpxTracksForMap).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens the map without a selection when the linked site has no boundary', async () => {
+    navigationMocks.__setSearchParams('site=No Boundary Site');
+
+    render(<HomeClient />);
+
+    const siteMap = await screen.findByTestId('site-map');
+    expect(siteMap).toHaveAttribute('data-selected', '');
+    expect(siteMap).toHaveAttribute('data-focused', '');
+  });
 });
