@@ -708,7 +708,7 @@ Owner).
 |Show all active sites with their boundaries on a map page for signed-in users|US 2.0.1|Red (Saumya, Chris)|Oct 17th|[#184](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/184)|
 |Create the GPX track table and file storage with access rules (migration)|US 2.0.9|Red (Saumya, Chris)|Oct 17th|[#185](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/185)|
 |Link each inspection in the profile history to its SIR|US 1.0.3|Green (Alissa, Jayden)|Oct 17th|[#187](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/187)|
-|Add "Forgot password" to the sign-in page and send a reset link|US 5.0.2|Green (Alissa, Jayden)|Oct 17th|[#188](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/188)|
+|Add "Forgot password" to the sign-in page and send a verification email|US 5.0.2|Green (Alissa, Jayden)|Oct 17th|[#188](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/188)|
 |Choose the tile source and the offline tile cache|US 4.0.2|Red (Saumya, Chris)|Oct 18th|[#189](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/189)|
 |Match sites in the KML import and list unmatched sites for an Admin|US 6.0.1|Blue (Aaron, Zanab, Abhinav)|Oct 18th|[#190](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/190)|
 |Add a "View on map" link to the site page and highlight only the selected site|US 2.0.1|Red (Saumya, Chris)|Oct 19th|[#191](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/191)|
@@ -818,7 +818,7 @@ The acceptance tests are in [User Stories](user-stories.md).
 - **Show activity aggregates on the profile and update them on a new SIR** (US 1.0.4). The profile
   already shows the SIR count from [PR #138](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/138). Add the reported activities. Done when 1.0.4 AT1 and AT2
   pass.
-- **Add "Forgot password" to the sign-in page and send a reset link** (US 5.0.2). Done when 5.0.2
+- **Add "Forgot password" to the sign-in page and send a verification email** (US 5.0.2). Done when 5.0.2
   AT1 passes.
 - **Verify a code, then set the new password** (US 5.0.2). No Admin step is needed. Done when 5.0.2
   AT1 to AT4 pass.

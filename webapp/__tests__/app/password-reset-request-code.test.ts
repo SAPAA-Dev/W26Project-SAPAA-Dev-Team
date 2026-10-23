@@ -41,7 +41,7 @@ describe('POST /auth/password-reset/request-code', () => {
     mockSignInWithOtp.mockResolvedValue({ data: {}, error: null });
   });
 
-  it('rejects an invalid email without contacting Supabase', async () => {
+  it('5.0.2 AT1: rejects an invalid email without contacting Supabase', async () => {
     const response = await POST(makeRequest({ email: 'not-an-email' }) as never);
 
     expect(response.status).toBe(400);
@@ -49,13 +49,13 @@ describe('POST /auth/password-reset/request-code', () => {
     expect(mockSignInWithOtp).not.toHaveBeenCalled();
   });
 
-  it('rejects a body that is not JSON', async () => {
+  it('5.0.2 AT1: rejects a body that is not JSON', async () => {
     const response = await POST(makeRequest(undefined) as never);
 
     expect(response.status).toBe(400);
   });
 
-  it('tells a Google-only user to reset through Google and sends no code', async () => {
+  it('5.0.2 AT1: tells a Google-only user to reset through Google and sends no code', async () => {
     mockListUsers.mockResolvedValue({
       data: { users: [{ id: 'u1', email: 'g@example.com', app_metadata: { providers: ['google'] } }] },
       error: null,
@@ -70,7 +70,7 @@ describe('POST /auth/password-reset/request-code', () => {
     expect(mockSignInWithOtp).not.toHaveBeenCalled();
   });
 
-  it('tells a Microsoft-only user to reset through Microsoft', async () => {
+  it('5.0.2 AT1: tells a Microsoft-only user to reset through Microsoft', async () => {
     mockListUsers.mockResolvedValue({
       data: { users: [{ id: 'u1', email: 'm@example.com', app_metadata: { providers: ['azure'] } }] },
       error: null,
@@ -84,7 +84,7 @@ describe('POST /auth/password-reset/request-code', () => {
     expect(mockSignInWithOtp).not.toHaveBeenCalled();
   });
 
-  it('falls back to the identities when app_metadata has no providers', async () => {
+  it('5.0.2 AT1: falls back to the identities when app_metadata has no providers', async () => {
     mockListUsers.mockResolvedValue({
       data: { users: [{ id: 'u1', email: 'g@example.com', app_metadata: {}, identities: [{ provider: 'google' }] }] },
       error: null,
@@ -96,7 +96,7 @@ describe('POST /auth/password-reset/request-code', () => {
     expect(mockSignInWithOtp).not.toHaveBeenCalled();
   });
 
-  it('sends a code for an email account', async () => {
+  it('5.0.2 AT1: sends a code for an email account', async () => {
     mockListUsers.mockResolvedValue({
       data: { users: [{ id: 'u1', email: 'e@example.com', app_metadata: { providers: ['email'] } }] },
       error: null,
@@ -113,7 +113,7 @@ describe('POST /auth/password-reset/request-code', () => {
     });
   });
 
-  it('answers the same generic message for an unknown email, so it does not reveal accounts', async () => {
+  it('5.0.2 AT1: answers the same generic message for an unknown email, so it does not reveal accounts', async () => {
     const response = await POST(makeRequest({ email: 'nobody@example.com' }) as never);
     const body = await response.json();
 
@@ -123,7 +123,7 @@ describe('POST /auth/password-reset/request-code', () => {
     expect(mockSignInWithOtp).toHaveBeenCalled();
   });
 
-  it('does not reveal a Supabase send error', async () => {
+  it('5.0.2 AT1: does not reveal a Supabase send error', async () => {
     mockSignInWithOtp.mockResolvedValue({ data: null, error: { message: 'rate limited' } });
 
     const response = await POST(makeRequest({ email: 'e@example.com' }) as never);
@@ -132,7 +132,7 @@ describe('POST /auth/password-reset/request-code', () => {
     expect((await response.json()).sent).toBe(true);
   });
 
-  it('answers 500 when the user lookup fails', async () => {
+  it('5.0.2 AT1: answers 500 when the user lookup fails', async () => {
     mockListUsers.mockResolvedValue({ data: null, error: { message: 'boom' } });
 
     const response = await POST(makeRequest({ email: 'e@example.com' }) as never);

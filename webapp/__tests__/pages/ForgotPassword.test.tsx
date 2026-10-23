@@ -30,7 +30,7 @@ describe('ForgotPasswordPage', () => {
     jest.clearAllMocks();
   });
 
-  it('renders the email form and a link back to login', () => {
+  it('5.0.2 AT1: renders the email form and a link back to login', () => {
     render(<ForgotPasswordPage />);
 
     expect(screen.getByLabelText(/Email Address/i)).toBeInTheDocument();
@@ -38,7 +38,7 @@ describe('ForgotPasswordPage', () => {
     expect(screen.getByRole('link', { name: /Back to Login/i })).toHaveAttribute('href', '/login');
   });
 
-  it('requests a code and moves to the code step', async () => {
+  it('5.0.2 AT1, AT4: requests a code and moves to the code step', async () => {
     fetchMock.mockResolvedValue(jsonResponse({ sent: true, message: 'If an account exists, a code is on its way.' }));
 
     render(<ForgotPasswordPage />);
@@ -52,7 +52,7 @@ describe('ForgotPasswordPage', () => {
     );
   });
 
-  it('shows the provider message for a Google or Microsoft account', async () => {
+  it('5.0.2 AT1: shows the provider message for a Google or Microsoft account', async () => {
     fetchMock.mockResolvedValue(
       jsonResponse({ providerRequired: 'google', error: 'This account signs in with Google.' }),
     );
@@ -65,7 +65,7 @@ describe('ForgotPasswordPage', () => {
     expect(screen.queryByLabelText(/Verification Code/i)).not.toBeInTheDocument();
   });
 
-  it('takes the user to the reset password page when the code is correct', async () => {
+  it('5.0.2 AT2, AT4: takes the user to the reset password page when the code is correct', async () => {
     const hrefSpy = spyOnLocationHrefSetter();
 
     fetchMock
@@ -84,7 +84,7 @@ describe('ForgotPasswordPage', () => {
     hrefSpy.mockRestore();
   });
 
-  it('shows an error when the code is rejected', async () => {
+  it('5.0.2 AT2: shows an error when the code is rejected', async () => {
     fetchMock
       .mockResolvedValueOnce(jsonResponse({ sent: true }))
       .mockResolvedValueOnce(jsonResponse({ error: 'That code is invalid or has expired.' }, false));

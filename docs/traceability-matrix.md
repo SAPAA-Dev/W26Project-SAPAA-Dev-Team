@@ -215,7 +215,10 @@ Notes:
 | US 5.0.4 | AT1 | After sign-out, opening the app again shows the sign-in page | `__tests__/middleware.test.ts:54`, `__tests__/components/ProtectedRoutes.test.tsx:56,185`, `__tests__/components/HeaderDropdown.test.tsx:70,106`, `__tests__/components/AdminNavBar.test.tsx:51,64`, `__tests__/components/auth.test.ts:151,157,164`, `cypress/e2e/logout.cy.ts:46,58` | Unit, Component, E2E | S+F | Yes | Pass |
 | US 5.0.4 | AT2 | After sign-out, the Back button shows no signed-in page | `__tests__/components/SignedOutGuard.test.tsx:10`, `cypress/e2e/logout.cy.ts:79` | Component, E2E | S | Yes | Pass |
 | US 5.0.4 | AT3 | Sign out from any page | `__tests__/components/TermsContent.test.tsx:15`, `__tests__/components/ProfilePage.test.tsx:342`, `__tests__/components/HeaderDropdown.test.tsx:52,58`, `__tests__/components/AdminNavBar.test.tsx:31`, `__tests__/components/ProtectedRoutes.test.tsx:170`, `cypress/e2e/logout.cy.ts:98` | Component, E2E | S | Yes | Pass |
-| US 5.0.2 | AT1 to AT4 | Reset a forgotten password (Sprint 3) | - | - | - | - | Not yet tested |
+| US 5.0.2 | AT1 | Select "Forgot password", enter an email, then an email is sent | `__tests__/pages/Login.test.tsx:51`, `__tests__/pages/ForgotPassword.test.tsx:41`, `__tests__/app/password-reset-request-code.test.ts:99,116,126` | Page, API | S+F | Yes | Pass (partial) |
+| US 5.0.2 | AT2 | Verify a code before setting a new password | `__tests__/pages/ForgotPassword.test.tsx:68,87`, `__tests__/app/password-reset-verify-code.test.ts:48,55,63`, `__tests__/pages/ResetPassword.test.tsx:32` | Page, API | S+F | Yes | Pass (partial) |
+| US 5.0.2 | AT3 | Sign in with the new password and not with the old one | `__tests__/pages/ResetPassword.test.tsx:61,73` | Page | S+F | Yes | Pass (partial) |
+| US 5.0.2 | AT4 | Reset the password without admin intervention | `__tests__/pages/ForgotPassword.test.tsx:41,68`, `__tests__/pages/ResetPassword.test.tsx:61`, `__tests__/components/SignedOutGuard.test.tsx:26` | Page, Component | S | Yes | Pass (partial) |
 
 Notes:
 

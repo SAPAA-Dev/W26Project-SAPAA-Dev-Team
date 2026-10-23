@@ -45,14 +45,14 @@ describe('POST /auth/password-reset/verify-code', () => {
     mockVerifyOtp.mockResolvedValue({ data: { session: { access_token: 'a' } }, error: null });
   });
 
-  it('rejects a code that is not six digits without verifying', async () => {
+  it('5.0.2 AT2: rejects a code that is not six digits without verifying', async () => {
     const response = await POST(makeRequest({ email: 'e@example.com', code: '12ab' }) as never);
 
     expect(response.status).toBe(400);
     expect(mockVerifyOtp).not.toHaveBeenCalled();
   });
 
-  it('rejects the code on error from verifyOtp', async () => {
+  it('5.0.2 AT2: rejects the code on error from verifyOtp', async () => {
     mockVerifyOtp.mockResolvedValue({ data: { session: null }, error: { message: 'invalid' } });
 
     const response = await POST(makeRequest({ email: 'e@example.com', code: '123456' }) as never);
@@ -60,7 +60,7 @@ describe('POST /auth/password-reset/verify-code', () => {
     expect(response.status).toBe(400);
   });
 
-  it('verifies the code with email type and keeps session in same browser', async () => {
+  it('5.0.2 AT2: verifies the code with email type and keeps session in same browser', async () => {
     const response = await POST(makeRequest({ email: 'E@Example.com ', code: ' 654321 ' }) as never);
     const body = await response.json();
 
