@@ -11,11 +11,12 @@ jest.mock("next/server", () => ({
   }));
   
   import { GET } from "@/app/api/user-gallery/sir-upload/route";
-  import { createClient } from "@/utils/supabase/server";
+  import { createClient, createServerSupabase } from "@/utils/supabase/server";
   import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
   
   jest.mock("@/utils/supabase/server", () => ({
-    createClient: jest.fn()
+    createClient: jest.fn(),
+    createServerSupabase: jest.fn(),
   }));
   
   jest.mock("@aws-sdk/client-s3", () => ({
@@ -41,6 +42,7 @@ jest.mock("next/server", () => ({
         },
         from: mockFrom,
       });
+      (createServerSupabase as jest.Mock).mockReturnValue({ from: mockFrom });
     });
  
     it("returns 401 if user is not authenticated", async () => {
@@ -74,7 +76,7 @@ jest.mock("next/server", () => ({
         data: {
             user: {
             id: "user-1",
-            app_metadata: { role: "user" },
+            app_metadata: { role: "user", authenticated: true },
             },
         },
         error: null,
@@ -178,7 +180,7 @@ jest.mock("next/server", () => ({
       ]);
       expect(attachmentsIsMock).toHaveBeenCalledWith("form_responses.archived_at", null);
       // M24: deactivated reports' photos stay hidden from user-facing galleries.
-      expect(attachmentsSelectMock.mock.calls[0][0]).toContain("form_responses!inner (archived_at, is_active)");
+      expect(attachmentsSelectMock.mock.calls[0][0]).toContain("form_responses!inner (archived_at, is_active, user_id, answers(question_id, is_hidden))");
       expect(attachmentsActiveMock).toHaveBeenCalledWith("form_responses.is_active", true);
   
       expect(sitesInMock).toHaveBeenCalledWith("id", ["207", "208"]);
@@ -222,7 +224,7 @@ jest.mock("next/server", () => ({
             data: {
                 user: {
                 id: "user-1",
-                app_metadata: { role: "user" },
+                app_metadata: { role: "user", authenticated: true },
                 },
             },
             error: null,
@@ -322,7 +324,7 @@ jest.mock("next/server", () => ({
         data: {
             user: {
             id: "user-1",
-            app_metadata: { role: "user" },
+            app_metadata: { role: "user", authenticated: true },
             },
         },
         error: null,
@@ -370,7 +372,7 @@ jest.mock("next/server", () => ({
         data: {
             user: {
             id: "user-1",
-            app_metadata: { role: "user" },
+            app_metadata: { role: "user", authenticated: true },
             },
         },
         error: null,

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Image as ImageIcon, Loader2, Lock } from "lucide-react";
+import { EyeOff, Image as ImageIcon, Loader2, Lock } from "lucide-react";
 import { getQuestionsOnline } from '@/utils/supabase/queries';
 import MarkdownText from "@/components/MarkdownText";
 
@@ -46,6 +46,8 @@ interface MainContentProps {
   onExistingAttachmentsChange?: (attachments: ExistingAttachment[]) => void;
   // Section saved in the draft, applied on the first render of the section list.
   restoredActiveSection?: number | null;
+  hiddenQuestionIds?: Set<number>;
+  onHiddenQuestionIdsChange?: (questionIds: Set<number>) => void;
 }
 
 // An image already persisted in AWS + attachments
@@ -85,6 +87,8 @@ export default function MainContent({
   currentUser,
   existingAttachments = [],
   restoredActiveSection = null,
+  hiddenQuestionIds = new Set<number>(),
+  onHiddenQuestionIdsChange,
 }: MainContentProps) {
   const [activeSection, setActiveSection] = useState<number | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -267,6 +271,13 @@ export default function MainContent({
 
   const handleResponse = (questionId: number, value: ResponseValue) => {
     onResponsesChange({ ...responses, [questionId]: value });
+  };
+
+  const setAnswerHidden = (questionId: number, hidden: boolean) => {
+    const next = new Set(hiddenQuestionIds);
+    if (hidden) next.add(questionId);
+    else next.delete(questionId);
+    onHiddenQuestionIdsChange?.(next);
   };
 
   // ── Existing-attachment helpers ─────────────────────────────────────────────
@@ -899,6 +910,16 @@ export default function MainContent({
                               </span>
                             )}
                           </div>
+                          <label className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-lg border border-[#D7C48F] bg-[#FFF8DF] px-3 py-2 text-sm font-semibold text-[#6E5412]">
+                            <input
+                              type="checkbox"
+                              checked={hiddenQuestionIds.has(question.id)}
+                              onChange={(event) => setAnswerHidden(question.id, event.target.checked)}
+                              className="h-4 w-4 rounded border-[#D7C48F] text-[#6E5412] focus:ring-[#6E5412]"
+                            />
+                            <EyeOff className="h-4 w-4" />
+                            Hide answer from other stewards
+                          </label>
                         </div>
                       </div>
                     </div>

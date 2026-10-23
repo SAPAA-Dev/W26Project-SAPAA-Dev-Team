@@ -171,6 +171,7 @@ function mockAuthenticatedUser() {
 }
 
 function mockAdminUser() {
+  mockCreateServerSupabase.mockReturnValue({ from: makeGalleryFrom() });
   mockReportOwner();
   mockCreateClient.mockResolvedValue({
     auth: {
@@ -511,6 +512,11 @@ describe("Acceptance Test 3 – Uploaded images are accessible through the appli
   });
 
   it("gallery returns 500 if the database query fails", async () => {
+    mockCreateServerSupabase.mockReturnValue({
+      from: makeGalleryFrom({
+        attachmentsError: { message: "DB connection failed" },
+      }),
+    });
     mockCreateClient.mockResolvedValue({
       auth: {
         getUser: jest.fn().mockResolvedValue({
@@ -524,9 +530,7 @@ describe("Acceptance Test 3 – Uploaded images are accessible through the appli
           error: null,
         }),
       },
-      from: makeGalleryFrom({
-        attachmentsError: { message: "DB connection failed" },
-      }),
+      from: makeGalleryFrom(),
     });
 
     const res = await GET();
