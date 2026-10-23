@@ -345,16 +345,17 @@ describe('SiteMap (US 2.0.6)', () => {
       expect(outline.source).toBe(SOURCE_ID);
     });
 
-    it('waits for the load event when the style is not ready', () => {
+    it('waits for the idle event when the style is not ready', () => {
       mapInstance.isStyleLoaded.mockReturnValue(false);
       render(<SiteMap boundaries={COLLECTION} />);
 
       expect(mapInstance.addSource).not.toHaveBeenCalled();
 
-      const loadCall = mapInstance.once.mock.calls.find(([event]) => event === 'load');
-      expect(loadCall).toBeDefined();
+      // The map-level load event fires once per instance, so the fallback is idle.
+      const idleCall = mapInstance.once.mock.calls.find(([event]) => event === 'idle');
+      expect(idleCall).toBeDefined();
 
-      act(() => loadCall?.[1]());
+      act(() => idleCall?.[1]());
 
       expect(mapInstance.addSource).toHaveBeenCalledTimes(1);
     });
@@ -1341,6 +1342,26 @@ describe('SiteMap site selection and GPX tracks (US 2.0.1)', () => {
       rerender(<SiteMap boundaries={COLLECTION} gpxTracks={null} />);
 
       expect(setData).toHaveBeenCalledWith({ type: 'FeatureCollection', features: [] });
+    });
+
+    it('applies the tracks through the idle path when the style is busy', () => {
+      // The style has loaded, but a pending source update keeps isStyleLoaded()
+      // false, so neither the direct call nor style.load can fire.
+      mapInstance.isStyleLoaded.mockReturnValue(false);
+      render(<SiteMap boundaries={COLLECTION} gpxTracks={GPX_TRACKS} />);
+
+      expect(mapInstance.addSource).not.toHaveBeenCalled();
+
+      // Every effect that waits registers its own idle handler, so all of them run.
+      const idleCalls = mapInstance.once.mock.calls.filter(([event]) => event === 'idle');
+      expect(idleCalls).toHaveLength(2);
+
+      for (const [, handler] of idleCalls) {
+        act(() => handler());
+      }
+
+      const addedSourceIds = mapInstance.addSource.mock.calls.map(([id]) => id);
+      expect(addedSourceIds).toContain(GPX_SOURCE_ID);
     });
 
     it('re-adds the track source and layer after a style swap', () => {

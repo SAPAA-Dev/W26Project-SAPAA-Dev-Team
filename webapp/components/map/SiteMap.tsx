@@ -591,13 +591,16 @@ export default function SiteMap({
     };
 
     // A source or a layer can be added only once the style has loaded. A style
-    // swap drops them, so the same function also runs on style.load.
+    // swap drops them, so the same function also runs on style.load. The map-level
+    // load event fires once per map instance and isStyleLoaded() stays false while
+    // any source update is pending, so the fallback before the first load waits for
+    // idle instead. The apply is idempotent, so a double run is harmless.
     map.on('style.load', applyBoundaries);
 
     if (map.isStyleLoaded()) {
       applyBoundaries();
     } else {
-      map.once('load', applyBoundaries);
+      map.once('idle', applyBoundaries);
     }
 
     return () => {
@@ -607,7 +610,7 @@ export default function SiteMap({
       // The effect above clears the ref before it removes the map, so this runs only
       // while the map is still alive.
       map.off('style.load', applyBoundaries);
-      if (mapRef.current !== null) mapRef.current.off('load', applyBoundaries);
+      if (mapRef.current !== null) mapRef.current.off('idle', applyBoundaries);
     };
   }, [apiKey, boundaries]);
 
@@ -662,16 +665,18 @@ export default function SiteMap({
       });
     };
 
+    // The load event fires once per map instance, so the fallback waits for idle
+    // when the style is busy. The apply is idempotent, so a double run is harmless.
     map.on('style.load', applyGpxTracks);
     if (map.isStyleLoaded()) {
       applyGpxTracks();
     } else {
-      map.once('load', applyGpxTracks);
+      map.once('idle', applyGpxTracks);
     }
 
     return () => {
       map.off('style.load', applyGpxTracks);
-      if (mapRef.current !== null) mapRef.current.off('load', applyGpxTracks);
+      if (mapRef.current !== null) mapRef.current.off('idle', applyGpxTracks);
     };
   }, [apiKey, gpxTracks]);
 
