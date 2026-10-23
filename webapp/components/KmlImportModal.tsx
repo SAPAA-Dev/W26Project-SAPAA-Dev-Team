@@ -128,6 +128,7 @@ export default function KmlImportModal({ open, onClose, onImported }: KmlImportM
   };
 
   const warnings = result?.warnings ?? [];
+  const unlinkedSites = result?.unlinkedSites ?? [];
 
   return (
     <div
@@ -220,6 +221,25 @@ export default function KmlImportModal({ open, onClose, onImported }: KmlImportM
               <ul className="mt-2 max-h-40 overflow-y-auto text-sm text-[#7A8075] space-y-1 list-disc pl-5">
                 {warnings.map((warning) => (
                   <li key={warning}>{warning}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {stage === 'done' && unlinkedSites.length > 0 && (
+            <div
+              data-testid="unlinked-sites"
+              className="mt-4 bg-[#FEF3C7] text-[#92400E] rounded-xl px-4 py-3"
+            >
+              <p className="text-sm font-medium">
+                {unlinkedSites.length} {unlinkedSites.length === 1 ? 'site has' : 'sites have'} no boundary
+              </p>
+              <ul
+                data-testid="unlinked-sites-list"
+                className="mt-2 max-h-40 overflow-y-auto text-sm space-y-1 list-disc pl-5"
+              >
+                {unlinkedSites.map((name, index) => (
+                  <li key={`${name}-${index}`}>{name}</li>
                 ))}
               </ul>
             </div>

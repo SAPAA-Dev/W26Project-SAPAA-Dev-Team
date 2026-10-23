@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import KmlImportModal from '@/components/KmlImportModal';
 import { importProtectedAreasFromStorage } from '@/utils/kml-import-actions';
 
@@ -36,6 +36,40 @@ describe('KmlImportModal', () => {
 
     expect(await screen.findByText('Imported 3 protected areas.')).toBeInTheDocument();
     expect(onImported).toHaveBeenCalledTimes(1);
+  });
+
+  it('lists the sites that have no boundary after an import', async () => {
+    mockImport.mockResolvedValue({
+      success: true,
+      upserted: 1,
+      skipped: 0,
+      warnings: [],
+      unlinkedSites: ['Alpha (NA)', 'Beta (WPP)'],
+    });
+    const { container } = render(<KmlImportModal open onClose={jest.fn()} />);
+
+    chooseFile(container);
+
+    const block = await screen.findByTestId('unlinked-sites');
+    expect(within(block).getByText('2 sites have no boundary')).toBeInTheDocument();
+    expect(within(block).getByText('Alpha (NA)')).toBeInTheDocument();
+    expect(within(block).getByText('Beta (WPP)')).toBeInTheDocument();
+  });
+
+  it('hides the boundary list when every site has a boundary', async () => {
+    mockImport.mockResolvedValue({
+      success: true,
+      upserted: 1,
+      skipped: 0,
+      warnings: [],
+      unlinkedSites: [],
+    });
+    const { container } = render(<KmlImportModal open onClose={jest.fn()} />);
+
+    chooseFile(container);
+
+    expect(await screen.findByText('Imported 1 protected areas.')).toBeInTheDocument();
+    expect(screen.queryByTestId('unlinked-sites')).not.toBeInTheDocument();
   });
 
   it('does not tell the page when the import fails', async () => {

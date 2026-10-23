@@ -20,6 +20,8 @@ function FilterSection({ label, options, selected, onChange }: FilterSectionProp
   const normalizedQuery = query.trim().toLowerCase();
   const visibleOptions = options.filter((option) => option.toLowerCase().includes(normalizedQuery));
   const searchLabel = searchLabelFor(label);
+  // The two fixed options do not need a search box.
+  const showSearch = label !== 'Status' && label !== 'Site Boundaries';
 
   return (
     <section className="border-b border-[#E4EBE4] last:border-b-0" aria-label={label}>
@@ -48,7 +50,7 @@ function FilterSection({ label, options, selected, onChange }: FilterSectionProp
       </div>
       {expanded && (
         <div className="px-3 pb-3">
-          {label !== 'Status' &&<input
+          {showSearch &&<input
             type="text"
             value={query}
             aria-label={searchLabel}
@@ -96,14 +98,17 @@ interface MapAreaFiltersProps {
   subtypes?: readonly string[];
   counties?: readonly string[];
   statuses?: readonly string[];
+  siteBoundaries?: readonly string[];
   selectedTypes?: ReadonlySet<string> | null;
   selectedSubtypes?: ReadonlySet<string> | null;
   selectedCounties?: ReadonlySet<string> | null;
   selectedStatuses?: ReadonlySet<string> | null;
+  selectedSiteBoundaries?: ReadonlySet<string> | null;
   onTypesChange?: (next: ReadonlySet<string> | null) => void;
   onSubtypesChange?: (next: ReadonlySet<string> | null) => void;
   onCountiesChange?: (next: ReadonlySet<string> | null) => void;
   onStatusesChange?: (next: ReadonlySet<string> | null) => void;
+  onSiteBoundariesChange?: (next: ReadonlySet<string> | null) => void;
 }
 
 export default function MapAreaFilters({
@@ -111,18 +116,26 @@ export default function MapAreaFilters({
   subtypes = [],
   counties = [],
   statuses = [],
+  siteBoundaries = [],
   selectedTypes = null,
   selectedSubtypes = null,
   selectedCounties = null,
   selectedStatuses = null,
+  selectedSiteBoundaries = null,
   onTypesChange = () => {},
   onSubtypesChange = () => {},
   onCountiesChange = () => {},
   onStatusesChange = () => {},
+  onSiteBoundariesChange = () => {},
 }: MapAreaFiltersProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const disabled = types.length === 0 && subtypes.length === 0 && counties.length === 0 && statuses.length === 0;
+  const disabled =
+    types.length === 0 &&
+    subtypes.length === 0 &&
+    counties.length === 0 &&
+    statuses.length === 0 &&
+    siteBoundaries.length === 0;
 
   useEffect(() => {
     if (!open) return;
@@ -175,6 +188,14 @@ export default function MapAreaFilters({
               options={statuses}
               selected={selectedStatuses}
               onChange={onStatusesChange}
+            />
+          )}
+          {siteBoundaries.length > 0 && (
+            <FilterSection
+              label="Site Boundaries"
+              options={siteBoundaries}
+              selected={selectedSiteBoundaries}
+              onChange={onSiteBoundariesChange}
             />
           )}
         </div>
