@@ -143,7 +143,7 @@ export default function HomeClient() {
   const [selectedAreaId, setSelectedAreaId] = useState<number | null>(null);
   // A ?site= link that arrived before the boundaries. The boundary load consumes it.
   const pendingSiteNameRef = useRef<string | null>(null);
-  // Every uploaded track, drawn on the map without a selection.
+  // Every uploaded track, loaded once per visit. A failure clears the lines.
   const [gpxTracks, setGpxTracks] = useState<GpxTrackLineFeatureCollection | null>(null);
   const gpxTracksRequested = useRef(false);
 
@@ -195,8 +195,6 @@ export default function HomeClient() {
     selectSiteByName(boundaries, siteName);
   }, [boundaries, selectSiteByName]);
 
-  // The map draws every uploaded track, so the load runs once per visit, not per
-  // selection. A failure clears the lines instead of leaving old ones on the map.
   useEffect(() => {
     if (viewMode !== 'map' || gpxTracksRequested.current) return;
     gpxTracksRequested.current = true;

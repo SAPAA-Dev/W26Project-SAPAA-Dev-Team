@@ -502,8 +502,6 @@ export default function SiteMap({
       map.getCanvas().style.cursor = 'pointer';
 
       const feature = event.features?.[0];
-      // The collection carries the protected area id as feature.id, so the hover
-      // state can name one feature.
       if (feature === undefined || feature.id === undefined) return;
       if (hoveredFeatureRef.current === feature.id) return;
 
@@ -549,8 +547,7 @@ export default function SiteMap({
 
       if (boundaries.features.length === 0) return;
 
-      // The collection carries the protected area id as feature.id. generateId would
-      // replace it with the feature index, so the source must not use it.
+      // generateId would replace the protected area id with the feature index.
       map.addSource(SOURCE_ID, { type: 'geojson', data: boundaries });
 
       map.addLayer({
@@ -591,10 +588,8 @@ export default function SiteMap({
     };
 
     // A source or a layer can be added only once the style has loaded. A style
-    // swap drops them, so the same function also runs on style.load. The map-level
-    // load event fires once per map instance and isStyleLoaded() stays false while
-    // any source update is pending, so the fallback before the first load waits for
-    // idle instead. The apply is idempotent, so a double run is harmless.
+    // swap drops them, so the same function also runs on style.load. The map
+    // fires load once per instance, so a busy style waits for idle instead.
     map.on('style.load', applyBoundaries);
 
     if (map.isStyleLoaded()) {
@@ -665,8 +660,7 @@ export default function SiteMap({
       });
     };
 
-    // The load event fires once per map instance, so the fallback waits for idle
-    // when the style is busy. The apply is idempotent, so a double run is harmless.
+    // The map fires load once per instance, so a busy style waits for idle instead.
     map.on('style.load', applyGpxTracks);
     if (map.isStyleLoaded()) {
       applyGpxTracks();

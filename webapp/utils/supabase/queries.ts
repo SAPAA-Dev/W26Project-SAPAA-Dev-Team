@@ -1484,10 +1484,7 @@ export async function getGpxTrackPoints(trackId: number): Promise<GpxTrackPoint[
   }
 }
 
-/**
- * Every track on the map, not only the tracks of one site. One unreadable file
- * must not hide the other tracks, so it is skipped instead of thrown.
- */
+// One unreadable file must not hide the other tracks, so it is skipped, not thrown.
 export async function getGpxTracksForMap(): Promise<GpxTrackForMap[]> {
   await requireApprovedTrackReader();
   const supabase = createServerSupabase();

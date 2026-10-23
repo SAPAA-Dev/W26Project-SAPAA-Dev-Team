@@ -327,8 +327,6 @@ describe('SiteMap (US 2.0.6)', () => {
       expect(sourceId).toBe(SOURCE_ID);
       expect(sourceSpec.type).toBe('geojson');
       expect(sourceSpec.data).toBe(COLLECTION);
-      // The collection carries the protected area id as feature.id. generateId would
-      // replace it with the feature index, so the source must not use it.
       expect(sourceSpec.generateId).toBeUndefined();
       expect(sourceSpec.data.features[0].id).toBe(COLLECTION.features[0].id);
 
@@ -351,7 +349,6 @@ describe('SiteMap (US 2.0.6)', () => {
 
       expect(mapInstance.addSource).not.toHaveBeenCalled();
 
-      // The map-level load event fires once per instance, so the fallback is idle.
       const idleCall = mapInstance.once.mock.calls.find(([event]) => event === 'idle');
       expect(idleCall).toBeDefined();
 
@@ -1345,8 +1342,7 @@ describe('SiteMap site selection and GPX tracks (US 2.0.1)', () => {
     });
 
     it('applies the tracks through the idle path when the style is busy', () => {
-      // The style has loaded, but a pending source update keeps isStyleLoaded()
-      // false, so neither the direct call nor style.load can fire.
+      // A pending source update keeps isStyleLoaded() false.
       mapInstance.isStyleLoaded.mockReturnValue(false);
       render(<SiteMap boundaries={COLLECTION} gpxTracks={GPX_TRACKS} />);
 

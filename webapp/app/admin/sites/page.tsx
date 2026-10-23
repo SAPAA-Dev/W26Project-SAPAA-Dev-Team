@@ -108,8 +108,6 @@ export default function AdminSitesPage() {
   const boundariesRequested = useRef(false);
   const [focusedArea, setFocusedArea] = useState<BoundaryFeature | null>(null);
 
-  // Every uploaded track, drawn on the map without a selection, as on the
-  // steward sites page. The load runs once per visit, not per selection.
   const [gpxTracks, setGpxTracks] = useState<GpxTrackLineFeatureCollection | null>(null);
   const gpxTracksRequested = useRef(false);
 
