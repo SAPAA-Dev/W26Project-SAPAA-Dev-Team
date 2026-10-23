@@ -19,7 +19,7 @@ type QueryResult = Record<string, unknown>;
 
 function makeQuery(result: QueryResult) {
   const query: Record<string, unknown> = {};
-  ['select', 'eq', 'is', 'order', 'range', 'overrideTypes', 'update'].forEach((method) => {
+  ['select', 'eq', 'not', 'is', 'order', 'range', 'overrideTypes', 'update'].forEach((method) => {
     query[method] = jest.fn(() => query);
   });
   query.maybeSingle = jest.fn(async () => result);
@@ -146,7 +146,7 @@ describe('/api/profile', () => {
       expect(mockAdminFrom).toHaveBeenCalledWith('form_responses');
     });
 
-    it('flags reports whose site is archived and keeps deleted sites as Unknown site', async () => {
+    it('flags unavailable sites and removes reports for deleted sites', async () => {
       const peopleQuery = makeQuery({ data: PERSON, error: null });
       // The route awaits the form_responses query directly, so the mock carries the result.
       const responsesResult = {
@@ -160,7 +160,7 @@ describe('/api/profile', () => {
         count: 3,
       };
       const responsesQuery: Record<string, unknown> = { ...responsesResult };
-      ['select', 'eq', 'is', 'order', 'range', 'overrideTypes'].forEach((method) => {
+      ['select', 'eq', 'not', 'is', 'order', 'range', 'overrideTypes'].forEach((method) => {
         responsesQuery[method] = jest.fn(() => responsesQuery);
       });
       mockAdminFrom.mockImplementation((table: string) =>
@@ -176,12 +176,12 @@ describe('/api/profile', () => {
         { count: 'exact' }
       );
       expect(responsesQuery.is).toHaveBeenCalledWith('archived_at', null);
+      expect(responsesQuery.not).toHaveBeenCalledWith('site_id', 'is', null);
       expect(body.history).toEqual([
         { id: 7, siteId: 5, siteName: 'Beaver Hills', siteArchived: false, siteInactive: false, inspectionDate: '2026-09-12' },
         { id: 8, siteId: 6, siteName: 'Duck Lake', siteArchived: true, siteInactive: false, inspectionDate: '2026-09-01' },
         // US 2.0.3 (M25): a deactivated site is flagged so the profile does not link to it.
         { id: 10, siteId: 7, siteName: 'Elk Island', siteArchived: false, siteInactive: true, inspectionDate: '2026-08-15' },
-        { id: 9, siteId: null, siteName: 'Unknown site', siteArchived: false, siteInactive: false, inspectionDate: '2026-08-01' },
       ]);
     });
 
@@ -189,7 +189,7 @@ describe('/api/profile', () => {
       // A form_responses query whose final await gives `result`.
       function responsesQuery(result: Record<string, unknown>) {
         const query: Record<string, unknown> = { ...result };
-        ['select', 'eq', 'is', 'order', 'range', 'overrideTypes'].forEach((method) => {
+        ['select', 'eq', 'not', 'is', 'order', 'range', 'overrideTypes'].forEach((method) => {
           query[method] = jest.fn(() => query);
         });
         return query;

@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient, createServerSupabase } from './supabase/server';
+import { refreshProtectedAreaLinks } from './supabase/siteLinks';
 import { KmlImportError, parseProtectedAreaFile } from '@/lib/map/kmlImport';
 
 export interface ImportKmlResult {
@@ -26,6 +27,8 @@ const MAX_FILE_BYTES = 50 * 1024 * 1024;
 
 const NOT_ADMIN_ERROR = 'Only admins can import protected areas.';
 const INVALID_PATH_ERROR = 'The import path is not valid.';
+const LINK_WARNING =
+  'The protected areas were saved, but the site links were not updated. Link the sites by hand or run the import again.';
 
 // Every call below runs with the service role, so the caller is checked first.
 // The check reads the signed-in session, never a value the caller sends.
@@ -143,7 +146,12 @@ export async function importProtectedAreasFromStorage(storagePath: string): Prom
       upserted += chunk.length;
     }
 
-    return { success: true, upserted, skipped: stats.skipped, warnings };
+    // The boundaries now hold the imported geometry, so the matching site cards can
+    // link and their centres can refresh. The import already succeeded, so a failed
+    // lookup is a warning, not an error.
+    const linked = await refreshProtectedAreaLinks(supabase);
+    const importWarnings = linked ? warnings : [...warnings, LINK_WARNING];
+    return { success: true, upserted, skipped: stats.skipped, warnings: importWarnings };
   } catch (error) {
     console.error('Failed to import the protected areas', error);
     return {

@@ -10,12 +10,14 @@ jest.mock("next/server", () => ({
 }));
 
 import { POST } from "@/app/api/s3/presign/route";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createServerSupabase } from "@/utils/supabase/server";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { generateFilename } from "@/utils/media/generateFilename";
 
 jest.mock("@/utils/supabase/server", () => ({
   createClient: jest.fn(),
+  createServerSupabase: jest.fn(),
 }));
 
 jest.mock("@aws-sdk/client-s3", () => ({
@@ -32,7 +34,20 @@ jest.mock("@/utils/media/generateFilename", () => ({
 }));
 
 describe("POST /api/s3/presign", () => {
+  type ReportResult = { data: unknown; error: unknown };
+
   const mockGetUser = jest.fn();
+  let reportResult: ReportResult;
+
+  // Chainable stand-in for the service-role query builder used by the owner check.
+  function reportQuery(result: ReportResult) {
+    const query: Record<string, jest.Mock> = {};
+    for (const method of ["select", "eq", "is"]) {
+      query[method] = jest.fn(() => query);
+    }
+    query.maybeSingle = jest.fn().mockResolvedValue(result);
+    return query;
+  }
 
   const validBody = {
     filename: "tree.jpg",
@@ -54,6 +69,12 @@ describe("POST /api/s3/presign", () => {
       auth: {
         getUser: mockGetUser,
       },
+    });
+
+    // The report is owned by user-1 unless a test says otherwise.
+    reportResult = { data: { user_id: "user-1" }, error: null };
+    (createServerSupabase as unknown as jest.Mock).mockReturnValue({
+      from: jest.fn(() => reportQuery(reportResult)),
     });
 
     (generateFilename as jest.Mock).mockReturnValue(
@@ -232,11 +253,145 @@ describe("POST /api/s3/presign", () => {
     expect(body).toEqual({ error: "File too large" });
   });
 
+  it("returns 400 when fileSize is missing", async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: "user-1", user_metadata: {} } },
+      error: null,
+    });
+
+    const request = new Request("http://localhost:3000/api/s3/presign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...validBody, fileSize: undefined }),
+    });
+
+    const response = await POST(request);
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "Invalid file data" });
+    expect(getSignedUrl).not.toHaveBeenCalled();
+  });
+
+  it("puts the content type and content length into the signed command", async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: "user-1", app_metadata: { authenticated: true }, user_metadata: {} } },
+      error: null,
+    });
+    (getSignedUrl as jest.Mock).mockResolvedValueOnce(
+      "https://signed-upload.example.com/jpeg"
+    );
+
+    const request = new Request("http://localhost:3000/api/s3/presign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(validBody),
+    });
+
+    await POST(request);
+
+    expect(PutObjectCommand).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ContentType: "image/jpeg",
+        ContentLength: 1000,
+      })
+    );
+  });
+
+  it("returns 403 when the report belongs to another user", async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: "user-2", app_metadata: { role: "steward", authenticated: true } } },
+      error: null,
+    });
+    reportResult = { data: { user_id: "user-1" }, error: null };
+
+    const request = new Request("http://localhost:3000/api/s3/presign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(validBody),
+    });
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: "Forbidden" });
+    expect(getSignedUrl).not.toHaveBeenCalled();
+  });
+
+  it("returns 403 when the report does not exist", async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: "user-1", app_metadata: { role: "steward", authenticated: true } } },
+      error: null,
+    });
+    reportResult = { data: null, error: null };
+
+    const request = new Request("http://localhost:3000/api/s3/presign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(validBody),
+    });
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: "Forbidden" });
+    expect(getSignedUrl).not.toHaveBeenCalled();
+  });
+
+  it("gives the report owner an upload url", async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: "user-1", app_metadata: { role: "steward", authenticated: true } } },
+      error: null,
+    });
+    reportResult = { data: { user_id: "user-1" }, error: null };
+    (getSignedUrl as jest.Mock).mockResolvedValueOnce(
+      "https://signed-upload.example.com/owner"
+    );
+
+    const request = new Request("http://localhost:3000/api/s3/presign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(validBody),
+    });
+
+    const response = await POST(request);
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.uploadUrl).toBe("https://signed-upload.example.com/owner");
+  });
+
+  it("refuses an approved admin who does not own the report", async () => {
+    mockGetUser.mockResolvedValue({
+      data: {
+        user: {
+          id: "admin-1",
+          app_metadata: { role: "admin", authenticated: true },
+        },
+      },
+      error: null,
+    });
+    reportResult = { data: { user_id: "user-1" }, error: null };
+    const request = new Request("http://localhost:3000/api/s3/presign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(validBody),
+    });
+
+    const response = await POST(request);
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body).toEqual({ error: "Forbidden" });
+    expect(getSignedUrl).not.toHaveBeenCalled();
+  });
+
   it("returns upload url, key, and generatedFilename for jpeg", async () => {
     mockGetUser.mockResolvedValue({
       data: {
         user: {
           id: "user-1",
+          app_metadata: { authenticated: true },
           user_metadata: { full_name: "Raiyana Rahman" },
         },
       },
@@ -286,6 +441,7 @@ describe("POST /api/s3/presign", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { authenticated: true },
           user_metadata: { full_name: "Raiyana Rahman" },
         },
       },
@@ -334,6 +490,7 @@ describe("POST /api/s3/presign", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { authenticated: true },
           user_metadata: { full_name: "Raiyana Rahman" },
         },
       },
@@ -382,6 +539,7 @@ describe("POST /api/s3/presign", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { authenticated: true },
           user_metadata: { full_name: "Fallback User" },
         },
       },
@@ -429,6 +587,7 @@ describe("POST /api/s3/presign", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { authenticated: true },
           user_metadata: {},
         },
       },
@@ -479,6 +638,7 @@ describe("POST /api/s3/presign", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { authenticated: true },
           user_metadata: { full_name: "Raiyana Rahman" },
         },
       },
@@ -526,6 +686,7 @@ describe("POST /api/s3/presign", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { authenticated: true },
           user_metadata: {},
         },
       },
@@ -548,6 +709,7 @@ describe("POST /api/s3/presign", () => {
       data: {
         user: {
           id: "user-1",
+          app_metadata: { authenticated: true },
           user_metadata: { full_name: "Raiyana Rahman" },
         },
       },
@@ -590,7 +752,7 @@ describe("POST /api/s3/presign", () => {
     ["a negative id", { responseId: -1 }],
     ["a decimal id", { questionId: 2.5 }],
   ])("returns 400 for %s and signs nothing", async (_label, change) => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-1", app_metadata: { authenticated: true } } }, error: null });
 
     const request = new Request("http://localhost:3000/api/s3/presign", {
       method: "POST",
@@ -606,7 +768,7 @@ describe("POST /api/s3/presign", () => {
   });
 
   it("returns 400 when the metadata would put a folder into the key", async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-1", app_metadata: { authenticated: true } } }, error: null });
     (generateFilename as jest.Mock).mockReturnValue("Riverlot56-2026/../x-generated.jpg");
 
     const request = new Request("http://localhost:3000/api/s3/presign", {

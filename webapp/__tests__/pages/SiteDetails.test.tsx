@@ -549,6 +549,21 @@ describe('SiteDetailScreen', () => {
         expect(screen.queryByText('Site is in good condition')).not.toBeInTheDocument();
       });
     });
+
+    it('1.0.3 AT3: shows the owner a hidden answer with an Answer Hidden badge', async () => {
+      (supabaseQueries.getFormResponsesBySite as jest.Mock).mockResolvedValue([{
+        ...mockInspections[0],
+        naturalness_hidden: true,
+        answers: [{ ...mockInspections[0].answers[0], is_hidden: true }],
+      }]);
+      render(<SiteDetailScreen />);
+
+      const dateButton = await screen.findByTestId('expand-inspection-button');
+      fireEvent.click(dateButton);
+
+      await waitFor(() => expect(screen.getByText('john@example.com')).toBeInTheDocument());
+      expect(screen.getAllByText('Answer Hidden')).toHaveLength(2);
+    });
   });
 
   describe('Question Comparison View', () => {

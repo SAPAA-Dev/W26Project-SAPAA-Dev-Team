@@ -43,6 +43,8 @@ export async function middleware(request: NextRequest) {
     !user &&
     !request.nextUrl.pathname.startsWith('/login') &&
     !request.nextUrl.pathname.startsWith('/signup') &&
+    !request.nextUrl.pathname.startsWith('/forgot-password') &&
+    !request.nextUrl.pathname.startsWith('/reset-password') &&
     !request.nextUrl.pathname.startsWith('/auth') &&
     !request.nextUrl.pathname.startsWith('/error')
   ) {
@@ -60,7 +62,7 @@ export async function middleware(request: NextRequest) {
   if (
     user &&
     user.app_metadata?.authenticated !== true &&
-    !['/login', '/signup', '/auth', '/error'].some((prefix) => path === prefix || path.startsWith(`${prefix}/`))
+    !['/login', '/signup', '/forgot-password', '/reset-password', '/auth', '/error'].some((prefix) => path === prefix || path.startsWith(`${prefix}/`))
   ) {
     if (request.method === 'GET' && path === '/sites') {
       return supabaseResponse

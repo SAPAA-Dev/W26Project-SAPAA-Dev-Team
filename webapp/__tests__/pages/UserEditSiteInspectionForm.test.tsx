@@ -596,6 +596,7 @@ beforeEach(() => {
   // Default mock returns - override per test as needed
   (queries.getQuestionsOnline as jest.Mock).mockResolvedValue([]);
   (queries.getFormResponseById as jest.Mock).mockResolvedValue({});
+  (queries.getHiddenQuestionIdsByResponseId as jest.Mock).mockResolvedValue([]);
   (queries.getResponseOwnerId as jest.Mock).mockResolvedValue('user-123'); // matches auth user → authorized
   (queries.getSiteIdForResponse as jest.Mock).mockResolvedValue(5);
   (queries.isSteward as jest.Mock).mockResolvedValue(false);
@@ -836,5 +837,26 @@ describe('W26 US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         await waitFor(() =>
           expect(mockPush).toHaveBeenCalledWith('/detail/Test%20Site?report=42')
         );
+    });
+
+    it("keeps an answer hidden when its owner edits the report", async () => {
+        (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(mockQuestions);
+        (queries.getFormResponseById as jest.Mock).mockResolvedValue(mockResponses);
+        (queries.getHiddenQuestionIdsByResponseId as jest.Mock).mockResolvedValue([32]);
+        (queries.getQuestionResponseType as jest.Mock).mockResolvedValue([
+          { question_id: 32, obs_value: null, obs_comm: true },
+        ]);
+
+        render(<EditReportPage />);
+        await waitFor(() => expect(screen.getByText('Edit Inspection Report')).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByTestId('question-input-32')).toBeInTheDocument());
+        expect(screen.getAllByRole('checkbox', { name: /hide answer from other stewards/i })[0]).toBeChecked();
+
+        fireEvent.click(screen.getByRole('button', { name: /Close/i }));
+        fireEvent.click(screen.getByRole('button', { name: /Save Changes/i }));
+
+        await waitFor(() => expect(queries.updateSiteInspectionAnswers).toHaveBeenCalled());
+        const answersArray = (queries.updateSiteInspectionAnswers as jest.Mock).mock.calls[0][1];
+        expect(answersArray).toContainEqual(expect.objectContaining({ question_id: 32, is_hidden: true }));
     });
 });

@@ -65,6 +65,7 @@ interface QuestionComparison {
     date: string;
     displayDate: string;
     answer: string;
+    isHidden: boolean;
   }>;
 }
 
@@ -75,6 +76,7 @@ interface EditableAnswer {
   obs_comm: string;
   section_id: number | null;
   section_title: string | null;
+  is_hidden: boolean;
 }
 
 type GalleryItem = {
@@ -94,7 +96,17 @@ type GalleryItem = {
   content_type?: string | null;
   date?: string | null;
   photographer?: string | null;
+  is_hidden?: boolean;
 };
+
+function HiddenAnswerBadge() {
+  return (
+    <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+      <EyeOff className="h-3 w-3" />
+      Answer Hidden
+    </span>
+  );
+}
 
 function getInspectionDate(response: FormResponse): string | null {
   return response.inspection_date ?? response.created_at ?? null;
@@ -363,6 +375,7 @@ export default function AdminSiteDetails() {
               day: 'numeric',
             }),
             answer: value,
+            isHidden: a.is_hidden === true,
           });
         }
       });
@@ -494,6 +507,7 @@ export default function AdminSiteDetails() {
       obs_comm: a.obs_comm ?? '',
       section_id: a.section_id,
       section_title: a.section_title,
+      is_hidden: a.is_hidden === true,
     })));
   };
 
@@ -508,11 +522,12 @@ export default function AdminSiteDetails() {
     setIsSaving(true);
     try {
       const batchArray = editAnswers
-        .filter(a => a.obs_value || a.obs_comm)
+        .filter(a => a.is_hidden || a.obs_value || a.obs_comm)
         .map(a => ({
           question_id: a.question_id,
           obs_value: a.obs_value.trim() !== '' ? a.obs_value.trim() : null,
           obs_comm: a.obs_comm.trim() !== '' ? a.obs_comm.trim() : null,
+          is_hidden: a.is_hidden,
         }));
   
       const inspectionDate = editingResponse.inspection_date ?? editingResponse.created_at ?? new Date().toISOString().split('T')[0];
@@ -968,7 +983,10 @@ export default function AdminSiteDetails() {
                               )}
                               {quality.score < 80 && <div title={`Data quality: ${quality.score}%`}><AlertTriangle className="w-4 h-4 text-[#E0A63A]" /></div>}
                             </div>
-                            <p className="text-sm text-[#7A8075]">Score: {normalizeScore(response.naturalness_score)}</p>
+                            <p className="text-sm text-[#7A8075]">
+                              Score: {normalizeScore(response.naturalness_score)}
+                              {response.naturalness_hidden && <HiddenAnswerBadge />}
+                            </p>
                           </div>
                         </div>
                         {isExpanded ? (
@@ -1014,13 +1032,19 @@ export default function AdminSiteDetails() {
                         {response.steward && (
                           <div>
                             <p className="text-sm font-semibold text-[#7A8075] mb-1">Steward</p>
-                            <p className="text-[#1E2520]">{response.steward}</p>
+                            <p className="text-[#1E2520]">
+                              {response.steward}
+                              {response.steward_hidden && <HiddenAnswerBadge />}
+                            </p>
                           </div>
                         )}
                         {response.naturalness_details && (
                           <div>
                             <p className="text-sm font-semibold text-[#7A8075] mb-1">Naturalness Details</p>
-                            <p className="text-[#1E2520]">{response.naturalness_details}</p>
+                            <p className="text-[#1E2520]">
+                              {response.naturalness_details}
+                              {response.naturalness_details_hidden && <HiddenAnswerBadge />}
+                            </p>
                           </div>
                         )}
                         {response.answers.length > 0 && (
@@ -1045,6 +1069,7 @@ export default function AdminSiteDetails() {
                                               {a.obs_value ? ` (Other: ${a.obs_comm})` : a.obs_comm}
                                             </span>
                                           )}
+                                          {a.is_hidden && <HiddenAnswerBadge />}
                                         </div>
                                       );
                                     })}
@@ -1122,7 +1147,10 @@ export default function AdminSiteDetails() {
                                 <Calendar className="w-4 h-4 text-[#7A8075] flex-shrink-0 mt-0.5 sm:mt-0" />
                                 <span className="text-sm font-semibold text-[#356B43]">{answer.displayDate}</span>
                               </div>
-                              <p className="text-[#1E2520]">{answer.answer}</p>
+                              <p className="text-[#1E2520]">
+                                {answer.answer}
+                                {answer.isHidden && <HiddenAnswerBadge />}
+                              </p>
                             </div>
                           ))}
                         </div>
@@ -1214,6 +1242,7 @@ export default function AdminSiteDetails() {
                       </button>
 
                       <div className="p-4 sm:p-5 space-y-3">
+                        {item.is_hidden && <HiddenAnswerBadge />}
                         <div className="text-sm text-[#7A8075] flex items-start sm:items-center gap-2">
                           <MapPin className="w-4 h-4 flex-shrink-0" />
                           <span>{item.site_name || site.namesite || "Unknown site"}</span>
@@ -1276,6 +1305,7 @@ export default function AdminSiteDetails() {
               </div>
 
               <div className="min-w-0 min-h-0 p-4 sm:p-6 bg-white space-y-4 sm:space-y-5 border-t lg:border-t-0 lg:border-l border-[#E4EBE4] overflow-y-auto">
+                {selectedImage.is_hidden && <HiddenAnswerBadge />}
                 <div>
                   <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">Site</p>
                   <p className="text-base sm:text-lg font-semibold text-[#254431] break-words">{selectedImage.site_name || site.namesite || "Unknown site"}</p>

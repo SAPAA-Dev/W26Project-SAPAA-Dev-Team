@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createServerSupabase } from "@/utils/supabase/server";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { deleteObjectsByKeys } from "@/utils/media/s3Delete";
@@ -19,12 +19,24 @@ const s3 = new S3Client({
 const IMAGE_TABLES = ["attachments", "homepage_image_uploads"] as const;
 type ImageTable = (typeof IMAGE_TABLES)[number];
 
+type ReportVisibility = {
+  user_id: string | null;
+  answers?: Array<{ question_id: number; is_hidden: boolean | null }> | null;
+};
+
+function getReportVisibility(value: ReportVisibility | ReportVisibility[] | null): ReportVisibility | null {
+  return Array.isArray(value) ? value[0] ?? null : value;
+}
+
 export async function GET(request: Request) {
   try {
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (user.app_metadata?.authenticated !== true) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -40,10 +52,11 @@ export async function GET(request: Request) {
     }
 
     // Archived reports keep their images for restore, but normal image lists must hide them.
-    let query = supabase
+    const admin = createServerSupabase();
+    let query = admin
       .from("attachments")
       .select(
-        "id, response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier, site_id, form_responses!inner(archived_at)"
+        "id, response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier, site_id, form_responses!inner(archived_at, user_id, answers(question_id, is_hidden))"
       )
       .is("form_responses.archived_at", null);
 
@@ -62,8 +75,21 @@ export async function GET(request: Request) {
 
     // Generate a presigned GET URL for each attachment (1 hour expiry)
     // A row whose key is outside the image folders is never signed.
+    const visibleAttachments = attachments.filter((row) => {
+      const report = getReportVisibility(row.form_responses);
+      const isHidden = report?.answers?.some(
+        (answer) => answer.question_id === row.question_id && answer.is_hidden === true
+      ) ?? false;
+      const canReadHidden = user.app_metadata?.role === "admin" || report?.user_id === user.id;
+      return !isHidden || canReadHidden;
+    });
+
     const items = await Promise.all(
-      attachments.filter((row) => isAllowedStorageKey(row.storage_key)).map(async (row) => {
+      visibleAttachments.filter((row) => isAllowedStorageKey(row.storage_key)).map(async (row) => {
+        const report = getReportVisibility(row.form_responses);
+        const isHidden = report?.answers?.some(
+          (answer) => answer.question_id === row.question_id && answer.is_hidden === true
+        ) ?? false;
         const command = new GetObjectCommand({
           Bucket: BUCKET,
           Key: row.storage_key,
@@ -81,6 +107,7 @@ export async function GET(request: Request) {
           caption:         row.caption,
           identifier:      row.identifier,
           site_id:         row.site_id,
+          ...(isHidden ? { is_hidden: true } : {}),
           imageUrl,
         };
       })

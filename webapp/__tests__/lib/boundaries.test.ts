@@ -44,6 +44,8 @@ function row(overrides: Partial<ProtectedAreaBoundaryRow> = {}): ProtectedAreaBo
     date_est: '1971-03-15',
     oc_name: 'Wainwright Dunes Ecological Reserve',
     notes: null,
+    site_name: null,
+    last_inspection_date: null,
     geometry: { type: 'MultiPolygon', coordinates: [[squareRing(4)]] },
     ...overrides,
   };
@@ -215,7 +217,25 @@ describe('toBoundaryFeatureCollection (US 2.0.6)', () => {
       notes: null,
       county: null,
       is_active: null,
+      site_name: null,
+      last_inspection_date: null,
     });
+  });
+
+  it('maps the linked site name and last inspection date (US 2.0.8 AT2)', () => {
+    const collection = toBoundaryFeatureCollection([
+      row({ site_name: 'Wainwright Dunes', last_inspection_date: '2024-03-15' }),
+    ]);
+
+    expect(collection.features[0].properties.site_name).toBe('Wainwright Dunes');
+    expect(collection.features[0].properties.last_inspection_date).toBe('2024-03-15');
+  });
+
+  it('maps null when the area has no linked site (US 2.0.8 AT2)', () => {
+    const collection = toBoundaryFeatureCollection([row({ site_name: null, last_inspection_date: null })]);
+
+    expect(collection.features[0].properties.site_name).toBeNull();
+    expect(collection.features[0].properties.last_inspection_date).toBeNull();
   });
 
   it('returns rounded coordinates', () => {

@@ -58,4 +58,19 @@ describe('OAuth callback next parameter', () => {
       expect(res.location).toBe('http://localhost:3000/sites');
     }
   );
+
+  it('redirects on the browser host in development, not Next.js origin', async () => {
+    const previous = process.env.NODE_ENV;
+    (process.env as Record<string, string>).NODE_ENV = 'development';
+    try {
+      const res = await GET({
+        url: 'http://localhost:3000/auth/callback?code=abc&next=/reset-password',
+        headers: { get: (name: string) => (name === 'host' ? '127.0.0.1:3000' : null) },
+      } as unknown as Parameters<typeof GET>[0]) as unknown as { location: string };
+
+      expect(res.location).toBe('http://127.0.0.1:3000/reset-password');
+    } finally {
+      (process.env as Record<string, string>).NODE_ENV = previous ?? 'test';
+    }
+  });
 });
