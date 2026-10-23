@@ -108,7 +108,6 @@ This table lists all 35 stories in [User Stories](../user-stories.md). 34 storie
 The team must decide how to fix these differences. This page does not change the stories or the screens for them.
 
 * US 1.0.4: the story asks for the SIR count and the activities reported. The Profile screen shows "SIRs Submitted" and "Sites Inspected".
-* US 5.0.2: the story says that a reset link goes to the email of the user. The Reset Password screen sends a 6-digit code and does not use a link.
 * US 2.0.5: the story says that the Admin uses "edit mode" on a site page. The wireframe puts "Update" on the Admin: Sites list, not on the Site Report.
 * Admin: Sites has a "Site Visibility" field (Public or Stewards Only) in the "Add Site" form. No story asks for this field.
 * US 2.0.12 and US 2.0.13: the stories say that the Admin enters the points and sees the reminder on the Site. The wireframe puts the "Priority" form and the reminder on the Admin: Sites list, the same as "Update" for US 2.0.5. The stories do not give the calculation of the to-visit priority, so the Site Report shows the priority as a placeholder bar.

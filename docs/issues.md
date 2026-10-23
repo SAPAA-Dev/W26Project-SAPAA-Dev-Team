@@ -49,7 +49,7 @@ that no merged pull request resolves the item.
 | 12 | Make site search work | bug | 4 | S | ★★★ | | Open |
 | 13 | Key site detail pages by id, not name | bug | 4 | S | ★★★ | | Open |
 | 14 | Instrument the events KPIs are built from | feature | 5 | M | ★★★ | | Open |
-| 15 | Add password reset | feature | 4 | S | ★★★ | | Open |
+| 15 | Add password reset | feature | 4 | S | ★★★ | | Done: PR #295 |
 | 16 | Show stewards a map | feature | 4 | S | ★★★ | 7 | Partly done (#159, #161, #166, #167, #241). US 2.0.6 done. US 2.0.1 in Sprint 3 |
 | 17 | Send the approval email the app already promises | bug | 3 | S | ★★★ | | Open |
 | 18 | Cache geocoding results and bound the quota | bug | 3 | S | ★★★ | 7 | Open. On `main`, `/api/geocode` and the heat map are for admins only, and the heat map returns at most 50 sites. No cache |
@@ -328,8 +328,13 @@ Acceptance: visits, inspections, and per user activity are recorded in a queryab
 #### 15. Add password reset
 `Labels: feature`
 
-No route, no link on the login page. Acceptance: a user who forgets their password can recover
-access without an admin.
+The web app now has a "Forgot password" link and the `/forgot-password` and `/reset-password`
+pages. US 5.0.2 requires an email, code verification, then a new password, with no admin
+intervention. The acceptance tests were updated on October 23, 2026 to remove the reset-link step.
+
+Existing Jest tests check the request, code verification and password update with mocked
+Supabase calls. Email delivery and sign-in with the new password, with rejection of the old
+password, still need a full acceptance check. See [the test mapping](traceability-matrix.md#5-access-and-accounts).
 
 #### 16. Show stewards a map
 `Labels: feature`

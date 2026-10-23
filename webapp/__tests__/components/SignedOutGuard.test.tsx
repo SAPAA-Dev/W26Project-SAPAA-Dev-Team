@@ -24,7 +24,7 @@ describe('SignedOutGuard (5.0.4 AT2)', () => {
   });
 
   it.each(['/login', '/forgot-password', '/reset-password'])(
-    'does nothing on the public page %s',
+    '5.0.2 AT4: does nothing on the public page %s',
     async (path) => {
       window.history.pushState({}, '', path);
       const redirect = jest.fn();
