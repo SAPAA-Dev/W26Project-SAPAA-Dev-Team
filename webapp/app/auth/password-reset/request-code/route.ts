@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { User } from '@supabase/supabase-js';
 import { createAnonSupabase } from '@/utils/supabase/server';
 import { supabaseAdmin } from '@/utils/supabase/admin';
+import { isEmail } from 'validator';
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const LIST_PAGE_SIZE = 1000;
 const LIST_MAX_PAGES = 10;
 
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
   }
 
   const email = normaliseEmail(body.email);
-  if (!EMAIL_PATTERN.test(email)) return invalidEmailResponse();
+  if (!isEmail(email)) return invalidEmailResponse();
 
   let provider: ExternalProvider | null = null;
   try {

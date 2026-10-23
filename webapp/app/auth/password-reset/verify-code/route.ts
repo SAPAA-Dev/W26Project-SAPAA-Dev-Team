@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { isEmail } from 'validator';
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CODE_PATTERN = /^\d{6}$/;
 
 function normaliseEmail(value: unknown) {
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
   const email = normaliseEmail(body.email);
   const code = typeof body.code === 'string' ? body.code.trim() : '';
-  if (!EMAIL_PATTERN.test(email) || !CODE_PATTERN.test(code)) {
+  if (!isEmail(email) || !CODE_PATTERN.test(code)) {
     return NextResponse.json({ error: 'Enter the six-digit code from your email.' }, { status: 400 });
   }
 
