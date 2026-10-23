@@ -413,9 +413,10 @@ export default function SiteMap({
     const map = new MapLibreMap({
       container: containerRef.current,
       style: styleUrl,
-      center: CENTER,
-      zoom: ZOOM,
-      maxBounds: MAX_BOUNDS,
+      // MapLibre fits these bounds when it builds the map. A fixed zoom cannot show
+      // the full province on every container height.
+      bounds: ALBERTA_BOUNDS,
+      fitBoundsOptions: { padding: VIEW_PADDING },
       renderWorldCopies: false,
       transformRequest: makeTransformRequest(() => onlineRef.current),
     });
