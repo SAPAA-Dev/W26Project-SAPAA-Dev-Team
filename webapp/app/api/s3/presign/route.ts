@@ -5,6 +5,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { generateFilename } from "@/utils/media/generateFilename";
 import { isAllowedStorageKey } from "@/utils/media/storageKeys";
+import { requireReportWriter } from "@/utils/supabase/queries";
 // AWS configuration
 const REGION = process.env.AWS_REGION!;
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
@@ -69,11 +70,31 @@ export async function POST(request: Request) {
       );
     }
 
+    // The size is signed into the S3 command, so a missing or non-whole size must not slip through.
+    if (typeof fileSize !== "number" || !Number.isSafeInteger(fileSize) || fileSize <= 0) {
+      return NextResponse.json(
+        { error: "Invalid file data" },
+        { status: 400 }
+      );
+    }
+
     if (fileSize > MAX_SIZE) {
       return NextResponse.json(
         { error: "File too large" },
         { status: 400 }
       );
+    }
+
+    // The service-role read inside requireReportWriter bypasses RLS, so it checks
+    // the caller first: only the report owner or an approved admin may upload.
+    // The denied message matches REPORT_WRITE_DENIED in utils/supabase/queries.ts.
+    try {
+      await requireReportWriter(responseId);
+    } catch (err) {
+      if (err instanceof Error && err.message === "You are not allowed to change this report.") {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      throw err;
     }
 
     //  Create S3 key
@@ -107,9 +128,13 @@ export async function POST(request: Request) {
 
 
     //Generate presigned URL
+    // ContentLength is signed, so S3 rejects a body of a different size. The S3 presigner
+    // marks Content-Type unsignable, so the type is enforced by the check above, not by S3.
     const command = new PutObjectCommand({
       Bucket: BUCKET,
       Key: key,
+      ContentType: contentType,
+      ContentLength: fileSize,
     });
 
     const uploadUrl = await getSignedUrl(s3, command, {

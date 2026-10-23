@@ -23,6 +23,7 @@ nav:
   - User Story Summaries: 'user-stories-summaries.md'
   - Project Management: 'project-management.md'
   - Software Design: 'software-design.md'
+  - UI/UX design: 'ui-design.md'
   - User Model: 'user-model.md'
   - API Documentation: 'api-documentation.md'
   - Wireframes: 'interactive-wireframe/index.md'
@@ -31,7 +32,6 @@ nav:
   - Contributing: 'contributing.md'
   - Issues Backlog: 'issues.md'
   - Archive (inherited):
-      - UI/UX design: 'ui-design.md'
       - Media Storage Architecture: 'aws-architecture.md'
       - User Manual: 'user-manual.md'
       - Admin Manual: 'admin-manual.md'

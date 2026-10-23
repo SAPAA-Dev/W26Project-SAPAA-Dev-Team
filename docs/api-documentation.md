@@ -1,11 +1,11 @@
 # API Documentation
 
 *The Fall 2026 section is the reference for every route handler, server action and database
-function of the web app. It was checked on October 11, 2026 against `chore/sprint-2-integration`
-at `848fc22`: `main` at `9009d0d` plus the Sprint 2 fix branches (`fix/alpha-code-quality`,
-`fix/alpha-approval-screen-on-sites`, `fix/beta-sprint-2-gaps`, `fix/gamma-sprint-2-gaps`,
-`fix/report-read-caller-checks` and the CI branches). The Winter 2026 section is inherited. The
-Fall 2025 routes are now in the Fall 2026 section.*
+function of the web app. It describes `main` at `ceb5188`, the Sprint 2 release, merged in
+[#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284) on October 13, 2026. It was
+checked on October 11 and 12 against the Sprint 2 fix branches that #284 brought into `main`. The
+caller checks of `queries.ts` were checked again on `main` at `ceb5188`. The Winter 2026 section is
+inherited. The Fall 2025 routes are now in the Fall 2026 section.*
 
 ## API Documentation From Fall 2026
 
@@ -67,7 +67,7 @@ row level security.
 | `GET /api/sites/{siteId}/gallery` | Approved user; hidden photos only for owner/admin | Signed-in | [Site report gallery](#get-apisitessiteidgallery) |
 | `GET /api/homepage-images` | Admin | Signed-in | [Admin homepage gallery](#get-apihomepage-images) |
 | `GET /api/homepage-images/{siteId}` | Signed-in user (RLS) | Signed-in | [Site homepage images](#get-apihomepage-imagessiteid) |
-| `POST /api/s3/presign` | Signed-in user | None | [Presign a report photo](#post-apis3presign) |
+| `POST /api/s3/presign` | Report owner or admin | None | [Presign a report photo](#post-apis3presign) |
 | `POST /api/s3/presign-homepage-images` | Signed-in user | None | [Presign a homepage photo](#post-apis3presign-homepage-images) |
 | `GET /api/user-gallery/sir-upload` | Approved user; hidden photos only for owner/admin | Signed-in | [User report gallery](#get-apiuser-gallerysir-upload) |
 | `GET /api/user-gallery/homepage-upload` | Signed-in user (RLS) | Signed-in | [User homepage gallery](#get-apiuser-galleryhomepage-upload) |
@@ -316,12 +316,15 @@ approved users.
 
 #### POST /api/s3/presign
 
-Returns a presigned S3 `PUT` URL for one report photo. The URL is valid for 180 seconds.
+Returns a presigned S3 `PUT` URL for one report photo. The URL is valid for 180 seconds. The
+signature pins the `Content-Length`, so S3 refuses a body of a different size. The route checks
+the type before it signs. The browser sends the `Content-Type` header so S3 stores the correct
+object type.
 
 **Request body:** `filename`, `contentType` (`image/jpeg`, `image/png` or `image/webp`),
-`fileSize` (at most 10 MB), `siteId`, `responseId` and `questionId` (positive whole numbers),
-`siteName`, `date`, `photographer` (optional; the default is `user_metadata.full_name` or
-`UnknownUser`) and `identifier` (optional).
+`fileSize` (a positive whole number, at most 10 MB), `siteId`, `responseId` and `questionId`
+(positive whole numbers), `siteName`, `date`, `photographer` (optional; the default is
+`user_metadata.full_name` or `UnknownUser`) and `identifier` (optional).
 
 **Response:** `{"uploadUrl": "...", "key": "inspections/<siteId>/<responseId>/<questionId>/<file>",
 "generatedFilename": "<file>"}`.
@@ -330,16 +333,19 @@ Returns a presigned S3 `PUT` URL for one report photo. The URL is valid for 180 
 
 | Status | Body | When |
 |---|---|---|
-| 400 | `Invalid file data` | `filename` or `contentType` is missing. |
+| 400 | `Invalid file data` | `filename` or `contentType` is missing, or `fileSize` is not a positive whole number. |
 | 400 | `Missing ids` / `Invalid ids` | An id is missing, or is not a positive whole number. |
 | 400 | `Missing image metadata` | `siteName` or `date` is missing. |
 | 400 | `Unsupported file type` / `File too large` | The type or the size breaks the rule. |
 | 400 | `Invalid image metadata` | The made key is not in the folder of that site, report and question. |
 | 401 | `Unauthorized` | No signed-in user. |
-| 500 | `Failed to generate upload URL` | The body is not JSON, or signing failed. |
+| 403 | `Forbidden` | The report does not exist, or the caller is not its owner and is not an approved admin. |
+| 500 | `Failed to generate upload URL` | The body is not JSON, the owner check failed, or signing failed. |
 
-**Caller rule:** any signed-in user. The route does not check that the caller owns `responseId`.
-`insertInspectionAttachments` checks the owner and the key before it saves the row.
+**Caller rule:** only the report owner or an approved admin. The route reads
+`form_responses.user_id` for `responseId` and refuses any other caller with 403, so no one can
+upload into another user's report folder. `insertInspectionAttachments` checks the owner and the
+key again before it saves the row.
 
 #### POST /api/s3/presign-homepage-images
 
@@ -493,17 +499,19 @@ copy.
 
 "No caller check" means that the action has no check of its own. Only the
 [middleware](#middleware) stands in front of it. GitHub issue #251 listed 13 read actions in
-`queries.ts` with no caller check. `fix/report-read-caller-checks` adds a check to each of them,
-changes `isSteward` and `getFormResponseById`, and deletes `addSiteInspection`. The issue closes
-when that branch reaches `main`. `getSitesOnline` was not on the #251 list but the browser calls it,
-so it checks the caller too. Issue #268 moved the PDF-only reads out of `queries.ts` into
-`webapp/lib/pdf/reportQueries.ts`, a server-only module that is not a server action (see
+`queries.ts` with no caller check. [PR #259](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/259)
+added a check to each of them, changed `isSteward` and `getFormResponseById`, and deleted
+`addSiteInspection`. Issue #251 is closed, and the fix is on `main` since #284. `getSitesOnline`
+was not on the #251 list but the browser calls it, so it checks the caller too.
+[PR #279](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/279) (issue #268) moved the
+PDF-only reads out of `queries.ts` into `webapp/lib/pdf/reportQueries.ts`, a server-only module
+that is not a server action (see
 [Server-only report reads](#server-only-report-reads-webapplibpdfreportqueriests)), and made
-`getNextFormInspectionNumber` private. No exported function in `queries.ts` now reads data without a
-caller check: each one calls `requireApprovedAdmin`, `requireApprovedCaller` or `requireReportWriter`
-first, or reads with the signed-in client under RLS (`getCurrentUserUid`, `getSitePageFields`,
-`getSiteLinks`, and the sign-in check of `getAllSiteReports`). Unless the table says otherwise, an
-action throws an `Error` with the database message when a query fails.
+`getNextFormInspectionNumber` private. No exported function in `queries.ts` on `main` reads data
+without a caller check: each one calls `requireApprovedAdmin`, `requireApprovedCaller` or
+`requireReportWriter` first, or reads with the signed-in client under RLS (`getCurrentUserUid`,
+`getSitePageFields` and `getSiteLinks`). Unless the table says otherwise, an action throws an
+`Error` with the database message when a query fails.
 
 #### Site inspection reports (`webapp/utils/supabase/queries.ts`)
 

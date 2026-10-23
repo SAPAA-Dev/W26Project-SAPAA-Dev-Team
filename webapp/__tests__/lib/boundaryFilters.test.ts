@@ -43,6 +43,8 @@ function feature(
       notes: null,
       county,
       is_active: isActive,
+      site_name: null,
+      last_inspection_date: null,
     },
     geometry: { type: 'MultiPolygon', coordinates: [] },
   };

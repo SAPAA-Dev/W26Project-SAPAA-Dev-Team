@@ -73,8 +73,9 @@ Each sprint has its own branch, `sprint-N`, made from `main`. Feature branches s
 their PRs go into it. At the end of the sprint, one PR merges `sprint-N` into `main`. The Scrum
 Master of the sprint reviews that PR (see [Scrum roles](project-management.md#scrum-roles)). The
 GitHub ruleset allows branch names that start with `sprint-`. Every sprint ends with a GitHub
-release built from `main` (step 7 below). `sprint-2` is the first sprint branch. The Sprint 2 work
-before it merged straight into `main`.
+release built from `main` (step 7 below). `sprint-2` was the first sprint branch. It was merged into
+`main` in [#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284) on October 13 and
+then deleted. The Sprint 2 work before it merged straight into `main`.
 
 The hosting project (Vercel) has its own production branch setting. It is not stored in this
 repository, so nobody can check it from here. The person who owns the hosting account must check
@@ -189,8 +190,9 @@ Run the files in this order.
 | 20 | `20261012000000_add_question_atomically.sql` | From `fix/form-editor-save-errors` (#273). Run it after step 2. Adds `add_question_atomically`, for the service role only. Until it exists, adding a question in the form editor fails. |
 | 21 | `20261022000000_add_answer_visibility.sql` | Adds `answers.is_hidden`. Run it before deploying US 1.0.3. Existing answers stay visible. |
 
-PRs #234, #238 and #242 are merged on `main`. Steps 18 to 20 come from the Sprint 2 fix branches,
-which merge into `main` with the `sprint-2` PR. Run each step only when its file is on `main`.
+PRs #234, #238 and #242 are merged on `main`. Steps 18 to 20 came with the Sprint 2 fixes, which
+are on `main` since [#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284)
+(October 13). Run each step only when its file is on `main`.
 If a PR merges with a different file name, use the name in the merged PR.
 
 ### Checks
@@ -295,8 +297,11 @@ Rules of the gates:
   an app fix. The comment in `e2e.yaml` names each excluded spec and the reason. `cypress` is not a
   required check. To save Actions minutes, it does not run on PRs into `sprint-*`.
 
-As of October 11, 2026, GitHub Actions has not run since October 10, because the account's Actions
+As of October 13, 2026, GitHub Actions has not run since October 10, because the account's Actions
 payments failed. Until it runs again, the results of these gates come from local runs only.
+[#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284) and
+[#285](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/285) were merged with an admin
+bypass, after the gates ran locally on `main` at `ceb5188`.
 
 ## GitHub rules
 

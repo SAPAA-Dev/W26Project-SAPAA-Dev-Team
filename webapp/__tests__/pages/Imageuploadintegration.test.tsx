@@ -33,6 +33,18 @@ const mockGetSignedUrl = getSignedUrl as jest.Mock;
 const mockCreateClient = createClient as jest.Mock;
 const mockCreateServerSupabase = createServerSupabase as jest.Mock;
 
+// The report owner check reads form_responses with the service-role client.
+function mockReportOwner(userId = "user-123") {
+  mockCreateServerSupabase.mockReturnValue({
+    from: jest.fn(() => ({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      is: jest.fn().mockReturnThis(),
+      maybeSingle: jest.fn().mockResolvedValue({ data: { user_id: userId }, error: null }),
+    })),
+  });
+}
+
 
 
 const mockAttachments = [
@@ -140,6 +152,7 @@ function makeGalleryFrom(options?: {
 
 
 function mockAuthenticatedUser() {
+  mockReportOwner();
   mockCreateClient.mockResolvedValue({
     auth: {
       getUser: jest.fn().mockResolvedValue({
@@ -147,6 +160,7 @@ function mockAuthenticatedUser() {
           user: {
             id: "user-123",
             email: "user@example.com",
+            app_metadata: { authenticated: true },
           },
         },
         error: null,
@@ -158,6 +172,7 @@ function mockAuthenticatedUser() {
 
 function mockAdminUser() {
   mockCreateServerSupabase.mockReturnValue({ from: makeGalleryFrom() });
+  mockReportOwner();
   mockCreateClient.mockResolvedValue({
     auth: {
       getUser: jest.fn().mockResolvedValue({

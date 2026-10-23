@@ -1,21 +1,33 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Map as MapLibreMap, Popup } from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@/components/map/enableMapLibreWorker';
-import { KeyRound } from 'lucide-react';
+import { Download, KeyRound } from 'lucide-react';
 import { boundaryBounds } from '@/lib/map/boundaries';
 import type { BoundaryFeature, BoundaryFeatureCollection } from '@/lib/map/boundaries';
+import { listRegions } from '@/lib/map/offline/tileCache';
+import type { SavedRegion } from '@/lib/map/offline/tileCache';
+import { mergeToDisjointRectangles } from '@/lib/map/offline/tileMath';
+import {
+  OFFLINE_MISS_MARKER,
+  makeTransformRequest,
+  releaseOfflineProtocol,
+  retainOfflineProtocol,
+} from '@/components/map/offlineProtocol';
+import OfflineSavePanel from '@/components/map/OfflineSavePanel';
 
 const STYLE_URL = 'https://api.protomaps.com/styles/v5/light/en.json';
-const CENTER: [number, number] = [-114.5, 54.5];
-const ZOOM = 5.5;
-const MAX_BOUNDS: [[number, number], [number, number]] = [
-  [-122.0, 48.0],
-  [-108.0, 60.5],
+
+// Alberta's provincial extent. The map fits this box on load, so the whole province
+// and every boundary are visible at the widest practical zoom.
+const ALBERTA_BOUNDS: [[number, number], [number, number]] = [
+  [-120.0, 49.0],
+  [-110.0, 60.0],
 ];
+const VIEW_PADDING = 32;
 
 const SOURCE_ID = 'protected-areas';
 const FILL_LAYER_ID = 'protected-areas-fill';
@@ -23,6 +35,16 @@ const OUTLINE_LAYER_ID = 'protected-areas-outline';
 
 const FILL_COLOR = '#356B43';
 const OUTLINE_COLOR = '#254431';
+
+const OFFLINE_REGIONS_SOURCE_ID = 'offline-regions';
+const OFFLINE_REGIONS_LAYER_ID = 'offline-regions-outline';
+const OFFLINE_REGIONS_COLOR = '#356B43';
+
+const OFFLINE_MASK_SOURCE_ID = 'offline-mask';
+const OFFLINE_MASK_LAYER_ID = 'offline-mask-fill';
+const OFFLINE_MASK_COLOR = '#F7F2EA';
+
+const MISSING_TILE_FLUSH_MS = 500;
 
 // The hover state is a boolean on the feature, so the map repaints one polygon
 // instead of every polygon.
@@ -65,79 +87,276 @@ function readProperty(properties: unknown, key: string): string | null {
   return typeof value === 'string' && value.trim() !== '' ? value : null;
 }
 
-// The order matches the protected-area export. DESCRIPTION is not a column.
-const POPUP_FIELDS: ReadonlyArray<{ label: string; key: string }> = [
-  { label: 'NAME', key: 'name' },
+// The five rows the card shows at rest. The rest of the export sits behind the
+// expand control, so the card stays short on the map.
+const BOUNDARY_SUMMARY_FIELDS: ReadonlyArray<PopupField> = [
   { label: 'FID', key: 'fid' },
-  { label: 'TYPE', key: 'area_type' },
-  { label: 'SUBTYPE', key: 'subtype' },
   { label: 'IUCN', key: 'iucn' },
-  { label: 'OC_NO', key: 'oc_no' },
-  { label: 'ACRES', key: 'acres' },
-  { label: 'HECTARES', key: 'hectares' },
-  { label: 'OC_DATE', key: 'oc_date' },
-  { label: 'DATE_EST', key: 'date_est' },
-  { label: 'OC_NAME', key: 'oc_name' },
+  { label: 'Order in Council', key: 'oc_no' },
+  { label: 'Area', key: 'hectares', unit: ' ha', measurement: true },
+  { label: 'Established', key: 'date_est' },
 ];
 
+const BOUNDARY_EXTRA_FIELDS: ReadonlyArray<PopupField> = [
+  { label: 'Name', key: 'name' },
+  { label: 'Acres', key: 'acres', measurement: true },
+  { label: 'Order date', key: 'oc_date' },
+  { label: 'Order name', key: 'oc_name' },
+];
+
+// The same format as the Site card, so the popup and the card show one date (US 2.0.8 AT2).
+const INSPECTION_DATE_FORMAT: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+};
+
+const SECTION_LABEL_CLASS = 'text-[10px] font-bold uppercase tracking-[0.14em] text-[#6B7A6B]';
+const SECTION_TITLE_CLASS = 'mt-1 text-xl font-bold leading-tight text-[#254431]';
+const DETAIL_ROW_CLASS =
+  'flex gap-3 border-b border-[#DCE4D4] py-1.5 text-xs leading-5 last:border-b-0';
+const DETAIL_LABEL_CLASS = 'w-[7.5rem] shrink-0 font-bold text-[#254431]';
+
+interface PopupField {
+  label: string;
+  key: string;
+  unit?: string;
+  measurement?: boolean;
+}
+
 /**
- * Builds the popup body from DOM nodes, not from an HTML string. The values come from
- * an imported file, and a node cannot carry markup.
+ * The measurement columns hold long decimals from the export. The card shows two
+ * decimals so a number like 106.737077 reads as 106.74 ha.
  */
-function createPopupContent(properties: unknown): HTMLElement {
-  const container = document.createElement('div');
+function readPopupValue(properties: unknown, field: PopupField): string | null {
+  const value = readProperty(properties, field.key);
+  if (value === null) return null;
 
+  const number = Number(value);
+  const text =
+    field.measurement === true && Number.isFinite(number)
+      ? number.toLocaleString('en-US', { maximumFractionDigits: 2 })
+      : value;
+  return `${text}${field.unit ?? ''}`;
+}
+
+function createSectionLabel(text: string): HTMLElement {
+  const label = document.createElement('div');
+  label.className = SECTION_LABEL_CLASS;
+  label.textContent = text;
+  return label;
+}
+
+function createTitle(text: string): HTMLElement {
   const title = document.createElement('div');
-  title.className = 'text-sm font-bold text-[#254431]';
-  title.textContent = readProperty(properties, 'name') ?? 'Protected area';
-  container.appendChild(title);
+  title.className = SECTION_TITLE_CLASS;
+  title.style.fontFamily = 'var(--font-heading)';
+  title.textContent = text;
+  return title;
+}
 
-  const areaType = readProperty(properties, 'area_type');
-  if (areaType !== null) {
-    const subtitle = document.createElement('div');
-    subtitle.className = 'text-xs text-[#7A8075]';
-    subtitle.textContent = areaType;  // Suggestion: set this to County if we can get a hard link between protected areas to a site.
-    container.appendChild(subtitle);
+function createDetailRow(label: string, value: string): HTMLElement {
+  const row = document.createElement('div');
+  row.className = DETAIL_ROW_CLASS;
+  row.dataset.field = label;
+
+  const term = document.createElement('span');
+  term.className = DETAIL_LABEL_CLASS;
+  term.textContent = label;
+
+  const description = document.createElement('span');
+  description.className = 'min-w-0 flex-1 text-[#254431]';
+  description.dataset.fieldValue = 'true';
+  description.textContent = value;
+
+  row.append(term, description);
+  return row;
+}
+
+function createBadge(text: string): HTMLElement {
+  const badge = document.createElement('span');
+  badge.className =
+    'rounded-full bg-[#E1E8DA] px-3 py-1 text-xs font-semibold text-[#254431]';
+  badge.dataset.boundaryBadge = 'true';
+  badge.textContent = text;
+  return badge;
+}
+
+function createChevron(): SVGSVGElement {
+  const namespace = 'http://www.w3.org/2000/svg';
+  const chevron = document.createElementNS(namespace, 'svg');
+  chevron.setAttribute('viewBox', '0 0 24 24');
+  chevron.setAttribute('aria-hidden', 'true');
+  chevron.setAttribute('class', 'h-4 w-4 shrink-0 transition-transform');
+
+  const path = document.createElementNS(namespace, 'path');
+  path.setAttribute('d', 'm6 9 6 6 6-6');
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke', 'currentColor');
+  path.setAttribute('stroke-width', '2');
+  path.setAttribute('stroke-linecap', 'round');
+  path.setAttribute('stroke-linejoin', 'round');
+  chevron.appendChild(path);
+  return chevron;
+}
+
+function createSiteSection(properties: unknown): HTMLElement {
+  const section = document.createElement('div');
+  section.className = 'bg-white px-5 pb-5 pt-5';
+
+  const siteName = readProperty(properties, 'site_name');
+  const county = readProperty(properties, 'county');
+  const lastInspectionDate = readProperty(properties, 'last_inspection_date');
+  section.dataset.siteInfo = siteName === null ? 'unlinked' : 'linked';
+
+  section.appendChild(createSectionLabel('SAPAA SITE'));
+
+  if (siteName === null) {
+    const unlinked = document.createElement('div');
+    unlinked.className = 'mt-1 text-base font-semibold text-[#7A8075]';
+    unlinked.dataset.noLinkedSite = 'true';
+    unlinked.textContent = 'No linked site';
+    section.appendChild(unlinked);
+    return section;
   }
 
-  const fields = document.createElement('div');
-  fields.className = 'mt-2';
-  for (const field of POPUP_FIELDS) {
-    const value = readProperty(properties, field.key);
-    if (value === null) continue;
+  const title = createTitle(siteName);
+  title.dataset.siteName = 'true';
+  section.appendChild(title);
 
-    const line = document.createElement('div');
-    line.className = 'text-xs leading-5 text-[#254431]';
-    line.dataset.field = field.label;
-
-    const label = document.createElement('span');
-    label.className = 'font-bold';
-    label.textContent = `${field.label}:`;
-    line.appendChild(label);
-    line.appendChild(document.createTextNode(` ${value}`));
-    fields.appendChild(line);
+  const siteInfo = document.createElement('div');
+  siteInfo.className = 'mt-3';
+  if (county !== null) {
+    const countyRow = createDetailRow('County', county);
+    countyRow.dataset.siteCounty = 'true';
+    siteInfo.appendChild(countyRow);
   }
-  if (fields.childElementCount > 0) container.appendChild(fields);
+
+  const inspectionRow = createDetailRow(
+    'Last inspection',
+    lastInspectionDate === null
+      ? 'Never inspected'
+      : new Date(lastInspectionDate).toLocaleDateString('en-US', INSPECTION_DATE_FORMAT)
+  );
+  inspectionRow.dataset.lastInspection = 'true';
+  siteInfo.appendChild(inspectionRow);
+  section.appendChild(siteInfo);
+
+  const viewSite = document.createElement('a');
+  viewSite.href = `/detail/${encodeURIComponent(siteName)}`;
+  viewSite.textContent = 'View site & SIRs';
+  viewSite.dataset.viewSirs = 'true';
+  viewSite.className =
+    'mt-4 flex h-10 w-full items-center justify-center rounded-lg bg-[#356B43] px-4 text-sm font-bold text-white transition-colors hover:bg-[#254431] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#356B43]';
+  section.appendChild(viewSite);
+
+  return section;
+}
+
+function createBoundarySection(properties: unknown): HTMLElement {
+  const section = document.createElement('div');
+  section.className = 'border-t border-[#E4EBE4] bg-[#F1F5EB] px-5 pb-4 pt-4';
+
+  section.appendChild(createSectionLabel('PROTECTED AREA BOUNDARY'));
+
+  // The long order name reads better as the heading; the short export name is in the details.
+  const boundaryName = readProperty(properties, 'oc_name') ?? readProperty(properties, 'name');
+  const title = createTitle(boundaryName ?? 'Protected area');
+  title.dataset.boundaryName = 'true';
+  section.appendChild(title);
+
+  const badges = document.createElement('div');
+  badges.className = 'mt-2 flex flex-wrap gap-2';
+  for (const key of ['area_type', 'subtype']) {
+    const value = readProperty(properties, key);
+    if (value !== null) badges.appendChild(createBadge(value));
+  }
+  if (badges.childElementCount > 0) section.appendChild(badges);
+
+  const summary = document.createElement('div');
+  summary.className = 'mt-3';
+  summary.dataset.boundarySummary = 'true';
+  for (const field of BOUNDARY_SUMMARY_FIELDS) {
+    const value = readPopupValue(properties, field);
+    if (value !== null) summary.appendChild(createDetailRow(field.label, value));
+  }
+  if (summary.childElementCount > 0) section.appendChild(summary);
+
+  const extra = document.createElement('div');
+  extra.className = 'hidden';
+  extra.dataset.boundaryExtra = 'true';
+  for (const field of BOUNDARY_EXTRA_FIELDS) {
+    const value = readPopupValue(properties, field);
+    // The heading already shows the order name when the export has one.
+    if (value === null || (field.key === 'oc_name' && value === boundaryName)) continue;
+    extra.appendChild(createDetailRow(field.label, value));
+  }
 
   const notes = readProperty(properties, 'notes');
   if (notes !== null) {
     const notesBlock = document.createElement('div');
-    notesBlock.className = 'mt-4';
+    notesBlock.className = 'mt-3';
 
     const heading = document.createElement('div');
-    heading.className = 'text-xs font-bold text-[#254431]';
+    heading.className = SECTION_LABEL_CLASS;
     heading.dataset.notesHeading = 'true';
     heading.textContent = 'NOTES';
     notesBlock.appendChild(heading);
 
     const body = document.createElement('div');
-    body.className = 'text-xs leading-5 text-[#254431] whitespace-pre-wrap';
+    body.className = 'mt-1 whitespace-pre-wrap text-xs leading-5 text-[#254431]';
     body.dataset.notesBody = 'true';
     body.textContent = notes;
     notesBlock.appendChild(body);
 
-    container.appendChild(notesBlock);
+    extra.appendChild(notesBlock);
   }
+
+  if (extra.childElementCount > 0) {
+    const expand = document.createElement('button');
+    expand.type = 'button';
+    expand.dataset.boundaryExpand = 'true';
+    expand.setAttribute('aria-expanded', 'false');
+    expand.className =
+      'mt-1 flex w-full items-center justify-between rounded-lg py-1.5 text-left text-xs font-bold text-[#254431] hover:bg-[#E1E8DA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#356B43]';
+
+    const expandLabel = document.createElement('span');
+    expandLabel.textContent = 'View all boundary details';
+
+    const chevron = createChevron();
+    expand.append(expandLabel, chevron);
+
+    expand.addEventListener('click', () => {
+      const willExpand = extra.classList.contains('hidden');
+      extra.classList.toggle('hidden', !willExpand);
+      expand.setAttribute('aria-expanded', String(willExpand));
+      expandLabel.textContent = willExpand
+        ? 'Hide boundary details'
+        : 'View all boundary details';
+      chevron.classList.toggle('rotate-180', willExpand);
+    });
+
+    section.appendChild(expand);
+    section.appendChild(extra);
+  }
+
+  return section;
+}
+
+/**
+ * Builds the popup body from DOM nodes, not from an HTML string. The values come from
+ * an imported file, and a node cannot carry markup.
+ *
+ * The card keeps the linked site and the protected-area boundary apart: the site name
+ * comes from sites_pa.namesite, and the boundary name comes from protected_areas.
+ */
+function createPopupContent(properties: unknown): HTMLElement {
+  const container = document.createElement('div');
+  container.className =
+    'max-h-[70vh] w-[min(320px,80vw)] overflow-y-auto bg-white font-sans';
+
+  container.appendChild(createSiteSection(properties));
+  container.appendChild(createBoundarySection(properties));
 
   return container;
 }
@@ -152,21 +371,63 @@ export default function SiteMap({
   const mapRef = useRef<MapLibreMap | null>(null);
   const popupRef = useRef<Popup | null>(null);
   const hoveredFeatureRef = useRef<string | number | null>(null);
+  const missingTilesRef = useRef(0);
   const apiKey = readApiKey();
+  const styleUrl = `${STYLE_URL}?key=${encodeURIComponent(apiKey ?? '')}`;
+
+  const [isOnline, setIsOnline] = useState(() =>
+    typeof navigator === 'undefined' ? true : navigator.onLine
+  );
+  // transformRequest reads this ref, so the callback stays current without a new Map.
+  const onlineRef = useRef(isOnline);
+  const [missingTiles, setMissingTiles] = useState(0);
+  const [saveMode, setSaveMode] = useState(false);
+  const [savedRegions, setSavedRegions] = useState<SavedRegion[]>(() => listRegions());
+  // The panel render needs the instance, and a ref read during render is not allowed.
+  const [map, setMap] = useState<MapLibreMap | null>(null);
+
+  // A style reload is the only way to move in-flight resource requests to the
+  // other path, so the map swaps the style when the connection mode flips.
+  useEffect(() => {
+    const handleConnectionChange = () => {
+      const online = typeof navigator === 'undefined' ? true : navigator.onLine;
+      const previous = onlineRef.current;
+      onlineRef.current = online;
+      setIsOnline(online);
+      if (online !== previous) mapRef.current?.setStyle(styleUrl);
+    };
+
+    window.addEventListener('online', handleConnectionChange);
+    window.addEventListener('offline', handleConnectionChange);
+    return () => {
+      window.removeEventListener('online', handleConnectionChange);
+      window.removeEventListener('offline', handleConnectionChange);
+    };
+  }, [styleUrl]);
 
   useEffect(() => {
     if (!apiKey || !containerRef.current) return;
 
+    retainOfflineProtocol();
+
     const map = new MapLibreMap({
       container: containerRef.current,
-      style: `${STYLE_URL}?key=${encodeURIComponent(apiKey)}`,
+      style: styleUrl,
       center: CENTER,
       zoom: ZOOM,
       maxBounds: MAX_BOUNDS,
       renderWorldCopies: false,
+      transformRequest: makeTransformRequest(() => onlineRef.current),
     });
     mapRef.current = map;
-    popupRef.current = new Popup({ closeButton: false, closeOnClick: true });
+    setMap(map);
+
+    popupRef.current = new Popup({
+      closeButton: false,
+      closeOnClick: true,
+      maxWidth: '360px',
+      className: 'site-detail-popup',
+    });
 
     // The canvas keeps the size it had when the toggle revealed the map, so a
     // later layout change (a window resize, a wrapped toolbar) needs a resize call.
@@ -178,12 +439,14 @@ export default function SiteMap({
       popupRef.current = null;
       hoveredFeatureRef.current = null;
       mapRef.current = null;
+      setMap(null);
       observer.disconnect();
       // map.remove() also drops every source, layer and listener on the map, so
       // there is nothing else to detach here.
+      releaseOfflineProtocol();
       map.remove();
     };
-  }, [apiKey]);
+  }, [apiKey, styleUrl]);
 
   // The boundaries arrive after the map exists, so the data lives in its own effect.
   // The first set builds the source and the layers; a later set only replaces the data,
@@ -192,16 +455,53 @@ export default function SiteMap({
     const map = mapRef.current;
     if (!apiKey || map === null) return;
 
+    const clearHover = () => {
+      const hovered = hoveredFeatureRef.current;
+      if (hovered === null) return;
+      map.setFeatureState({ source: SOURCE_ID, id: hovered }, { hover: false });
+      hoveredFeatureRef.current = null;
+    };
+
+    const handleMouseMove = (event: MapLayerMouseEvent) => {
+      map.getCanvas().style.cursor = 'pointer';
+
+      const feature = event.features?.[0];
+      // generateId puts an id on every feature, so the hover state can name one.
+      if (feature === undefined || feature.id === undefined) return;
+      if (hoveredFeatureRef.current === feature.id) return;
+
+      clearHover();
+      hoveredFeatureRef.current = feature.id;
+      map.setFeatureState({ source: SOURCE_ID, id: feature.id }, { hover: true });
+    };
+
+    const handleMouseLeave = () => {
+      map.getCanvas().style.cursor = '';
+      clearHover();
+    };
+
+    const handleClick = (event: MapLayerMouseEvent) => {
+      const feature = event.features?.[0];
+      const popup = popupRef.current;
+      if (feature === undefined || popup === null) return;
+      popup
+        .setLngLat(event.lngLat)
+        .setDOMContent(createPopupContent(feature.properties))
+        .addTo(map);
+    };
+
+    // Layer listeners survive a style swap, so they are registered once for the
+    // life of the map. Re-adding them on every style.load would stack duplicates.
+    map.on('mousemove', FILL_LAYER_ID, handleMouseMove);
+    map.on('mouseleave', FILL_LAYER_ID, handleMouseLeave);
+    map.on('click', FILL_LAYER_ID, handleClick);
+
     const applyBoundaries = () => {
       if (!boundaries) return;
 
       const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
       if (source) {
-        const hovered = hoveredFeatureRef.current;
-        if (hovered !== null) {
-          map.setFeatureState({ source: SOURCE_ID, id: hovered }, { hover: false });
-          hoveredFeatureRef.current = null;
-        }
+        clearHover();
         map.getCanvas().style.cursor = '';
         popupRef.current?.remove();
         source.setData(boundaries);
@@ -231,58 +531,25 @@ export default function SiteMap({
           'line-width': ['case', HOVERED, 3, 2],
         },
       });
-
-      const clearHover = () => {
-        const hovered = hoveredFeatureRef.current;
-        if (hovered === null) return;
-        map.setFeatureState({ source: SOURCE_ID, id: hovered }, { hover: false });
-        hoveredFeatureRef.current = null;
-      };
-
-      const handleMouseMove = (event: MapLayerMouseEvent) => {
-        map.getCanvas().style.cursor = 'pointer';
-
-        const feature = event.features?.[0];
-        // generateId puts an id on every feature, so the hover state can name one.
-        if (feature === undefined || feature.id === undefined) return;
-        if (hoveredFeatureRef.current === feature.id) return;
-
-        clearHover();
-        hoveredFeatureRef.current = feature.id;
-        map.setFeatureState({ source: SOURCE_ID, id: feature.id }, { hover: true });
-      };
-
-      const handleMouseLeave = () => {
-        map.getCanvas().style.cursor = '';
-        clearHover();
-      };
-
-      const handleClick = (event: MapLayerMouseEvent) => {
-        const feature = event.features?.[0];
-        const popup = popupRef.current;
-        if (feature === undefined || popup === null) return;
-        popup
-          .setLngLat(event.lngLat)
-          .setDOMContent(createPopupContent(feature.properties))
-          .addTo(map);
-      };
-
-      map.on('mousemove', FILL_LAYER_ID, handleMouseMove);
-      map.on('mouseleave', FILL_LAYER_ID, handleMouseLeave);
-      map.on('click', FILL_LAYER_ID, handleClick);
     };
 
-    // A source or a layer can be added only once the style has loaded.
+    // A source or a layer can be added only once the style has loaded. A style
+    // swap drops them, so the same function also runs on style.load.
+    map.on('style.load', applyBoundaries);
+
     if (map.isStyleLoaded()) {
       applyBoundaries();
-      return;
+    } else {
+      map.once('load', applyBoundaries);
     }
 
-    map.once('load', applyBoundaries);
-
     return () => {
+      map.off('mousemove', FILL_LAYER_ID, handleMouseMove);
+      map.off('mouseleave', FILL_LAYER_ID, handleMouseLeave);
+      map.off('click', FILL_LAYER_ID, handleClick);
       // The effect above clears the ref before it removes the map, so this runs only
       // while the map is still alive.
+      map.off('style.load', applyBoundaries);
       if (mapRef.current !== null) mapRef.current.off('load', applyBoundaries);
     };
   }, [apiKey, boundaries]);
@@ -294,6 +561,183 @@ export default function SiteMap({
     const bounds = boundaryBounds(focusedArea.geometry);
     if (bounds !== null) map.fitBounds(bounds, { padding: 48, maxZoom: 13 });
   }, [apiKey, focusedArea]);
+
+  // The outlines show what the user saved, and a style swap drops them, so the
+  // apply function also runs on style.load.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!apiKey || map === null) return;
+
+    const collection = {
+      type: 'FeatureCollection' as const,
+      features: savedRegions.map((region) => ({
+        type: 'Feature' as const,
+        properties: { id: region.id },
+        geometry: {
+          type: 'Polygon' as const,
+          coordinates: [
+            [
+              [region.bounds.west, region.bounds.south],
+              [region.bounds.east, region.bounds.south],
+              [region.bounds.east, region.bounds.north],
+              [region.bounds.west, region.bounds.north],
+              [region.bounds.west, region.bounds.south],
+            ],
+          ],
+        },
+      })),
+    };
+
+    const applyOfflineRegions = () => {
+      const source = map.getSource(OFFLINE_REGIONS_SOURCE_ID) as GeoJSONSource | undefined;
+      if (source) {
+        source.setData(collection);
+        return;
+      }
+      // An empty list only clears an existing source, so an empty map adds nothing.
+      if (savedRegions.length === 0) return;
+      map.addSource(OFFLINE_REGIONS_SOURCE_ID, { type: 'geojson', data: collection });
+      map.addLayer({
+        id: OFFLINE_REGIONS_LAYER_ID,
+        type: 'line',
+        source: OFFLINE_REGIONS_SOURCE_ID,
+        paint: {
+          'line-color': OFFLINE_REGIONS_COLOR,
+          'line-width': 2,
+          'line-dasharray': [2, 2],
+        },
+      });
+    };
+
+    map.on('style.load', applyOfflineRegions);
+    if (map.isStyleLoaded()) applyOfflineRegions();
+
+    return () => {
+      map.off('style.load', applyOfflineRegions);
+    };
+  }, [apiKey, savedRegions]);
+
+  // The mask hides what has no tiles, and the holes are the saved areas.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!apiKey || map === null) return;
+
+    const outerRing = [
+      [-180, -85.0511],
+      [180, -85.0511],
+      [180, 85.0511],
+      [-180, 85.0511],
+      [-180, -85.0511],
+    ];
+
+    // The holes must not cross or nest, so the saved rectangles dissolve into
+    // disjoint pieces first.
+    const holes = mergeToDisjointRectangles(savedRegions.map((region) => region.bounds));
+
+    const maskGeometry =
+      isOnline || savedRegions.length === 0
+        ? null
+        : {
+            type: 'FeatureCollection' as const,
+            features: [
+              {
+                type: 'Feature' as const,
+                properties: {},
+                geometry: {
+                  type: 'Polygon' as const,
+                  coordinates: [
+                    outerRing,
+                    ...holes.map((hole) => [
+                      [hole.west, hole.south],
+                      [hole.east, hole.south],
+                      [hole.east, hole.north],
+                      [hole.west, hole.north],
+                      [hole.west, hole.south],
+                    ]),
+                  ],
+                },
+              },
+            ],
+          };
+
+    const applyOfflineMask = () => {
+      const source = map.getSource(OFFLINE_MASK_SOURCE_ID) as GeoJSONSource | undefined;
+      if (maskGeometry === null) {
+        if (map.getLayer(OFFLINE_MASK_LAYER_ID)) {
+          map.setLayoutProperty(OFFLINE_MASK_LAYER_ID, 'visibility', 'none');
+        }
+        return;
+      }
+
+      if (source) {
+        source.setData(maskGeometry);
+        map.setLayoutProperty(OFFLINE_MASK_LAYER_ID, 'visibility', 'visible');
+        return;
+      }
+
+      map.addSource(OFFLINE_MASK_SOURCE_ID, { type: 'geojson', data: maskGeometry });
+      // The mask sits above the basemap and below the app layers, so the
+      // protected areas and the dashed region outlines stay visible.
+      const layer = {
+        id: OFFLINE_MASK_LAYER_ID,
+        type: 'fill' as const,
+        source: OFFLINE_MASK_SOURCE_ID,
+        paint: {
+          'fill-color': OFFLINE_MASK_COLOR,
+          'fill-opacity': 1,
+        },
+      };
+      // The boundaries layers may not exist yet, so the search falls through
+      // to the region outline.
+      const beforeId = [FILL_LAYER_ID, OFFLINE_REGIONS_LAYER_ID].find((id) => map.getLayer(id));
+      if (beforeId === undefined) {
+        map.addLayer(layer);
+      } else {
+        map.addLayer(layer, beforeId);
+      }
+    };
+
+    map.on('style.load', applyOfflineMask);
+    if (map.isStyleLoaded()) applyOfflineMask();
+
+    return () => {
+      map.off('style.load', applyOfflineMask);
+    };
+  }, [apiKey, isOnline, savedRegions]);
+
+  // A tile miss fires a map error, so the badge count comes from the error event.
+  // The counter flushes on a timer because one view change misses many tiles at once.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!apiKey || map === null) return;
+
+    let flushTimer: number | null = null;
+
+    const handleError = (event: { error?: { message?: string } }) => {
+      if (onlineRef.current) return;
+      if (!event.error?.message?.includes(OFFLINE_MISS_MARKER)) return;
+      missingTilesRef.current += 1;
+      if (flushTimer !== null) return;
+      flushTimer = window.setTimeout(() => {
+        flushTimer = null;
+        setMissingTiles(missingTilesRef.current);
+      }, MISSING_TILE_FLUSH_MS);
+    };
+
+    const handleMoveEnd = () => {
+      missingTilesRef.current = 0;
+      setMissingTiles(0);
+    };
+
+    map.on('error', handleError);
+    map.on('moveend', handleMoveEnd);
+
+    return () => {
+      map.off('error', handleError);
+      map.off('moveend', handleMoveEnd);
+      if (flushTimer !== null) window.clearTimeout(flushTimer);
+    };
+  }, [apiKey]);
 
   if (!apiKey) {
     return (
@@ -345,6 +789,40 @@ export default function SiteMap({
       {status !== null && (
         <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-[#E4EBE4] bg-white/95 px-3 py-1.5 text-xs font-medium text-[#254431] shadow-sm">
           {status}
+        </div>
+      )}
+      {!saveMode && (
+        <button
+          type="button"
+          onClick={() => setSaveMode(true)}
+          className="pointer-events-auto absolute right-4 top-4 flex items-center gap-1.5 rounded-full border border-[#E4EBE4] bg-white/95 px-3 py-1.5 text-xs font-medium text-[#254431] shadow-sm"
+        >
+          <Download className="h-3.5 w-3.5" />
+          Save offline area
+        </button>
+      )}
+      {saveMode && map !== null && (
+        <div className="absolute inset-0 z-10">
+          <OfflineSavePanel
+            map={map}
+            styleUrl={styleUrl}
+            savedRegions={savedRegions}
+            onSaved={(region) => setSavedRegions((previous) => [...previous, region])}
+            onRegionRemoved={(id) =>
+              setSavedRegions((previous) => previous.filter((region) => region.id !== id))
+            }
+            onClose={() => setSaveMode(false)}
+          />
+        </div>
+      )}
+      {!isOnline && (
+        <div className="pointer-events-none absolute bottom-4 left-4 rounded-full border border-[#E4EBE4] bg-white/95 px-3 py-1.5 text-xs font-medium text-[#254431] shadow-sm">
+          <div>Offline map. Tiles outside saved areas are missing.</div>
+          {missingTiles > 0 && (
+            <div>
+              {missingTiles} {missingTiles === 1 ? 'tile' : 'tiles'} missing in this view.
+            </div>
+          )}
         </div>
       )}
     </div>

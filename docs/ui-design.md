@@ -1,6 +1,93 @@
+# UI/UX Design — Fall 2026
+
+## 1. Introduction
+
+This document covers the web UI added since Winter 2026. Retained Winter design choices are explained where they support the new work. The Winter reference remains below.
+
+The target audience is adults, including seniors, who enjoy the outdoors, would like to share observations, or volunteer to inspect natural parks. The design aims for a calm interface with familiar website controls: labelled fields, cards, menus, and clear Save and Cancel buttons. It retains green and neutral colours and limits decorative animation to reduce distraction, especially on phones. Small loading indicators and menu transitions give feedback. Responsive layouts stack content on small screens.
+
+Section 2 explains the considerations for the design principles: proximity, alignment, repetition, and contrast and additionally, accessibility. Section 3 covers the application of Neilsen's ten usability heuristics: Visibility of System Status, Match Between the System and the Real World, User Control and Freedom, Consistency and Standards, Error Prevention, Recognition Rather than Recall, Flexibility and Efficiency of Use, Aesthetic and Minimalist Design, Help Users Recognize, Diagnose, and Recover from Errors, Help and Documentation.
+
+
+## 2. Design principles
+
+### 2.1 Proximity
+
+The new profile page (`/profile`, US 1.0.1 and US 1.0.2) groups skills and focus areas together. Contact fields have a separate heading. Labels sit directly above their inputs, and Save and Cancel sit together below the form. These groups help users identify which details belong together.
+
+### 2.2 Alignment
+
+The profile page uses a centred content area and consistent left edges for headings and fields. Field grids use two columns on larger screens and one on small screens. This extends the Winter responsive layout and gives phone users a clear reading order.
+
+### 2.3 Repetition
+
+The profile page repeats the Winter green header, white cards, rounded corners, and filled green primary buttons. The site and report archive dialogs use the same confirmation pattern. Repeated controls reduce the number of new patterns users must learn.
+
+### 2.4 Contrast and accessibility
+
+The profile page uses dark text on light surfaces. Its Save button uses white text on green. Calculated contrast ratios for these solid colour pairs are:
+
+| Example | Text | Background | Contrast |
+|---|---|---|---|
+| Save changes button | `#FFFFFF` | `#356B43` | 6.3:1 |
+| Profile headings | `#254431` | `#FFFFFF` | 10.77:1 |
+| Main profile text | `#1E2520` | `#F7F2EA` | 14.06:1 |
+
+These pairs meet the WCAG requirements for normal text and were tested in [Accessibility Aid](https://accessibilityaid.com/free-tools/colour-contrast-checker). These are only a few examples and do not establish accessibility compliance for the full app.
+
+Accessibility also needs more than colour. The profile form has visible labels. Save failures have an alert role, and save confirmation has a status role. Archive dialogs have accessible titles and labelled close buttons. Text such as “Archive Site” explains the action without relying on colour alone.
+
+## 3. Usability heuristics
+
+The ten subsections below apply [Jakob Nielsen's usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/) to the implemented UI.
+
+### 3.1 Visibility of System Status
+
+The profile page shows a loading indicator, changes Save to “Saving…”, and confirms a successful save. Archive dialogs show connected-record loading and “Archiving...” during the operation. Users can see that an action is in progress.
+
+### 3.2 Match Between the System and the Real World
+
+Profiles show “Skills”, “Focus areas”, and “Inspection reports submitted”. Site pages show the assigned steward (US 3.0.2). These labels refer to volunteer work rather than database terms.
+
+### 3.3 User Control and Freedom
+
+Users can cancel profile edits or close an archive confirmation. Users also have the freedon to navigate back to their previous page after navigating to a steward profile to pick up where they left off. The new archived-site and archived-report pages let admins restore records (US 2.0.4 and US 7.0.8). The confirmation explains that archiving keeps the related records.
+
+### 3.4 Consistency and Standards
+
+Sprint 2 extends the Winter navigation and button styles to new pages. Profile editing uses standard text fields and Save and Cancel controls. Sign-out work (US 5.0.4) keeps a familiar account action available across signed-in pages.
+
+### 3.5 Error Prevention
+
+The profile form requires a name and email and checks email and link formats. Its Save button is disabled during a save if the requirements are not met. Archive confirmation names the site and shows the affected record counts before the admin proceeds.
+
+### 3.6 Recognition Rather than Recall
+
+The profile edit form displays current values beside visible labels. The site list offers labelled Cards View and Map View controls, with county filters (US 2.0.6). Users can identify options without remembering commands.
+
+### 3.7 Flexibility and Efficiency of Use
+
+The site list supports search and county filtering in cards and map views. Users can choose how to find a site. Bulk PDF export (US 7.0.6) removes the need to export each selected report separately and 'Advanced' settings for PDF exports give more experienced admins the flexibility to configure what questions to include in their export.
+
+### 3.8 Aesthetic and Minimalist Design
+
+New profile sections use the retained white cards and green headings. Editing appears when the owner selects Edit profile. Separate archive pages keep archived records out of the normal lists. The layout gives priority to the current task.
+
+### 3.9 Help Users Recognize, Diagnose, and Recover from Errors
+
+A failed profile save keeps the form and entered values so the user can retry. A failed profile load offers “Try again”. The site list retains “No sites found” with advice to adjust the search or filters, rather than leaving an unexplained empty area.
+
+### 3.10 Help and Documentation
+
+The profile form explains comma-separated skills and focus areas, required email, and contact visibility. Archive dialogs explain what will be kept and how to restore it. The site-list menu retains the App tutorial and Contact us options from Winter. Tutorial availability depends on the page providing its walkthrough handler.
+
+Implementation references: [profile UI](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/blob/ceb5188/webapp/components/ProfilePage.tsx), [site list](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/blob/ceb5188/webapp/app/sites/page.tsx), [archive confirmation](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/blob/ceb5188/webapp/app/admin/sites/components/ArchiveSiteModal.tsx), and [navigation menu](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/blob/ceb5188/webapp/components/HeaderDropdown.tsx).
+
+---
+
 # UI/UX Design (Winter 2026)
 
-*Inherited from the Winter 2026 team. We keep this page for reference only. We do not update it for Fall 2026.*
+*Inherited from the Winter 2026 team. We keep the content below for reference only. We do not update it for Fall 2026.*
 
 ## Protected Areas Inspection App
 ### UI / UX Design Documentation - v3.0
