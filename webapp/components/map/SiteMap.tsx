@@ -8,6 +8,7 @@ import '@/components/map/enableMapLibreWorker';
 import { Download, KeyRound } from 'lucide-react';
 import { boundaryBounds } from '@/lib/map/boundaries';
 import type { BoundaryFeature, BoundaryFeatureCollection } from '@/lib/map/boundaries';
+import type { GpxTrackLineFeatureCollection } from '@/lib/map/gpxTrack';
 import { listRegions } from '@/lib/map/offline/tileCache';
 import type { SavedRegion } from '@/lib/map/offline/tileCache';
 import { mergeToDisjointRectangles } from '@/lib/map/offline/tileMath';
@@ -36,6 +37,15 @@ const OUTLINE_LAYER_ID = 'protected-areas-outline';
 const FILL_COLOR = '#356B43';
 const OUTLINE_COLOR = '#254431';
 
+// The track reads as a path a steward walked, not a boundary: a dashed orange
+// line over the solid green outline (US 2.0.1 AT2).
+const GPX_SOURCE_ID = 'gpx-tracks';
+const GPX_LINE_LAYER_ID = 'gpx-tracks-line';
+const GPX_LINE_COLOR = '#C2410C';
+const GPX_LINE_WIDTH = 3;
+const GPX_LINE_DASHARRAY = [2, 1];
+const EMPTY_TRACK_COLLECTION = { type: 'FeatureCollection' as const, features: [] };
+
 const OFFLINE_REGIONS_SOURCE_ID = 'offline-regions';
 const OFFLINE_REGIONS_LAYER_ID = 'offline-regions-outline';
 const OFFLINE_REGIONS_COLOR = '#356B43';
@@ -51,6 +61,14 @@ const MISSING_TILE_FLUSH_MS = 500;
 const HOVERED: ['boolean', ['feature-state', 'hover'], boolean] = [
   'boolean',
   ['feature-state', 'hover'],
+  false,
+];
+
+// The selected site carries its own state, so a selection change repaints two
+// polygons: the old one loses the highlight, the new one gains it.
+const SELECTED: ['boolean', ['feature-state', 'selected'], boolean] = [
+  'boolean',
+  ['feature-state', 'selected'],
   false,
 ];
 
@@ -78,6 +96,12 @@ interface SiteMapProps {
   boundariesError?: string | null;
   /** The area the user picked from the search matches. The map fits its bounds. */
   focusedArea?: BoundaryFeature | null;
+  /** The protected area id of the selected site. Only that site is highlighted. */
+  selectedAreaId?: number | null;
+  /** Fires when the user clicks a boundary. The parent owns the selection. */
+  onBoundarySelect?: (areaId: number) => void;
+  /** GPX tracks of the selected site, drawn as lines over the boundaries. */
+  gpxTracks?: GpxTrackLineFeatureCollection | null;
 }
 
 function readProperty(properties: unknown, key: string): string | null {
@@ -366,11 +390,15 @@ export default function SiteMap({
   boundariesLoading,
   boundariesError,
   focusedArea,
+  selectedAreaId,
+  onBoundarySelect,
+  gpxTracks,
 }: SiteMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const popupRef = useRef<Popup | null>(null);
   const hoveredFeatureRef = useRef<string | number | null>(null);
+  const selectedAreaIdRef = useRef<number | null>(null);
   const missingTilesRef = useRef(0);
   const apiKey = readApiKey();
   const styleUrl = `${STYLE_URL}?key=${encodeURIComponent(apiKey ?? '')}`;
@@ -404,6 +432,13 @@ export default function SiteMap({
       window.removeEventListener('offline', handleConnectionChange);
     };
   }, [styleUrl]);
+
+  // The boundaries effect binds the click handler once for the life of the map, so
+  // the parent callback reaches it through a ref instead of a new listener set.
+  const onBoundarySelectRef = useRef(onBoundarySelect);
+  useEffect(() => {
+    onBoundarySelectRef.current = onBoundarySelect;
+  }, [onBoundarySelect]);
 
   useEffect(() => {
     if (!apiKey || !containerRef.current) return;
@@ -489,6 +524,8 @@ export default function SiteMap({
         .setLngLat(event.lngLat)
         .setDOMContent(createPopupContent(feature.properties))
         .addTo(map);
+      // The source keeps the protected area ids of the collection, so the id is a number.
+      if (feature.id !== undefined) onBoundarySelectRef.current?.(Number(feature.id));
     };
 
     // Layer listeners survive a style swap, so they are registered once for the
@@ -519,7 +556,12 @@ export default function SiteMap({
         source: SOURCE_ID,
         paint: {
           'fill-color': FILL_COLOR,
-          'fill-opacity': ['case', HOVERED, 0.45, 0.25],
+          'fill-opacity': [
+            'case',
+            SELECTED,
+            0.6,
+            ['case', HOVERED, 0.45, 0.25],
+          ],
         },
       });
 
@@ -529,9 +571,20 @@ export default function SiteMap({
         source: SOURCE_ID,
         paint: {
           'line-color': OUTLINE_COLOR,
-          'line-width': ['case', HOVERED, 3, 2],
+          'line-width': ['case', SELECTED, 4, ['case', HOVERED, 3, 2]],
         },
       });
+
+      applySelection();
+    };
+
+    // A style swap drops every feature state, so the selection comes back with the
+    // boundaries it belongs to.
+    const applySelection = () => {
+      const selected = selectedAreaIdRef.current;
+      if (selected !== null) {
+        map.setFeatureState({ source: SOURCE_ID, id: selected }, { selected: true });
+      }
     };
 
     // A source or a layer can be added only once the style has loaded. A style
@@ -554,6 +607,70 @@ export default function SiteMap({
       if (mapRef.current !== null) mapRef.current.off('load', applyBoundaries);
     };
   }, [apiKey, boundaries]);
+
+  // The parent owns the selection, so this effect only moves the highlight: the
+  // previous site loses it, the new one gains it (US 2.0.1 AT4).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!apiKey || map === null) return;
+
+    const previous = selectedAreaIdRef.current;
+    selectedAreaIdRef.current = selectedAreaId ?? null;
+
+    // Before the style loads the source does not exist, and setFeatureState on a
+    // missing source fires a map error. applySelection restores the highlight once
+    // the boundaries build the source.
+    if (map.getSource(SOURCE_ID) === undefined) return;
+
+    if (previous !== null && previous !== selectedAreaId) {
+      map.setFeatureState({ source: SOURCE_ID, id: previous }, { selected: false });
+    }
+    if (selectedAreaId != null && previous !== selectedAreaId) {
+      map.setFeatureState({ source: SOURCE_ID, id: selectedAreaId }, { selected: true });
+    }
+  }, [apiKey, selectedAreaId]);
+
+  // The tracks arrive after the map exists, so they live in their own effect like
+  // the boundaries. A style swap drops the source and the layer, so the same
+  // function also runs on style.load.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!apiKey || map === null) return;
+
+    const applyGpxTracks = () => {
+      const source = map.getSource(GPX_SOURCE_ID) as GeoJSONSource | undefined;
+      if (source) {
+        source.setData(gpxTracks ?? EMPTY_TRACK_COLLECTION);
+        return;
+      }
+      if (gpxTracks == null || gpxTracks.features.length === 0) {
+        return;
+      }
+      map.addSource(GPX_SOURCE_ID, { type: 'geojson', data: gpxTracks });
+      map.addLayer({
+        id: GPX_LINE_LAYER_ID,
+        type: 'line',
+        source: GPX_SOURCE_ID,
+        paint: {
+          'line-color': GPX_LINE_COLOR,
+          'line-width': GPX_LINE_WIDTH,
+          'line-dasharray': GPX_LINE_DASHARRAY,
+        },
+      });
+    };
+
+    map.on('style.load', applyGpxTracks);
+    if (map.isStyleLoaded()) {
+      applyGpxTracks();
+    } else {
+      map.once('load', applyGpxTracks);
+    }
+
+    return () => {
+      map.off('style.load', applyGpxTracks);
+      if (mapRef.current !== null) mapRef.current.off('load', applyGpxTracks);
+    };
+  }, [apiKey, gpxTracks]);
 
   // The camera can move before the style loads, so this effect does not wait for it.
   useEffect(() => {

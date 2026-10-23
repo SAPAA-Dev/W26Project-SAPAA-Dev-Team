@@ -4,8 +4,10 @@
 
 
 import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { getSitesOnline, getTotalInspectionCount, getProtectedAreaBoundaries, SiteSummary } from '@/utils/supabase/queries';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { getSitesOnline, getTotalInspectionCount, getProtectedAreaBoundaries, getGpxTracksBySite, getGpxTrackPoints, SiteSummary } from '@/utils/supabase/queries';
+import { gpxTracksToLineFeatureCollection } from '@/lib/map/gpxTrack';
+import type { GpxTrackLineFeatureCollection } from '@/lib/map/gpxTrack';
 import { Search, MapPin, Calendar, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, LayoutGrid, Map as MapIcon } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import Image from 'next/image';
@@ -90,6 +92,26 @@ async function getCurrentUser(): Promise<{ email: string; role: string; name: st
   }
 }
 
+// The site page links here as /sites?site=<name>. Reading the param in a child
+// under a Suspense boundary keeps the page prerenderable, because useSearchParams
+// opts the reader out of the static shell.
+function SiteParamListener({ onSelectSite }: { onSelectSite: (siteName: string) => void }) {
+  const siteParam = useSearchParams().get('site');
+
+  // The callback reaches the effect through a ref, so a new callback identity
+  // cannot re-select a site the user has moved away from.
+  const onSelectSiteRef = useRef(onSelectSite);
+  useEffect(() => {
+    onSelectSiteRef.current = onSelectSite;
+  }, [onSelectSite]);
+
+  useEffect(() => {
+    if (siteParam) onSelectSiteRef.current(siteParam);
+  }, [siteParam]);
+
+  return null;
+}
+
 export default function HomeClient() {
   const router = useRouter();
   const [sites, setSites] = useState<UnifiedSite[]>([]);
@@ -117,6 +139,35 @@ export default function HomeClient() {
   const [boundariesError, setBoundariesError] = useState<string | null>(null);
   const boundariesRequested = useRef(false);
   const [focusedArea, setFocusedArea] = useState<BoundaryFeature | null>(null);
+  // The protected area id of the selected site. The map highlights only this area,
+  // and the GPX tracks of its site are loaded for it.
+  const [selectedAreaId, setSelectedAreaId] = useState<number | null>(null);
+  // A ?site= link that arrived before the boundaries. The boundary load consumes it.
+  const pendingSiteNameRef = useRef<string | null>(null);
+  const [gpxTracks, setGpxTracks] = useState<GpxTrackLineFeatureCollection | null>(null);
+
+  // The same case-insensitive join in every place a boundary's site_name is matched
+  // against a sites_pa name, so the highlight and the track lookup agree.
+  const siteByName = useCallback(
+    (siteName: string) => sites.find((item) => item.namesite.toLowerCase() === siteName.toLowerCase()),
+    [sites]
+  );
+
+  // A new object, so selecting the same area again centres the map again.
+  const selectArea = useCallback((area: BoundaryFeature) => {
+    setFocusedArea({ ...area });
+    setSelectedAreaId(area.id);
+  }, []);
+
+  // Focuses and selects the boundary of the linked site. A site without a linked
+  // protected area has no boundary, so the map opens without a selection.
+  const selectSiteByName = useCallback((collection: BoundaryFeatureCollection, siteName: string) => {
+    const area = collection.features.find(
+      (feature) => feature.properties.site_name?.toLowerCase() === siteName.toLowerCase()
+    );
+    if (area === undefined) return;
+    selectArea(area);
+  }, [selectArea]);
 
   useEffect(() => {
     if (viewMode !== 'map' || boundariesRequested.current) return;
@@ -124,10 +175,65 @@ export default function HomeClient() {
 
     setBoundariesLoading(true);
     getProtectedAreaBoundaries()
-      .then(setBoundaries)
-      .catch(() => setBoundariesError('Site boundaries could not load.'))
+      .then((collection) => {
+        setBoundaries(collection);
+        // A ?site=<name> link opened the map before the boundaries existed, so the
+        // site is centred and selected as soon as its boundary arrives.
+        const pendingSiteName = pendingSiteNameRef.current;
+        pendingSiteNameRef.current = null;
+        if (pendingSiteName !== null) selectSiteByName(collection, pendingSiteName);
+      })
+      .catch(() => {
+        // The pending ?site= name must not survive a failed load, so a retry
+        // cannot auto-select a site the user has moved away from.
+        pendingSiteNameRef.current = null;
+        setBoundariesError('Site boundaries could not load.');
+      })
       .finally(() => setBoundariesLoading(false));
-  }, [viewMode]);
+  }, [viewMode, selectSiteByName]);
+
+  const handleMapEntry = useCallback((siteName: string) => {
+    setViewMode('map');
+    if (boundaries === null) {
+      pendingSiteNameRef.current = siteName;
+      return;
+    }
+    selectSiteByName(boundaries, siteName);
+  }, [boundaries, selectSiteByName]);
+
+  // The tracks belong to the selected site, so they load when the selection
+  // changes. A site without tracks, or a selection without a linked site, clears
+  // the lines instead of leaving the previous site's track on the map.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const area = boundaries?.features.find((feature) => feature.id === selectedAreaId);
+      const siteName = area?.properties.site_name ?? null;
+      const site = siteName === null ? undefined : siteByName(siteName);
+      if (site === undefined) {
+        if (!cancelled) setGpxTracks(null);
+        return;
+      }
+
+      try {
+        const summaries = await getGpxTracksBySite(site.id);
+        const loaded = await Promise.all(
+          summaries.map(async (track) => ({
+            id: track.id,
+            originalFileName: track.originalFileName,
+            points: await getGpxTrackPoints(track.id),
+          }))
+        );
+        if (!cancelled) setGpxTracks(gpxTracksToLineFeatureCollection(loaded));
+      } catch {
+        if (!cancelled) setGpxTracks(null);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedAreaId, boundaries, siteByName]);
 
   const areaFilterOptions = useMemo(() => boundaryFilterOptions(boundaries), [boundaries]);
   const cardCountyOptions = useMemo(
@@ -313,6 +419,10 @@ export default function HomeClient() {
           onFinish={handleTutorialFinish}
         />
       )}
+
+      <Suspense fallback={null}>
+        <SiteParamListener onSelectSite={handleMapEntry} />
+      </Suspense>
       
         <div id="tutorial-header" className="bg-gradient-to-r from-[#254431] to-[#356B43] text-white px-6 py-4 shadow-lg">
         <Suspense fallback={null}>
@@ -433,8 +543,7 @@ export default function HomeClient() {
               value={search}
               onChange={setSearch}
               matches={viewMode === 'map' ? mapBoundaries.features : null}
-              // A new object, so picking the same area again centres the map again.
-              onPick={(area) => setFocusedArea({ ...area })}
+              onPick={selectArea}
               className="w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"            />
           </div>
 
@@ -556,6 +665,9 @@ export default function HomeClient() {
             boundariesLoading={boundariesLoading}
             boundariesError={boundariesError}
             focusedArea={focusedArea}
+            selectedAreaId={selectedAreaId}
+            onBoundarySelect={setSelectedAreaId}
+            gpxTracks={gpxTracks}
           />
         ) : (
         <div id="tutorial-site-list">
