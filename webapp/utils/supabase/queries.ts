@@ -266,8 +266,8 @@ const READ_DENIED = 'Only approved users can view this data.';
 const REPORT_VIEW_DENIED = 'You are not allowed to view this report.';
 
 // Report writes run with the service role, so each one checks the caller first.
-// Only the report owner may change a report, and an archived report changes only
-// through the admin archive actions.
+// Only the report owner or an approved admin may change a report, and an archived
+// report changes only through the admin archive actions.
 export async function requireReportWriter(responseId: number, errorMessage = REPORT_WRITE_DENIED): Promise<{
   isAdmin: boolean;
   userId: string;
@@ -286,7 +286,7 @@ export async function requireReportWriter(responseId: number, errorMessage = REP
     .maybeSingle();
 
   if (error) throw new Error(error.message || 'Failed to check the report owner');
-  if (!data || data.user_id !== caller.userId) {
+  if (!data || (!caller.isAdmin && data.user_id !== caller.userId)) {
     throw new Error(errorMessage);
   }
   return { ...caller, siteId: data.site_id, createdAt: data.created_at ?? null };
