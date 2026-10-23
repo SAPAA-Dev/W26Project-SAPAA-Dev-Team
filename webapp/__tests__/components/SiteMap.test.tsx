@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, act, fireEvent } from '@testing-library/react';
 import SiteMap from '@/components/map/SiteMap';
 import type { BoundaryFeatureCollection } from '@/lib/map/boundaries';
+import type { GpxTrackLineFeatureCollection } from '@/lib/map/gpxTrack';
 
 // The panel has its own suite, so a mock keeps this suite independent of it.
 jest.mock('@/components/map/OfflineSavePanel', () => ({
@@ -326,8 +327,8 @@ describe('SiteMap (US 2.0.6)', () => {
       expect(sourceId).toBe(SOURCE_ID);
       expect(sourceSpec.type).toBe('geojson');
       expect(sourceSpec.data).toBe(COLLECTION);
-      // The hover state and the popup name one feature, so the source needs ids.
-      expect(sourceSpec.generateId).toBe(true);
+      expect(sourceSpec.generateId).toBeUndefined();
+      expect(sourceSpec.data.features[0].id).toBe(COLLECTION.features[0].id);
 
       expect(mapInstance.addLayer).toHaveBeenCalledTimes(2);
 
@@ -342,16 +343,16 @@ describe('SiteMap (US 2.0.6)', () => {
       expect(outline.source).toBe(SOURCE_ID);
     });
 
-    it('waits for the load event when the style is not ready', () => {
+    it('waits for the idle event when the style is not ready', () => {
       mapInstance.isStyleLoaded.mockReturnValue(false);
       render(<SiteMap boundaries={COLLECTION} />);
 
       expect(mapInstance.addSource).not.toHaveBeenCalled();
 
-      const loadCall = mapInstance.once.mock.calls.find(([event]) => event === 'load');
-      expect(loadCall).toBeDefined();
+      const idleCall = mapInstance.once.mock.calls.find(([event]) => event === 'idle');
+      expect(idleCall).toBeDefined();
 
-      act(() => loadCall?.[1]());
+      act(() => idleCall?.[1]());
 
       expect(mapInstance.addSource).toHaveBeenCalledTimes(1);
     });
@@ -1160,6 +1161,218 @@ describe('SiteMap (US 2.0.6)', () => {
         ([name, layer]) => name === 'mousemove' && layer === 'protected-areas-fill'
       );
       expect(fillListenerCalls.length).toBe(1);
+    });
+  });
+});
+
+const GPX_SOURCE_ID = 'gpx-tracks';
+const GPX_LINE_LAYER_ID = 'gpx-tracks-line';
+
+const GPX_TRACKS: GpxTrackLineFeatureCollection = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: { trackId: 7, fileName: 'walk.gpx' },
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          [-110.67, 52.62],
+          [-110.66, 52.63],
+        ],
+      },
+    },
+  ],
+};
+
+describe('SiteMap site selection and GPX tracks (US 2.0.1)', () => {
+  // The suite stands outside the US 2.0.6 block, so it repeats its setup: the
+  // ResizeObserver shim and the map mock defaults.
+  beforeAll(() => {
+    (global as unknown as { ResizeObserver: unknown }).ResizeObserver = jest.fn(
+      (callback: () => void) => {
+        resizeCallback = callback;
+        return { observe: mockObserve, disconnect: mockDisconnect };
+      }
+    );
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    resizeCallback = null;
+    canvas.style.cursor = '';
+    delete process.env.NEXT_PUBLIC_PROTOMAPS_API_KEY;
+    Object.defineProperty(navigator, 'onLine', { value: true, configurable: true });
+
+    tileCacheMocks.listRegions.mockReset().mockReturnValue([]);
+    tileCacheMocks.getCachedResponse.mockReset().mockResolvedValue(null);
+
+    mapInstance.isStyleLoaded.mockReturnValue(true);
+    mapInstance.getSource.mockReturnValue(undefined);
+    mapInstance.getCanvas.mockReturnValue(canvas);
+    mapInstance.getLayer.mockReset().mockReturnValue(undefined);
+    popupInstance.setLngLat.mockReturnValue(popupInstance);
+    popupInstance.setDOMContent.mockReturnValue(popupInstance);
+    popupInstance.addTo.mockReturnValue(popupInstance);
+
+    process.env.NEXT_PUBLIC_PROTOMAPS_API_KEY = 'test-key';
+  });
+
+  describe('selection highlight (AT4)', () => {
+    beforeEach(() => {
+      // The boundaries built the source, so the selection effect can move the state.
+      mapInstance.getSource.mockReturnValue({ setData: jest.fn() });
+    });
+
+    it('marks the selected area only', () => {
+      render(<SiteMap boundaries={COLLECTION} selectedAreaId={1} />);
+
+      expect(mapInstance.setFeatureState).toHaveBeenCalledWith(
+        { source: SOURCE_ID, id: 1 },
+        { selected: true }
+      );
+    });
+
+    it('moves the highlight when the selection changes, so only the new site keeps it', () => {
+      const { rerender } = render(<SiteMap boundaries={COLLECTION} selectedAreaId={1} />);
+
+      rerender(<SiteMap boundaries={COLLECTION} selectedAreaId={2} />);
+
+      expect(mapInstance.setFeatureState).toHaveBeenCalledWith(
+        { source: SOURCE_ID, id: 1 },
+        { selected: false }
+      );
+      expect(mapInstance.setFeatureState).toHaveBeenCalledWith(
+        { source: SOURCE_ID, id: 2 },
+        { selected: true }
+      );
+    });
+
+    it('clears the highlight when the selection becomes null', () => {
+      const { rerender } = render(<SiteMap boundaries={COLLECTION} selectedAreaId={1} />);
+
+      rerender(<SiteMap boundaries={COLLECTION} selectedAreaId={null} />);
+
+      expect(mapInstance.setFeatureState).toHaveBeenLastCalledWith(
+        { source: SOURCE_ID, id: 1 },
+        { selected: false }
+      );
+    });
+
+    it('restores the highlight after a style swap', () => {
+      render(<SiteMap boundaries={COLLECTION} selectedAreaId={1} />);
+
+      mapInstance.getSource.mockReturnValue(undefined);
+      act(() => mapHandler('style.load')());
+
+      const selectedCalls = mapInstance.setFeatureState.mock.calls.filter(
+        ([, state]) => state.selected === true
+      );
+      expect(selectedCalls).toHaveLength(2);
+    });
+  });
+
+  describe('boundary click', () => {
+    it('reports the clicked area to the parent', () => {
+      const onBoundarySelect = jest.fn();
+      render(<SiteMap boundaries={COLLECTION} onBoundarySelect={onBoundarySelect} />);
+
+      act(() =>
+        layerHandler('click')({
+          lngLat: { lng: -110.5, lat: 52.6 },
+          features: [{ id: 3, properties: { name: 'Wainwright Dunes' } }],
+        })
+      );
+
+      expect(onBoundarySelect).toHaveBeenCalledWith(3);
+    });
+
+    it('keeps the popup working when no callback is given', () => {
+      render(<SiteMap boundaries={COLLECTION} />);
+
+      act(() =>
+        layerHandler('click')({
+          lngLat: { lng: -110.5, lat: 52.6 },
+          features: [{ id: 3, properties: { name: 'Wainwright Dunes' } }],
+        })
+      );
+
+      expect(popupInstance.addTo).toHaveBeenCalledWith(mapInstance);
+    });
+  });
+
+  describe('GPX tracks (AT2)', () => {
+    it('draws the tracks as a dashed line in a style different from the boundary outline', () => {
+      render(<SiteMap boundaries={COLLECTION} gpxTracks={GPX_TRACKS} />);
+
+      const trackSourceCall = mapInstance.addSource.mock.calls.find(
+        ([id]) => id === GPX_SOURCE_ID
+      );
+      expect(trackSourceCall).toBeDefined();
+      expect(trackSourceCall?.[1].data).toBe(GPX_TRACKS);
+
+      const trackLayer = mapInstance.addLayer.mock.calls
+        .map(([layer]) => layer)
+        .find((layer) => layer.id === GPX_LINE_LAYER_ID);
+      expect(trackLayer.type).toBe('line');
+      expect(trackLayer.source).toBe(GPX_SOURCE_ID);
+
+      const outline = mapInstance.addLayer.mock.calls
+        .map(([layer]) => layer)
+        .find((layer) => layer.id === OUTLINE_LAYER_ID);
+      expect(trackLayer.paint['line-color']).not.toBe(outline.paint['line-color']);
+      expect(trackLayer.paint['line-dasharray']).toBeDefined();
+      expect(outline.paint['line-dasharray']).toBeUndefined();
+    });
+
+    it('adds no track source when the prop is absent', () => {
+      render(<SiteMap boundaries={COLLECTION} />);
+
+      expect(mapInstance.addSource).toHaveBeenCalledTimes(1);
+    });
+
+    it('clears the drawn tracks when the selection moves to a site without tracks', () => {
+      const setData = jest.fn();
+      const { rerender } = render(<SiteMap boundaries={COLLECTION} gpxTracks={GPX_TRACKS} />);
+
+      mapInstance.getSource.mockReturnValue({ setData });
+      rerender(<SiteMap boundaries={COLLECTION} gpxTracks={null} />);
+
+      expect(setData).toHaveBeenCalledWith({ type: 'FeatureCollection', features: [] });
+    });
+
+    it('applies the tracks through the idle path when the style is busy', () => {
+      // A pending source update keeps isStyleLoaded() false.
+      mapInstance.isStyleLoaded.mockReturnValue(false);
+      render(<SiteMap boundaries={COLLECTION} gpxTracks={GPX_TRACKS} />);
+
+      expect(mapInstance.addSource).not.toHaveBeenCalled();
+
+      // Every effect that waits registers its own idle handler, so all of them run.
+      const idleCalls = mapInstance.once.mock.calls.filter(([event]) => event === 'idle');
+      expect(idleCalls).toHaveLength(2);
+
+      for (const [, handler] of idleCalls) {
+        act(() => handler());
+      }
+
+      const addedSourceIds = mapInstance.addSource.mock.calls.map(([id]) => id);
+      expect(addedSourceIds).toContain(GPX_SOURCE_ID);
+    });
+
+    it('re-adds the track source and layer after a style swap', () => {
+      render(<SiteMap boundaries={COLLECTION} gpxTracks={GPX_TRACKS} />);
+
+      mapInstance.getSource.mockReturnValue(undefined);
+      // A style swap reloads every app source, so all style.load handlers run.
+      for (const handler of allMapHandlers('style.load')) {
+        act(() => handler());
+      }
+
+      const trackSourceCalls = mapInstance.addSource.mock.calls.filter(
+        ([id]) => id === GPX_SOURCE_ID
+      );
+      expect(trackSourceCalls).toHaveLength(2);
     });
   });
 });

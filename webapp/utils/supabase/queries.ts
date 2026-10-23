@@ -9,7 +9,7 @@ import {
   type BoundaryFeatureCollection,
   type ProtectedAreaBoundaryRow,
 } from '../../lib/map/boundaries';
-import { parseGpxTrackFile, type GpxTrackPoint } from '../../lib/map/gpxTrack';
+import { parseGpxTrackFile, type GpxTrackForMap, type GpxTrackPoint } from '../../lib/map/gpxTrack';
 
 import { SITE_PAGE_FIELDS } from '@/lib/sitePageFields';
 import {
@@ -1482,6 +1482,42 @@ export async function getGpxTrackPoints(trackId: number): Promise<GpxTrackPoint[
     console.error('Failed to parse a stored GPX track', parseError);
     throw new Error('The stored GPX file is not a valid track.');
   }
+}
+
+// One unreadable file must not hide the other tracks, so it is skipped, not thrown.
+export async function getGpxTracksForMap(): Promise<GpxTrackForMap[]> {
+  await requireApprovedTrackReader();
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('gpx_tracks')
+    .select('id, original_file_name, storage_path')
+    .order('created_at', { ascending: true });
+
+  if (error) throw new Error(error.message || 'Failed to load the GPX tracks');
+
+  const loaded = await Promise.all(
+    (data ?? []).map(async (row): Promise<GpxTrackForMap | null> => {
+      try {
+        const { data: file, error: downloadError } = await supabase.storage
+          .from(GPX_TRACKS_BUCKET)
+          .download(row.storage_path);
+        if (downloadError !== null || file === null) {
+          throw new Error('The stored GPX file could not be read.');
+        }
+        return {
+          id: row.id,
+          originalFileName: row.original_file_name,
+          points: parseGpxTrackFile(new Uint8Array(await file.arrayBuffer())),
+        };
+      } catch (readError) {
+        console.error('Failed to read a stored GPX track', readError);
+        return null;
+      }
+    })
+  );
+
+  return loaded.filter((track): track is GpxTrackForMap => track !== null);
 }
 
 // Only http and https links are saved, so a link like "javascript:..." can never reach the page.

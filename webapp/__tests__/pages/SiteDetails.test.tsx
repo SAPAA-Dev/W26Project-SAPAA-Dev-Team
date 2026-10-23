@@ -296,6 +296,17 @@ describe('SiteDetailScreen', () => {
       });
       expect(mockRouter.push).toHaveBeenCalledWith('/sites');
     });
+
+    it('links to the map at this site when View on map is clicked (2.0.1 AT3)', async () => {
+      render(<SiteDetailScreen />);
+
+      const viewOnMap = await screen.findByTestId('view-on-map');
+      fireEvent.click(viewOnMap);
+
+      expect(mockRouter.push).toHaveBeenCalledWith(
+        '/sites?site=Aspen%20Grove%20Reserve'
+      );
+    });
   });
 
   describe('Stats Cards', () => {

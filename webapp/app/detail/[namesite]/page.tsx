@@ -29,6 +29,7 @@ import {
     Pencil,
     ImageIcon,
     Loader2,
+    Map as MapIcon,
     Maximize2,
     X,
     Search,
@@ -579,6 +580,14 @@ export default function SiteDetailScreen() {
               <SiteLinks {...siteLinks} />
             </div>
           )}
+          <button
+            onClick={() => router.push(`/sites?site=${encodeURIComponent(site.namesite)}`)}
+            className="mt-2 flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+            data-testid="view-on-map"
+          >
+            <MapIcon className="w-4 h-4" />
+            View on map
+          </button>
           {isAdmin && (
             <SitePageEditor
               siteId={site.id}
