@@ -33,6 +33,10 @@ export interface ProtectedAreaBoundaryRow {
   county?: string | null;
   // Null when no sites_pa row points at this protected area.
   is_active?: boolean | null;
+  // Null when no sites_pa row points at this protected area.
+  site_name?: string | null;
+  // The newest non-archived report of the linked site. Null when there is no link or no report.
+  last_inspection_date?: string | null;
 }
 
 export interface BoundaryProperties {
@@ -50,6 +54,8 @@ export interface BoundaryProperties {
   notes: string | null;
   county: string | null;
   is_active: boolean | null;
+  site_name: string | null;
+  last_inspection_date: string | null;
 }
 
 export interface BoundaryFeature {
@@ -262,6 +268,8 @@ export function toBoundaryFeatureCollection(
         notes: row.notes,
         county: row.county ?? null,
         is_active: row.is_active ?? null,
+        site_name: row.site_name ?? null,
+        last_inspection_date: row.last_inspection_date ?? null,
       },
       geometry,
     });

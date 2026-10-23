@@ -15,12 +15,15 @@ function mockCaller(role: string | null, approved = true) {
 
 describe("Supabase edit site functions (US 2.0.5)", () => {
   const mockFrom = jest.fn();
+  const mockRpc = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockCaller("admin");
+    mockRpc.mockResolvedValue({ data: null, error: null });
     (createServerSupabase as jest.Mock).mockReturnValue({
       from: mockFrom,
+      rpc: mockRpc,
     });
   });
 
@@ -116,6 +119,7 @@ describe("Supabase edit site functions (US 2.0.5)", () => {
       expect(mockFrom).toHaveBeenCalledWith("sites_pa");
       expect(mockUpdate).toHaveBeenCalledWith({ namesite: "New Name", ab_county: 5, protected_area_id: null });
       expect(mockEq).toHaveBeenCalledWith("id", 1);
+      expect(mockRpc).toHaveBeenCalledWith("link_sites_to_protected_areas", { p_link: false });
     });
 
     it("updates site with null county", async () => {
@@ -139,6 +143,7 @@ describe("Supabase edit site functions (US 2.0.5)", () => {
     it("US 2.0.5: refuses a blank name without touching the database (L17)", async () => {
       await expect(queries.updateSite(1, "   ", 5)).resolves.toEqual({ ok: false, error: "Site name is required." });
       expect(mockFrom).not.toHaveBeenCalled();
+      expect(mockRpc).not.toHaveBeenCalled();
     });
 
     it("saves the selected protected area", async () => {
@@ -148,6 +153,25 @@ describe("Supabase edit site functions (US 2.0.5)", () => {
 
       await expect(queries.updateSite(1, "Name", null, 9)).resolves.toEqual({ ok: true });
       expect(mockUpdate).toHaveBeenCalledWith({ namesite: "Name", ab_county: null, protected_area_id: 9 });
+      expect(mockRpc).toHaveBeenCalledWith("link_sites_to_protected_areas", { p_link: false });
+    });
+
+    it("stays ok when the site link lookup fails", async () => {
+      const mockEq = jest.fn().mockResolvedValue({ error: null });
+      const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq });
+      mockFrom.mockReturnValueOnce({ update: mockUpdate });
+      mockRpc.mockResolvedValue({ data: null, error: { message: "permission denied" } });
+
+      await expect(queries.updateSite(1, "Name", null, 9)).resolves.toEqual({ ok: true });
+    });
+
+    it("stays ok when the site link request rejects", async () => {
+      const mockEq = jest.fn().mockResolvedValue({ error: null });
+      const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq });
+      mockFrom.mockReturnValueOnce({ update: mockUpdate });
+      mockRpc.mockRejectedValue(new Error("network down"));
+
+      await expect(queries.updateSite(1, "Name", null, 9)).resolves.toEqual({ ok: true });
     });
 
     it("explains a protected area that is already linked", async () => {

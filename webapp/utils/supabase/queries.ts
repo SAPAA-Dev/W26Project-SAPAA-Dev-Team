@@ -1,6 +1,7 @@
 'use server';
 
 import { createServerSupabase, createClient } from './server';
+import { refreshProtectedAreaLinks } from './siteLinks';
 import { deleteObjectsByKeys } from '../media/s3Delete';
 import { isAllowedStorageKey } from '../media/storageKeys';
 import {
@@ -8,6 +9,7 @@ import {
   type BoundaryFeatureCollection,
   type ProtectedAreaBoundaryRow,
 } from '../../lib/map/boundaries';
+import { parseGpxTrackFile, type GpxTrackPoint } from '../../lib/map/gpxTrack';
 
 import { SITE_PAGE_FIELDS } from '@/lib/sitePageFields';
 import {
@@ -541,27 +543,81 @@ function countyFromEmbed(
   return value.county ?? null;
 }
 
+interface ProtectedAreaLink {
+  county: string | null;
+  is_active: boolean | null;
+  site_name: string | null;
+  last_inspection_date: string | null;
+}
+
+interface SiteLinkResponseRow {
+  inspection_date?: string | null;
+  created_at?: string | null;
+  archived_at?: string | null;
+}
+
+interface SiteLinkRow {
+  protected_area_id: number | null;
+  is_active: boolean | null;
+  namesite: string | null;
+  ab_counties: { county: string } | { county: string }[] | null;
+  latest_dated: SiteLinkResponseRow[] | null;
+  latest_undated: SiteLinkResponseRow[] | null;
+}
+
 // ab_counties has row level security and no select policy for signed-in users.
-// The caller is already approved. This read returns only the link, the county, and is_active.
-async function readProtectedAreaLinks(): Promise<Map<number, { county: string | null; is_active: boolean | null }>> {
+// The caller is already approved. This read returns only the link, the county, the status,
+// the site name and the newest report of the linked site.
+async function readProtectedAreaLinks(): Promise<Map<number, ProtectedAreaLink>> {
   const supabase = createServerSupabase();
   const { data, error } = await supabase
     .from('sites_pa')
-    .select('protected_area_id, is_active, ab_counties(county)')
+    .select(`
+      protected_area_id,
+      is_active,
+      namesite,
+      ab_counties (
+        county
+      ),
+      latest_dated:form_responses (
+        inspection_date,
+        created_at,
+        archived_at
+      ),
+      latest_undated:form_responses (
+        inspection_date,
+        created_at,
+        archived_at
+      )
+    `)
     .not('protected_area_id', 'is', null)
     // An archived site is hidden from the app, so it must not give a map area a county or status.
-    .is('archived_at', null);
+    .is('archived_at', null)
+    // The same newest-report rule as getSitesOnline, so the popup date matches the Site card.
+    .is('latest_dated.archived_at', null)
+    .not('latest_dated.inspection_date', 'is', null)
+    .order('inspection_date', { referencedTable: 'latest_dated', ascending: false })
+    .limit(1, { referencedTable: 'latest_dated' })
+    .is('latest_undated.archived_at', null)
+    .is('latest_undated.inspection_date', null)
+    .order('created_at', { referencedTable: 'latest_undated', ascending: false })
+    .limit(1, { referencedTable: 'latest_undated' });
 
   if (error) throw new Error(error.message || 'Failed to fetch site links');
 
-  const links = new Map<number, { county: string | null; is_active: boolean | null }>();
-  for (const row of data ?? []) {
-    const areaId = row.protected_area_id as number | null;
+  const links = new Map<number, ProtectedAreaLink>();
+  for (const row of (data ?? []) as unknown as SiteLinkRow[]) {
+    const areaId = row.protected_area_id;
     if (areaId === null || links.has(areaId)) continue;
     links.set(areaId, {
-      county: countyFromEmbed(row.ab_counties as { county: string } | { county: string }[] | null),
+      county: countyFromEmbed(row.ab_counties),
       // A null is_active means active, the same as getSitesOnline and getAllSites.
-      is_active: (row.is_active as boolean | null) ?? true,
+      is_active: row.is_active ?? true,
+      site_name: row.namesite ?? null,
+      last_inspection_date: getLatestInspectionDate([
+        ...(row.latest_dated ?? []),
+        ...(row.latest_undated ?? []),
+      ]),
     });
   }
   return links;
@@ -589,6 +645,8 @@ export async function getProtectedAreaBoundaries(): Promise<BoundaryFeatureColle
       ...row,
       county: link?.county ?? null,
       is_active: link ? link.is_active : null,
+      site_name: link?.site_name ?? null,
+      last_inspection_date: link?.last_inspection_date ?? null,
     };
   });
 
@@ -745,6 +803,11 @@ async function updateSiteOrThrow(
     .eq('id', id);
 
   if (error) throw siteWriteError(error, 'Failed to update site');
+
+  // #181: a manual link or unlink changes the centre. shouldLink stays false so an
+  // unlink is not undone by the strict name match. The helper logs a failed lookup;
+  // the site write above already succeeded, so the action stays ok.
+  await refreshProtectedAreaLinks(supabase, false);
 }
 
 export async function createSite(
@@ -772,6 +835,9 @@ async function createSiteOrThrow(
     .insert({ namesite: name, ab_county, is_active: true, protected_area_id });
 
   if (error) throw siteWriteError(error, 'Failed to create site');
+
+  // #181: a new site whose exact name matches a KML area links here.
+  await refreshProtectedAreaLinks(supabase);
 }
 
 /**
@@ -1332,6 +1398,85 @@ export async function getSitePageFields(siteId: number): Promise<SitePageFieldVa
     value: row.value,
     isVisible: row.is_visible,
   }));
+}
+
+// The bucket that 20261020000000_create_gpx_tracks.sql creates.
+const GPX_TRACKS_BUCKET = 'gpx-tracks';
+const GPX_READ_DENIED = 'Only approved stewards and admins can view GPX tracks.';
+
+// The gpx_tracks RLS policies allow only approved stewards and admins, and
+// these reads run with the service role, which bypasses RLS. requireApprovedCaller
+// checks only the approval flag, so the role is checked separately here.
+async function requireApprovedTrackReader(): Promise<void> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+  const user = data.user;
+  const role = user?.app_metadata?.role;
+  if (
+    error !== null
+    || !user
+    || user.app_metadata?.authenticated !== true
+    || (role !== 'steward' && role !== 'admin')
+  ) {
+    throw new Error(GPX_READ_DENIED);
+  }
+}
+
+export interface GpxTrackSummary {
+  id: number;
+  originalFileName: string;
+  trackPointCount: number;
+  createdAt: string;
+}
+
+export async function getGpxTracksBySite(siteId: number): Promise<GpxTrackSummary[]> {
+  await requireApprovedTrackReader();
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('gpx_tracks')
+    .select('id, original_file_name, track_point_count, created_at')
+    .eq('site_id', siteId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message || 'Failed to load the GPX tracks of a site');
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    originalFileName: row.original_file_name,
+    trackPointCount: row.track_point_count,
+    createdAt: row.created_at,
+  }));
+}
+
+export async function getGpxTrackPoints(trackId: number): Promise<GpxTrackPoint[]> {
+  await requireApprovedTrackReader();
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('gpx_tracks')
+    .select('id, storage_path')
+    .eq('id', trackId)
+    .single();
+
+  if (error !== null || data === null) {
+    throw new Error('The GPX track could not be found.');
+  }
+
+  const { data: file, error: downloadError } = await supabase.storage
+    .from(GPX_TRACKS_BUCKET)
+    .download(data.storage_path);
+
+  if (downloadError !== null || file === null) {
+    throw new Error('The stored GPX file could not be read.');
+  }
+
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  try {
+    return parseGpxTrackFile(bytes);
+  } catch (parseError) {
+    console.error('Failed to parse a stored GPX track', parseError);
+    throw new Error('The stored GPX file is not a valid track.');
+  }
 }
 
 // Only http and https links are saved, so a link like "javascript:..." can never reach the page.

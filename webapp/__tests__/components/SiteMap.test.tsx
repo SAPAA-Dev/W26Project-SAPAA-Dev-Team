@@ -95,14 +95,11 @@ const FILL_LAYER_ID = 'protected-areas-fill';
 const OUTLINE_LAYER_ID = 'protected-areas-outline';
 const SOURCE_ID = 'protected-areas';
 
-const MAP_BOX = {
-  center: [-114.5, 54.5],
-  zoom: 5.5,
-  maxBounds: [
-    [-122.0, 48.0],
-    [-108.0, 60.5],
-  ],
-};
+const ALBERTA_BOUNDS = [
+  [-120.0, 49.0],
+  [-110.0, 60.0],
+];
+const VIEW_PADDING = 32;
 
 const COLLECTION: BoundaryFeatureCollection = {
   type: 'FeatureCollection',
@@ -125,6 +122,8 @@ const COLLECTION: BoundaryFeatureCollection = {
         notes: null,
         county: null,
         is_active: null,
+        site_name: null,
+        last_inspection_date: null,
       },
       geometry: {
         type: 'MultiPolygon',
@@ -200,6 +199,17 @@ function layerHandler(eventName: string): (event: Record<string, unknown>) => vo
   return call[2];
 }
 
+function detailRowTexts(root: ParentNode | null): string[] {
+  if (root === null) return [];
+  return Array.from(root.querySelectorAll('[data-field]')).map(
+    (row) => `${row.getAttribute('data-field')}: ${row.querySelector('[data-field-value]')?.textContent}`
+  );
+}
+
+function popupContent(): HTMLElement {
+  return popupInstance.setDOMContent.mock.calls[0][0] as HTMLElement;
+}
+
 describe('SiteMap (US 2.0.6)', () => {
   beforeAll(() => {
     // jsdom does not implement ResizeObserver.
@@ -251,7 +261,7 @@ describe('SiteMap (US 2.0.6)', () => {
     }
   );
 
-  it('opens the bounded Alberta view with the Protomaps style when the key is set', () => {
+  it('opens the map fitted to Alberta with the Protomaps style when the key is set', () => {
     process.env.NEXT_PUBLIC_PROTOMAPS_API_KEY = 'test+key/1';
     render(<SiteMap />);
 
@@ -261,11 +271,26 @@ describe('SiteMap (US 2.0.6)', () => {
     expect(options.style).toBe(
       'https://api.protomaps.com/styles/v5/light/en.json?key=test%2Bkey%2F1'
     );
-    expect(options.center).toEqual(MAP_BOX.center);
-    expect(options.zoom).toBe(MAP_BOX.zoom);
-    expect(options.maxBounds).toEqual(MAP_BOX.maxBounds);
+    expect(options.bounds).toEqual(ALBERTA_BOUNDS);
+    expect(options.fitBoundsOptions).toEqual({ padding: VIEW_PADDING });
+    expect(options.center).toBeUndefined();
+    expect(options.zoom).toBeUndefined();
+    expect(options.maxBounds).toBeUndefined();
     expect(options.renderWorldCopies).toBe(false);
     expect(mockObserve).toHaveBeenCalledTimes(1);
+  });
+
+  it('frames the popup as the site detail card', () => {
+    process.env.NEXT_PUBLIC_PROTOMAPS_API_KEY = 'test-key';
+    render(<SiteMap />);
+
+    expect(mocks.Popup).toHaveBeenCalledWith(
+      expect.objectContaining({
+        closeButton: false,
+        maxWidth: '360px',
+        className: 'site-detail-popup',
+      })
+    );
   });
 
   it('resizes the canvas when the container changes size', () => {
@@ -404,7 +429,7 @@ describe('SiteMap (US 2.0.6)', () => {
       expect(mapInstance.setFeatureState).not.toHaveBeenCalled();
     });
 
-    it('opens a popup with the name and the area type on click', () => {
+    it('opens a popup with both the site name and the boundary name on click', () => {
       render(<SiteMap boundaries={COLLECTION} />);
 
       const lngLat = { lng: -110.5, lat: 52.6 };
@@ -412,7 +437,16 @@ describe('SiteMap (US 2.0.6)', () => {
         layerHandler('click')({
           lngLat,
           features: [
-            { id: 1, properties: { name: 'Wainwright Dunes', area_type: 'Ecological Reserve' } },
+            {
+              id: 1,
+              properties: {
+                name: 'Wainwright Dunes',
+                oc_name: 'Wainwright Dunes Ecological Reserve',
+                area_type: 'ER',
+                subtype: 'Ecological Reserve',
+                site_name: 'Wainwright Dunes (ER)',
+              },
+            },
           ],
         })
       );
@@ -420,12 +454,34 @@ describe('SiteMap (US 2.0.6)', () => {
       expect(popupInstance.setLngLat).toHaveBeenCalledWith(lngLat);
       expect(popupInstance.addTo).toHaveBeenCalledWith(mapInstance);
 
-      const content = popupInstance.setDOMContent.mock.calls[0][0] as HTMLElement;
-      expect(content.textContent).toContain('Wainwright Dunes');
-      expect(content.textContent).toContain('Ecological Reserve');
+      const content = popupContent();
+      expect(content.querySelector('[data-site-name]')?.textContent).toBe('Wainwright Dunes (ER)');
+      expect(content.querySelector('[data-boundary-name]')?.textContent).toBe(
+        'Wainwright Dunes Ecological Reserve'
+      );
+      expect(
+        Array.from(content.querySelectorAll('[data-boundary-badge]')).map(
+          (badge) => badge.textContent
+        )
+      ).toEqual(['ER', 'Ecological Reserve']);
     });
 
-    it('lists the stored fields under the subtitle and puts notes on their own lines', () => {
+    it('uses the short export name for the boundary when the order name is absent', () => {
+      render(<SiteMap boundaries={COLLECTION} />);
+
+      act(() =>
+        layerHandler('click')({
+          lngLat: { lng: -110.5, lat: 52.6 },
+          features: [{ id: 1, properties: { name: 'Wainwright Dunes', area_type: 'ER' } }],
+        })
+      );
+
+      expect(popupContent().querySelector('[data-boundary-name]')?.textContent).toBe(
+        'Wainwright Dunes'
+      );
+    });
+
+    it('shows five summary fields and keeps the rest behind the expand control', () => {
       render(<SiteMap boundaries={COLLECTION} />);
 
       act(() =>
@@ -453,27 +509,67 @@ describe('SiteMap (US 2.0.6)', () => {
         })
       );
 
-      const content = popupInstance.setDOMContent.mock.calls[0][0] as HTMLElement;
-      const fields = Array.from(content.querySelectorAll('[data-field]')).map(
-        (line) => line.textContent
+      const content = popupContent();
+      const summary = content.querySelector('[data-boundary-summary]');
+      const extra = content.querySelector('[data-boundary-extra]');
+      const expand = content.querySelector('[data-boundary-expand]') as HTMLButtonElement;
+
+      expect(detailRowTexts(summary)).toEqual([
+        'FID: 0',
+        'IUCN: II',
+        'Order in Council: OC 454/71-42',
+        'Area: 75.2 ha',
+        'Established: 1971-03-15',
+      ]);
+      expect(extra?.classList.contains('hidden')).toBe(true);
+      expect(expand.getAttribute('aria-expanded')).toBe('false');
+      expect(expand.textContent).toContain('View all boundary details');
+    });
+
+    it('shows the remaining fields and the notes after the expand control is clicked', () => {
+      render(<SiteMap boundaries={COLLECTION} />);
+
+      act(() =>
+        layerHandler('click')({
+          lngLat: { lng: -110.5, lat: 52.6 },
+          features: [
+            {
+              id: 1,
+              properties: {
+                name: 'Pembina River',
+                fid: 0,
+                area_type: 'NA',
+                subtype: 'Conservation',
+                acres: 185.835377,
+                oc_date: '1971-03-15',
+                oc_name: 'Pembina River Natural Area',
+                notes: 'Watch the riverbank.',
+              },
+            },
+          ],
+        })
       );
 
-      expect(fields).toEqual([
-        'NAME: Pembina River',
-        'FID: 0',
-        'TYPE: NA',
-        'SUBTYPE: Conservation',
-        'IUCN: II',
-        'OC_NO: OC 454/71-42',
-        'ACRES: 185.835377',
-        'HECTARES: 75.204909',
-        'OC_DATE: 1971-03-15',
-        'DATE_EST: 1971-03-15',
-        'OC_NAME: Pembina River Natural Area',
+      const content = popupContent();
+      const extra = content.querySelector('[data-boundary-extra]');
+      const expand = content.querySelector('[data-boundary-expand]') as HTMLButtonElement;
+
+      act(() => expand.click());
+
+      expect(extra?.classList.contains('hidden')).toBe(false);
+      expect(expand.getAttribute('aria-expanded')).toBe('true');
+      expect(expand.textContent).toContain('Hide boundary details');
+      expect(detailRowTexts(extra)).toEqual([
+        'Name: Pembina River',
+        'Acres: 185.84',
+        'Order date: 1971-03-15',
       ]);
-      expect(content.querySelector('[data-notes-heading]')?.textContent).toBe('NOTES');
-      expect(content.querySelector('[data-notes-body]')?.textContent).toBe('Watch the riverbank.');
-      expect(content.querySelector('[data-notes-heading]')?.parentElement?.className).toContain('mt-4');
+      expect(extra?.querySelector('[data-notes-heading]')?.textContent).toBe('NOTES');
+      expect(extra?.querySelector('[data-notes-body]')?.textContent).toBe('Watch the riverbank.');
+
+      act(() => expand.click());
+      expect(extra?.classList.contains('hidden')).toBe(true);
+      expect(expand.getAttribute('aria-expanded')).toBe('false');
     });
 
     it('omits an empty field and the notes block when notes are absent', () => {
@@ -497,12 +593,16 @@ describe('SiteMap (US 2.0.6)', () => {
         })
       );
 
-      const content = popupInstance.setDOMContent.mock.calls[0][0] as HTMLElement;
-      const fields = Array.from(content.querySelectorAll('[data-field]')).map(
-        (line) => line.textContent
-      );
-
-      expect(fields).toEqual(['NAME: Pembina River', 'FID: 0', 'TYPE: NA']);
+      const content = popupContent();
+      expect(detailRowTexts(content.querySelector('[data-boundary-summary]'))).toEqual(['FID: 0']);
+      expect(
+        Array.from(content.querySelectorAll('[data-boundary-badge]')).map(
+          (badge) => badge.textContent
+        )
+      ).toEqual(['NA']);
+      expect(detailRowTexts(content.querySelector('[data-boundary-extra]'))).toEqual([
+        'Name: Pembina River',
+      ]);
       expect(content.querySelector('[data-notes-heading]')).toBeNull();
     });
 
@@ -511,8 +611,145 @@ describe('SiteMap (US 2.0.6)', () => {
 
       act(() => layerHandler('click')({ lngLat: { lng: 0, lat: 0 }, features: [{ id: 1 }] }));
 
-      const content = popupInstance.setDOMContent.mock.calls[0][0] as HTMLElement;
-      expect(content.textContent).toContain('Protected area');
+      const content = popupContent();
+      expect(content.querySelector('[data-boundary-name]')?.textContent).toBe('Protected area');
+    });
+
+    it('US 2.0.8 AT1: opens the detail popup for the selected site', () => {
+      render(<SiteMap boundaries={COLLECTION} />);
+
+      const lngLat = { lng: -110.5, lat: 52.6 };
+      act(() =>
+        layerHandler('click')({
+          lngLat,
+          features: [{ id: 1, properties: { name: 'Wainwright Dunes', site_name: 'Wainwright Dunes' } }],
+        })
+      );
+
+      expect(popupInstance.setLngLat).toHaveBeenCalledWith(lngLat);
+      expect(popupInstance.setDOMContent).toHaveBeenCalled();
+      expect(popupInstance.addTo).toHaveBeenCalledWith(mapInstance);
+    });
+
+    it('US 2.0.8 AT1: opens no popup when the click carries no feature', () => {
+      render(<SiteMap boundaries={COLLECTION} />);
+
+      act(() => layerHandler('click')({ lngLat: { lng: 0, lat: 0 }, features: [] }));
+
+      expect(popupInstance.setDOMContent).not.toHaveBeenCalled();
+    });
+
+    it('US 2.0.8 AT2: puts the site name, county and last inspection date at the top', () => {
+      render(<SiteMap boundaries={COLLECTION} />);
+
+      act(() =>
+        layerHandler('click')({
+          lngLat: { lng: -110.5, lat: 52.6 },
+          features: [
+            {
+              id: 1,
+              properties: {
+                name: 'Wainwright Dunes',
+                site_name: 'Wainwright Dunes (ER)',
+                county: 'Parkland County',
+                last_inspection_date: '2024-03-15',
+                area_type: 'ER',
+                fid: 12,
+              },
+            },
+          ],
+        })
+      );
+
+      const content = popupContent();
+      const expectedDate = new Date('2024-03-15').toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+      const siteSection = content.children[0];
+      const boundarySection = content.children[1];
+
+      expect(siteSection.querySelector('[data-site-name]')?.textContent).toBe(
+        'Wainwright Dunes (ER)'
+      );
+      expect(siteSection.getAttribute('data-site-info')).toBe('linked');
+      expect(
+        siteSection.querySelector('[data-site-county] [data-field-value]')?.textContent
+      ).toBe('Parkland County');
+      expect(
+        siteSection.querySelector('[data-last-inspection] [data-field-value]')?.textContent
+      ).toBe(expectedDate);
+      expect(boundarySection.querySelector('[data-boundary-name]')?.textContent).toBe(
+        'Wainwright Dunes'
+      );
+    });
+
+    it('US 2.0.8 AT2: shows "Never inspected" when the site has no report date', () => {
+      render(<SiteMap boundaries={COLLECTION} />);
+
+      act(() =>
+        layerHandler('click')({
+          lngLat: { lng: -110.5, lat: 52.6 },
+          features: [
+            { id: 1, properties: { name: 'Riverlot 56', site_name: 'Riverlot 56 (NA)' } },
+          ],
+        })
+      );
+
+      expect(
+        popupContent().querySelector('[data-last-inspection] [data-field-value]')?.textContent
+      ).toBe('Never inspected');
+    });
+
+    it('US 2.0.8 AT2: shows "No linked site" for an area with no site', () => {
+      render(<SiteMap boundaries={COLLECTION} />);
+
+      act(() =>
+        layerHandler('click')({
+          lngLat: { lng: -110.5, lat: 52.6 },
+          features: [{ id: 1, properties: { name: 'Some Area', area_type: 'NA', fid: 3 } }],
+        })
+      );
+
+      const content = popupContent();
+      const siteSection = content.children[0];
+      expect(siteSection.getAttribute('data-site-info')).toBe('unlinked');
+      expect(siteSection.querySelector('[data-no-linked-site]')?.textContent).toBe('No linked site');
+      expect(siteSection.querySelector('[data-site-name]')).toBeNull();
+      expect(siteSection.querySelector('[data-site-county]')).toBeNull();
+      expect(siteSection.querySelector('[data-last-inspection]')).toBeNull();
+      expect(content.querySelector('[data-view-sirs]')).toBeNull();
+      expect(content.querySelector('[data-boundary-name]')?.textContent).toBe('Some Area');
+    });
+
+    it('US 2.0.8 AT3: links "View site & SIRs" to the encoded detail path', () => {
+      render(<SiteMap boundaries={COLLECTION} />);
+
+      act(() =>
+        layerHandler('click')({
+          lngLat: { lng: -110.5, lat: 52.6 },
+          features: [{ id: 1, properties: { name: 'Bilby', site_name: 'Bilby #2 / East' } }],
+        })
+      );
+
+      const link = popupContent().querySelector('[data-view-sirs]');
+
+      expect(link?.textContent).toBe('View site & SIRs');
+      expect(link?.getAttribute('href')).toBe('/detail/Bilby%20%232%20%2F%20East');
+    });
+
+    it('US 2.0.8 AT3: shows no View site & SIRs link for an area with no linked site', () => {
+      render(<SiteMap boundaries={COLLECTION} />);
+
+      act(() =>
+        layerHandler('click')({
+          lngLat: { lng: -110.5, lat: 52.6 },
+          features: [{ id: 1, properties: { name: 'Some Area' } }],
+        })
+      );
+
+      expect(popupContent().querySelector('[data-view-sirs]')).toBeNull();
     });
   });
 

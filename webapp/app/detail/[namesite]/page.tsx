@@ -44,6 +44,7 @@ import SiteSteward from "./SiteSteward";
 import SitePageEditor from "./SitePageEditor";
 import SubmittedBy from "./SubmittedBy";
 import SirPdfExportButton from "@/components/SirPdfExportButton";
+import GpxTrackUpload, { canUploadGpxTracks } from "@/components/GpxTrackUpload";
 
 const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
@@ -663,6 +664,11 @@ export default function SiteDetailScreen() {
             <span className="text-base sm:text-lg text-center">New Site Inspection Report</span>
           </button>
         </div>
+
+        {/* GPX Track Upload */}
+        {canUploadGpxTracks(currentUser) && (
+          <GpxTrackUpload siteId={site.id} />
+        )}
 
         {/* View Toggle */}
         <div id="tutorial-view-toggle" className="flex gap-1.5">
