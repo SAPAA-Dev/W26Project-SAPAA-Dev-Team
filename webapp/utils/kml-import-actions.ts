@@ -10,6 +10,9 @@ export interface ImportKmlResult {
   upserted?: number;
   skipped?: number;
   warnings?: string[];
+  // Names of the active sites that no protected area boundary points at, after the
+  // link step. Absent when the link step or the read failed.
+  unlinkedSites?: string[];
 }
 
 // Matches the bucket that 20261006000000_create_kml_imports_bucket.sql creates.
@@ -76,6 +79,33 @@ async function sweepStaleUploads(
   if (error !== null) {
     // A failed sweep must never fail the import; the next one retries it.
     console.error('Failed to sweep stale KML uploads', error);
+  }
+}
+
+// The import has already succeeded at this point, so a failed read is a log line,
+// not an error.
+async function readUnlinkedSiteNames(
+  supabase: ReturnType<typeof createServerSupabase>
+): Promise<string[] | undefined> {
+  try {
+    const { data, error } = await supabase
+      .from('sites_pa')
+      .select('namesite')
+      .is('archived_at', null)
+      .is('protected_area_id', null)
+      .order('namesite', { ascending: true });
+
+    if (error !== null) {
+      console.error('Failed to read the sites with no boundary', error);
+      return undefined;
+    }
+
+    return ((data ?? []) as Array<{ namesite: string | null }>)
+      .map((row) => row.namesite)
+      .filter((name): name is string => name !== null && name.trim() !== '');
+  } catch (error) {
+    console.error('Failed to read the sites with no boundary', error);
+    return undefined;
   }
 }
 
@@ -151,7 +181,16 @@ export async function importProtectedAreasFromStorage(storagePath: string): Prom
     // lookup is a warning, not an error.
     const linked = await refreshProtectedAreaLinks(supabase);
     const importWarnings = linked ? warnings : [...warnings, LINK_WARNING];
-    return { success: true, upserted, skipped: stats.skipped, warnings: importWarnings };
+    // A failed link step already has LINK_WARNING. Do not report every active site
+    // as unbounded when the links were never updated.
+    const unlinkedSites = linked ? await readUnlinkedSiteNames(supabase) : undefined;
+    return {
+      success: true,
+      upserted,
+      skipped: stats.skipped,
+      warnings: importWarnings,
+      ...(unlinkedSites === undefined ? {} : { unlinkedSites }),
+    };
   } catch (error) {
     console.error('Failed to import the protected areas', error);
     return {

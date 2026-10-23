@@ -84,12 +84,16 @@ jest.mock('@/components/map/SiteMap', () => ({
   default: function MockSiteMap({
     boundaries,
     focusedArea,
+    canEditBoundaryColors,
+    onSetBoundaryColor,
     selectedAreaId,
     onBoundarySelect,
     gpxTracks,
   }: {
     boundaries?: { features: Array<{ id: number; properties: { name: string } }> } | null;
     focusedArea?: { properties: { name: string } } | null;
+    canEditBoundaryColors?: boolean;
+    onSetBoundaryColor?: unknown;
     selectedAreaId?: number | null;
     onBoundarySelect?: (areaId: number) => void;
     gpxTracks?: { features: unknown[] } | null;
@@ -98,6 +102,8 @@ jest.mock('@/components/map/SiteMap', () => ({
       <ul
         data-testid="site-map"
         data-focused={focusedArea?.properties.name ?? ''}
+        data-can-edit-colors={String(canEditBoundaryColors === true)}
+        data-can-set-color={String(typeof onSetBoundaryColor === 'function')}
         data-selected={selectedAreaId ?? ''}
         data-tracks={gpxTracks?.features.length ?? 0}
       >
@@ -768,6 +774,25 @@ it('filters the map by type, subtype and name, and keeps the search text across 
   // The area is on the map and in the search matches list (2.0.6 AT3)
   expect(screen.getAllByText('Pembina River').length).toBeGreaterThan(0);
   expect(screen.queryByRole('button', { name: /^sort$/i })).not.toBeInTheDocument();
+});
+
+it('never gives the user map the boundary color control', async () => {
+  const user = userEvent.setup();
+  // Even if the server flag is true, the user-facing map must not pass the control.
+  mockGetProtectedAreaBoundaries.mockResolvedValue({
+    type: 'FeatureCollection',
+    features: [mapFeature(1, 'Pembina River', 'NA', null, null, true)],
+    can_edit_colors: true,
+  });
+
+  render(<HomeClient />);
+  await waitFor(() => expect(screen.getByText('Elk Island National Park')).toBeInTheDocument());
+  await user.click(screen.getByRole('button', { name: 'Map View' }));
+
+  await waitFor(() => expect(screen.getByTestId('site-map')).toBeInTheDocument());
+  const map = screen.getByTestId('site-map');
+  expect(map).toHaveAttribute('data-can-edit-colors', 'false');
+  expect(map).toHaveAttribute('data-can-set-color', 'false');
 });
 
 it('US 2.0.6 AT2: clearing a county filter shows every active area again', async () => {

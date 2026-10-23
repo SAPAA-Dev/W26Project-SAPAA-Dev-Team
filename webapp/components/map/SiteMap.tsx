@@ -6,8 +6,17 @@ import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@/components/map/enableMapLibreWorker';
 import { Download, KeyRound } from 'lucide-react';
-import { boundaryBounds } from '@/lib/map/boundaries';
-import type { BoundaryFeature, BoundaryFeatureCollection } from '@/lib/map/boundaries';
+import {
+  DEFAULT_BOUNDARY_FILL_COLOR,
+  DEFAULT_BOUNDARY_OUTLINE_COLOR,
+  boundaryBounds,
+} from '@/lib/map/boundaries';
+import type {
+  BoundaryColorRequest,
+  BoundaryColorResult,
+  BoundaryFeature,
+  BoundaryFeatureCollection,
+} from '@/lib/map/boundaries';
 import type { GpxTrackLineFeatureCollection } from '@/lib/map/gpxTrack';
 import { listRegions } from '@/lib/map/offline/tileCache';
 import type { SavedRegion } from '@/lib/map/offline/tileCache';
@@ -34,9 +43,6 @@ const SOURCE_ID = 'protected-areas';
 const FILL_LAYER_ID = 'protected-areas-fill';
 const OUTLINE_LAYER_ID = 'protected-areas-outline';
 
-const FILL_COLOR = '#356B43';
-const OUTLINE_COLOR = '#254431';
-
 // The track reads as a path a steward walked, not a boundary: a dashed orange
 // line over the solid green outline (US 2.0.1 AT2).
 const GPX_SOURCE_ID = 'gpx-tracks';
@@ -62,6 +68,19 @@ const HOVERED: ['boolean', ['feature-state', 'hover'], boolean] = [
   'boolean',
   ['feature-state', 'hover'],
   false,
+];
+
+// A color from the database wins. A boundary without one keeps the original green.
+type BoundaryColorExpression = ['coalesce', ['get', string], string];
+const BOUNDARY_FILL_COLOR: BoundaryColorExpression = [
+  'coalesce',
+  ['get', 'boundary_color'],
+  DEFAULT_BOUNDARY_FILL_COLOR,
+];
+const BOUNDARY_OUTLINE_COLOR: BoundaryColorExpression = [
+  'coalesce',
+  ['get', 'boundary_color'],
+  DEFAULT_BOUNDARY_OUTLINE_COLOR,
 ];
 
 // The selected site carries its own state, so a selection change repaints two
@@ -96,6 +115,9 @@ interface SiteMapProps {
   boundariesError?: string | null;
   /** The area the user picked from the search matches. The map fits its bounds. */
   focusedArea?: BoundaryFeature | null;
+  /** Admins get the color control in the click popup. The server action checks the role too. */
+  canEditBoundaryColors?: boolean;
+  onSetBoundaryColor?: (request: BoundaryColorRequest) => Promise<BoundaryColorResult>;
   /** The protected area id of the selected site. Only that site is highlighted. */
   selectedAreaId?: number | null;
   /** Fires when the user clicks a boundary. The parent owns the selection. */
@@ -104,11 +126,26 @@ interface SiteMapProps {
   gpxTracks?: GpxTrackLineFeatureCollection | null;
 }
 
+interface BoundaryColorEditor {
+  onSet: (request: BoundaryColorRequest) => Promise<BoundaryColorResult>;
+  // The map source is replaced when the page applies the saved color. This flag keeps
+  // the open popup for that one update.
+  preservePopup: () => void;
+  releasePopup: () => void;
+}
+
 function readProperty(properties: unknown, key: string): string | null {
   if (properties === null || typeof properties !== 'object') return null;
   const value = (properties as Record<string, unknown>)[key];
   if (typeof value === 'number' && Number.isFinite(value)) return String(value);
   return typeof value === 'string' && value.trim() !== '' ? value : null;
+}
+
+function readProtectedAreaId(properties: unknown): number | null {
+  const text = readProperty(properties, 'protected_area_id');
+  if (text === null) return null;
+  const id = Number(text);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
 }
 
 // The five rows the card shows at rest. The rest of the export sits behind the
@@ -277,7 +314,10 @@ function createSiteSection(properties: unknown): HTMLElement {
   return section;
 }
 
-function createBoundarySection(properties: unknown): HTMLElement {
+function createBoundarySection(
+  properties: unknown,
+  colorEditor?: BoundaryColorEditor
+): HTMLElement {
   const section = document.createElement('div');
   section.className = 'border-t border-[#E4EBE4] bg-[#F1F5EB] px-5 pb-4 pt-4';
 
@@ -364,6 +404,143 @@ function createBoundarySection(properties: unknown): HTMLElement {
     section.appendChild(extra);
   }
 
+  // The color control is separate from the details control, so it is present even
+  // when the export has no extra boundary fields.
+  if (colorEditor !== undefined) {
+    section.appendChild(createColorSection(properties, colorEditor));
+  }
+
+  return section;
+}
+
+const COLOR_BUTTON_CLASS =
+  'mt-2 flex h-8 w-full items-center justify-center rounded-lg px-3 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#356B43]';
+
+function createColorSection(properties: unknown, editor: BoundaryColorEditor): HTMLElement {
+  const section = document.createElement('div');
+  section.className = 'mt-1';
+
+  const expand = document.createElement('button');
+  expand.type = 'button';
+  expand.dataset.boundaryColorExpand = 'true';
+  expand.setAttribute('aria-expanded', 'false');
+  expand.className =
+    'flex w-full items-center justify-between rounded-lg py-1.5 text-left text-xs font-bold text-[#254431] hover:bg-[#E1E8DA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#356B43]';
+
+  const expandLabel = document.createElement('span');
+  expandLabel.textContent = 'Set Color';
+
+  const chevron = createChevron();
+  expand.append(expandLabel, chevron);
+
+  const body = document.createElement('div');
+  body.className = 'mt-1 hidden';
+  body.dataset.boundaryColorBody = 'true';
+
+  const inputLabel = document.createElement('label');
+  inputLabel.className = 'flex items-center gap-3 text-xs font-semibold text-[#254431]';
+
+  const input = document.createElement('input');
+  input.type = 'color';
+  input.dataset.boundaryColorInput = 'true';
+  input.setAttribute('aria-label', 'Boundary color');
+  input.className =
+    'h-8 w-12 shrink-0 cursor-pointer rounded border border-[#DCE4D4] bg-white p-0.5';
+
+  const storedColor = readProperty(properties, 'boundary_color');
+  input.value =
+    storedColor !== null && /^#[0-9A-Fa-f]{6}$/.test(storedColor)
+      ? storedColor
+      : DEFAULT_BOUNDARY_FILL_COLOR;
+
+  const inputText = document.createElement('span');
+  inputText.textContent = 'Boundary colour';
+  inputLabel.append(input, inputText);
+
+  const protectedAreaId = readProtectedAreaId(properties);
+  const areaType = readProperty(properties, 'area_type')?.trim() ?? '';
+
+  const siteButton = document.createElement('button');
+  siteButton.type = 'button';
+  siteButton.dataset.boundaryColorSite = 'true';
+  siteButton.textContent = 'Set for this site';
+  siteButton.className = `${COLOR_BUTTON_CLASS} bg-[#356B43] text-white hover:bg-[#254431]`;
+
+  const typeButton = document.createElement('button');
+  typeButton.type = 'button';
+  typeButton.dataset.boundaryColorType = 'true';
+  typeButton.textContent = 'Set for site type';
+  typeButton.className = `${COLOR_BUTTON_CLASS} border border-[#DCE4D4] bg-white text-[#254431] hover:bg-[#E1E8DA]`;
+
+  const hint = document.createElement('p');
+  hint.className = 'mt-2 text-[10px] leading-4 text-[#6B7A6B]';
+  hint.textContent = 'A type color replaces individual colors of that type.';
+
+  const status = document.createElement('div');
+  status.dataset.boundaryColorStatus = 'true';
+  status.setAttribute('role', 'status');
+  status.setAttribute('aria-live', 'polite');
+  status.className = 'mt-1 min-h-4 text-[10px] leading-4';
+
+  let pending = false;
+  const syncDisabled = () => {
+    siteButton.disabled = pending || protectedAreaId === null;
+    typeButton.disabled = pending || areaType === '';
+  };
+  syncDisabled();
+
+  const submit = async (scope: 'site' | 'type') => {
+    if (pending) return;
+    if (scope === 'site' && protectedAreaId === null) return;
+    if (scope === 'type' && areaType === '') return;
+
+    pending = true;
+    syncDisabled();
+    status.style.color = '';
+    status.textContent = 'Saving…';
+
+    // The successful write updates the page state, which replaces the map source.
+    // The flag keeps the open popup in place for that one update.
+    editor.preservePopup();
+    let result: BoundaryColorResult;
+    try {
+      result = await editor.onSet({
+        scope,
+        protectedAreaId: protectedAreaId ?? 0,
+        areaType: scope === 'type' ? areaType : null,
+        color: input.value,
+      });
+    } catch {
+      result = { ok: false, error: 'The color could not be saved.' };
+    }
+    pending = false;
+    syncDisabled();
+
+    if (result.ok) {
+      status.style.color = '#356B43';
+      status.textContent = 'Saved.';
+      return;
+    }
+
+    // No state change follows a failure, so the flag must not hide a later filter change.
+    editor.releasePopup();
+    status.style.color = '#B91C1C';
+    status.textContent = result.error;
+  };
+
+  siteButton.addEventListener('click', () => void submit('site'));
+  typeButton.addEventListener('click', () => void submit('type'));
+
+  expand.addEventListener('click', () => {
+    const willExpand = body.classList.contains('hidden');
+    body.classList.toggle('hidden', !willExpand);
+    expand.setAttribute('aria-expanded', String(willExpand));
+    expandLabel.textContent = willExpand ? 'Hide color' : 'Set Color';
+    chevron.classList.toggle('rotate-180', willExpand);
+  });
+
+  body.append(inputLabel, siteButton, typeButton, hint, status);
+  section.append(expand, body);
   return section;
 }
 
@@ -374,13 +551,16 @@ function createBoundarySection(properties: unknown): HTMLElement {
  * The card keeps the linked site and the protected-area boundary apart: the site name
  * comes from sites_pa.namesite, and the boundary name comes from protected_areas.
  */
-function createPopupContent(properties: unknown): HTMLElement {
+function createPopupContent(
+  properties: unknown,
+  colorEditor?: BoundaryColorEditor
+): HTMLElement {
   const container = document.createElement('div');
   container.className =
     'max-h-[70vh] w-[min(320px,80vw)] overflow-y-auto bg-white font-sans';
 
   container.appendChild(createSiteSection(properties));
-  container.appendChild(createBoundarySection(properties));
+  container.appendChild(createBoundarySection(properties, colorEditor));
 
   return container;
 }
@@ -390,6 +570,8 @@ export default function SiteMap({
   boundariesLoading,
   boundariesError,
   focusedArea,
+  canEditBoundaryColors,
+  onSetBoundaryColor,
   selectedAreaId,
   onBoundarySelect,
   gpxTracks,
@@ -398,6 +580,8 @@ export default function SiteMap({
   const mapRef = useRef<MapLibreMap | null>(null);
   const popupRef = useRef<Popup | null>(null);
   const hoveredFeatureRef = useRef<string | number | null>(null);
+  // Set before a color write and consumed by the next boundaries update.
+  const preservePopupRef = useRef(false);
   const selectedAreaIdRef = useRef<number | null>(null);
   const missingTilesRef = useRef(0);
   const apiKey = readApiKey();
@@ -519,9 +703,23 @@ export default function SiteMap({
       const feature = event.features?.[0];
       const popup = popupRef.current;
       if (feature === undefined || popup === null) return;
+
+      const colorEditor: BoundaryColorEditor | undefined =
+        canEditBoundaryColors === true && onSetBoundaryColor !== undefined
+          ? {
+              onSet: onSetBoundaryColor,
+              preservePopup: () => {
+                preservePopupRef.current = true;
+              },
+              releasePopup: () => {
+                preservePopupRef.current = false;
+              },
+            }
+          : undefined;
+
       popup
         .setLngLat(event.lngLat)
-        .setDOMContent(createPopupContent(feature.properties))
+        .setDOMContent(createPopupContent(feature.properties, colorEditor))
         .addTo(map);
       // The source keeps the protected area ids of the collection, so the id is a number.
       if (feature.id !== undefined) onBoundarySelectRef.current?.(Number(feature.id));
@@ -540,7 +738,9 @@ export default function SiteMap({
       if (source) {
         clearHover();
         map.getCanvas().style.cursor = '';
-        popupRef.current?.remove();
+        const preservePopup = preservePopupRef.current;
+        preservePopupRef.current = false;
+        if (!preservePopup) popupRef.current?.remove();
         source.setData(boundaries);
         return;
       }
@@ -555,7 +755,7 @@ export default function SiteMap({
         type: 'fill',
         source: SOURCE_ID,
         paint: {
-          'fill-color': FILL_COLOR,
+          'fill-color': BOUNDARY_FILL_COLOR,
           'fill-opacity': [
             'case',
             SELECTED,
@@ -570,7 +770,7 @@ export default function SiteMap({
         type: 'line',
         source: SOURCE_ID,
         paint: {
-          'line-color': OUTLINE_COLOR,
+          'line-color': BOUNDARY_OUTLINE_COLOR,
           'line-width': ['case', SELECTED, 4, ['case', HOVERED, 3, 2]],
         },
       });
@@ -607,7 +807,7 @@ export default function SiteMap({
       map.off('style.load', applyBoundaries);
       if (mapRef.current !== null) mapRef.current.off('idle', applyBoundaries);
     };
-  }, [apiKey, boundaries]);
+  }, [apiKey, boundaries, canEditBoundaryColors, onSetBoundaryColor]);
 
   // The parent owns the selection, so this effect only moves the highlight: the
   // previous site loses it, the new one gains it (US 2.0.1 AT4).

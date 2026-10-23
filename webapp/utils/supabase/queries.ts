@@ -5,6 +5,7 @@ import { refreshProtectedAreaLinks } from './siteLinks';
 import { deleteObjectsByKeys } from '../media/s3Delete';
 import { isAllowedStorageKey } from '../media/storageKeys';
 import {
+  normalizeBoundaryColor,
   toBoundaryFeatureCollection,
   type BoundaryFeatureCollection,
   type ProtectedAreaBoundaryRow,
@@ -638,7 +639,7 @@ export async function getProtectedAreaBoundaries(): Promise<BoundaryFeatureColle
   const { data, error } = await supabase
     .from('protected_areas')
     .select(
-      'id, name, fid, area_type, subtype, iucn, oc_no, acres, hectares, oc_date, date_est, oc_name, notes, geometry'
+      'id, name, fid, area_type, subtype, iucn, oc_no, acres, hectares, oc_date, date_est, oc_name, notes, geometry, boundary_color'
     );
 
   if (error) throw new Error(error.message || 'Failed to fetch protected area boundaries');
@@ -656,11 +657,15 @@ export async function getProtectedAreaBoundaries(): Promise<BoundaryFeatureColle
   });
 
   const collection = toBoundaryFeatureCollection(rows);
-  if (caller.isAdmin) return collection;
+  // The map shows the color control from this server-verified flag, not from the
+  // client session. A steward always gets false, even if the browser holds a stale role.
+  const can_edit_colors = caller.isAdmin;
+  if (caller.isAdmin) return { ...collection, can_edit_colors };
 
   return {
     type: 'FeatureCollection',
     features: collection.features.filter((feature) => feature.properties.is_active !== false),
+    can_edit_colors,
   };
 }
 
@@ -843,6 +848,52 @@ async function createSiteOrThrow(
 
   // #181: a new site whose exact name matches a KML area links here.
   await refreshProtectedAreaLinks(supabase);
+}
+
+// Boundary color writes run with the service role, so the admin check runs first.
+export async function setSiteBoundaryColor(
+  protectedAreaId: number,
+  color: string
+): Promise<SiteActionResult> {
+  return siteActionResult(async () => {
+    await requireApprovedAdmin('Only admins can change boundary colors.');
+    if (!Number.isSafeInteger(protectedAreaId) || protectedAreaId <= 0) {
+      throw new Error('The protected area is not valid.');
+    }
+    const normalized = normalizeBoundaryColor(color);
+    if (normalized === null) throw new Error('The color is not valid.');
+
+    const supabase = createServerSupabase();
+    const { error, count } = await supabase
+      .from('protected_areas')
+      .update({ boundary_color: normalized }, { count: 'exact' })
+      .eq('id', protectedAreaId);
+
+    // A zero count means the id no longer exists, so the admin must not read a false success.
+    if (error || count === 0) throw new Error('The color could not be saved.');
+  });
+}
+
+// This writes every row of the type, so it also replaces individual colors of that type.
+export async function setSiteTypeBoundaryColor(
+  areaType: string,
+  color: string
+): Promise<SiteActionResult> {
+  return siteActionResult(async () => {
+    await requireApprovedAdmin('Only admins can change boundary colors.');
+    const type = typeof areaType === 'string' ? areaType.trim() : '';
+    if (type === '') throw new Error('A site type is required.');
+    const normalized = normalizeBoundaryColor(color);
+    if (normalized === null) throw new Error('The color is not valid.');
+
+    const supabase = createServerSupabase();
+    const { error, count } = await supabase
+      .from('protected_areas')
+      .update({ boundary_color: normalized }, { count: 'exact' })
+      .eq('area_type', type);
+
+    if (error || count === 0) throw new Error('The color could not be saved.');
+  });
 }
 
 /**

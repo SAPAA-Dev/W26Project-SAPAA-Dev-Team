@@ -29,6 +29,8 @@ export interface ProtectedAreaBoundaryRow {
   oc_name: string | null;
   notes: string | null;
   geometry: GeoJsonMultiPolygon;
+  // Admin-chosen map color as #rrggbb. Null means the map default.
+  boundary_color?: string | null;
   // Null when no sites_pa row points at this protected area, or the site has no county.
   county?: string | null;
   // Null when no sites_pa row points at this protected area.
@@ -40,9 +42,14 @@ export interface ProtectedAreaBoundaryRow {
 }
 
 export interface BoundaryProperties {
+  // protected_areas.id. The popup names the row to write a per-site color.
+  // The MapLibre feature id is not usable: the source sets generateId, which replaces it.
+  protected_area_id: number;
   name: string;
   fid: number;
   area_type: string;
+  // Admin-chosen map color as #rrggbb. Null means the map default.
+  boundary_color: string | null;
   subtype: string | null;
   iucn: string | null;
   oc_no: string | null;
@@ -68,7 +75,24 @@ export interface BoundaryFeature {
 export interface BoundaryFeatureCollection {
   type: 'FeatureCollection';
   features: BoundaryFeature[];
+  // Server-verified: true only for an approved admin. The map shows the color control
+  // from this value, never from the client session.
+  can_edit_colors?: boolean;
 }
+
+// The colors the map has always drawn when an admin has not chosen one.
+export const DEFAULT_BOUNDARY_FILL_COLOR = '#356B43';
+export const DEFAULT_BOUNDARY_OUTLINE_COLOR = '#254431';
+export const BOUNDARY_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/;
+
+export interface BoundaryColorRequest {
+  scope: 'site' | 'type';
+  protectedAreaId: number;
+  areaType: string | null;
+  color: string;
+}
+
+export type BoundaryColorResult = { ok: true } | { ok: false; error: string };
 
 export const DEFAULT_COORDINATE_DECIMALS = 5;
 
@@ -254,9 +278,11 @@ export function toBoundaryFeatureCollection(
       type: 'Feature',
       id: row.id,
       properties: {
+        protected_area_id: row.id,
         name: row.name,
         fid: row.fid,
         area_type: row.area_type,
+        boundary_color: row.boundary_color ?? null,
         subtype: row.subtype,
         iucn: row.iucn,
         oc_no: row.oc_no,
@@ -306,4 +332,53 @@ export function boundaryBounds(
     [west, south],
     [east, north],
   ];
+}
+
+/**
+ * Returns the color in the canonical lower-case form, or null when the value is not
+ * a six-digit hex color. The database check repeats this rule, so a caller cannot
+ * store a value that the map cannot read.
+ */
+export function normalizeBoundaryColor(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return BOUNDARY_COLOR_PATTERN.test(trimmed) ? trimmed.toLowerCase() : null;
+}
+
+/**
+ * Copies the collection with the new color on the affected features.
+ *
+ * A site color writes one feature. A type color writes every feature of that type,
+ * which is how the database update replaces the individual colors of that type.
+ * The input is not changed, and no match returns the same object, so the map does
+ * not repaint when there is nothing to draw differently.
+ */
+export function applyBoundaryColor(
+  collection: BoundaryFeatureCollection,
+  request: BoundaryColorRequest
+): BoundaryFeatureCollection {
+  const color = normalizeBoundaryColor(request.color);
+  if (color === null) return collection;
+
+  const areaType = request.areaType?.trim() ?? '';
+  if (request.scope === 'type' && areaType === '') return collection;
+
+  let changed = false;
+  const features = collection.features.map((feature) => {
+    const matches =
+      request.scope === 'site'
+        ? feature.properties.protected_area_id === request.protectedAreaId
+        : feature.properties.area_type.trim() === areaType;
+
+    if (!matches || feature.properties.boundary_color === color) return feature;
+
+    changed = true;
+    return {
+      ...feature,
+      properties: { ...feature.properties, boundary_color: color },
+    };
+  });
+
+  if (!changed) return collection;
+  return { ...collection, features };
 }

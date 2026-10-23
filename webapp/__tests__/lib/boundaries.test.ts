@@ -1,5 +1,7 @@
 import {
+  applyBoundaryColor,
   boundaryBounds,
+  normalizeBoundaryColor,
   roundCoordinates,
   simplifyMultiPolygon,
   simplifyRing,
@@ -46,6 +48,7 @@ function row(overrides: Partial<ProtectedAreaBoundaryRow> = {}): ProtectedAreaBo
     notes: null,
     site_name: null,
     last_inspection_date: null,
+    boundary_color: null,
     geometry: { type: 'MultiPolygon', coordinates: [[squareRing(4)]] },
     ...overrides,
   };
@@ -203,9 +206,11 @@ describe('toBoundaryFeatureCollection (US 2.0.6)', () => {
     expect(collection.features).toHaveLength(1);
     expect(collection.features[0].id).toBe(7);
     expect(collection.features[0].properties).toEqual({
+      protected_area_id: 7,
       name: 'Wainwright Dunes',
       fid: 12,
       area_type: 'ER',
+      boundary_color: null,
       subtype: null,
       iucn: 'Ia',
       oc_no: 'OC 123/45',
@@ -298,5 +303,90 @@ describe('boundaryBounds', () => {
 
   it('returns null for a boundary with no positions', () => {
     expect(boundaryBounds({ type: 'MultiPolygon', coordinates: [] })).toBeNull();
+  });
+});
+
+describe('boundary colors', () => {
+  function threeAreas() {
+    return toBoundaryFeatureCollection([
+      row({ id: 1, area_type: 'NA', boundary_color: null }),
+      row({ id: 2, area_type: 'NA', boundary_color: '#111111' }),
+      row({ id: 3, area_type: 'ER', boundary_color: '#222222' }),
+    ]);
+  }
+
+  it('normalizes a six-digit hex color and rejects anything else', () => {
+    expect(normalizeBoundaryColor(' #AABBCC ')).toBe('#aabbcc');
+    expect(normalizeBoundaryColor('#aabbc')).toBeNull();
+    expect(normalizeBoundaryColor('red')).toBeNull();
+    expect(normalizeBoundaryColor(42)).toBeNull();
+  });
+
+  it('maps the stored color into the feature properties', () => {
+    expect(threeAreas().features[0].properties.boundary_color).toBeNull();
+    expect(threeAreas().features[1].properties.boundary_color).toBe('#111111');
+    expect(threeAreas().features[0].properties.protected_area_id).toBe(1);
+  });
+
+  it('sets the color on one site only and leaves the input unchanged', () => {
+    const collection = threeAreas();
+
+    const updated = applyBoundaryColor(collection, {
+      scope: 'site',
+      protectedAreaId: 1,
+      areaType: null,
+      color: '#ABCDEF',
+    });
+
+    expect(updated.features.map((feature) => feature.properties.boundary_color)).toEqual([
+      '#abcdef',
+      '#111111',
+      '#222222',
+    ]);
+    expect(collection.features[0].properties.boundary_color).toBeNull();
+  });
+
+  it('sets the color on every boundary of a site type, replacing individual colors', () => {
+    const updated = applyBoundaryColor(threeAreas(), {
+      scope: 'type',
+      protectedAreaId: 0,
+      areaType: ' NA ',
+      color: '#00ff00',
+    });
+
+    expect(updated.features.map((feature) => feature.properties.boundary_color)).toEqual([
+      '#00ff00',
+      '#00ff00',
+      '#222222',
+    ]);
+  });
+
+  it('does nothing for a blank type, an invalid color, or no match', () => {
+    const collection = threeAreas();
+
+    expect(
+      applyBoundaryColor(collection, {
+        scope: 'type',
+        protectedAreaId: 0,
+        areaType: '  ',
+        color: '#00ff00',
+      })
+    ).toBe(collection);
+    expect(
+      applyBoundaryColor(collection, {
+        scope: 'site',
+        protectedAreaId: 1,
+        areaType: null,
+        color: 'nope',
+      })
+    ).toBe(collection);
+    expect(
+      applyBoundaryColor(collection, {
+        scope: 'site',
+        protectedAreaId: 99,
+        areaType: null,
+        color: '#00ff00',
+      })
+    ).toBe(collection);
   });
 });
