@@ -86,7 +86,7 @@ export async function POST(request: Request) {
     }
 
     // The service-role read inside requireReportWriter bypasses RLS, so it checks
-    // the caller first: only the report owner or an approved admin may upload.
+    // the caller first: only the report owner may upload.
     // The denied message matches REPORT_WRITE_DENIED in utils/supabase/queries.ts.
     try {
       await requireReportWriter(responseId);
