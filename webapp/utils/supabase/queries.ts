@@ -263,7 +263,7 @@ const REPORT_VIEW_DENIED = 'You are not allowed to view this report.';
 // Report writes run with the service role, so each one checks the caller first.
 // Only the report owner or an approved admin may change a report, and an archived
 // report changes only through the admin archive actions.
-async function requireReportWriter(responseId: number, errorMessage = REPORT_WRITE_DENIED): Promise<{
+export async function requireReportWriter(responseId: number, errorMessage = REPORT_WRITE_DENIED): Promise<{
   isAdmin: boolean;
   userId: string;
   siteId: number;
