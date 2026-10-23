@@ -117,6 +117,15 @@ function makeGalleryFrom(options?: {
   sitesError?: { message: string } | null;
 }) {
   return (table: string) => {
+    if (table === "form_responses") {
+      return {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        is: jest.fn().mockReturnThis(),
+        maybeSingle: jest.fn().mockResolvedValue({ data: { user_id: "user-123" }, error: null }),
+      };
+    }
+
     if (table === "attachments") {
       return {
         select: jest.fn().mockReturnThis(),
@@ -172,7 +181,6 @@ function mockAuthenticatedUser() {
 
 function mockAdminUser() {
   mockCreateServerSupabase.mockReturnValue({ from: makeGalleryFrom() });
-  mockReportOwner();
   mockCreateClient.mockResolvedValue({
     auth: {
       getUser: jest.fn().mockResolvedValue({
