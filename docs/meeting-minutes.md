@@ -698,6 +698,71 @@ The team reported that Sprint 2 is finished, with every planned issue done plus 
 
 Next meeting: Friday, October 23, 2026.
 
+---
+
+# October 23, 2026 – Meeting #11: Client meeting with Frank
+ 
+| Field | Details |
+|---|---|
+| Company | SAPAA |
+| Project | SAPAA SIR |
+| Date | October 23, 2026 |
+| Time | 3:35pm |
+| Location | Offline, Google Meets |
+| Attendees | Frank (client), Chris, Aaron, Alissa, Jayden, Abhinav |
+| Absentees | Saumya, Zanab |
+| Minute-taker | No minute-taker; rebuilt from the transcript. |
+| Source | Raw transcript. |
+ 
+## Agenda
+ 
+1. Progress since last Friday (completed work)
+2. Work still in progress and plan for Tuesday's release
+3. Live demo of the current build
+4. Frank's new requirement: terms and conditions on registration
+5. Roadmap and proof of concept for versions 4 and 5
+6. Round table
+
+## Summary
+ 
+The team reviewed progress since last Friday, then demoed the map features (recolouring, offline maps, GPX upload), password reset and past inspection report history/hiding of answers. Frank asked that the password-reset provider and credentials be documented in the final report, and raised a new requirement: users must accept data-privacy terms when registering. He then walked through the vision for versions 4 and 5 (organizational steward features, proof of concept methodology, advisory panel, candidate organization rubric).
+ 
+## Key Discussions & Decisions
+ 
+### Password reset and documentation
+- Password reset currently works locally via Supabase and a local email service (Mailpit); the reset code expires after 10 minutes.
+- The email provider is not chosen yet. Options found: Resend (about 100 emails/day) and Brevo about 300/day but with only one domain account. The team leans toward the first.
+- The system is built so providers can be switched with a small code change (same approach as the mapping provider).
+- Frank needs production Supabase credentials shared with the team.
+- **Decision/requirement:** the final project report must record which provider was chosen, the plan tier, where the credentials are, and who holds the password, so a future team can find it in two years. Frank stressed this level of documentation is expected.
+### GPX display and relevance
+- Frank wants GPX display driven by recency by count, not time: show the last 5 GPX files per site by default, with older ones available on request.
+- GPX uploads should be tied to a site visit rather than arbitrary, to avoid clutter (e.g. hundreds of files a year on a busy site like River Lot 56).
+### New requirement: terms and conditions on registration
+- Frank showed his existing terms-and-conditions page on the SAPAA site (spreadsheet BFE, F-005 reference) and the access-request form fields: name, email, optional phone, reason for access (with an "other" text box).
+- Users must tick both acknowledgement boxes (accessing potentially private information; not misusing it) before registering. Frank wants acceptance before the "please let me in" button, not a separate request-access step.
+- Needed before the team finishes. Not a crisis. A future team may add annual recertification.
+### Roadmap, versions 4 and 5 and proof of concept
+- Versions 2 and 3 (current work) are individual stewards; version 4 introduces organizational stewards (e.g. a volunteer who knows a site intimately versus a one-off visitor).
+- Examples: noticing a missing sign among three; tracking volunteer hours and activities for grant reporting; certifications (chainsaw, ATV) tied to work orders; organization and crown lease data structures.
+- Volunteer safety (GIS), biophysical monitoring and knowledge keeper ideas are out of scope for the proof of concept.
+- The proof of concept follows a 6-step methodology (problem, how it is solved today, question, hypothesis, next steps, vision). Frank gave the team a "get out of jail free" option: a proof of concept suffices if full version 4 isn't delivered.
+- Seven organizations are in the proof of concept, with three to be focused on. A rubric rates them on five dimensions; the Edmonton-area land trust ranked as the best candidate. About 180 organizations of interest exist, around 70 of which run natural areas.
+- An advisory panel of engaged participants will provide oversight.
+- Frank is drafting requirements documents; they serve as a common reference point, and he encouraged using, not just reading, them.
+- Sprints 4 and 5 will focus on this material; Frank invited ideas by email or in meetings.
+
+## Action Items
+ 
+| # | Action | Owner | Due |
+|---|---|---|---|
+| 1 | Create a new story to only show the last 5 GPX files per site by default with a way to view older ones; tie GPX uploads to a site visit | Team | Not set |
+| 2 | Choose an email provider for password reset, set up with production Supabase credentials, and document the provider, plan, credentials location and password holder in the final report | Alissa / Team | Info next week; final report |
+| 3 | Share production Supabase credentials with the team | Frank | Not set |
+| 4 | Review the proof of concept methodology and roadmap/requirements documents ahead of sprints 4 and 5; send sprint 4 and 5 ideas | Team / Frank | Not set |
+
+---
+
 ## Winter 2026 (previous team)
 
 ### Winter 2026 Sprint 1
