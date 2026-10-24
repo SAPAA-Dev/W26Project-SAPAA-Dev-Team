@@ -55,6 +55,9 @@ Sprint 1 has no user stories. It is documentation and discovery.
     - Steward opens site details from the map.
 - **US 2.0.9 - Upload a GPX Track of a Site Visit** (Charter 2c)
     - Steward uploads a GPX track for a site visit.
+- **US 2.0.14 - Color Map Sites by Type** (Charter 2c)
+    - Team: Blue (Aaron, Zanab, Abhinav).
+    - Steward sees boundary colors set by an Admin for one site or all sites of a type. Different types can use the same color. Colors do not have to match the SAPAA website.
 - **US 4.0.2 - Offline and Online Map Layers** (No charter, team request)
     - Steward uses map layers offline and online.
 - **US 4.0.4 - Edit My Previous Inspections** (Charter 1)
@@ -89,8 +92,6 @@ Sprint 1 has no user stories. It is documentation and discovery.
 
 - **US 1.0.6 - Select and Edit Skills and Focus Areas** (Charter 2b)
     - Instead of free text, select and edit skills and focus areas from a predetermined list. Include an option for 'Other'.
-- **US 2.0.14 - Match Map Marker Colours to the Website** (Charter 2c)
-    - See map marker colours that match the SAPAA website.
 - **US 3.0.4 - Add a Steward Without an Account** (Charter 2b)
     - Add a steward by name, email and phone number without requiring them to have an account so that their details can be shown on a site page.
 
