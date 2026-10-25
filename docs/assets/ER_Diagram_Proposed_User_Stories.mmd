@@ -219,7 +219,9 @@ erDiagram
         text status "pending, processing, complete, failed"
         text storage_path "S3 key of the zip"
         text error
+        integer file_count
         timestamptz created_at
+        timestamptz finished_at
     }
 
     auth_users |o--o| people : "auth_user_id"
