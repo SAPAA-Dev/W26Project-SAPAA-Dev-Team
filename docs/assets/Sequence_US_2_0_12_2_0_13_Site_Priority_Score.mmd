@@ -44,36 +44,37 @@ sequenceDiagram
     actor Admin
     actor Steward
     participant Page as Site page<br/>app/detail/[namesite]
-    participant Server as Server actions<br/>SiteSafetyPriorityActions (proposed)
-    participant DB as Supabase DB<br/>site_priority (proposed)
+    participant Server as Server actions<br/>site-priority-actions.ts
+    participant DB as Supabase DB<br/>sites_pa priority columns
 
-    Note over Admin,DB: Covers US 2.0.12 and 2.0.13. No priority scores exist in the code today.<br/>"(proposed)" = the step is not in the code today.
+    Note over Admin,DB: Covers US 2.0.12 and 2.0.13. The three scores and their saved date<br/>are columns on sites_pa. The priority is not stored.
 
     Note over Admin,DB: Save the three scores (US 2.0.12 AT 1, AT 5, US 2.0.13 AT 3)
     Admin->>Page: Enter points for abuses, biological imperatives<br/>and time since the last visit, then Save
-    Page->>Server: updateSitePriorityScores(siteId, scores) (proposed)
-    Server->>Server: Check caller is Admin from a trusted role source,<br/>store not decided (see the proposed ER diagram)
+    Page->>Server: saveSitePriorityScores(siteId, scores)
+    Server->>Server: Check caller is Admin from the signed-in session<br/>(app_metadata role is admin and the account is approved)
+    Server->>Server: Check each score is a whole number from 0 to 5
     alt Caller is not Admin, for example a Steward<br/>who sends the request directly (US 2.0.12 AT 5)
         Server-->>Page: Refuse (403). Scores stay the same
         Page-->>Steward: Show "Only an Admin can change the scores"
     else Caller is Admin
-        Server->>DB: Upsert site_priority row.<br/>Set points_saved_at to now and saved_by to the caller
+        Server->>DB: Update the sites_pa row with the service role.<br/>Set priority_saved_at to now and priority_saved_by to the caller
         DB-->>Server: Saved row
         Server-->>Page: Saved. The reminder is absent (US 2.0.13 AT 3)
     end
 
     Note over Admin,DB: Show the priority (US 2.0.12 AT 2, AT 3, AT 4, US 2.0.13 AT 1, AT 2, AT 4)
     Steward->>Page: Open a Site page
-    Page->>Server: getSitePriority(siteId) (proposed)
-    Server->>Server: Check session and approved account (proposed)
+    Page->>Server: getSitePriority(siteId)
+    Server->>Server: Check session and approved account
     alt No valid session or account not approved
         Server-->>Page: Refuse (401)
         Page-->>Steward: Go to /login
     else Access allowed
-        Server->>DB: Read the site_priority row
-        DB-->>Server: Three scores and points_saved_at
-        Server->>Server: computeVisitPriority(scores). Same scores give the same priority
-        opt Caller is Admin and points_saved_at is more than one year ago
+        Server->>DB: Read the priority columns of the sites_pa row
+        DB-->>Server: Three scores and priority_saved_at
+        Server->>Server: computeVisitPriority(scores): the sum of the three scores, 0 to 15.<br/>Same scores give the same priority
+        opt Caller is Admin and priority_saved_at is more than one year ago
             Server->>Server: Add needsReassessment = true (US 2.0.13)
         end
         Server-->>Page: Priority and three scores. needsReassessment only for Admins
@@ -81,4 +82,4 @@ sequenceDiagram
         Note over Admin,Page: For an Admin, the page also shows the reminder when<br/>needsReassessment is true (US 2.0.13 AT 1, AT 2)
     end
 
-    Note over Admin,DB: The server calculates the priority and the reminder, so each client shows the same values.<br/>Open questions: the formula of computeVisitPriority, and if "time since the last visit"<br/>is typed by an Admin or calculated from the newest form_responses.inspection_date.
+    Note over Admin,DB: The server calculates the priority and the reminder, so each client shows the same values.<br/>"Time since the last visit" is a score that an Admin types. Open question for Frank:<br/>he has not confirmed that the priority is the sum of the three scores.

@@ -1,6 +1,7 @@
 'use server';
 
-import { createClient, createServerSupabase } from './supabase/server';
+import { createServerSupabase } from './supabase/server';
+import { requireApprovedAdmin } from './auth-checks';
 import { refreshProtectedAreaLinks } from './supabase/siteLinks';
 import { KmlImportError, parseProtectedAreaFile } from '@/lib/map/kmlImport';
 
@@ -32,16 +33,6 @@ const NOT_ADMIN_ERROR = 'Only admins can import protected areas.';
 const INVALID_PATH_ERROR = 'The import path is not valid.';
 const LINK_WARNING =
   'The protected areas were saved, but the site links were not updated. Link the sites by hand or run the import again.';
-
-// Every call below runs with the service role, so the caller is checked first.
-// The check reads the signed-in session, never a value the caller sends.
-async function isApprovedAdmin(): Promise<boolean> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) return false;
-  return data.user.app_metadata?.role === 'admin'
-    && data.user.app_metadata?.authenticated === true;
-}
 
 const SWEEP_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const LIST_PAGE_SIZE = 100;
@@ -114,8 +105,13 @@ async function readUnlinkedSiteNames(
  * upserts the protected areas it holds, and removes the staged file.
  */
 export async function importProtectedAreasFromStorage(storagePath: string): Promise<ImportKmlResult> {
-  if (!(await isApprovedAdmin())) {
-    return { success: false, error: NOT_ADMIN_ERROR };
+  try {
+    await requireApprovedAdmin(NOT_ADMIN_ERROR);
+  } catch (error) {
+    if (error instanceof Error && error.message === NOT_ADMIN_ERROR) {
+      return { success: false, error: NOT_ADMIN_ERROR };
+    }
+    throw error;
   }
 
   const normalizedPath = storagePath.replace(/\\/g, '/');

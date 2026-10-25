@@ -1,23 +1,13 @@
 import { createServerSupabase } from '@/utils/supabase/server';
 import { renderToBuffer, type DocumentProps } from '@react-pdf/renderer';
 import React from 'react';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { s3Client } from '@/lib/s3/client';
 import { InspectionReportDocument } from './inspectionReport';
 import { fetchReportData } from './pdfDataFetcher';
 import { PdfRequest } from './types';
 
-const REGION = process.env.AWS_REGION!;
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
-
-function getS3Client() {
-  return new S3Client({
-    region: REGION,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
-  });
-}
 
 export async function processPdfJob(jobId: string) {
   const supabase = createServerSupabase();
@@ -46,8 +36,7 @@ export async function processPdfJob(jobId: string) {
 
     const key = `pdf-exports/${job.created_by}/${jobId}/${filename}`;
 
-    const s3 = getS3Client();
-    await s3.send(new PutObjectCommand({
+    await s3Client.send(new PutObjectCommand({
       Bucket: BUCKET,
       Key: key,
       Body: buffer,

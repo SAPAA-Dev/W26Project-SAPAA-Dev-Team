@@ -59,6 +59,13 @@ erDiagram
         boolean is_active
         timestamptz archived_at
         bigint protected_area_id FK, UK "optional protected_areas.id"
+        double centre_latitude
+        double centre_longitude
+        smallint priority_abuses
+        smallint priority_biological
+        smallint priority_time
+        timestamptz priority_saved_at
+        uuid priority_saved_by FK
     }
 
     form_sections["WEB form_sections"] {
@@ -117,6 +124,7 @@ erDiagram
         bigint question_id FK
         text obs_value
         text obs_comm
+        boolean is_hidden
     }
 
     attachments["WEB attachments"] {
@@ -207,6 +215,7 @@ erDiagram
         bigint fid "unique (folder, fid)"
         date date_res
         numeric area_ha
+        text boundary_color
     }
 
     socials["WEB socials"] {
@@ -230,8 +239,30 @@ erDiagram
         timestamptz updated_at
     }
 
+    gpx_tracks["WEB gpx_tracks"] {
+        bigint id PK
+        bigint site_id FK
+        uuid user_id FK
+        text storage_path
+        text original_file_name
+        integer track_point_count
+        timestamptz created_at
+    }
+
+    export_jobs["WEB export_jobs"] {
+        uuid id PK
+        uuid created_by FK
+        text status
+        text storage_path
+        text error
+        integer file_count
+        timestamptz created_at
+        timestamptz finished_at
+    }
+
     ab_counties |o--o{ sites_pa : "ab_county"
     protected_areas |o--o| sites_pa : "protected_area_id"
+    auth_users |o--o{ sites_pa : "priority_saved_by"
     question_keys |o--o{ questions : "question_key_id"
     form_sections ||--o{ questions : "section_id"
     questions ||--o{ question_options : "question_id"
@@ -252,8 +283,11 @@ erDiagram
     people ||--o| socials : "person_id"
     sites_pa ||--o{ site_page_fields : "site_id"
     auth_users |o--o{ site_page_fields : "updated_by"
+    sites_pa ||--o{ gpx_tracks : "site_id"
+    auth_users ||--o{ gpx_tracks : "user_id"
+    auth_users ||--o{ export_jobs : "created_by"
 
-    class ab_counties,sites_pa,form_sections,question_keys,questions,question_options,form_responses,answers,attachments,homepage_image_uploads,S26_pdf_jobs,people,site_stewards,protected_areas,socials,site_page_fields web
+    class ab_counties,sites_pa,form_sections,question_keys,questions,question_options,form_responses,answers,attachments,homepage_image_uploads,S26_pdf_jobs,people,site_stewards,protected_areas,socials,site_page_fields,gpx_tracks,export_jobs web
     class luperson shared
     %% END GENERATED: er
 
