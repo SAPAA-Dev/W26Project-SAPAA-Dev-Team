@@ -6,7 +6,7 @@ that checks the AT now, or the test that the team plans to add. The
 [Traceability Matrix](traceability-matrix.md) records the results of these tests
 ([#214](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/214)).
 
-Status is as of October 23, 2026, on `sprint-3` at `52ed9a4`.
+Status is as of October 23, 2026, on `sprint-3` at `52ed9a4`. The 6.0.1 rows are as of October 25, 2026, at `e449e01`.
 
 ## Test types
 
@@ -14,6 +14,7 @@ Status is as of October 23, 2026, on `sprint-3` at `52ed9a4`.
 |---|---|---|---|
 | Unit | One function or server action. Supabase, S3 and other services are mocks. | Jest | `webapp/__tests__/lib/`, `webapp/__tests__/components/queries.*` |
 | Integration | One page, component or API route with its children. The server actions are mocks. | Jest and React Testing Library | `webapp/__tests__/pages/`, `webapp/__tests__/components/`, `webapp/__tests__/app/` |
+| Database | One SQL function on a local Supabase, with no mocks. | Jest | `webapp/__tests__/db/` |
 | E2E | A full user flow in a browser against a local Supabase. | Cypress | `webapp/cypress/e2e/` |
 | Manual | A flow that the tools cannot check, for example a device that goes offline. A team member does the steps and records the result in the PR. | Browser | The PR of the story |
 
@@ -107,12 +108,16 @@ Rules:
 
 ## 6.0.1 Store Each Site's Geometry From the Shared Source (Blue)
 
+The tests in `__tests__/db/` run the real SQL function on a local Supabase. `npm test` skips them. Run them with
+`npm run test:db -- --runInBand` after `supabase start`.
+
 | AT | Type | Test | Status |
 |---|---|---|---|
-| AT1: a site in the government KML uses exactly the same geometry | Unit | `__tests__/lib/kmlImport.test.ts:205`, `:214`, `:253`, `:262`; `__tests__/lib/kml-import-actions.test.ts:144` | Partial: add a `(6.0.1 AT1)` test that a linked site reads the geometry of its protected area unchanged ([#181](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/181)) |
-| AT2: a Site read from the database has a boundary and a centre point | Unit | Planned: `(6.0.1 AT2)` query test that a linked site returns its boundary and a latitude and longitude | Planned: `sites_pa` has `protected_area_id`, but no centre point column on `sprint-3` yet ([#181](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/181)) |
-| AT3: each Site has a geometry or is on a list of unmatched Sites for an Admin | Unit, Integration | `__tests__/lib/kml-import-actions.test.ts:325`, `:337`, `:349`, `:359`, `:371`; `__tests__/lib/boundaryFilters.test.ts:223`; `__tests__/components/MapAreaFilters.test.tsx:35` | Exists |
-| AT4: geocoding results are cached and stay under 2,500 requests a day | Unit | `__tests__/app/api/geocode.test.ts` checks the route, not the cache | Planned: `(6.0.1 AT4)` tests that a second request for the same place uses the cache and that the route stops at the daily limit ([#193](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/193)) |
+| AT1: a Site with a boundary in the KML is linked to it, and the stored boundary has the same longitude and latitude values as the KML | Unit, Database | `__tests__/lib/kmlImport.test.ts:205`, `:214`, `:253`; `__tests__/lib/kml-import-actions.test.ts:144`; `__tests__/db/site-boundary-links.test.ts:102`, `:135` | Exists |
+| AT2: a Site read from the database has a boundary link or no link | Database | `__tests__/db/site-boundary-links.test.ts:102`, `:114`, `:157` | Exists |
+| AT3: each Site is linked to a boundary or is on the list of Sites with no boundary for an Admin | Unit, Integration, Database | `__tests__/lib/kml-import-actions.test.ts:325`, `:337`; `__tests__/components/KmlImportModal.test.tsx:41`, `:59`; `__tests__/db/site-boundary-links.test.ts:114`, `:125`, `:148` | Exists |
+| AT4: the Unlinked filter shows only the Sites with no boundary, and the Linked filter shows only the Sites with a boundary | Unit, Integration | `__tests__/lib/boundaryFilters.test.ts:228`; `__tests__/pages/AdminSites.test.tsx:107`; `__tests__/components/MapAreaFilters.test.tsx:36` | Exists |
+| AT5: the server refuses a Steward who calls the Admin import, and returns no list | Unit | `__tests__/lib/kml-import-actions.test.ts:116`, `:128`, `:137` | Exists |
 
 ## Summary
 
@@ -126,8 +131,8 @@ Rules:
 | 4.0.2 | 4 | 1 | 1 | 1 | 1 |
 | 4.0.4 | 4 | 1 | 3 | 0 | 0 |
 | 5.0.2 | 4 | 3 | 1 | 0 | 0 |
-| 6.0.1 | 4 | 1 | 1 | 2 | 0 |
-| **Total** | **34** | **20** | **9** | **4** | **1** |
+| 6.0.1 | 5 | 5 | 0 | 0 | 0 |
+| **Total** | **35** | **24** | **8** | **2** | **1** |
 
 Some ATs need two types (for example Partial and Manual). The table counts each AT once, by its
 main status.
