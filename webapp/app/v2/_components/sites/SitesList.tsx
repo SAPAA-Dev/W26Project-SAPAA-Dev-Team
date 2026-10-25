@@ -65,7 +65,7 @@ function SitesHome({ onRetry }: { onRetry: () => void }) {
     document.getElementById('site-search')?.focus({ preventScroll: true });
   };
   const inspect = () => (mineDue.length === 1 ? router.push(inspectHref(mineDue[0].slug)) : setPicking(true));
-  const clearAll = () => update({ q: '', view: 'all', status: [], county: [] });
+  const clearAll = () => update({ q: '', view: 'all', status: [], county: [], boundary: undefined });
 
   return (
     <main className="pb-[calc(var(--nav-clear)+40px)]">

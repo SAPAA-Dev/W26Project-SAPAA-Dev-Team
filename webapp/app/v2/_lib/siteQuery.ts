@@ -20,6 +20,8 @@ export interface SiteQuery {
   county: string[];
   sort: SortKey;
   selected: string | null; // site slug
+  /** Admin filter: sites with or without a linked boundary (the old admin list's Linked / Unlinked). */
+  boundary?: 'with' | 'without';
 }
 
 const LIST = (v: string | null) => (v ? v.split(',').filter(Boolean) : []);
@@ -37,6 +39,7 @@ export function useSiteQuery() {
       county: LIST(params.get('county')),
       sort: (params.get('sort') as SortKey) ?? 'urgency',
       selected: params.get('sel'),
+      boundary: ['with', 'without'].includes(params.get('boundary') ?? '') ? (params.get('boundary') as 'with' | 'without') : undefined,
     }),
     [params],
   );
@@ -51,6 +54,7 @@ export function useSiteQuery() {
       if (next.status.length) p.set('status', next.status.join(','));
       if (next.county.length) p.set('county', next.county.join(','));
       if (next.sort !== 'urgency') p.set('sort', next.sort);
+      if (next.boundary) p.set('boundary', next.boundary);
       if (next.selected) p.set('sel', next.selected);
       const s = p.toString();
       // Shallow URL update: Next syncs useSearchParams without a server round trip.
@@ -74,7 +78,7 @@ const memo = new WeakMap<SiteSummary[], Map<string, SiteSummary[]>>();
  * The result is shared between callers: treat it as read-only.
  */
 export function applySiteQuery(sites: SiteSummary[], query: SiteQuery, me: Me | null): SiteSummary[] {
-  const key = JSON.stringify([query.q, query.view, query.status, query.county, query.sort, query.view === 'mine' ? me?.assignedSiteIds : 0]);
+  const key = JSON.stringify([query.q, query.view, query.status, query.county, query.sort, query.boundary, query.view === 'mine' ? me?.assignedSiteIds : 0]);
   let byKey = memo.get(sites);
   if (!byKey) memo.set(sites, (byKey = new Map()));
   let hit = byKey.get(key);
@@ -95,6 +99,8 @@ function filterSites(sites: SiteSummary[], query: SiteQuery, me: Me | null): Sit
     if (query.view === 'never' && s.status !== 'never') return false;
     if (query.status.length && !query.status.includes(s.status)) return false;
     if (query.county.length && !query.county.includes(s.county ?? 'Unknown')) return false;
+    // center comes from the linked boundary's geometry, so no center means no boundary.
+    if (query.boundary && (s.center !== null) !== (query.boundary === 'with')) return false;
     return true;
   });
   const byName = (a: SiteSummary, b: SiteSummary) => a.name.localeCompare(b.name);
