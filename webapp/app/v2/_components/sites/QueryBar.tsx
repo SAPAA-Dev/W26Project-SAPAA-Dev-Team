@@ -67,7 +67,7 @@ export default function QueryBar({ tone }: { tone: 'paper' | 'floating' }) {
       ) as Record<SavedView, number>),
     [sites, me, query],
   );
-  const filterCount = query.status.length + query.county.length + (query.sort === 'urgency' ? 0 : 1);
+  const filterCount = query.status.length + query.county.length + (query.sort === 'urgency' ? 0 : 1) + (query.boundary ? 1 : 0);
 
   const floating = tone === 'floating';
   const lift = floating ? 'shadow-[0_4px_14px_rgba(18,42,28,0.35)]' : '';

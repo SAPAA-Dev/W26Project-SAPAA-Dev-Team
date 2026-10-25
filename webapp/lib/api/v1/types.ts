@@ -81,6 +81,8 @@ export interface Photo {
   date: string | null;
   siteId: number | null;
   siteName: string | null;
+  /** True when the report owner hid this photo's answer; only that owner and admins receive it. */
+  isHidden?: boolean;
 }
 
 export interface BoundaryProperties {

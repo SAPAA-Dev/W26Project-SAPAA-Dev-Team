@@ -95,7 +95,7 @@ function SitesMapView() {
     restoreFocus.current = viaKeyboard ? query.selected : null;
     update({ selected: null });
   };
-  const clearFilters = () => update({ q: '', view: 'all', status: [], county: [], selected: null });
+  const clearFilters = () => update({ q: '', view: 'all', status: [], county: [], boundary: undefined, selected: null });
 
   // Closing the card by keyboard puts focus back on the row it came from.
   useEffect(() => {

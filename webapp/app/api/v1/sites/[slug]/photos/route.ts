@@ -6,5 +6,5 @@ type Ctx = { params: Promise<{ slug: string }> };
 
 export const GET = route<Ctx>(async (caller, req, { params }) => {
   const includeInactive = wantsInactive(caller, req);
-  return listPhotos((await findSite((await params).slug, includeInactive)).id, includeInactive);
+  return listPhotos(caller, (await findSite((await params).slug, includeInactive)).id, includeInactive);
 }, { cache: true });

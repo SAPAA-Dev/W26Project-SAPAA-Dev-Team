@@ -14,7 +14,7 @@ const SORTS: { key: SortKey; label: string }[] = [
   { key: 'recent', label: 'Recently visited' },
 ];
 
-type Filters = Pick<SiteQuery, 'status' | 'county' | 'sort'>;
+type Filters = Pick<SiteQuery, 'status' | 'county' | 'sort' | 'boundary'>;
 
 const toggle = <T,>(list: T[], v: T) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
 
@@ -43,11 +43,12 @@ function Filters({ open, sites, me, query, onApply, onClose }: Props) {
   const [status, setStatus] = useState(query.status);
   const [county, setCounty] = useState(query.county);
   const [sort, setSort] = useState(query.sort);
+  const [boundary, setBoundary] = useState(query.boundary);
   const [find, setFind] = useState('');
 
   const total = useMemo(
-    () => applySiteQuery(sites, { ...query, status, county, sort }, me).length,
-    [sites, query, status, county, sort, me],
+    () => applySiteQuery(sites, { ...query, status, county, sort, boundary }, me).length,
+    [sites, query, status, county, sort, boundary, me],
   );
   const counties = useMemo(() => {
     const m = new Map<string, number>();
@@ -70,6 +71,7 @@ function Filters({ open, sites, me, query, onApply, onClose }: Props) {
               setStatus([]);
               setCounty([]);
               setSort('urgency');
+              setBoundary(undefined);
             }}
             className="press h-12 rounded-full px-4 text-[15px] font-semibold text-[var(--ink)] underline-offset-4 hover:underline"
           >
@@ -79,7 +81,7 @@ function Filters({ open, sites, me, query, onApply, onClose }: Props) {
             type="button"
             disabled={total === 0}
             onClick={() => {
-              onApply({ status, county, sort });
+              onApply({ status, county, sort, boundary });
               onClose();
             }}
             className={`press h-12 flex-1 rounded-full bg-[var(--accent)] text-[15px] font-bold text-[var(--on-accent)] disabled:opacity-45 ${TNUM}`}
@@ -124,6 +126,20 @@ function Filters({ open, sites, me, query, onApply, onClose }: Props) {
           ))}
         </div>
       </fieldset>
+
+      {me?.role === 'admin' && (
+        <fieldset className="mt-6">
+          <legend className={legend}>Boundary</legend>
+          <div className="flex flex-wrap gap-2">
+            {([[undefined, 'Any'], ['with', 'Has a boundary'], ['without', 'No boundary']] as const).map(([v, label]) => (
+              <label key={label} className={pill}>
+                <input type="radio" name="site-boundary" className="sr-only" checked={boundary === v} onChange={() => setBoundary(v)} />
+                {label}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
 
       <fieldset className="mt-6">
         <legend className={legend}>

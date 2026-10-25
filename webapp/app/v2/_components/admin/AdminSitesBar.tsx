@@ -403,12 +403,14 @@ function KmlSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
       toast(`Imported ${plural(r.upserted ?? 0, 'protected area')}.`);
       invalidate('boundaries');
       invalidate('admin:areas');
+      invalidate('sites'); // the import re-links sites to their boundaries (centre, area type)
     } catch (e) {
       fail(errMsg(e, 'The import failed.'));
     }
   };
 
   const warnings = result?.warnings ?? [];
+  const unlinked = result?.unlinkedSites ?? [];
   return (
     <Sheet
       open={open}
@@ -467,6 +469,18 @@ function KmlSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
         <p role="alert" className="mt-4 text-[15px] font-semibold text-[var(--clay-ink)]">
           {error}
         </p>
+      )}
+      {stage === 'done' && unlinked.length > 0 && (
+        <details open className="mt-4">
+          <summary className="min-h-11 cursor-pointer text-[15px] font-semibold">
+            {plural(unlinked.length, 'site has', 'sites have')} no boundary
+          </summary>
+          <ul className="mt-1 max-h-40 list-disc overflow-y-auto pl-5 text-sm text-[var(--ink-2)]">
+            {unlinked.map((name, i) => (
+              <li key={`${name}-${i}`}>{name}</li>
+            ))}
+          </ul>
+        </details>
       )}
       {warnings.length > 0 && (
         <details className="mt-4">
