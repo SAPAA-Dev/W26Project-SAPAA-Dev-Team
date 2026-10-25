@@ -35,6 +35,7 @@ async function main() {
 
   const { data: list, error: listError } = await admin.auth.admin.listUsers({ perPage: 1000 });
   if (listError) throw listError;
+  const userIds = {};
   for (const [key, user] of Object.entries(USERS)) {
     const attributes = {
       email: user.email,
@@ -44,10 +45,11 @@ async function main() {
       app_metadata: { role: user.role, authenticated: user.authenticated },
     };
     const existing = list.users.find((u) => u.email === user.email);
-    const { error } = existing
+    const { data: saved, error } = existing
       ? await admin.auth.admin.updateUserById(existing.id, attributes)
       : await admin.auth.admin.createUser(attributes);
     if (error) throw error;
+    userIds[key.toLowerCase()] = saved.user.id;
   }
 
   // Several specs (edit/disable site, PDF export, site gallery) look for this site by name.
@@ -134,6 +136,55 @@ async function main() {
   });
   if (attachmentError) throw attachmentError;
 
+  // US 2.0.1 AT2: one GPX track per linked site, so the map draws a line over each
+  // boundary. The points sit inside the boundary squares seeded above.
+  const gpx = (name, points) => `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="SAPAA e2e seed" xmlns="http://www.topografix.com/GPX/1/1">
+<trk><name>${name}</name><trkseg>
+${points.map(([lng, lat]) => `<trkpt lat="${lat}" lon="${lng}"/>`).join('\n')}
+</trkseg></trk>
+</gpx>`;
+  const trackSeeds = [
+    {
+      site: 'Riverlot 56 (NA)',
+      fileName: 'riverlot-walk.gpx',
+      user: 'steward',
+      points: [[-112.995, 53.605], [-112.99, 53.608], [-112.985, 53.612], [-112.99, 53.615]],
+    },
+    {
+      site: 'E2E Lamont Meadow',
+      fileName: 'lamont-walk.gpx',
+      user: 'admin',
+      points: [[-110.995, 55.005], [-110.99, 55.008], [-110.985, 55.012], [-110.99, 55.015]],
+    },
+  ];
+  for (const track of trackSeeds) {
+    const { data: site, error: trackSiteError } = await admin
+      .from('sites_pa').select('id').eq('namesite', track.site).single();
+    if (trackSiteError) throw trackSiteError;
+    const storagePath = `${userIds[track.user]}/seed/${track.fileName}`;
+    const { error: uploadError } = await admin.storage
+      .from('gpx-tracks')
+      .upload(storagePath, gpx(track.fileName, track.points), {
+        contentType: 'application/gpx+xml',
+        upsert: true,
+      });
+    if (uploadError) throw uploadError;
+    const { error: removeError } = await admin
+      .from('gpx_tracks')
+      .delete()
+      .eq('storage_path', storagePath);
+    if (removeError) throw removeError;
+    const { error: trackError } = await admin.from('gpx_tracks').insert({
+      site_id: site.id,
+      user_id: userIds[track.user],
+      storage_path: storagePath,
+      original_file_name: track.fileName,
+      track_point_count: track.points.length,
+    });
+    if (trackError) throw trackError;
+  }
+
   const env = {
     NEXT_PUBLIC_SUPABASE_URL: url,
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
@@ -152,7 +203,7 @@ async function main() {
     env[`CYPRESS_${key}_PASSWORD`] = PASSWORD;
   }
   process.stdout.write(Object.entries(env).map(([k, v]) => `${k}=${v}\n`).join(''));
-  console.error(`Seeded ${Object.keys(USERS).length} E2E users, 2 sites, ${areas.length} boundaries and 1 report into ${url}.`);
+  console.error(`Seeded ${Object.keys(USERS).length} E2E users, 2 sites, ${areas.length} boundaries, 1 report and ${trackSeeds.length} GPX tracks into ${url}.`);
 }
 
 main().catch((error) => {
