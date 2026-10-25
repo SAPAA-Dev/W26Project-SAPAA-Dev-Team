@@ -59,6 +59,11 @@ const OFFLINE_STYLE: StyleSpecification = {
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse = () => window.matchMedia('(pointer: coarse)').matches;
 
+/** Extra px a selected site sits above the middle of the uncovered area, so the card never crowds it. */
+const SELECT_LIFT = 24;
+/** On a phone the top inset includes the map-key row, which only covers the sides; a selection may sit under it. */
+const KEY_ROW = 64;
+
 /** Centre of the uncovered area, as an offset from the canvas centre. */
 const offsetFor = (i: Inset): PointLike => [(i.left - i.right) / 2, (i.top - i.bottom) / 2];
 const pad = (i: Inset, extra: number): Inset => ({
@@ -323,18 +328,25 @@ export default function MapCanvas({
   // Fly to the selection, landing it in the middle of the uncovered map.
   const selectedSlug = selected?.slug;
   const selectedCenter = selected?.center;
+  const flownTo = useRef<string | undefined>(undefined);
+  const flownZoom = useRef(0);
+  // The card is taller than the list peek it replaces, so the cover (inset.bottom) settles after the
+  // selection; fly again when it changes so the site lands above the card.
+  const cover = inset.bottom;
   useEffect(() => {
     if (!usable(map) || !selectedCenter) return;
-    const camera = {
-      center: selectedCenter,
-      zoom: Math.max(map.getZoom(), 9.5),
-      offset: offsetFor(currentInset()),
-    };
+    if (flownTo.current !== selectedSlug) {
+      flownTo.current = selectedSlug;
+      flownZoom.current = Math.min(Math.max(map.getZoom(), 8.8), 9.6);
+    }
+    const ins = currentInset();
+    const [ox, oy] = offsetFor(ins.top > 100 ? { ...ins, top: ins.top - KEY_ROW } : ins) as [number, number];
+    const camera = { center: selectedCenter, zoom: flownZoom.current, offset: [ox, oy - SELECT_LIFT] as PointLike };
     if (reducedMotion()) map.jumpTo(camera);
     else map.flyTo({ ...camera, duration: 1100, essential: false });
-    // Re-fly only when the selection changes, not when its object is re-fetched.
+    // Re-fly when the selection or the cover changes, not when the selected object is re-fetched.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, selectedSlug]);
+  }, [map, selectedSlug, cover]);
 
   // ---------------------------------------------------------------- list hover
   useEffect(() => {
