@@ -3,10 +3,13 @@ import type {
   AdminInbox,
   BoundaryCollection,
   FormSection,
+  InspectionHistory,
   Me,
   NewReportInput,
   Photo,
   Report,
+  ReportAnswersForEdit,
+  ReportUpdateInput,
   SiteDetail,
   SiteSummary,
 } from './types';
@@ -86,4 +89,18 @@ export const api = {
   },
   photos: () => call<Photo[]>('/photos'),
   adminInbox: () => call<AdminInbox>('/admin/inbox'),
+
+  // ---- Reports and profile history (sprint 3) ----
+  reportAnswers: (id: number) => call<ReportAnswersForEdit>(`/reports/${id}/answers`),
+  updateReport: (id: number, input: ReportUpdateInput) => {
+    freshReads();
+    return call<{ id: number }>(`/reports/${id}`, { method: 'PUT', body: JSON.stringify(input) });
+  },
+  /** Another steward's history with person (people.id); your own without. */
+  inspectionHistory: (opts: { person?: number | string | null; page?: number } = {}) => {
+    const q = new URLSearchParams();
+    if (opts.person) q.set('person', String(opts.person));
+    if (opts.page && opts.page > 1) q.set('page', String(opts.page));
+    return call<InspectionHistory>(`/me/history${q.size ? `?${q}` : ''}`);
+  },
 };

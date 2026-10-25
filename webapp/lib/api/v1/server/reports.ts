@@ -2,14 +2,19 @@ import { reduceAnswers, type RawAnswerRow } from '@/lib/pdf/reportQueries';
 import {
   addSiteInspectionReport,
   getDateOfVisitQuestionId,
+  getFormResponseById,
+  getHiddenQuestionIdsByResponseId,
   getQuestionResponseType,
+  requireReportWriter,
   rollbackSiteInspectionSubmission,
+  updateSiteInspectionAnswers,
   uploadSiteInspectionAnswers,
 } from '@/utils/supabase/queries';
-import type { NewReportInput, Report } from '../types';
+import type { NewReportInput, Report, ReportAnswersForEdit, ReportUpdateInput } from '../types';
 import { HttpError, type Caller } from './auth';
 import { db, fetchAll, naturalnessOf, questionIds, reportDate } from './db';
 import { findSite } from './sites';
+import { canReadHidden, visibleAnswers } from './visibility';
 
 interface ReportRow {
   id: number;
@@ -25,7 +30,7 @@ interface ReportRow {
 
 const BASE = 'id, site_id, user_id, is_active, inspection_no, inspection_date, created_at, sites_pa!inner(id, namesite)';
 const ANSWERS =
-  'answers(question_id, obs_value, obs_comm, questions(id, form_question, section_id, form_sections!questions_section_id_fkey(id, title)))';
+  'answers(question_id, obs_value, obs_comm, is_hidden, questions(id, form_question, section_id, form_sections!questions_section_id_fkey(id, title)))';
 const NO_FILTER = { naturalnessId: -1, naturalnessDetailsId: -1, stewardId: -1 };
 
 /**
@@ -67,11 +72,17 @@ export async function listReports(
     questionSets.then(async ([nat, steward]) => {
       const list = filter.withAnswers
         ? rows.flatMap((row) => (row.answers ?? []).map((a) => ({ ...a, response_id: row.id })))
-        : await fetchAll<{ response_id: number; question_id: number; obs_value: string | null; obs_comm: string | null }>(
+        : await fetchAll<{
+            response_id: number;
+            question_id: number;
+            obs_value: string | null;
+            obs_comm: string | null;
+            is_hidden?: boolean | null;
+          }>(
             (from, to) =>
               db()
                 .from('answers')
-                .select('response_id, question_id, obs_value, obs_comm')
+                .select('response_id, question_id, obs_value, obs_comm, is_hidden')
                 .in('question_id', [...nat, ...steward])
                 .order('id')
                 .range(from, to)
@@ -86,9 +97,20 @@ export async function listReports(
 
   const natByReport = new Map<number, string | null>();
   const stewardByReport = new Map<number, string | null>();
+  const natHidden = new Set<number>();
+  const stewardHidden = new Set<number>();
+  const ownerOf = new Map(rows.map((row) => [row.id, row.user_id]));
   for (const a of answers) {
-    if (natIds.has(a.question_id)) natByReport.set(a.response_id, a.obs_value);
-    if (stewardIds.has(a.question_id)) stewardByReport.set(a.response_id, a.obs_comm ?? a.obs_value);
+    // A hidden answer reaches only an admin or the report's owner, as in getFormResponsesBySite.
+    if (a.is_hidden === true && !canReadHidden(caller, ownerOf.get(a.response_id))) continue;
+    if (natIds.has(a.question_id)) {
+      natByReport.set(a.response_id, a.obs_value);
+      if (a.is_hidden === true) natHidden.add(a.response_id);
+    }
+    if (stewardIds.has(a.question_id)) {
+      stewardByReport.set(a.response_id, a.obs_comm ?? a.obs_value);
+      if (a.is_hidden === true) stewardHidden.add(a.response_id);
+    }
   }
   const personByUser = new Map(
     (people ?? []).map((p: { id: number; auth_user_id: string; display_name: string }) => [
@@ -107,14 +129,17 @@ export async function listReports(
     submittedBy: (row.user_id && personByUser.get(row.user_id)) || null,
     stewardName: stewardByReport.get(row.id)?.trim() || null,
     naturalness: naturalnessOf(natByReport.get(row.id)),
+    ...(natHidden.has(row.id) && { naturalnessHidden: true }),
+    ...(stewardHidden.has(row.id) && { stewardNameHidden: true }),
     isOwn: row.user_id === caller.userId,
     isActive: row.is_active !== false,
     ...(filter.withAnswers && {
-      answers: reduceAnswers(row.answers ?? [], NO_FILTER).answers.map((a) => ({
+      answers: reduceAnswers(visibleAnswers(row.answers ?? [], caller, row.user_id), NO_FILTER).answers.map((a) => ({
         section: a.section_title ?? '',
         question: a.question_text.replace(/\s*\(Q\d+[A-Za-z]?\)\s*$/, ''),
         value: a.obs_value,
         comment: a.obs_comm,
+        ...(a.is_hidden && { hidden: true }),
       })),
     }),
   }));
@@ -138,15 +163,18 @@ interface QuestionRow {
   question_options: { option_text: string }[] | null;
 }
 
-/** Validates the body, then saves the report through the same server functions the new-report page uses. */
-export async function createReport(body: unknown): Promise<{ id: number; inspectionNo: string }> {
-  const input = body as Partial<NewReportInput> | null;
-  if (!input || typeof input !== 'object' || Array.isArray(input)) throw new HttpError(400, 'Invalid report.');
-  if (typeof input.siteSlug !== 'string' || !input.siteSlug.trim()) throw new HttpError(400, 'siteSlug is required.');
+interface ParsedInput {
+  questions: Map<number, QuestionRow>;
+  answers: Map<number, string | string[]>;
+  comments: Map<number, string>;
+  hidden: Set<number>;
+  inspectionDate: string;
+}
+
+/** Validates answers, comments and hidden ids against the active form. Shared by createReport and updateReport. */
+async function parseInput(input: { answers?: unknown; comments?: unknown; hidden?: unknown }): Promise<ParsedInput> {
   const raw = input.answers;
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new HttpError(400, 'answers must be an object.');
-
-  const site = await findSite(input.siteSlug);
 
   const { data: questionData, error } = await db()
     .from('questions')
@@ -197,6 +225,15 @@ export async function createReport(body: unknown): Promise<{ id: number; inspect
     }
   }
 
+  // Question ids to hide from other stewards. An id that is no longer on the form is ignored.
+  const hidden = new Set<number>();
+  if (input.hidden !== undefined) {
+    if (!Array.isArray(input.hidden) || !input.hidden.every((id) => Number.isSafeInteger(id) && id > 0)) {
+      throw new HttpError(400, 'hidden must be a list of question ids.');
+    }
+    for (const id of input.hidden as number[]) if (questions.has(id)) hidden.add(id);
+  }
+
   const missing = [...questions.values()].filter(
     (q) => q.is_required && q.question_type !== 'image' && !answers.has(q.id)
   );
@@ -207,19 +244,54 @@ export async function createReport(body: unknown): Promise<{ id: number; inspect
   const inspectionDate = dateQuestionId !== null ? answers.get(dateQuestionId) : undefined;
   if (typeof inspectionDate !== 'string') throw new HttpError(400, 'The date of visit is required.');
 
+  return { questions, answers, comments, hidden, inspectionDate };
+}
+
+interface AnswerRow {
+  question_id: number;
+  obs_value: string | null;
+  obs_comm: string | null;
+  is_hidden: boolean;
+}
+
+/**
+ * The answer rows, shaped like handleSubmit in app/detail/[namesite]/new-report/page.tsx: every row of a
+ * hidden question carries is_hidden, and a hidden image question keeps an empty marker row, because the
+ * photo gallery hides a photo through the hidden flag of its question.
+ */
+async function buildRows({ questions, answers, comments, hidden }: ParsedInput): Promise<AnswerRow[]> {
+  const types = new Map((await getQuestionResponseType()).map((q) => [q.question_id, q]));
+  const rows = [...answers].flatMap(([questionId, answer]) => {
+    const t = types.get(questionId);
+    return (Array.isArray(answer) ? answer : [answer]).map((v) => ({
+      question_id: questionId,
+      obs_value: t?.obs_value ? v : null,
+      obs_comm: v === 'Other' ? comments.get(questionId) ?? null : t?.obs_comm ? v : null,
+      is_hidden: hidden.has(questionId),
+    }));
+  });
+  for (const id of hidden) {
+    if (questions.get(id)?.question_type === 'image') rows.push({ question_id: id, obs_value: null, obs_comm: null, is_hidden: true });
+  }
+  return rows;
+}
+
+/** Validates the body, then saves the report through the same server functions the new-report page uses. */
+export async function createReport(body: unknown): Promise<{ id: number; inspectionNo: string }> {
+  const input = body as Partial<NewReportInput> | null;
+  if (!input || typeof input !== 'object' || Array.isArray(input)) throw new HttpError(400, 'Invalid report.');
+  if (typeof input.siteSlug !== 'string' || !input.siteSlug.trim()) throw new HttpError(400, 'siteSlug is required.');
+  if (!input.answers || typeof input.answers !== 'object' || Array.isArray(input.answers)) {
+    throw new HttpError(400, 'answers must be an object.');
+  }
+
+  const site = await findSite(input.siteSlug);
+  const parsed = await parseInput(input);
+
   // From here on this mirrors handleSubmit in app/detail/[namesite]/new-report/page.tsx.
-  const { id } = await addSiteInspectionReport(site.id, inspectionDate);
+  const { id } = await addSiteInspectionReport(site.id, parsed.inspectionDate);
   try {
-    const types = new Map((await getQuestionResponseType()).map((q) => [q.question_id, q]));
-    const rows = [...answers].flatMap(([questionId, answer]) => {
-      const t = types.get(questionId);
-      return (Array.isArray(answer) ? answer : [answer]).map((v) => ({
-        response_id: id,
-        question_id: questionId,
-        obs_value: t?.obs_value ? v : null,
-        obs_comm: v === 'Other' ? comments.get(questionId) ?? null : t?.obs_comm ? v : null,
-      }));
-    });
+    const rows = (await buildRows(parsed)).map((row) => ({ ...row, response_id: id }));
     if (rows.length) await uploadSiteInspectionAnswers(rows);
   } catch (saveError) {
     await rollbackSiteInspectionSubmission(id).catch((e) => console.error('[api/v1] rollback failed', e));
@@ -229,6 +301,71 @@ export async function createReport(body: unknown): Promise<{ id: number; inspect
   const { data, error: readError } = await db().from('form_responses').select('inspection_no').eq('id', id).single();
   if (readError) throw new Error(readError.message);
   return { id, inspectionNo: data.inspection_no };
+}
+
+// requireReportWriter and the two edit reads throw these messages for "not yours" and "not there".
+const WRITE_DENIED = 'You are not allowed to change this report.';
+const VIEW_DENIED = 'You are not allowed to view this report.';
+
+async function asOwnerOrAdmin<T>(denied: string, run: () => Promise<T>): Promise<T> {
+  try {
+    return await run();
+  } catch (error) {
+    if (error instanceof Error && error.message === denied) throw new HttpError(403, denied);
+    throw error;
+  }
+}
+
+function reportId(idParam: string): number {
+  const id = Number(idParam);
+  if (!/^\d+$/.test(idParam) || !Number.isSafeInteger(id) || id <= 0) throw new HttpError(404, 'Report not found.');
+  return id;
+}
+
+/**
+ * Replaces every answer of a past report, as the edit-report page does. Only the report's owner or an admin
+ * may do it (requireReportWriter), and an archived report cannot be changed. Answers to questions that are no
+ * longer on the form are carried over untouched.
+ */
+export async function updateReport(idParam: string, body: unknown): Promise<{ id: number }> {
+  const id = reportId(idParam);
+  await asOwnerOrAdmin(WRITE_DENIED, () => requireReportWriter(id));
+  const input = body as Partial<ReportUpdateInput> | null;
+  if (!input || typeof input !== 'object' || Array.isArray(input)) throw new HttpError(400, 'Invalid report.');
+
+  const parsed = await parseInput(input);
+  const rows = await buildRows(parsed);
+  const { data, error } = await db().from('answers').select('question_id, obs_value, obs_comm, is_hidden').eq('response_id', id);
+  if (error) throw new Error(error.message);
+  const kept = ((data ?? []) as (Omit<AnswerRow, 'is_hidden'> & { is_hidden: boolean | null })[])
+    .filter((row) => !parsed.questions.has(row.question_id))
+    .map((row) => ({ ...row, is_hidden: row.is_hidden === true }));
+
+  try {
+    await updateSiteInspectionAnswers(id, [...rows, ...kept], parsed.inspectionDate);
+  } catch (saveError) {
+    if (saveError instanceof Error && saveError.message.startsWith('Required questions are missing')) {
+      throw new HttpError(400, saveError.message);
+    }
+    throw saveError;
+  }
+  return { id };
+}
+
+/** A report's stored answers for the edit form: the owner or an admin only (getFormResponseById checks that). */
+export async function getReportAnswers(idParam: string): Promise<ReportAnswersForEdit> {
+  const id = reportId(idParam);
+  const [raw, hidden] = await asOwnerOrAdmin(VIEW_DENIED, () =>
+    Promise.all([getFormResponseById(id), getHiddenQuestionIdsByResponseId(id)])
+  );
+  const answers: ReportAnswersForEdit['answers'] = {};
+  const comments: ReportAnswersForEdit['comments'] = {};
+  for (const [key, value] of Object.entries(raw)) {
+    // getFormResponseById keeps the text typed with "Other" under "<id>_comm".
+    if (key.endsWith('_comm')) comments[Number(key.slice(0, -5))] = value as string;
+    else answers[Number(key)] = value;
+  }
+  return { answers, comments, hidden };
 }
 
 function isIsoDate(value: string): boolean {
