@@ -2,8 +2,9 @@ import { boundaryBounds, type GeoJsonMultiPolygon } from '@/lib/map/boundaries';
 import { SITE_PAGE_FIELDS } from '@/lib/sitePageFields';
 import { getSiteLinks } from '@/utils/supabase/queries';
 import { statusForDays, type SiteDetail, type SiteLink, type SiteSummary } from '../types';
-import { HttpError } from './auth';
+import { HttpError, type Caller } from './auth';
 import { daysSince, db, fetchAll, naturalnessOf, naturalnessQuestionIds, reportDate } from './db';
+import { canReadHidden } from './visibility';
 
 interface AreaRow {
   id: number;
@@ -23,6 +24,7 @@ interface SiteRow {
 interface ReportRow {
   id: number;
   site_id: number;
+  user_id: string | null;
   inspection_date: string | null;
   created_at: string | null;
 }
@@ -51,18 +53,20 @@ async function related(ids: number[] | null) {
     fetchAll<ReportRow>((from, to) => {
       let q = db()
         .from('form_responses')
-        .select('id, site_id, inspection_date, created_at')
+        .select('id, site_id, user_id, inspection_date, created_at')
         .eq('is_active', true)
         .is('archived_at', null)
         .not('site_id', 'is', null);
       if (ids) q = q.in('site_id', ids);
       return q.order('id').range(from, to);
     }),
-    fetchAll<{ response_id: number; obs_value: string | null }>((from, to) => {
+    fetchAll<{ response_id: number; obs_value: string | null; is_hidden?: boolean | null }>((from, to) => {
       // One site reads only its own answers (through the report), not every site's.
       let q = db()
         .from('answers')
-        .select(ids ? 'response_id, obs_value, form_responses!inner(site_id)' : 'response_id, obs_value')
+        .select(
+          ids ? 'response_id, obs_value, is_hidden, form_responses!inner(site_id)' : 'response_id, obs_value, is_hidden'
+        )
         .in('question_id', natIds);
       if (ids) q = q.in('form_responses.site_id', ids);
       return q.order('id').range(from, to);
@@ -80,7 +84,11 @@ async function related(ids: number[] | null) {
  * stewards). The whole list runs them all at once; `namesite` narrows everything to one site, whose
  * other reads wait for its id.
  */
-export async function loadSites(namesite?: string, includeInactive = false, { geometry = true } = {}) {
+export async function loadSites(
+  namesite?: string,
+  includeInactive = false,
+  { geometry = true, caller }: { geometry?: boolean; caller?: Caller } = {}
+) {
   const siteRows = fetchAll<SiteRow>((from, to) => {
     // Without geometry (the map's boundary read has its own copy) a summary has no center.
     const area = `protected_areas(id, area_type, hectares, area_ha${geometry ? ', geometry' : ''})`;
@@ -95,8 +103,12 @@ export async function loadSites(namesite?: string, includeInactive = false, { ge
       : await siteRows.then(async (rows) => [rows, rows.length ? await related(rows.map((s) => s.id)) : [[], [], []]] as const);
   if (sites.length === 0) return { sites: [] as SiteSummary[], areaBySite, trend };
 
+  // A hidden naturalness answer counts toward the average and trend only for an admin or the report's owner
+  // (no caller: for nobody), the same rule as getFormResponsesBySite.
+  const ownerOf = new Map(reports.map((report) => [report.id, report.user_id]));
   const scoreByReport = new Map<number, number>();
   for (const answer of natAnswers) {
+    if (answer.is_hidden === true && !canReadHidden(caller, ownerOf.get(answer.response_id))) continue;
     const nat = naturalnessOf(answer.obs_value);
     if (nat) scoreByReport.set(answer.response_id, nat.score);
   }
@@ -150,14 +162,14 @@ export async function loadSites(namesite?: string, includeInactive = false, { ge
 
 const round5 = (n: number) => Math.round(n * 1e5) / 1e5;
 
-export async function listSites(includeInactive = false): Promise<SiteSummary[]> {
-  return (await loadSites(undefined, includeInactive)).sites;
+export async function listSites(includeInactive = false, caller?: Caller): Promise<SiteSummary[]> {
+  return (await loadSites(undefined, includeInactive, { caller })).sites;
 }
 
-export async function getSiteDetail(slug: string, includeInactive = false): Promise<SiteDetail> {
+export async function getSiteDetail(slug: string, includeInactive = false, caller?: Caller): Promise<SiteDetail> {
   // The links need only the site's id, so they load beside the summary instead of after it.
   const [{ sites, trend }, shown] = await Promise.all([
-    loadSites(slug, includeInactive),
+    loadSites(slug, includeInactive, { caller }),
     findSite(slug, includeInactive).then((found) => getSiteLinks(found.id)),
   ]);
   const site = sites[0];

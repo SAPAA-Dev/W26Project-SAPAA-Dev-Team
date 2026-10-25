@@ -17,6 +17,8 @@ export async function getMe(caller: Caller): Promise<Me> {
         .select('site_id')
         .eq('user_id', caller.userId)
         .eq('is_active', true)
+        // A report whose site was deleted has no site; profile history leaves it out (app/api/profile).
+        .not('site_id', 'is', null)
         .is('archived_at', null)
         .order('id')
         .range(from, to)

@@ -52,6 +52,8 @@ export interface ReportAnswer {
   question: string;
   value: string | null;
   comment: string | null;
+  /** True when the report owner hid this answer from other stewards. Only the owner and admins receive hidden answers. */
+  hidden?: boolean;
 }
 
 export interface Report {
@@ -65,6 +67,9 @@ export interface Report {
   /** Name typed in the report's steward-name answer; use when submittedBy is null. */
   stewardName: string | null;
   naturalness: { score: number; label: string } | null;
+  /** True when the naturalness / steward-name answer above is hidden from other stewards (you may read it). */
+  naturalnessHidden?: boolean;
+  stewardNameHidden?: boolean;
   isOwn: boolean;
   /** False for a disabled report. Only admins who ask with ?includeInactive=1 receive those. */
   isActive?: boolean;
@@ -140,10 +145,49 @@ export interface NewReportInput {
   answers: Record<number, string | string[]>;
   /** question id -> free text for "Other" (stored as obs_comm, like the legacy <id>_comm keys). */
   comments?: Record<number, string>;
+  /** Question ids whose answer is hidden from other stewards (US 1.0.3). */
+  hidden?: number[];
 }
 
 export interface AdminInbox {
   pendingUsers: { id: string; email: string | null; createdAt: string }[];
   recentReports: Report[];
   overdueSites: SiteSummary[];
+}
+
+// ---- Reports and profile history (sprint 3) ----
+
+/** PUT /reports/:id: the owner or an admin replaces every answer, as the old edit-report page does. */
+export type ReportUpdateInput = Omit<NewReportInput, 'siteSlug'>;
+
+/** GET /reports/:id/answers: a report's stored answers in the shape of NewReportInput, for the edit form. */
+export interface ReportAnswersForEdit {
+  /** question id -> answer. A pick-one answer of "Other" arrives as ["Other"]. */
+  answers: Record<number, string | string[]>;
+  /** question id -> the text typed with "Other". */
+  comments: Record<number, string>;
+  /** Question ids hidden from other stewards (image questions included). */
+  hidden: number[];
+}
+
+export interface InspectionHistoryItem {
+  id: number;
+  siteId: number;
+  siteSlug: string;
+  siteName: string;
+  /** Hidden from the app by an admin. The report is listed but not opened. */
+  siteArchived: boolean;
+  /** Deactivated by an admin. The report is listed but not opened. */
+  siteInactive: boolean;
+  date: string | null;
+  /** False when the site is archived or deactivated. */
+  canOpen: boolean;
+}
+
+/** GET /me/history: one page (10) of a steward's active reports, newest first. */
+export interface InspectionHistory {
+  items: InspectionHistoryItem[];
+  page: number;
+  pageSize: number;
+  total: number;
 }

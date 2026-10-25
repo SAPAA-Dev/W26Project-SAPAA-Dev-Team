@@ -12,7 +12,7 @@ import { STATUS_COLOR, STATUS_INK, STATUS_LABEL, ago } from '@/app/v2/_lib/siteQ
 import PhotoHero from '@/app/v2/_components/sites/PhotoHero';
 import { HEADING } from '@/app/v2/_components/sites/ui';
 import { SEASON_GOAL, formatDate, initials, seasonVisits, siteHref } from '@/app/v2/_components/flows/format';
-import { ErrorState, NaturalnessPill, SectionTitle, Toast, btn, card, heroTitle, raised, tabBarPadding, useToast } from '@/app/v2/_components/flows/ui';
+import { ErrorState, SectionTitle, Toast, btn, card, heroTitle, raised, tabBarPadding, useToast } from '@/app/v2/_components/flows/ui';
 import { EditProfileSheet, type Profile } from './EditProfileSheet';
 
 interface ProfilePayload {
@@ -43,6 +43,11 @@ export default function YouPage() {
   const profile = useApi(`profile:${person ?? 'me'}`, () => getProfile(person));
   const sites = useApi('sites', api.sites);
   const reports = useApi('reports', api.reports);
+  // Inspection history, ten a page: reports on an archived or deactivated site are listed but not opened.
+  const [historyPage, setHistoryPage] = useState(1);
+  const history = useApi(`profile:history:${person ?? 'me'}:${historyPage}`, () =>
+    api.inspectionHistory({ person, page: historyPage }),
+  );
   const [patch, setPatch] = useState<Partial<Profile>>({});
   // Settings links here with ?edit=1 to open the editor.
   const [editing, setEditing] = useState(() => params.get('edit') === '1');
@@ -73,10 +78,6 @@ export default function YouPage() {
 
   const mine = (r: Report) =>
     own ? r.isOwn : (pid !== undefined && r.submittedBy?.id === pid) || (!r.submittedBy && !!name && r.stewardName === name);
-  const history = (reports.data ?? [])
-    .filter(mine)
-    .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))
-    .slice(0, 5);
   const season = reports.data ? seasonVisits(reports.data, mine) : null;
   const filed = profile.data?.stats.inspectionCount ?? (own ? me.data?.stats.reports : undefined);
   const visited = profile.data?.stats.distinctSiteCount ?? (own ? me.data?.stats.sites : undefined);
@@ -240,9 +241,9 @@ export default function YouPage() {
         </Block>
 
         <Block
-          title="Recent inspections"
+          title="Inspection history"
           action={
-            history.length > 0 && (
+            (history.data?.total ?? 0) > 0 && (
               <Link
                 href={own ? '/v2/reports?who=mine' : `/v2/reports?who=all&q=${encodeURIComponent(name)}`}
                 className="inline-flex min-h-11 items-center gap-1 text-[15px] font-semibold underline-offset-2 hover:underline"
@@ -253,32 +254,71 @@ export default function YouPage() {
             )
           }
         >
-          {reports.error ? (
-            <ErrorState title="Reports did not load" error={reports.error} onRetry={reports.refetch} />
-          ) : !reports.data ? (
+          {history.error ? (
+            <ErrorState title="History did not load" error={history.error} onRetry={history.refetch} />
+          ) : !history.data ? (
             <div className="h-32 animate-pulse rounded-[var(--radius-l)] bg-[var(--bg-sunken)]" />
-          ) : history.length === 0 ? (
+          ) : history.data.items.length === 0 ? (
             <p className="text-[15px] text-[var(--ink-2)]">
               {own ? 'Your submitted inspections will show here.' : `${firstName} has no inspections on file yet.`}
             </p>
           ) : (
-            <ul className={`${card} divide-y divide-[var(--line)] overflow-hidden`}>
-              {history.map((r) => (
-                <li key={r.id}>
-                  <Link href={`/v2/reports/${r.id}`} className="press flex min-h-16 items-center gap-3 px-4 py-3 [--press-scale:0.99] hover:bg-[var(--bg-sunken)] active:bg-[var(--bg-sunken)]">
+            <>
+              <ul className={`${card} divide-y divide-[var(--line)] overflow-hidden`}>
+                {history.data.items.map((r) => {
+                  const row = (
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate font-semibold">{r.siteName}</span>
-                      <span className="mt-0.5 flex flex-wrap gap-x-1.5 text-sm text-[var(--ink-2)]">
-                        <span className="whitespace-nowrap">{formatDate(r.date)}</span>
-                        <span className="num whitespace-nowrap">· {r.inspectionNo ?? `#${r.id}`}</span>
+                      <span className="block truncate font-semibold">
+                        {r.siteName}
+                        {r.siteArchived && <StatusTag>Archived by Admin</StatusTag>}
+                        {!r.siteArchived && r.siteInactive && <StatusTag>Deactivated by Admin</StatusTag>}
                       </span>
+                      <span className="mt-0.5 block text-sm text-[var(--ink-2)]">{formatDate(r.date)}</span>
                     </span>
-                    <NaturalnessPill value={r.naturalness} />
-                    <ChevronRight size={18} aria-hidden className="shrink-0 text-[var(--ink-2)]" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
+                  );
+                  return (
+                    <li key={r.id}>
+                      {r.canOpen ? (
+                        <Link
+                          href={`/v2/reports/${r.id}`}
+                          className="press flex min-h-16 items-center gap-3 px-4 py-3 [--press-scale:0.99] hover:bg-[var(--bg-sunken)] active:bg-[var(--bg-sunken)]"
+                        >
+                          {row}
+                          <ChevronRight size={18} aria-hidden className="shrink-0 text-[var(--ink-2)]" />
+                        </Link>
+                      ) : (
+                        <div data-testid={`unavailable-history-row-${r.id}`} className="flex min-h-16 items-center gap-3 px-4 py-3 opacity-60">
+                          {row}
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+              {history.data.total > history.data.pageSize && (
+                <nav aria-label="History pages" className="mt-3 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    disabled={historyPage <= 1}
+                    onClick={() => setHistoryPage((p) => p - 1)}
+                    className={`${btn.secondary} min-h-11 px-4 text-[15px] disabled:opacity-40`}
+                  >
+                    Previous
+                  </button>
+                  <span className="num text-sm text-[var(--ink-2)]">
+                    Page {history.data.page} of {Math.ceil(history.data.total / history.data.pageSize)}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={historyPage * history.data.pageSize >= history.data.total}
+                    onClick={() => setHistoryPage((p) => p + 1)}
+                    className={`${btn.secondary} min-h-11 px-4 text-[15px] disabled:opacity-40`}
+                  >
+                    Next
+                  </button>
+                </nav>
+              )}
+            </>
           )}
         </Block>
 
@@ -303,6 +343,14 @@ export default function YouPage() {
       )}
       <Toast message={toast} />
     </>
+  );
+}
+
+function StatusTag({ children }: { children: ReactNode }) {
+  return (
+    <span className="ml-2 rounded-full bg-[var(--bg-sunken)] px-2 py-0.5 align-middle text-[12px] font-bold text-[var(--ink-2)]">
+      {children}
+    </span>
   );
 }
 
