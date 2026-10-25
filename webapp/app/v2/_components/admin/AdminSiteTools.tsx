@@ -11,6 +11,7 @@ import {
   FileSpreadsheet,
   Link2,
   Loader2,
+  Palette,
   PencilLine,
   Settings2,
   UserRoundCog,
@@ -33,9 +34,10 @@ import { btn, ErrorState, inputCls, Sheet } from '@/app/v2/_components/flows/ui'
 import { formatDate } from '@/app/v2/_components/flows/format';
 import { Confirm, downloadFile, errMsg, ImpactList, MenuRow, MenuRule, plural, refreshSite, toast, Toggle, useIsAdmin } from './shared';
 import { SiteSheet } from './SiteSheet';
+import { BoundaryColorSheet } from './BoundaryColorSheet';
 import { PdfSheet } from './pdf';
 
-type Panel = 'menu' | 'edit' | 'links' | 'steward' | 'pdf' | 'quality' | 'archive';
+type Panel = 'menu' | 'edit' | 'links' | 'steward' | 'color' | 'pdf' | 'quality' | 'archive';
 type AdminResponse = FormResponse & { is_active: boolean };
 
 /** All non-archived reports of a site with their answers and active flag (the classic admin page's read). */
@@ -124,6 +126,7 @@ export default function AdminSiteTools({ slug, site }: { slug: string; site?: Si
               hint={site.steward ? site.steward.name : 'No steward yet'}
               onClick={() => setPanel('steward')}
             />
+            <MenuRow icon={Palette} label="Boundary colour" hint="How the area is outlined on the map" onClick={() => setPanel('color')} />
             <MenuRule />
             <MenuRow icon={Download} label="Export PDF" hint="Every report on this site" onClick={() => setPanel('pdf')} />
             <MenuRow
@@ -186,6 +189,7 @@ export default function AdminSiteTools({ slug, site }: { slug: string; site?: Si
           />
           <LinksSheet open={panel === 'links'} onClose={close} siteId={site.id} slug={slug} />
           <StewardSheet open={panel === 'steward'} onClose={close} site={site} slug={slug} />
+          <BoundaryColorSheet open={panel === 'color'} onClose={close} site={site} />
           <PdfSheet open={panel === 'pdf'} onClose={close} target={{ mode: 'site', siteName: site.name }} subject={site.name} />
           <Sheet
             open={panel === 'quality'}

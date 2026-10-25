@@ -97,6 +97,8 @@ export interface BoundaryProperties {
   siteId: number | null;
   siteSlug: string | null;
   status: InspectionStatus | null; // null when no site is linked
+  /** Admin-chosen outline colour as #rrggbb; null means the map default. */
+  color?: string | null;
 }
 
 export interface BoundaryCollection {
@@ -107,6 +109,8 @@ export interface BoundaryCollection {
     properties: BoundaryProperties;
     geometry: { type: 'Polygon' | 'MultiPolygon'; coordinates: unknown };
   }[];
+  /** Server-verified: true only for an approved admin. The colour control is drawn from this, never from the session. */
+  canEditColors?: boolean;
 }
 
 export interface Me {
@@ -191,3 +195,35 @@ export interface InspectionHistory {
   pageSize: number;
   total: number;
 }
+
+// ---- Map: GPX tracks and boundary colours (US 2.0.9, US 2.0.1)
+
+/** One LineString per uploaded GPX file, as the map draws them. */
+export interface TrackCollection {
+  type: 'FeatureCollection';
+  features: {
+    type: 'Feature';
+    properties: { trackId: number; fileName: string };
+    geometry: { type: 'LineString'; coordinates: number[][] };
+  }[];
+}
+
+/** A saved track of one site. canDelete: the uploader or an admin, as the table's delete policy says. */
+export interface SiteTrack {
+  id: number;
+  fileName: string;
+  pointCount: number;
+  createdAt: string;
+  canDelete: boolean;
+}
+
+/** Step 1 of an upload: the browser PUTs the file to signedUrl, then saves the track with `path`. */
+export interface TrackUpload {
+  path: string;
+  signedUrl: string;
+}
+
+/** Colour change: one area, or every area of one type. */
+export type BoundaryColorInput =
+  | { scope: 'site'; areaId: number; color: string }
+  | { scope: 'type'; areaType: string; color: string };

@@ -7,7 +7,10 @@ import type { Feature, FeatureCollection, Geometry, Point } from 'geojson';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@/components/map/enableMapLibreWorker';
 import './map.css';
-import type { BoundaryCollection, SiteSummary } from '@/lib/api/v1/types';
+import { releaseOfflineProtocol, retainOfflineProtocol } from '@/components/map/offlineProtocol';
+import type { SavedRegion } from '@/lib/map/offline/tileCache';
+import { makeOfflineTransform, offlineMask, regionOutlines } from './offline';
+import type { BoundaryCollection, SiteSummary, TrackCollection } from '@/lib/api/v1/types';
 import { STATUS_LABEL } from '../../_lib/siteQuery';
 import {
   ALBERTA,
@@ -28,6 +31,11 @@ interface Props {
   /** Filtered sites, already in list order. */
   sites: SiteSummary[];
   boundaries: BoundaryCollection | undefined;
+  tracks?: TrackCollection;
+  /** navigator.onLine. Offline, basemap requests are answered from the saved areas. */
+  online: boolean;
+  /** Areas saved for offline use (outlined, and the only places the basemap draws while offline). */
+  regions: SavedRegion[];
   selected: SiteSummary | null;
   /** Site the pointer is over in the list, mirrored on its pin. */
   hoverId: number | null;
@@ -81,6 +89,9 @@ const usable = (m: MlMap | null): m is MlMap => m !== null && !isRemoved(m);
 export default function MapCanvas({
   sites,
   boundaries,
+  tracks,
+  online,
+  regions,
   selected,
   hoverId,
   inset,
@@ -97,13 +108,17 @@ export default function MapCanvas({
   const ready = useEffectEvent((m: MlMap) => onReady(m));
   const offline = useEffectEvent(() => onOffline());
   const currentInset = useEffectEvent(() => inset);
+  // transformRequest reads this, so the map picks the offline path without being rebuilt.
+  const onlineRef = useRef(online);
 
   // ---------------------------------------------------------------- create once
   useEffect(() => {
     if (!el.current) return;
+    retainOfflineProtocol();
     const m = new MlMap({
       container: el.current,
       style: STYLE_URL,
+      transformRequest: makeOfflineTransform(() => onlineRef.current),
       bounds: ALBERTA,
       maxBounds: MAX_BOUNDS,
       renderWorldCopies: false,
@@ -202,8 +217,25 @@ export default function MapCanvas({
     return () => {
       tip.remove();
       m.remove();
+      releaseOfflineProtocol();
     };
   }, []);
+
+  // ---------------------------------------------------------------- offline
+  // In-flight and cached basemap requests only change path with a new style, so a change of connection
+  // reloads it (diff: false drops our layers cleanly; style.load puts them back). This also brings the
+  // basemap back when the plain offline fallback was showing.
+  useEffect(() => {
+    if (onlineRef.current === online) return;
+    onlineRef.current = online;
+    if (usable(map)) map.setStyle(STYLE_URL, { diff: false });
+  }, [map, online]);
+
+  useEffect(() => {
+    if (!usable(map)) return;
+    (map.getSource(SRC.offlineRegions) as GeoJSONSource | undefined)?.setData(regionOutlines(regions) as FeatureCollection);
+    (map.getSource(SRC.offlineMask) as GeoJSONSource | undefined)?.setData(offlineMask(regions, online) as FeatureCollection);
+  }, [map, styleGen, regions, online]);
 
   // ---------------------------------------------------------------- data
   useEffect(() => {
@@ -236,7 +268,12 @@ export default function MapCanvas({
               type: 'Feature',
               id: f.id,
               geometry: f.geometry as Geometry,
-              properties: { name: f.properties.name, slug: f.properties.siteSlug ?? '', st: f.properties.status ?? 'none' },
+              properties: {
+                name: f.properties.name,
+                slug: f.properties.siteSlug ?? '',
+                st: f.properties.status ?? 'none',
+                color: f.properties.color ?? '',
+              },
             })),
           }
         : null,
@@ -247,6 +284,12 @@ export default function MapCanvas({
     if (!usable(map) || !areas) return;
     (map.getSource(SRC.boundaries) as GeoJSONSource | undefined)?.setData(areas);
   }, [map, styleGen, areas]);
+
+  // Uploaded GPX tracks (steward and admin only; a failed or refused read simply draws none).
+  useEffect(() => {
+    if (!usable(map)) return;
+    (map.getSource(SRC.tracks) as GeoJSONSource | undefined)?.setData((tracks ?? EMPTY) as FeatureCollection);
+  }, [map, styleGen, tracks]);
 
   // Areas follow the filter: linked areas of hidden sites disappear, unlinked areas stay as context.
   const slugs = useMemo(() => sites.map((s) => s.slug), [sites]);

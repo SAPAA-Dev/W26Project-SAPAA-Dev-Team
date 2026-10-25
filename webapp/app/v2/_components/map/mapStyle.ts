@@ -111,10 +111,20 @@ export function firstSymbolLayer(map: MlMap): string | undefined {
 
 // ---------------------------------------------------------------- overlays
 
-export const SRC = { sites: 'sites', boundaries: 'boundaries', me: 'me' } as const;
+export const SRC = {
+  sites: 'sites',
+  boundaries: 'boundaries',
+  tracks: 'tracks',
+  offlineMask: 'offline-mask',
+  offlineRegions: 'offline-regions',
+  me: 'me',
+} as const;
 export const LAYER = {
   boundaryFill: 'boundary-fill',
   boundaryLine: 'boundary-line',
+  tracks: 'gpx-tracks',
+  offlineMask: 'offline-mask',
+  offlineRegions: 'offline-regions',
   halo: 'site-halo',
   pins: 'site-pins',
   labels: 'site-labels',
@@ -140,6 +150,17 @@ const byStatus = (m: Record<InspectionStatus, string>, fallback: string): Expres
   fallback,
 ];
 
+/** The orange of a GPX track, also drawn in the map key. */
+export const TRACK_COLOR = '#c2410c';
+
+/** An admin-chosen colour (`color`, #rrggbb, '' when unset) wins over the status colour. Pins keep their status colour. */
+const chosen = (fallback: ExpressionSpecification): ExpressionSpecification => [
+  'case',
+  ['!=', ['get', 'color'], ''],
+  ['get', 'color'],
+  fallback,
+];
+
 /** Airbnb-style tiers: what needs a visit is big, what is fine is a quiet dot. */
 const TIER: ExpressionSpecification = ['match', ['get', 'st'], 'overdue', 7.5, 'never', 6.5, 'due', 5.5, 3.75];
 const BUMP: ExpressionSpecification = ['case', SELECTED, 4, HOVER, 2.5, 0];
@@ -148,13 +169,18 @@ export const RANK: Record<InspectionStatus, number> = { overdue: 3, never: 2, du
 
 export const OVERLAY_LAYERS: { layer: AddLayerObject; belowLabels: boolean }[] = [
   {
+    // Offline only: hides the basemap wherever no tiles were saved. The data is empty while online.
+    belowLabels: true,
+    layer: { id: LAYER.offlineMask, type: 'fill', source: SRC.offlineMask, paint: { 'fill-color': C.land, 'fill-opacity': 1 } },
+  },
+  {
     belowLabels: true,
     layer: {
       id: LAYER.boundaryFill,
       type: 'fill',
       source: SRC.boundaries,
       paint: {
-        'fill-color': byStatus(STATUS_FILL, C.neutral),
+        'fill-color': chosen(byStatus(STATUS_FILL, C.neutral)),
         'fill-opacity': ['case', SELECTED, 0.36, HOVER, 0.28, ['==', ['get', 'st'], 'none'], 0.08, 0.17],
       },
     },
@@ -166,10 +192,31 @@ export const OVERLAY_LAYERS: { layer: AddLayerObject; belowLabels: boolean }[] =
       type: 'line',
       source: SRC.boundaries,
       paint: {
-        'line-color': ['case', SELECTED, C.canopy, byStatus(STATUS_LINE, C.border)],
+        'line-color': ['case', SELECTED, C.canopy, chosen(byStatus(STATUS_LINE, C.border))],
         'line-width': ['interpolate', ['linear'], ['zoom'], 5, ['case', SELECTED, 2, 0.6], 11, ['case', SELECTED, 3, 1.6]],
         'line-opacity': ['case', ['==', ['get', 'st'], 'none'], 0.6, 0.9],
       },
+    },
+  },
+  {
+    // A walked path, not a boundary: dashed orange over the outlines (US 2.0.1 AT2). Under the pins and labels.
+    belowLabels: true,
+    layer: {
+      id: LAYER.tracks,
+      type: 'line',
+      source: SRC.tracks,
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: { 'line-color': TRACK_COLOR, 'line-width': 3, 'line-dasharray': [2, 1] },
+    },
+  },
+  {
+    // Outlines of the areas saved for offline use.
+    belowLabels: true,
+    layer: {
+      id: LAYER.offlineRegions,
+      type: 'line',
+      source: SRC.offlineRegions,
+      paint: { 'line-color': C.forest, 'line-width': 2, 'line-dasharray': [2, 2] },
     },
   },
   {

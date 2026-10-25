@@ -31,6 +31,7 @@ import { NaturalBar, naturalLabel } from '../../_components/site/Naturalness';
 import { ByQuestion, ReportTimeline, Retry, SkeletonCards } from '../../_components/site/Reports';
 import PhotoGrid from '../../_components/site/PhotoGrid';
 import SapaaAbout from '../../_components/site/SapaaAbout';
+import GpxTracks from '../../_components/site/GpxTracks';
 import { AdminSiteTools } from '../../_components/admin/lazy';
 
 type Tab = 'reports' | 'questions' | 'photos';
@@ -258,6 +259,7 @@ function SiteView({ slug }: { slug: string }) {
               </li>
             );
           })}
+          <GpxTracks slug={slug} />
         </ul>
         <SapaaAbout siteName={slug} hasArea={!!s?.hectares} />
 

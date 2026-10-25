@@ -19,6 +19,10 @@ import { prefetchSite } from '../sites/useSites';
 import type { Inset } from './MapCanvas';
 import { CHROME, MapButtons, MapKey } from './MapControls';
 import MapSheet, { useHeight } from './MapSheet';
+import OfflineSavePanel from '@/components/map/OfflineSavePanel';
+import { listRegions } from '@/lib/map/offline/tileCache';
+import type { SavedRegion } from '@/lib/map/offline/tileCache';
+import { STYLE_URL } from './mapStyle';
 import SiteCard from './SiteCard';
 
 const SORT_NOTE = { urgency: 'most urgent first', name: 'A to Z', recent: 'recently visited first' } as const;
@@ -35,6 +39,16 @@ const subscribe = (cb: () => void) => {
 };
 const useDesktop = () =>
   useSyncExternalStore(subscribe, () => window.matchMedia(DESKTOP).matches, () => false);
+
+const subscribeOnline = (cb: () => void) => {
+  window.addEventListener('online', cb);
+  window.addEventListener('offline', cb);
+  return () => {
+    window.removeEventListener('online', cb);
+    window.removeEventListener('offline', cb);
+  };
+};
+const useOnline = () => useSyncExternalStore(subscribeOnline, () => navigator.onLine, () => true);
 
 /**
  * Trailhead map: the map is the page, the list rides in a bottom sheet (a left panel on md+).
@@ -53,7 +67,12 @@ function SitesMapView() {
   const sites = useApi('sites', api.sites);
   const me = useApi('me', api.me);
   const areas = useApi('boundaries', api.boundaries);
+  const tracks = useApi('tracks', api.tracks); // stewards and admins only; for anyone else the read is refused and no lines draw
   const desktop = useDesktop();
+  const online = useOnline();
+  // Areas saved for offline use (kept in this browser by lib/map/offline).
+  const [regions, setRegions] = useState<SavedRegion[]>(() => listRegions());
+  const [saving, setSaving] = useState(false);
   const reduce = useReducedMotion();
 
   const [map, setMap] = useState<MlMap | null>(null);
@@ -177,6 +196,9 @@ function SitesMapView() {
       {offline && (
         <Notice icon={<CloudOff size={16} aria-hidden />}>Basemap offline. Sites still show.</Notice>
       )}
+      {!online && !offline && (
+        <Notice icon={<CloudOff size={16} aria-hidden />}>Offline. The basemap only shows saved areas.</Notice>
+      )}
       {areas.error && (
         <Notice
           action={
@@ -193,16 +215,34 @@ function SitesMapView() {
   );
 
   const canvas = (
-    <MapCanvas
-      sites={results ?? []}
-      boundaries={areas.data}
-      selected={selected}
-      hoverId={hoverId}
-      inset={inset}
-      onSelect={select}
-      onReady={setMap}
-      onOffline={() => setOffline(true)}
-    />
+    <>
+      <MapCanvas
+        sites={results ?? []}
+        boundaries={areas.data}
+        tracks={tracks.data}
+        online={online}
+        regions={regions}
+        selected={selected}
+        hoverId={hoverId}
+        inset={inset}
+        onSelect={select}
+        onReady={setMap}
+        onOffline={() => setOffline(true)}
+      />
+      {saving && map && (
+        // The save-area panel (unchanged from the classic map) frames the part of the map to keep.
+        <div className="pointer-events-none absolute inset-0 z-40">
+          <OfflineSavePanel
+            map={map}
+            styleUrl={STYLE_URL}
+            savedRegions={regions}
+            onSaved={(region) => setRegions((r) => [...r, region])}
+            onRegionRemoved={(id) => setRegions((r) => r.filter((x) => x.id !== id))}
+            onClose={() => setSaving(false)}
+          />
+        </div>
+      )}
+    </>
   );
 
   // ---------------------------------------------------------------- desktop: left panel
@@ -258,7 +298,7 @@ function SitesMapView() {
             <MapKey align="right" />
             {notices}
           </div>
-          <MapButtons map={map} inset={inset} className="pointer-events-auto" />
+          <MapButtons map={map} inset={inset} className="pointer-events-auto" onSaveOffline={() => setSaving(true)} />
         </div>
       </div>
     );
@@ -284,7 +324,7 @@ function SitesMapView() {
           <MapKey />
           {notices}
         </div>
-        <MapButtons map={map} inset={inset} className="pointer-events-auto" />
+        <MapButtons map={map} inset={inset} className="pointer-events-auto" onSaveOffline={() => setSaving(true)} />
       </div>
       <MapSheet
         mode={card ? 'card' : 'list'}

@@ -2,6 +2,7 @@
 import type {
   AdminInbox,
   BoundaryCollection,
+  BoundaryColorInput,
   FormSection,
   InspectionHistory,
   Me,
@@ -12,6 +13,9 @@ import type {
   ReportUpdateInput,
   SiteDetail,
   SiteSummary,
+  SiteTrack,
+  TrackCollection,
+  TrackUpload,
 } from './types';
 
 export class ApiError extends Error {
@@ -102,5 +106,34 @@ export const api = {
     if (opts.person) q.set('person', String(opts.person));
     if (opts.page && opts.page > 1) q.set('page', String(opts.page));
     return call<InspectionHistory>(`/me/history${q.size ? `?${q}` : ''}`);
+  },
+
+  // ---- Map: GPX tracks and boundary colours ----
+  tracks: () => call<TrackCollection>('/map/tracks'),
+  siteTracks: (s: string) => call<SiteTrack[]>(`/sites/${slug(s)}/tracks`),
+  /** Three steps: a signed URL, the file straight to the bucket (up to 50 MB), then the server checks and saves it. */
+  uploadTrack: async (s: string, file: File) => {
+    freshReads();
+    const { path, signedUrl } = await call<TrackUpload>(`/sites/${slug(s)}/tracks/upload-url`, { method: 'POST' });
+    // The same multipart body supabase-js sends for a signed upload.
+    const body = new FormData();
+    body.append('cacheControl', '3600');
+    body.append('', new Blob([file], { type: 'application/gpx+xml' }), 'track.gpx');
+    // The token in the URL is the credential; the public key only addresses the project, as in supabase-js.
+    const apikey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    const put = await fetch(signedUrl, { method: 'PUT', body, headers: { 'x-upsert': 'false', ...(apikey && { apikey }) } });
+    if (!put.ok) throw new ApiError(put.status, 'The upload failed. Try again.');
+    return call<{ id: number; pointCount: number }>(`/sites/${slug(s)}/tracks`, {
+      method: 'POST',
+      body: JSON.stringify({ path, fileName: file.name }),
+    });
+  },
+  deleteTrack: (s: string, id: number) => {
+    freshReads();
+    return call<{ ok: true }>(`/sites/${slug(s)}/tracks/${id}`, { method: 'DELETE' });
+  },
+  setBoundaryColor: (input: BoundaryColorInput) => {
+    freshReads();
+    return call<{ ok: true }>('/map/boundaries/color', { method: 'PUT', body: JSON.stringify(input) });
   },
 };
