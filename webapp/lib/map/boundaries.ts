@@ -43,7 +43,6 @@ export interface ProtectedAreaBoundaryRow {
 
 export interface BoundaryProperties {
   // protected_areas.id. The popup names the row to write a per-site color.
-  // The MapLibre feature id is not usable: the source sets generateId, which replaces it.
   protected_area_id: number;
   name: string;
   fid: number;
