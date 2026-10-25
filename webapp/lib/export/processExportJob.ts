@@ -26,11 +26,34 @@ class ExportError extends Error {}
 type ExportEntry = { source: 's3' | 'gpx'; key: string; zipPath: string };
 type ServerSupabase = ReturnType<typeof createServerSupabase>;
 
-// The key names the file in the zip. Empty, "." and ".." segments are dropped, so a stored key can never
-// write outside its folder when the zip is unpacked.
+// The key names the file in the zip. A key comes from a table that a user can write, so it is not trusted.
+// Both "/" and "\\" separate folders (Windows unpacks "\\" as a separator), segments that are only dots are
+// dropped, and any other character outside [A-Za-z0-9._-] becomes "_". A key can then never write outside
+// its folder when the zip is unpacked.
 export function zipPathFor(folder: string, key: string): string {
-  const segments = key.split('/').filter((segment) => segment !== '' && segment !== '.' && segment !== '..');
+  const segments = key
+    .split(/[\\/]/)
+    .filter((segment) => segment !== '' && !/^\.+$/.test(segment))
+    .map((segment) => segment.replace(/[^A-Za-z0-9._-]/g, '_'));
   return [folder, ...segments].join('/');
+}
+
+// Two different keys can give one name after the clean-up. Each file keeps its own entry: the later
+// one gets "_2", "_3" and so on before its extension.
+function withUniquePaths(entries: ExportEntry[]): ExportEntry[] {
+  const used = new Set<string>();
+  return entries.map((entry) => {
+    let zipPath = entry.zipPath;
+    for (let copy = 2; used.has(zipPath); copy += 1) {
+      const dot = entry.zipPath.lastIndexOf('.');
+      const hasExtension = dot > entry.zipPath.lastIndexOf('/') + 1;
+      zipPath = hasExtension
+        ? `${entry.zipPath.slice(0, dot)}_${copy}${entry.zipPath.slice(dot)}`
+        : `${entry.zipPath}_${copy}`;
+    }
+    used.add(zipPath);
+    return { ...entry, zipPath };
+  });
 }
 
 // PostgREST returns at most 1000 rows for one request, so read the table page by page.
@@ -61,7 +84,8 @@ export async function collectExportEntries(supabase: ServerSupabase): Promise<Ex
     ...pdfFiles.map((key) => ({ source: 's3' as const, key, zipPath: zipPathFor('pdfs', key) })),
   ];
   // Two rows can name one object. The zip holds one copy.
-  return [...new Map(entries.map((entry) => [entry.zipPath, entry])).values()];
+  const distinct = [...new Map(entries.map((entry) => [`${entry.source}:${entry.zipPath}:${entry.key}`, entry])).values()];
+  return withUniquePaths(distinct);
 }
 
 async function readFile(entry: ExportEntry, supabase: ServerSupabase, s3: S3Client): Promise<Uint8Array> {

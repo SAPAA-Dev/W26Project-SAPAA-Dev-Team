@@ -49,6 +49,26 @@ describe("zipPathFor", () => {
   it("drops empty, dot and dot-dot segments so a key cannot leave its folder", () => {
     expect(zipPathFor("pdfs", "/../a//./b.pdf")).toBe("pdfs/a/b.pdf");
   });
+
+  it("treats a backslash as a separator, so a Windows path cannot leave its folder", () => {
+    expect(zipPathFor("gpx", "x\\..\\..\\start.gpx")).toBe("gpx/x/start.gpx");
+    expect(zipPathFor("gpx", "..\\..\\start.gpx")).toBe("gpx/start.gpx");
+  });
+
+  it("drops segments of only dots, however many", () => {
+    expect(zipPathFor("gpx", "a/.../....../b.gpx")).toBe("gpx/a/b.gpx");
+  });
+
+  it("replaces characters outside A-Z, a-z, 0-9, dot, underscore and hyphen", () => {
+    expect(zipPathFor("images/inspections", "u/photo 1:?*<>|\"é.jpg")).toBe("images/inspections/u/photo_1________.jpg");
+  });
+
+  it("never gives a path with a backslash or a leading slash", () => {
+    const path = zipPathFor("pdfs", "C:\\Windows\\..\\evil.pdf");
+    expect(path).not.toContain("\\");
+    expect(path.startsWith("pdfs/")).toBe(true);
+    expect(path.split("/")).not.toContain("..");
+  });
 });
 
 describe("collectExportEntries (3.0.3 AT2)", () => {
@@ -82,6 +102,24 @@ describe("collectExportEntries (3.0.3 AT2)", () => {
 
     expect(entries).toHaveLength(1001);
     expect(attachments.range).toHaveBeenNthCalledWith(2, 1000, 1999);
+  });
+
+  it("keeps both files when two keys give the same name after the clean-up", async () => {
+    const tables: Record<string, ReturnType<typeof tableBuilder>> = {
+      attachments: tableBuilder([[{ storage_key: "a b/1.jpg" }, { storage_key: "a_b/1.jpg" }, { storage_key: "a:b/1.jpg" }]]),
+      homepage_image_uploads: tableBuilder([[]]),
+      gpx_tracks: tableBuilder([[]]),
+      S26_pdf_jobs: tableBuilder([[]]),
+    };
+
+    const entries = await collectExportEntries({ from: (table: string) => tables[table] } as never);
+
+    expect(entries.map((entry) => entry.zipPath)).toEqual([
+      "images/inspections/a_b/1.jpg",
+      "images/inspections/a_b/1_2.jpg",
+      "images/inspections/a_b/1_3.jpg",
+    ]);
+    expect(entries.map((entry) => entry.key)).toEqual(["a b/1.jpg", "a_b/1.jpg", "a:b/1.jpg"]);
   });
 
   it("fails when a table cannot be read", async () => {
