@@ -30,8 +30,8 @@ describe('v2 offline basemap requests (US 4.0.2 wiring)', () => {
   });
 
   it('uses the scheme the shared offline protocol registers', () => {
-    const shared = makeTransformRequest(() => false)('https://api.protomaps.com/x', 'Tile' as never);
-    expect(shared?.url.startsWith(OFFLINE_PREFIX)).toBe(true);
+    const shared = makeTransformRequest(() => false)('https://api.protomaps.com/x', 'Tile' as never) as { url: string };
+    expect(shared.url.startsWith(OFFLINE_PREFIX)).toBe(true);
   });
 });
 
