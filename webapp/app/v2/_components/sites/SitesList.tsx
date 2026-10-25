@@ -14,6 +14,7 @@ import { AdminSitesBar } from '../admin/lazy';
 import SiteRow, { StatusTag } from './SiteRow';
 import PhotoHero, { BrandMark } from './PhotoHero';
 import QuickActions, { type QuickAction } from './QuickActions';
+import Overview from './Overview';
 import { Sheet, useOpenKey } from '../flows/ui';
 import { BASE_QUERY, fmtDate, HEADING, shortCounty, sinceVisit, siteHref, TNUM } from './ui';
 
@@ -129,6 +130,8 @@ function SitesHome({ onRetry }: { onRetry: () => void }) {
           )}
 
           <div aria-hidden className="hairline-treeline reveal mx-4 mt-8 md:mx-0" />
+
+          {sites && <Overview sites={sites} active={query.status} onPick={(status) => update({ status })} />}
         </div>
 
         <section id="sites-list" aria-labelledby="all-sites" className={SECTION}>
