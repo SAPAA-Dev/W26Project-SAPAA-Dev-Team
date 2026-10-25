@@ -215,7 +215,7 @@ classDiagram
             +getSiteSafety(siteId) SiteSafety
             +updateSiteSafety(siteId, fields) void
             +getSitePriority(siteId) SitePriority, needsReassessment
-            +updateSitePriorityScores(siteId, scores) void
+            +saveSitePriorityScores(siteId, scores) result
             +computeVisitPriority(scores) number
         }
 
@@ -340,7 +340,7 @@ classDiagram
     HomepageImageActions --> SupabaseBackend : homepage_image_uploads
     ContributionMetrics --> SupabaseBackend : reads form_responses, sites_pa
     ProfileRoute --> ContributionMetrics : metrics (proposed)
-    SiteSafetyPriorityActions --> SupabaseBackend : site_safety, site_priority
+    SiteSafetyPriorityActions --> SupabaseBackend : site_safety, sites_pa priority columns
     SiteObservationsPanel --> INaturalistApi : top 5 observations
     PdfJobProcessor --> PdfDataFetcher : reads SIRs
     PdfDataFetcher --> InspectionQueries : reads the SIRs of one site
