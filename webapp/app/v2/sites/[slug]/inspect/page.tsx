@@ -208,6 +208,8 @@ function Inspection({
     setSubmitError(null);
     const out: Record<number, string | string[]> = {};
     const comments: Record<number, string> = {};
+    // "<id>_hidden" keys in the draft hold the hide-from-other-stewards choice, like "<id>_other" holds the Other text.
+    const hidden = sections.flatMap((s) => s.questions.filter((q) => values[`${q.id}_hidden`] === true).map((q) => q.id));
     for (const s of sections)
       for (const q of s.questions) {
         const v = values[q.id];
@@ -217,7 +219,7 @@ function Inspection({
         if (Array.isArray(v) && v.some(isOtherOption) && typeof other === 'string' && other.trim()) comments[q.id] = other.trim();
       }
     try {
-      const res = await api.submitReport({ siteSlug: slug, answers: out, comments });
+      const res = await api.submitReport({ siteSlug: slug, answers: out, comments, ...(hidden.length ? { hidden } : {}) });
       clearDraft(slug);
       // Prefixes cover 'sites', 'site:<slug>', 'reports', 'report:<id>' and the season count.
       invalidate('site');
@@ -339,6 +341,8 @@ function Inspection({
                           autofilled={answers[q.id] === undefined && defaults[q.id] !== undefined}
                           error={errorFor(q)}
                           showErrors={showErrors}
+                          hidden={values[`${q.id}_hidden`] === true}
+                          onHidden={(v) => setAnswer(`${q.id}_hidden`, v)}
                         />
                       ))}
                     </div>

@@ -2,12 +2,14 @@
 
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useMemo } from 'react';
-import { ArrowLeft, ChevronRight, MapPin } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { ArrowLeft, ChevronRight, MapPin, PencilLine } from 'lucide-react';
 import { api } from '@/lib/api/v1/client';
 import type { Report } from '@/lib/api/v1/types';
 import { useApi } from '@/app/v2/_lib/useApi';
 import { formatDate, questionNumber, reportPerson, siteHref } from '@/app/v2/_components/flows/format';
+import { EditReportSheet } from '@/app/v2/_components/flows/EditReport';
+import { HiddenTag } from '@/app/v2/_components/flows/HiddenTag';
 import PhotoHero from '@/app/v2/_components/sites/PhotoHero';
 import { HEADING } from '@/app/v2/_components/sites/ui';
 import { ErrorState, SectionTitle, btn, card, heroTitle, raised, tabBarPadding } from '@/app/v2/_components/flows/ui';
@@ -16,6 +18,7 @@ interface Row {
   question: string;
   values: string[];
   notes: string[];
+  hidden: boolean;
 }
 
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
@@ -26,8 +29,9 @@ function groupAnswers(report: Report) {
   for (const a of report.answers ?? []) {
     const rows = sections.get(a.section) ?? new Map<string, Row>();
     sections.set(a.section, rows);
-    const row = rows.get(a.question) ?? { question: a.question, values: [], notes: [] };
+    const row = rows.get(a.question) ?? { question: a.question, values: [], notes: [], hidden: false };
     rows.set(a.question, row);
+    if (a.hidden) row.hidden = true;
     const main = a.value ?? a.comment;
     if (main) row.values.push(main === 'true' ? 'Agreed' : DATE_ONLY.test(main) ? formatDate(main, 'long') : main);
     if (a.value && a.comment && a.comment !== a.value) row.notes.push(a.comment);
@@ -41,6 +45,8 @@ export default function ReportDetailPage() {
   const valid = Number.isInteger(id) && id > 0;
   const report = useApi(valid ? `report:${id}` : null, () => api.report(id));
   const r = report.data;
+  const isAdmin = useApi('me', api.me).data?.role === 'admin';
+  const [editing, setEditing] = useState(false);
   const sections = useMemo(() => (r ? groupAnswers(r) : []), [r]);
   const back = () => (window.history.length > 1 ? router.back() : router.push('/v2/reports'));
   const person = r && reportPerson(r);
@@ -78,7 +84,10 @@ export default function ReportDetailPage() {
                 {r.naturalness && (
                   <div>
                     <dt className="text-[13px] text-[var(--sage)]">Naturalness</dt>
-                    <dd className="mt-0.5 font-semibold">{r.naturalness.label}</dd>
+                    <dd className="mt-0.5 font-semibold">
+                      {r.naturalness.label}
+                      {r.naturalnessHidden && <HiddenTag />}
+                    </dd>
                   </div>
                 )}
               </dl>
@@ -121,6 +130,19 @@ export default function ReportDetailPage() {
               <ChevronRight size={18} aria-hidden className="shrink-0 text-[var(--ink-2)]" />
             </Link>
 
+            {/* The report's owner or an admin; the server checks it again. */}
+            {(r.isOwn || isAdmin) && (
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                className={`${card} lift mt-3 flex min-h-16 w-full items-center gap-3 px-4 py-3 text-left`}
+              >
+                <PencilLine size={20} aria-hidden className="shrink-0 text-[var(--ink-2)]" />
+                <span className="flex-1 font-semibold">Edit answers</span>
+                <ChevronRight size={18} aria-hidden className="shrink-0 text-[var(--ink-2)]" />
+              </button>
+            )}
+
             {sections.length === 0 ? (
               <p className="mt-8 text-[16px] text-[var(--ink-2)]">No answers were recorded for this report.</p>
             ) : (
@@ -132,7 +154,10 @@ export default function ReportDetailPage() {
                       const { text } = questionNumber(row.question);
                       return (
                         <div key={row.question} className="px-4 py-3.5">
-                          <dt className="text-[14px] leading-snug text-[var(--ink-2)]">{text}</dt>
+                          <dt className="text-[14px] leading-snug text-[var(--ink-2)]">
+                            {text}
+                            {row.hidden && <HiddenTag />}
+                          </dt>
                           <dd className="mt-1 text-[16px] leading-relaxed font-semibold whitespace-pre-line">
                             {row.values.length ? row.values.join(', ') : <span className="font-normal text-[var(--ink-2)]">Not answered</span>}
                           </dd>
@@ -148,6 +173,13 @@ export default function ReportDetailPage() {
                 </section>
               ))
             )}
+            <EditReportSheet
+              open={editing}
+              onClose={() => setEditing(false)}
+              report={r}
+              title={r.inspectionNo ? `Report ${r.inspectionNo}` : `Report from ${formatDate(r.date)}`}
+              onSaved={() => setEditing(false)}
+            />
           </>
         )}
       </main>

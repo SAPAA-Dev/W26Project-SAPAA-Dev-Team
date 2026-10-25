@@ -3,7 +3,7 @@
 
 import { useId } from 'react';
 import * as m from 'motion/react-m';
-import { AlertCircle, Camera, Check, Info, Lock, Trash2, X } from 'lucide-react';
+import { AlertCircle, Camera, Check, EyeOff, Info, Lock, Trash2, X } from 'lucide-react';
 import MarkdownText from '@/components/MarkdownText';
 import type { FormQuestion } from '@/lib/api/v1/types';
 import type { DraftAnswer } from '@/app/v2/_components/flows/drafts';
@@ -61,6 +61,9 @@ interface Props {
   autofilled: boolean;
   error: string | null;
   showErrors: boolean;
+  /** Give onHidden to offer "Hide answer from other stewards" (US 1.0.3) on this card. */
+  hidden?: boolean;
+  onHidden?: (hidden: boolean) => void;
 }
 
 /** One question card. Choice questions are a fieldset whose legend is the question. */
@@ -119,6 +122,18 @@ export function QuestionCard(props: Props) {
             <Input {...props} id={id} describedBy={describedBy} />
           </div>
         </>
+      )}
+      {props.onHidden && (
+        <label className="mt-3 flex min-h-11 cursor-pointer items-center gap-2.5 text-[15px] font-semibold text-[var(--ink-2)]">
+          <input
+            type="checkbox"
+            checked={props.hidden === true}
+            onChange={(e) => props.onHidden?.(e.target.checked)}
+            className="size-5 shrink-0 accent-[var(--forest)]"
+          />
+          <EyeOff size={16} aria-hidden className="shrink-0" />
+          Hide answer from other stewards
+        </label>
       )}
       {error && (
         <p id={`${id}-msg`} className="mt-3 flex items-start gap-1.5 text-sm font-semibold text-[var(--clay-ink)]">

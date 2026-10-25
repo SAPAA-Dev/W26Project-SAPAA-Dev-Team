@@ -11,6 +11,7 @@ import { fmtDate, HEADING, TNUM, toDate } from '../sites/ui';
 import { NaturalBar, naturalColor } from './Naturalness';
 import { MetaLine } from '../sites/SiteRow';
 import { AdminReportActions } from '../admin/lazy';
+import { HiddenTag } from '../flows/HiddenTag';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -234,7 +235,10 @@ function Answers({ report }: { report: Report }) {
           <dl className="mt-1.5 flex flex-col gap-2.5">
             {list.map((a, i) => (
               <div key={`${a.question}-${i}`}>
-                <dt className="text-sm text-[var(--ink-2)]">{a.question}</dt>
+                <dt className="text-sm text-[var(--ink-2)]">
+                  {a.question}
+                  {a.hidden && <HiddenTag />}
+                </dt>
                 <dd className="text-[15px] break-words">{answerText((a.value ?? a.comment)!)}</dd>
                 {a.value && a.comment && (
                   <dd className="mt-0.5 text-sm break-words text-[var(--ink-2)]">“{a.comment}”</dd>
