@@ -43,6 +43,7 @@ import { createClient } from '@/utils/supabase/client';
 import UserNavBar from "@/components/HeaderDropdown";
 import SiteLinks from "@/components/SiteLinks";
 import SiteSteward from "./SiteSteward";
+import SitePriority from "./SitePriority";
 import SitePageEditor from "./SitePageEditor";
 import SubmittedBy from "./SubmittedBy";
 import SirPdfExportButton from "@/components/SirPdfExportButton";
@@ -575,6 +576,7 @@ export default function SiteDetailScreen() {
             </div>
           )}
           {(isAdmin || !stewardHidden) && <SiteSteward siteId={site.id} isAdmin={isAdmin && currentUser?.approved === true} />}
+          <SitePriority siteId={site.id} isAdmin={isAdmin && currentUser?.approved === true} />
           {siteLinks && (
             <div className="mt-1">
               <SiteLinks {...siteLinks} />
