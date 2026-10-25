@@ -1,10 +1,12 @@
 # Requirements Traceability Matrix (Fall 2026)
 
 This page links each acceptance test (AT) in [User Stories](user-stories.md) to the automated tests
-that check it. Status is as of **October 11, 2026**, the Sprint 2 code freeze, on
-`chore/sprint-2-integration` at `848fc22`: `main` at `9009d0d` plus the Sprint 2 fix branches
-(Alpha, Beta, Gamma, `fix/report-read-caller-checks` and the CI branches). The Sprint 2 release is
-October 13 at 20:00.
+that check it. Status is as of **October 13, 2026**, the Sprint 2 release, on `main` at `ceb5188`
+(merged in [#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284)). That is `main`
+at the October 11 code freeze (`9009d0d`) plus the Sprint 2 fix and follow-up PRs (#253 to #262
+and #276). The GitHub release
+[`sprint-2`](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/releases/tag/sprint-2) was
+published on October 13.
 
 ## How to read this page
 
@@ -25,15 +27,12 @@ October 13 at 20:00.
   example `(5.0.4 AT2)` or `US 2.0.6 AT3:`. **Yes** means that a test of the row has the story ID
   and the AT number of the row in its name. **No** means that no test name of the row has that
   label.
-- **Status** comes from a full local run of `npm run test:ci` (Jest with coverage) on October 12,
-  2026, on `chore/sprint-2-followups`: `chore/sprint-2-integration` at `0c51647` plus the fixes of
-  [#264](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/264) to
-  [#274](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/274): 111 suites, 1524 tests,
-  1524 passed, 0 failed (the database rule suite skips without a local Supabase). These are local
-  results.
+- **Status** comes from a full local run of `npm run test:ci` (Jest with coverage) on `main` at
+  `ceb5188`: 111 suites passed and 1 skipped, 1524 tests passed, 5 skipped, 0 failed (the
+  database rule suite skips without a local Supabase). These are local results.
   GitHub Actions has not run since October 10, because the account's Actions payments failed. CI
-  did not run on the commits from `e39cc8f` (PR #243) onward, and it did not run on any fix
-  branch. The last CI run that ran the tests is
+  did not run on the commits from `e39cc8f` (PR #243) onward, on any fix branch, or on #284 and
+  #285, which were merged with an admin bypass. The last CI run that ran the tests is
   [run 38092728953](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/actions/runs/38092728953)
   on `2cf69c6` (October 10: 96 suites, 1235 tests, all passed). When CI runs again, take the
   status from the CI run of `main` and remove this note.
@@ -136,7 +135,7 @@ Notes:
 | US 2.0.1 | AT1 to AT4 | Sites and past visits on the map (Sprint 3) | - | - | - | - | Not yet tested |
 | US 2.0.8 | AT1 to AT3 | Site details from the map (Sprint 3) | - | - | - | - | Not yet tested |
 | US 2.0.9 | AT1 to AT6 | GPX track upload, one file or several (Sprint 3) | - | - | - | - | Not yet tested |
-| US 2.0.11 | AT1 to AT4 | Safety information for a site (Sprint 3) | - | - | - | - | Not yet tested |
+| US 2.0.14 | AT1 | Each boundary uses the color saved by an Admin for its site or site type (Sprint 3) | `__tests__/components/SiteMap.test.tsx:324,849,882,931`, `__tests__/lib/boundaries.test.ts:325,331,349,364`, `__tests__/components/queries.boundaryColors.test.ts:38,52,66,76`, `__tests__/components/queries.boundaries.test.ts:104,113` | Component, Unit | S+F | No | Pass |
 
 Notes:
 
@@ -202,9 +201,6 @@ Notes:
 | US 4.0.6 | AT2 | No "required" note beside the Identifier field | `__tests__/pages/FormSubmissionPrevention.test.tsx:506` | Page | S | Yes | Pass |
 | US 4.0.2 | AT1 to AT4 | Offline and online map layers (Sprint 3) | - | - | - | - | Not yet tested |
 | US 4.0.4 | AT1 to AT4 | Edit my previous inspections (Sprint 3) | - | - | - | - | Not yet tested |
-| US 4.0.5 | AT1 to AT2 | iNaturalist integration (Sprint 3) | - | - | - | - | Not yet tested |
-| US 4.0.7 | AT1 to AT5 | Top iNaturalist observations for a site (Sprint 3) | - | - | - | - | Not yet tested |
-
 Notes:
 
 - 4.0.6 AT1: 'submits a report whose image has an empty Identifier' saves `identifier: null`. The
@@ -220,7 +216,10 @@ Notes:
 | US 5.0.4 | AT1 | After sign-out, opening the app again shows the sign-in page | `__tests__/middleware.test.ts:54`, `__tests__/components/ProtectedRoutes.test.tsx:56,185`, `__tests__/components/HeaderDropdown.test.tsx:70,106`, `__tests__/components/AdminNavBar.test.tsx:51,64`, `__tests__/components/auth.test.ts:151,157,164`, `cypress/e2e/logout.cy.ts:46,58` | Unit, Component, E2E | S+F | Yes | Pass |
 | US 5.0.4 | AT2 | After sign-out, the Back button shows no signed-in page | `__tests__/components/SignedOutGuard.test.tsx:10`, `cypress/e2e/logout.cy.ts:79` | Component, E2E | S | Yes | Pass |
 | US 5.0.4 | AT3 | Sign out from any page | `__tests__/components/TermsContent.test.tsx:15`, `__tests__/components/ProfilePage.test.tsx:342`, `__tests__/components/HeaderDropdown.test.tsx:52,58`, `__tests__/components/AdminNavBar.test.tsx:31`, `__tests__/components/ProtectedRoutes.test.tsx:170`, `cypress/e2e/logout.cy.ts:98` | Component, E2E | S | Yes | Pass |
-| US 5.0.2 | AT1 to AT4 | Reset a forgotten password (Sprint 3) | - | - | - | - | Not yet tested |
+| US 5.0.2 | AT1 | Select "Forgot password", enter an email, then an email is sent | `__tests__/pages/Login.test.tsx:51`, `__tests__/pages/ForgotPassword.test.tsx:41`, `__tests__/app/password-reset-request-code.test.ts:99,116,126` | Page, API | S+F | Yes | Pass (partial) |
+| US 5.0.2 | AT2 | Verify a code before setting a new password | `__tests__/pages/ForgotPassword.test.tsx:68,87`, `__tests__/app/password-reset-verify-code.test.ts:48,55,63`, `__tests__/pages/ResetPassword.test.tsx:32` | Page, API | S+F | Yes | Pass (partial) |
+| US 5.0.2 | AT3 | Sign in with the new password and not with the old one | `__tests__/pages/ResetPassword.test.tsx:61,73` | Page | S+F | Yes | Pass (partial) |
+| US 5.0.2 | AT4 | Reset the password without admin intervention | `__tests__/pages/ForgotPassword.test.tsx:41,68`, `__tests__/pages/ResetPassword.test.tsx:61`, `__tests__/components/SignedOutGuard.test.tsx:26` | Page, Component | S | Yes | Pass (partial) |
 
 Notes:
 
@@ -354,16 +353,16 @@ Notes:
 | Fix site inspection page resetting current page when app is exited temporarily (#87, [PR #164](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/164), [PR #236](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/236)) | Beta | `__tests__/pages/SiteInspectionReport.test.tsx:947` and the draft tests under 'W26 US 1.0.26 - Persist Site Inspection Form Draft' (`:852`) | Pass |
 | Set up development, release, and feature branches | Gamma | - (no code) | - |
 
-Other tests from the Sprint 2 fix branches. They check fixes, not an AT.
+Other tests from the Sprint 2 fixes, now on `main`. They check fixes, not an AT.
 
-| Test file | What it checks | Branch |
+| Test file | What it checks | PR |
 |---|---|---|
-| `__tests__/app/api/heatmap.test.ts` | 401 and 403, `%`, `_` and `*` in the keyword, at most 50 sites, no match, 500 on a database error | `fix/beta-sprint-2-gaps` |
-| `__tests__/app/api/geocode.test.ts` | 401 and 403, `{latitude, longitude}` with nulls when there is no match, 500 when `OPENCAGE_API_KEY` is missing, the 8 second timeout and OpenCage errors | `fix/beta-sprint-2-gaps` |
-| `__tests__/pages/AdminFormEditor.loading.test.tsx` | The form editor loads the sections and the questions once, and an older questions load does not undo a toggle | `fix/beta-sprint-2-gaps` |
-| `__tests__/components/queries.sitesOnline.test.ts:49,81,111` | `getSitesOnline` asks for the newest dated and the newest undated report of each site, not every report | `fix/beta-sprint-2-gaps` |
-| `__tests__/lib/admin-actions.test.ts:77,97` | `getAllUsers` reads every page of users, and returns nothing when a later page fails | `fix/beta-sprint-2-gaps` |
-| `__tests__/pages/Sites.test.tsx` | The first-visit tutorial is stubbed, so the suite no longer fails at random | `fix/beta-sprint-2-gaps` |
+| `__tests__/app/api/heatmap.test.ts` | 401 and 403, `%`, `_` and `*` in the keyword, at most 50 sites, no match, 500 on a database error | [PR #261](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/261) |
+| `__tests__/app/api/geocode.test.ts` | 401 and 403, `{latitude, longitude}` with nulls when there is no match, 500 when `OPENCAGE_API_KEY` is missing, the 8 second timeout and OpenCage errors | [PR #261](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/261) |
+| `__tests__/pages/AdminFormEditor.loading.test.tsx` | The form editor loads the sections and the questions once, and an older questions load does not undo a toggle | [PR #261](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/261) |
+| `__tests__/components/queries.sitesOnline.test.ts:49,81,111` | `getSitesOnline` asks for the newest dated and the newest undated report of each site, not every report | [PR #261](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/261) |
+| `__tests__/lib/admin-actions.test.ts:77,97` | `getAllUsers` reads every page of users, and returns nothing when a later page fails | [PR #261](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/261) |
+| `__tests__/pages/Sites.test.tsx` | The first-visit tutorial is stubbed, so the suite no longer fails at random | [PR #261](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/261) |
 
 ## Coverage summary
 
@@ -390,15 +389,15 @@ Sprint 2 stories, as of October 12, 2026, with the local Cypress and database ru
 | **Total** | | **67** | **62** | **5** | **0** |
 
 On October 9 the totals were 33 covered, 23 partial and 11 with no test. On `main` at `9009d0d`
-they were 51 covered, 15 partial and 1 with no test (2.0.2 AT5). The tests of the Sprint 2 fix
-branches covered 2.0.2 AT5, 2.0.5 AT1, AT2 and AT4, 2.0.6 AT2 and 7.0.6 AT2. Every AT now has a
+they were 51 covered, 15 partial and 1 with no test (2.0.2 AT5). The tests that came in after the
+freeze covered 2.0.2 AT5, 2.0.5 AT1, AT2 and AT4, 2.0.6 AT2 and 7.0.6 AT2. Every AT now has a
 test.
 
-**Code coverage** of the same local run (`npm run test:ci`, October 12): statements 85.06%,
+**Code coverage** of the same local run (`npm run test:ci`, October 13): statements 85.06%,
 branches 74%, functions 78.61%, lines 87.56%. The run fails below the thresholds in
 `webapp/jest.config.ts` (statements 83, branches 72, functions 77, lines 85).
 
-Sprint 3 stories (1.0.3, 1.0.4, 2.0.1, 2.0.8, 2.0.9, 2.0.11, 4.0.2, 4.0.4, 4.0.5, 4.0.7, 5.0.2 and
+Sprint 3 stories (1.0.3, 1.0.4, 2.0.1, 2.0.8, 2.0.9, 4.0.2, 4.0.4, 5.0.2 and
 6.0.1) are not yet tested. Their rows are added AT by AT when the sprint starts.
 
 ## Known limits

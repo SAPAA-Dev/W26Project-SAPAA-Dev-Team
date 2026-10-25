@@ -1,6 +1,6 @@
 # Software Design
 
-This page shows the high-level design of the SAPAA system: the architecture, the data, the key interactions, the user interface, and the technologies. The diagrams mark the parts that are proposed. The other parts show the code on `main` as of October 11, 2026 (9009d0d). Sprint 2 is still in progress: the release is October 13. Some steps name a change on the `fix/alpha-code-quality` branch, which merges in the same Sprint 2 pull request set. A proposed part does not exist in the code. It is a design proposal for a user story, not a decision.
+This page shows the high-level design of the SAPAA system: the architecture, the data, the key interactions, the user interface, and the technologies. The diagrams mark the parts that are proposed. The other parts show the code on `main` as of October 13, 2026 (ceb5188), the Sprint 2 release, merged in [#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284). A proposed part does not exist in the code. It is a design proposal for a user story, not a decision.
 
 ### How the diagrams are generated
 

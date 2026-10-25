@@ -133,6 +133,7 @@ export async function GET(request: NextRequest) {
       .select(columns, options)
       .eq('user_id', profile.auth_user_id)
       .eq('is_active', true)
+      .not('site_id', 'is', null)
       .is('archived_at', null);
 
   // Count sites in the database because loading every report only to count it is slow.
@@ -159,7 +160,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unable to load inspection history.' }, { status: 500 });
   }
 
-  const history = (inspections ?? []).map((inspection) => ({
+  const history = (inspections ?? []).filter((inspection) => inspection.site_id !== null).map((inspection) => ({
     id: inspection.id,
     siteId: inspection.site_id,
     siteName: inspection.sites_pa?.namesite ?? 'Unknown site',

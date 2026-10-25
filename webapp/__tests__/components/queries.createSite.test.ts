@@ -19,11 +19,13 @@ function mockCaller(role: string, approved = true) {
 
 describe("createSite and findSitesWithName (US 2.0.2)", () => {
   const mockFrom = jest.fn();
+  const mockRpc = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockCaller("admin");
-    (createServerSupabase as jest.Mock).mockReturnValue({ from: mockFrom });
+    mockRpc.mockResolvedValue({ data: null, error: null });
+    (createServerSupabase as jest.Mock).mockReturnValue({ from: mockFrom, rpc: mockRpc });
   });
 
   it("createSite rejects a steward and touches nothing (2.0.2 AT4)", async () => {
@@ -31,6 +33,7 @@ describe("createSite and findSitesWithName (US 2.0.2)", () => {
 
     await expect(queries.createSite("New Site", null)).resolves.toEqual({ ok: false, error: "Only admins can edit sites." });
     expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 
   it("findSitesWithName rejects a steward and touches nothing (2.0.2 AT4)", async () => {
@@ -45,6 +48,7 @@ describe("createSite and findSitesWithName (US 2.0.2)", () => {
 
     await expect(queries.createSite("New Site", null)).resolves.toEqual({ ok: false, error: "Only admins can edit sites." });
     expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 
   it("createSite saves a trimmed, active site with its county (2.0.3 AT5)", async () => {
@@ -60,11 +64,13 @@ describe("createSite and findSitesWithName (US 2.0.2)", () => {
       is_active: true,
       protected_area_id: null,
     });
+    expect(mockRpc).toHaveBeenCalledWith("link_sites_to_protected_areas", { p_link: true });
   });
 
   it("createSite refuses an empty name without touching the database (2.0.2 AT3)", async () => {
     await expect(queries.createSite("   ", null)).resolves.toEqual({ ok: false, error: "Site name is required." });
     expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 
   it("createSite saves the selected protected area (2.0.2 AT1)", async () => {
@@ -79,11 +85,13 @@ describe("createSite and findSitesWithName (US 2.0.2)", () => {
       is_active: true,
       protected_area_id: 9,
     });
+    expect(mockRpc).toHaveBeenCalledWith("link_sites_to_protected_areas", { p_link: true });
   });
 
   it("createSite refuses a protected area id that is not a positive integer (2.0.2 AT1)", async () => {
     await expect(queries.createSite("New Site", null, 1.5)).resolves.toEqual({ ok: false, error: "The protected area is not valid." });
     expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 
   it("createSite explains a missing protected area (2.0.2 AT1)", async () => {
@@ -110,6 +118,20 @@ describe("createSite and findSitesWithName (US 2.0.2)", () => {
     });
 
     await expect(queries.createSite("Bilby NA", null)).resolves.toEqual({ ok: false, error: "A site with this name already exists." });
+  });
+
+  it("createSite stays ok when the site link lookup fails", async () => {
+    mockFrom.mockReturnValue({ insert: jest.fn().mockResolvedValue({ error: null }) });
+    mockRpc.mockResolvedValue({ data: null, error: { message: "permission denied" } });
+
+    await expect(queries.createSite("New Site", null)).resolves.toEqual({ ok: true });
+  });
+
+  it("createSite stays ok when the site link request rejects", async () => {
+    mockFrom.mockReturnValue({ insert: jest.fn().mockResolvedValue({ error: null }) });
+    mockRpc.mockRejectedValue(new Error("network down"));
+
+    await expect(queries.createSite("New Site", null)).resolves.toEqual({ ok: true });
   });
 
   it("findSitesWithName warns on the same name, ignoring case (2.0.2 AT2)", async () => {

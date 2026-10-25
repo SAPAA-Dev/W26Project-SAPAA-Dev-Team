@@ -3,7 +3,12 @@ const mockDownload = jest.fn();
 const mockRemove = jest.fn();
 const mockList = jest.fn();
 const mockUpsert = jest.fn();
-const mockFrom = jest.fn(() => ({ upsert: mockUpsert }));
+const mockRpc = jest.fn();
+const mockOrder = jest.fn();
+const mockUnlinkedIs = jest.fn();
+const mockArchivedIs = jest.fn();
+const mockSitesSelect = jest.fn();
+const mockFrom = jest.fn(() => ({ upsert: mockUpsert, select: mockSitesSelect }));
 const mockParseProtectedAreaFile = jest.fn();
 
 const mockServiceClient = {
@@ -11,6 +16,7 @@ const mockServiceClient = {
     from: () => ({ download: mockDownload, remove: mockRemove, list: mockList }),
   },
   from: mockFrom,
+  rpc: mockRpc,
 };
 
 jest.mock('../../utils/supabase/server', () => ({
@@ -94,8 +100,13 @@ function mockDownloadOk() {
 describe('importProtectedAreasFromStorage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockFrom.mockImplementation(() => ({ upsert: mockUpsert }));
+    mockFrom.mockImplementation(() => ({ upsert: mockUpsert, select: mockSitesSelect }));
     mockUpsert.mockResolvedValue({ error: null });
+    mockRpc.mockResolvedValue({ data: null, error: null });
+    mockSitesSelect.mockReturnValue({ is: mockArchivedIs });
+    mockArchivedIs.mockReturnValue({ is: mockUnlinkedIs });
+    mockUnlinkedIs.mockReturnValue({ order: mockOrder });
+    mockOrder.mockResolvedValue({ data: [], error: null });
     mockRemove.mockResolvedValue({ error: null });
     mockList.mockResolvedValue({ data: [], error: null });
     mockDownloadOk();
@@ -110,6 +121,7 @@ describe('importProtectedAreasFromStorage', () => {
     expect(result).toEqual({ success: false, error: 'Only admins can import protected areas.' });
     expect(mockDownload).not.toHaveBeenCalled();
     expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockRpc).not.toHaveBeenCalled();
     expect(mockRemove).not.toHaveBeenCalled();
   });
 
@@ -139,8 +151,9 @@ describe('importProtectedAreasFromStorage', () => {
     expect(mockFrom).toHaveBeenCalledWith('protected_areas');
     expect(mockUpsert).toHaveBeenCalledTimes(1);
     expect(mockUpsert.mock.calls[0][1]).toEqual({ onConflict: 'folder,fid' });
+    expect(mockRpc).toHaveBeenCalledWith('link_sites_to_protected_areas', { p_link: true });
     expect(mockRemove).toHaveBeenCalledWith([VALID_PATH]);
-    expect(result).toEqual({ success: true, upserted: 2, skipped: 0, warnings: [] });
+    expect(result).toEqual({ success: true, upserted: 2, skipped: 0, warnings: [], unlinkedSites: [] });
   });
 
   it('parses the bytes it downloaded', async () => {
@@ -198,6 +211,7 @@ describe('importProtectedAreasFromStorage', () => {
 
     expect(result.success).toBe(false);
     expect(result.upserted).toBe(50);
+    expect(mockRpc).not.toHaveBeenCalled();
     expect(mockRemove).toHaveBeenCalledWith([VALID_PATH]);
   });
 
@@ -258,6 +272,7 @@ describe('importProtectedAreasFromStorage', () => {
     expect(result.success).toBe(false);
     expect(result.warnings).toEqual(['"Empty" has no polygon geometry.']);
     expect(mockUpsert).not.toHaveBeenCalled();
+    expect(mockRpc).not.toHaveBeenCalled();
     expect(mockRemove).toHaveBeenCalledWith([VALID_PATH]);
   });
 
@@ -291,7 +306,7 @@ describe('importProtectedAreasFromStorage', () => {
 
     const result = await importProtectedAreasFromStorage(VALID_PATH);
 
-    expect(result).toEqual({ success: true, upserted: 1, skipped: 0, warnings: [] });
+    expect(result).toEqual({ success: true, upserted: 1, skipped: 0, warnings: [], unlinkedSites: [] });
   });
 
   it('sweeps uploads older than a day during the import', async () => {
@@ -305,5 +320,89 @@ describe('importProtectedAreasFromStorage', () => {
     await importProtectedAreasFromStorage(VALID_PATH);
 
     expect(mockRemove).toHaveBeenCalledWith(['kml-imports/old-upload/orphan.kml']);
+  });
+
+  it('reads the active sites that have no protected area link', async () => {
+    mockCaller('admin');
+
+    await importProtectedAreasFromStorage(VALID_PATH);
+
+    expect(mockFrom).toHaveBeenCalledWith('sites_pa');
+    expect(mockSitesSelect).toHaveBeenCalledWith('namesite');
+    expect(mockArchivedIs).toHaveBeenCalledWith('archived_at', null);
+    expect(mockUnlinkedIs).toHaveBeenCalledWith('protected_area_id', null);
+    expect(mockOrder).toHaveBeenCalledWith('namesite', { ascending: true });
+  });
+
+  it('reports the site names and drops blank names', async () => {
+    mockCaller('admin');
+    mockOrder.mockResolvedValue({
+      data: [{ namesite: 'Zeta' }, { namesite: ' ' }, { namesite: null }, { namesite: 'Alpha' }],
+      error: null,
+    });
+
+    const result = await importProtectedAreasFromStorage(VALID_PATH);
+
+    expect(result.unlinkedSites).toEqual(['Zeta', 'Alpha']);
+  });
+
+  it('still succeeds when the unlinked site read fails', async () => {
+    mockCaller('admin');
+    mockOrder.mockResolvedValue({ data: null, error: { message: 'permission denied' } });
+
+    const result = await importProtectedAreasFromStorage(VALID_PATH);
+
+    expect(result.success).toBe(true);
+    expect(result.unlinkedSites).toBeUndefined();
+  });
+
+  it('still succeeds when the unlinked site read rejects', async () => {
+    mockCaller('admin');
+    mockArchivedIs.mockImplementation(() => {
+      throw new Error('network down');
+    });
+
+    const result = await importProtectedAreasFromStorage(VALID_PATH);
+
+    expect(result.success).toBe(true);
+    expect(result.unlinkedSites).toBeUndefined();
+  });
+
+  it('does not read the unlinked sites when the link step fails', async () => {
+    mockCaller('admin');
+    mockRpc.mockResolvedValue({ data: null, error: { message: 'permission denied' } });
+
+    const result = await importProtectedAreasFromStorage(VALID_PATH);
+
+    expect(result.unlinkedSites).toBeUndefined();
+    expect(mockSitesSelect).not.toHaveBeenCalled();
+  });
+
+  it('still succeeds with a warning when the site match fails', async () => {
+    mockCaller('admin');
+    mockRpc.mockResolvedValue({ data: null, error: { message: 'permission denied' } });
+
+    const result = await importProtectedAreasFromStorage(VALID_PATH);
+
+    expect(result).toEqual({
+      success: true,
+      upserted: 1,
+      skipped: 0,
+      warnings: [
+        'The protected areas were saved, but the site links were not updated. Link the sites by hand or run the import again.',
+      ],
+    });
+  });
+
+  it('still succeeds with a warning when the site match request rejects', async () => {
+    mockCaller('admin');
+    mockRpc.mockRejectedValue(new Error('network down'));
+
+    const result = await importProtectedAreasFromStorage(VALID_PATH);
+
+    expect(result.success).toBe(true);
+    expect(result.warnings).toEqual([
+      'The protected areas were saved, but the site links were not updated. Link the sites by hand or run the import again.',
+    ]);
   });
 });

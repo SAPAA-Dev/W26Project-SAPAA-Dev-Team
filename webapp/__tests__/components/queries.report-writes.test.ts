@@ -143,6 +143,14 @@ describe('report write server actions', () => {
     });
   }
 
+  function queueRequiredQuestions(questions: Array<{
+    id: number;
+    form_question: string | null;
+    question_type: string;
+  }> = []) {
+    return queue('questions', { data: questions, error: null });
+  }
+
   describe('updateSiteInspectionAnswers (B2)', () => {
     const answers = [{ question_id: 3, obs_value: 'Good', obs_comm: null }];
 
@@ -156,20 +164,56 @@ describe('report write server actions', () => {
       expect(mockFrom).not.toHaveBeenCalledWith('answers');
     });
 
-    it('refuses an unapproved owner before reading the report', async () => {
-      mockCaller(OWNER, 'steward', false);
+    it.each(['steward', 'admin'])('refuses an unapproved %s before reading the report', async (role) => {
+      mockCaller(OWNER, role, false);
       await expect(updateSiteInspectionAnswers(41, answers, '2026-10-01')).rejects.toThrow(
         'You are not allowed to change this report.'
       );
       expect(mockFrom).not.toHaveBeenCalled();
     });
 
-    it.each([
-      ['the owner', OWNER, 'steward'],
-      ['an approved admin', ADMIN, 'admin'],
-    ])('lets %s replace the answers', async (_label, id, role) => {
-      mockCaller(id, role);
+    it('lets the owner replace the answers', async () => {
       queueReport(OWNER);
+      queueRequiredQuestions();
+      queue('form_responses', { data: { id: 41 }, error: null });
+      queue('answers', { data: null, error: null });
+      const insert = queue('answers', { data: null, error: null });
+
+      await updateSiteInspectionAnswers(41, answers, '2026-10-01');
+
+      expect(insert.insert).toHaveBeenCalledWith([{ ...answers[0], response_id: 41 }]);
+    });
+
+    it('lets an approved admin replace the answers in another user\'s report', async () => {
+      mockCaller(ADMIN, 'admin');
+      queueReport(OWNER);
+      queueRequiredQuestions();
+      queue('form_responses', { data: { id: 41 }, error: null });
+      queue('answers', { data: null, error: null });
+      const insert = queue('answers', { data: null, error: null });
+
+      await updateSiteInspectionAnswers(41, answers, '2026-10-01');
+
+      expect(insert.insert).toHaveBeenCalledWith([{ ...answers[0], response_id: 41 }]);
+    });
+
+    it('refuses an update that clears a required answer and names the question', async () => {
+      queueReport(OWNER);
+      queueRequiredQuestions([
+        { id: 3, form_question: 'Site condition', question_type: 'text' },
+      ]);
+
+      await expect(updateSiteInspectionAnswers(41, [], '2026-10-01')).rejects.toThrow(
+        'Required questions are missing: Site condition'
+      );
+      expect(mockFrom).not.toHaveBeenCalledWith('answers');
+    });
+
+    it('accepts an answer to every required question', async () => {
+      queueReport(OWNER);
+      queueRequiredQuestions([
+        { id: 3, form_question: 'Site condition', question_type: 'text' },
+      ]);
       queue('form_responses', { data: { id: 41 }, error: null });
       queue('answers', { data: null, error: null });
       const insert = queue('answers', { data: null, error: null });
@@ -199,11 +243,7 @@ describe('report write server actions', () => {
       expect(mockFrom).not.toHaveBeenCalled();
     });
 
-    it.each([
-      ['the owner', OWNER, 'steward'],
-      ['an approved admin', ADMIN, 'admin'],
-    ])('lets %s change only the caption and identifier', async (_label, id, role) => {
-      mockCaller(id, role);
+    it('lets the owner change only the caption and identifier', async () => {
       queue('attachments', { data: { response_id: 41 }, error: null });
       queueReport(OWNER);
       const update = queue('attachments', { data: null, error: null });
@@ -252,11 +292,7 @@ describe('report write server actions', () => {
       expect(mockFrom).not.toHaveBeenCalledWith('answers');
     });
 
-    it.each([
-      ['the owner', OWNER, 'steward'],
-      ['an approved admin', ADMIN, 'admin'],
-    ])('lets %s add answers', async (_label, id, role) => {
-      mockCaller(id, role);
+    it('lets the owner add answers', async () => {
       queueReport(OWNER);
       const insert = queue('answers', { data: null, error: null });
       await uploadSiteInspectionAnswers(answers);
@@ -307,11 +343,7 @@ describe('report write server actions', () => {
       expect(mockFrom).not.toHaveBeenCalled();
     });
 
-    it.each([
-      ['the owner', OWNER, 'steward'],
-      ['an approved admin', ADMIN, 'admin'],
-    ])('lets %s add a photo', async (_label, id, role) => {
-      mockCaller(id, role);
+    it('lets the owner add a photo', async () => {
       queueReport(OWNER);
       const insert = queue('attachments', { data: null, error: null });
       await insertInspectionAttachments([row]);
@@ -349,11 +381,7 @@ describe('report write server actions', () => {
       expect(mockFrom).not.toHaveBeenCalledWith('answers');
     });
 
-    it.each([
-      ['the owner', OWNER, 'steward'],
-      ['an approved admin', ADMIN, 'admin'],
-    ])('returns the answers to %s', async (_label, id, role) => {
-      mockCaller(id, role);
+    it('returns the answers to the owner', async () => {
       queueReport(OWNER);
       const answers = queue('answers', { data: answerRows, error: null });
 

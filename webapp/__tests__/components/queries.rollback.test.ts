@@ -142,7 +142,8 @@ describe("rollbackSiteInspectionSubmission (US 7.0.5)", () => {
     expect(deleteObjectsByKeys).not.toHaveBeenCalled();
   });
 
-  it("refuses the owner once the report is older than the rollback window", async () => {
+  it.each(["steward", "admin"])("refuses a %s once the report is older than the rollback window", async (role) => {
+    mockCaller(role === "admin" ? "admin-uuid" : "owner-uuid", role);
     mockReport({ user_id: "owner-uuid", site_id: 207, created_at: "2026-01-01T00:00:00Z" });
 
     await expect(rollbackSiteInspectionSubmission(3226)).rejects.toThrow(
@@ -151,16 +152,19 @@ describe("rollbackSiteInspectionSubmission (US 7.0.5)", () => {
     expect(mockFrom).toHaveBeenCalledTimes(1);
   });
 
-  it("allows an approved admin to roll back another user's new report", async () => {
+  it("lets an approved admin roll back another user's new report", async () => {
     mockCaller("admin-uuid", "admin");
     mockReport();
-    mockSelect([]);
-    mockDelete();
-    mockDelete();
+    mockSelect([{ storage_key: "inspections/207/3226/27/file1.jpg" }]);
+    const attachmentsDeleteEq = mockDelete();
+    const answersDeleteEq = mockDelete();
     const responseDeleteEq = mockDelete();
 
     await rollbackSiteInspectionSubmission(3226);
 
+    expect(attachmentsDeleteEq).toHaveBeenCalledWith("response_id", 3226);
+    expect(answersDeleteEq).toHaveBeenCalledWith("response_id", 3226);
     expect(responseDeleteEq).toHaveBeenCalledWith("id", 3226);
+    expect(deleteObjectsByKeys).toHaveBeenCalledWith(["inspections/207/3226/27/file1.jpg"]);
   });
 });

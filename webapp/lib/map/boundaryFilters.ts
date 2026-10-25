@@ -12,9 +12,12 @@ export const UNKNOWN_COUNTY_LABEL = 'Unknown county';
 export const ACTIVE_STATUS_LABEL = 'Active';
 export const INACTIVE_STATUS_LABEL = 'Inactive';
 export const NO_STATUS_LABEL = 'No status';
+export const LINKED_LABEL = 'Linked';
+export const UNLINKED_LABEL = 'Unlinked';
 
 export const CARD_STATUS_OPTIONS = [ACTIVE_STATUS_LABEL, INACTIVE_STATUS_LABEL];
 export const MAP_STATUS_OPTIONS = [ACTIVE_STATUS_LABEL, INACTIVE_STATUS_LABEL, NO_STATUS_LABEL];
+export const SITE_BOUNDARY_OPTIONS = [LINKED_LABEL, UNLINKED_LABEL];
 
 // The map starts with inactive sites hidden. No status means the protected area has no site.
 export function defaultMapStatuses(): ReadonlySet<string> {
@@ -105,6 +108,14 @@ export function matchesActiveFilter(
 ): boolean {
   const label = isActive ? ACTIVE_STATUS_LABEL : INACTIVE_STATUS_LABEL;
   return matchesCategory(label, selected, ACTIVE_STATUS_LABEL);
+}
+
+export function matchesSiteBoundaryFilter(
+  protectedAreaId: number | null | undefined,
+  selected: ReadonlySet<string> | null
+): boolean {
+  if (selected == null) return true;
+  return selected.has(protectedAreaId == null ? UNLINKED_LABEL : LINKED_LABEL);
 }
 
 function statusLabel(isActive: boolean | null | undefined): string {

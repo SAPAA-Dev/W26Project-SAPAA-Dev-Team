@@ -48,12 +48,28 @@ describe("getProtectedAreaBoundaries (US 2.0.6)", () => {
 
   const mockLinksIs = jest.fn();
 
+  interface MockQueryBuilder {
+    not: jest.Mock;
+    is: jest.Mock;
+    order: jest.Mock;
+    limit: jest.Mock;
+    then: (resolve: (value: unknown) => unknown) => Promise<unknown>;
+  }
+
   function mockLinks(rows: unknown[]) {
-    mockLinksIs.mockResolvedValue({ data: rows, error: null });
+    const builder = {} as MockQueryBuilder;
+    builder.not = jest.fn(() => builder);
+    builder.is = jest.fn((column: string, value: unknown) => {
+      // Keep the archived filter visible to the test that checks it.
+      if (column === "archived_at") mockLinksIs(column, value);
+      return builder;
+    });
+    builder.order = jest.fn(() => builder);
+    builder.limit = jest.fn(() => builder);
+    builder.then = (resolve) => Promise.resolve({ data: rows, error: null }).then(resolve);
+
     mockAdminFrom.mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        not: jest.fn().mockReturnValue({ is: mockLinksIs }),
-      }),
+      select: jest.fn(() => builder),
     });
   }
 
@@ -82,6 +98,25 @@ describe("getProtectedAreaBoundaries (US 2.0.6)", () => {
 
     expect(collection.features[0].properties.county).toBe("Parkland");
     expect(collection.features[0].properties.is_active).toBe(false);
+    expect(collection.can_edit_colors).toBe(true);
+  });
+
+  it("maps the admin-chosen boundary color into the feature", async () => {
+    mockAreas([{ ...area, boundary_color: "#AABBCC" }]);
+    mockLinks([]);
+
+    const collection = await queries.getProtectedAreaBoundaries();
+
+    expect(collection.features[0].properties.boundary_color).toBe("#AABBCC");
+  });
+
+  it("leaves the boundary color null when the column is empty", async () => {
+    mockAreas([area]);
+    mockLinks([]);
+
+    const collection = await queries.getProtectedAreaBoundaries();
+
+    expect(collection.features[0].properties.boundary_color).toBeNull();
   });
 
   it("reads links only from sites that are not archived (M10)", async () => {
@@ -112,6 +147,77 @@ describe("getProtectedAreaBoundaries (US 2.0.6)", () => {
     expect(collection.features[0].properties.is_active).toBeNull();
   });
 
+  it("attaches the site name and inspection date from the linked site (US 2.0.8 AT2)", async () => {
+    mockAreas([area]);
+    mockLinks([
+      {
+        protected_area_id: 7,
+        is_active: true,
+        namesite: "Wainwright Dunes",
+        ab_counties: { county: "Parkland" },
+        latest_dated: [
+          { inspection_date: "2024-03-15", created_at: "2024-03-16T10:00:00Z", archived_at: null },
+        ],
+        latest_undated: [],
+      },
+    ]);
+
+    const collection = await queries.getProtectedAreaBoundaries();
+
+    expect(collection.features[0].properties.site_name).toBe("Wainwright Dunes");
+    expect(collection.features[0].properties.last_inspection_date).toBe("2024-03-15");
+  });
+
+  it("uses created_at for the newest report with no inspection date (US 2.0.8 AT2)", async () => {
+    mockAreas([area]);
+    mockLinks([
+      {
+        protected_area_id: 7,
+        is_active: true,
+        namesite: "Wainwright Dunes",
+        ab_counties: null,
+        latest_dated: [],
+        latest_undated: [
+          { inspection_date: null, created_at: "2024-04-01T09:00:00Z", archived_at: null },
+        ],
+      },
+    ]);
+
+    const collection = await queries.getProtectedAreaBoundaries();
+
+    expect(collection.features[0].properties.last_inspection_date).toBe("2024-04-01T09:00:00Z");
+  });
+
+  it("leaves the site name and date null when no site joins the area (US 2.0.8 AT2)", async () => {
+    mockAreas([area]);
+    mockLinks([]);
+
+    const collection = await queries.getProtectedAreaBoundaries();
+
+    expect(collection.features[0].properties.site_name).toBeNull();
+    expect(collection.features[0].properties.last_inspection_date).toBeNull();
+  });
+
+  it("ignores an archived report when it sets the date (US 2.0.8 AT2)", async () => {
+    mockAreas([area]);
+    mockLinks([
+      {
+        protected_area_id: 7,
+        is_active: true,
+        namesite: "Wainwright Dunes",
+        ab_counties: null,
+        latest_dated: [
+          { inspection_date: "2024-03-15", created_at: "2024-03-16T10:00:00Z", archived_at: "2024-05-01T00:00:00Z" },
+        ],
+        latest_undated: [],
+      },
+    ]);
+
+    const collection = await queries.getProtectedAreaBoundaries();
+
+    expect(collection.features[0].properties.last_inspection_date).toBeNull();
+  });
+
   it("omits an inactive site for a steward (2.0.3 AT2)", async () => {
     const userFrom = mockCaller("steward");
     userFrom.mockReturnValue({
@@ -122,6 +228,7 @@ describe("getProtectedAreaBoundaries (US 2.0.6)", () => {
     const collection = await queries.getProtectedAreaBoundaries();
 
     expect(collection.features).toEqual([]);
+    expect(collection.can_edit_colors).toBe(false);
   });
 
   it("rejects a user who is not approved and reads nothing", async () => {
