@@ -95,4 +95,30 @@ describe("SitePriority", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Each score must be a whole number from 0 to 5.");
     expect(saveSitePriorityScores).toHaveBeenCalledWith(7, { abuses: 2, biological: null, time: null });
   });
+
+  describe("one-year reminder (2.0.13)", () => {
+    it("shows the reminder when the server flags old points (AT1)", async () => {
+      (getSitePriority as jest.Mock).mockResolvedValue({ ...SCORED, savedAt: "2025-01-01T00:00:00Z", needsReassessment: true });
+      render(<SitePriority siteId={7} isAdmin />);
+      expect(await screen.findByTestId("site-priority-reminder")).toHaveTextContent("Reassess them");
+    });
+
+    it("hides the reminder when the server does not flag the points (AT2, AT4)", async () => {
+      (getSitePriority as jest.Mock).mockResolvedValue(SCORED);
+      render(<SitePriority siteId={7} isAdmin />);
+      await screen.findByTestId("site-priority-value");
+      expect(screen.queryByTestId("site-priority-reminder")).not.toBeInTheDocument();
+    });
+
+    it("removes the reminder after the admin saves new points (AT3)", async () => {
+      (getSitePriority as jest.Mock).mockResolvedValue({ ...SCORED, savedAt: "2025-01-01T00:00:00Z", needsReassessment: true });
+      (saveSitePriorityScores as jest.Mock).mockResolvedValue({ success: true, priority: SCORED });
+      render(<SitePriority siteId={7} isAdmin />);
+
+      fireEvent.click(await screen.findByText("Edit scores"));
+      fireEvent.click(screen.getByTestId("site-priority-save"));
+
+      await waitFor(() => expect(screen.queryByTestId("site-priority-reminder")).not.toBeInTheDocument());
+    });
+  });
 });

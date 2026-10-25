@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Gauge } from "lucide-react";
+import { Gauge, TriangleAlert } from "lucide-react";
 import {
   getSitePriority,
   saveSitePriorityScores,
@@ -89,6 +89,13 @@ export default function SitePriority({ siteId, isAdmin }: { siteId: number; isAd
           </button>
         )}
       </div>
+
+      {data?.needsReassessment && (
+        <p className="ml-7 flex items-center gap-1 text-sm font-semibold text-[#FFE9A8]" data-testid="site-priority-reminder">
+          <TriangleAlert className="w-4 h-4" />
+          These points were saved more than a year ago. Reassess them.
+        </p>
+      )}
 
       {data?.scores && (
         <ul className="ml-7 text-sm" data-testid="site-priority-scores">
