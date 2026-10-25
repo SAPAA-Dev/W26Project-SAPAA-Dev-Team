@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { GeoJSONSource, Map as MlMap } from 'maplibre-gl';
-import { LoaderCircle, Locate, LocateFixed, Minus, Plus } from 'lucide-react';
+import { Download, LoaderCircle, Locate, LocateFixed, Minus, Plus } from 'lucide-react';
 import type { InspectionStatus } from '@/lib/api/v1/types';
 import { STATUS_COLOR, STATUS_INK } from '../../_lib/siteQuery';
 import { MAX_BOUNDS, SRC, TRACK_COLOR } from './mapStyle';
@@ -17,7 +17,18 @@ const BTN = 'press grid size-11 place-items-center hover:bg-[var(--forest-2)] ac
 
 type Locating = 'idle' | 'busy' | 'on' | 'error';
 
-export function MapButtons({ map, inset, className = '' }: { map: MlMap | null; inset: Inset; className?: string }) {
+export function MapButtons({
+  map,
+  inset,
+  className = '',
+  onSaveOffline,
+}: {
+  map: MlMap | null;
+  inset: Inset;
+  className?: string;
+  /** Opens the save-for-offline panel. */
+  onSaveOffline?: () => void;
+}) {
   const [loc, setLoc] = useState<Locating>('idle');
   const [note, setNote] = useState('');
 
@@ -100,6 +111,11 @@ export function MapButtons({ map, inset, className = '' }: { map: MlMap | null; 
           style={{ color: loc === 'on' ? 'var(--honey)' : undefined }}
         />
       </button>
+      {onSaveOffline && (
+        <button type="button" className={`${BTN} rounded-[var(--radius-m)] ${CHROME}`} aria-label="Save this area for offline use" onClick={onSaveOffline}>
+          <Download size={20} aria-hidden />
+        </button>
+      )}
       {loc === 'error' && (
         <p className={`max-w-56 rounded-[var(--radius-s)] px-3 py-2 text-[13px] leading-snug ${CHROME}`}>{note}</p>
       )}

@@ -111,11 +111,20 @@ export function firstSymbolLayer(map: MlMap): string | undefined {
 
 // ---------------------------------------------------------------- overlays
 
-export const SRC = { sites: 'sites', boundaries: 'boundaries', tracks: 'tracks', me: 'me' } as const;
+export const SRC = {
+  sites: 'sites',
+  boundaries: 'boundaries',
+  tracks: 'tracks',
+  offlineMask: 'offline-mask',
+  offlineRegions: 'offline-regions',
+  me: 'me',
+} as const;
 export const LAYER = {
   boundaryFill: 'boundary-fill',
   boundaryLine: 'boundary-line',
   tracks: 'gpx-tracks',
+  offlineMask: 'offline-mask',
+  offlineRegions: 'offline-regions',
   halo: 'site-halo',
   pins: 'site-pins',
   labels: 'site-labels',
@@ -160,6 +169,11 @@ export const RANK: Record<InspectionStatus, number> = { overdue: 3, never: 2, du
 
 export const OVERLAY_LAYERS: { layer: AddLayerObject; belowLabels: boolean }[] = [
   {
+    // Offline only: hides the basemap wherever no tiles were saved. The data is empty while online.
+    belowLabels: true,
+    layer: { id: LAYER.offlineMask, type: 'fill', source: SRC.offlineMask, paint: { 'fill-color': C.land, 'fill-opacity': 1 } },
+  },
+  {
     belowLabels: true,
     layer: {
       id: LAYER.boundaryFill,
@@ -193,6 +207,16 @@ export const OVERLAY_LAYERS: { layer: AddLayerObject; belowLabels: boolean }[] =
       source: SRC.tracks,
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: { 'line-color': TRACK_COLOR, 'line-width': 3, 'line-dasharray': [2, 1] },
+    },
+  },
+  {
+    // Outlines of the areas saved for offline use.
+    belowLabels: true,
+    layer: {
+      id: LAYER.offlineRegions,
+      type: 'line',
+      source: SRC.offlineRegions,
+      paint: { 'line-color': C.forest, 'line-width': 2, 'line-dasharray': [2, 2] },
     },
   },
   {
