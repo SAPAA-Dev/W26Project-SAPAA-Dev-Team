@@ -362,7 +362,7 @@ Purpose: This diagram shows how a user resets a password with an email code and 
 
 ### US 6.0.1: Store Each Site's Geometry From the Shared Source
 
-Purpose: This diagram shows how a load job copies the Site boundaries from the shared Alberta KML, and lists the unmatched Sites for an Admin. Stories: US 6.0.1 – Store Each Site's Geometry From the Shared Source.
+Purpose: This diagram shows how a load job copies the Site boundaries from the shared Alberta KML, and lists the Sites with no boundary for an Admin. Stories: US 6.0.1 – Store Each Site's Geometry From the Shared Source.
 
 [Mermaid source](assets/Sequence_US_6_0_1_Site_Geometry_Load.mmd)
 

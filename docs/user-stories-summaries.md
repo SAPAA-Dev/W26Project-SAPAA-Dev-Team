@@ -65,7 +65,7 @@ Sprint 1 has no user stories. It is documentation and discovery.
 - **US 5.0.2 - Reset a Forgotten Password** (Charter 1)
     - User requests an email, verifies the code, then sets a new password without admin help.
 - **US 6.0.1 - Store Each Site's Geometry From the Shared Source** (Charter 2c)
-    - Each site stores boundary and centre point from the shared KML source.
+    - Each site is linked to its boundary from the shared KML source, and an Admin sees the sites with no boundary.
 
 ## Sprint 4
 

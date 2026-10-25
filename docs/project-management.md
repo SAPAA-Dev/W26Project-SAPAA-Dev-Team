@@ -703,7 +703,7 @@ Owner).
 
 |Task|Related US|Assignee|Due|Issue|
 |:---:|:---:|:---:|:---:|:---:|
-|Link each site to its boundary from the Alberta government KML and store a centre point (migration)|US 6.0.1|Blue (Aaron, Zanab, Abhinav)|Oct 16th|[#181](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/181)|
+|Link each site to its boundary from the Alberta government KML (migration)|US 6.0.1|Blue (Aaron, Zanab, Abhinav)|Oct 16th|[#181](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/181)|
 |Write the Sprint 3 test plan|Dev Task|Blue (Aaron, Zanab, Abhinav)|Oct 16th|[#182](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/182)|
 |Review the schema of the site geometry columns, the GPX track table|Dev Task|Green (Alissa, Jayden)|Oct 16th|[#183](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/183)|
 |Show all active sites with their boundaries on a map page for signed-in users|US 2.0.1|Red (Saumya, Chris)|Oct 17th|[#184](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/184)|
@@ -711,10 +711,9 @@ Owner).
 |Link each inspection in the profile history to its SIR|US 1.0.3|Green (Alissa, Jayden)|Oct 17th|[#187](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/187)|
 |Add "Forgot password" to the sign-in page and send a verification email|US 5.0.2|Green (Alissa, Jayden)|Oct 17th|[#188](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/188)|
 |Choose the tile source and the offline tile cache|US 4.0.2|Red (Saumya, Chris)|Oct 18th|[#189](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/189)|
-|Match sites in the KML import and list unmatched sites for an Admin|US 6.0.1|Blue (Aaron, Zanab, Abhinav)|Oct 18th|[#190](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/190)|
+|List the sites with no boundary for an Admin|US 6.0.1|Blue (Aaron, Zanab, Abhinav)|Oct 18th|[#190](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/190)|
 |Add a "View on map" link to the site page and highlight only the selected site|US 2.0.1|Red (Saumya, Chris)|Oct 19th|[#191](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/191)|
 |GPX upload server action: check the extension, the GPX format, the track points and the size|US 2.0.9|Red (Saumya, Chris)|Oct 19th|[#192](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/192)|
-|Cache geocoding results and stay under the OpenCage daily limit, with tests for 6.0.1|US 6.0.1|Blue (Aaron, Zanab, Abhinav)|Oct 19th|[#193](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/193)|
 |Open a past SIR in edit mode, and check on the server that only its author can edit it|US 4.0.4|Blue (Aaron, Zanab, Abhinav)|Oct 19th|[#194](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/194)|
 |Show activity aggregates on the profile and update them on a new SIR, with tests for 1.0.4|US 1.0.4|Green (Alissa, Jayden)|Oct 19th|[#195](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/195)|
 |Add a CI check that fails when a diagram SVG does not match its Mermaid source|Dev Task|Red (Saumya, Chris)|Oct 20th|[#196](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/196)|
@@ -742,7 +741,7 @@ The acceptance tests are in [User Stories](user-stories.md).
 
 **Dependencies.** The work that other tasks build on is due first:
 
-- 6.0.1 (site boundary and centre point, October 16) comes before the map page (2.0.1), the
+- 6.0.1 (site-to-boundary link, October 16) comes before the map page (2.0.1), the
   boundaries on the map.
 - The map page of 2.0.1 (October 17) comes before the site detail view (2.0.8), the GPX tracks on
   the map (2.0.1 AT2) and the offline layers (4.0.2). It builds on the base map of [PR #159](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/159).
@@ -784,14 +783,11 @@ The acceptance tests are in [User Stories](user-stories.md).
 
 **Blue (Aaron, Zanab, Abhinav): site geometry, site details, boundary colors and SIR edits**
 
-- **Link each site to its boundary and store a centre point** (US 6.0.1). This continues the KML
+- **Link each site to its boundary** (US 6.0.1). This continues the KML
   parser and import from [PR #137](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/137) and [PR #152](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/152), and the site-to-area link that [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167) added.
   That link is empty until an Admin sets it. This task fills it from the KML for the existing
   sites. Done when 6.0.1 AT1 and AT2 pass and Green has reviewed the schema.
-- **Match sites in the KML import and list unmatched sites for an Admin** (US 6.0.1). Done when
-  6.0.1 AT3 passes.
-- **Cache geocoding results and stay under the OpenCage daily limit** (US 6.0.1). Done when 6.0.1
-  AT1 to AT4 pass.
+- **List the sites with no boundary for an Admin** (US 6.0.1). Done when 6.0.1 AT3 and AT4 pass.
 - **Open a site detail view when a site is selected on the map** (US 2.0.8). Use the same data as
   the site page. This task needs the base map of 2.0.1. Done when 2.0.8 AT1 and AT2 pass.
 - **"View SIRs" link from the site detail view** (US 2.0.8). Done when 2.0.8 AT1 to AT3 pass.

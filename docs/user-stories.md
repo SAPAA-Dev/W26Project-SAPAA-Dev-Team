@@ -487,14 +487,14 @@ The line below each story title names the one charter project that is the best m
 ### US 6.0.1 - Store Each Site's Geometry From the Shared Source | Story Points: 5
 *Charter project: 2c – Map Management*
 
-> As a **Steward**, **I want** each Site stored with its real boundary and location, taken from the same source the SAPAA website uses, **so that** I can use either map to tell where a site really is and the website and app never disagree about a Site's shape
+> As an **Admin**, **I want** each Site linked to its boundary from the shared Alberta KML source, and a list of the Sites that have no boundary, **so that** the website and the app never disagree about a Site's shape and I can fix the Sites that are missing one
 
 > **Acceptance Tests**
 
-> 1. Given a site already exists in the Alberta government KML the website uses, the site geometry the app uses is exactly the same
-> 2. Given the geometries are loaded, When a Site is read from the database, Then it has a stored boundary and a centre point (latitude and longitude)
-> 3. Given the list of active Sites, When the load is finished, Then each Site has a geometry or is on a list of unmatched Sites for an Admin to fix
-> 4. Given geocoding is still used for any Site (for example to fill a missing point), When it runs, Then results are cached and requests stay under the OpenCage free tier of 2,500 per day
+> 1. Given an active Site and a boundary for it in the Alberta government KML data the website uses, When the Sites are linked, Then the Site is linked to that boundary and the boundary it reads is exactly the same as the KML
+> 2. Given the Sites are linked, When a Site is read from the database, Then it has a link to its boundary or no link
+> 3. Given the list of active Sites, When the link is finished, Then each Site is linked to a boundary or is on a list of Sites with no boundary for an Admin to fix
+> 4. Given I am a Steward, When I request the list of Sites with no boundary, Then the server refuses
 
 ---
 ## 7 - Inspections and Media

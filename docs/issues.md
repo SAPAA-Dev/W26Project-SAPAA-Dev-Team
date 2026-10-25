@@ -103,7 +103,7 @@ uses the current story set (35 stories). "none" means that no current story cove
 | 14 | US 1.0.4 Aggregate User Activity and Contributions on a user's profile | Must | 2 | The stats need the activity records |
 | 15 | US 5.0.2 Reset a Forgotten Password | Must | 2 | Same feature |
 | 16 | US 2.0.1 View Sites and Past Visits on an Interactive Map | Should | 8 | Same feature |
-| 18 | US 6.0.1 Store Each Site's Geometry From the Shared Source | Must | 5 | Its AT4 caches geocoding under the OpenCage limit |
+| 18 | US 6.0.1 Store Each Site's Geometry From the Shared Source | Must | 5 | Same feature. Geocoding and the centre point are out of this story |
 | 21 | US 1.0.1 Add User Profiles | Must | 5 | Same feature. Done (#54 closed) |
 | 24 | US 7.0.5 Delete an Image and Clean Up After It | Should | 5 | Same feature. Done (#65 closed by PR #148) |
 | 35 | none | - | - | Decided, see item 35 |
@@ -273,7 +273,7 @@ import it with `importProtectedAreasFromStorage` (#152), which parses the file w
 
 Progress as of October 11, 2026: [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167) links a site to its protected area with a new
 column, and an Admin sets the link. The migration does not fill it for the existing sites. Sprint 3
-task [#181](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/181) (US 6.0.1) fills the link from the KML and stores a centre point.
+task [#181](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/181) (US 6.0.1) fills the link from the KML.
 
 #### 8. Fix the failing test on main
 `Labels: bug, infra`
