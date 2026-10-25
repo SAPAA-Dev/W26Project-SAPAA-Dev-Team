@@ -149,8 +149,11 @@ describe('/api/profile', () => {
     describe('skill and focus area options (1.0.6 AT1)', () => {
       function peopleTables(optionRows: unknown, optionError: unknown = null, profileRow: unknown = PERSON) {
         // Awaiting the builder gives the rows. makeQuery is thenable-free, so this one is.
-        const optionQuery = { select: jest.fn(() => optionQuery), overrideTypes: jest.fn(() => optionQuery),
-          then: (resolve: (value: unknown) => unknown) => Promise.resolve({ data: optionRows, error: optionError }).then(resolve) };
+        const optionQuery: Record<string, unknown> = {
+          then: (resolve: (value: unknown) => unknown) => Promise.resolve({ data: optionRows, error: optionError }).then(resolve),
+        };
+        optionQuery.select = jest.fn(() => optionQuery);
+        optionQuery.overrideTypes = jest.fn(() => optionQuery);
         const profileQuery = makeQuery({ data: profileRow, error: null });
         let peopleReads = 0;
         mockAdminFrom.mockImplementation((table: string) => {
