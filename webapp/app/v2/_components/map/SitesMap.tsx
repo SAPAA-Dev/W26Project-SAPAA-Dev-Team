@@ -53,6 +53,7 @@ function SitesMapView() {
   const sites = useApi('sites', api.sites);
   const me = useApi('me', api.me);
   const areas = useApi('boundaries', api.boundaries);
+  const tracks = useApi('tracks', api.tracks); // stewards and admins only; for anyone else the read is refused and no lines draw
   const desktop = useDesktop();
   const reduce = useReducedMotion();
 
@@ -196,6 +197,7 @@ function SitesMapView() {
     <MapCanvas
       sites={results ?? []}
       boundaries={areas.data}
+      tracks={tracks.data}
       selected={selected}
       hoverId={hoverId}
       inset={inset}

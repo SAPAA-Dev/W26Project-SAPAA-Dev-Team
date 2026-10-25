@@ -7,7 +7,7 @@ import type { Feature, FeatureCollection, Geometry, Point } from 'geojson';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@/components/map/enableMapLibreWorker';
 import './map.css';
-import type { BoundaryCollection, SiteSummary } from '@/lib/api/v1/types';
+import type { BoundaryCollection, SiteSummary, TrackCollection } from '@/lib/api/v1/types';
 import { STATUS_LABEL } from '../../_lib/siteQuery';
 import {
   ALBERTA,
@@ -28,6 +28,7 @@ interface Props {
   /** Filtered sites, already in list order. */
   sites: SiteSummary[];
   boundaries: BoundaryCollection | undefined;
+  tracks?: TrackCollection;
   selected: SiteSummary | null;
   /** Site the pointer is over in the list, mirrored on its pin. */
   hoverId: number | null;
@@ -81,6 +82,7 @@ const usable = (m: MlMap | null): m is MlMap => m !== null && !isRemoved(m);
 export default function MapCanvas({
   sites,
   boundaries,
+  tracks,
   selected,
   hoverId,
   inset,
@@ -236,7 +238,12 @@ export default function MapCanvas({
               type: 'Feature',
               id: f.id,
               geometry: f.geometry as Geometry,
-              properties: { name: f.properties.name, slug: f.properties.siteSlug ?? '', st: f.properties.status ?? 'none' },
+              properties: {
+                name: f.properties.name,
+                slug: f.properties.siteSlug ?? '',
+                st: f.properties.status ?? 'none',
+                color: f.properties.color ?? '',
+              },
             })),
           }
         : null,
@@ -247,6 +254,12 @@ export default function MapCanvas({
     if (!usable(map) || !areas) return;
     (map.getSource(SRC.boundaries) as GeoJSONSource | undefined)?.setData(areas);
   }, [map, styleGen, areas]);
+
+  // Uploaded GPX tracks (steward and admin only; a failed or refused read simply draws none).
+  useEffect(() => {
+    if (!usable(map)) return;
+    (map.getSource(SRC.tracks) as GeoJSONSource | undefined)?.setData((tracks ?? EMPTY) as FeatureCollection);
+  }, [map, styleGen, tracks]);
 
   // Areas follow the filter: linked areas of hidden sites disappear, unlinked areas stay as context.
   const slugs = useMemo(() => sites.map((s) => s.slug), [sites]);

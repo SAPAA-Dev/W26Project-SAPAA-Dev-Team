@@ -5,7 +5,7 @@ import type { GeoJSONSource, Map as MlMap } from 'maplibre-gl';
 import { LoaderCircle, Locate, LocateFixed, Minus, Plus } from 'lucide-react';
 import type { InspectionStatus } from '@/lib/api/v1/types';
 import { STATUS_COLOR, STATUS_INK } from '../../_lib/siteQuery';
-import { MAX_BOUNDS, SRC } from './mapStyle';
+import { MAX_BOUNDS, SRC, TRACK_COLOR } from './mapStyle';
 import type { Inset } from './MapCanvas';
 
 /** Dark instrument chrome floating over the light map. */
@@ -207,6 +207,12 @@ export function MapKey({
               <span className="text-[13px] leading-tight text-[var(--ink-2)]">
                 Protected area with no SAPAA site. Tinted areas take their site&apos;s colour.
               </span>
+            </li>
+            <li className="flex items-center gap-3">
+              <span className="grid w-5 place-items-center">
+                <span aria-hidden className="h-0 w-5 border-t-[3px] border-dashed" style={{ borderColor: TRACK_COLOR }} />
+              </span>
+              <span className="text-[13px] leading-tight text-[var(--ink-2)]">GPX track from a site visit</span>
             </li>
           </ul>
           <p className="mt-3 text-[11px] text-[var(--ink-2)]">
