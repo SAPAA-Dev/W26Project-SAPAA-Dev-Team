@@ -316,6 +316,37 @@ describe('ProfilePage', () => {
     expect(screen.getByRole('heading', { name: 'Jamie R.' })).toBeInTheDocument();
   });
 
+  it('picks skills from the values that profiles already use and saves the change (1.0.6 AT1, AT3)', async () => {
+    const withOptions = { ...profilePayload, options: { skills: ['Bird ID', 'Mosses'], focusAreas: ['Wetlands', 'Grasslands'] } };
+    const stored = { ...profilePayload.profile, skills: ['Mosses'], focusAreas: ['Wetlands'] };
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => withOptions })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ profile: stored }) });
+    render(<ProfilePage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }));
+    const skills = screen.getByLabelText('Add skills');
+    expect(within(skills).getByRole('option', { name: 'Mosses' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Bird ID' }));
+    fireEvent.change(skills, { target: { value: 'Mosses' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'jamie@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    expect(await screen.findByText('Profile saved.')).toBeInTheDocument();
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body).skills).toEqual(['Mosses']);
+    expect(screen.getByText('Mosses')).toBeInTheDocument();
+    expect(screen.queryByText('Bird ID')).not.toBeInTheDocument();
+  });
+
+  it('still lets the person add a skill with Other when the server sends no list', async () => {
+    render(<ProfilePage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }));
+
+    expect(within(screen.getByLabelText('Add skills')).getAllByRole('option').map((option) => option.textContent))
+      .toEqual(['Select…', 'Other…']);
+  });
+
   it('shows the saved values again after a reload (1.0.1 AT5, 1.0.2 AT4, 1.0.2 AT6)', async () => {
     const stored = {
       ...profilePayload.profile,
@@ -331,8 +362,11 @@ describe('ProfilePage', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }));
     fireEvent.change(screen.getByLabelText('Display name'), { target: { value: 'Jamie R.' } });
-    fireEvent.change(screen.getByLabelText(/^Skills/), { target: { value: 'Bird ID, Mosses' } });
-    fireEvent.change(screen.getByLabelText(/^Focus areas/), { target: { value: 'Wetlands, Grasslands' } });
+    for (const [list, value] of [['skills', 'Mosses'], ['focus areas', 'Grasslands']]) {
+      fireEvent.change(screen.getByLabelText(`Add ${list}`), { target: { value: '__other__' } });
+      fireEvent.change(screen.getByLabelText(`Other ${list}`), { target: { value } });
+      fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+    }
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'jamie@example.com' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(await screen.findByText('Profile saved.')).toBeInTheDocument();
