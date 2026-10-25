@@ -20,7 +20,7 @@ is now.
 | Legacy people | `luperson` | Mobile app writes `displayname` (`FNR/src/services/database.ts:312`). The Google Sheets Apps Script synced the full table by `id`. PR #118 removed that script from the repository, but the deployed script can still sync the table. The production columns are not in the repository. It has no link to `auth.users` (backlog item 38). | Not changed. The web app only checks that an email exists (`isSteward` in `webapp/utils/supabase/queries.ts`). |
 | Inspections of a user | `form_responses.user_id` references `auth.users.id` | None. The inspection count can be calculated from this. | The profile calculates the counts from this (see [Inspection counts](#inspection-counts)). |
 | Steward of a site | Nothing | US 3.0.2 needs it. | `site_stewards` (#131). Written by `assignSiteSteward` in `webapp/utils/steward-actions.ts` (#133). Shown on the site page and on the profile under "Steward of" (#139, #140). |
-| Skills, focus areas | Nothing | US 1.0.1 and 1.0.2 need them. | `people.skills` and `people.focus_areas` (#131). Edited through `PATCH /api/profile` (#138). |
+| Skills, focus areas | Nothing | US 1.0.1 and 1.0.2 need them. | `people.skills` and `people.focus_areas` (#131). Edited through `PATCH /api/profile` (#138). US 1.0.6: the edit form offers the values that profiles already use, from `GET /api/profile` (owner only), and an Other option for a new value. |
 
 ## Options considered
 
