@@ -164,8 +164,8 @@ describe('report write server actions', () => {
       expect(mockFrom).not.toHaveBeenCalledWith('answers');
     });
 
-    it('refuses an unapproved owner before reading the report', async () => {
-      mockCaller(OWNER, 'steward', false);
+    it.each(['steward', 'admin'])('refuses an unapproved %s before reading the report', async (role) => {
+      mockCaller(OWNER, role, false);
       await expect(updateSiteInspectionAnswers(41, answers, '2026-10-01')).rejects.toThrow(
         'You are not allowed to change this report.'
       );
@@ -184,15 +184,17 @@ describe('report write server actions', () => {
       expect(insert.insert).toHaveBeenCalledWith([{ ...answers[0], response_id: 41 }]);
     });
 
-    it('refuses an admin who does not own the report', async () => {
+    it('lets an approved admin replace the answers in another user\'s report', async () => {
       mockCaller(ADMIN, 'admin');
       queueReport(OWNER);
+      queueRequiredQuestions();
+      queue('form_responses', { data: { id: 41 }, error: null });
+      queue('answers', { data: null, error: null });
+      const insert = queue('answers', { data: null, error: null });
 
-      await expect(updateSiteInspectionAnswers(41, answers, '2026-10-01')).rejects.toThrow(
-        'You are not allowed to change this report.'
-      );
-      expect(mockFrom).toHaveBeenCalledTimes(1);
-      expect(mockFrom).not.toHaveBeenCalledWith('questions');
+      await updateSiteInspectionAnswers(41, answers, '2026-10-01');
+
+      expect(insert.insert).toHaveBeenCalledWith([{ ...answers[0], response_id: 41 }]);
     });
 
     it('refuses an update that clears a required answer and names the question', async () => {

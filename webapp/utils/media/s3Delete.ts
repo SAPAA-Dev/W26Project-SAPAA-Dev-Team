@@ -1,16 +1,8 @@
-import { S3Client, DeleteObjectsCommand } from "@aws-sdk/client-s3";
+import { DeleteObjectsCommand } from "@aws-sdk/client-s3";
+import { s3Client } from "@/lib/s3/client";
 import { isAllowedStorageKey } from "./storageKeys";
 
-const REGION = process.env.AWS_REGION!;
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
-
-const client = new S3Client({
-  region: REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
 
 const DELETE_LIMIT = 1000;
 
@@ -30,7 +22,7 @@ export async function deleteObjectsByKeys(keys: Array<string | null>): Promise<v
       Bucket: BUCKET,
       Delete: { Objects: chunk.map((Key) => ({ Key })) },
     });
-    const result = await client.send(command);
+    const result = await s3Client.send(command);
     if (result.Errors && result.Errors.length > 0) {
       throw new Error(
         result.Errors.map((entry) => entry.Message || entry.Key).join("; ") ||

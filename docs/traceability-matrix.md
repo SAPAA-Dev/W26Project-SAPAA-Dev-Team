@@ -135,6 +135,7 @@ Notes:
 | US 2.0.1 | AT1 to AT4 | Sites and past visits on the map (Sprint 3) | - | - | - | - | Not yet tested |
 | US 2.0.8 | AT1 to AT3 | Site details from the map (Sprint 3) | - | - | - | - | Not yet tested |
 | US 2.0.9 | AT1 to AT6 | GPX track upload, one file or several (Sprint 3) | - | - | - | - | Not yet tested |
+| US 2.0.14 | AT1 | Each boundary uses the color saved by an Admin for its site or site type (Sprint 3) | `__tests__/components/SiteMap.test.tsx:324,849,882,931`, `__tests__/lib/boundaries.test.ts:325,331,349,364`, `__tests__/components/queries.boundaryColors.test.ts:38,52,66,76`, `__tests__/components/queries.boundaries.test.ts:104,113` | Component, Unit | S+F | No | Pass |
 
 Notes:
 

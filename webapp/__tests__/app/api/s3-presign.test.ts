@@ -318,9 +318,9 @@ describe("POST /api/s3/presign", () => {
     expect(getSignedUrl).not.toHaveBeenCalled();
   });
 
-  it("returns 403 when the report does not exist", async () => {
+  it.each(["steward", "admin"])("returns 403 for a %s when the report does not exist", async (role) => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1", app_metadata: { role: "steward", authenticated: true } } },
+      data: { user: { id: "user-1", app_metadata: { role, authenticated: true } } },
       error: null,
     });
     reportResult = { data: null, error: null };
@@ -361,7 +361,7 @@ describe("POST /api/s3/presign", () => {
     expect(body.uploadUrl).toBe("https://signed-upload.example.com/owner");
   });
 
-  it("refuses an approved admin who does not own the report", async () => {
+  it("gives an approved admin an upload URL for another user's report", async () => {
     mockGetUser.mockResolvedValue({
       data: {
         user: {
@@ -372,6 +372,7 @@ describe("POST /api/s3/presign", () => {
       error: null,
     });
     reportResult = { data: { user_id: "user-1" }, error: null };
+    (getSignedUrl as jest.Mock).mockResolvedValueOnce("https://signed-upload.example.com/admin");
     const request = new Request("http://localhost:3000/api/s3/presign", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -381,9 +382,9 @@ describe("POST /api/s3/presign", () => {
     const response = await POST(request);
     const body = await response.json();
 
-    expect(response.status).toBe(403);
-    expect(body).toEqual({ error: "Forbidden" });
-    expect(getSignedUrl).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(body.uploadUrl).toBe("https://signed-upload.example.com/admin");
+    expect(body.key).toMatch(/^inspections\/207\/3226\/27\//);
   });
 
   it("returns upload url, key, and generatedFilename for jpeg", async () => {

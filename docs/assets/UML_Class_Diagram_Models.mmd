@@ -338,16 +338,6 @@ classDiagram
         +updated_at: timestamp
     }
 
-    class SitePriority {
-        <<new table site_priority, 2.0.12 2.0.13>>
-        +site_id: number
-        +abuse_points: number
-        +biological_points: number
-        +time_since_visit_points: number
-        +points_saved_at: timestamp
-        +saved_by: string
-    }
-
     class INatObservation {
         <<new 4.0.7, no table>>
         +id: number
@@ -379,7 +369,6 @@ classDiagram
     ExportJob ..> GpxTrack : zips files
     ExportJob ..> PdfJob : zips completed PDFs
     Site "1" --> "0..1" SiteSafety : site_id
-    Site "1" --> "0..1" SitePriority : site_id
     PdfJob ..> PdfOptions : request_payload
     INatObservation ..> Site : found in the boundary
 

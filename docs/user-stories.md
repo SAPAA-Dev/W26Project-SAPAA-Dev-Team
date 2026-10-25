@@ -239,15 +239,14 @@ The line below each story title names the one charter project that is the best m
 > 3. Given the reminder is showing, When I save new points, Then the reminder is absent and the saved date is the new date
 > 4. Given I am a Steward, When I open the Site, Then the Admin reminder is not shown
 
-### US 2.0.14 - Match Map Marker Colours to the Website | Story Points: 2
+### US 2.0.14 - Color Map Sites by Type | Story Points: 2
 *Charter project: 2c – Map Management*
 
-> As a **Steward**, **I want** to see map marker colours that match the SAPAA website, **so that** I can tell site types apart
+> As a **Steward**, **I want** to see the boundary colors that an Admin sets for sites or site types, **so that** I can use those colors to identify sites on the map
 
 > **Acceptance Tests**
 
-> 1. Given sites of different types are on the map, Then provincial parks, recreation areas and other site types use their matching SAPAA website marker colours
-> 2. Given a site type has a colour on the SAPAA website, When I view a marker for that type, Then its colour matches the website
+> 1. Given an Admin has saved different boundary colors for sites or site types, When I view those sites on the map, Then each boundary uses its saved color
 
 ---
 ## 3 - Admin Persona
@@ -644,7 +643,7 @@ The line below each story title names the one charter project that is the best m
 | US 7.0.8 | Delete a Site Inspection Report | 5 |
 
 | US 1.0.6 | Select and Edit Skills and Focus Areas | 2 |
-| US 2.0.14 | Match Map Marker Colours to the Website | 2 |
+| US 2.0.14 | Color Map Sites by Type | 2 |
 | US 3.0.4 | Add a Steward Without an Account | 3 |
 
 ### Could Have
