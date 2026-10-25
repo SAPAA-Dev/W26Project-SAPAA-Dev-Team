@@ -20,6 +20,7 @@ import {
 import Image from 'next/image';
 import { getTotalInspectionCount, getLastInspectionDate, getNaturalnessDistribution, getTopSitesDistribution } from '@/utils/supabase/queries';
 import AdminNavBar from "../AdminNavBar";
+import ExportAllFilesButton from "@/components/ExportAllFilesButton";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useRouter } from 'next/navigation';
 
@@ -305,6 +306,7 @@ export default function Dashboard() {
         
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
+          <ExportAllFilesButton />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {/* Total Records */}
             <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-[#E4EBE4] shadow-sm">
