@@ -132,8 +132,8 @@ export default function HomeClient() {
   const [selectedSubtypes, setSelectedSubtypes] = useState<ReadonlySet<string> | null>(null);
   const [selectedCounties, setSelectedCounties] = useState<ReadonlySet<string> | null>(null);
 
-  // The boundaries are large, so they load the first time the map view opens and never
-  // again during the visit.
+  // The boundaries are large, so they load the first time the map view opens and stay
+  // loaded for the visit. A failed load clears the flag, so the next entry retries it.
   const [boundaries, setBoundaries] = useState<BoundaryFeatureCollection | null>(null);
   const [boundariesLoading, setBoundariesLoading] = useState(false);
   const [boundariesError, setBoundariesError] = useState<string | null>(null);
@@ -143,8 +143,10 @@ export default function HomeClient() {
   const [selectedAreaId, setSelectedAreaId] = useState<number | null>(null);
   // A ?site= link that arrived before the boundaries. The boundary load consumes it.
   const pendingSiteNameRef = useRef<string | null>(null);
-  // Every uploaded track, loaded once per visit. A failure clears the lines.
+  // Every uploaded track, loaded once per visit. A failure clears the lines and
+  // shows a note, because an empty map and a failed load look the same otherwise.
   const [gpxTracks, setGpxTracks] = useState<GpxTrackLineFeatureCollection | null>(null);
+  const [gpxTracksError, setGpxTracksError] = useState<string | null>(null);
   const gpxTracksRequested = useRef(false);
 
   // A new object, so selecting the same area again centres the map again.
@@ -163,14 +165,15 @@ export default function HomeClient() {
     selectArea(area);
   }, [selectArea]);
 
-  useEffect(() => {
-    if (viewMode !== 'map' || boundariesRequested.current) return;
+  const loadBoundaries = useCallback(() => {
+    if (boundariesRequested.current) return;
     boundariesRequested.current = true;
 
     setBoundariesLoading(true);
     getProtectedAreaBoundaries()
       .then((collection) => {
         setBoundaries(collection);
+        setBoundariesError(null);
         // A ?site=<name> link opened the map before the boundaries existed, so the
         // site is centred and selected as soon as its boundary arrives.
         const pendingSiteName = pendingSiteNameRef.current;
@@ -181,27 +184,40 @@ export default function HomeClient() {
         // The pending ?site= name must not survive a failed load, so a retry
         // cannot auto-select a site the user has moved away from.
         pendingSiteNameRef.current = null;
+        boundariesRequested.current = false;
         setBoundariesError('Site boundaries could not load.');
       })
       .finally(() => setBoundariesLoading(false));
-  }, [viewMode, selectSiteByName]);
+  }, [selectSiteByName]);
+
+  useEffect(() => {
+    if (viewMode === 'map') loadBoundaries();
+  }, [viewMode, loadBoundaries]);
 
   const handleMapEntry = useCallback((siteName: string) => {
     setViewMode('map');
     if (boundaries === null) {
       pendingSiteNameRef.current = siteName;
+      // The load may have failed before, so this entry is also the retry.
+      loadBoundaries();
       return;
     }
     selectSiteByName(boundaries, siteName);
-  }, [boundaries, selectSiteByName]);
+  }, [boundaries, selectSiteByName, loadBoundaries]);
 
   useEffect(() => {
     if (viewMode !== 'map' || gpxTracksRequested.current) return;
     gpxTracksRequested.current = true;
 
     getGpxTracksForMap()
-      .then((tracks) => setGpxTracks(gpxTracksToLineFeatureCollection(tracks)))
-      .catch(() => setGpxTracks(null));
+      .then((tracks) => {
+        setGpxTracks(gpxTracksToLineFeatureCollection(tracks));
+        setGpxTracksError(null);
+      })
+      .catch(() => {
+        setGpxTracks(null);
+        setGpxTracksError('Visit tracks could not load.');
+      });
   }, [viewMode]);
 
   const areaFilterOptions = useMemo(() => boundaryFilterOptions(boundaries), [boundaries]);
@@ -637,6 +653,7 @@ export default function HomeClient() {
             selectedAreaId={selectedAreaId}
             onBoundarySelect={setSelectedAreaId}
             gpxTracks={gpxTracks}
+            gpxTracksError={gpxTracksError}
           />
         ) : (
         <div id="tutorial-site-list">
