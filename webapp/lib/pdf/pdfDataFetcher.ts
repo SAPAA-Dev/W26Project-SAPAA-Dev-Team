@@ -7,24 +7,14 @@ import {
   getReportQuestionKeyMap,
 } from './reportQueries';
 import { createServerSupabase } from '@/utils/supabase/server';
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { s3Client } from '@/lib/s3/client';
 import pLimit from 'p-limit';
 import { PdfRequest, PdfReportData, PdfSiteData, PdfAttachment, PdfOptions } from './types';
 
-const REGION = process.env.AWS_REGION!;
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
-
-function getS3Client() {
-  return new S3Client({
-    region: REGION,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
-  });
-}
 
 function detectImageFormat(buf: Buffer): 'png' | 'jpg' | 'webp' | null {
   if (buf.length < 4) return null;
@@ -78,9 +68,8 @@ async function downloadOneAttachment(row: {
 
   if (row.storage_key) {
     try {
-      const s3 = getS3Client();
       const command = new GetObjectCommand({ Bucket: BUCKET, Key: row.storage_key });
-      const presignedUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
+      const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 });
       const result = await fetchImageBuffer(presignedUrl);
       if (result) {
         imageBuffer = result.buffer;
