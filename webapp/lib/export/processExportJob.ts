@@ -157,7 +157,8 @@ export async function processExportJob(jobId: string) {
   if (jobError || !job) throw new Error('Export job not found');
 
   try {
-    await supabase.from('export_jobs').update({ status: 'processing' }).eq('id', jobId);
+    const { error: processingError } = await supabase.from('export_jobs').update({ status: 'processing' }).eq('id', jobId);
+    if (processingError) throw processingError;
 
     const entries = await collectExportEntries(supabase);
     const s3 = getS3Client();
@@ -167,17 +168,19 @@ export async function processExportJob(jobId: string) {
     const key = `exports/${job.created_by}/${jobId}/SAPAA_All_Files_${dateStamp}.zip`;
     await s3.send(new PutObjectCommand({ Bucket: BUCKET, Key: key, Body: zipBytes, ContentType: 'application/zip' }));
 
-    await supabase
+    const { error: completionError } = await supabase
       .from('export_jobs')
       .update({ status: 'complete', storage_path: key, file_count: entries.length, finished_at: new Date().toISOString() })
       .eq('id', jobId);
+    if (completionError) throw completionError;
   } catch (error) {
     // Only a message written for an Admin goes to the row. Anything else could name the bucket or a table.
     const message = error instanceof ExportError ? error.message : 'The export failed. Try again.';
     if (!(error instanceof ExportError)) console.error('Export job failed', error);
-    await supabase
+    const { error: failureError } = await supabase
       .from('export_jobs')
       .update({ status: 'failed', error: message, finished_at: new Date().toISOString() })
       .eq('id', jobId);
+    if (failureError) throw failureError;
   }
 }
