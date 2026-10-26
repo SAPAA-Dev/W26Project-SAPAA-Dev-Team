@@ -2,8 +2,9 @@
 -- scripts/local_supabase.js applies it to the local Supabase with `db query --local`.
 -- The inspection reports upsert with `on conflict (inspection_no) do update`: real reports
 -- use the same YYYY-NNN numbers, so a production run would move real reports to the demo
--- site and rewrite the live question definitions. The guard below aborts the whole block
--- when the database holds any site other than the demo site.
+-- site and rewrite the live question definitions. The guard below skips the whole block
+-- (nothing is written) when the database holds any site other than the demo site. It skips
+-- instead of failing so `npm run dev` still starts on a local database that has imported sites.
 
 do $seed$
 declare
@@ -16,9 +17,10 @@ begin
   where namesite is distinct from 'Quackberry Duck Park';
 
   if existing_site_count > 0 then
-    raise exception
-      'Refusing to seed: % site(s) other than the demo site exist. This file must not run against production.',
+    raise notice
+      'Skipping seed: % site(s) other than the demo site exist. This file must not run against production.',
       existing_site_count;
+    return;
   end if;
 
 insert into public."ab_counties" (county)
