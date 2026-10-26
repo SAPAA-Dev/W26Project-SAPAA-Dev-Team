@@ -48,7 +48,7 @@ Rules:
 
 | AT | Type | Test | Status |
 |---|---|---|---|
-| AT1: the aggregates match the user's data | Unit, Integration | `__tests__/app/api/profile.test.ts` (contribution statistics), `__tests__/components/ProfilePage.test.tsx` | Exists; the separate query-count test still fails in the full run |
+| AT1: the aggregates match the user's data | Unit, Integration | `__tests__/app/api/profile.test.ts` (contribution statistics), `__tests__/components/ProfilePage.test.tsx` | Passed locally after the shared-branch profile test fixes; required CI pending |
 | AT2: a new report adds 1 to the SIR count | Integration | Planned: `ProfilePage.test.tsx`, `(1.0.4 AT2)` reload after a new report | Planned |
 
 ## 1.0.6 Select and Edit Skills and Focus Areas (Red)
@@ -182,7 +182,7 @@ The [traceability matrix](traceability-matrix.md) has one row per AT. Coverage i
 | **Total** | | **50** | **46** | **3** | **1** |
 
 US 3.0.4 is removed. Activity-count AT2 and the remaining partial rows still need evidence.
-The full suite is not green until the profile query-count failure is corrected.
+The combined local suite passes 1912 tests (25 skipped). Required CI must pass before release.
 
 ## How to run the tests
 

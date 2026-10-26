@@ -48,7 +48,9 @@ Cypress or native mobile build was run.
 | Database rules and site links | 3 local database suites, 25 tests passed. The tests use the real local Supabase. This is not evidence that production migrations ran. |
 | Focused acceptance suites | 14 suites, 357 tests passed. The map reconnection test is in `SiteMap.test.tsx`. |
 | Clean production build | Passed with local placeholder settings on an isolated source copy. Compilation and build type checking passed. |
-| Full unit suite on the sprint source after #305, #312 and #315, with the #318 changes | 1 failed, 1911 passed, 25 skipped. The failure is the profile API test that expects three query calls but receives four. It is outside this export fix and must be corrected before release. A final green CI run must replace this result. |
+| Full unit suite on the sprint source after #305, #312 and #315, with the #318 changes | Passed: 1912 tests, 25 skipped, 0 failed (132 passing suites). Chris's shared-branch commits corrected the profile query count, forced the date test time zone and mocked the site gallery request. Type check and full lint also passed. Required CI is still pending. |
+
+The prior sprint CI run ([40403404181](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/actions/runs/40403404181)) failed the profile query-count and date tests. The combined local run above includes their fixes. Do not use the older CI run as release evidence.
 
 The test plan and traceability matrix cover **50 ATs: 46 covered, 3 partial and 1 with no test**.
 The partial rows are profile-history row details (1.0.3 AT1), active-site map filtering (2.0.1 AT1)
@@ -104,7 +106,7 @@ a successful local test does not prove either.
 ## Release gates
 
 - [ ] Export follow-up #318 reviewed and merged into `sprint-3`.
-- [ ] The profile query-count test is corrected by its owner; the full test suite is green.
+- [x] The profile test fixes are included; the full local unit suite is green. CI is still required.
 - [ ] Type check, build, lint, docs and required checks pass on the final sprint commit.
 - [ ] Green records the schema/access-rule review in #183.
 - [ ] A human records the production migration state and applies missing merged files.
@@ -124,7 +126,7 @@ Do not publish a success claim while a gate above is open.
 | Item | Value |
 |---|---|
 | Final sprint commit | Pending final fixes and CI |
-| Sprint-to-main PR | Pending creation |
+| Sprint-to-main PR | [Draft #319](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/319); waits for #318 and release gates |
 | Main-to-release PR | Pending sprint merge |
 | Production migrations applied by / time | Human record required |
 | Production smoke check by / time | Human record required |

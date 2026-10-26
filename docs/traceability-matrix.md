@@ -12,9 +12,11 @@ Sprint 3 records were updated on **October 26, 2026** after the skills, export a
 PRs merged. The current scope is 14 stories and 50 acceptance tests. US 3.0.4 was removed when
 Frank required accounts and sign-in; PR #310 was closed without merge.
 
-The local close-out run on the Sprint 3 source after #305, #312 and #315, with the #318 changes has **1 failed test, 1911
-passed and 25 skipped**. The failure is the profile API test that expects three query calls
-instead of four. The database rule run passed **25 tests** on the local Supabase after applying the merged Sprint 3 migrations.
+The combined local close-out run on the Sprint 3 source after #305, #312 and #315, with the
+#318 changes and Chris's shared-branch test fixes, passed **1912 tests, 25 skipped, 0 failed**
+(132 passing suites). Type check and full lint passed. The prior sprint CI run failed the
+profile query-count and date tests; the current required CI result is still pending.
+The database rule run passed **25 tests** on local Supabase after the merged Sprint 3 migrations.
 The export follow-up (#318) passed **38 tests**, including three state-write failure tests.
 
 The browser checks use the real app with local Supabase and local SMTP. The offline check
@@ -126,7 +128,7 @@ Notes:
   rejects more than twelve skills.
 - 1.0.3 AT1: `ProfilePage.test.tsx:117,191` check that the history is listed and paged. No test
   checks the site name and the date of each row.
-- 1.0.4: PR #315 is merged. The aggregate tests cover AT1; the separate query-count assertion still fails. AT2 still needs explicit count-plus-one evidence.
+- 1.0.4: PR #315 is merged. The aggregate tests cover AT1; the combined local run includes the corrected query-count assertion. AT2 still needs explicit count-plus-one evidence.
 - 1.0.6 and 3.0.3 merged through #308 and #309. US 3.0.4 was removed on October 26; #310 was closed without merge.
 
 ## 2 - Place Management
