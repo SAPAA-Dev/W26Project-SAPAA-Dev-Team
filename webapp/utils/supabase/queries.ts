@@ -1601,6 +1601,8 @@ export interface SiteDeleteImpact {
   attachmentCount: number;
   homepageImageCount: number;
   siteStewardCount: number;
+  gpxTrackCount: number;
+  sitePageFieldCount: number;
 }
 
 export interface SiteArchiveResult {

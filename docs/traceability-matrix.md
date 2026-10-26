@@ -416,7 +416,7 @@ Notes:
 
 | Task | Team | Test file(s) | Status |
 |---|---|---|---|
-| Improve authentication checks for admin routes | Beta | `__tests__/app/api/heatmap.test.ts`, `__tests__/app/api/geocode.test.ts` (401 and 403 for each route), `__tests__/lib/admin-actions.test.ts`, `__tests__/lib/form-actions.test.ts`, `__tests__/components/queries.admin.test.ts`, `__tests__/components/queries.report-writes.test.ts` ([PR #242](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/242)), `__tests__/pages/AdminLayout.test.tsx` ([PR #240](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/240)), and the 403 cases in `__tests__/app/api/` | Pass |
+| Improve authentication checks for admin routes | Beta | `__tests__/lib/admin-actions.test.ts`, `__tests__/lib/form-actions.test.ts`, `__tests__/components/queries.admin.test.ts`, `__tests__/components/queries.report-writes.test.ts` ([PR #242](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/242)), `__tests__/pages/AdminLayout.test.tsx` ([PR #240](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/240)), and the 403 cases in `__tests__/app/api/` | Pass |
 | Investigate and fix Invalid Identifier Supabase error (#128) | Alpha | - | Not yet tested |
 | Update db names to not include "W26" as prefix (#129) | Alpha | - (#129 changed only the table names in mocks) | Not yet tested |
 | Create and migrate the user model (#131) | Alpha | - | Not yet tested |
@@ -427,8 +427,6 @@ Other tests from the Sprint 2 fixes, now on `main`. They check fixes, not an AT.
 
 | Test file | What it checks | PR |
 |---|---|---|
-| `__tests__/app/api/heatmap.test.ts` | 401 and 403, `%`, `_` and `*` in the keyword, at most 50 sites, no match, 500 on a database error | [PR #261](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/261) |
-| `__tests__/app/api/geocode.test.ts` | 401 and 403, `{latitude, longitude}` with nulls when there is no match, 500 when `OPENCAGE_API_KEY` is missing, the 8 second timeout and OpenCage errors | [PR #261](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/261) |
 | `__tests__/pages/AdminFormEditor.loading.test.tsx` | The form editor loads the sections and the questions once, and an older questions load does not undo a toggle | [PR #261](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/261) |
 | `__tests__/components/queries.sitesOnline.test.ts:49,81,111` | `getSitesOnline` asks for the newest dated and the newest undated report of each site, not every report | [PR #261](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/261) |
 | `__tests__/lib/admin-actions.test.ts:77,97` | `getAllUsers` reads every page of users, and returns nothing when a later page fails | [PR #261](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/261) |

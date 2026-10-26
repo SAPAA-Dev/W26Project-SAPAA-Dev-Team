@@ -18,6 +18,9 @@ concurrency:
 
 jobs:
   reviewers:
+    # A draft PR is not ready for review, so it gets no reviewer check and no reminder comment.
+    # A skipped job counts as passing for a required check. ready_for_review runs it again.
+    if: github.event.pull_request.draft == false
     runs-on: self-hosted
     permissions:
       contents: read

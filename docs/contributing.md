@@ -167,11 +167,11 @@ Run the files in this order.
 
 | Step | File | Note |
 | --- | --- | --- |
-| 0 | `20260925000000_local_app_schema.sql` | **Never run this on production.** It is only for a fresh local database: it creates the `W26_` tables, which production already has. It also enables row level security on `luperson` with no policy, so on production it would cut the F26 mobile app and the Google Sheet off from `luperson`. `create table if not exists` does not protect against this. |
+| 0 | `20260925000000_local_app_schema.sql` | **Never run this on production.** It is only for a fresh local database: it creates the `W26_` tables, which production already has. It no longer enables row level security on the legacy tables (`luperson` and the three `_fnr` tables), so it cannot cut the F26 mobile app and the Google Sheet off from `luperson`. It still creates `W26_` tables and policies production does not need, and `create table if not exists` does not make it safe there. |
 | 1 | `20261002000000_fix_questions_section_fk_name.sql` | Run only while `W26_questions` still exists. After the rename the file fails. It does nothing when the constraint already has the right name. |
 | 2 | `20261003000000_remove_w26_prefix.sql` | The rename. Do it in the cutover window. |
 | 3 | `20261004000000_create_user_model.sql` | Adds the trigger on `auth.users` and a `people` row for each existing login. Check the count after it (below). |
-| 4 | `20261004010000_create_protected_areas.sql` | Skip it if `protected_areas` already exists (the `protected_areas` result in the pre-check is not null). Also skip it if the table has a `folder` column, which means step 9 already ran. The header says safe to run twice, but after step 9 dropped `site_id` a second run fails on the `site_id` index. |
+| 4 | `20261004010000_create_protected_areas.sql` | Skip it if `protected_areas` already exists (the `protected_areas` result in the pre-check is not null). Also skip it if the table has a `folder` column, which means step 9 already ran. A second run is safe: the `site_id` index step skips itself once step 9 has dropped that column. |
 | 5 | `20261005000000_profile_distinct_site_count.sql` | |
 | 6 | `20261005010000_create_socials.sql` | |
 | 7 | `20261005020000_gallery_read_policies.sql` | |
@@ -196,6 +196,9 @@ Run the files in this order.
 | 26 | `20261024000000_add_site_priority_scores.sql` | Adds the three scores, saved date and saving Admin. Existing sites have no scores. Apply before deploying US 2.0.12 and 2.0.13. |
 | 27 | `20261024010000_create_export_jobs.sql` | Creates export jobs and the creator-only read policy. Only the service-role server writes jobs. Apply before deploying US 3.0.3. |
 | 28 | `20261024020000_check_gpx_track_path.sql` | From PR #312. Include only after it merges. It replaces the GPX insert policy with the path check; existing rows are not rewritten. |
+| 29 | `20261025000000_fix_site_delete_impact.sql` | Redefines the two site delete functions so the impact count includes GPX tracks and page fields. Service role only. Needs `site_page_fields`, `archived_at` and `gpx_tracks`, so apply it after steps 10, 11 and 21. |
+| 30 | `20261025000010_add_missing_fk_indexes.sql` | Adds eleven foreign key and filter indexes. Each build locks its table while it runs, so apply outside peak use. |
+| 31 | `20261025000020_count_one_naturalness_answer_per_report.sql` | Redefines `get_naturalness_distribution` to count each report once per score. Keeps the existing grants. Apply after step 12. |
 
 PRs #234, #238 and #242 are merged on `main`. Steps 18 to 20 came with the Sprint 2 fixes, which
 are on `main` since [#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284)
@@ -298,7 +301,7 @@ rebase, then force-push your branch.
 | --- | --- | --- |
 | `ci.yaml` | Every push to any branch, and by hand | `webapp-tests`: `npm ci`, `npx tsc --noEmit`, `npm run test:ci`, `npm run build`, then `npm run lint -- --max-warnings 0`. `docs-build`: `mkdocs build --clean`. `hook-tests`: `sh .githooks/test-hooks.sh`. |
 | `pr-checks.yaml` | PRs into `main`, `release` and `sprint-*` | `conventions` (branch name, PR title, commit messages) and `pr-size`. |
-| `reviewer-gate.yaml` | PRs into `main`, `release` and `sprint-*`, and reviews | `reviewers`, which posts the `reviewer-gate` status. |
+| `reviewer-gate.yaml` | PRs into `main`, `release` and `sprint-*`, and reviews. Skipped while the PR is a draft; it runs when the PR is marked ready for review. | `reviewers`, which posts the `reviewer-gate` status. |
 | `diagrams.yaml` | PRs into `main`, `release` and `sprint-*` | See [The diagrams workflow](#the-diagrams-workflow). |
 | `diagram-svg-check.yaml` | Every PR into `main`, `release` and `sprint-*`, on the self-hosted runner | `diagram-svg-check`: runs the diagram tests and `check --svg-only`. It fails when the source or SVG differs from the recorded render, the SVG is missing, or the manifest has no SVG hash. It renders and writes nothing. Run `npm run diagrams` and commit the result. |
 | `e2e.yaml` | PRs into `main` and `release`, and by hand | `cypress`: runs `cypress/e2e/logout.cy.ts` and `cypress/e2e/profile.cy.ts` against a local Supabase that it starts in the job (the migrations, `supabase/seed.sql` and `scripts/e2e_seed.js`). |

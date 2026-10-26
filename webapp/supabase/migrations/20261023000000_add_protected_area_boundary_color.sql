@@ -8,12 +8,21 @@
 alter table public.protected_areas
   add column if not exists boundary_color text;
 
-alter table public.protected_areas
-  drop constraint if exists protected_areas_boundary_color_format;
-
-alter table public.protected_areas
-  add constraint protected_areas_boundary_color_format
-  check (boundary_color is null or boundary_color ~ '^#[0-9A-Fa-f]{6}$');
+-- The constraint is only added when it does not exist, so a rerun does not repeat
+-- the full-table validation scan under its ACCESS EXCLUSIVE lock.
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'protected_areas_boundary_color_format'
+      and conrelid = 'public.protected_areas'::regclass
+  ) then
+    alter table public.protected_areas
+      add constraint protected_areas_boundary_color_format
+      check (boundary_color is null or boundary_color ~ '^#[0-9A-Fa-f]{6}$');
+  end if;
+end;
+$$;
 
 comment on column public.protected_areas.boundary_color is
   'Admin-chosen map color as #rrggbb. Null means the map default.';

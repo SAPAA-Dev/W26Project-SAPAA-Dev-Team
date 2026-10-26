@@ -1,8 +1,29 @@
 -- One protected area belongs to one site. The column stays nullable:
 -- a site can have no protected area. A unique index in Postgres allows many nulls.
--- Stop if this file fails. Two sites already share one protected_area_id.
--- A human must remove the extra link before this constraint can be added.
--- A human runs this file in the Supabase dashboard. Do not run it from the app.
+-- The check below stops the file with a readable error before the constraint fails
+-- with a raw unique violation. A human must remove the extra link before this
+-- constraint can be added. A human runs this file in the Supabase dashboard. Do not
+-- run it from the app. ALTER TABLE ... ADD CONSTRAINT ... UNIQUE takes an ACCESS
+-- EXCLUSIVE lock on sites_pa while the unique index builds: reads and writes wait for it,
+-- so run it outside peak use.
+
+do $$
+declare
+  duplicate_link record;
+begin
+  for duplicate_link in
+    select protected_area_id, count(*) as site_count
+    from public.sites_pa
+    where protected_area_id is not null
+    group by protected_area_id
+    having count(*) > 1
+  loop
+    raise exception
+      'Two or more sites link to protected area %: remove the extra link before this constraint can be added',
+      duplicate_link.protected_area_id;
+  end loop;
+end;
+$$;
 
 drop index if exists public.sites_pa_protected_area_id_idx;
 
