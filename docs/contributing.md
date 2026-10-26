@@ -196,6 +196,8 @@ Run the files in this order.
 | 26 | `20261024000000_add_site_priority_scores.sql` | Adds the three scores, saved date and saving Admin. Existing sites have no scores. Apply before deploying US 2.0.12 and 2.0.13. |
 | 27 | `20261024010000_create_export_jobs.sql` | Creates export jobs and the creator-only read policy. Only the service-role server writes jobs. Apply before deploying US 3.0.3. |
 | 28 | `20261024020000_check_gpx_track_path.sql` | From PR #312. Include only after it merges. It replaces the GPX insert policy with the path check; existing rows are not rewritten. |
+| 29 | `20261025000000_fix_site_delete_impact.sql` | Redefines the two site delete functions so the impact count includes GPX tracks and page fields. Service role only. Apply after step 28. |
+| 30 | `20261025000010_add_missing_fk_indexes.sql` | Adds five foreign key indexes. Each build locks its table while it runs, so apply outside peak use. |
 
 PRs #234, #238 and #242 are merged on `main`. Steps 18 to 20 came with the Sprint 2 fixes, which
 are on `main` since [#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284)
