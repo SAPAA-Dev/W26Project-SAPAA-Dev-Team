@@ -43,37 +43,46 @@ sequenceDiagram
     autonumber off
     actor Admin
     participant Page as Admin page
-    participant Api as Export routes (proposed)<br/>/api/export<br/>/api/export/status/[jobId]
+    participant Api as Export routes<br/>/api/export<br/>/api/export/status/[jobId]
     participant Job as Background job<br/>zip export
     participant DB as Supabase DB
     participant S3 as AWS S3
+    participant Store as Supabase Storage<br/>gpx-tracks bucket
 
-    Note over Admin,S3: Covers US 3.0.3. All steps are proposed. The flow copies<br/>the PDF job pattern (S26_pdf_jobs, after(), presigned URL).<br/>export_jobs is like S26_pdf_jobs, without mode and request_payload.
+    Note over Admin,Store: Covers US 3.0.3. The flow copies the PDF job pattern<br/>(S26_pdf_jobs, after(), presigned URL).<br/>export_jobs is like S26_pdf_jobs, without mode and request_payload.
 
     Admin->>Page: Select Export all files
-    Page->>Api: POST /api/export: createExportJob()
-    Api->>Api: Check caller is Admin<br/>from a trusted role source, store not decided
+    Page->>Api: POST /api/export
+    Api->>Api: Check caller is Admin: app_metadata role is admin<br/>and the account is approved
     alt Caller is not Admin
         Api-->>Page: 403. No job is made
         Page-->>Admin: Show "not allowed"
+    else Caller is Admin and has an export that started in the last 30 minutes<br/>and is still pending or processing
+        Api-->>Page: 409 with that jobId. No new job is made
+        Page->>Page: Follow the job that is already running
     else Caller is Admin
         Api->>DB: Insert export_jobs row,<br/>status pending, created_by = caller
         Api-->>Page: 202 with jobId
         Api->>Job: after(): run zip job
-        Job->>DB: Read storage keys from attachments,<br/>homepage_image_uploads, gpx_tracks<br/>and completed S26_pdf_jobs
+        Job->>DB: Read storage keys page by page from attachments,<br/>homepage_image_uploads, gpx_tracks<br/>and completed S26_pdf_jobs
         DB-->>Job: Storage keys
-        loop Each stored file
-            Job->>S3: Get file
-            S3-->>Job: File
-            Job->>Job: Add file to zip
+        loop Each stored file, one at a time
+            alt Image or PDF
+                Job->>S3: Get file
+                S3-->>Job: File
+            else GPX track
+                Job->>Store: Download file
+                Store-->>Job: File
+            end
+            Job->>Job: Add file to zip. Stop when the files total more than 500 MB
         end
-        alt A file is missing or the job fails
-            Job->>DB: Update export_jobs row: status failed,<br/>error with file names
+        alt A file is missing, the files total more than 500 MB, or the job fails
+            Job->>DB: Update export_jobs row: status failed,<br/>error with the file names (up to 10) or the 500 MB limit
         else Zip is made (AT 1, AT 2)
             Job->>S3: Put zip file
             Job->>DB: Update export_jobs row: status complete,<br/>storage_path of the zip
         end
-        Page->>Api: GET /api/export/status/[jobId]:<br/>getExportJobStatus(jobId)
+        Page->>Api: GET /api/export/status/[jobId]
         Api->>Api: Check session. Check caller is Admin or job creator
         alt Caller is not Admin and not the job creator
             Api-->>Page: 403. No status and no URL
@@ -93,4 +102,4 @@ sequenceDiagram
         end
     end
 
-    Note over Job,S3: Zip size and job run time can be large.<br/>The limits are an open question for the team.
+    Note over Job,Store: One export holds at most 500 MB. The job builds the zip in memory,<br/>so a larger limit needs a multipart upload.

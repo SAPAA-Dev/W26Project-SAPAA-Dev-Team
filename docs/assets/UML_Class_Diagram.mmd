@@ -153,7 +153,7 @@ classDiagram
         class PdfReportQueries {
             <<webapp/lib/pdf/reportQueries.ts>>
             +getReportQuestionKeyMap() Record
-            +reduceAnswers(rawAnswers, keyMap) answers, naturalness, naturalnessDetails, steward
+            +reduceAnswers(rawAnswers, keyMap) answers, naturalness, naturalnessDetails, steward, ...
             +getAttachmentsByResponseId(responseId) list of id, question_id, storage_key, filename, content_type, ...
             +getSitesByNames(siteNames) list of id, namesite, ab_county, ab_counties
             +getFormResponsesForSiteIds(siteIds, keyMap) Map
@@ -243,9 +243,10 @@ classDiagram
         }
 
         class ExportRoutes {
-            <<new 3.0.3: proposed routes>>
-            +createExportJob() jobId [NEW 3.0.3]
-            +getExportJobStatus(jobId) ExportJob [NEW 3.0.3]
+            <<new 3.0.3: routes>>
+            +POST() jobId [NEW 3.0.3]
+            +GET(jobId) ExportJob [NEW 3.0.3]
+            +processExportJob(jobId) void [NEW 3.0.3]
         }
 
         class OfflineMapService {
@@ -283,7 +284,7 @@ classDiagram
     note for InspectionQueries "CHANGE 1.0.3: getFormResponsesBySite removes answers that the steward hides.<br>CHANGE 7.0.4: it also returns the question key of each answer.<br>The site page groups answers by that key. There is no separate query."
     note for AccessChecks "Not a module. Each helper is a private function that reads the caller from the server session.<br>requireApprovedAdmin: queries.ts and form-actions.ts. requireApprovedCaller, requireReportWriter: queries.ts.<br>isApprovedAdmin: admin-actions.ts and kml-import-actions.ts. getAdminUserId: steward-actions.ts.<br>Approved = app_metadata.authenticated true. Admin = app_metadata.role admin. RLS reads the same keys.<br>The route handlers have inline copies. middleware.ts also blocks unapproved users (403 or redirect to /sites)."
     note for SiteQueries "US 2.0.8 uses Site, getSiteByName and getFormResponsesBySite.<br>US 2.0.4: archiveSite hides a Site. permanentlyDeleteSite deletes only an archived sites_pa row.<br>SIRs, attachments and homepage images stay with no site. S3 files stay.<br>US 2.0.1: getProtectedAreaBoundaries. US 2.0.2: getSiteSuggestions."
-    note for ExportRoutes "POST /api/export calls createExportJob.<br>GET /api/export/status/[jobId] calls getExportJobStatus.<br>getExportJobStatus returns the URL only to an Admin or the job creator.<br>The ZIP includes inspection images, homepage images, GPX files and completed PDFs."
+    note for ExportRoutes "POST /api/export makes a job and starts processExportJob after the response.<br>GET /api/export/status/[jobId] returns the URL only to an Admin or the job creator.<br>The ZIP includes inspection images, homepage images, GPX files and completed PDFs, up to 500 MB."
     note for PdfDataFetcher "CHANGE 7.0.7: removes the answers of options.hiddenQuestionIds.<br>CHANGE 7.0.6: processPdfJob reads the SIRs in batches.<br>The cause of the 50 SIR limit is an open question."
     note for ContributionMetrics "Proposed (docs/user-model.md, Gamification proposal). Counts from form_responses and sites_pa:<br>inspections, counties, site variety, first report of a Site. All time or the last year.<br>No points are stored. people.activity_points stays unused."
     note for NewReportPage "NEW 4.0.5: the browser calls iNaturalist. handleSubmit copies<br>each chosen photo to S3 through /api/s3/presign.<br>insertInspectionAttachments writes inat_observation_id.<br>CHANGE 4.0.6: photo identifier is optional and does not block submission.<br>PresignRoute also accepts an empty identifier."
@@ -304,7 +305,7 @@ classDiagram
     SiteImagesRoute --> SupabaseBackend : inline Admin check for DELETE
     PdfRoute --> SupabaseBackend : inline check, owner or Admin
     PdfStatusRoute --> SupabaseBackend : inline check, job creator only
-    ExportRoutes --> AccessChecks : Admin (proposed)
+    ExportRoutes --> AccessChecks : Admin
     SiteQueries --> SupabaseBackend : web app tables
     InspectionQueries --> SupabaseBackend : web app tables
     ProfileRoute --> SupabaseBackend : people, socials, form_responses

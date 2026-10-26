@@ -43,6 +43,13 @@ classDiagram
         +is_active: boolean
         +archived_at: timestamp?
         +protected_area_id: number?
+        +centre_latitude: number?
+        +centre_longitude: number?
+        +priority_abuses: number?
+        +priority_biological: number?
+        +priority_time: number?
+        +priority_saved_at: timestamp?
+        +priority_saved_by: string?
     }
 
     class County {
@@ -103,6 +110,7 @@ classDiagram
         +question_id: number
         +obs_value: string?
         +obs_comm: string?
+        +is_hidden: boolean
     }
 
     class Question {
@@ -217,6 +225,7 @@ classDiagram
         +fid: number
         +date_res: date?
         +area_ha: number?
+        +boundary_color: string?
     }
 
     class SitePageField {
@@ -274,18 +283,6 @@ classDiagram
         +longitude: number [NEW 6.0.1]
     }
 
-    class GpxTrack {
-        <<new table gpx_tracks, 2.0.9>>
-        +id: number
-        +site_id: number
-        +user_id: string
-        +storage_key: string
-        +filename: string
-        +file_size_bytes: number
-        +point_count: number
-        +created_at: timestamp
-    }
-
     class Person {
         +inat_username: string? [NEW 4.0.5]
     }
@@ -316,16 +313,6 @@ classDiagram
 
     class Attachment {
         +inat_observation_id: number [NEW 4.0.5]
-    }
-
-    class ExportJob {
-        <<new table export_jobs, 3.0.3>>
-        +id: string
-        +created_by: string
-        +status: string
-        +storage_path: string
-        +error: string
-        +created_at: timestamp
     }
 
     class SiteSafety {
