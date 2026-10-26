@@ -141,9 +141,57 @@ describe('/api/profile', () => {
       expect(response.status).toBe(200);
       expect(mockRpc).toHaveBeenCalledWith('get_distinct_inspected_site_count', { p_user_id: VIEWER.id });
       expect(body.stats.distinctSiteCount).toBe(2);
-      expect(mockAdminFrom).toHaveBeenCalledTimes(2);
+      // One read of the reports. The owner's second read of people is the 1.0.6 option list.
+      expect(mockAdminFrom.mock.calls.filter(([table]) => table === 'form_responses')).toHaveLength(1);
       expect(mockAdminFrom).toHaveBeenCalledWith('people');
-      expect(mockAdminFrom).toHaveBeenCalledWith('form_responses');
+    });
+
+    describe('skill and focus area options (1.0.6 AT1)', () => {
+      function peopleTables(optionRows: unknown, optionError: unknown = null, profileRow: unknown = PERSON) {
+        // Awaiting the builder gives the rows. makeQuery is thenable-free, so this one is.
+        const optionQuery: Record<string, unknown> = {
+          then: (resolve: (value: unknown) => unknown) => Promise.resolve({ data: optionRows, error: optionError }).then(resolve),
+        };
+        optionQuery.select = jest.fn(() => optionQuery);
+        optionQuery.overrideTypes = jest.fn(() => optionQuery);
+        const profileQuery = makeQuery({ data: profileRow, error: null });
+        let peopleReads = 0;
+        mockAdminFrom.mockImplementation((table: string) => {
+          if (table !== 'people') return makeQuery({ data: [], error: null, count: 0 });
+          peopleReads += 1;
+          return peopleReads === 1 ? profileQuery : optionQuery;
+        });
+      }
+
+      it('gives the owner the values that profiles already use, once each', async () => {
+        peopleTables([
+          { skills: ['Bird ID', 'bird id'], focus_areas: ['Wetlands'] },
+          { skills: ['Bird ID', 'Mosses'], focus_areas: null },
+        ]);
+
+        const body = await (await GET(makeRequest({}) as never)).json();
+
+        expect(body.options).toEqual({ skills: ['Bird ID', 'Mosses'], focusAreas: ['Wetlands'] });
+      });
+
+      it('gives the list to nobody but the owner', async () => {
+        peopleTables([{ skills: ['Bird ID'], focus_areas: [] }], null, { ...PERSON, auth_user_id: 'someone-else' });
+
+        const body = await (await GET(makeRequest({ personId: '99' }) as never)).json();
+
+        expect(body.isOwner).toBe(false);
+        expect(body.options).toBeUndefined();
+      });
+
+      it('still returns the profile with an empty list when the list cannot be read', async () => {
+        peopleTables(null, { code: '57014', message: 'timeout' });
+
+        const response = await GET(makeRequest({}) as never);
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(body.options).toEqual({ skills: [], focusAreas: [] });
+      });
     });
 
     it('flags unavailable sites and removes reports for deleted sites', async () => {

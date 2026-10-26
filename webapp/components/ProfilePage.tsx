@@ -7,6 +7,8 @@ import { Archive, Check, ClipboardList, Leaf, Loader2, MapPin, Pencil, Save, Use
 import { getSitesForSteward, StewardedSite } from '@/utils/steward-actions';
 import { SOCIAL_FIELDS, SocialKey, Socials, socialHref } from '@/lib/socials';
 import UserNavBar from '@/components/HeaderDropdown';
+import TagPicker from '@/components/TagPicker';
+import { TagOptions } from '@/lib/profileTags';
 
 type HistoryItem = {
   id: number;
@@ -32,17 +34,10 @@ type ProfileData = {
   stats: { inspectionCount: number; distinctSiteCount: number };
   history: HistoryItem[];
   pagination: Pagination;
+  options?: TagOptions;
 };
 
-type ProfileForm = { displayName: string; skills: string; focusAreas: string; socials: Record<SocialKey, string> };
-
-function tagText(tags: string[]) {
-  return tags.join(', ');
-}
-
-function splitTags(value: string) {
-  return value.split(',').map((tag) => tag.trim()).filter(Boolean);
-}
+type ProfileForm = { displayName: string; skills: string[]; focusAreas: string[]; socials: Record<SocialKey, string> };
 
 function formatDate(value: string | null) {
   if (!value) return 'Date not recorded';
@@ -109,6 +104,7 @@ function ContactList({ socials }: { socials?: Socials }) {
 
 function ProfileEditForm({
   form,
+  options,
   onChange,
   onSubmit,
   onCancel,
@@ -116,6 +112,7 @@ function ProfileEditForm({
   saveError,
 }: {
   form: ProfileForm;
+  options: TagOptions;
   onChange: (form: ProfileForm) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onCancel: () => void;
@@ -141,14 +138,8 @@ function ProfileEditForm({
             title="Enter your name."
           />
         </label>
-        <label className="text-sm font-semibold text-[#254431]">
-          Skills <span className="font-normal">(comma-separated)</span>
-          <input value={form.skills} onChange={(event) => onChange({ ...form, skills: event.target.value })} className={inputClass} />
-        </label>
-        <label className="text-sm font-semibold text-[#254431]">
-          Focus areas <span className="font-normal">(comma-separated)</span>
-          <input value={form.focusAreas} onChange={(event) => onChange({ ...form, focusAreas: event.target.value })} className={inputClass} />
-        </label>
+        <TagPicker label="Skills" values={form.skills} options={options.skills} onChange={(skills) => onChange({ ...form, skills })} />
+        <TagPicker label="Focus areas" values={form.focusAreas} options={options.focusAreas} onChange={(focusAreas) => onChange({ ...form, focusAreas })} />
       </div>
       <h3 className="mt-6 text-base font-bold text-[#254431]">
         Contact <span className="text-sm font-normal text-[#5B655D]">(email required, the rest optional, visible to signed-in members)</span>
@@ -358,7 +349,7 @@ export default function ProfilePage({ personId }: { personId?: string }) {
   const [pageLoading, setPageLoading] = useState(false);
   const [pageError, setPageError] = useState<string | null>(null);
   const router = useRouter();
-  const [form, setForm] = useState<ProfileForm>({ displayName: '', skills: '', focusAreas: '', socials: socialsForm(undefined) });
+  const [form, setForm] = useState<ProfileForm>({ displayName: '', skills: [], focusAreas: [], socials: socialsForm(undefined) });
   const [stewardedSites, setStewardedSites] = useState<StewardedSite[]>([]);
 
   const loadProfile = useCallback(async () => {
@@ -371,8 +362,8 @@ export default function ProfilePage({ personId }: { personId?: string }) {
       setData(payload);
       setForm({
         displayName: payload.profile.displayName,
-        skills: tagText(payload.profile.skills),
-        focusAreas: tagText(payload.profile.focusAreas),
+        skills: payload.profile.skills,
+        focusAreas: payload.profile.focusAreas,
         socials: socialsForm(payload.profile.socials),
       });
     } catch (err) {
@@ -419,8 +410,8 @@ export default function ProfilePage({ personId }: { personId?: string }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           displayName: form.displayName,
-          skills: splitTags(form.skills),
-          focusAreas: splitTags(form.focusAreas),
+          skills: form.skills,
+          focusAreas: form.focusAreas,
           socials: form.socials,
         }),
       });
@@ -516,6 +507,7 @@ export default function ProfilePage({ personId }: { personId?: string }) {
         {editing && data.isOwner && (
           <ProfileEditForm
             form={form}
+            options={data.options ?? { skills: [], focusAreas: [] }}
             onChange={setForm}
             onSubmit={saveProfile}
             onCancel={() => { setEditing(false); setSaveError(null); }}

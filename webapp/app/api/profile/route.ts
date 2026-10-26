@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createServerSupabase } from '@/utils/supabase/server';
 import { normaliseSocials, Socials, toSocials } from '@/lib/socials';
+import { collectTagOptions } from '@/lib/profileTags';
 
 const PROFILE_SELECT = 'id, auth_user_id, display_name, skills, focus_areas';
 // socials.person_id is the primary key, so PostgREST embeds one object (or null), not a list.
@@ -178,7 +179,23 @@ export async function GET(request: NextRequest) {
     stats: { inspectionCount: count ?? 0, distinctSiteCount: Number(siteCount ?? 0) },
     history,
     pagination: { page, pageSize: PAGE_SIZE, total: count ?? 0 },
+    options: isOwner ? await loadTagOptions(admin) : undefined,
   });
+}
+
+// 1.0.6: only the owner edits, so only the owner gets the values that other profiles use.
+// The values carry no names, so the list does not say who has which skill.
+async function loadTagOptions(admin: ReturnType<typeof createServerSupabase>) {
+  const { data, error } = await admin
+    .from('people')
+    .select('skills, focus_areas')
+    .overrideTypes<Array<Pick<ProfileRow, 'skills' | 'focus_areas'>>, { merge: false }>();
+  // The picker still works with no list: the person can use Other.
+  if (error || !data) return { skills: [], focusAreas: [] };
+  return {
+    skills: collectTagOptions(data.map((row) => row.skills)),
+    focusAreas: collectTagOptions(data.map((row) => row.focus_areas)),
+  };
 }
 
 export async function PATCH(request: NextRequest) {
