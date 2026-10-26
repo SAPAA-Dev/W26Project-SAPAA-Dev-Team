@@ -1,9 +1,13 @@
 -- LOCAL ONLY. Do not run this file in production.
 -- npm run dev (scripts/local_supabase.js) applies it to build the old W26_ schema in a
 -- local Supabase, so the later migrations have tables to rename and alter. Production
--- already has these tables. This file turns on RLS for luperson with no policy, which
--- would cut off the mobile app and the Sheet, and its create policy lines fail on a second
--- run. If production uses the Supabase CLI migration history, mark it as applied instead:
+-- already has these tables.
+-- The legacy tables (luperson, sites_list_fnr, sites_detail_fnr_test,
+-- sites_report_fnr_test) get no RLS here. RLS with no policy returns zero rows to every
+-- non-service client, and the webapp reads them with the service role, so RLS adds
+-- nothing in local development. Enabling it here was a trap: the file sits in the
+-- migration directory, so a CLI push against production would have turned it on there.
+-- If production uses the Supabase CLI migration history, mark this file as applied instead:
 -- supabase migration repair --status applied 20260925000000
 
 create table if not exists public."W26_ab_counties" (
@@ -165,17 +169,10 @@ alter table public."W26_form_responses" enable row level security;
 alter table public."W26_answers" enable row level security;
 alter table public."W26_attachments" enable row level security;
 alter table public."W26_homepage-image-uploads" enable row level security;
-alter table public."luperson" enable row level security;
-alter table public.sites_list_fnr enable row level security;
-alter table public.sites_detail_fnr_test enable row level security;
-alter table public.sites_report_fnr_test enable row level security;
 alter table public."S26_pdf_jobs" enable row level security;
 
-grant select on public.sites_report_fnr_test to authenticated;
-create policy "Authenticated users can read local site reports"
-  on public.sites_report_fnr_test for select to authenticated
-  using (true);
-
+-- The policies are dropped before they are created, so a second run of this file succeeds.
+drop policy if exists "Users can read their PDF jobs" on public."S26_pdf_jobs";
 grant select, insert on public."S26_pdf_jobs" to authenticated;
 create policy "Users can read their PDF jobs"
   on public."S26_pdf_jobs" for select to authenticated
