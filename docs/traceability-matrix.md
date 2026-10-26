@@ -8,12 +8,24 @@ and #276). The GitHub release
 [`sprint-2`](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/releases/tag/sprint-2) was
 published on October 13.
 
+Sprint 3 rows are as of **October 26, 2026**, on `sprint-3` at `5181a2d`
+([#214](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/214)). Their status comes from a local
+run of `npm run test:ci` on that commit: 127 suites passed and 2 skipped, 1840 tests passed and 12
+skipped, 0 failed. The 2 skipped suites are the database tests. A local run of
+`npm run test:db -- --runInBand` on the same commit, with every migration applied: 2 suites, 12
+tests, all passed. The team
+agreed to use a local run because Actions could not run on GitHub-hosted runners. CI now uses a
+self-hosted runner ([#316](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/316)). When CI runs
+on `sprint-3`, take the status from that run.
+
 ## How to read this page
 
 - There is one table for each feature area. Each row is one AT of one user story.
 - **Test file(s)** are relative to `webapp/`. Jest tests are in `__tests__/`. Cypress (E2E) tests
   are in `cypress/e2e/`. A number after a colon is the line of the test, for example
   `ProfilePage.test.tsx:243`.
+- **PR** is the pull request that added or changed the tests and the code of a Sprint 3 AT. "Not
+  merged" means the PR of the story is not in `sprint-3`. Rows from earlier sprints show `-`.
 - **S/F** tells which scenarios the tests check:
 
 | Value | Meaning |
@@ -50,7 +62,7 @@ published on October 13.
 | Pass | Tests for the AT exist and passed. |
 | Pass (partial) | Tests passed, but they check only part of the AT. The note below the table tells which part is missing. |
 | Fail | A test for the AT failed. |
-| Not run | Only a Cypress test checks the AT, and no recorded run of that test exists, so the result is not verified. No row has this status now. |
+| Not run | Only a Cypress or database test checks the AT, and no recorded run of that test exists, so the result is not verified. |
 | Not yet tested | No test checks the AT. |
 
 ## How to update this page
@@ -65,21 +77,27 @@ published on October 13.
 
 ## 1 - People Management
 
-| US | AT | Acceptance test (short) | Test file(s) | Test type | S/F | Labelled in test name | Status |
-|---|---|---|---|---|---|---|---|
-| US 1.0.1 | AT1 | A profile shows name, skills, focus area, contact info and inspection count | `__tests__/app/api/profile.test.ts:274`, `__tests__/components/ProfilePage.test.tsx:106,116,134,140`, `__tests__/lib/socials.test.ts` | API, Component, Unit | S+F | Yes | Pass |
-| US 1.0.1 | AT2 | Open my own profile from the main menu | `__tests__/components/HeaderDropdown.test.tsx:94` | Component | S | Yes | Pass |
-| US 1.0.1 | AT3 | Open a profile from an inspection on a site page | `__tests__/components/SubmittedBy.test.tsx:11`, `__tests__/lib/steward-actions.test.ts:183` | Component, Unit | S+F | Yes | Pass |
-| US 1.0.1 | AT4 | Go back to the previous page from a profile | `__tests__/components/ProfilePage.test.tsx:69` | Component | S | Yes | Pass |
-| US 1.0.1 | AT5 | A reload shows the latest stored values | `__tests__/components/ProfilePage.test.tsx:308` | Component | S | Yes | Pass |
-| US 1.0.2 | AT1 | A user edits only their own information | `__tests__/app/api/profile.test.ts:326,393`, `__tests__/components/ProfilePage.test.tsx:252`, `__tests__/db/rls.test.ts:56` | API, Component, DB | S+F | Yes | Pass |
-| US 1.0.2 | AT2 | A request to edit another user's information fails | `__tests__/app/api/profile.test.ts:307`, `cypress/e2e/profile.cy.ts:91`, `__tests__/db/rls.test.ts:65` | API, E2E, DB | F | Yes | Pass |
-| US 1.0.2 | AT3 | A blank name or email blocks Save and highlights the field | `__tests__/components/ProfilePage.test.tsx:227,239`, `__tests__/app/api/profile.test.ts:361,401`, `__tests__/lib/socials.test.ts:21` | Component, API, Unit | F | Yes | Pass |
-| US 1.0.2 | AT4 | After Save, the page shows the new values | `__tests__/components/ProfilePage.test.tsx:273,290,308`, `__tests__/app/api/profile.test.ts:345,410` | Component, API | S+F | Yes | Pass |
-| US 1.0.2 | AT5 | Saved values stay after sign-out and sign-in | `cypress/e2e/profile.cy.ts:64` | E2E | S | Yes | Pass |
-| US 1.0.2 | AT6 | Added skills and focus areas show on the profile after Save | `__tests__/components/ProfilePage.test.tsx:308`, `__tests__/app/api/profile.test.ts:419` | Component, API | S+F | Yes | Pass |
-| US 1.0.3 | AT1 to AT3 | Inspection history on a profile (Sprint 3) | - | - | - | - | Not yet tested |
-| US 1.0.4 | AT1 to AT2 | Activity aggregates on a profile (Sprint 3) | - | - | - | - | Not yet tested |
+| US | AT | Acceptance test (short) | Test file(s) | Test type | S/F | Labelled in test name | Status | PR |
+|---|---|---|---|---|---|---|---|---|
+| US 1.0.1 | AT1 | A profile shows name, skills, focus area, contact info and inspection count | `__tests__/app/api/profile.test.ts:274`, `__tests__/components/ProfilePage.test.tsx:106,116,134,140`, `__tests__/lib/socials.test.ts` | API, Component, Unit | S+F | Yes | Pass | - |
+| US 1.0.1 | AT2 | Open my own profile from the main menu | `__tests__/components/HeaderDropdown.test.tsx:94` | Component | S | Yes | Pass | - |
+| US 1.0.1 | AT3 | Open a profile from an inspection on a site page | `__tests__/components/SubmittedBy.test.tsx:11`, `__tests__/lib/steward-actions.test.ts:183` | Component, Unit | S+F | Yes | Pass | - |
+| US 1.0.1 | AT4 | Go back to the previous page from a profile | `__tests__/components/ProfilePage.test.tsx:69` | Component | S | Yes | Pass | - |
+| US 1.0.1 | AT5 | A reload shows the latest stored values | `__tests__/components/ProfilePage.test.tsx:308` | Component | S | Yes | Pass | - |
+| US 1.0.2 | AT1 | A user edits only their own information | `__tests__/app/api/profile.test.ts:326,393`, `__tests__/components/ProfilePage.test.tsx:252`, `__tests__/db/rls.test.ts:56` | API, Component, DB | S+F | Yes | Pass | - |
+| US 1.0.2 | AT2 | A request to edit another user's information fails | `__tests__/app/api/profile.test.ts:307`, `cypress/e2e/profile.cy.ts:91`, `__tests__/db/rls.test.ts:65` | API, E2E, DB | F | Yes | Pass | - |
+| US 1.0.2 | AT3 | A blank name or email blocks Save and highlights the field | `__tests__/components/ProfilePage.test.tsx:227,239`, `__tests__/app/api/profile.test.ts:361,401`, `__tests__/lib/socials.test.ts:21` | Component, API, Unit | F | Yes | Pass | - |
+| US 1.0.2 | AT4 | After Save, the page shows the new values | `__tests__/components/ProfilePage.test.tsx:273,290,308`, `__tests__/app/api/profile.test.ts:345,410` | Component, API | S+F | Yes | Pass | - |
+| US 1.0.2 | AT5 | Saved values stay after sign-out and sign-in | `cypress/e2e/profile.cy.ts:64` | E2E | S | Yes | Pass | - |
+| US 1.0.2 | AT6 | Added skills and focus areas show on the profile after Save | `__tests__/components/ProfilePage.test.tsx:308`, `__tests__/app/api/profile.test.ts:419` | Component, API | S+F | Yes | Pass | - |
+| US 1.0.3 | AT1 | The profile lists previous inspections with site and date | `__tests__/components/ProfilePage.test.tsx:117,191` | Component | S | No | Pass (partial) | [#298](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/298) |
+| US 1.0.3 | AT2 | A past inspection opens with its submitted information | `__tests__/components/ProfilePage.test.tsx:108` | Component | S | Yes | Pass | [#298](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/298) |
+| US 1.0.3 | AT3 | Hidden answers are not shown to other stewards | `__tests__/components/queries.exportPaging.test.ts:182,208`, `__tests__/app/api/site-images.test.ts:157,193`, `__tests__/pages/SiteDetails.test.tsx:564` | Unit, API, Page | S+F | Yes | Pass | [#298](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/298) |
+| US 1.0.4 | AT1 | The aggregates match the user's data (SIR count, activities) | `__tests__/components/ProfilePage.test.tsx:117` | Component | S | No | Pass (partial) | Not merged |
+| US 1.0.4 | AT2 | A new report adds 1 to the SIR count | - | - | - | - | Not yet tested | Not merged |
+| US 1.0.6 | AT1 | Skills and focus areas use dropdowns with an "Other" option | - | - | - | - | Not yet tested | Not merged |
+| US 1.0.6 | AT2 | Typing a skill or focus area suggests similar existing values | - | - | - | - | Not yet tested | Not merged |
+| US 1.0.6 | AT3 | An edited skill or focus area shows on the profile after Save | - | - | - | - | Not yet tested | Not merged |
 
 Notes:
 
@@ -102,40 +120,64 @@ Notes:
 - 1.0.2 AT6: 'shows the saved values again after a reload' adds a skill and a focus area, checks
   that the save sends both, and checks that both show after the reload. `profile.test.ts:419`
   rejects more than twelve skills.
+- 1.0.3 AT1: `ProfilePage.test.tsx:117,191` check that the history is listed and paged. No test
+  checks the site name and the date of each row.
+- 1.0.4: the PR for the story (`feat/profile-activity-aggregates`) is not merged. AT1 has only the
+  older summary test `ProfilePage.test.tsx:117`.
+- 1.0.6, 3.0.3 and 3.0.4 moved from Sprint 4 to Sprint 3 on October 24. Their PRs are not merged.
 
 ## 2 - Place Management
 
-| US | AT | Acceptance test (short) | Test file(s) | Test type | S/F | Labelled in test name | Status |
-|---|---|---|---|---|---|---|---|
-| US 2.0.2 | AT1 | An Admin selects the boundary of a new site | `__tests__/components/AddSiteModal.test.tsx:109`, `__tests__/components/ProtectedAreaField.test.tsx:24,38`, `__tests__/components/queries.createSite.test.ts:70,84,89,97`, `cypress/e2e/add_site.cy.ts:54` | Component, Unit, E2E | S+F | Yes | Pass |
-| US 2.0.2 | AT2 | A possible-duplicate warning shows before save | `__tests__/components/AddSiteModal.test.tsx:70,82`, `__tests__/components/queries.createSite.test.ts:107,115,123,135,143`, `cypress/e2e/add_site.cy.ts:75` | Component, Unit, E2E | S+F | Yes | Pass |
-| US 2.0.2 | AT3 | An empty required field blocks creation and is highlighted | `__tests__/components/AddSiteModal.test.tsx:60,97`, `__tests__/components/queries.createSite.test.ts:65`, `cypress/e2e/add_site.cy.ts:89` | Component, Unit, E2E | S+F | Yes | Pass |
-| US 2.0.2 | AT4 | A Steward's create request is refused and no site is made | `__tests__/components/queries.createSite.test.ts:29,36,43`, `cypress/e2e/add_site.cy.ts:100` | Unit, E2E | F | Yes | Pass |
-| US 2.0.2 | AT5 | A new site appears in the search results | `__tests__/pages/AdminSites.test.tsx:174,186`, `cypress/e2e/add_site.cy.ts:127` | Page, E2E | S+F | Yes | Pass |
-| US 2.0.2 | AT6 | Boundary suggestions from the Alberta government KML | `__tests__/components/AddSiteModal.test.tsx:126,138`, `__tests__/components/queries.createSite.test.ts:148,155`, `__tests__/lib/availableProtectedAreas.test.ts:9`, `cypress/e2e/add_site.cy.ts:141` | Component, Unit, E2E | S+F | Yes | Pass |
-| US 2.0.3 | AT1 | Toggle a site between active and inactive | `__tests__/components/queries.disable.test.ts:90,101,118`, `__tests__/pages/AdminSites.disable.test.tsx:41,55,87,108,211`, `cypress/e2e/deactivate_site.cy.ts:72` | Unit, Component, E2E | S+F | Yes | Pass |
-| US 2.0.3 | AT2 | An inactive site is not in site pickers or search results | `__tests__/components/queries.sitesOnline.test.ts:72`, `__tests__/components/queries.report-writes.test.ts:109,116`, `__tests__/components/queries.boundaries.test.ts:115`, `cypress/e2e/deactivate_site.cy.ts:83` | Unit, E2E | S+F | Yes | Pass |
-| US 2.0.3 | AT3 | A reactivated site appears again | `__tests__/pages/AdminSites.disable.test.tsx:143,186`, `cypress/e2e/deactivate_site.cy.ts:89,97` | Component, E2E | S+F | Yes | Pass |
-| US 2.0.3 | AT4 | The inspections of an inactive site can still be viewed | `__tests__/pages/AdminSiteDetails.test.tsx:1117`, `__tests__/components/queries.admin.test.ts:67`, `cypress/e2e/deactivate_site.cy.ts:109` | Page, Unit, E2E | S+F | Yes | Pass (partial) |
-| US 2.0.3 | AT5 | A new site is active by default | `__tests__/components/queries.createSite.test.ts:50`, `cypress/e2e/deactivate_site.cy.ts:118` | Unit, E2E | S | Yes | Pass |
-| US 2.0.4 | AT1 | The Admin confirms before a site is deleted | `__tests__/pages/AdminSites.archive.test.tsx:152,206,218,267`, `__tests__/pages/AdminSites.archived.test.tsx:161,202,231` | Page | S+F | Yes | Pass |
-| US 2.0.4 | AT2 | The confirmation names how many records are affected | `__tests__/pages/AdminSites.archive.test.tsx:152,167,189,252`, `__tests__/pages/AdminSites.archived.test.tsx:180`, `__tests__/components/queries.archive-site.test.ts:80` | Page, Unit | S+F | Yes | Pass |
-| US 2.0.4 | AT3 | The agreed cascade applies to inspections, images and visit counts | `__tests__/components/queries.archive-site.test.ts:144,222`, `__tests__/pages/Reports.test.tsx:105,126`, `__tests__/pages/SiteDetails.test.tsx:160` | Unit, Page | S | Yes | Pass (partial) |
-| US 2.0.4 | AT4 | A failed cascade rejects the delete and changes nothing | `__tests__/components/queries.archive-site.test.ts:163,241`, `__tests__/pages/AdminSites.archive.test.tsx:235`, `__tests__/pages/AdminSites.archived.test.tsx:214` | Unit, Page | F | Yes | Pass |
-| US 2.0.5 | AT1 | An Admin enters edit mode on a site page | `__tests__/pages/SiteDetails.test.tsx:207`, `__tests__/components/SitePageEditor.test.tsx:27`, `__tests__/lib/availableProtectedAreas.test.ts:18` | Page, Component, Unit | S | Yes | Pass |
-| US 2.0.5 | AT2 | A non-admin cannot enter edit mode | `__tests__/pages/SiteDetails.test.tsx:215`, `__tests__/components/queries.sitePageFields.test.ts:35` | Page, Unit | F | Yes | Pass |
-| US 2.0.5 | AT3 | Edit mode shows which fields are included or excluded | `__tests__/components/SitePageEditor.test.tsx:44` | Component | S | Yes | Pass |
-| US 2.0.5 | AT4 | After save, the site page shows new fields and hides excluded ones | `__tests__/pages/SiteDetails.test.tsx:222,239`, `__tests__/components/SitePageEditor.test.tsx:52,68`, `__tests__/components/queries.sitePageFields.test.ts:44,102`, `__tests__/components/SiteLinks.test.tsx:39` | Page, Component, Unit | S+F | Yes | Pass |
-| US 2.0.6 | AT1 | Filters keep only matching sites on the map | `__tests__/lib/boundaryFilters.test.ts:85,98,109,120,132,154,160`, `__tests__/components/MapAreaFilters.test.tsx:23`, `__tests__/components/queries.boundaries.test.ts:77,105`, `__tests__/pages/Sites.test.tsx:678`, `cypress/e2e/map_filter.cy.ts:53` | Unit, Component, Page, E2E | S+F | Yes | Pass |
-| US 2.0.6 | AT2 | Clearing a filter shows all active sites again | `__tests__/pages/Sites.test.tsx:739`, `__tests__/lib/boundaryFilters.test.ts:94,143,174,218`, `cypress/e2e/map_filter.cy.ts:66` | Page, Unit, E2E | S | Yes | Pass |
-| US 2.0.6 | AT3 | Selecting a search match centres the map on the site | `__tests__/components/SiteMap.test.tsx:442,455`, `__tests__/pages/Sites.test.tsx:775`, `__tests__/lib/boundaries.test.ts:267`, `cypress/e2e/map_filter.cy.ts:76,92` | Component, Page, Unit, E2E | S+F | Yes | Pass |
-| US 2.0.10 | AT1 | A short link to the SAPAA website on the site page | `__tests__/components/SiteLinks.test.tsx:6,10,23`, `__tests__/components/queries.sitePageFields.test.ts:122,133` | Component, Unit | S+F | Yes | Pass |
-| US 2.0.10 | AT2 | A short link to iNaturalist on the site page | `__tests__/components/SiteLinks.test.tsx:23` | Component | S | Yes | Pass |
-| US 2.0.10 | AT3 | A link opens in a new window | `__tests__/components/SiteLinks.test.tsx:30` | Component | S | Yes | Pass |
-| US 2.0.1 | AT1 to AT4 | Sites and past visits on the map (Sprint 3) | - | - | - | - | Not yet tested |
-| US 2.0.8 | AT1 to AT3 | Site details from the map (Sprint 3) | - | - | - | - | Not yet tested |
-| US 2.0.9 | AT1 to AT6 | GPX track upload, one file or several (Sprint 3) | - | - | - | - | Not yet tested |
-| US 2.0.14 | AT1 | Each boundary uses the color saved by an Admin for its site or site type (Sprint 3) | `__tests__/components/SiteMap.test.tsx:324,849,882,931`, `__tests__/lib/boundaries.test.ts:325,331,349,364`, `__tests__/components/queries.boundaryColors.test.ts:38,52,66,76`, `__tests__/components/queries.boundaries.test.ts:104,113` | Component, Unit | S+F | No | Pass |
+| US | AT | Acceptance test (short) | Test file(s) | Test type | S/F | Labelled in test name | Status | PR |
+|---|---|---|---|---|---|---|---|---|
+| US 2.0.2 | AT1 | An Admin selects the boundary of a new site | `__tests__/components/AddSiteModal.test.tsx:109`, `__tests__/components/ProtectedAreaField.test.tsx:24,38`, `__tests__/components/queries.createSite.test.ts:70,84,89,97`, `cypress/e2e/add_site.cy.ts:54` | Component, Unit, E2E | S+F | Yes | Pass | - |
+| US 2.0.2 | AT2 | A possible-duplicate warning shows before save | `__tests__/components/AddSiteModal.test.tsx:70,82`, `__tests__/components/queries.createSite.test.ts:107,115,123,135,143`, `cypress/e2e/add_site.cy.ts:75` | Component, Unit, E2E | S+F | Yes | Pass | - |
+| US 2.0.2 | AT3 | An empty required field blocks creation and is highlighted | `__tests__/components/AddSiteModal.test.tsx:60,97`, `__tests__/components/queries.createSite.test.ts:65`, `cypress/e2e/add_site.cy.ts:89` | Component, Unit, E2E | S+F | Yes | Pass | - |
+| US 2.0.2 | AT4 | A Steward's create request is refused and no site is made | `__tests__/components/queries.createSite.test.ts:29,36,43`, `cypress/e2e/add_site.cy.ts:100` | Unit, E2E | F | Yes | Pass | - |
+| US 2.0.2 | AT5 | A new site appears in the search results | `__tests__/pages/AdminSites.test.tsx:174,186`, `cypress/e2e/add_site.cy.ts:127` | Page, E2E | S+F | Yes | Pass | - |
+| US 2.0.2 | AT6 | Boundary suggestions from the Alberta government KML | `__tests__/components/AddSiteModal.test.tsx:126,138`, `__tests__/components/queries.createSite.test.ts:148,155`, `__tests__/lib/availableProtectedAreas.test.ts:9`, `cypress/e2e/add_site.cy.ts:141` | Component, Unit, E2E | S+F | Yes | Pass | - |
+| US 2.0.3 | AT1 | Toggle a site between active and inactive | `__tests__/components/queries.disable.test.ts:90,101,118`, `__tests__/pages/AdminSites.disable.test.tsx:41,55,87,108,211`, `cypress/e2e/deactivate_site.cy.ts:72` | Unit, Component, E2E | S+F | Yes | Pass | - |
+| US 2.0.3 | AT2 | An inactive site is not in site pickers or search results | `__tests__/components/queries.sitesOnline.test.ts:72`, `__tests__/components/queries.report-writes.test.ts:109,116`, `__tests__/components/queries.boundaries.test.ts:115`, `cypress/e2e/deactivate_site.cy.ts:83` | Unit, E2E | S+F | Yes | Pass | - |
+| US 2.0.3 | AT3 | A reactivated site appears again | `__tests__/pages/AdminSites.disable.test.tsx:143,186`, `cypress/e2e/deactivate_site.cy.ts:89,97` | Component, E2E | S+F | Yes | Pass | - |
+| US 2.0.3 | AT4 | The inspections of an inactive site can still be viewed | `__tests__/pages/AdminSiteDetails.test.tsx:1117`, `__tests__/components/queries.admin.test.ts:67`, `cypress/e2e/deactivate_site.cy.ts:109` | Page, Unit, E2E | S+F | Yes | Pass (partial) | - |
+| US 2.0.3 | AT5 | A new site is active by default | `__tests__/components/queries.createSite.test.ts:50`, `cypress/e2e/deactivate_site.cy.ts:118` | Unit, E2E | S | Yes | Pass | - |
+| US 2.0.4 | AT1 | The Admin confirms before a site is deleted | `__tests__/pages/AdminSites.archive.test.tsx:152,206,218,267`, `__tests__/pages/AdminSites.archived.test.tsx:161,202,231` | Page | S+F | Yes | Pass | - |
+| US 2.0.4 | AT2 | The confirmation names how many records are affected | `__tests__/pages/AdminSites.archive.test.tsx:152,167,189,252`, `__tests__/pages/AdminSites.archived.test.tsx:180`, `__tests__/components/queries.archive-site.test.ts:80` | Page, Unit | S+F | Yes | Pass | - |
+| US 2.0.4 | AT3 | The agreed cascade applies to inspections, images and visit counts | `__tests__/components/queries.archive-site.test.ts:144,222`, `__tests__/pages/Reports.test.tsx:105,126`, `__tests__/pages/SiteDetails.test.tsx:160` | Unit, Page | S | Yes | Pass (partial) | - |
+| US 2.0.4 | AT4 | A failed cascade rejects the delete and changes nothing | `__tests__/components/queries.archive-site.test.ts:163,241`, `__tests__/pages/AdminSites.archive.test.tsx:235`, `__tests__/pages/AdminSites.archived.test.tsx:214` | Unit, Page | F | Yes | Pass | - |
+| US 2.0.5 | AT1 | An Admin enters edit mode on a site page | `__tests__/pages/SiteDetails.test.tsx:207`, `__tests__/components/SitePageEditor.test.tsx:27`, `__tests__/lib/availableProtectedAreas.test.ts:18` | Page, Component, Unit | S | Yes | Pass | - |
+| US 2.0.5 | AT2 | A non-admin cannot enter edit mode | `__tests__/pages/SiteDetails.test.tsx:215`, `__tests__/components/queries.sitePageFields.test.ts:35` | Page, Unit | F | Yes | Pass | - |
+| US 2.0.5 | AT3 | Edit mode shows which fields are included or excluded | `__tests__/components/SitePageEditor.test.tsx:44` | Component | S | Yes | Pass | - |
+| US 2.0.5 | AT4 | After save, the site page shows new fields and hides excluded ones | `__tests__/pages/SiteDetails.test.tsx:222,239`, `__tests__/components/SitePageEditor.test.tsx:52,68`, `__tests__/components/queries.sitePageFields.test.ts:44,102`, `__tests__/components/SiteLinks.test.tsx:39` | Page, Component, Unit | S+F | Yes | Pass | - |
+| US 2.0.6 | AT1 | Filters keep only matching sites on the map | `__tests__/lib/boundaryFilters.test.ts:85,98,109,120,132,154,160`, `__tests__/components/MapAreaFilters.test.tsx:23`, `__tests__/components/queries.boundaries.test.ts:77,105`, `__tests__/pages/Sites.test.tsx:678`, `cypress/e2e/map_filter.cy.ts:53` | Unit, Component, Page, E2E | S+F | Yes | Pass | - |
+| US 2.0.6 | AT2 | Clearing a filter shows all active sites again | `__tests__/pages/Sites.test.tsx:739`, `__tests__/lib/boundaryFilters.test.ts:94,143,174,218`, `cypress/e2e/map_filter.cy.ts:66` | Page, Unit, E2E | S | Yes | Pass | - |
+| US 2.0.6 | AT3 | Selecting a search match centres the map on the site | `__tests__/components/SiteMap.test.tsx:442,455`, `__tests__/pages/Sites.test.tsx:775`, `__tests__/lib/boundaries.test.ts:267`, `cypress/e2e/map_filter.cy.ts:76,92` | Component, Page, Unit, E2E | S+F | Yes | Pass | - |
+| US 2.0.10 | AT1 | A short link to the SAPAA website on the site page | `__tests__/components/SiteLinks.test.tsx:6,10,23`, `__tests__/components/queries.sitePageFields.test.ts:122,133` | Component, Unit | S+F | Yes | Pass | - |
+| US 2.0.10 | AT2 | A short link to iNaturalist on the site page | `__tests__/components/SiteLinks.test.tsx:23` | Component | S | Yes | Pass | - |
+| US 2.0.10 | AT3 | A link opens in a new window | `__tests__/components/SiteLinks.test.tsx:30` | Component | S | Yes | Pass | - |
+| US 2.0.1 | AT1 | Every active Site is drawn with its boundary | `__tests__/components/SiteMap.test.tsx:1104,1110` | Component | S | No | Pass (partial) | [#301](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/301) |
+| US 2.0.1 | AT2 | A GPX track is drawn in a style different from the boundary | `__tests__/lib/gpxTrack.test.ts:78`, `__tests__/components/SiteMap.test.tsx:1619` | Unit, Component | S | Yes | Pass | [#301](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/301) |
+| US 2.0.1 | AT3 | The Site page links to its location on the map | `__tests__/pages/SiteDetails.test.tsx:300` | Page | S | Yes | Pass | [#301](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/301) |
+| US 2.0.1 | AT4 | Only the newly selected Site is highlighted | `__tests__/components/SiteMap.test.tsx:1541,1550,1565`, `__tests__/pages/Sites.test.tsx:960` | Component, Page | S | Yes | Pass | [#301](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/301) |
+| US 2.0.8 | AT1 | Selecting a Site opens its detail view | `__tests__/components/SiteMap.test.tsx:631,647` | Component | S | Yes | Pass | [#297](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/297) |
+| US 2.0.8 | AT2 | The detail view shows the same name, county and last inspection date as the Site page | `__tests__/components/queries.boundaries.test.ts:150,171,191,201`, `__tests__/lib/boundaries.test.ts:230,239`, `__tests__/components/SiteMap.test.tsx:655,701,718` | Unit, Component | S+F | Yes | Pass | [#297](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/297) |
+| US 2.0.8 | AT3 | "View SIRs" goes to the past SIRs | `__tests__/components/SiteMap.test.tsx:739,755` | Component | S | Yes | Pass | [#297](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/297) |
+| US 2.0.9 | AT1 | A valid .gpx file is saved and linked to the Site and the account | `__tests__/lib/gpx-track-actions.test.ts:72,90`, `__tests__/components/GpxTrackUpload.test.tsx:68` | Unit, Component | S | Yes | Pass | [#296](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/296) |
+| US 2.0.9 | AT2 | A file without the .gpx extension shows "only GPX files" | `__tests__/lib/gpx-track-actions.test.ts:122`, `__tests__/components/GpxTrackUpload.test.tsx:99` | Unit, Component | F | Yes | Pass | [#296](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/296) |
+| US 2.0.9 | AT3 | An invalid .gpx file or one with no track points is refused and nothing is saved | `__tests__/lib/gpx-track-actions.test.ts:235,246`, `__tests__/components/GpxTrackUpload.test.tsx:140` | Unit, Component | F | Yes | Pass | [#296](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/296) |
+| US 2.0.9 | AT4 | A stored track reads back with the same track points | `__tests__/components/queries.gpxTracks.test.ts:109`, `__tests__/lib/gpxTrack.test.ts:33`, `__tests__/components/GpxTrackUpload.test.tsx:166` | Unit, Component | S | Yes | Pass | [#296](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/296) |
+| US 2.0.9 | AT5 | A file over the size limit is refused with a message that names the limit | `__tests__/lib/gpx-track-actions.test.ts:257`, `__tests__/components/GpxTrackUpload.test.tsx:111` | Unit, Component | F | Yes | Pass | [#296](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/296) |
+| US 2.0.9 | AT6 | Several files at once: each valid file is saved and each refused file is listed with its reason | `__tests__/lib/gpx-track-actions.test.ts:289`, `__tests__/components/GpxTrackUpload.test.tsx:123,140` | Unit, Component | S+F | Yes | Pass | [#296](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/296) |
+| US 2.0.12 | AT1 | An Admin enters the three scores and they are saved | `__tests__/lib/sitePriority.test.ts:18`, `__tests__/lib/site-priority-actions.test.ts:44`, `__tests__/components/SitePriority.test.tsx:48` | Unit, Component | S+F | Yes | Pass | [#307](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/307) |
+| US 2.0.12 | AT2 | The Site page shows one to-visit priority calculated from the scores | `__tests__/lib/sitePriority.test.ts:7`, `__tests__/lib/site-priority-actions.test.ts:44`, `__tests__/components/SitePriority.test.tsx:48` | Unit, Component | S | Yes | Pass | [#307](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/307) |
+| US 2.0.12 | AT3 | Two Sites with the same scores show the same priority | `__tests__/lib/sitePriority.test.ts:12`, `__tests__/lib/site-priority-actions.test.ts:137` | Unit | S | Yes | Pass | [#307](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/307) |
+| US 2.0.12 | AT4 | A Steward sees the priority and the three scores | `__tests__/lib/site-priority-actions.test.ts:110`, `__tests__/components/SitePriority.test.tsx:21` | Unit, Component | S | Yes | Pass | [#307](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/307) |
+| US 2.0.12 | AT5 | The server refuses a Steward's change and the scores stay the same | `__tests__/lib/site-priority-actions.test.ts:62`, `__tests__/components/SitePriority.test.tsx:73` | Unit, Component | F | Yes | Pass | [#307](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/307) |
+| US 2.0.13 | AT1 | An Admin sees a reminder when the points are more than a year old | `__tests__/lib/sitePriority.test.ts:38`, `__tests__/lib/site-priority-actions.test.ts:125`, `__tests__/components/SitePriority.test.tsx:100` | Unit, Component | S | Yes | Pass | [#307](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/307) |
+| US 2.0.13 | AT2 | No reminder when the points are less than a year old | `__tests__/lib/sitePriority.test.ts:42`, `__tests__/lib/site-priority-actions.test.ts:131`, `__tests__/components/SitePriority.test.tsx:106` | Unit, Component | S | Yes | Pass | [#307](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/307) |
+| US 2.0.13 | AT3 | Saving new points removes the reminder and stores the new date | `__tests__/lib/site-priority-actions.test.ts:44`, `__tests__/components/SitePriority.test.tsx:113` | Unit, Component | S | Yes | Pass | [#307](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/307) |
+| US 2.0.13 | AT4 | A Steward does not see the Admin reminder | `__tests__/lib/site-priority-actions.test.ts:110`, `__tests__/components/SitePriority.test.tsx:106` | Unit, Component | F | Yes | Pass | [#307](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/307) |
+| US 2.0.14 | AT1 | Each boundary uses the color saved by an Admin for its site or site type (Sprint 3) | `__tests__/components/SiteMap.test.tsx:324,849,882,931`, `__tests__/lib/boundaries.test.ts:325,331,349,364`, `__tests__/components/queries.boundaryColors.test.ts:38,52,66,76`, `__tests__/components/queries.boundaries.test.ts:104,113` | Component, Unit | S+F | No | Pass | [#303](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/303) |
 
 Notes:
 
@@ -179,15 +221,24 @@ Notes:
   `boundaries.test.ts` and `queries.boundaries.test.ts` test the boundary data that the map draws.
 - 2.0.10 AT1: `queries.sitePageFields.test.ts:122` gives the default links to a site with no saved
   links, and `:133` gives no link when the admin cleared or hid it.
+- 2.0.1 AT1: `SiteMap.test.tsx:1104,1110` check the boundary layer. No test checks that an inactive
+  site is not drawn.
+- 2.0.12 and 2.0.13: the tests mock the server actions and the database. No database test checks
+  that the server refuses a Steward's change.
 
 ## 3 - Admin Persona
 
-| US | AT | Acceptance test (short) | Test file(s) | Test type | S/F | Labelled in test name | Status |
-|---|---|---|---|---|---|---|---|
-| US 3.0.2 | AT1 | An Admin searches for a steward to assign | `__tests__/components/SiteSteward.test.tsx:39,70`, `__tests__/lib/steward-actions.test.ts:102,130,139`, `__tests__/pages/SiteDetails.test.tsx:187,195` | Component, Unit, Page | S+F | Yes | Pass |
-| US 3.0.2 | AT2 | An Admin assigns a new steward and replaces the old one | `__tests__/components/SiteSteward.test.tsx:39,82`, `__tests__/lib/steward-actions.test.ts:75` | Component, Unit | S+F | Yes | Pass |
-| US 3.0.2 | AT3 | The assignment shows on the site page and on the steward's profile | `__tests__/components/SiteSteward.test.tsx:15,25`, `__tests__/lib/steward-actions.test.ts:152,166`, `__tests__/components/ProfilePage.test.tsx:41,60` | Component, Unit | S | Yes | Pass |
-| US 3.0.2 | AT4 | A user who cannot assign is refused and nothing is created | `__tests__/lib/steward-actions.test.ts:47,61`, `__tests__/components/SiteSteward.test.tsx:55` | Unit, Component | F | Yes | Pass |
+| US | AT | Acceptance test (short) | Test file(s) | Test type | S/F | Labelled in test name | Status | PR |
+|---|---|---|---|---|---|---|---|---|
+| US 3.0.2 | AT1 | An Admin searches for a steward to assign | `__tests__/components/SiteSteward.test.tsx:39,70`, `__tests__/lib/steward-actions.test.ts:102,130,139`, `__tests__/pages/SiteDetails.test.tsx:187,195` | Component, Unit, Page | S+F | Yes | Pass | - |
+| US 3.0.2 | AT2 | An Admin assigns a new steward and replaces the old one | `__tests__/components/SiteSteward.test.tsx:39,82`, `__tests__/lib/steward-actions.test.ts:75` | Component, Unit | S+F | Yes | Pass | - |
+| US 3.0.2 | AT3 | The assignment shows on the site page and on the steward's profile | `__tests__/components/SiteSteward.test.tsx:15,25`, `__tests__/lib/steward-actions.test.ts:152,166`, `__tests__/components/ProfilePage.test.tsx:41,60` | Component, Unit | S | Yes | Pass | - |
+| US 3.0.2 | AT4 | A user who cannot assign is refused and nothing is created | `__tests__/lib/steward-actions.test.ts:47,61`, `__tests__/components/SiteSteward.test.tsx:55` | Unit, Component | F | Yes | Pass | - |
+| US 3.0.3 | AT1 | An export puts the files in a ZIP file | - | - | - | - | Not yet tested | Not merged |
+| US 3.0.3 | AT2 | The export has all images, at minimum | - | - | - | - | Not yet tested | Not merged |
+| US 3.0.4 | AT1 | An Admin saves a steward with only a name, email and phone number | - | - | - | - | Not yet tested | Not merged |
+| US 3.0.4 | AT2 | A steward without an account can be assigned to a site and their contact info opened | - | - | - | - | Not yet tested | Not merged |
+| US 3.0.4 | AT3 | A steward without an account is listed without signing up or signing in | - | - | - | - | Not yet tested | Not merged |
 
 Notes:
 
@@ -195,31 +246,44 @@ Notes:
 
 ## 4 - General Features
 
-| US | AT | Acceptance test (short) | Test file(s) | Test type | S/F | Labelled in test name | Status |
-|---|---|---|---|---|---|---|---|
-| US 4.0.6 | AT1 | A SIR with an empty Identifier submits | `__tests__/pages/FormSubmissionPrevention.test.tsx:370,469`, `__tests__/pages/UserEditSiteInspectionForm.test.tsx:747`, `__tests__/app/api/s3-presign.test.ts:477` | Page, API | S+F | Yes | Pass |
-| US 4.0.6 | AT2 | No "required" note beside the Identifier field | `__tests__/pages/FormSubmissionPrevention.test.tsx:506` | Page | S | Yes | Pass |
-| US 4.0.2 | AT1 to AT4 | Offline and online map layers (Sprint 3) | - | - | - | - | Not yet tested |
-| US 4.0.4 | AT1 to AT4 | Edit my previous inspections (Sprint 3) | - | - | - | - | Not yet tested |
+| US | AT | Acceptance test (short) | Test file(s) | Test type | S/F | Labelled in test name | Status | PR |
+|---|---|---|---|---|---|---|---|---|
+| US 4.0.6 | AT1 | A SIR with an empty Identifier submits | `__tests__/pages/FormSubmissionPrevention.test.tsx:370,469`, `__tests__/pages/UserEditSiteInspectionForm.test.tsx:747`, `__tests__/app/api/s3-presign.test.ts:477` | Page, API | S+F | Yes | Pass | - |
+| US 4.0.6 | AT2 | No "required" note beside the Identifier field | `__tests__/pages/FormSubmissionPrevention.test.tsx:506` | Page | S | Yes | Pass | - |
+| US 4.0.2 | AT1 | Download a map area for offline use and see its download status | `__tests__/components/OfflineSavePanel.test.tsx:218,257,269,291` | Component | S+F | No | Pass | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293), [#299](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/299) |
+| US 4.0.2 | AT2 | Offline, downloaded tiles render and the map pans and zooms inside the area | `__tests__/lib/map/offline/tileCache.test.ts:314` | Unit | S | No | Pass (partial) | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293), [#299](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/299) |
+| US 4.0.2 | AT3 | Offline, missing tiles outside the area are indicated | - | - | - | - | Not yet tested | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293), [#299](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/299) |
+| US 4.0.2 | AT4 | Online, the map uses live tiles and not the cache | - | - | - | - | Not yet tested | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293), [#299](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/299) |
+| US 4.0.4 | AT1 | The author opens a past SIR and enters edit mode | `__tests__/pages/UserEditSiteInspectionForm.test.tsx:616,641` | Page | S | No | Pass | [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
+| US 4.0.4 | AT2 | Another steward cannot enter edit mode or change the SIR | `__tests__/pages/UserEditSiteInspectionForm.test.tsx:623,630` | Page | F | No | Pass (partial) | [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
+| US 4.0.4 | AT3 | Clearing a required answer blocks submit and lists the missing questions | `__tests__/pages/UserEditSiteInspectionForm.test.tsx:723,791` | Page | F | No | Pass (partial) | [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
+| US 4.0.4 | AT4 | Saved edits show everywhere the report is rendered | `__tests__/pages/UserEditSiteInspectionForm.test.tsx:825,842` | Page | S | No | Pass (partial) | [#298](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/298), [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
 Notes:
 
 - 4.0.6 AT1: 'submits a report whose image has an empty Identifier' saves `identifier: null`. The
   presign route returns an upload URL when the identifier is empty or null.
-- 4.0.4: the inherited tests `UserEditSiteInspectionForm.test.tsx` and
-  `cypress/e2e/edit_site_inspection_form.cy.ts` (Winter 2026 US 1.0.22) are related. They are mapped
-  to 4.0.4 when the story starts in Sprint 3.
+- 4.0.2 AT2: `tileCache.test.ts:314` checks that a saved tile is returned. No test turns the
+  network off and pans or zooms the map. AT3 and AT4 have no test. They need a manual check with
+  "Offline" on in the browser developer tools (see the [Sprint 3 test plan](test-plan.md)).
+- 4.0.4: the tests are the inherited Winter 2026 US 1.0.22 tests, so no test name has a 4.0.4
+  label. AT2: the page shows Access Denied to another steward, but no test checks that the update
+  server action refuses a caller who is not the author. AT3: the tests check that submit is blocked,
+  not the list of missing questions
+  ([#204](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/204)). AT4: the tests check the
+  site page, not the profile history or the PDF export
+  ([#210](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/210)).
 
 ## 5 - Access and Accounts
 
-| US | AT | Acceptance test (short) | Test file(s) | Test type | S/F | Labelled in test name | Status |
-|---|---|---|---|---|---|---|---|
-| US 5.0.4 | AT1 | After sign-out, opening the app again shows the sign-in page | `__tests__/middleware.test.ts:54`, `__tests__/components/ProtectedRoutes.test.tsx:56,185`, `__tests__/components/HeaderDropdown.test.tsx:70,106`, `__tests__/components/AdminNavBar.test.tsx:51,64`, `__tests__/components/auth.test.ts:151,157,164`, `cypress/e2e/logout.cy.ts:46,58` | Unit, Component, E2E | S+F | Yes | Pass |
-| US 5.0.4 | AT2 | After sign-out, the Back button shows no signed-in page | `__tests__/components/SignedOutGuard.test.tsx:10`, `cypress/e2e/logout.cy.ts:79` | Component, E2E | S | Yes | Pass |
-| US 5.0.4 | AT3 | Sign out from any page | `__tests__/components/TermsContent.test.tsx:15`, `__tests__/components/ProfilePage.test.tsx:342`, `__tests__/components/HeaderDropdown.test.tsx:52,58`, `__tests__/components/AdminNavBar.test.tsx:31`, `__tests__/components/ProtectedRoutes.test.tsx:170`, `cypress/e2e/logout.cy.ts:98` | Component, E2E | S | Yes | Pass |
-| US 5.0.2 | AT1 | Select "Forgot password", enter an email, then an email is sent | `__tests__/pages/Login.test.tsx:51`, `__tests__/pages/ForgotPassword.test.tsx:41`, `__tests__/app/password-reset-request-code.test.ts:99,116,126` | Page, API | S+F | Yes | Pass (partial) |
-| US 5.0.2 | AT2 | Verify a code before setting a new password | `__tests__/pages/ForgotPassword.test.tsx:68,87`, `__tests__/app/password-reset-verify-code.test.ts:48,55,63`, `__tests__/pages/ResetPassword.test.tsx:32` | Page, API | S+F | Yes | Pass (partial) |
-| US 5.0.2 | AT3 | Sign in with the new password and not with the old one | `__tests__/pages/ResetPassword.test.tsx:61,73` | Page | S+F | Yes | Pass (partial) |
-| US 5.0.2 | AT4 | Reset the password without admin intervention | `__tests__/pages/ForgotPassword.test.tsx:41,68`, `__tests__/pages/ResetPassword.test.tsx:61`, `__tests__/components/SignedOutGuard.test.tsx:26` | Page, Component | S | Yes | Pass (partial) |
+| US | AT | Acceptance test (short) | Test file(s) | Test type | S/F | Labelled in test name | Status | PR |
+|---|---|---|---|---|---|---|---|---|
+| US 5.0.4 | AT1 | After sign-out, opening the app again shows the sign-in page | `__tests__/middleware.test.ts:54`, `__tests__/components/ProtectedRoutes.test.tsx:56,185`, `__tests__/components/HeaderDropdown.test.tsx:70,106`, `__tests__/components/AdminNavBar.test.tsx:51,64`, `__tests__/components/auth.test.ts:151,157,164`, `cypress/e2e/logout.cy.ts:46,58` | Unit, Component, E2E | S+F | Yes | Pass | - |
+| US 5.0.4 | AT2 | After sign-out, the Back button shows no signed-in page | `__tests__/components/SignedOutGuard.test.tsx:10`, `cypress/e2e/logout.cy.ts:79` | Component, E2E | S | Yes | Pass | - |
+| US 5.0.4 | AT3 | Sign out from any page | `__tests__/components/TermsContent.test.tsx:15`, `__tests__/components/ProfilePage.test.tsx:342`, `__tests__/components/HeaderDropdown.test.tsx:52,58`, `__tests__/components/AdminNavBar.test.tsx:31`, `__tests__/components/ProtectedRoutes.test.tsx:170`, `cypress/e2e/logout.cy.ts:98` | Component, E2E | S | Yes | Pass | - |
+| US 5.0.2 | AT1 | Select "Forgot password", enter an email, then an email is sent | `__tests__/pages/Login.test.tsx:51`, `__tests__/pages/ForgotPassword.test.tsx:41`, `__tests__/app/password-reset-request-code.test.ts:99,116,126` | Page, API | S+F | Yes | Pass (partial) | [#295](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/295) |
+| US 5.0.2 | AT2 | Verify a code before setting a new password | `__tests__/pages/ForgotPassword.test.tsx:68,87`, `__tests__/app/password-reset-verify-code.test.ts:48,55,63`, `__tests__/pages/ResetPassword.test.tsx:32` | Page, API | S+F | Yes | Pass (partial) | [#295](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/295) |
+| US 5.0.2 | AT3 | Sign in with the new password and not with the old one | `__tests__/pages/ResetPassword.test.tsx:61,73` | Page | S+F | Yes | Pass (partial) | [#295](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/295) |
+| US 5.0.2 | AT4 | Reset the password without admin intervention | `__tests__/pages/ForgotPassword.test.tsx:41,68`, `__tests__/pages/ResetPassword.test.tsx:61`, `__tests__/components/SignedOutGuard.test.tsx:26` | Page, Component | S | Yes | Pass (partial) | [#295](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/295) |
 
 Notes:
 
@@ -263,41 +327,49 @@ were removed on September 25, 2026 (see [Project Management](project-management.
 
 ## 6 - Data and Places
 
-| US | AT | Acceptance test (short) | Test file(s) | Test type | S/F | Labelled in test name | Status |
-|---|---|---|---|---|---|---|---|
-| US 6.0.1 | AT1 to AT4 | Site geometry from the shared KML source (Sprint 3) | - | - | - | - | Not yet tested |
+| US | AT | Acceptance test (short) | Test file(s) | Test type | S/F | Labelled in test name | Status | PR |
+|---|---|---|---|---|---|---|---|---|
+| US 6.0.1 | AT1 | A Site with a boundary in the KML is linked to it, with the same longitude and latitude values | `__tests__/lib/kmlImport.test.ts:205,214,253`, `__tests__/lib/kml-import-actions.test.ts:144`, `__tests__/db/site-boundary-links.test.ts:102,135` | Unit, DB | S | No | Pass | [#294](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/294) |
+| US 6.0.1 | AT2 | A Site read from the database has a boundary link or no link | `__tests__/db/site-boundary-links.test.ts:102,114,157` | DB | S+F | No | Pass | [#294](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/294) |
+| US 6.0.1 | AT3 | Each Site is linked or is on the list of Sites with no boundary for an Admin | `__tests__/lib/kml-import-actions.test.ts:325,337`, `__tests__/components/KmlImportModal.test.tsx:41,59`, `__tests__/db/site-boundary-links.test.ts:114,125,148` | Unit, Component, DB | S+F | No | Pass | [#294](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/294), [#303](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/303) |
+| US 6.0.1 | AT4 | The Unlinked filter shows only Sites with no boundary, and the Linked filter only Sites with one | `__tests__/lib/boundaryFilters.test.ts:228`, `__tests__/pages/AdminSites.test.tsx:107`, `__tests__/components/MapAreaFilters.test.tsx:36` | Unit, Page, Component | S | No | Pass | [#303](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/303) |
+| US 6.0.1 | AT5 | The server refuses a Steward who calls the Admin import, and returns no list | `__tests__/lib/kml-import-actions.test.ts:116,128,137` | Unit | F | No | Pass | [#294](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/294) |
 
 Notes:
 
-- 6.0.1: `__tests__/lib/kmlImport.test.ts` and `__tests__/lib/kml-import-actions.test.ts` (PR #152)
-  test the KML parser and the import. They are mapped to 6.0.1 when the story starts in Sprint 3.
+- 6.0.1 uses the final wording of its 5 ATs. The geocoding AT was removed, because the team stopped
+  using OpenCage. Some test names still say `US 6.0.1 AT3` for the Linked and Unlinked filter, which
+  is AT4 now, so the Labelled column says No.
+- 6.0.1 AT1, AT2 and AT3: `__tests__/db/site-boundary-links.test.ts` runs the real link function on a
+  local Supabase (`npm run test:db -- --runInBand`). CI does not run it. It passed in the local run
+  of October 26.
 
 ## 7 - Inspections and Media
 
-| US | AT | Acceptance test (short) | Test file(s) | Test type | S/F | Labelled in test name | Status |
-|---|---|---|---|---|---|---|---|
-| US 7.0.1 | AT1 | A Steward exports a PDF of their own SIR | `__tests__/app/api/pdf.test.ts:311`, `__tests__/components/SirPdfExportButton.test.tsx:32,41,84` | API, Component | S+F | Yes | Pass |
-| US 7.0.1 | AT2 | A Steward's request for another person's SIR is refused | `__tests__/app/api/pdf.test.ts:333,346,372,384,395`, `__tests__/app/api/pdf-status.test.ts:69`, `__tests__/components/SirPdfExportButton.test.tsx:68` | API, Component | F | Yes | Pass |
-| US 7.0.1 | AT3 | The PDF has the same answers and photos as the SIR page | `__tests__/components/SirPdfExportButton.test.tsx:41`, `__tests__/lib/pdfDataFetcher.test.ts:572,728`, `__tests__/lib/inspectionReport.test.tsx:53` | Component, Unit | S+F | Yes | Pass (partial) |
-| US 7.0.5 | AT1 | A deleted image is gone from the site gallery and reports | `__tests__/pages/AdminGallery.test.tsx:200,215`, `__tests__/app/api/site-images-delete.test.ts:172,245`, `__tests__/components/DeleteImageButton.test.tsx:34,66` | Page, API, Component | S+F | Yes | Pass (partial) |
-| US 7.0.5 | AT2 | Non-admins see no delete control and the server refuses them | `__tests__/app/api/site-images-delete.test.ts:98,113,128`, `__tests__/pages/SiteDetailsImageGallery.test.tsx:221` | API, Page | F | Yes | Pass |
-| US 7.0.5 | AT3 | The S3 file of a deleted image is gone | `__tests__/app/api/site-images-delete.test.ts:172,190,245`, `__tests__/lib/s3Delete.test.ts:19` | API, Unit | S+F | Yes | Pass (partial) |
-| US 7.0.5 | AT4 | A deactivated SIR keeps its S3 files | `__tests__/components/queries.archive-report.test.ts:154` | Unit | S | Yes | Pass |
-| US 7.0.5 | AT5 | A rolled-back SIR submission removes its S3 files | `__tests__/components/queries.rollback.test.ts:59,82,94`, `__tests__/pages/FormSubmissionPrevention.test.tsx:304` | Unit, Page | S+F | Yes | Pass |
-| US 7.0.6 | AT1 | An export of more than 50 SIRs has each selected SIR | `__tests__/app/api/pdf.test.ts:267`, `__tests__/lib/pdfDataFetcher.test.ts:449,463,487,497`, `__tests__/components/queries.exportPaging.test.ts:40,57,89,97` | API, Unit | S+F | Yes | Pass |
-| US 7.0.6 | AT2 | Each exported SIR has the same answers as its page | `__tests__/components/queries.exportPaging.test.ts:105,152,167`, `__tests__/lib/pdfDataFetcher.test.ts:336,507` | Unit | S+F | Yes | Pass |
-| US 7.0.6 | AT3 | A Steward's bulk export request is refused | `__tests__/app/api/pdf.test.ts:96,282,372,384` | API | F | Yes | Pass |
-| US 7.0.6 | AT4 | A failed export leaves the stored SIRs unchanged | `__tests__/lib/processPdfJob.test.tsx:95` | Unit | F | Yes | Pass |
-| US 7.0.7 | AT1 | Fields selected to hide are marked for the export | `__tests__/components/PdfExportModal.test.tsx:277,293,331` | Component | S | Yes | Pass |
-| US 7.0.7 | AT2 | Hidden fields are absent and the other fields are present | `__tests__/lib/pdfDataFetcher.test.ts:299,358,367,375,670`, `__tests__/app/api/pdf.test.ts:541` | Unit, API | S+F | Yes | Pass |
-| US 7.0.7 | AT3 | The stored answers stay after an export with hidden fields | `__tests__/lib/pdfDataFetcher.test.ts:314` | Unit | S | Yes | Pass |
-| US 7.0.7 | AT4 | A Steward's export request with hidden fields is refused | `__tests__/app/api/pdf.test.ts:358` | API | F | Yes | Pass |
-| US 7.0.7 | AT5 | With no hidden fields, the export has the full SIR | `__tests__/lib/pdfDataFetcher.test.ts:286,336` | Unit | S | Yes | Pass |
-| US 7.0.8 | AT1 | The Admin confirms before a SIR is deleted | `__tests__/pages/ArchiveReportModal.test.tsx:31,53`, `__tests__/pages/AdminSiteDetails.test.tsx:1136`, `__tests__/pages/AdminReports.archived.test.tsx:93`, `__tests__/components/queries.archive-report.test.ts:88`, `cypress/e2e/archive_report.cy.ts:58` | Page, Unit, E2E | S+F | Yes | Pass |
-| US 7.0.8 | AT2 | A deleted SIR is gone from the site and report lists | `__tests__/pages/AdminSiteDetails.test.tsx:1136,1158`, `__tests__/components/queries.reports.test.ts:93`, `__tests__/components/queries.archive-report.test.ts:119,130`, `cypress/e2e/archive_report.cy.ts:71` | Page, Unit, E2E | S+F | Yes | Pass |
-| US 7.0.8 | AT3 | The images of a deleted SIR are no longer shown | `__tests__/components/queries.archive-report.test.ts:139,146,176`, `__tests__/app/api/gallery.test.ts:129`, `__tests__/app/api/site-images.test.ts:87`, `__tests__/app/api/sites-siteId-gallery.test.ts:102`, `__tests__/app/api/user-gallery-sir-upload.test.ts:72`, `cypress/e2e/archive_report.cy.ts:96` | Unit, API, E2E | S+F | Yes | Pass |
-| US 7.0.8 | AT4 | A Steward's delete request is refused and the SIR stays | `__tests__/components/queries.archive-report.test.ts:60`, `__tests__/components/queries.rollback.test.ts:108,119,135`, `cypress/e2e/archive_report.cy.ts:118` | Unit, E2E | F | Yes | Pass |
-| US 7.0.8 | AT5 | A failed delete shows an error and the SIR stays | `__tests__/pages/AdminReports.archived.test.tsx:125`, `__tests__/pages/ArchiveReportModal.test.tsx:71`, `__tests__/components/queries.archive-report.test.ts:207`, `cypress/e2e/archive_report.cy.ts:150` | Page, Unit, E2E | F | Yes | Pass |
+| US | AT | Acceptance test (short) | Test file(s) | Test type | S/F | Labelled in test name | Status | PR |
+|---|---|---|---|---|---|---|---|---|
+| US 7.0.1 | AT1 | A Steward exports a PDF of their own SIR | `__tests__/app/api/pdf.test.ts:311`, `__tests__/components/SirPdfExportButton.test.tsx:32,41,84` | API, Component | S+F | Yes | Pass | - |
+| US 7.0.1 | AT2 | A Steward's request for another person's SIR is refused | `__tests__/app/api/pdf.test.ts:333,346,372,384,395`, `__tests__/app/api/pdf-status.test.ts:69`, `__tests__/components/SirPdfExportButton.test.tsx:68` | API, Component | F | Yes | Pass | - |
+| US 7.0.1 | AT3 | The PDF has the same answers and photos as the SIR page | `__tests__/components/SirPdfExportButton.test.tsx:41`, `__tests__/lib/pdfDataFetcher.test.ts:572,728`, `__tests__/lib/inspectionReport.test.tsx:53` | Component, Unit | S+F | Yes | Pass (partial) | - |
+| US 7.0.5 | AT1 | A deleted image is gone from the site gallery and reports | `__tests__/pages/AdminGallery.test.tsx:200,215`, `__tests__/app/api/site-images-delete.test.ts:172,245`, `__tests__/components/DeleteImageButton.test.tsx:34,66` | Page, API, Component | S+F | Yes | Pass (partial) | - |
+| US 7.0.5 | AT2 | Non-admins see no delete control and the server refuses them | `__tests__/app/api/site-images-delete.test.ts:98,113,128`, `__tests__/pages/SiteDetailsImageGallery.test.tsx:221` | API, Page | F | Yes | Pass | - |
+| US 7.0.5 | AT3 | The S3 file of a deleted image is gone | `__tests__/app/api/site-images-delete.test.ts:172,190,245`, `__tests__/lib/s3Delete.test.ts:19` | API, Unit | S+F | Yes | Pass (partial) | - |
+| US 7.0.5 | AT4 | A deactivated SIR keeps its S3 files | `__tests__/components/queries.archive-report.test.ts:154` | Unit | S | Yes | Pass | - |
+| US 7.0.5 | AT5 | A rolled-back SIR submission removes its S3 files | `__tests__/components/queries.rollback.test.ts:59,82,94`, `__tests__/pages/FormSubmissionPrevention.test.tsx:304` | Unit, Page | S+F | Yes | Pass | - |
+| US 7.0.6 | AT1 | An export of more than 50 SIRs has each selected SIR | `__tests__/app/api/pdf.test.ts:267`, `__tests__/lib/pdfDataFetcher.test.ts:449,463,487,497`, `__tests__/components/queries.exportPaging.test.ts:40,57,89,97` | API, Unit | S+F | Yes | Pass | - |
+| US 7.0.6 | AT2 | Each exported SIR has the same answers as its page | `__tests__/components/queries.exportPaging.test.ts:105,152,167`, `__tests__/lib/pdfDataFetcher.test.ts:336,507` | Unit | S+F | Yes | Pass | - |
+| US 7.0.6 | AT3 | A Steward's bulk export request is refused | `__tests__/app/api/pdf.test.ts:96,282,372,384` | API | F | Yes | Pass | - |
+| US 7.0.6 | AT4 | A failed export leaves the stored SIRs unchanged | `__tests__/lib/processPdfJob.test.tsx:95` | Unit | F | Yes | Pass | - |
+| US 7.0.7 | AT1 | Fields selected to hide are marked for the export | `__tests__/components/PdfExportModal.test.tsx:277,293,331` | Component | S | Yes | Pass | - |
+| US 7.0.7 | AT2 | Hidden fields are absent and the other fields are present | `__tests__/lib/pdfDataFetcher.test.ts:299,358,367,375,670`, `__tests__/app/api/pdf.test.ts:541` | Unit, API | S+F | Yes | Pass | - |
+| US 7.0.7 | AT3 | The stored answers stay after an export with hidden fields | `__tests__/lib/pdfDataFetcher.test.ts:314` | Unit | S | Yes | Pass | - |
+| US 7.0.7 | AT4 | A Steward's export request with hidden fields is refused | `__tests__/app/api/pdf.test.ts:358` | API | F | Yes | Pass | - |
+| US 7.0.7 | AT5 | With no hidden fields, the export has the full SIR | `__tests__/lib/pdfDataFetcher.test.ts:286,336` | Unit | S | Yes | Pass | - |
+| US 7.0.8 | AT1 | The Admin confirms before a SIR is deleted | `__tests__/pages/ArchiveReportModal.test.tsx:31,53`, `__tests__/pages/AdminSiteDetails.test.tsx:1136`, `__tests__/pages/AdminReports.archived.test.tsx:93`, `__tests__/components/queries.archive-report.test.ts:88`, `cypress/e2e/archive_report.cy.ts:58` | Page, Unit, E2E | S+F | Yes | Pass | - |
+| US 7.0.8 | AT2 | A deleted SIR is gone from the site and report lists | `__tests__/pages/AdminSiteDetails.test.tsx:1136,1158`, `__tests__/components/queries.reports.test.ts:93`, `__tests__/components/queries.archive-report.test.ts:119,130`, `cypress/e2e/archive_report.cy.ts:71` | Page, Unit, E2E | S+F | Yes | Pass | - |
+| US 7.0.8 | AT3 | The images of a deleted SIR are no longer shown | `__tests__/components/queries.archive-report.test.ts:139,146,176`, `__tests__/app/api/gallery.test.ts:129`, `__tests__/app/api/site-images.test.ts:87`, `__tests__/app/api/sites-siteId-gallery.test.ts:102`, `__tests__/app/api/user-gallery-sir-upload.test.ts:72`, `cypress/e2e/archive_report.cy.ts:96` | Unit, API, E2E | S+F | Yes | Pass | - |
+| US 7.0.8 | AT4 | A Steward's delete request is refused and the SIR stays | `__tests__/components/queries.archive-report.test.ts:60`, `__tests__/components/queries.rollback.test.ts:108,119,135`, `cypress/e2e/archive_report.cy.ts:118` | Unit, E2E | F | Yes | Pass | - |
+| US 7.0.8 | AT5 | A failed delete shows an error and the SIR stays | `__tests__/pages/AdminReports.archived.test.tsx:125`, `__tests__/pages/ArchiveReportModal.test.tsx:71`, `__tests__/components/queries.archive-report.test.ts:207`, `cypress/e2e/archive_report.cy.ts:150` | Page, Unit, E2E | F | Yes | Pass | - |
 
 Notes:
 
@@ -397,8 +469,29 @@ test.
 branches 74%, functions 78.61%, lines 87.56%. The run fails below the thresholds in
 `webapp/jest.config.ts` (statements 83, branches 72, functions 77, lines 85).
 
-Sprint 3 stories (1.0.3, 1.0.4, 2.0.1, 2.0.8, 2.0.9, 4.0.2, 4.0.4, 5.0.2 and
-6.0.1) are not yet tested. Their rows are added AT by AT when the sprint starts.
+Sprint 3 stories, as of October 26, 2026, on `sprint-3` at `5181a2d`.
+
+| Story | Team | ATs | Covered | Partial | None | Not run |
+|---|---|---|---|---|---|---|
+| US 1.0.3 | Green | 3 | AT2, AT3 | AT1 | - | - |
+| US 1.0.4 | Green | 2 | - | AT1 | AT2 | - |
+| US 1.0.6 | Red | 3 | - | - | AT1 to AT3 | - |
+| US 2.0.1 | Red | 4 | AT2 to AT4 | AT1 | - | - |
+| US 2.0.8 | Blue | 3 | AT1 to AT3 | - | - | - |
+| US 2.0.9 | Red | 6 | AT1 to AT6 | - | - | - |
+| US 2.0.12 | Red | 5 | AT1 to AT5 | - | - | - |
+| US 2.0.13 | Red | 4 | AT1 to AT4 | - | - | - |
+| US 2.0.14 | Blue | 1 | AT1 | - | - | - |
+| US 3.0.3 | Red | 2 | - | - | AT1, AT2 | - |
+| US 3.0.4 | Red | 3 | - | - | AT1 to AT3 | - |
+| US 4.0.2 | Red | 4 | AT1 | AT2 | AT3, AT4 | - |
+| US 4.0.4 | Blue | 4 | AT1 | AT2 to AT4 | - | - |
+| US 5.0.2 | Green | 4 | - | AT1 to AT4 | - | - |
+| US 6.0.1 | Blue | 5 | AT1 to AT5 | - | - | - |
+| **Total** | | **53** | **31** | **11** | **11** | **0** |
+
+Of the 11 ATs with no test, 9 belong to stories whose PRs are not merged (1.0.4, 1.0.6, 3.0.3 and
+3.0.4).
 
 ## Known limits
 
