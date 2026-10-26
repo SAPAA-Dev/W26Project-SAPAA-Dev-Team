@@ -198,6 +198,7 @@ Run the files in this order.
 | 28 | `20261024020000_check_gpx_track_path.sql` | From PR #312. Include only after it merges. It replaces the GPX insert policy with the path check; existing rows are not rewritten. |
 | 29 | `20261025000000_fix_site_delete_impact.sql` | Redefines the two site delete functions so the impact count includes GPX tracks and page fields. Service role only. Needs `site_page_fields`, `archived_at` and `gpx_tracks`, so apply it after steps 10, 11 and 21. |
 | 30 | `20261025000010_add_missing_fk_indexes.sql` | Adds eleven foreign key and filter indexes. Each build locks its table while it runs, so apply outside peak use. |
+| 31 | `20261025000020_count_one_naturalness_answer_per_report.sql` | Redefines `get_naturalness_distribution` to count each report once per score. Keeps the existing grants. Apply after step 12. |
 
 PRs #234, #238 and #242 are merged on `main`. Steps 18 to 20 came with the Sprint 2 fixes, which
 are on `main` since [#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284)

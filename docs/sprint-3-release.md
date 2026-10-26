@@ -90,6 +90,7 @@ check what is already applied and run only the missing, merged files before code
 | `20261024020000_check_gpx_track_path.sql` | Apply the version merged by #312 after the GPX table. It constrains new insert paths and does not clean old rows. |
 | `20261025000000_fix_site_delete_impact.sql` | Replaces the site delete impact and permanent delete functions. Execute stays with the service role only. A GPX file in the bucket is not removed with its row. |
 | `20261025000010_add_missing_fk_indexes.sql` | Eleven indexes, no policy or grant change. Locks each table while it builds. |
+| `20261025000020_count_one_naturalness_answer_per_report.sql` | Replaces one read-only chart function. Grants are unchanged. Counts a report once even if it holds two Q31 rows. |
 
 This inventory is not Green's approval and is not a production migration record. Issue #183
 must carry the human review before release. Confirm the production schema and bucket policies;
