@@ -1,35 +1,134 @@
 {
-  "Architecture.mmd": "2fb164c573e08772",
-  "ER_Diagram.mmd": "22fd8129ecb2c00e",
-  "ER_Diagram_Legacy.mmd": "a566f0d255c6b5b8",
-  "ER_Diagram_Proposed_User_Stories.mmd": "bb3f7e2bce50212f",
-  "Sequence_Auth_Sign_In_Sign_Up_and_Admin_Approval.mmd": "b1f4b091b4daf2b0",
-  "Sequence_SIR_Submission_With_Photos.mmd": "23e6595d7295a83f",
-  "Sequence_US_1_0_1_1_0_3_1_0_4_View_Steward_Profile.mmd": "476c4f572e03eeb0",
-  "Sequence_US_1_0_2_Edit_Own_Profile.mmd": "e22318de004f9415",
-  "Sequence_US_1_0_5_Activity_Points.mmd": "434d8bbb91d1bc8a",
-  "Sequence_US_2_0_11_Site_Safety_Information.mmd": "e516b6a88b47ba54",
-  "Sequence_US_2_0_12_2_0_13_Site_Priority_Score.mmd": "c9dac20de89b10ef",
-  "Sequence_US_2_0_1_2_0_6_Site_Map_Search_and_Filter.mmd": "005f528742e93111",
-  "Sequence_US_2_0_2_Add_Site.mmd": "d79f0cdaa6cd7181",
-  "Sequence_US_2_0_3_2_0_5_Update_and_Deactivate_Site.mmd": "2f49e24421b9d838",
-  "Sequence_US_2_0_4_Delete_Site.mmd": "162bd5f957a31043",
-  "Sequence_US_2_0_8_2_0_10_Site_Details_From_Map.mmd": "a0b53ae9326bacc5",
-  "Sequence_US_2_0_9_GPX_Track_Upload.mmd": "e703a38747633029",
-  "Sequence_US_3_0_2_Steward_Designation.mmd": "7848a80fbba6e270",
-  "Sequence_US_3_0_3_Export_All_Digital_Files.mmd": "c193dbf1b4e0b670",
-  "Sequence_US_4_0_2_Offline_and_Online_Map_Layers.mmd": "6298609563934502",
-  "Sequence_US_4_0_4_Edit_My_Previous_Inspections.mmd": "75cca73924bc167b",
-  "Sequence_US_4_0_5_iNaturalist_Photo_Import.mmd": "f620eecefa57e3fa",
-  "Sequence_US_4_0_6_Photo_Identifier_Optional.mmd": "bfec42a15329415c",
-  "Sequence_US_4_0_7_Top_iNaturalist_Observations.mmd": "c1223500ea2dfa4d",
-  "Sequence_US_5_0_2_5_0_4_Password_Reset_and_Sign_Out.mmd": "4e3e74a366433dfa",
-  "Sequence_US_6_0_1_Site_Geometry_Load.mmd": "0b1c573fade3b67b",
-  "Sequence_US_7_0_1_Steward_PDF_Export.mmd": "6f7e33a62c050b09",
-  "Sequence_US_7_0_3_7_0_4_Inspection_Summaries.mmd": "ca8d299d2bf6eb8b",
-  "Sequence_US_7_0_5_Image_Delete_and_Cleanup.mmd": "4309798b60522c17",
-  "Sequence_US_7_0_6_7_0_7_Bulk_SIR_Export_With_Hidden_Fields.mmd": "e6edbb3e0df43337",
-  "Sequence_US_7_0_8_Delete_SIR.mmd": "6d9ba5978f252c3b",
-  "UML_Class_Diagram.mmd": "bdb78e392169a4de",
-  "UML_Class_Diagram_Models.mmd": "9ec5bbc2613dc7bf"
+  "Architecture.mmd": {
+    "source": "2fb164c573e08772",
+    "svg": "92bd17e94207e7bd"
+  },
+  "ER_Diagram.mmd": {
+    "source": "22fd8129ecb2c00e",
+    "svg": "42418df19d1b8f37"
+  },
+  "ER_Diagram_Legacy.mmd": {
+    "source": "a566f0d255c6b5b8",
+    "svg": "cdbe5304b6c6d78c"
+  },
+  "ER_Diagram_Proposed_User_Stories.mmd": {
+    "source": "bb3f7e2bce50212f",
+    "svg": "cfe4d45366479748"
+  },
+  "Sequence_Auth_Sign_In_Sign_Up_and_Admin_Approval.mmd": {
+    "source": "b1f4b091b4daf2b0",
+    "svg": "a0045eb993a28559"
+  },
+  "Sequence_SIR_Submission_With_Photos.mmd": {
+    "source": "23e6595d7295a83f",
+    "svg": "964a35a711794ce2"
+  },
+  "Sequence_US_1_0_1_1_0_3_1_0_4_View_Steward_Profile.mmd": {
+    "source": "476c4f572e03eeb0",
+    "svg": "048cd1493363165b"
+  },
+  "Sequence_US_1_0_2_Edit_Own_Profile.mmd": {
+    "source": "e22318de004f9415",
+    "svg": "44cfa5c417834cb4"
+  },
+  "Sequence_US_1_0_5_Activity_Points.mmd": {
+    "source": "434d8bbb91d1bc8a",
+    "svg": "d9c29c3f7f2763eb"
+  },
+  "Sequence_US_2_0_11_Site_Safety_Information.mmd": {
+    "source": "e516b6a88b47ba54",
+    "svg": "689f122772c2ea32"
+  },
+  "Sequence_US_2_0_12_2_0_13_Site_Priority_Score.mmd": {
+    "source": "c9dac20de89b10ef",
+    "svg": "6c6e193645c5fb44"
+  },
+  "Sequence_US_2_0_1_2_0_6_Site_Map_Search_and_Filter.mmd": {
+    "source": "005f528742e93111",
+    "svg": "8fd2b95bfc400687"
+  },
+  "Sequence_US_2_0_2_Add_Site.mmd": {
+    "source": "d79f0cdaa6cd7181",
+    "svg": "47ea0ab1a105ce44"
+  },
+  "Sequence_US_2_0_3_2_0_5_Update_and_Deactivate_Site.mmd": {
+    "source": "2f49e24421b9d838",
+    "svg": "6451d9750f30dda2"
+  },
+  "Sequence_US_2_0_4_Delete_Site.mmd": {
+    "source": "162bd5f957a31043",
+    "svg": "6f5b41371530f9f6"
+  },
+  "Sequence_US_2_0_8_2_0_10_Site_Details_From_Map.mmd": {
+    "source": "a0b53ae9326bacc5",
+    "svg": "0688a89b1d63e253"
+  },
+  "Sequence_US_2_0_9_GPX_Track_Upload.mmd": {
+    "source": "e703a38747633029",
+    "svg": "b2f76f9d06fbc685"
+  },
+  "Sequence_US_3_0_2_Steward_Designation.mmd": {
+    "source": "7848a80fbba6e270",
+    "svg": "c3d709ec77385df1"
+  },
+  "Sequence_US_3_0_3_Export_All_Digital_Files.mmd": {
+    "source": "c193dbf1b4e0b670",
+    "svg": "ee8ccc93c635daf9"
+  },
+  "Sequence_US_4_0_2_Offline_and_Online_Map_Layers.mmd": {
+    "source": "6298609563934502",
+    "svg": "59a8ca3f202d004b"
+  },
+  "Sequence_US_4_0_4_Edit_My_Previous_Inspections.mmd": {
+    "source": "75cca73924bc167b",
+    "svg": "596817d2fb3aa0eb"
+  },
+  "Sequence_US_4_0_5_iNaturalist_Photo_Import.mmd": {
+    "source": "f620eecefa57e3fa",
+    "svg": "2fae1cd977126059"
+  },
+  "Sequence_US_4_0_6_Photo_Identifier_Optional.mmd": {
+    "source": "bfec42a15329415c",
+    "svg": "173f368d0699f3bf"
+  },
+  "Sequence_US_4_0_7_Top_iNaturalist_Observations.mmd": {
+    "source": "c1223500ea2dfa4d",
+    "svg": "e695e9615ea411e9"
+  },
+  "Sequence_US_5_0_2_5_0_4_Password_Reset_and_Sign_Out.mmd": {
+    "source": "4e3e74a366433dfa",
+    "svg": "1fba7a9e41ead35f"
+  },
+  "Sequence_US_6_0_1_Site_Geometry_Load.mmd": {
+    "source": "0b1c573fade3b67b",
+    "svg": "19f7fee8d868ee5b"
+  },
+  "Sequence_US_7_0_1_Steward_PDF_Export.mmd": {
+    "source": "6f7e33a62c050b09",
+    "svg": "be6207fd85a7736f"
+  },
+  "Sequence_US_7_0_3_7_0_4_Inspection_Summaries.mmd": {
+    "source": "ca8d299d2bf6eb8b",
+    "svg": "71f73130af8aa066"
+  },
+  "Sequence_US_7_0_5_Image_Delete_and_Cleanup.mmd": {
+    "source": "4309798b60522c17",
+    "svg": "79c2eb609e8ef33f"
+  },
+  "Sequence_US_7_0_6_7_0_7_Bulk_SIR_Export_With_Hidden_Fields.mmd": {
+    "source": "e6edbb3e0df43337",
+    "svg": "17093044fd5f2713"
+  },
+  "Sequence_US_7_0_8_Delete_SIR.mmd": {
+    "source": "6d9ba5978f252c3b",
+    "svg": "9b8dd1ec1fc4f715"
+  },
+  "UML_Class_Diagram.mmd": {
+    "source": "54e6ed816b2509f1",
+    "svg": "6b3bebefc9a7d6ea"
+  },
+  "UML_Class_Diagram_Models.mmd": {
+    "source": "9ec5bbc2613dc7bf",
+    "svg": "12c56be6a958f37c"
+  }
 }
