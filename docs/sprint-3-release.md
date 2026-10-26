@@ -45,10 +45,10 @@ Cypress or native mobile build was run.
 | Report edit and visibility, 4.0.4 AT1 to AT3 and part of AT4 | Passed locally. The owner opened edit mode and saved changed text. The database and site view showed the new text with its hidden flag retained. Clearing a required answer blocked Save and left the stored report unchanged. Another approved steward could neither see the hidden text nor enter edit mode. Every PDF, profile and Admin summary view was not rechecked after the same edit. |
 | Server report rules | The focused Jest run passed the ownership, approval, required-answer and hidden-answer tests. These use mocked Supabase/S3. |
 | Export job failure handling | 38 export tests passed, including three new tests that fail on the old state-write code. A failed processing write stops the upload; a failed completion write records failure; failure to record that failure rejects to the existing background error handler. S3 and Supabase are mocked. |
-| Database rules and site links | 3 local database suites, 25 tests passed. The tests use the real local Supabase. This is not evidence that production migrations ran. |
+| Database rules and site links | 4 local database suites, 36 tests passed. They use the real local Supabase. The migration-safety suite runs each check inside a rolled-back transaction. This is not evidence that production migrations ran. |
 | Focused acceptance suites | 14 suites, 357 tests passed. The map reconnection test is in `SiteMap.test.tsx`. |
 | Clean production build | Passed with local placeholder settings on an isolated source copy. Compilation and build type checking passed. |
-| Full unit suite on the sprint source after #305, #312 and #315, with the #318 changes | Passed: 1912 tests, 25 skipped, 0 failed (132 passing suites). Chris's shared-branch commits corrected the profile query count, forced the date test time zone and mocked the site gallery request. Type check and full lint also passed. Required CI is still pending. |
+| Full unit suite on the #321 branch before it merged | Passed: 1883 tests, 0 failed (130 passing suites). The count is lower than the earlier 1912 because the heatmap and geocode code and tests were removed from `sprint-3`. The database suites skip in this run and were run separately (row above). Type check, full lint, the production build, the docs build and the hook tests also passed. |
 
 The prior sprint CI run ([40403404181](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/actions/runs/40403404181)) failed the profile query-count and date tests. The combined local run above includes their fixes. Do not use the older CI run as release evidence.
 
@@ -76,8 +76,9 @@ evidence. Coverage counts are not a claim that the full suite or production acce
 ## Schema and migration review
 
 The complete order is in [Contributing](contributing.md#production-database-migrations).
-Do not run the local bootstrap migration on production. A human with production access must
-check what is already applied and run only the missing, merged files before code deployment.
+Do not run the local bootstrap migration on production. On October 26 the team
+decided that applying them is not a gate for this release. Features that read the new tables
+and functions will not work in production until the missing files are applied.
 
 | File | Review observation |
 |---|---|
@@ -92,15 +93,16 @@ check what is already applied and run only the missing, merged files before code
 | `20261025000010_add_missing_fk_indexes.sql` | Eleven indexes, no policy or grant change. Locks each table while it builds. |
 | `20261025000020_count_one_naturalness_answer_per_report.sql` | Replaces one read-only chart function. Grants are unchanged. Counts a report once even if it holds two Q31 rows. |
 
-This inventory is not Green's approval and is not a production migration record. Issue #183
-must carry the human review before release. Confirm the production schema and bucket policies;
-a successful local test does not prove either.
+This inventory is not a production migration record. Issue #183 was closed as completed on
+October 26 together with #321, which Abhinav approved after reviewing it against #183. The
+production schema and bucket policies were not checked; a successful local test does not prove
+either.
 
 ## TA feedback addressed
 
 | Feedback | Close-out response |
 |---|---|
-| Too many branches and trivial PRs | One export follow-up PR (#318) was explicitly approved after #309 merged with a confirmed error. The acceptance tests and release records are commits in that same follow-up. The branch hook rejected direct commits on `sprint-3`, so no hook was bypassed. No separate PR is made for each document. |
+| Too many branches and trivial PRs | One export follow-up PR (#318) was explicitly approved after #309 merged with a confirmed error. The acceptance tests and release records are commits in that same follow-up. The final record is one docs commit on `sprint-3`, so no separate PR is made for a document. |
 | Test locally before commits; use CI for integration | Local export tests, focused acceptance tests, database checks, a clean build and real browser checks were run. The final sprint CI result remains a release gate. |
 | Meaningful human review | The follow-up names the failure state and the regression tests. Green reviewers are assigned. No agent approves its own change or substitutes a generic approval for a story review. |
 | Reuse the S3 client and Admin checks | #311 introduced the shared helpers. #318 reuses `lib/s3/client.ts` in file export and its status route. Mock state is reset between tests. |
@@ -108,11 +110,11 @@ a successful local test does not prove either.
 
 ## Release gates
 
-- [ ] Export follow-up #318 reviewed and merged into `sprint-3`.
+- [x] Export follow-up #318 and migration follow-up #321 reviewed and merged into `sprint-3`.
 - [x] The profile test fixes are included; the full local unit suite is green. CI is still required.
 - [ ] Type check, build, lint, docs and required checks pass on the final sprint commit.
-- [ ] Green records the schema/access-rule review in #183.
-- [ ] A human records the production migration state and applies missing merged files.
+- [x] Schema and access-rule review: #183 closed as completed on October 26 with #321.
+- Production migrations: not a release gate (team decision, October 26).
 - [ ] Production email template, SMTP, redirect URLs, Protomaps key and hosting limits checked.
 - [ ] Jayden reviews the sprint PR into `main`; the required human approvals are present.
 - [ ] Merge `sprint-3` into `main`, then open `main` into `release`.
@@ -128,10 +130,10 @@ Do not publish a success claim while a gate above is open.
 
 | Item | Value |
 |---|---|
-| Final sprint commit | Pending final fixes and CI |
-| Sprint-to-main PR | [Draft #319](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/319); waits for #318 and release gates |
+| Final sprint commit | `1972fa1` (merge of #321), before this record commit. Required CI results are added when the run finishes. |
+| Sprint-to-main PR | [Draft #319](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/319); #318 and #321 are merged; waits for CI and approvals |
 | Main-to-release PR | Pending sprint merge |
-| Production migrations applied by / time | Human record required |
+| Production migrations applied by / time | Not a gate (team decision, October 26) |
 | Production smoke check by / time | Human record required |
 | Released main commit and tag | Not published |
 
