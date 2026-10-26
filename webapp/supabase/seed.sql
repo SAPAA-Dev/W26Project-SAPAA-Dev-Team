@@ -1,7 +1,26 @@
+-- LOCAL ONLY. Do not run this file against production.
+-- scripts/local_supabase.js applies it to the local Supabase with `db query --local`.
+-- The inspection reports upsert with `on conflict (inspection_no) do update`: real reports
+-- use the same YYYY-NNN numbers, so a production run would move real reports to the demo
+-- site and rewrite the live question definitions. The guard below aborts the whole block
+-- when the database holds any site other than the demo site.
+
 do $seed$
 declare
   report_index integer;
+  existing_site_count bigint;
 begin
+  -- A database that holds any other site is not a local seed database.
+  select count(*) into existing_site_count
+  from public."sites_pa"
+  where namesite is distinct from 'Quackberry Duck Park';
+
+  if existing_site_count > 0 then
+    raise exception
+      'Refusing to seed: % site(s) other than the demo site exist. This file must not run against production.',
+      existing_site_count;
+  end if;
+
 insert into public."ab_counties" (county)
 values ('Quackatchewan')
 on conflict (county) do nothing;
