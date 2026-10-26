@@ -25,7 +25,7 @@ env:
 
 jobs:
   diagrams:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 15
     outputs:
       changed: ${{ steps.diff.outputs.changed }}
@@ -86,7 +86,7 @@ jobs:
   diagrams-push:
     needs: diagrams
     if: needs.diagrams.outputs.changed == 'true'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 5
     env:
       HEAD_REF: ${{ github.event.pull_request.head.ref }}
