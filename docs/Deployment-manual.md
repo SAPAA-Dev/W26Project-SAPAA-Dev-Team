@@ -165,7 +165,6 @@ The application requires the following environment variables.
 | `AWS_SECRET_ACCESS_KEY` | AWS IAM secret access key | AWS IAM → Users → Security credentials |
 | `AWS_REGION` | AWS region of your S3 bucket | AWS S3 bucket settings |
 | `AWS_S3_BUCKET_NAME` | S3 bucket name | AWS S3 console |
-| `OPENCAGE_API_KEY` | OpenCage Geocoding API key. The geocode route (`/api/geocode`) reads it | [opencagedata.com](https://opencagedata.com) → API Keys |
 | `NEXT_PUBLIC_PROTOMAPS_API_KEY` | Protomaps key for the site map. Without it the map shows "Map key not set" | [maps.protomaps.com](https://maps.protomaps.com) → API keys |
 
 `NEXT_PUBLIC_` variables are written into the build, so set `NEXT_PUBLIC_PROTOMAPS_API_KEY` before
@@ -187,7 +186,6 @@ AWS_SECRET_ACCESS_KEY=your_aws_secret_key
 AWS_REGION=your_region
 AWS_S3_BUCKET_NAME=your_bucket_name
 
-OPENCAGE_API_KEY=your_opencage_key
 NEXT_PUBLIC_PROTOMAPS_API_KEY=your_protomaps_key
 ```
 
@@ -453,14 +451,11 @@ The application uses Supabase Auth `app_metadata` to also store user authorizati
 ### 6. Test Admin Features
 
 1. Log in with an admin account
-2. Verify the Admin Dashboard loads, charts display data, and heatmap search works
+2. Verify the Admin Dashboard loads and charts display data
 
 ### 7. Test API Endpoints (See API Documentation)
 
-```bash
-# Example Test on geocoding
-curl https://your-project-name.vercel.app/api/geocode?q=Alberta
-```
+See the API Documentation for the routes and how to call them.
 
 ---
 
@@ -984,82 +979,6 @@ GET /api/homepage-images/207
  
 ---
  
-### Utility Endpoints
- 
-#### 11. Geocoding API
- 
-**Endpoint:** `GET /api/geocode`
- 
-**Description:** Geocodes a location name to coordinates using the OpenCage API.
- 
-**Authentication:** Required
- 
-**Query Parameters:**
- 
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| `q` | string | Yes | Location name to geocode |
- 
-**Example Request:**
-```bash
-GET /api/geocode?q=Elk Island Provincial Park
-```
- 
-**Response `200`:**
-```json
-{
-  "latitude": 53.5731,
-  "longitude": -112.8583
-}
-```
- 
-| Status | Description |
-|---|---|
-| `200` | Coordinates returned successfully |
-| `400` | Missing `q` parameter |
-| `500` | Geocoding failed |
- 
-**Rate Limits:** Limited by OpenCage API quota (2,500 requests/day on free tier).
- 
----
- 
-#### 12. Heatmap API
- 
-**Endpoint:** `GET /api/heatmap`
- 
-**Description:** Searches for sites matching a keyword and returns visit counts for heatmap visualization.
- 
-**Authentication:** Required
- 
-**Query Parameters:**
- 
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| `keyword` | string | No | Search term to match against site names |
- 
-**Example Request:**
-```bash
-GET /api/heatmap?keyword=park
-```
- 
-**Response `200`:**
-```json
-{
-  "data": [
-    { "namesite": "Elk Island Provincial Park", "count": 15 },
-    { "namesite": "Writing-on-Stone Provincial Park", "count": 12 }
-  ]
-}
-```
- 
-| Status | Description |
-|---|---|
-| `200` | Site data returned successfully |
-| `400` | Invalid query or database error |
-| `500` | Database query failed |
- 
----
- 
 ### Authentication Endpoints
  
 These routes are handled internally by Next.js and Supabase. Use the frontend login/signup pages instead of calling them directly.
@@ -1212,7 +1131,6 @@ check that the older code still works with the current tables.
 - [Supabase Documentation](https://supabase.com/docs)
 - [Vercel Documentation](https://vercel.com/docs)
 - [AWS S3 Documentation](https://docs.aws.amazon.com/s3/)
-- [OpenCage API Documentation](https://opencagedata.com/api)
 
 For deployment support or issues, contact your development team with error messages, reproduction steps, browser/OS information, and screenshots where applicable.
 
