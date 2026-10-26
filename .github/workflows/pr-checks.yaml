@@ -13,7 +13,7 @@ jobs:
   # Branch name, PR title and every commit go through the same .githooks/commit-msg
   # the team runs locally, so the rules only live in one place.
   conventions:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: read
     steps:
@@ -46,7 +46,7 @@ jobs:
 
   # Informal only: never fails. Lockfiles and docs/ don't count.
   pr-size:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: read
       pull-requests: write

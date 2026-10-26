@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   webapp-tests:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     defaults:
       run:
         working-directory: webapp
@@ -41,7 +41,7 @@ jobs:
       - run: npm run lint -- --max-warnings 0 --ignore-pattern 'coverage/**'
 
   docs-build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -51,7 +51,7 @@ jobs:
       - run: mkdocs build --clean
 
   hook-tests:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
       - run: sh .githooks/test-hooks.sh
