@@ -70,9 +70,6 @@ Sprint 1 has no user stories. It is documentation and discovery.
 - **US 3.0.3 - Export all digital files from SIR-SAPAA** (Charter 1)
     - Team: Red (Saumya, Chris).
     - Admin exports all images and digital files at once.
-- **US 3.0.4 - Add a Steward Without an Account** (Charter 2b)
-    - Team: Red (Saumya, Chris).
-    - Add a steward by name, email and phone number without requiring them to have an account so that their details can be shown on a site page.
 - **US 4.0.2 - Offline and Online Map Layers** (No charter, team request)
     - Steward uses map layers offline and online.
 - **US 4.0.4 - Edit My Previous Inspections** (Charter 1)
@@ -104,6 +101,11 @@ Sprint 1 has no user stories. It is documentation and discovery.
 No stories planned yet.
 
 ## Won't Have
+
+- **US 3.0.4 - Add a Steward Without an Account** (Charter 2b)
+    - Team: Red (Saumya, Chris).
+    - Add a steward by name, email and phone number without requiring them to have an account so that their details can be shown on a site page.
+    - Removed on October 26, 2026. Frank requires an account and sign-in. PR #310 was closed without merge.
 
 These stories are not planned for a sprint.
 

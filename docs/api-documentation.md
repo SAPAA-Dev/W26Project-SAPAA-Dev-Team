@@ -482,6 +482,19 @@ With no `code`, or when the exchange fails, it redirects to `/auth/auth-code-err
 
 ---
 
+#### File export (Sprint 3)
+
+| Route | Caller and result |
+|---|---|
+| `POST /api/export` | Approved Admin only. Returns 202 and `jobId`; 409 when that Admin already has a recent pending or processing job. The server reads the file catalogs in pages of 1000. |
+| `GET /api/export/status/{jobId}` | Signed-in job creator or approved Admin. Returns the job state and, when complete, a one-hour signed download link. |
+
+The job includes inspection images, homepage images, GPX objects and completed PDF exports.
+It stops above 500 MiB of source files and fails if a stored object cannot be read. The ZIP is
+held in memory. The processor and status route use the shared S3 client. Each state write checks
+its error; if the failed state cannot be saved, the processor rejects to the existing background
+error handler. The app does not claim success for an unrecorded completed job.
+
 ### 2. Server actions
 
 A server action is an exported function in a `'use server'` file. The page calls it directly, but

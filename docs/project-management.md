@@ -49,11 +49,11 @@ These teams are for Sprint 3 only. The ownership areas rotate, so that most memb
 area. Only Chris (Platform) and Abhinav (Quality) keep their Sprint 2 area. Red owns Platform /
 CI/CD / releases and makes the Sprint 3 release. Red also has the map work, because the map, the
 GPX tracks and the offline layers are one connected piece of work. On October 24, five stories (24 points)
-moved from Sprint 4 to Sprint 3 and went to Red: 1.0.6, 2.0.12, 2.0.13, 3.0.3 and 3.0.4.
+moved from Sprint 4 to Sprint 3 and went to Red: 1.0.6, 2.0.12, 2.0.13, 3.0.3 and 3.0.4. On October 26, Frank required stewards to have an account and sign in. US 3.0.4 was removed and [PR #310](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/310) was closed without merge. The current scope is 14 stories and 68 points.
 
 | Team | Members | Ownership area | Points |
 |---|---|---|---|
-| Red | Saumya, Chris | Platform / CI/CD / releases | 50 |
+| Red | Saumya, Chris | Platform / CI/CD / releases | 47 |
 | Blue | Aaron, Zanab, Abhinav | Quality / reliability / dev experience | 15 |
 | Green | Alissa, Jayden | Architecture / backend / data | 6 |
 
@@ -68,12 +68,12 @@ The full story set is in [User Stories](user-stories.md): 43 user stories in sev
 |---|---|---|---|---|---|---|---|
 | 1 - People Management | - | 1.0.1 (5, M) ✓, 1.0.2 (3, M) ✓ | 1.0.3 (2, S), 1.0.4 (2, M), 1.0.6 (2, S) | 1.0.5 (5, C) | - | - | - |
 | 2 - Place Management | - | 2.0.2 (3, M) ✓, 2.0.3 (3, S) ✓, 2.0.4 (8, M) ✓, 2.0.5 (5, M) ✓, 2.0.6 (5, S) ✓, 2.0.10 (1, M) ✓ | 2.0.1 (8, S), 2.0.8 (3, M), 2.0.9 (5, M), 2.0.12 (8, C), 2.0.13 (3, C), 2.0.14 (2, S) | - | - | - | 2.0.11 (5, W) |
-| 3 - Admin Persona | - | 3.0.2 (5, S) ✓ | 3.0.3 (8, M), 3.0.4 (3, S) | - | - | - | - |
+| 3 - Admin Persona | - | 3.0.2 (5, S) ✓ | 3.0.3 (8, M) | - | - | - | 3.0.4 (3, W) |
 | 4 - General Features | - | 4.0.6 (1, M) ✓ | 4.0.2 (13, S), 4.0.4 (5, S) | - | - | - | 4.0.5 (5, W), 4.0.7 (5, W) |
 | 5 - Access and Accounts | - | 5.0.4 (2, S) ✓ | 5.0.2 (2, M) | 5.0.5 (8, M), 5.0.6 (5, M), 5.0.7 (8, M), 5.0.8 (5, M), 5.0.9 (3, M) | - | - | - |
 | 6 - Data and Places | - | - | 6.0.1 (5, M) | - | - | - | - |
 | 7 - Inspections and Media | - | 7.0.1 (2, C) ✓, 7.0.5 (5, S) ✓, 7.0.6 (5, S) ✓, 7.0.7 (5, M) ✓, 7.0.8 (5, S) ✓ | - | 7.0.3 (5, C) | - | - | 7.0.4 (5, W), 7.0.9 (5, W) |
-| **Committed points** | **0** | **63** | **71** | **39** | **0** | **0** | **25** |
+| **Committed points** | **0** | **63** | **68** | **39** | **0** | **0** | **28** |
 
 Numbers in brackets: story points and MoSCoW priority (M = Must Have, S = Should Have, C = Could Have, W = Won't Have).
 
@@ -91,15 +91,15 @@ By MoSCoW:
 | Priority | Stories | Points | Where |
 |---|---|---|---|
 | Must Have | 19 | 85 | 8 in Sprint 2, 6 in Sprint 3, 5 in Sprint 4 |
-| Should Have | 14 | 65 | 7 in Sprint 2, 7 in Sprint 3 |
+| Should Have | 13 | 62 | 7 in Sprint 2, 6 in Sprint 3 |
 | Could Have | 5 | 23 | 1 in Sprint 2, 2 in Sprint 3, 2 in Sprint 4 |
-| Won't Have | 5 | 25 | No sprint (2.0.11, 4.0.5, 4.0.7, 7.0.4, 7.0.9) |
+| Won't Have | 6 | 28 | No sprint (2.0.11, 3.0.4, 4.0.5, 4.0.7, 7.0.4, 7.0.9) |
 
 Sprint 1 has no user stories because it is documentation and discovery. The team keeps Sprint 5
 free on purpose: the client said that more work can come, and the sprint is also for final
 polish, deployment and field-test fixes.
 
-**Open conflicts with the plan.** None. 2.0.6 (map filter) was placed before the map (2.0.1,
+**Open conflicts with the plan.** The Sprint 3 code freeze was missed. The release remains pending the checks in [Sprint 3 release checks](sprint-3-release.md). 2.0.6 (map filter) was placed before the map (2.0.1,
 Sprint 3), and it is done in Sprint 2, so 2.0.1 builds on it. The team confirms or changes
 placement at Sprint 3 planning (October 14).
 
@@ -158,7 +158,7 @@ All releases are GitHub releases at 20:00 on the due date.
 |---|---|---|---|---|---|
 | Sprint 1 | Documentation and discovery: requirements, design, plan and teamwork | - | September 29, 2026 | 0 (documentation and discovery) | 0 |
 | Sprint 2 | Steward profiles, site administration, and SIR export and delete | October 11, 2026 | October 13, 2026 | 16 | 63 |
-| Sprint 3 | Interactive map with site geometry, boundary colors and GPX tracks, inspection history, password reset, to-visit priority, export of all files, skill dropdowns and stewards without accounts | October 25, 2026 | October 27, 2026 | 15 | 71 |
+| Sprint 3 | Interactive map with site geometry, boundary colors and GPX tracks, inspection history, password reset, to-visit priority, export of all files and skill dropdowns | October 25, 2026 | October 27, 2026 | 14 | 68 |
 | Sprint 4 | Activity points, the all-SIR summary and integrated access requests | November 15, 2026 | November 17, 2026 | 7 | 39 |
 | Sprint 5 | New client requests, final polish, deployment and field-test fixes | November 29, 2026 | December 1, 2026 | 0 (not planned yet) | 0 |
 
@@ -166,7 +166,7 @@ All releases are GitHub releases at 20:00 on the due date.
 
 Re-estimated on October 11, 2026, the Sprint 2 code freeze, from `main` at `9009d0d`. A story
 counts as done only when its PR is merged on `main` and the merged work covers each AT of the
-story. During Sprint 3, Frank removed US 2.0.11, US 4.0.5 and US 4.0.7 from scope. Each has 5 points. They are now Won't Have (Won't Do), with no sprint. The scope totals fell from 60 to 45 committed points and from 57 to 42 re-estimated points. US 2.0.14 then moved from Sprint 4 to Sprint 3, which brings the Sprint 3 commitment to 47 points. The recorded re-estimate stays at 42 points. The velocity-based capacity remains 57 points. On October 24, five Sprint 4 stories (1.0.6, 2.0.12, 2.0.13, 3.0.3 and 3.0.4, 24 points) moved to Sprint 3. Sprint 3 is now 71 points and Sprint 4 is 39 points. The recorded Sprint 3 re-estimate stays at 42 points.
+story. During Sprint 3, Frank removed US 2.0.11, US 4.0.5 and US 4.0.7 from scope. Each has 5 points. They are now Won't Have (Won't Do), with no sprint. The scope totals fell from 60 to 45 committed points and from 57 to 42 re-estimated points. US 2.0.14 then moved from Sprint 4 to Sprint 3, which brings the Sprint 3 commitment to 47 points. The recorded re-estimate stays at 42 points. The velocity-based capacity remains 57 points. On October 24, five Sprint 4 stories (1.0.6, 2.0.12, 2.0.13, 3.0.3 and 3.0.4, 24 points) moved to Sprint 3. At that date Sprint 3 had 71 points and Sprint 4 had 39 points. The recorded Sprint 3 re-estimate stays at 42 points. On October 26, US 3.0.4 was removed (3 points), so the current Sprint 3 scope is 68 points.
 
 **Formula.**
 
@@ -215,7 +215,7 @@ but one of them is reading week, and the plan counts no story work in reading we
 
 | Sprint | Dates | Working weeks | Arithmetic | Re-estimate | Committed | Difference | Plan |
 |---|---|---|---|---|---|---|---|
-| Sprint 3 | Oct 14 to Oct 27 | 2 | 57 − 15 (scope change) | 42 | 71 | 29 over | Three stories removed; US 2.0.14 and five Sprint 4 stories (24 points) added. Capacity remains 57. |
+| Sprint 3 | Oct 14 to Oct 27 | 2 | 57 − 15 (scope change) | 42 | 68 | 26 over | Three stories removed; US 2.0.14 and five Sprint 4 stories added. US 3.0.4 removed on October 26. Capacity remains 57. |
 | Sprint 4 | Oct 28 to Nov 17 | 2 (3 weeks minus reading week) | 4.07 × 7 × 2 | 57 | 39 | 18 free | Room for Sprint 3 carry-over. |
 | Sprint 5 | Nov 18 to Dec 1 | 2 | 4.07 × 7 × 2 | 57 | 0 | 57 free | 30 points for new client stories. The other 27 are for deployment, final polish and fixes from the December field test. |
 
@@ -223,19 +223,19 @@ If the team also works in reading week, Sprint 4 can take 4.07 × 7 × 3 = 85 po
 not count on it.
 
 **Sprint 3 scope change.** The three removed stories are not carry-over to Sprint 4.
-Their tasks are excluded from the current plan.
+Their tasks are excluded from the current plan. US 3.0.4 was also removed on October 26; it is not carry-over.
 
-**Sprint 3 risk.** Sprint 3 needs 71 / 7 = 10.1 points per person. This is above the 9.0 of
+**Sprint 3 risk.** Sprint 3 needs 68 / 7 = 9.7 points per person. This is above the 9.0 of
 Sprint 2 on October 11 and the 7.3 of October 9. The load is not even:
 
 | Team | Members | Points | Per person |
 |---|---|---|---|
-| Red | 2 | 50 (1.0.6: 2, 2.0.1: 8, 2.0.9: 5, 2.0.12: 8, 2.0.13: 3, 3.0.3: 8, 3.0.4: 3, 4.0.2: 13) | 25.0 |
+| Red | 2 | 47 (1.0.6: 2, 2.0.1: 8, 2.0.9: 5, 2.0.12: 8, 2.0.13: 3, 3.0.3: 8, 4.0.2: 13) | 23.5 |
 | Blue | 3 | 15 | 5.0 |
 | Green | 2 | 6 | 3.0 |
 
-Red has 25 points per person, which is 2.6 times the highest team result of Sprint 2 (Gamma, 9.7).
-4.0.2 alone is 13 points. The five moved stories add 24 points to Red, so the offline layer tasks of 4.0.2 are the first work to move back.
+Red has 23.5 points per person, which is 2.4 times the highest team result of Sprint 2 (Gamma, 9.7).
+4.0.2 alone is 13 points. The four moved stories that remain add 21 points to Red, so the offline layer tasks of 4.0.2 are the first work to move back.
 
 **Mitigation (proposed for the October 14 planning; the Product Owner decides).**
 
@@ -243,7 +243,7 @@ Red has 25 points per person, which is 2.6 times the highest team result of Spri
   ([#185](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/185)), both due October 17, by October 20: the offline layer tasks of 4.0.2
   ([#207](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/207), [#209](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/209), [#213](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/213)) move to Sprint 4. This move would raise Sprint 4 from 39 to 52 points, which is within the capacity of 57. Blue (5.0 points
   per person) takes the GPX upload tasks of 2.0.9 ([#192](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/192), [#201](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/201)).
-- If the offline work moves, Sprint 3 has 58 points and Sprint 4 has 52 points. The Product Owner must review the load.
+- If the offline work moves, Sprint 3 has 55 points and Sprint 4 has 52 points. The Product Owner must review the load.
 
 The base map, the protected area boundaries, the map filters and the map search
 ([PR #159](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/159), [PR #161](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/161), [PR #166](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/166), [PR #167](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/167), [PR #241](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/241)) are already on `main`. 2.0.1 builds on
@@ -646,28 +646,27 @@ each AT is in the [Traceability Matrix](traceability-matrix.md).
 
 #### User stories
 
-|User Story|Story points|Issue|
+|User Story|Story points|Issue or PR|
 |:---:|:---:|:---:|
 |US 1.0.3 - Show history of Site Inspections on a Steward's Profile|2|[#169](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/169)|
 |US 1.0.4 - Aggregate User Activity and Contributions on a user's profile|2|[#170](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/170)|
-|US 1.0.6 - Select and Edit Skills and Focus Areas|2|No issue yet|
+|US 1.0.6 - Select and Edit Skills and Focus Areas|2|[PR #308](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/308)|
 |US 2.0.1 - View Sites and Past Visits on an Interactive Map|8|[#171](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/171)|
 |US 2.0.8 - View a Site's Details From the Map|3|[#172](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/172)|
 |US 2.0.9 - Upload a GPX Track of a Site Visit|5|[#173](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/173)|
-|US 2.0.12 - Score a Site for To-Visit Priority|8|No issue yet|
-|US 2.0.13 - Flag Site Points That Are a Year Old|3|No issue yet|
-|US 2.0.14 - Color Map Sites by Type|2|No issue recorded|
-|US 3.0.3 - Export all digital files from SIR-SAPAA|8|No issue yet|
-|US 3.0.4 - Add a Steward Without an Account|3|No issue yet|
+|US 2.0.12 - Score a Site for To-Visit Priority|8|[PR #307](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/307)|
+|US 2.0.13 - Flag Site Points That Are a Year Old|3|[PR #307](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/307)|
+|US 2.0.14 - Color Map Sites by Type|2|[PR #313](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/313)|
+|US 3.0.3 - Export all digital files from SIR-SAPAA|8|[PR #309](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/309)|
 |US 4.0.2 - Offline and Online Map Layers|13|[#175](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/175)|
 |US 4.0.4 - Edit My Previous Inspections|5|[#176](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/176)|
 |US 5.0.2 - Reset a Forgotten Password|2|[#179](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/179)|
 |US 6.0.1 - Store Each Site's Geometry From the Shared Source|5|[#180](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/180)|
 
-**Committed:** 71 points. **Re-estimate:** 42 points (see [Velocity re-estimate](#velocity-re-estimate)).
+**Committed:** 68 points. **Re-estimate:** 42 points (see [Velocity re-estimate](#velocity-re-estimate)).
 
-The sprint starts on October 14, after the Sprint 2 demo, review and retrospective. All Sprint 3
-work is finished and merged by **October 25** (code freeze), two days before the deadline. Red
+The sprint starts on October 14, after the Sprint 2 demo, review and retrospective. The planned code freeze was **October 25**, two days before the deadline. The freeze was missed;
+[release checks](sprint-3-release.md) record the remaining checks and approvals. Red
 makes the release on October 26. October 27 is spare time before the 20:00 deadline. Tasks are
 assigned to teams, not to people. Each team divides its tasks between its members. No Sprint 2
 work carried over to this sprint.
@@ -682,8 +681,8 @@ The milestone also has four issues that are not story tasks:
 |---|---|---|
 | [#251](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/251) | Report read actions in queries.ts don't check the caller | Closed. Fixed by [PR #259](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/259), on `main` since #284. See [Issues Backlog](issues.md). |
 | [#264](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/264) | Minute the Oct 14 lab, Sprint 2 retro and Sprint 3 planning | Open |
-| [#271](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/271) | Use one shared admin check and one S3 client | Open |
-| [#275](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/275) | Make S3 enforce the photo upload size and type limits | Open |
+| [#271](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/271) | Use one shared admin check and one S3 client | Closed by PR #311. The export follow-up PR #318 also reuses the shared S3 client. |
+| [#275](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/275) | Make S3 enforce the photo upload size and type limits | Closed by PR #291. |
 
 **Teams:** Red (Saumya, Chris), Blue (Aaron, Zanab, Abhinav), Green (Alissa, Jayden). See
 [Sprint 3 teams](#sprint-3-teams).
@@ -736,14 +735,12 @@ Owner).
 |Show saved edits everywhere the report is rendered, with tests for 4.0.4|US 4.0.4|Blue (Aaron, Zanab, Abhinav)|Oct 23rd|[#210](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/210)|
 |Use live tiles when online, with tests for offline and online mode|US 4.0.2|Red (Saumya, Chris)|Oct 24th|[#213](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/213)|
 |Update the traceability matrix for the Sprint 3 stories|Dev Task|Blue (Aaron, Zanab, Abhinav)|Oct 24th|[#214](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/214)|
-|Add the three priority scores and their saved date to a site, and calculate the to-visit priority on the server (migration)|US 2.0.12|Red (Saumya, Chris)|Oct 25th|Draft|
-|Admin score form and the to-visit priority on the site page. The server refuses a Steward's change. Tests for 2.0.12|US 2.0.12|Red (Saumya, Chris)|Oct 25th|Draft|
-|Show a reminder to an Admin when the points were saved more than a year ago, with tests for 2.0.13|US 2.0.13|Red (Saumya, Chris)|Oct 25th|Draft|
-|Export job that puts all stored images and files in one ZIP file|US 3.0.3|Red (Saumya, Chris)|Oct 25th|Draft|
-|Admin control to start the export and download the ZIP file, with tests for 3.0.3|US 3.0.3|Red (Saumya, Chris)|Oct 25th|Draft|
-|Skill and focus area dropdowns with an "Other" option and suggestions on the profile edit form, with tests for 1.0.6|US 1.0.6|Red (Saumya, Chris)|Oct 25th|Draft|
-|Create the table for stewards without an account, with access rules (migration)|US 3.0.4|Red (Saumya, Chris)|Oct 25th|Draft|
-|Admin form to add a steward without an account, assign the steward to a site and show the contact details, with tests for 3.0.4|US 3.0.4|Red (Saumya, Chris)|Oct 25th|Draft|
+|Add the three priority scores and their saved date to a site, and calculate the to-visit priority on the server (migration)|US 2.0.12|Red (Saumya, Chris)|Oct 25th|[PR #307](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/307)|
+|Admin score form and the to-visit priority on the site page. The server refuses a Steward's change. Tests for 2.0.12|US 2.0.12|Red (Saumya, Chris)|Oct 25th|[PR #307](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/307)|
+|Show a reminder to an Admin when the points were saved more than a year ago, with tests for 2.0.13|US 2.0.13|Red (Saumya, Chris)|Oct 25th|[PR #307](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/307)|
+|Export job that puts all stored images and files in one ZIP file|US 3.0.3|Red (Saumya, Chris)|Oct 25th|[PR #309](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/309)|
+|Admin control to start the export and download the ZIP file, with tests for 3.0.3|US 3.0.3|Red (Saumya, Chris)|Oct 25th|[PR #309](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/309)|
+|Skill and focus area dropdowns with an "Other" option and suggestions on the profile edit form, with tests for 1.0.6|US 1.0.6|Red (Saumya, Chris)|Oct 25th|[PR #308](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/308)|
 |Open a PR for each task and request 2 reviews|All US|Everyone|Oct 24th|[#215](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/215)|
 |Code freeze: all Sprint 3 PRs reviewed and merged|All US|Everyone|Oct 25th|[#216](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/216)|
 |Write the release notes and make the Sprint 3 release on GitHub|Release|Red (Saumya, Chris)|Oct 26th|[#217](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/217)|
@@ -807,12 +804,6 @@ The acceptance tests are in [User Stories](user-stories.md).
   when 3.0.3 AT1 and AT2 pass.
 - **Skill and focus area dropdowns on the profile edit form** (US 1.0.6). Include an "Other"
   option and suggest similar existing values. Done when 1.0.6 AT1 to AT3 pass.
-- **Create the table for stewards without an account** (US 3.0.4). The table design is not decided
-  ([User Stories](user-stories.md)). Green reviews the schema. Done when the migration runs on a
-  clean local database.
-- **Admin form to add a steward without an account** (US 3.0.4). Name, email and phone number.
-  Assign the steward to a site and show the contact details on the site page. Done when 3.0.4 AT1
-  to AT3 pass.
 - **Add a CI check that fails when a diagram SVG does not match its Mermaid source** (dev task).
   The check runs on PRs that change `docs/assets/*.mmd` or `docs/images/*.svg`. Done when a PR with
   an out-of-date SVG fails the check.
@@ -895,7 +886,7 @@ is 18 points below the capacity estimate, which leaves room for Sprint 3 carry-o
 
 The October 16 requests are US 1.0.6, US 2.0.14 and US 3.0.4. Owner: Team.
 US 2.0.14 is in Sprint 3, assigned to Team Blue (Aaron, Zanab, Abhinav).
-US 1.0.6 and US 3.0.4 moved from Sprint 4 to Sprint 3 on October 24, with 5 points in total. They are assigned to Red.
+US 1.0.6 and US 3.0.4 moved from Sprint 4 to Sprint 3 on October 24, with 5 points in total. US 3.0.4 was removed on October 26. US 1.0.6 remains assigned to Red.
 All three have Should Have priority.
 
 #### Tasks
