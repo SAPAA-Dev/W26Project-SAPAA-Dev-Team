@@ -1,7 +1,7 @@
 'use server';
 
 import { supabaseAdmin } from '../utils/supabase/admin';
-import { createClient } from './supabase/server';
+import { requireApprovedAdmin } from './auth-checks';
 import type { AdminUserAttributes, User as AuthUser } from '@supabase/supabase-js';
 
 export interface User {
@@ -9,16 +9,6 @@ export interface User {
   email: string;
   role: string;
   authenticated: boolean;
-}
-
-// Every action below runs with the service role, so each one checks the caller
-// first. The check reads the signed-in session, never a value the caller sends.
-async function isApprovedAdmin(): Promise<boolean> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) return false;
-  return data.user.app_metadata?.role === 'admin'
-    && data.user.app_metadata?.authenticated === true;
 }
 
 const NOT_ADMIN_ERROR = 'Only admins can manage user accounts.';
@@ -29,7 +19,12 @@ function errorMessage(e: unknown): string {
 }
 
 export async function getAllUsers(): Promise<User[]> {
-  if (!(await isApprovedAdmin())) return [];
+  try {
+    await requireApprovedAdmin(NOT_ADMIN_ERROR);
+  } catch (error) {
+    if (error instanceof Error && error.message === NOT_ADMIN_ERROR) return [];
+    throw error;
+  }
 
   // listUsers returns one page, 50 users by default, so read every page.
   const users: AuthUser[] = [];
@@ -55,7 +50,14 @@ export async function getAllUsers(): Promise<User[]> {
 
 export async function addUser(newUser: { email: string; password: string; role?: string; authenticated?:boolean}) {
   try {
-    if (!(await isApprovedAdmin())) return { success: false, error: NOT_ADMIN_ERROR };
+    try {
+      await requireApprovedAdmin(NOT_ADMIN_ERROR);
+    } catch (error) {
+      if (error instanceof Error && error.message === NOT_ADMIN_ERROR) {
+        return { success: false, error: NOT_ADMIN_ERROR };
+      }
+      throw error;
+    }
 
     const { email, password, role = 'steward', authenticated = false } = newUser;
 
@@ -76,7 +78,14 @@ export async function addUser(newUser: { email: string; password: string; role?:
 
 export async function deleteUser(userId: string) {
   try {
-    if (!(await isApprovedAdmin())) return { success: false, error: NOT_ADMIN_ERROR };
+    try {
+      await requireApprovedAdmin(NOT_ADMIN_ERROR);
+    } catch (error) {
+      if (error instanceof Error && error.message === NOT_ADMIN_ERROR) {
+        return { success: false, error: NOT_ADMIN_ERROR };
+      }
+      throw error;
+    }
 
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
@@ -91,7 +100,14 @@ export async function deleteUser(userId: string) {
 
 export async function updateUser(data: { id: string; email: string; password?: string; role: string; authenticated:boolean }) {
   try {
-    if (!(await isApprovedAdmin())) return { success: false, error: NOT_ADMIN_ERROR };
+    try {
+      await requireApprovedAdmin(NOT_ADMIN_ERROR);
+    } catch (error) {
+      if (error instanceof Error && error.message === NOT_ADMIN_ERROR) {
+        return { success: false, error: NOT_ADMIN_ERROR };
+      }
+      throw error;
+    }
 
     const { id, email, password, role, authenticated } = data;
 

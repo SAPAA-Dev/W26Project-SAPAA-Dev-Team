@@ -70,9 +70,10 @@ export default function PermanentDeleteSiteModal({
           </p>
 
           <p className="text-sm text-gray-600">
-            Only the site record is removed. Its inspection reports, answers,
-            and images stay in the database, disconnected from any site. This
-            operation cannot be undone.
+            The site record, its steward assignments, page fields, and GPX
+            tracks are removed. Its inspection reports, answers, and images
+            stay in the database, disconnected from any site. This operation
+            cannot be undone.
           </p>
 
           {loading && (

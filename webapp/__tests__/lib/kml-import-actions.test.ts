@@ -1,3 +1,10 @@
+/**
+ * @jest-environment node
+ *
+ * The AT1 test uses the real parser, not the mock. togeojson needs the xmldom
+ * XMLSerializer, and the jsdom global breaks it. See kmlImport.test.ts.
+ */
+
 const mockCreateClient = jest.fn();
 const mockDownload = jest.fn();
 const mockRemove = jest.fn();
@@ -46,6 +53,26 @@ import { KmlImportError } from '../../lib/map/kmlImport';
 import { importProtectedAreasFromStorage } from '../../utils/kml-import-actions';
 
 const VALID_PATH = 'kml-imports/0f8f8f8f-1111-2222-3333-444455556666/SAPAA-Map.kmz';
+
+const KML_TEXT = `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <Folder>
+      <name>Natural Areas</name>
+      <Placemark>
+        <name>Alexo</name>
+        <description><![CDATA[Alexo <br> FID 7 <br> NAME Alexo <br> TYPE NA]]></description>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <coordinates>1,2,0 3,4,0 5,6,0 1,2,0</coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+    </Folder>
+  </Document>
+</kml>`;
 
 function mockCaller(role: string | null, authenticated = true) {
   const user =
@@ -113,12 +140,13 @@ describe('importProtectedAreasFromStorage', () => {
     mockParse(1);
   });
 
-  it('rejects a steward and touches neither storage nor the table', async () => {
+  it('US 6.0.1 AT5: refuses a steward and touches neither storage nor the table', async () => {
     mockCaller('steward');
 
     const result = await importProtectedAreasFromStorage(VALID_PATH);
 
     expect(result).toEqual({ success: false, error: 'Only admins can import protected areas.' });
+    expect(result.unlinkedSites).toBeUndefined();
     expect(mockDownload).not.toHaveBeenCalled();
     expect(mockFrom).not.toHaveBeenCalled();
     expect(mockRpc).not.toHaveBeenCalled();
@@ -154,6 +182,28 @@ describe('importProtectedAreasFromStorage', () => {
     expect(mockRpc).toHaveBeenCalledWith('link_sites_to_protected_areas', { p_link: true });
     expect(mockRemove).toHaveBeenCalledWith([VALID_PATH]);
     expect(result).toEqual({ success: true, upserted: 2, skipped: 0, warnings: [], unlinkedSites: [] });
+  });
+
+  it('US 6.0.1 AT1: stores the exact KML coordinates and links the site', async () => {
+    mockCaller('admin');
+    const actual = jest.requireActual('../../lib/map/kmlImport') as typeof import('../../lib/map/kmlImport');
+    mockParseProtectedAreaFile.mockImplementation(actual.parseProtectedAreaFile);
+    mockDownload.mockResolvedValue({
+      data: { arrayBuffer: async () => new TextEncoder().encode(KML_TEXT).buffer },
+      error: null,
+    });
+
+    const result = await importProtectedAreasFromStorage(VALID_PATH);
+
+    expect(result.success).toBe(true);
+    const rows = mockUpsert.mock.calls[0][0] as Array<{ name: string; geometry: unknown }>;
+    expect(rows).toHaveLength(1);
+    expect(rows[0].name).toBe('Alexo');
+    expect(rows[0].geometry).toEqual({
+      type: 'MultiPolygon',
+      coordinates: [[[[1, 2], [3, 4], [5, 6], [1, 2]]]],
+    });
+    expect(mockRpc).toHaveBeenCalledWith('link_sites_to_protected_areas', { p_link: true });
   });
 
   it('parses the bytes it downloaded', async () => {
@@ -322,7 +372,7 @@ describe('importProtectedAreasFromStorage', () => {
     expect(mockRemove).toHaveBeenCalledWith(['kml-imports/old-upload/orphan.kml']);
   });
 
-  it('reads the active sites that have no protected area link', async () => {
+  it('US 6.0.1 AT3: reads the non-archived sites that have no protected area link', async () => {
     mockCaller('admin');
 
     await importProtectedAreasFromStorage(VALID_PATH);
@@ -334,7 +384,7 @@ describe('importProtectedAreasFromStorage', () => {
     expect(mockOrder).toHaveBeenCalledWith('namesite', { ascending: true });
   });
 
-  it('reports the site names and drops blank names', async () => {
+  it('US 6.0.1 AT3: reports the site names and drops blank names', async () => {
     mockCaller('admin');
     mockOrder.mockResolvedValue({
       data: [{ namesite: 'Zeta' }, { namesite: ' ' }, { namesite: null }, { namesite: 'Alpha' }],

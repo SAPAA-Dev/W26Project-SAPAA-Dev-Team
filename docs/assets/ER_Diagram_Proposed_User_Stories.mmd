@@ -126,6 +126,11 @@ erDiagram
         bigint protected_area_id FK, UK "US 6.0.1, 2.0.1, 2.0.2: optional protected_areas.id"
         numeric latitude "NEW US 6.0.1: centre point"
         numeric longitude "NEW US 6.0.1: centre point"
+        smallint priority_abuses "NEW US 2.0.12: 0 to 5"
+        smallint priority_biological "NEW US 2.0.12: 0 to 5"
+        smallint priority_time "NEW US 2.0.12: 0 to 5, time since the last visit"
+        timestamptz priority_saved_at "NEW US 2.0.13: reminder after one year"
+        uuid priority_saved_by FK "NEW US 2.0.12: auth.users.id"
     }
 
     site_page_fields["EXISTING site_page_fields"] {
@@ -155,15 +160,6 @@ erDiagram
         text other_info "NULL = not recorded"
         uuid updated_by FK "auth.users.id"
         timestamptz updated_at
-    }
-
-    site_priority["NEW site_priority (US 2.0.12, 2.0.13)"] {
-        bigint site_id PK, FK
-        integer abuse_points
-        integer biological_points
-        integer time_since_visit_points
-        timestamptz points_saved_at "US 2.0.13: reminder after one year"
-        uuid saved_by FK "auth.users.id"
     }
 
     form_responses["EXISTING form_responses"] {
@@ -219,7 +215,9 @@ erDiagram
         text status "pending, processing, complete, failed"
         text storage_path "S3 key of the zip"
         text error
+        integer file_count
         timestamptz created_at
+        timestamptz finished_at
     }
 
     auth_users |o--o| people : "auth_user_id"
@@ -246,14 +244,14 @@ erDiagram
     auth_users ||--o{ S26_pdf_jobs : "created_by"
     auth_users ||--o{ export_jobs : "created_by"
     sites_pa ||--o| site_safety : "site_id"
-    sites_pa ||--o| site_priority : "site_id"
+    auth_users |o--o{ sites_pa : "priority_saved_by"
 
     classDef existing fill:#cfe4ff,stroke:#333,color:#111
     classDef proposed fill:#c9f7d4,stroke:#1a7f37,stroke-width:2px,color:#111
     classDef question fill:#ffe344,stroke:#d4ba24,stroke-width:2px,color:#111
 
     class auth_users,people,socials,site_stewards,protected_areas,ab_counties,sites_pa,site_page_fields,form_responses,answers,questions,attachments,homepage_image_uploads,S26_pdf_jobs existing
-    class profile_hidden_questions,gpx_tracks,export_jobs,site_safety,site_priority proposed
+    class profile_hidden_questions,gpx_tracks,export_jobs,site_safety proposed
     class OPEN_QUESTIONS question
 
     %% text_array means the PostgreSQL type text[].

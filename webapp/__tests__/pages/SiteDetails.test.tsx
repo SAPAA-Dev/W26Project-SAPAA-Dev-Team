@@ -134,6 +134,9 @@ describe('SiteDetailScreen', () => {
     (supabaseQueries.getSitePageFields as jest.Mock).mockResolvedValue([]);
     (supabaseQueries.getFormResponsesBySite as jest.Mock).mockResolvedValue(mockInspections);
     (supabaseQueries.getCurrentUserUid as jest.Mock).mockResolvedValue('user-123');
+    // The gallery effect calls fetch on mount. Answer these calls so jsdom does not
+    // try a real network request.
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ items: [] }) });
   });
 
   describe('Loading and Error states', () => {

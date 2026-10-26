@@ -1,17 +1,7 @@
 'use server';
 
-import { createServerSupabase, createClient as createUserClient } from './supabase/server';
-
-// Every write below runs with the service role, so each one checks the caller
-// first. The check reads the signed-in session, never a value the caller sends.
-async function requireApprovedAdmin(): Promise<void> {
-  const supabase = await createUserClient();
-  const { data, error } = await supabase.auth.getUser();
-  const approved = !error
-    && data.user?.app_metadata?.role === 'admin'
-    && data.user?.app_metadata?.authenticated === true;
-  if (!approved) throw new Error('Only admins can edit the form.');
-}
+import { createServerSupabase } from './supabase/server';
+import { requireApprovedAdmin } from './auth-checks';
 
 // ─── Types ───────────────────────────────────────────────────────────
 export interface FormSection {
@@ -44,7 +34,7 @@ export interface FormQuestion {
 // ─── Form Editor Queries ─────────────────────────────────────────────
 
 export async function fetchFormSections(): Promise<FormSection[]> {
-  await requireApprovedAdmin();
+  await requireApprovedAdmin('Only admins can edit the form.');
   const supabase = createServerSupabase();
   const { data, error } = await supabase
     .from("form_sections")
@@ -57,7 +47,7 @@ export async function fetchFormSections(): Promise<FormSection[]> {
 
 
 export async function fetchFormQuestions(): Promise<FormQuestion[]> {
-  await requireApprovedAdmin();
+  await requireApprovedAdmin('Only admins can edit the form.');
   const supabase = createServerSupabase();
   const { data, error } = await supabase
     .from("questions")
@@ -99,7 +89,7 @@ export async function fetchFormQuestions(): Promise<FormQuestion[]> {
 }
 
 export async function getMaxFormOrder(): Promise<number> {
-  await requireApprovedAdmin();
+  await requireApprovedAdmin('Only admins can edit the form.');
   const supabase = createServerSupabase();
 
   const { data } = await supabase
@@ -117,7 +107,7 @@ export async function getMaxFormOrder(): Promise<number> {
 export type FormActionResult = { success: true } | { success: false; error: string };
 
 export async function saveQuestion(question: FormQuestion): Promise<FormActionResult> {
-  await requireApprovedAdmin();
+  await requireApprovedAdmin('Only admins can edit the form.');
   const supabase = createServerSupabase();
 
   // 1. Update the question
@@ -187,7 +177,7 @@ export async function saveQuestion(question: FormQuestion): Promise<FormActionRe
 
 // Admin should only be able to toggle question visibility and never delete questions (request from client)
 export async function toggleQuestionActive(questionId: number, currentState: boolean) {
-  await requireApprovedAdmin();
+  await requireApprovedAdmin('Only admins can edit the form.');
   const supabase = createServerSupabase();
   const { error } = await supabase
     .from("questions")
@@ -208,7 +198,7 @@ export async function addQuestion(
     question_key: string;
   }
 ): Promise<FormActionResult> {
-  await requireApprovedAdmin();
+  await requireApprovedAdmin('Only admins can edit the form.');
   const supabase = createServerSupabase();
 
   // 1. Work out the derived columns.
@@ -253,7 +243,7 @@ export async function addQuestion(
 export async function reorderQuestions(
   updates: { questionId: number; questionName: string; newOrder: number }[]
 ) {
-  await requireApprovedAdmin();
+  await requireApprovedAdmin('Only admins can edit the form.');
   const supabase = createServerSupabase();
 
   for (const update of updates) {

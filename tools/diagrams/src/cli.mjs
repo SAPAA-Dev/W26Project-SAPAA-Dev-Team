@@ -2,7 +2,7 @@
 // npm run diagrams        -> generate, lint, render the changed diagrams
 // npm run diagrams:check  -> fail if a generated block or an SVG is out of date (writes nothing)
 //
-// node src/cli.mjs generate | render [--force] [--only X.mmd] | lint | all | check
+// node src/cli.mjs generate | render [--force] [--only X.mmd] | lint | all | check [--svg-only]
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,7 +10,7 @@ import * as C from './config.mjs';
 import { schemaFromMigrations } from './schema.mjs';
 import { applyGenerated } from './markers.mjs';
 import { createProject, erLines, modelLines, serviceLines } from './generate.mjs';
-import { plan, render } from './render.mjs';
+import { hashOf, plan, render } from './render.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const abs = (p) => path.join(ROOT, p);
@@ -81,9 +81,11 @@ async function doRender(args) {
   const all = renderPlan(args.includes('--force'));
   const jobs = all.filter((j) => j.stale && (!only || j.mmd === only));
   const failed = await render(jobs, abs(C.IMAGES));
-  // Hashes of every source that rendered, sorted so the file does not churn.
+  // Save both hashes only after a successful render, so an edited SVG fails the check.
   const hashes = readHashes();
-  for (const j of jobs) if (!failed.includes(j.mmd)) hashes[j.mmd] = j.hash;
+  for (const job of jobs) if (!failed.includes(job.mmd)) {
+    hashes[job.mmd] = { source: job.hash, svg: hashOf(read(path.join(C.IMAGES, job.svg))) };
+  }
   for (const k of Object.keys(hashes)) if (!all.some((j) => j.mmd === k)) delete hashes[k];
   const sorted = Object.fromEntries(Object.keys(hashes).sort().map((k) => [k, hashes[k]]));
   fs.writeFileSync(abs(C.HASHES), JSON.stringify(sorted, null, 2) + '\n');
@@ -108,11 +110,15 @@ if (cmd === 'generate' || cmd === 'all') {
   const schema = await schemaFromMigrations(abs(C.MIGRATIONS));
   report(lint(schema));
 } else if (cmd === 'check') {
-  const { schema, changed, warnings } = await generate({ write: false });
-  report([...warnings, ...lint(schema)]);
+  // The separate diagrams workflow updates generated blocks; this check needs no browser.
+  const svgOnly = args.includes('--svg-only');
+  const { schema, changed, warnings } = svgOnly
+    ? { schema: null, changed: [], warnings: [] }
+    : await generate({ write: false });
+  if (!svgOnly) report([...warnings, ...lint(schema)]);
   const stale = renderPlan(false).filter((j) => j.stale).map((j) => j.mmd);
   for (const f of changed) console.log(`out of date: ${f} (generated block)`);
-  for (const f of stale) console.log(`out of date: ${C.ASSETS}/${f} (SVG not rendered from this source)`);
+  for (const f of stale) console.log(`out of date: ${C.ASSETS}/${f} (source or SVG differs from the recorded render)`);
   if (changed.length || stale.length) {
     console.log('Run `npm run diagrams` and commit the result.');
     code = 1;

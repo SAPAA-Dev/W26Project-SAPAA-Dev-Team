@@ -1,6 +1,7 @@
 'use server';
 
 import { createServerSupabase, createClient } from './server';
+import { requireApprovedAdmin, requireApprovedCaller } from '../auth-checks';
 import { refreshProtectedAreaLinks } from './siteLinks';
 import { deleteObjectsByKeys } from '../media/s3Delete';
 import { isAllowedStorageKey } from '../media/storageKeys';
@@ -523,24 +524,6 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
   });
 }
 
-/**
- * Returns the boundaries the map draws, ready for MapLibre.
- *
- * The geometry column is jsonb that holds a GeoJSON MultiPolygon, so no conversion is
- * needed. The coordinates are rounded and the rings are simplified here, on the
- * server, to keep the payload small.
- */
-async function requireApprovedCaller(
-  errorMessage = 'You must be signed in to view site boundaries.'
-): Promise<{ isAdmin: boolean; userId: string; email: string | null }> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
-  const user = data.user;
-  const approved = !error && user?.app_metadata?.authenticated === true;
-  if (!approved || !user) throw new Error(errorMessage);
-  return { isAdmin: user.app_metadata?.role === 'admin', userId: user.id, email: user.email ?? null };
-}
-
 function countyFromEmbed(
   value: { county: string } | { county: string }[] | null
 ): string | null {
@@ -629,6 +612,13 @@ async function readProtectedAreaLinks(): Promise<Map<number, ProtectedAreaLink>>
   return links;
 }
 
+/**
+ * Returns the boundaries the map draws, ready for MapLibre.
+ *
+ * The geometry column is jsonb that holds a GeoJSON MultiPolygon, so no conversion is
+ * needed. The coordinates are rounded and the rings are simplified here, on the
+ * server, to keep the payload small.
+ */
 export async function getProtectedAreaBoundaries(): Promise<BoundaryFeatureCollection> {
   const caller = await requireApprovedCaller();
   // The cookie client, not createServerSupabase. RLS grants select on protected_areas
@@ -770,19 +760,6 @@ async function siteActionResult(run: () => Promise<void>): Promise<SiteActionRes
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : 'Failed to save the site.' };
   }
-}
-
-// Site edits run with the service role, so each one checks the caller first.
-// The check reads the signed-in session, never a value the caller sends.
-async function requireApprovedAdmin(
-  errorMessage = 'Only admins can edit sites.'
-): Promise<void> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
-  const approved = !error
-    && data.user?.app_metadata?.role === 'admin'
-    && data.user?.app_metadata?.authenticated === true;
-  if (!approved) throw new Error(errorMessage);
 }
 
 export async function updateSite(
@@ -1624,6 +1601,8 @@ export interface SiteDeleteImpact {
   attachmentCount: number;
   homepageImageCount: number;
   siteStewardCount: number;
+  gpxTrackCount: number;
+  sitePageFieldCount: number;
 }
 
 export interface SiteArchiveResult {

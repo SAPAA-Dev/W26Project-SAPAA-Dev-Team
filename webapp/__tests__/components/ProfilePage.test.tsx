@@ -20,13 +20,37 @@ const profilePayload = {
     role: 'Steward',
   },
   isOwner: true,
-  stats: { inspectionCount: 3, distinctSiteCount: 2 },
+  stats: {
+    inspectionCount: 3,
+    distinctSiteCount: 2,
+    topSite: { name: 'Beaver Hills', visitCount: 2 },
+    mostRecentSite: { name: 'Beaver Hills', inspectionDate: '2026-09-12' },
+    reportsThisYear: 3,
+    accountCreatedAt: '2024-06-15T12:00:00.000Z',
+    countyCount: 2,
+    topCounty: { name: 'Strathcona County', reportCount: 2 },
+  },
   history: [{ id: 7, siteId: 5, siteName: 'Beaver Hills', siteArchived: false, siteInactive: false, inspectionDate: '2026-09-12' }],
   pagination: { page: 1, pageSize: 10, total: 3 },
 };
 
 describe('ProfilePage', () => {
   const fetchMock = jest.fn();
+
+  // V8 caches the default timezone after first use, so setting process.env.TZ at runtime does
+  // not reliably change formatting. Force the zone on the Intl call instead. An explicit
+  // timeZone (the component uses UTC for date-only strings) stays unchanged.
+  const formatInAlberta = () => {
+    const originalFormat = Intl.DateTimeFormat;
+    jest.spyOn(Intl, 'DateTimeFormat').mockImplementation(
+      (locale?: Intl.LocalesArgument, options?: Intl.DateTimeFormatOptions) =>
+        new originalFormat(locale, { ...options, timeZone: options?.timeZone ?? 'America/Edmonton' }),
+    );
+  };
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
 
   beforeEach(() => {
     fetchMock.mockReset();
@@ -120,8 +144,50 @@ describe('ProfilePage', () => {
     expect(await screen.findByRole('heading', { name: 'Jamie Rivera' })).toBeInTheDocument();
     expect(screen.getByText('Inspection reports submitted')).toBeInTheDocument();
     expect(screen.getByText('Distinct sites inspected')).toBeInTheDocument();
-    expect(screen.getByText('Beaver Hills')).toBeInTheDocument();
+    expect(screen.getAllByText('Beaver Hills')).not.toHaveLength(0);
     expect(screen.getByText('Web inspection records only.')).toBeInTheDocument();
+  });
+
+  it('shows all profile activity aggregates (1.0.4 AT1)', async () => {
+    render(<ProfilePage />);
+
+    await screen.findByRole('heading', { name: 'Jamie Rivera' });
+
+    const topSiteCard = screen.getByText('Top site visited').parentElement!;
+    expect(topSiteCard).toHaveTextContent('Beaver Hills');
+    expect(topSiteCard).toHaveTextContent('2 visits');
+
+    const recentSiteCard = screen.getByText('Most recent site visited').parentElement!;
+    expect(recentSiteCard).toHaveTextContent('Beaver Hills');
+    expect(recentSiteCard).toHaveTextContent('Sep 12, 2026');
+
+    expect(screen.getByText('Reports submitted this year').parentElement).toHaveTextContent('3');
+    expect(screen.getByText('Account age').parentElement).toHaveTextContent(/year/);
+    expect(screen.getByText('Counties visited').parentElement).toHaveTextContent('2');
+
+    const topCountyCard = screen.getByText('Top county visited').parentElement!;
+    expect(topCountyCard).toHaveTextContent('Strathcona County');
+    expect(topCountyCard).toHaveTextContent('2 reports');
+  });
+
+  it('shows empty states when the user has no visits or county data', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ...profilePayload,
+        stats: {
+          ...profilePayload.stats,
+          topSite: null,
+          mostRecentSite: null,
+          topCounty: null,
+        },
+      }),
+    });
+
+    render(<ProfilePage />);
+
+    expect((await screen.findAllByText('No visits yet')).length).toBe(2);
+    expect(screen.getByText('No county data')).toBeInTheDocument();
   });
 
   it('shows only the contact details the person filled in (1.0.1 AT1)', async () => {
@@ -158,34 +224,26 @@ describe('ProfilePage', () => {
   });
 
   it('does not show a date one day early in Alberta', async () => {
-    const previousZone = process.env.TZ;
-    process.env.TZ = 'America/Edmonton';
-    try {
-      render(<ProfilePage />);
+    formatInAlberta();
+    render(<ProfilePage />);
 
-      expect(await screen.findByText('Sep 12, 2026')).toBeInTheDocument();
-      expect(screen.queryByText('Sep 11, 2026')).not.toBeInTheDocument();
-    } finally {
-      process.env.TZ = previousZone;
-    }
+    const historySection = (await screen.findByRole('heading', { name: 'Inspection history' })).closest('section')!;
+    expect(within(historySection).getByText('Sep 12, 2026')).toBeInTheDocument();
+    expect(within(historySection).queryByText('Sep 11, 2026')).not.toBeInTheDocument();
   });
 
   it('shows the local day for a report that only has a created_at timestamp', async () => {
-    const previousZone = process.env.TZ;
-    process.env.TZ = 'America/Edmonton';
+    formatInAlberta();
     fetchMock.mockResolvedValue({
       ok: true,
       // 03:30 UTC on Sep 12 is 21:30 on Sep 11 in Alberta.
       json: async () => ({ ...profilePayload, history: [{ ...profilePayload.history[0], inspectionDate: '2026-09-12T03:30:00+00:00' }] }),
     });
-    try {
-      render(<ProfilePage />);
+    render(<ProfilePage />);
 
-      expect(await screen.findByText('Sep 11, 2026')).toBeInTheDocument();
-      expect(screen.queryByText('Sep 12, 2026')).not.toBeInTheDocument();
-    } finally {
-      process.env.TZ = previousZone;
-    }
+    const historySection = (await screen.findByRole('heading', { name: 'Inspection history' })).closest('section')!;
+    expect(within(historySection).getByText('Sep 11, 2026')).toBeInTheDocument();
+    expect(within(historySection).queryByText('Sep 12, 2026')).not.toBeInTheDocument();
   });
 
   describe('inspection history paging', () => {
@@ -316,6 +374,37 @@ describe('ProfilePage', () => {
     expect(screen.getByRole('heading', { name: 'Jamie R.' })).toBeInTheDocument();
   });
 
+  it('picks skills from the values that profiles already use and saves the change (1.0.6 AT1, AT3)', async () => {
+    const withOptions = { ...profilePayload, options: { skills: ['Bird ID', 'Mosses'], focusAreas: ['Wetlands', 'Grasslands'] } };
+    const stored = { ...profilePayload.profile, skills: ['Mosses'], focusAreas: ['Wetlands'] };
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => withOptions })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ profile: stored }) });
+    render(<ProfilePage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }));
+    const skills = screen.getByLabelText('Add skills');
+    expect(within(skills).getByRole('option', { name: 'Mosses' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Bird ID' }));
+    fireEvent.change(skills, { target: { value: 'Mosses' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'jamie@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    expect(await screen.findByText('Profile saved.')).toBeInTheDocument();
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body).skills).toEqual(['Mosses']);
+    expect(screen.getByText('Mosses')).toBeInTheDocument();
+    expect(screen.queryByText('Bird ID')).not.toBeInTheDocument();
+  });
+
+  it('still lets the person add a skill with Other when the server sends no list', async () => {
+    render(<ProfilePage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }));
+
+    expect(within(screen.getByLabelText('Add skills')).getAllByRole('option').map((option) => option.textContent))
+      .toEqual(['Select…', 'Other…']);
+  });
+
   it('shows the saved values again after a reload (1.0.1 AT5, 1.0.2 AT4, 1.0.2 AT6)', async () => {
     const stored = {
       ...profilePayload.profile,
@@ -331,8 +420,11 @@ describe('ProfilePage', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'Edit profile' }));
     fireEvent.change(screen.getByLabelText('Display name'), { target: { value: 'Jamie R.' } });
-    fireEvent.change(screen.getByLabelText(/^Skills/), { target: { value: 'Bird ID, Mosses' } });
-    fireEvent.change(screen.getByLabelText(/^Focus areas/), { target: { value: 'Wetlands, Grasslands' } });
+    for (const [list, value] of [['skills', 'Mosses'], ['focus areas', 'Grasslands']]) {
+      fireEvent.change(screen.getByLabelText(`Add ${list}`), { target: { value: '__other__' } });
+      fireEvent.change(screen.getByLabelText(`Other ${list}`), { target: { value } });
+      fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+    }
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'jamie@example.com' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(await screen.findByText('Profile saved.')).toBeInTheDocument();

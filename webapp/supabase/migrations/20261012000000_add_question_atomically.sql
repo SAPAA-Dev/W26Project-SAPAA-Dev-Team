@@ -27,6 +27,10 @@ declare
   new_key_id bigint;
   new_question_id bigint;
 begin
+  -- Serialize the form order: the lock queue makes a concurrent call wait for
+  -- this transaction, so two calls cannot read the same max(formorder).
+  lock table public.questions in share row exclusive mode;
+
   insert into public.question_keys (category, "question key", comment, definition)
   values (p_category, p_question_key, p_comment, null)
   returning id into new_key_id;

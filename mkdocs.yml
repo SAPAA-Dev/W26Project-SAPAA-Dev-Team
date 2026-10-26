@@ -31,6 +31,7 @@ nav:
   - Meeting Minutes: 'meeting-minutes.md'
   - Contributing: 'contributing.md'
   - Issues Backlog: 'issues.md'
+  - Sprint 3 Test Plan: 'test-plan.md'
   - Archive (inherited):
       - Media Storage Architecture: 'aws-architecture.md'
       - User Manual: 'user-manual.md'
@@ -40,4 +41,5 @@ nav:
       - Static Analysis: 'sonar-qube.md'
       - Job Documentation: 'job-documentation.md'
       - Traceability Matrix: 'traceability-matrix.md'
+      - Sprint 3 release checks: sprint-3-release.md
       - Winter 2026 Requirements: 'index-WINTER2026.md'

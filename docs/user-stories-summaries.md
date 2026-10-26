@@ -58,6 +58,18 @@ Sprint 1 has no user stories. It is documentation and discovery.
 - **US 2.0.14 - Color Map Sites by Type** (Charter 2c)
     - Team: Blue (Aaron, Zanab, Abhinav).
     - Steward sees boundary colors set by an Admin for one site or all sites of a type. Different types can use the same color. Colors do not have to match the SAPAA website.
+- **US 1.0.6 - Select and Edit Skills and Focus Areas** (Charter 2b)
+    - Team: Red (Saumya, Chris).
+    - Instead of free text, select and edit skills and focus areas from a predetermined list. Include an option for 'Other'.
+- **US 2.0.12 - Score a Site for To-Visit Priority** (Charter 1)
+    - Team: Red (Saumya, Chris).
+    - Admin scores a site. Steward views the to-visit priority.
+- **US 2.0.13 - Flag Site Points That Are a Year Old** (Charter 1)
+    - Team: Red (Saumya, Chris).
+    - Admin views a reminder when site scores are one year old.
+- **US 3.0.3 - Export all digital files from SIR-SAPAA** (Charter 1)
+    - Team: Red (Saumya, Chris).
+    - Admin exports all images and digital files at once.
 - **US 4.0.2 - Offline and Online Map Layers** (No charter, team request)
     - Steward uses map layers offline and online.
 - **US 4.0.4 - Edit My Previous Inspections** (Charter 1)
@@ -71,12 +83,6 @@ Sprint 1 has no user stories. It is documentation and discovery.
 
 - **US 1.0.5 - Earn Points for Inspection Activity** (Charter 2b)
     - Steward earns points for visits, photos, and inspection activity.
-- **US 2.0.12 - Score a Site for To-Visit Priority** (Charter 1)
-    - Admin scores a site. Steward views the to-visit priority.
-- **US 2.0.13 - Flag Site Points That Are a Year Old** (Charter 1)
-    - Admin views a reminder when site scores are one year old.
-- **US 3.0.3 - Export all digital files from SIR-SAPAA** (Charter 1)
-    - Admin exports all images and digital files at once.
 - **US 5.0.5 - Request Access During Email Sign-Up** (Charter 2b)
     - Prospective user requests access while creating an email and password account.
 - **US 5.0.6 - Complete an Access Request With Google or Microsoft** (Charter 2b)
@@ -90,16 +96,16 @@ Sprint 1 has no user stories. It is documentation and discovery.
 - **US 7.0.3 - See All Inspections in One View** (Charter 1)
     - Admin views summary counts across all SIRs.
 
-- **US 1.0.6 - Select and Edit Skills and Focus Areas** (Charter 2b)
-    - Instead of free text, select and edit skills and focus areas from a predetermined list. Include an option for 'Other'.
-- **US 3.0.4 - Add a Steward Without an Account** (Charter 2b)
-    - Add a steward by name, email and phone number without requiring them to have an account so that their details can be shown on a site page.
-
 ## Sprint 5
 
 No stories planned yet.
 
 ## Won't Have
+
+- **US 3.0.4 - Add a Steward Without an Account** (Charter 2b)
+    - Team: Red (Saumya, Chris).
+    - Add a steward by name, email and phone number without requiring them to have an account so that their details can be shown on a site page.
+    - Removed on October 26, 2026. Frank requires an account and sign-in. PR #310 was closed without merge.
 
 These stories are not planned for a sprint.
 

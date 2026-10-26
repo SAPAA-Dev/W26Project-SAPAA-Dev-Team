@@ -7,6 +7,8 @@ checked on October 11 and 12 against the Sprint 2 fix branches that #284 brought
 caller checks of `queries.ts` were checked again on `main` at `ceb5188`. The Winter 2026 section is
 inherited. The Fall 2025 routes are now in the Fall 2026 section.*
 
+Sprint 3 additions are labelled below and describe the sprint branch, not the Sprint 2 tag.
+
 ## API Documentation From Fall 2026
 
 ### Access rules
@@ -72,8 +74,6 @@ row level security.
 | `GET /api/user-gallery/sir-upload` | Approved user; hidden photos only for owner/admin | Signed-in | [User report gallery](#get-apiuser-gallerysir-upload) |
 | `GET /api/user-gallery/homepage-upload` | Signed-in user (RLS) | Signed-in | [User homepage gallery](#get-apiuser-galleryhomepage-upload) |
 | `GET /api/openapi` | No check in the handler | None | [OpenAPI document](#get-apiopenapi) |
-| `GET /api/geocode` | Admin | Signed-in (auth only) | [Geocode a name](#get-apigeocode) |
-| `GET /api/heatmap` | Admin | Signed-in | [Heat map counts](#get-apiheatmap) |
 | `GET /auth/callback` | None (sign-in step) | Signed-in and service role | [OAuth callback](#get-authcallback) |
 | `GET /auth/confirm` | None (sign-in step) | Signed-in | [Email confirmation](#get-authconfirm) |
 
@@ -396,50 +396,6 @@ filename, file_size_bytes, imageUrl}]}`.
 Returns the OpenAPI 3.0 document in `webapp/lib/swagger.ts`. `/api-docs` reads it. The handler has
 no check. The middleware requires an approved session.
 
-#### GET /api/geocode
-
-Gets the coordinates of a place name from the OpenCage Geocoding API (Fall 2025).
-
-**Query parameters:** `q` (required).
-
-**Response:** always `{"latitude": ..., "longitude": ...}`, for example
-`{"latitude": 53.5731, "longitude": -112.8583}`. Both values are `null`, with status 200, when
-OpenCage finds no match.
-
-**Errors:**
-
-| Status | Body | When |
-|---|---|---|
-| 400 | `Missing q param` | `q` is missing. The route checks this before the session. |
-| 401 | `Unauthorized` | No signed-in user, or the session check fails. |
-| 403 | `Forbidden` | The caller is not an approved admin. |
-| 500 | `Geocoding is not configured` | `OPENCAGE_API_KEY` is not set. The route reads it on each request and does not call OpenCage. |
-| 500 | The OpenCage or network message, or `Geocoding failed` | OpenCage fails, or does not answer in 8 seconds (`axios` timeout). |
-
-**Caller rule:** admin only (see [Admin rule](#admin-rule)). Only the heat map on the admin
-dashboard calls it. Each call uses the OpenCage quota: the free plan allows 2,500 requests each
-day.
-
-#### GET /api/heatmap
-
-Counts the rows of the view `sites_report_fnr_test` whose site name contains a keyword, for the
-heat map on the admin dashboard (Fall 2025).
-
-**Query parameters:** `keyword`. The route removes `*`, because PostgREST reads `*` as `%` in
-`ilike` and has no escape for it. It escapes `\`, `%` and `_`, so the keyword matches only those
-characters. A keyword that is empty after this returns `{"data": []}` with no query and no session
-check.
-
-**Response:** `{"data": [{"namesite": "Elk Island Provincial Park", "count": 15}]}`, sorted by
-count, most first, and at most 50 sites. The dashboard geocodes each site one second apart, so the
-cap keeps the wait short. When nothing matches: `{"data": [], "message": "No sites found"}`.
-
-**Errors:** 401 `Unauthorized` (no signed-in user). 403 `Forbidden` (not an approved admin). 500
-with the database message when the query fails, or with the exception message.
-
-**Caller rule:** admin only (see [Admin rule](#admin-rule)). It reads with the signed-in client, so
-RLS on `sites_report_fnr_test` also applies.
-
 #### Sign-in, sign-up and approval
 
 Login, sign-up and sign-out run in the browser with supabase-js (`webapp/services/auth.ts`). They
@@ -481,6 +437,19 @@ The email confirmation link target. It exchanges `code` for a session and redire
 With no `code`, or when the exchange fails, it redirects to `/auth/auth-code-error`.
 
 ---
+
+#### File export (Sprint 3)
+
+| Route | Caller and result |
+|---|---|
+| `POST /api/export` | Approved Admin only. Returns 202 and `jobId`; 409 when that Admin already has a recent pending or processing job. The server reads the file catalogs in pages of 1000. |
+| `GET /api/export/status/{jobId}` | Signed-in job creator or approved Admin. Returns the job state and, when complete, a one-hour signed download link. |
+
+The job includes inspection images, homepage images, GPX objects and completed PDF exports.
+It stops above 500 MiB of source files and fails if a stored object cannot be read. The ZIP is
+held in memory. The processor and status route use the shared S3 client. Each state write checks
+its error; if the failed state cannot be saved, the processor rejects to the existing background
+error handler. The app does not claim success for an unrecorded completed job.
 
 ### 2. Server actions
 
@@ -770,7 +739,6 @@ Every table below has row level security on. "None" means no policy allows it.
 | `ab_counties`, `questions`, `question_options`, `question_keys`, `form_sections` | None | None | None | None | None | All | `20260925000000` |
 | `S26_pdf_jobs` | None | Read and insert own jobs | Read and insert own jobs | Same | None | All | `20260925000000` |
 | `luperson` | None | None | None | None | None | All | `20260925000000` (local only) |
-| `sites_report_fnr_test` | None | Read all | Read all | None | None | All | `20260925000000` (local only) |
 | Storage bucket `kml-imports` (private, 50 MiB) | None | None | None | None | Upload `.kml`/`.kmz`, read, delete | All | `20261006000000` |
 | RPC functions | See [Database RPC functions](#3-database-rpc-functions) | | | | | | |
 
@@ -804,6 +772,6 @@ For a detailed explanation of the API endpoints, see:
 
 ## API Documentation From Fall 2025
 
-The Fall 2025 routes (`GET /api/geocode`, `GET /api/heatmap`, `GET /auth/callback` and
-`GET /auth/confirm`) are now in the [route reference](#1-api-routes) above, corrected to match the
-code on `main`.
+The Fall 2025 routes `GET /auth/callback` and `GET /auth/confirm` are now in the
+[route reference](#1-api-routes) above, corrected to match the code on `main`. `GET /api/geocode`
+and `GET /api/heatmap` are gone from the code and from this document.

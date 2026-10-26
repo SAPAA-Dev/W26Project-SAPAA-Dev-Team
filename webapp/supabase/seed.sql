@@ -1,7 +1,54 @@
+-- LOCAL ONLY. Do not run this file against production.
+-- scripts/local_supabase.js applies it to the local Supabase with `db query --local`.
+-- The inspection reports upsert with `on conflict (inspection_no) do update`: real reports
+-- use the same YYYY-NNN numbers, so a production run would move real reports to the demo
+-- site and rewrite the live question definitions. The guard below skips the whole block
+-- (nothing is written) when the database holds any site other than the demo site. It skips
+-- instead of failing so `npm run dev` still starts on a local database that has imported sites.
+
 do $seed$
 declare
   report_index integer;
+  demo_site_id bigint;
+  foreign_data text;
 begin
+  -- A database that holds any data this file did not write is not a local seed database.
+  -- Sites alone are not enough: production can have reports, questions or sections with
+  -- no matching site row, and the upserts below would overwrite them.
+  select id into demo_site_id from public."sites_pa" where namesite = 'Quackberry Duck Park';
+
+  select concat_ws(', ',
+    case when exists (
+      select 1 from public."sites_pa" where namesite is distinct from 'Quackberry Duck Park'
+    ) then 'sites_pa' end,
+    case when exists (
+      select 1 from public."form_responses" where site_id is distinct from demo_site_id
+    ) then 'form_responses' end,
+    case when exists (
+      select 1 from public."questions"
+      where not coalesce("question key" = any (array[
+        'Q21_Date_Of_Visit', 'Q31_Naturalness', 'Q32_Natural_Comm', 'Q13_FirstandLastNameForGuests'
+      ]), false)
+    ) then 'questions' end,
+    case when exists (
+      select 1 from public."question_keys"
+      where not coalesce("question key" = any (array[
+        'Q21_Date_Of_Visit', 'Q31_Naturalness', 'Q32_Natural_Comm', 'Q13_FirstandLastNameForGuests'
+      ]), false)
+    ) then 'question_keys' end,
+    case when exists (
+      select 1 from public."form_sections"
+      where not coalesce(title = any (array['Visit details', 'Site observations']), false)
+    ) then 'form_sections' end
+  ) into foreign_data;
+
+  if foreign_data <> '' then
+    raise notice
+      'Skipping seed: rows this file did not write exist in %. This file must not run against production.',
+      foreign_data;
+    return;
+  end if;
+
 insert into public."ab_counties" (county)
 values ('Quackatchewan')
 on conflict (county) do nothing;

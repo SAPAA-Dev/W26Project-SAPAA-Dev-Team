@@ -4,6 +4,8 @@
 -- the image files from storage.
 
 -- A blank archive date means that the report is still in normal use.
+-- The index build takes a SHARE lock on form_responses, which blocks report writes
+-- for the build time. Run this file outside peak use.
 alter table public.form_responses
   add column if not exists archived_at timestamptz;
 

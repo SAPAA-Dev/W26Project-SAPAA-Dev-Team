@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient, createServerSupabase } from './supabase/server';
+import { requireApprovedAdmin } from './auth-checks';
 
 export interface StewardOption {
   id: number;
@@ -20,18 +21,14 @@ type ActionResult = { success: true } | { success: false; error: string };
 type EmbeddedPerson = { id: number; display_name: string } | null;
 type EmbeddedSite = { namesite: string; archived_at: string | null; is_active: boolean | null } | null;
 
-async function getAdminUserId(): Promise<string | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) return null;
-  const approvedAdmin = data.user.app_metadata?.role === 'admin'
-    && data.user.app_metadata?.authenticated === true;
-  return approvedAdmin ? data.user.id : null;
-}
-
 // 3.0.2 AT1: admins search people by name.
 export async function searchStewards(query: string): Promise<StewardOption[]> {
-  if (!(await getAdminUserId())) return [];
+  try {
+    await requireApprovedAdmin('Only admins can search stewards.');
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Only admins can search stewards.') return [];
+    throw error;
+  }
   // PostgREST reads "*" as "%" in ilike and has no escape for it, so drop it.
   const term = query.replace(/\*/g, '').trim();
   if (!term) return [];
@@ -52,8 +49,15 @@ export async function searchStewards(query: string): Promise<StewardOption[]> {
 
 // 3.0.2 AT2 and AT4: only admins assign. A new steward replaces the old one (site_id is the key).
 export async function assignSiteSteward(siteId: number, personId: number): Promise<ActionResult> {
-  const adminId = await getAdminUserId();
-  if (!adminId) return { success: false, error: 'Only admins can assign a steward.' };
+  let adminId: string;
+  try {
+    ({ userId: adminId } = await requireApprovedAdmin('Only admins can assign a steward.'));
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Only admins can assign a steward.') {
+      return { success: false, error: 'Only admins can assign a steward.' };
+    }
+    throw error;
+  }
   if (!Number.isInteger(siteId) || siteId <= 0 || !Number.isInteger(personId) || personId <= 0) {
     return { success: false, error: 'Invalid site or person.' };
   }

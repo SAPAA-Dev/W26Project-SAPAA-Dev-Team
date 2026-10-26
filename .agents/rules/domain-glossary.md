@@ -4,7 +4,7 @@ SAPAA is the Stewards of Alberta's Protected Areas Association. Volunteer stewar
 
 | Term | Meaning | Where in code |
 | --- | --- | --- |
-| Site | A protected area. There are no latitude or longitude columns. The app geocodes sites by name. | `sites_pa`, `ab_counties`; `webapp/app/admin/sites/`, `webapp/app/api/geocode/`, `FNR/src/services/openCage.ts` |
+| Site | A protected area. `centre_latitude` and `centre_longitude` hold the centre of the linked boundary (migration `20261020100000`); they are null for a site with no boundary. | `sites_pa`, `ab_counties`; `webapp/app/admin/sites/`, `webapp/app/api/geocode/`, `FNR/src/services/openCage.ts` |
 | Steward | A volunteer who inspects sites. A steward is a `luperson` row. | `webapp/utils/supabase/queries.ts` |
 | Admin | A SAPAA staff user. Admins approve accounts and edit forms. | `webapp/app/admin/` |
 | SIR | Site Inspection Report. One filled form for one site visit. | `form_responses`, `answers` |

@@ -275,6 +275,8 @@ The line below each story title names the one charter project that is the best m
 > 2. Extraction should include all images, at minimum
 
 ### US 3.0.4 - Add a Steward Without an Account | Story Points: 3
+
+**Removed from scope on October 26, 2026.** Frank requires stewards to have an account and sign in. [PR #310](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/310) was closed without merge. The original story and tests below are retained as a record.
 *Charter project: 2b – Person Management*
 
 > As a **Admin**, **I want** to add a steward by name, email and phone number without an account and show these details on a site page, **so that** a site can list its steward even when that person has no account
@@ -626,7 +628,7 @@ The line below each story title names the one charter project that is the best m
 
 ### Should Have
 
-*14 stories, 65 story points.*
+*13 stories, 62 story points.*
 
 | ID | Story | Points |
 |---|---|---|
@@ -644,7 +646,6 @@ The line below each story title names the one charter project that is the best m
 
 | US 1.0.6 | Select and Edit Skills and Focus Areas | 2 |
 | US 2.0.14 | Color Map Sites by Type | 2 |
-| US 3.0.4 | Add a Steward Without an Account | 3 |
 
 ### Could Have
 
@@ -660,7 +661,7 @@ The line below each story title names the one charter project that is the best m
 
 ### Won't Have
 
-*5 stories, 25 story points.*
+*6 stories, 28 story points.*
 
 | ID | Story | Points |
 |---|---|---|
@@ -669,3 +670,4 @@ The line below each story title names the one charter project that is the best m
 | US 4.0.5 | iNaturalist integration | 5 |
 | US 2.0.11 | Show Safety Information for a Site | 5 |
 | US 4.0.7 | Show the Top iNaturalist Observations for a Site | 5 |
+| US 3.0.4 | Add a Steward Without an Account | 3 |
