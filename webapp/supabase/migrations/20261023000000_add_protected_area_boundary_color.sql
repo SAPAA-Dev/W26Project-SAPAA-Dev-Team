@@ -8,11 +8,8 @@
 alter table public.protected_areas
   add column if not exists boundary_color text;
 
-alter table public.protected_areas
-  drop constraint if exists protected_areas_boundary_color_format;
-
--- The constraint is only added when it does not exist, so a rerun does not
--- repeat the full-table validation scan under its SHARE ROW EXCLUSIVE lock.
+-- The constraint is only added when it does not exist, so a rerun does not repeat
+-- the full-table validation scan under its ACCESS EXCLUSIVE lock.
 do $$
 begin
   if not exists (

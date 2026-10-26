@@ -177,6 +177,7 @@ grant select, insert on public."S26_pdf_jobs" to authenticated;
 create policy "Users can read their PDF jobs"
   on public."S26_pdf_jobs" for select to authenticated
   using (created_by = (select auth.uid()));
+drop policy if exists "Users can create their PDF jobs" on public."S26_pdf_jobs";
 create policy "Users can create their PDF jobs"
   on public."S26_pdf_jobs" for insert to authenticated
   with check (created_by = (select auth.uid()));

@@ -1,8 +1,8 @@
 -- Foreign keys with no index on the referencing column force a full table scan on
 -- every delete check, every dashboard aggregate, and every report write that touches
 -- the parent row. These are the five hot paths the review found:
---   answers.response_id      scanned by the report delete and archive functions
---   attachments.response_id scanned by the report delete and archive functions
+--   answers.response_id      scanned by the report delete impact function
+--   attachments.response_id scanned by the report delete impact function
 --   form_responses.site_id   scanned by the site delete check (ON DELETE RESTRICT)
 --   form_responses.user_id   scanned by the inspected site count on every profile view
 --   homepage_image_uploads.site_id scanned by the site delete impact

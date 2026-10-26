@@ -11,11 +11,8 @@ alter table public.sites_pa
   add column if not exists priority_saved_at timestamptz,
   add column if not exists priority_saved_by uuid references auth.users (id) on delete set null;
 
-alter table public.sites_pa
-  drop constraint if exists sites_pa_priority_scores_valid;
-
--- The constraint is only added when it does not exist, so a rerun does not
--- repeat the full-table validation scan under its SHARE ROW EXCLUSIVE lock.
+-- The constraint is only added when it does not exist, so a rerun does not repeat
+-- the full-table validation scan under its ACCESS EXCLUSIVE lock.
 do $$
 begin
   if not exists (
