@@ -279,6 +279,7 @@ rebase, then force-push your branch.
 | `pr-checks.yaml` | PRs into `main`, `release` and `sprint-*` | `conventions` (branch name, PR title, commit messages) and `pr-size`. |
 | `reviewer-gate.yaml` | PRs into `main`, `release` and `sprint-*`, and reviews | `reviewers`, which posts the `reviewer-gate` status. |
 | `diagrams.yaml` | PRs into `main`, `release` and `sprint-*` | See [The diagrams workflow](#the-diagrams-workflow). |
+| `diagram-svg-check.yaml` | Every PR into `main`, `release` and `sprint-*`, on the self-hosted runner | `diagram-svg-check`: runs the diagram tests and `check --svg-only`. It fails when the source or SVG differs from the recorded render, the SVG is missing, or the manifest has no SVG hash. It renders and writes nothing. Run `npm run diagrams` and commit the result. |
 | `e2e.yaml` | PRs into `main` and `release`, and by hand | `cypress`: runs `cypress/e2e/logout.cy.ts` and `cypress/e2e/profile.cy.ts` against a local Supabase that it starts in the job (the migrations, `supabase/seed.sql` and `scripts/e2e_seed.js`). |
 
 Rules of the gates:
@@ -399,9 +400,15 @@ Rules:
   hand-written. The tool warns when one of them names a table that a migration dropped or
   renamed, or a dropped or renamed column as `table.column`. It does not find a column name
   without its table.
-- The tool renders a `.mmd` again only when its content changes. The hashes are in
-  `docs/assets/.diagram-hashes.json`. A `.mmd` file is saved to the SVG name that
-  `docs/software-design.md` links, for example `ER_Diagram.mmd` to `ER_Diagram_mermaid.svg`.
+- The tool renders a `.mmd` again when its source, SVG, renderer version or configuration
+  differs from the last render. Source and SVG hashes are saved after a successful render in
+  `docs/assets/.diagram-hashes.json`. The first run with an old manifest renders every diagram
+  to record its SVG hash. A `.mmd` file is saved to the SVG name that `docs/software-design.md`
+  links, for example `ER_Diagram.mmd` to `ER_Diagram_mermaid.svg`.
+- `check --svg-only` checks these saved hashes without generating blocks or opening a browser.
+  It detects drift from the recorded render; it does not independently render and compare an SVG.
+  The workflow runs for every PR so its status is present even when no diagram changed.
+  It becomes a merge gate only when a repository admin makes `diagram-svg-check` required.
 - Running the tool twice gives no changes.
 - Self-check: `npm --prefix tools/diagrams test`. The workflow also runs it.
 - The services diagram does not read `webapp/node_modules`. A type from a package shows as

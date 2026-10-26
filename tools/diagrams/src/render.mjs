@@ -38,7 +38,9 @@ export function plan({ assetsDir, imagesDir, designDoc, hashes, force = false })
     const source = fs.readFileSync(path.join(assetsDir, mmd), 'utf8');
     const svg = names.get(mmd) ?? mmd.replace(/\.mmd$/, '.svg');
     const hash = hashOf(source);
-    const stale = force || hashes[mmd] !== hash || !fs.existsSync(path.join(imagesDir, svg));
+    const svgPath = path.join(imagesDir, svg);
+    const stale = force || hashes[mmd]?.source !== hash || !fs.existsSync(svgPath)
+      || hashes[mmd]?.svg !== hashOf(fs.readFileSync(svgPath, 'utf8'));
     return { mmd, svg, source, hash, stale };
   });
 }

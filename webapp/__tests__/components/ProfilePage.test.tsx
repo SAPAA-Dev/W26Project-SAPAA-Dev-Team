@@ -20,7 +20,16 @@ const profilePayload = {
     role: 'Steward',
   },
   isOwner: true,
-  stats: { inspectionCount: 3, distinctSiteCount: 2 },
+  stats: {
+    inspectionCount: 3,
+    distinctSiteCount: 2,
+    topSite: { name: 'Beaver Hills', visitCount: 2 },
+    mostRecentSite: { name: 'Beaver Hills', inspectionDate: '2026-09-12' },
+    reportsThisYear: 3,
+    accountCreatedAt: '2024-06-15T12:00:00.000Z',
+    countyCount: 2,
+    topCounty: { name: 'Strathcona County', reportCount: 2 },
+  },
   history: [{ id: 7, siteId: 5, siteName: 'Beaver Hills', siteArchived: false, siteInactive: false, inspectionDate: '2026-09-12' }],
   pagination: { page: 1, pageSize: 10, total: 3 },
 };
@@ -135,8 +144,50 @@ describe('ProfilePage', () => {
     expect(await screen.findByRole('heading', { name: 'Jamie Rivera' })).toBeInTheDocument();
     expect(screen.getByText('Inspection reports submitted')).toBeInTheDocument();
     expect(screen.getByText('Distinct sites inspected')).toBeInTheDocument();
-    expect(screen.getByText('Beaver Hills')).toBeInTheDocument();
+    expect(screen.getAllByText('Beaver Hills')).not.toHaveLength(0);
     expect(screen.getByText('Web inspection records only.')).toBeInTheDocument();
+  });
+
+  it('shows all profile activity aggregates (1.0.4 AT1)', async () => {
+    render(<ProfilePage />);
+
+    await screen.findByRole('heading', { name: 'Jamie Rivera' });
+
+    const topSiteCard = screen.getByText('Top site visited').parentElement!;
+    expect(topSiteCard).toHaveTextContent('Beaver Hills');
+    expect(topSiteCard).toHaveTextContent('2 visits');
+
+    const recentSiteCard = screen.getByText('Most recent site visited').parentElement!;
+    expect(recentSiteCard).toHaveTextContent('Beaver Hills');
+    expect(recentSiteCard).toHaveTextContent('Sep 12, 2026');
+
+    expect(screen.getByText('Reports submitted this year').parentElement).toHaveTextContent('3');
+    expect(screen.getByText('Account age').parentElement).toHaveTextContent(/year/);
+    expect(screen.getByText('Counties visited').parentElement).toHaveTextContent('2');
+
+    const topCountyCard = screen.getByText('Top county visited').parentElement!;
+    expect(topCountyCard).toHaveTextContent('Strathcona County');
+    expect(topCountyCard).toHaveTextContent('2 reports');
+  });
+
+  it('shows empty states when the user has no visits or county data', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ...profilePayload,
+        stats: {
+          ...profilePayload.stats,
+          topSite: null,
+          mostRecentSite: null,
+          topCounty: null,
+        },
+      }),
+    });
+
+    render(<ProfilePage />);
+
+    expect((await screen.findAllByText('No visits yet')).length).toBe(2);
+    expect(screen.getByText('No county data')).toBeInTheDocument();
   });
 
   it('shows only the contact details the person filled in (1.0.1 AT1)', async () => {
@@ -176,8 +227,9 @@ describe('ProfilePage', () => {
     formatInAlberta();
     render(<ProfilePage />);
 
-    expect(await screen.findByText('Sep 12, 2026')).toBeInTheDocument();
-    expect(screen.queryByText('Sep 11, 2026')).not.toBeInTheDocument();
+    const historySection = (await screen.findByRole('heading', { name: 'Inspection history' })).closest('section')!;
+    expect(within(historySection).getByText('Sep 12, 2026')).toBeInTheDocument();
+    expect(within(historySection).queryByText('Sep 11, 2026')).not.toBeInTheDocument();
   });
 
   it('shows the local day for a report that only has a created_at timestamp', async () => {
@@ -189,8 +241,9 @@ describe('ProfilePage', () => {
     });
     render(<ProfilePage />);
 
-    expect(await screen.findByText('Sep 11, 2026')).toBeInTheDocument();
-    expect(screen.queryByText('Sep 12, 2026')).not.toBeInTheDocument();
+    const historySection = (await screen.findByRole('heading', { name: 'Inspection history' })).closest('section')!;
+    expect(within(historySection).getByText('Sep 11, 2026')).toBeInTheDocument();
+    expect(within(historySection).queryByText('Sep 12, 2026')).not.toBeInTheDocument();
   });
 
   describe('inspection history paging', () => {

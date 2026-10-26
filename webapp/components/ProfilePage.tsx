@@ -3,7 +3,24 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, ReactNode, useCallback, useEffect, useState } from 'react';
-import { Archive, Check, ClipboardList, Leaf, Loader2, MapPin, Pencil, Save, UserCheck, UserRound } from 'lucide-react';
+import {
+  Archive,
+  Calendar,
+  ChartNoAxesColumnIncreasing,
+  Check,
+  ClipboardList,
+  Clock,
+  Flag,
+  Leaf,
+  Loader2,
+  Map as MapIcon,
+  MapPin,
+  Pencil,
+  Save,
+  Star,
+  UserCheck,
+  UserRound,
+} from 'lucide-react';
 import { getSitesForSteward, StewardedSite } from '@/utils/steward-actions';
 import { SOCIAL_FIELDS, SocialKey, Socials, socialHref } from '@/lib/socials';
 import UserNavBar from '@/components/HeaderDropdown';
@@ -31,7 +48,16 @@ type ProfileData = {
     socials?: Socials;
   };
   isOwner: boolean;
-  stats: { inspectionCount: number; distinctSiteCount: number };
+  stats: {
+    inspectionCount: number;
+    distinctSiteCount: number;
+    topSite: { name: string; visitCount: number } | null;
+    mostRecentSite: { name: string; inspectionDate: string } | null;
+    reportsThisYear: number;
+    accountCreatedAt: string | null;
+    countyCount: number;
+    topCounty: { name: string; reportCount: number } | null;
+  };
   history: HistoryItem[];
   pagination: Pagination;
   options?: TagOptions;
@@ -48,6 +74,34 @@ function formatDate(value: string | null) {
     return new Intl.DateTimeFormat('en-CA', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(value));
   }
   return new Intl.DateTimeFormat('en-CA', { dateStyle: 'medium' }).format(new Date(value));
+}
+
+function formatAccountAge(createdAt: string | null) {
+  if (!createdAt) return 'Not available';
+
+  const created = new Date(createdAt);
+  if (Number.isNaN(created.getTime())) return 'Not available';
+
+  const now = new Date();
+  let months = (now.getUTCFullYear() - created.getUTCFullYear()) * 12
+    + now.getUTCMonth() - created.getUTCMonth();
+  if (now.getUTCDate() < created.getUTCDate()) months -= 1;
+  months = Math.max(0, months);
+
+  if (months === 0) return 'Less than one month';
+
+  const years = Math.floor(months / 12);
+  const remainingMonths = months % 12;
+  const parts = [];
+  if (years > 0) parts.push(`${years} ${years === 1 ? 'year' : 'years'}`);
+  if (remainingMonths > 0) {
+    parts.push(`${remainingMonths} ${remainingMonths === 1 ? 'month' : 'months'}`);
+  }
+  return parts.join(', ');
+}
+
+function countLabel(count: number, singular: string, plural: string) {
+  return `${count} ${count === 1 ? singular : plural}`;
 }
 
 function socialsForm(socials: Socials | undefined) {
@@ -207,12 +261,23 @@ function StewardedSites({ sites }: { sites: StewardedSite[] }) {
   );
 }
 
-function StatCard({ icon, label, value }: { icon: ReactNode; label: string; value: number }) {
+function StatCard({
+  icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: ReactNode;
+  detail?: ReactNode;
+}) {
   return (
     <div className="rounded-2xl bg-white p-5 shadow-sm">
       {icon}
       <p className="mt-3 text-sm font-medium text-[#5B655D]">{label}</p>
-      <p className="text-3xl font-bold text-[#254431]">{value}</p>
+      <p className="text-2xl font-bold text-[#254431] sm:text-3xl">{value}</p>
+      {detail && <p className="mt-1 text-sm text-[#5B655D]">{detail}</p>}
     </div>
   );
 }
@@ -391,7 +456,12 @@ export default function ProfilePage({ personId }: { personId?: string }) {
       const response = await fetch(`/api/profile${profileQuery(personId, page)}`);
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? 'Unable to load inspection history.');
-      setData((current) => current ? { ...current, history: payload.history, pagination: payload.pagination } : current);
+      setData((current) => current ? {
+        ...current,
+        stats: payload.stats,
+        history: payload.history,
+        pagination: payload.pagination,
+      } : current);
     } catch (err) {
       setPageError(err instanceof Error ? err.message : 'Unable to load inspection history.');
     } finally {
@@ -521,6 +591,39 @@ export default function ProfilePage({ personId }: { personId?: string }) {
         <section className="mt-6 grid gap-4 sm:grid-cols-2">
           <StatCard icon={<ClipboardList className="h-5 w-5 text-[#356B43]" />} label="Inspection reports submitted" value={stats.inspectionCount} />
           <StatCard icon={<MapPin className="h-5 w-5 text-[#356B43]" />} label="Distinct sites inspected" value={stats.distinctSiteCount} />
+          <StatCard
+            icon={<Star className="h-5 w-5 text-[#356B43]" />}
+            label="Top site visited"
+            value={stats.topSite?.name ?? 'No visits yet'}
+            detail={stats.topSite ? countLabel(stats.topSite.visitCount, 'visit', 'visits') : undefined}
+          />
+          <StatCard
+            icon={<Clock className="h-5 w-5 text-[#356B43]" />}
+            label="Most recent site visited"
+            value={stats.mostRecentSite?.name ?? 'No visits yet'}
+            detail={stats.mostRecentSite ? formatDate(stats.mostRecentSite.inspectionDate) : undefined}
+          />
+          <StatCard
+            icon={<ChartNoAxesColumnIncreasing className="h-5 w-5 text-[#356B43]" />}
+            label="Reports submitted this year"
+            value={stats.reportsThisYear}
+          />
+          <StatCard
+            icon={<Calendar className="h-5 w-5 text-[#356B43]" />}
+            label="Account age"
+            value={formatAccountAge(stats.accountCreatedAt)}
+          />
+          <StatCard
+            icon={<MapIcon className="h-5 w-5 text-[#356B43]" />}
+            label="Counties visited"
+            value={stats.countyCount}
+          />
+          <StatCard
+            icon={<Flag className="h-5 w-5 text-[#356B43]" />}
+            label="Top county visited"
+            value={stats.topCounty?.name ?? 'No county data'}
+            detail={stats.topCounty ? countLabel(stats.topCounty.reportCount, 'report', 'reports') : undefined}
+          />
         </section>
 
         <InspectionHistory

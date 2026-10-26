@@ -110,7 +110,7 @@ classDiagram
         }
         class ProfileRoute {
             <<route /api/profile>>
-            +GET(personId, page) profile, isOwner, stats, history, pagination
+            +GET(personId, page) profile, isOwner, stats, history, pagination, options
             +PATCH(body) profile
         }
         class PresignRoute {
