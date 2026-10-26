@@ -8,6 +8,7 @@ jest.mock("@aws-sdk/client-s3", () => ({
   PutObjectCommand: jest.fn((input) => ({ type: "put", input })),
 }));
 jest.mock("../../utils/supabase/server", () => ({ createServerSupabase: jest.fn() }));
+jest.mock("../../lib/s3/client", () => ({ s3Client: { send: (...args: unknown[]) => mockSend(...args) } }));
 
 import {
   buildExportZip,
@@ -29,8 +30,8 @@ function tableBuilder(pages: unknown[][], error: unknown = null) {
   return b;
 }
 
-function jobTable(created_by = "admin-uuid") {
-  const update = jest.fn(() => ({ eq: jest.fn(() => Promise.resolve({ error: null })) }));
+function jobTable(created_by = "admin-uuid", updateErrors: Array<{ message: string } | null> = []) {
+  const update = jest.fn(() => ({ eq: jest.fn(() => Promise.resolve({ error: updateErrors.shift() ?? null })) }));
   const b: Record<string, jest.Mock> = {};
   b.select = jest.fn(() => b);
   b.eq = jest.fn(() => b);
@@ -228,5 +229,36 @@ describe("processExportJob", () => {
     await processExportJob("job-1");
 
     expect(job.update).toHaveBeenLastCalledWith(expect.objectContaining({ status: "failed", error: "The export failed. Try again." }));
+  });
+
+  it("records failure and does not upload when the processing update fails", async () => {
+    const job = jobTable("admin-uuid", [{ message: "database unavailable" }]);
+    (createServerSupabase as jest.Mock).mockReturnValue(supabaseFor(job));
+
+    await processExportJob("job-1");
+
+    expect(mockSend).not.toHaveBeenCalled();
+    expect(job.update).toHaveBeenLastCalledWith(expect.objectContaining({ status: "failed" }));
+  });
+
+  it("records failure when the ZIP uploads but the completion update fails", async () => {
+    const job = jobTable("admin-uuid", [null, { message: "private database error" }]);
+    (createServerSupabase as jest.Mock).mockReturnValue(supabaseFor(job));
+    mockSend.mockResolvedValue({});
+
+    await processExportJob("job-1");
+
+    expect(job.update).toHaveBeenLastCalledWith(expect.objectContaining({
+      status: "failed", error: "The export failed. Try again.",
+    }));
+  });
+
+  it("rejects when the failure state cannot be saved", async () => {
+    const failure = { message: "failure state could not be saved" };
+    const job = jobTable("admin-uuid", [null, failure]);
+    (createServerSupabase as jest.Mock).mockReturnValue(supabaseFor(job, { attachments: [{ storage_key: "a.jpg" }] }));
+    mockSend.mockRejectedValue(new Error("NoSuchKey"));
+
+    await expect(processExportJob("job-1")).rejects.toEqual(failure);
   });
 });

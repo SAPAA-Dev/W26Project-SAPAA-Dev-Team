@@ -1252,6 +1252,27 @@ describe('SiteMap (US 2.0.6)', () => {
       );
     });
 
+    it('4.0.2 AT4: returns to live requests and clears the offline badge after reconnecting', () => {
+      render(<SiteMap />);
+      const transform = MockMap.mock.calls[0][0].transformRequest;
+      const url = 'https://api.protomaps.com/tiles/6/33/21';
+
+      act(() => {
+        Object.defineProperty(navigator, 'onLine', { value: false, configurable: true });
+        window.dispatchEvent(new Event('offline'));
+      });
+      expect(transform(url)).toEqual({ url: `sapaa-offline://${url}` });
+      expect(screen.getByText('Offline map. Tiles outside saved areas are missing.')).toBeInTheDocument();
+
+      act(() => {
+        Object.defineProperty(navigator, 'onLine', { value: true, configurable: true });
+        window.dispatchEvent(new Event('online'));
+      });
+      expect(transform(url)).toBeUndefined();
+      expect(screen.queryByText('Offline map. Tiles outside saved areas are missing.')).not.toBeInTheDocument();
+      expect(mapInstance.setStyle).toHaveBeenCalledTimes(2);
+    });
+
     it('shows the offline badge and counts missing tiles until the view moves', () => {
       jest.useFakeTimers();
       try {

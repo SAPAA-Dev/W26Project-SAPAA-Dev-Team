@@ -1,24 +1,14 @@
 import { createServerSupabase } from '@/utils/supabase/server';
 import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { Zip, ZipPassThrough } from 'fflate';
+import { s3Client } from '@/lib/s3/client';
 
 export const MAX_EXPORT_BYTES = 500 * 1024 * 1024;
 const GPX_BUCKET = 'gpx-tracks';
 const PAGE_SIZE = 1000;
 const MAX_NAMES_IN_ERROR = 10;
 
-const REGION = process.env.AWS_REGION!;
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
-
-export function getS3Client() {
-  return new S3Client({
-    region: REGION,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
-  });
-}
 
 // An error whose message an Admin can read on the page. Any other error is logged and shown as a general message.
 class ExportError extends Error {}
@@ -157,27 +147,29 @@ export async function processExportJob(jobId: string) {
   if (jobError || !job) throw new Error('Export job not found');
 
   try {
-    await supabase.from('export_jobs').update({ status: 'processing' }).eq('id', jobId);
+    const { error: processingError } = await supabase.from('export_jobs').update({ status: 'processing' }).eq('id', jobId);
+    if (processingError) throw processingError;
 
     const entries = await collectExportEntries(supabase);
-    const s3 = getS3Client();
-    const zipBytes = await buildExportZip(entries, supabase, s3);
+    const zipBytes = await buildExportZip(entries, supabase, s3Client);
 
     const dateStamp = new Date().toISOString().split('T')[0];
     const key = `exports/${job.created_by}/${jobId}/SAPAA_All_Files_${dateStamp}.zip`;
-    await s3.send(new PutObjectCommand({ Bucket: BUCKET, Key: key, Body: zipBytes, ContentType: 'application/zip' }));
+    await s3Client.send(new PutObjectCommand({ Bucket: BUCKET, Key: key, Body: zipBytes, ContentType: 'application/zip' }));
 
-    await supabase
+    const { error: completionError } = await supabase
       .from('export_jobs')
       .update({ status: 'complete', storage_path: key, file_count: entries.length, finished_at: new Date().toISOString() })
       .eq('id', jobId);
+    if (completionError) throw completionError;
   } catch (error) {
     // Only a message written for an Admin goes to the row. Anything else could name the bucket or a table.
     const message = error instanceof ExportError ? error.message : 'The export failed. Try again.';
     if (!(error instanceof ExportError)) console.error('Export job failed', error);
-    await supabase
+    const { error: failureError } = await supabase
       .from('export_jobs')
       .update({ status: 'failed', error: message, finished_at: new Date().toISOString() })
       .eq('id', jobId);
+    if (failureError) throw failureError;
   }
 }

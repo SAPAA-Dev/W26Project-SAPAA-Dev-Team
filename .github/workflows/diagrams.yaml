@@ -56,7 +56,17 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ~/.cache/puppeteer
-          key: puppeteer-${{ runner.os }}-${{ hashFiles('tools/diagrams/package-lock.json') }}
+          key: puppeteer-v2-${{ runner.os }}-${{ hashFiles('tools/diagrams/package-lock.json') }}
+
+      - name: Remove an incomplete browser install
+        # If a browser download is interrupted, the cache keeps the browser folder without
+        # the executable. Puppeteer sees the folder and does not download the executable again.
+        run: |
+          cache="$HOME/.cache/puppeteer"
+          if [ -d "$cache" ] && [ -z "$(find "$cache" -type f -name 'chrome-headless-shell*' | head -n 1)" ]; then
+            echo "The cached browser has no executable. Download it again."
+            rm -rf "$cache"
+          fi
 
       - name: Update the diagrams
         run: npm run diagrams

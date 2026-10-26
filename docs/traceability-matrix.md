@@ -8,15 +8,21 @@ and #276). The GitHub release
 [`sprint-2`](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/releases/tag/sprint-2) was
 published on October 13.
 
-Sprint 3 rows are as of **October 26, 2026**, on `sprint-3` at `5181a2d`
-([#214](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/214)). Their status comes from a local
-run of `npm run test:ci` on that commit: 127 suites passed and 2 skipped, 1840 tests passed and 12
-skipped, 0 failed. The 2 skipped suites are the database tests. A local run of
-`npm run test:db -- --runInBand` on the same commit, with every migration applied: 2 suites, 12
-tests, all passed. The team
-agreed to use a local run because Actions could not run on GitHub-hosted runners. CI now uses a
-self-hosted runner ([#316](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/316)). When CI runs
-on `sprint-3`, take the status from that run.
+Sprint 3 records were updated on **October 26, 2026** after the skills, export and activity
+PRs merged. The current scope is 14 stories and 50 acceptance tests. US 3.0.4 was removed when
+Frank required accounts and sign-in; PR #310 was closed without merge.
+
+The combined local close-out run on the Sprint 3 source after #305, #312 and #315, with the
+#318 changes and Chris's shared-branch test fixes, passed **1912 tests, 25 skipped, 0 failed**
+(132 passing suites). Type check and full lint passed. The prior sprint CI run failed the
+profile query-count and date tests; the current required CI result is still pending.
+The database rule run passed **25 tests** on local Supabase after the merged Sprint 3 migrations.
+The export follow-up (#318) passed **38 tests**, including three state-write failure tests.
+
+The browser checks use the real app with local Supabase and local SMTP. The offline check
+uses the real browser cache and MapLibre with controlled tile responses. These are local
+results, not production acceptance. See [release checks](sprint-3-release.md) for the evidence,
+steps, open checks and final CI status. A covered AT does not make the full suite green.
 
 ## How to read this page
 
@@ -93,11 +99,11 @@ on `sprint-3`, take the status from that run.
 | US 1.0.3 | AT1 | The profile lists previous inspections with site and date | `__tests__/components/ProfilePage.test.tsx:117,191` | Component | S | No | Pass (partial) | [#298](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/298) |
 | US 1.0.3 | AT2 | A past inspection opens with its submitted information | `__tests__/components/ProfilePage.test.tsx:108` | Component | S | Yes | Pass | [#298](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/298) |
 | US 1.0.3 | AT3 | Hidden answers are not shown to other stewards | `__tests__/components/queries.exportPaging.test.ts:182,208`, `__tests__/app/api/site-images.test.ts:157,193`, `__tests__/pages/SiteDetails.test.tsx:564` | Unit, API, Page | S+F | Yes | Pass | [#298](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/298) |
-| US 1.0.4 | AT1 | The aggregates match the user's data (SIR count, activities) | `__tests__/components/ProfilePage.test.tsx:117` | Component | S | No | Pass (partial) | Not merged |
-| US 1.0.4 | AT2 | A new report adds 1 to the SIR count | - | - | - | - | Not yet tested | Not merged |
-| US 1.0.6 | AT1 | Skills and focus areas use dropdowns with an "Other" option | - | - | - | - | Not yet tested | Not merged |
-| US 1.0.6 | AT2 | Typing a skill or focus area suggests similar existing values | - | - | - | - | Not yet tested | Not merged |
-| US 1.0.6 | AT3 | An edited skill or focus area shows on the profile after Save | - | - | - | - | Not yet tested | Not merged |
+| US 1.0.4 | AT1 | The aggregates match the user's data (SIR count, activities) | `__tests__/app/api/profile.test.ts` (contribution statistics), `__tests__/components/ProfilePage.test.tsx` | API, Component | S+F | Yes | Pass | [#315](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/315) |
+| US 1.0.4 | AT2 | A new report adds 1 to the SIR count | - | - | - | No | Not yet tested | [#315](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/315) |
+| US 1.0.6 | AT1 | Skills and focus areas use dropdowns with an "Other" option | `__tests__/components/TagPicker.test.tsx:13,30` | Component | S+F | Yes | Pass | [#308](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/308) |
+| US 1.0.6 | AT2 | Typing a skill or focus area suggests similar existing values | `__tests__/components/TagPicker.test.tsx:41`, `__tests__/lib/profileTags.test.ts` | Component, Unit | S+F | Yes | Pass | [#308](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/308) |
+| US 1.0.6 | AT3 | An edited skill or focus area shows on the profile after Save | `__tests__/components/ProfilePage.test.tsx:372`, `__tests__/components/TagPicker.test.tsx:94` | Component | S | Yes | Pass | [#308](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/308) |
 
 Notes:
 
@@ -122,9 +128,8 @@ Notes:
   rejects more than twelve skills.
 - 1.0.3 AT1: `ProfilePage.test.tsx:117,191` check that the history is listed and paged. No test
   checks the site name and the date of each row.
-- 1.0.4: the PR for the story (`feat/profile-activity-aggregates`) is not merged. AT1 has only the
-  older summary test `ProfilePage.test.tsx:117`.
-- 1.0.6, 3.0.3 and 3.0.4 moved from Sprint 4 to Sprint 3 on October 24. Their PRs are not merged.
+- 1.0.4: PR #315 is merged. The aggregate tests cover AT1; the combined local run includes the corrected query-count assertion. AT2 still needs explicit count-plus-one evidence.
+- 1.0.6 and 3.0.3 merged through #308 and #309. US 3.0.4 was removed on October 26; #310 was closed without merge.
 
 ## 2 - Place Management
 
@@ -234,11 +239,8 @@ Notes:
 | US 3.0.2 | AT2 | An Admin assigns a new steward and replaces the old one | `__tests__/components/SiteSteward.test.tsx:39,82`, `__tests__/lib/steward-actions.test.ts:75` | Component, Unit | S+F | Yes | Pass | - |
 | US 3.0.2 | AT3 | The assignment shows on the site page and on the steward's profile | `__tests__/components/SiteSteward.test.tsx:15,25`, `__tests__/lib/steward-actions.test.ts:152,166`, `__tests__/components/ProfilePage.test.tsx:41,60` | Component, Unit | S | Yes | Pass | - |
 | US 3.0.2 | AT4 | A user who cannot assign is refused and nothing is created | `__tests__/lib/steward-actions.test.ts:47,61`, `__tests__/components/SiteSteward.test.tsx:55` | Unit, Component | F | Yes | Pass | - |
-| US 3.0.3 | AT1 | An export puts the files in a ZIP file | - | - | - | - | Not yet tested | Not merged |
-| US 3.0.3 | AT2 | The export has all images, at minimum | - | - | - | - | Not yet tested | Not merged |
-| US 3.0.4 | AT1 | An Admin saves a steward with only a name, email and phone number | - | - | - | - | Not yet tested | Not merged |
-| US 3.0.4 | AT2 | A steward without an account can be assigned to a site and their contact info opened | - | - | - | - | Not yet tested | Not merged |
-| US 3.0.4 | AT3 | A steward without an account is listed without signing up or signing in | - | - | - | - | Not yet tested | Not merged |
+| US 3.0.3 | AT1 | An export puts the files in a ZIP file | `__tests__/lib/processExportJob.test.ts` (`buildExportZip`), `__tests__/components/ExportAllFilesButton.test.tsx` | Unit, Component | S+F | Yes | Pass | [#309](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/309) |
+| US 3.0.3 | AT2 | The export has all images, at minimum | `__tests__/lib/processExportJob.test.ts` (`collectExportEntries`, 1000-row paging, missing objects) | Unit | S+F | Yes | Pass | [#309](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/309) |
 
 Notes:
 
@@ -251,27 +253,23 @@ Notes:
 | US 4.0.6 | AT1 | A SIR with an empty Identifier submits | `__tests__/pages/FormSubmissionPrevention.test.tsx:370,469`, `__tests__/pages/UserEditSiteInspectionForm.test.tsx:747`, `__tests__/app/api/s3-presign.test.ts:477` | Page, API | S+F | Yes | Pass | - |
 | US 4.0.6 | AT2 | No "required" note beside the Identifier field | `__tests__/pages/FormSubmissionPrevention.test.tsx:506` | Page | S | Yes | Pass | - |
 | US 4.0.2 | AT1 | Download a map area for offline use and see its download status | `__tests__/components/OfflineSavePanel.test.tsx:218,257,269,291` | Component | S+F | No | Pass | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293), [#299](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/299) |
-| US 4.0.2 | AT2 | Offline, downloaded tiles render and the map pans and zooms inside the area | `__tests__/lib/map/offline/tileCache.test.ts:314` | Unit | S | No | Pass (partial) | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293), [#299](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/299) |
-| US 4.0.2 | AT3 | Offline, missing tiles outside the area are indicated | - | - | - | - | Not yet tested | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293), [#299](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/299) |
-| US 4.0.2 | AT4 | Online, the map uses live tiles and not the cache | - | - | - | - | Not yet tested | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293), [#299](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/299) |
+| US 4.0.2 | AT2 | Offline, downloaded tiles render and the map pans and zooms inside the area | [Local browser cache and zoom check](sprint-3-release.md#acceptance-evidence), `__tests__/components/SiteMap.test.tsx:1225` | Browser, Component | S | No | Pass | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293) |
+| US 4.0.2 | AT3 | Offline, missing tiles outside the area are indicated | [Local missing-tile check](sprint-3-release.md#acceptance-evidence), `__tests__/components/SiteMap.test.tsx` (offline badge) | Browser, Component | S+F | No | Pass | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293) |
+| US 4.0.2 | AT4 | Online, the map uses live tiles and not the cache | [Local reconnect check](sprint-3-release.md#acceptance-evidence), `__tests__/components/SiteMap.test.tsx` (4.0.2 AT4) | Browser, Component | S | Yes | Pass | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293) |
 | US 4.0.4 | AT1 | The author opens a past SIR and enters edit mode | `__tests__/pages/UserEditSiteInspectionForm.test.tsx:616,641` | Page | S | No | Pass | [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
-| US 4.0.4 | AT2 | Another steward cannot enter edit mode or change the SIR | `__tests__/pages/UserEditSiteInspectionForm.test.tsx:623,630` | Page | F | No | Pass (partial) | [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
-| US 4.0.4 | AT3 | Clearing a required answer blocks submit and lists the missing questions | `__tests__/pages/UserEditSiteInspectionForm.test.tsx:723,791` | Page | F | No | Pass (partial) | [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
+| US 4.0.4 | AT2 | Another steward cannot enter edit mode or change the SIR | `__tests__/components/queries.report-writes.test.ts:157,167`, `__tests__/pages/UserEditSiteInspectionForm.test.tsx:623`; [local browser check](sprint-3-release.md#acceptance-evidence) | Unit, Page, Browser | F | No | Pass | [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
+| US 4.0.4 | AT3 | Clearing a required answer blocks submit and lists the missing questions | `__tests__/components/queries.report-writes.test.ts:200,212`, `__tests__/pages/UserEditSiteInspectionForm.test.tsx:723` | Unit, Page | S+F | No | Pass | [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
 | US 4.0.4 | AT4 | Saved edits show everywhere the report is rendered | `__tests__/pages/UserEditSiteInspectionForm.test.tsx:825,842` | Page | S | No | Pass (partial) | [#298](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/298), [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
 Notes:
 
 - 4.0.6 AT1: 'submits a report whose image has an empty Identifier' saves `identifier: null`. The
   presign route returns an upload URL when the identifier is empty or null.
-- 4.0.2 AT2: `tileCache.test.ts:314` checks that a saved tile is returned. No test turns the
-  network off and pans or zooms the map. AT3 and AT4 have no test. They need a manual check with
-  "Offline" on in the browser developer tools (see the [Sprint 3 test plan](test-plan.md)).
-- 4.0.4: the tests are the inherited Winter 2026 US 1.0.22 tests, so no test name has a 4.0.4
-  label. AT2: the page shows Access Denied to another steward, but no test checks that the update
-  server action refuses a caller who is not the author. AT3: the tests check that submit is blocked,
-  not the list of missing questions
-  ([#204](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/204)). AT4: the tests check the
-  site page, not the profile history or the PDF export
-  ([#210](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/210)).
+- 4.0.2 AT2 to AT4: the local browser run saved 96 tiles, used the real cache while offline,
+  showed missing tiles after panning outside the area, and returned to live requests on reconnect.
+- 4.0.4 AT2 and AT3: the server tests check ownership, approval and the names of missing required
+  questions. The local browser run also checked denied edit mode and a blocked save after a
+  required answer was cleared. AT4 stays partial because every export and summary view was not
+  checked after the same edit.
 
 ## 5 - Access and Accounts
 
@@ -280,10 +278,10 @@ Notes:
 | US 5.0.4 | AT1 | After sign-out, opening the app again shows the sign-in page | `__tests__/middleware.test.ts:54`, `__tests__/components/ProtectedRoutes.test.tsx:56,185`, `__tests__/components/HeaderDropdown.test.tsx:70,106`, `__tests__/components/AdminNavBar.test.tsx:51,64`, `__tests__/components/auth.test.ts:151,157,164`, `cypress/e2e/logout.cy.ts:46,58` | Unit, Component, E2E | S+F | Yes | Pass | - |
 | US 5.0.4 | AT2 | After sign-out, the Back button shows no signed-in page | `__tests__/components/SignedOutGuard.test.tsx:10`, `cypress/e2e/logout.cy.ts:79` | Component, E2E | S | Yes | Pass | - |
 | US 5.0.4 | AT3 | Sign out from any page | `__tests__/components/TermsContent.test.tsx:15`, `__tests__/components/ProfilePage.test.tsx:342`, `__tests__/components/HeaderDropdown.test.tsx:52,58`, `__tests__/components/AdminNavBar.test.tsx:31`, `__tests__/components/ProtectedRoutes.test.tsx:170`, `cypress/e2e/logout.cy.ts:98` | Component, E2E | S | Yes | Pass | - |
-| US 5.0.2 | AT1 | Select "Forgot password", enter an email, then an email is sent | `__tests__/pages/Login.test.tsx:51`, `__tests__/pages/ForgotPassword.test.tsx:41`, `__tests__/app/password-reset-request-code.test.ts:99,116,126` | Page, API | S+F | Yes | Pass (partial) | [#295](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/295) |
-| US 5.0.2 | AT2 | Verify a code before setting a new password | `__tests__/pages/ForgotPassword.test.tsx:68,87`, `__tests__/app/password-reset-verify-code.test.ts:48,55,63`, `__tests__/pages/ResetPassword.test.tsx:32` | Page, API | S+F | Yes | Pass (partial) | [#295](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/295) |
-| US 5.0.2 | AT3 | Sign in with the new password and not with the old one | `__tests__/pages/ResetPassword.test.tsx:61,73` | Page | S+F | Yes | Pass (partial) | [#295](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/295) |
-| US 5.0.2 | AT4 | Reset the password without admin intervention | `__tests__/pages/ForgotPassword.test.tsx:41,68`, `__tests__/pages/ResetPassword.test.tsx:61`, `__tests__/components/SignedOutGuard.test.tsx:26` | Page, Component | S | Yes | Pass (partial) | [#295](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/295) |
+| US 5.0.2 | AT1 | Select "Forgot password", enter an email, then an email is sent | [Local email, code and password check](sprint-3-release.md#acceptance-evidence); `__tests__/pages/ResetPassword.test.tsx`, `__tests__/app/password-reset-verify-code.test.ts` | Browser, API, Page | S+F | Yes | Pass | [#295](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/295) |
+| US 5.0.2 | AT2 | Verify a code before setting a new password | [Local email, code and password check](sprint-3-release.md#acceptance-evidence); `__tests__/pages/ResetPassword.test.tsx`, `__tests__/app/password-reset-verify-code.test.ts` | Browser, API, Page | S+F | Yes | Pass | [#295](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/295) |
+| US 5.0.2 | AT3 | Sign in with the new password and not with the old one | [Local email, code and password check](sprint-3-release.md#acceptance-evidence); `__tests__/pages/ResetPassword.test.tsx`, `__tests__/app/password-reset-verify-code.test.ts` | Browser, API, Page | S+F | Yes | Pass | [#295](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/295) |
+| US 5.0.2 | AT4 | Reset the password without admin intervention | [Local email, code and password check](sprint-3-release.md#acceptance-evidence); `__tests__/pages/ResetPassword.test.tsx`, `__tests__/app/password-reset-verify-code.test.ts` | Browser, API, Page | S+F | Yes | Pass | [#295](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/295) |
 
 Notes:
 
@@ -469,29 +467,41 @@ test.
 branches 74%, functions 78.61%, lines 87.56%. The run fails below the thresholds in
 `webapp/jest.config.ts` (statements 83, branches 72, functions 77, lines 85).
 
-Sprint 3 stories, as of October 26, 2026, on `sprint-3` at `5181a2d`.
+Sprint 3 coverage after the October 26 close-out checks. This table measures coverage, not
+release approval. The full-suite failure above must be corrected before release.
 
-| Story | Team | ATs | Covered | Partial | None | Not run |
-|---|---|---|---|---|---|---|
-| US 1.0.3 | Green | 3 | AT2, AT3 | AT1 | - | - |
-| US 1.0.4 | Green | 2 | - | AT1 | AT2 | - |
-| US 1.0.6 | Red | 3 | - | - | AT1 to AT3 | - |
-| US 2.0.1 | Red | 4 | AT2 to AT4 | AT1 | - | - |
-| US 2.0.8 | Blue | 3 | AT1 to AT3 | - | - | - |
-| US 2.0.9 | Red | 6 | AT1 to AT6 | - | - | - |
-| US 2.0.12 | Red | 5 | AT1 to AT5 | - | - | - |
-| US 2.0.13 | Red | 4 | AT1 to AT4 | - | - | - |
-| US 2.0.14 | Blue | 1 | AT1 | - | - | - |
-| US 3.0.3 | Red | 2 | - | - | AT1, AT2 | - |
-| US 3.0.4 | Red | 3 | - | - | AT1 to AT3 | - |
-| US 4.0.2 | Red | 4 | AT1 | AT2 | AT3, AT4 | - |
-| US 4.0.4 | Blue | 4 | AT1 | AT2 to AT4 | - | - |
-| US 5.0.2 | Green | 4 | - | AT1 to AT4 | - | - |
-| US 6.0.1 | Blue | 5 | AT1 to AT5 | - | - | - |
-| **Total** | | **53** | **31** | **11** | **11** | **0** |
+| Story | Team | ATs | Covered | Partial | None |
+|---|---|---|---|---|---|
+| US 1.0.3 | Green | 3 | AT2, AT3 | AT1 | - |
+| US 1.0.4 | Green | 2 | AT1 | - | AT2 |
+| US 1.0.6 | Red | 3 | AT1, AT2, AT3 | - | - |
+| US 2.0.1 | Red | 4 | AT2, AT3, AT4 | AT1 | - |
+| US 2.0.8 | Blue | 3 | AT1, AT2, AT3 | - | - |
+| US 2.0.9 | Red | 6 | AT1, AT2, AT3, AT4, AT5, AT6 | - | - |
+| US 2.0.12 | Red | 5 | AT1, AT2, AT3, AT4, AT5 | - | - |
+| US 2.0.13 | Red | 4 | AT1, AT2, AT3, AT4 | - | - |
+| US 2.0.14 | Blue | 1 | AT1 | - | - |
+| US 3.0.3 | Red | 2 | AT1, AT2 | - | - |
+| US 4.0.2 | Red | 4 | AT1, AT2, AT3, AT4 | - | - |
+| US 4.0.4 | Blue | 4 | AT1, AT2, AT3 | AT4 | - |
+| US 5.0.2 | Green | 4 | AT1, AT2, AT3, AT4 | - | - |
+| US 6.0.1 | Blue | 5 | AT1, AT2, AT3, AT4, AT5 | - | - |
+| **Total** | | **50** | **46** | **3** | **1** |
 
-Of the 11 ATs with no test, 9 belong to stories whose PRs are not merged (1.0.4, 1.0.6, 3.0.3 and
-3.0.4).
+US 3.0.4 is removed, not an untested commitment. Activity-count AT2 still needs explicit evidence.
+
+## Close-out evidence notes
+
+- The server ownership and required-answer tests already exist in `queries.report-writes.test.ts`.
+  The previous plan did not list them. Browser checks confirmed an owner edit, preservation of
+  the hidden flag, rejection of another steward's edit and absence of the hidden text for that steward.
+- The earlier offline AT2–AT4 gap is covered by the local browser run with 96 saved tiles.
+  It checks the cache path, missing-tile indicator and return to live requests. It does not
+  test a production Protomaps key or a full reload of the app while offline.
+- Password-reset AT1–AT4 passed against local Supabase with a delivered local SMTP message.
+  Production SMTP, template and redirect settings still need the release owner's check.
+- SIR-edit AT4 stays partial: the site view and visibility are checked, but every export and
+  summary view has not been checked in a browser after the same edit.
 
 ## Known limits
 

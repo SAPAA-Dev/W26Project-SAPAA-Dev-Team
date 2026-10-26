@@ -13,7 +13,8 @@ import { createClient, createServerSupabase } from '@/utils/supabase/server';
 import { processExportJob } from '@/lib/export/processExportJob';
 
 jest.mock('@/utils/supabase/server', () => ({ createClient: jest.fn(), createServerSupabase: jest.fn() }));
-jest.mock('@/lib/export/processExportJob', () => ({ processExportJob: jest.fn(), getS3Client: jest.fn(() => ({})) }));
+jest.mock('@/lib/export/processExportJob', () => ({ processExportJob: jest.fn() }));
+jest.mock('@/lib/s3/client', () => ({ s3Client: {} }));
 jest.mock('@aws-sdk/client-s3', () => ({ GetObjectCommand: jest.fn((input) => ({ input })) }));
 const mockGetSignedUrl = jest.fn();
 jest.mock('@aws-sdk/s3-request-presigner', () => ({ getSignedUrl: (...args: unknown[]) => mockGetSignedUrl(...args) }));

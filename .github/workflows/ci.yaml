@@ -30,13 +30,15 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npx tsc --noEmit
       - run: npm run test:ci
-      # The build only needs the public env vars to exist, not real values.
+      # The build only needs the env vars to exist, not real values. SUPABASE_SECRET is read
+      # when the admin client module loads, so the password reset routes fail without it.
       - run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: 1
           NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder
           NEXT_PUBLIC_PROTOMAPS_API_KEY: ci-placeholder
+          SUPABASE_SECRET: ci-placeholder
       # test:ci writes coverage/ first, so keep the generated report out of the lint run.
       - run: npm run lint -- --max-warnings 0 --ignore-pattern 'coverage/**'
 

@@ -155,7 +155,7 @@ breaks before it. There is no way to avoid a short gap, so do it in a maintenanc
 before the deploy:
 
 1. Tell the stewards and admins that the app is down for a short time.
-2. Run steps 1 to 20 below, in order, in one sitting.
+2. Run only the missing migrations below, in order. Check the release commit and the current schema first. A production database that already has Sprint 2 does not need those steps again.
 3. Merge the release PR straight away ([Branch model](#branch-model)), so the new code deploys.
 4. Open the app and run the smoke test below. The window ends when it passes.
 
@@ -188,12 +188,33 @@ Run the files in this order.
 | 18 | `20261011000000_revoke_public_execute_on_report_functions.sql` | From `fix/alpha-code-quality`. Run it after step 15. Only the service role can then call `get_distinct_inspected_site_count` and `get_max_inspection_number`. |
 | 19 | `20261011010000_revoke_public_execute_on_dashboard_functions.sql` | From `fix/gamma-sprint-2-gaps`. Run it after step 12. Revokes execute on `get_naturalness_distribution` and `get_top_sites_distribution` from `public` and `anon`. `authenticated` keeps it, because the StewardLog admin dashboard calls both functions after sign-in. |
 | 20 | `20261012000000_add_question_atomically.sql` | From `fix/form-editor-save-errors` (#273). Run it after step 2. Adds `add_question_atomically`, for the service role only. Until it exists, adding a question in the form editor fails. |
-| 21 | `20261022000000_add_answer_visibility.sql` | Adds `answers.is_hidden`. Run it before deploying US 1.0.3. Existing answers stay visible. |
+| 21 | `20261020000000_create_gpx_tracks.sql` | Creates the private `gpx-tracks` bucket and GPX rows, indexes and access policies. Run after the site tables and user model exist. |
+| 22 | `20261020100000_link_sites_to_protected_areas.sql` | Adds centre coordinates and the service-role-only boundary-link RPC. It does not fill existing rows when applied. |
+| 23 | `20261021000000_link_sites_to_protected_areas.sql` | Same contents as step 22. Retain both versions in the migration history; the second run is safe. Do not invent a replacement migration. |
+| 24 | `20261022000000_add_answer_visibility.sql` | Adds `answers.is_hidden`. Existing answers stay visible. Apply before deploying US 1.0.3. |
+| 25 | `20261023000000_add_protected_area_boundary_color.sql` | Adds the optional boundary color and its `#rrggbb` constraint. Existing boundaries keep the default. |
+| 26 | `20261024000000_add_site_priority_scores.sql` | Adds the three scores, saved date and saving Admin. Existing sites have no scores. Apply before deploying US 2.0.12 and 2.0.13. |
+| 27 | `20261024010000_create_export_jobs.sql` | Creates export jobs and the creator-only read policy. Only the service-role server writes jobs. Apply before deploying US 3.0.3. |
+| 28 | `20261024020000_check_gpx_track_path.sql` | From PR #312. Include only after it merges. It replaces the GPX insert policy with the path check; existing rows are not rewritten. |
 
 PRs #234, #238 and #242 are merged on `main`. Steps 18 to 20 came with the Sprint 2 fixes, which
 are on `main` since [#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284)
 (October 13). Run each step only when its file is on `main`.
 If a PR merges with a different file name, use the name in the merged PR.
+
+### Sprint 3 migration review
+
+The files above target the web schema. They do not rename legacy mobile inspection tables.
+Steps 22 and 23 are byte-identical. Both are retained because databases can already record one
+or both versions. The link function is `security invoker`, uses an empty search path, and grants
+execution only to the service role. Applying it adds the function and coordinates; an approved
+Admin still runs the import to fill site links.
+
+Green must confirm the final migration review in issue #183 before release. This document is
+an inventory and order, not an approval to run SQL on production. A human records which files
+were applied and the result of the checks in [Sprint 3 release checks](sprint-3-release.md).
+Do not apply step 28 from an unmerged branch. Do not assume that a successful local run proves
+the production schema is current.
 
 ### Checks
 

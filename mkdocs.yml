@@ -41,4 +41,5 @@ nav:
       - Static Analysis: 'sonar-qube.md'
       - Job Documentation: 'job-documentation.md'
       - Traceability Matrix: 'traceability-matrix.md'
+      - Sprint 3 release checks: sprint-3-release.md
       - Winter 2026 Requirements: 'index-WINTER2026.md'
