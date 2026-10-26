@@ -62,7 +62,13 @@ describe('/api/profile', () => {
     mockGetUser.mockResolvedValue({ data: { user: VIEWER }, error: null });
     mockAdminFrom.mockReturnValue(makeQuery({ data: PERSON, error: null }));
     mockRpc.mockResolvedValue({ data: 2, error: null });
-    mockGetUserById.mockResolvedValue({ data: { user: { app_metadata: { role: 'admin' } } } });
+    mockGetUserById.mockResolvedValue({
+      data: { user: { app_metadata: { role: 'admin' }, created_at: '2024-06-15T12:00:00.000Z' } },
+    });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   describe('GET', () => {
@@ -127,7 +133,16 @@ describe('/api/profile', () => {
       const body = await response.json();
 
       expect(response.status).toBe(200);
-      expect(body.stats).toEqual({ inspectionCount: 0, distinctSiteCount: 0 });
+      expect(body.stats).toEqual({
+        inspectionCount: 0,
+        distinctSiteCount: 0,
+        topSite: null,
+        mostRecentSite: null,
+        reportsThisYear: 0,
+        accountCreatedAt: null,
+        countyCount: 0,
+        topCounty: null,
+      });
       expect(body.history).toEqual([]);
       expect(body.isOwner).toBe(false);
       expect(mockAdminFrom).not.toHaveBeenCalledWith('form_responses');
@@ -141,8 +156,7 @@ describe('/api/profile', () => {
       expect(response.status).toBe(200);
       expect(mockRpc).toHaveBeenCalledWith('get_distinct_inspected_site_count', { p_user_id: VIEWER.id });
       expect(body.stats.distinctSiteCount).toBe(2);
-      // One read of the reports. The owner's second read of people is the 1.0.6 option list.
-      expect(mockAdminFrom.mock.calls.filter(([table]) => table === 'form_responses')).toHaveLength(1);
+      expect(mockAdminFrom).toHaveBeenCalledTimes(3);
       expect(mockAdminFrom).toHaveBeenCalledWith('people');
     });
 
@@ -192,6 +206,102 @@ describe('/api/profile', () => {
         expect(response.status).toBe(200);
         expect(body.options).toEqual({ skills: [], focusAreas: [] });
       });
+    });
+
+    it('calculates user contribution statistics from all active reports (1.0.4 AT1)', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-10-25T12:00:00.000Z'));
+      const peopleQuery = makeQuery({ data: PERSON, error: null });
+      const historyQuery: Record<string, unknown> = {
+        data: [],
+        error: null,
+        count: 4,
+      };
+      const aggregateQuery: Record<string, unknown> = {
+        data: [
+          {
+            id: 1,
+            site_id: 5,
+            inspection_date: '2025-08-01',
+            created_at: '2025-08-02T12:00:00.000Z',
+            sites_pa: { id: 5, namesite: 'Beaver Hills', ab_counties: { id: 9, county: 'Strathcona County' } },
+          },
+          {
+            id: 2,
+            site_id: 5,
+            inspection_date: '2026-09-12',
+            created_at: '2026-09-13T12:00:00.000Z',
+            sites_pa: { id: 5, namesite: 'Beaver Hills', ab_counties: { id: 9, county: 'Strathcona County' } },
+          },
+          {
+            id: 3,
+            site_id: 6,
+            inspection_date: '2026-10-22',
+            created_at: '2026-10-23T12:00:00.000Z',
+            sites_pa: { id: 6, namesite: 'Duck Lake', ab_counties: { id: 10, county: 'Parkland County' } },
+          },
+          {
+            id: 4,
+            site_id: 7,
+            inspection_date: null,
+            created_at: '2026-10-24T12:00:00.000Z',
+            sites_pa: { id: 7, namesite: 'Elk Island', ab_counties: null },
+          },
+        ],
+        error: null,
+      };
+      [historyQuery, aggregateQuery].forEach((query) => {
+        ['select', 'eq', 'not', 'is', 'order', 'range', 'overrideTypes'].forEach((method) => {
+          query[method] = jest.fn(() => query);
+        });
+      });
+      let responseQueryCount = 0;
+      mockAdminFrom.mockImplementation((table: string) => {
+        if (table !== 'form_responses') return peopleQuery;
+        responseQueryCount += 1;
+        return responseQueryCount === 1 ? historyQuery : aggregateQuery;
+      });
+
+      const response = await GET(makeRequest({ personId: '42' }) as never);
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body.stats).toEqual({
+        inspectionCount: 4,
+        distinctSiteCount: 2,
+        topSite: { name: 'Beaver Hills', visitCount: 2 },
+        mostRecentSite: { name: 'Elk Island', inspectionDate: '2026-10-24T12:00:00.000Z' },
+        reportsThisYear: 3,
+        accountCreatedAt: '2024-06-15T12:00:00.000Z',
+        countyCount: 2,
+        topCounty: { name: 'Strathcona County', reportCount: 2 },
+      });
+      expect(aggregateQuery.select).toHaveBeenCalledWith(
+        'id, site_id, inspection_date, created_at, sites_pa(id, namesite, ab_counties(id, county))',
+        undefined,
+      );
+    });
+
+    it('answers 500 when the contribution statistics cannot be loaded', async () => {
+      const peopleQuery = makeQuery({ data: PERSON, error: null });
+      const historyQuery: Record<string, unknown> = { data: [], error: null, count: 0 };
+      const aggregateQuery: Record<string, unknown> = { data: null, error: { message: 'boom' } };
+      [historyQuery, aggregateQuery].forEach((query) => {
+        ['select', 'eq', 'not', 'is', 'order', 'range', 'overrideTypes'].forEach((method) => {
+          query[method] = jest.fn(() => query);
+        });
+      });
+      let responseQueryCount = 0;
+      mockAdminFrom.mockImplementation((table: string) => {
+        if (table !== 'form_responses') return peopleQuery;
+        responseQueryCount += 1;
+        return responseQueryCount === 1 ? historyQuery : aggregateQuery;
+      });
+
+      const response = await GET(makeRequest({ personId: '42' }) as never);
+      const body = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(body.error).toBe('Unable to load profile activity.');
     });
 
     it('flags unavailable sites and removes reports for deleted sites', async () => {
@@ -245,8 +355,9 @@ describe('/api/profile', () => {
 
       function mockResponses(...queries: Record<string, unknown>[]) {
         const peopleQuery = makeQuery({ data: PERSON, error: null });
+        const emptyAggregate = responsesQuery({ data: [], error: null, count: 0 });
         mockAdminFrom.mockImplementation((table: string) =>
-          table === 'form_responses' ? queries.shift() : peopleQuery
+          table === 'form_responses' ? (queries.shift() ?? emptyAggregate) : peopleQuery
         );
       }
 

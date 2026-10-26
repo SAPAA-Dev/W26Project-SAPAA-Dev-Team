@@ -1,0 +1,37 @@
+name: Diagram SVG check
+
+on:
+  pull_request:
+    branches: [main, release, 'sprint-*']
+    types: [opened, reopened, synchronize]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  diagram-svg-check:
+    runs-on: self-hosted
+    timeout-minutes: 5
+    env:
+      # The check renders nothing, so it does not need a browser.
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tools/diagrams/package-lock.json
+
+      - name: Check that every SVG matches its Mermaid source
+        run: |
+          npm --prefix tools/diagrams ci --silent
+          npm --prefix tools/diagrams test
+          npm --prefix tools/diagrams run check --silent -- --svg-only
