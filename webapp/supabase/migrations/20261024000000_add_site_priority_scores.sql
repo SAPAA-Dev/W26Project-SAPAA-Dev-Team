@@ -14,13 +14,25 @@ alter table public.sites_pa
 alter table public.sites_pa
   drop constraint if exists sites_pa_priority_scores_valid;
 
-alter table public.sites_pa
-  add constraint sites_pa_priority_scores_valid check (
-    (priority_abuses is null and priority_biological is null and priority_time is null
-      and priority_saved_at is null)
-    or (priority_abuses between 0 and 5 and priority_biological between 0 and 5
-      and priority_time between 0 and 5 and priority_saved_at is not null)
-  );
+-- The constraint is only added when it does not exist, so a rerun does not
+-- repeat the full-table validation scan under its SHARE ROW EXCLUSIVE lock.
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'sites_pa_priority_scores_valid'
+      and conrelid = 'public.sites_pa'::regclass
+  ) then
+    alter table public.sites_pa
+      add constraint sites_pa_priority_scores_valid check (
+        (priority_abuses is null and priority_biological is null and priority_time is null
+          and priority_saved_at is null)
+        or (priority_abuses between 0 and 5 and priority_biological between 0 and 5
+          and priority_time between 0 and 5 and priority_saved_at is not null)
+      );
+  end if;
+end;
+$$;
 
 comment on column public.sites_pa.priority_abuses is
   'Admin points for abuses, 0 to 5. Null with the other priority columns means not scored.';
