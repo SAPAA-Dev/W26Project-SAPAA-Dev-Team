@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { createClient, createServerSupabase } from '@/utils/supabase/server';
-import { getS3Client } from '@/lib/export/processExportJob';
+import { s3Client } from '@/lib/s3/client';
 
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
 
@@ -27,7 +27,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ job
 
   if (job.status === 'complete' && job.storage_path) {
     const downloadUrl = await getSignedUrl(
-      getS3Client(),
+      s3Client,
       new GetObjectCommand({ Bucket: BUCKET, Key: job.storage_path }),
       { expiresIn: 3600 },
     );

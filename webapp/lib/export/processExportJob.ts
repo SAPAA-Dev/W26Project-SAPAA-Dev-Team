@@ -1,24 +1,14 @@
 import { createServerSupabase } from '@/utils/supabase/server';
 import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { Zip, ZipPassThrough } from 'fflate';
+import { s3Client } from '@/lib/s3/client';
 
 export const MAX_EXPORT_BYTES = 500 * 1024 * 1024;
 const GPX_BUCKET = 'gpx-tracks';
 const PAGE_SIZE = 1000;
 const MAX_NAMES_IN_ERROR = 10;
 
-const REGION = process.env.AWS_REGION!;
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
-
-export function getS3Client() {
-  return new S3Client({
-    region: REGION,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
-  });
-}
 
 // An error whose message an Admin can read on the page. Any other error is logged and shown as a general message.
 class ExportError extends Error {}
@@ -161,12 +151,11 @@ export async function processExportJob(jobId: string) {
     if (processingError) throw processingError;
 
     const entries = await collectExportEntries(supabase);
-    const s3 = getS3Client();
-    const zipBytes = await buildExportZip(entries, supabase, s3);
+    const zipBytes = await buildExportZip(entries, supabase, s3Client);
 
     const dateStamp = new Date().toISOString().split('T')[0];
     const key = `exports/${job.created_by}/${jobId}/SAPAA_All_Files_${dateStamp}.zip`;
-    await s3.send(new PutObjectCommand({ Bucket: BUCKET, Key: key, Body: zipBytes, ContentType: 'application/zip' }));
+    await s3Client.send(new PutObjectCommand({ Bucket: BUCKET, Key: key, Body: zipBytes, ContentType: 'application/zip' }));
 
     const { error: completionError } = await supabase
       .from('export_jobs')

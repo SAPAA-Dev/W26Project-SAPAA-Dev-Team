@@ -8,6 +8,7 @@ jest.mock("@aws-sdk/client-s3", () => ({
   PutObjectCommand: jest.fn((input) => ({ type: "put", input })),
 }));
 jest.mock("../../utils/supabase/server", () => ({ createServerSupabase: jest.fn() }));
+jest.mock("../../lib/s3/client", () => ({ s3Client: { send: (...args: unknown[]) => mockSend(...args) } }));
 
 import {
   buildExportZip,
