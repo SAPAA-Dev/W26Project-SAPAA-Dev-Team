@@ -156,7 +156,7 @@ describe('/api/profile', () => {
       expect(response.status).toBe(200);
       expect(mockRpc).toHaveBeenCalledWith('get_distinct_inspected_site_count', { p_user_id: VIEWER.id });
       expect(body.stats.distinctSiteCount).toBe(2);
-      expect(mockAdminFrom).toHaveBeenCalledTimes(3);
+      expect(mockAdminFrom).toHaveBeenCalledTimes(4);
       expect(mockAdminFrom).toHaveBeenCalledWith('people');
     });
 

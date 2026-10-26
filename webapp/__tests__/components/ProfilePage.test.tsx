@@ -37,6 +37,21 @@ const profilePayload = {
 describe('ProfilePage', () => {
   const fetchMock = jest.fn();
 
+  // V8 caches the default timezone after first use, so setting process.env.TZ at runtime does
+  // not reliably change formatting. Force the zone on the Intl call instead. An explicit
+  // timeZone (the component uses UTC for date-only strings) stays unchanged.
+  const formatInAlberta = () => {
+    const originalFormat = Intl.DateTimeFormat;
+    jest.spyOn(Intl, 'DateTimeFormat').mockImplementation(
+      (locale?: Intl.LocalesArgument, options?: Intl.DateTimeFormatOptions) =>
+        new originalFormat(locale, { ...options, timeZone: options?.timeZone ?? 'America/Edmonton' }),
+    );
+  };
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   beforeEach(() => {
     fetchMock.mockReset();
     fetchMock.mockResolvedValue({ ok: true, json: async () => profilePayload });
@@ -209,36 +224,26 @@ describe('ProfilePage', () => {
   });
 
   it('does not show a date one day early in Alberta', async () => {
-    const previousZone = process.env.TZ;
-    process.env.TZ = 'America/Edmonton';
-    try {
-      render(<ProfilePage />);
+    formatInAlberta();
+    render(<ProfilePage />);
 
-      const historySection = (await screen.findByRole('heading', { name: 'Inspection history' })).closest('section')!;
-      expect(within(historySection).getByText('Sep 12, 2026')).toBeInTheDocument();
-      expect(within(historySection).queryByText('Sep 11, 2026')).not.toBeInTheDocument();
-    } finally {
-      process.env.TZ = previousZone;
-    }
+    const historySection = (await screen.findByRole('heading', { name: 'Inspection history' })).closest('section')!;
+    expect(within(historySection).getByText('Sep 12, 2026')).toBeInTheDocument();
+    expect(within(historySection).queryByText('Sep 11, 2026')).not.toBeInTheDocument();
   });
 
   it('shows the local day for a report that only has a created_at timestamp', async () => {
-    const previousZone = process.env.TZ;
-    process.env.TZ = 'America/Edmonton';
+    formatInAlberta();
     fetchMock.mockResolvedValue({
       ok: true,
       // 03:30 UTC on Sep 12 is 21:30 on Sep 11 in Alberta.
       json: async () => ({ ...profilePayload, history: [{ ...profilePayload.history[0], inspectionDate: '2026-09-12T03:30:00+00:00' }] }),
     });
-    try {
-      render(<ProfilePage />);
+    render(<ProfilePage />);
 
-      const historySection = (await screen.findByRole('heading', { name: 'Inspection history' })).closest('section')!;
-      expect(within(historySection).getByText('Sep 11, 2026')).toBeInTheDocument();
-      expect(within(historySection).queryByText('Sep 12, 2026')).not.toBeInTheDocument();
-    } finally {
-      process.env.TZ = previousZone;
-    }
+    const historySection = (await screen.findByRole('heading', { name: 'Inspection history' })).closest('section')!;
+    expect(within(historySection).getByText('Sep 11, 2026')).toBeInTheDocument();
+    expect(within(historySection).queryByText('Sep 12, 2026')).not.toBeInTheDocument();
   });
 
   describe('inspection history paging', () => {
