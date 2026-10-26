@@ -159,10 +159,6 @@ classDiagram
             +getFormResponsesForSiteIds(siteIds, keyMap) Map
             +getAttachmentsForResponseIds(responseIds) list of id, response_id, question_id, storage_key, filename, ...
         }
-        class GeocodeRoute {
-            <<route /api/geocode>>
-            +GET(q) latitude, longitude [CHANGE 6.0.1]
-        }
     }
 
     namespace MobileApp {
@@ -288,7 +284,6 @@ classDiagram
     note for PdfDataFetcher "CHANGE 7.0.7: removes the answers of options.hiddenQuestionIds.<br>CHANGE 7.0.6: processPdfJob reads the SIRs in batches.<br>The cause of the 50 SIR limit is an open question."
     note for ContributionMetrics "Proposed (docs/user-model.md, Gamification proposal). Counts from form_responses and sites_pa:<br>inspections, counties, site variety, first report of a Site. All time or the last year.<br>No points are stored. people.activity_points stays unused."
     note for NewReportPage "NEW 4.0.5: the browser calls iNaturalist. handleSubmit copies<br>each chosen photo to S3 through /api/s3/presign.<br>insertInspectionAttachments writes inat_observation_id.<br>CHANGE 4.0.6: photo identifier is optional and does not block submission.<br>PresignRoute also accepts an empty identifier."
-    note for GeocodeRoute "US 6.0.1 AT 4: results are cached and requests stay under 2,500 per day.<br>Open question: where the cache and the daily count are stored."
 
     WebAuthService --> SupabaseBackend : Auth
     AccessChecks --> SupabaseBackend : auth.getUser(), app_metadata
@@ -335,7 +330,6 @@ classDiagram
     PdfStatusRoute --> AwsS3 : presigned GET
     ExportRoutes --> SupabaseBackend : export_jobs
     ExportRoutes --> AwsS3 : reads images, GPX and PDFs and stores zip
-    GeocodeRoute --> OpenCageApi : geocodes
     StewardLogGeocoder --> OpenCageApi : geocodes from the phone
     OfflineMapService --> MapTileServer : downloads tiles
     HomepageImageActions --> SupabaseBackend : homepage_image_uploads
