@@ -126,3 +126,22 @@ describeDb('site delete impact', () => {
     });
   });
 });
+
+describeDb('naturalness chart count', () => {
+  it('counts a report once even when it holds two Q31 rows', () => {
+    const { ok, err, out } = runSql(`${probeSite}
+      insert into public.form_responses (site_id, inspection_no, inspection_date, is_active)
+      values (${probeSiteId}, 'DUP-001', current_date, true);
+      insert into public.answers (response_id, question_id, obs_value)
+      select responses.id, questions.id, 'Probe score'
+      from public.form_responses as responses
+      cross join public.questions as questions
+      cross join generate_series(1, 2)
+      where responses.inspection_no = 'DUP-001' and questions."question key" = 'Q31_Naturalness';
+      ${migration('20261025000020_count_one_naturalness_answer_per_report.sql')}
+      select count from public.get_naturalness_distribution() where naturalness_score = 'Probe score';`);
+    expect(err).not.toContain('ERROR');
+    expect(ok).toBe(true);
+    expect(out.trim()).toBe('1');
+  });
+});
