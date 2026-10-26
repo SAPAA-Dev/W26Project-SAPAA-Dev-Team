@@ -9,17 +9,43 @@
 do $seed$
 declare
   report_index integer;
-  existing_site_count bigint;
+  demo_site_id bigint;
+  foreign_data text;
 begin
-  -- A database that holds any other site is not a local seed database.
-  select count(*) into existing_site_count
-  from public."sites_pa"
-  where namesite is distinct from 'Quackberry Duck Park';
+  -- A database that holds any data this file did not write is not a local seed database.
+  -- Sites alone are not enough: production can have reports, questions or sections with
+  -- no matching site row, and the upserts below would overwrite them.
+  select id into demo_site_id from public."sites_pa" where namesite = 'Quackberry Duck Park';
 
-  if existing_site_count > 0 then
+  select concat_ws(', ',
+    case when exists (
+      select 1 from public."sites_pa" where namesite is distinct from 'Quackberry Duck Park'
+    ) then 'sites_pa' end,
+    case when exists (
+      select 1 from public."form_responses" where site_id is distinct from demo_site_id
+    ) then 'form_responses' end,
+    case when exists (
+      select 1 from public."questions"
+      where not coalesce("question key" = any (array[
+        'Q21_Date_Of_Visit', 'Q31_Naturalness', 'Q32_Natural_Comm', 'Q13_FirstandLastNameForGuests'
+      ]), false)
+    ) then 'questions' end,
+    case when exists (
+      select 1 from public."question_keys"
+      where not coalesce("question key" = any (array[
+        'Q21_Date_Of_Visit', 'Q31_Naturalness', 'Q32_Natural_Comm', 'Q13_FirstandLastNameForGuests'
+      ]), false)
+    ) then 'question_keys' end,
+    case when exists (
+      select 1 from public."form_sections"
+      where not coalesce(title = any (array['Visit details', 'Site observations']), false)
+    ) then 'form_sections' end
+  ) into foreign_data;
+
+  if foreign_data <> '' then
     raise notice
-      'Skipping seed: % site(s) other than the demo site exist. This file must not run against production.',
-      existing_site_count;
+      'Skipping seed: rows this file did not write exist in %. This file must not run against production.',
+      foreign_data;
     return;
   end if;
 
