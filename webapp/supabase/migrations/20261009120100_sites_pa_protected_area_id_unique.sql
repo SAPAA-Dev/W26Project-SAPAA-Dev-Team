@@ -3,8 +3,9 @@
 -- The check below stops the file with a readable error before the constraint fails
 -- with a raw unique violation. A human must remove the extra link before this
 -- constraint can be added. A human runs this file in the Supabase dashboard. Do not
--- run it from the app. The unique index is built inside the constraint: it takes a
--- SHARE ROW EXCLUSIVE lock on sites_pa for the build time, so run it outside peak use.
+-- run it from the app. ALTER TABLE ... ADD CONSTRAINT ... UNIQUE takes an ACCESS
+-- EXCLUSIVE lock on sites_pa while the unique index builds: reads and writes wait for it,
+-- so run it outside peak use.
 
 do $$
 declare

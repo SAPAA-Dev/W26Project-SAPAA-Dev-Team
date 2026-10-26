@@ -3,7 +3,9 @@
 -- so a permanent site delete removes them with the site row, but the impact JSON did
 -- not report them and the function comment did not name them. This file redefines both
 -- functions with the complete list. A human runs this file in the Supabase dashboard
--- for production, after 20261020000000_create_gpx_tracks.sql. Safe to run twice.
+-- for production, after 20261008000000_create_site_page_fields.sql (site_page_fields),
+-- 20261008164223_delete_site.sql (archived_at and the two functions this file replaces) and
+-- 20261020000000_create_gpx_tracks.sql (gpx_tracks). Safe to run twice.
 
 -- Complete impact list for the admin confirmation dialog. gpxTrackCount and
 -- sitePageFieldCount name the rows that cascade away with the site row.
