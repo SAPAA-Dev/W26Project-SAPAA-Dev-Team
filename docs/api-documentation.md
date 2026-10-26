@@ -7,6 +7,8 @@ checked on October 11 and 12 against the Sprint 2 fix branches that #284 brought
 caller checks of `queries.ts` were checked again on `main` at `ceb5188`. The Winter 2026 section is
 inherited. The Fall 2025 routes are now in the Fall 2026 section.*
 
+Sprint 3 additions are labelled below and describe the sprint branch, not the Sprint 2 tag.
+
 ## API Documentation From Fall 2026
 
 ### Access rules

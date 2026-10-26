@@ -12,9 +12,9 @@ Sprint 3 records were updated on **October 26, 2026** after the skills, export a
 PRs merged. The current scope is 14 stories and 50 acceptance tests. US 3.0.4 was removed when
 Frank required accounts and sign-in; PR #310 was closed without merge.
 
-The local close-out run on the Sprint 3 source after #305 and #315 has **1 failed test, 1908
-passed and 13 skipped**. The failure is the profile API test that expects three query calls
-instead of four. The database rule run passed **13 tests** on the existing local Supabase.
+The local close-out run on the Sprint 3 source after #305, #312 and #315, with the #318 changes has **1 failed test, 1911
+passed and 25 skipped**. The failure is the profile API test that expects three query calls
+instead of four. The database rule run passed **25 tests** on the local Supabase after applying the merged Sprint 3 migrations.
 The export follow-up (#318) passed **38 tests**, including three state-write failure tests.
 
 The browser checks use the real app with local Supabase and local SMTP. The offline check

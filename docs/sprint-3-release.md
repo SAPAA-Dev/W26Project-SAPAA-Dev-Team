@@ -33,8 +33,9 @@ October 28 and are not an overdue pre-release implementation task.
 
 ## Acceptance evidence
 
-The checks below ran on October 26 against the real local app and local Supabase. Disposable
-accounts and report/site fixtures were removed after each run. Production was not used. No
+The checks below ran on October 26 against the real local app and local Supabase. Disposable browser
+accounts and report/site fixtures were removed after each browser run. The database suites keep
+their standard local E2E seed data. Production was not used. No
 Cypress or native mobile build was run.
 
 | Check | Result and limits |
@@ -44,10 +45,10 @@ Cypress or native mobile build was run.
 | Report edit and visibility, 4.0.4 AT1 to AT3 and part of AT4 | Passed locally. The owner opened edit mode and saved changed text. The database and site view showed the new text with its hidden flag retained. Clearing a required answer blocked Save and left the stored report unchanged. Another approved steward could neither see the hidden text nor enter edit mode. Every PDF, profile and Admin summary view was not rechecked after the same edit. |
 | Server report rules | The focused Jest run passed the ownership, approval, required-answer and hidden-answer tests. These use mocked Supabase/S3. |
 | Export job failure handling | 38 export tests passed, including three new tests that fail on the old state-write code. A failed processing write stops the upload; a failed completion write records failure; failure to record that failure rejects to the existing background error handler. S3 and Supabase are mocked. |
-| Database rules and site links | 2 local database suites, 13 tests passed. The tests use the real local Supabase. This is not evidence that production migrations ran. |
+| Database rules and site links | 3 local database suites, 25 tests passed. The tests use the real local Supabase. This is not evidence that production migrations ran. |
 | Focused acceptance suites | 14 suites, 357 tests passed. The map reconnection test is in `SiteMap.test.tsx`. |
 | Clean production build | Passed with local placeholder settings on an isolated source copy. Compilation and build type checking passed. |
-| Full unit suite on the sprint source after #305 and #315 | 1 failed, 1908 passed, 13 skipped. The failure is the profile API test that expects three query calls but receives four. It is outside this export fix and must be corrected before release. A final green CI run must replace this result. |
+| Full unit suite on the sprint source after #305, #312 and #315, with the #318 changes | 1 failed, 1911 passed, 25 skipped. The failure is the profile API test that expects three query calls but receives four. It is outside this export fix and must be corrected before release. A final green CI run must replace this result. |
 
 The test plan and traceability matrix cover **50 ATs: 46 covered, 3 partial and 1 with no test**.
 The partial rows are profile-history row details (1.0.3 AT1), active-site map filtering (2.0.1 AT1)
