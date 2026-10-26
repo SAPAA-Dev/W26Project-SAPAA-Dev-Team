@@ -2,19 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import dynamic from "next/dynamic";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import Link from "next/link";
-import { 
-  FileText, 
+import {
+  FileText,
   Calendar,
-  Search,
-  MapPin,
   BarChart3,
   ImageIcon,
   PieChart,
-  Loader2,
   ArrowLeft
 } from "lucide-react";
 import Image from 'next/image';
@@ -25,16 +21,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { useRouter } from 'next/navigation';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
-
-// dynamically import Leaflet 
-const Map = dynamic(() => import("./components/Map"), { ssr: false });
-
-type HeatPoint = {
-  latitude: number;
-  longitude: number;
-  weight: number;
-  namesite?: string;
-};
 
 type GalleryItem = {
   id: string;
@@ -57,7 +43,6 @@ export default function Dashboard() {
   const router = useRouter();
   createClient();
   const [loading, setLoading] = useState(true);
-  const [keyword, setKeyword] = useState("");
   const [stats, setStats] = useState<{
     totalInspections: number;
     lastInspectionDate: string | null;
@@ -68,8 +53,6 @@ export default function Dashboard() {
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [naturalnessData, setNaturalnessData] = useState<Awaited<ReturnType<typeof getNaturalnessDistribution>>>([]);
   const [siteData, setSiteData] = useState<Awaited<ReturnType<typeof getTopSitesDistribution>>>([]);
-  const [points, setPoints] = useState<HeatPoint[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
 
   const fetchStats = async () => {
     setLoading(true);
@@ -87,81 +70,6 @@ export default function Dashboard() {
       console.error('Error loading stats:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleSearch = async () => {
-    if (!keyword.trim()) {
-      alert("Please enter a search keyword");
-      return;
-    }
-
-    setSearchLoading(true);
-    setPoints([]); // Clear map immediately
-
-    try {
-      const response = await fetch(`/api/heatmap?keyword=${encodeURIComponent(keyword)}`);
-      
-      if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
-      }
-      
-      const data = await response.json();
-      const raw = data.data || [];
-
-      if (raw.length === 0) {
-        alert(`No sites found matching "${keyword}"`);
-        setSearchLoading(false);
-        return;
-      }
-
-      // Geocode each site with delay
-      const coords = [];
-      
-      for (let i = 0; i < raw.length; i++) {
-        const site = raw[i];
-        
-        try {
-          const geoResponse = await fetch(`/api/geocode?q=${encodeURIComponent(site.namesite)}`);
-          
-          if (!geoResponse.ok) {
-            console.warn(`Geocoding failed for ${site.namesite}`);
-            continue;
-          }
-          
-          const geo = await geoResponse.json();
-
-          if (geo?.latitude && geo?.longitude) {
-            coords.push({
-              latitude: geo.latitude,
-              longitude: geo.longitude,
-              weight: site.count,
-              namesite: site.namesite,
-            });
-          }
-          
-          // Small delay to avoid rate limiting
-          if (i < raw.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-          
-        } catch (error) {
-          console.error(`Error geocoding ${site.namesite}:`, error);
-        }
-      }
-
-      if (coords.length === 0) {
-        alert(`Found ${raw.length} sites, but couldn't determine their locations.`);
-      }
-      
-      setPoints(coords);
-      
-    } catch (error: unknown) {
-      console.error("Search error:", error);
-      alert(`Search failed: ${(error as Error).message}`);
-      setPoints([]); // Clear map on error
-    } finally {
-      setSearchLoading(false);
     }
   };
 
@@ -453,61 +361,6 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-
-
-          {/* Heatmap Section */}
-          <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-[#E4EBE4] shadow-sm">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-[#E4EBE4] rounded-lg flex items-center justify-center">
-                <MapPin className="w-5 h-5 text-[#356B43]" />
-              </div>
-              <h2 className="text-lg sm:text-xl font-bold text-[#254431] leading-snug">Site Heatmap</h2>
-            </div>
-
-            {/* Search Bar */}
-            <div className="mb-6">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A8075]" />
-                  <input
-                    className="w-full pl-12 pr-4 py-3 sm:py-3.5 bg-[#F7F2EA] border-2 border-[#86A98A] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-all"
-                    placeholder="Enter keyword to search sites..."
-                    value={keyword}
-                    onChange={(e) => setKeyword(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  />
-                </div>
-                <button
-                  className="w-full sm:w-auto justify-center bg-gradient-to-r from-[#356B43] to-[#254431] text-white px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                  onClick={handleSearch}
-                  disabled={!keyword.trim() || searchLoading}
-                >
-                  {searchLoading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Searching...
-                    </>
-                  ) : (
-                    <>
-                      <Search className="w-5 h-5" />
-                      Search
-                    </>
-                  )}
-                </button>
-              </div>
-              {points.length > 0 && (
-                <p className="text-sm text-[#7A8075] mt-3 flex items-start sm:items-center gap-2 leading-relaxed">
-                  <MapPin className="w-4 h-4" />
-                  Found {points.length} location{points.length !== 1 ? 's' : ''} for &quot;{keyword}&quot;
-                </p>
-              )}
-            </div>
-
-            {/* Map Container */}
-            <div className="rounded-xl overflow-hidden border-2 border-[#E4EBE4] h-[320px] sm:h-[400px] lg:h-[500px]">
-              <Map points={points} showHeatmap={true} />
-            </div>
-          </div>
         </div>
       </div>
     </ProtectedRoute>
