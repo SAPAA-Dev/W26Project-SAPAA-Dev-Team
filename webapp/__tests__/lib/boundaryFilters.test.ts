@@ -220,7 +220,7 @@ describe('list filters (US 2.0.6)', () => {
   });
 });
 
-describe('site boundary filter (US 6.0.1 AT3)', () => {
+describe('site boundary filter (US 6.0.1 AT4)', () => {
   it('offers Linked and Unlinked as one separate section', () => {
     expect(SITE_BOUNDARY_OPTIONS).toEqual([LINKED_LABEL, UNLINKED_LABEL]);
   });

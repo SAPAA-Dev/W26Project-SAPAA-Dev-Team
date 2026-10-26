@@ -355,6 +355,56 @@ describe('SiteMap (US 2.0.6)', () => {
       ]);
     });
 
+    it('US 2.0.14 AT1: paints each boundary with the color saved for its site or type', () => {
+      const colored: BoundaryFeatureCollection = {
+        type: 'FeatureCollection',
+        features: [
+          {
+            ...COLLECTION.features[0],
+            id: 1,
+            properties: {
+              ...COLLECTION.features[0].properties,
+              protected_area_id: 1,
+              boundary_color: '#aa0000',
+            },
+          },
+          {
+            ...COLLECTION.features[0],
+            id: 2,
+            properties: {
+              ...COLLECTION.features[0].properties,
+              protected_area_id: 2,
+              area_type: 'ER',
+              boundary_color: '#00bb00',
+            },
+          },
+        ],
+      };
+
+      render(<SiteMap boundaries={colored} />);
+
+      const [, sourceSpec] = mapInstance.addSource.mock.calls[0];
+      expect(
+        sourceSpec.data.features.map(
+          (feature: { properties: { boundary_color: string | null } }) =>
+            feature.properties.boundary_color
+        )
+      ).toEqual(['#aa0000', '#00bb00']);
+
+      const fill = mapInstance.addLayer.mock.calls[0][0];
+      const outline = mapInstance.addLayer.mock.calls[1][0];
+      expect(fill.paint['fill-color']).toEqual([
+        'coalesce',
+        ['get', 'boundary_color'],
+        '#356B43',
+      ]);
+      expect(outline.paint['line-color']).toEqual([
+        'coalesce',
+        ['get', 'boundary_color'],
+        '#254431',
+      ]);
+    });
+
     it('waits for the idle event when the style is not ready', () => {
       mapInstance.isStyleLoaded.mockReturnValue(false);
       render(<SiteMap boundaries={COLLECTION} />);

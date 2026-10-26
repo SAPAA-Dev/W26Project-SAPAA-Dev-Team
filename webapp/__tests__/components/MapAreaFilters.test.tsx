@@ -32,7 +32,7 @@ function BoundaryHarness() {
   );
 }
 
-describe('MapAreaFilters site boundaries (US 6.0.1 AT3)', () => {
+describe('MapAreaFilters site boundaries (US 6.0.1 AT4)', () => {
   it('shows a separate Site Boundaries section with Linked and Unlinked', async () => {
     const user = userEvent.setup();
     render(<BoundaryHarness />);
