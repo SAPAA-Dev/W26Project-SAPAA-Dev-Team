@@ -10,7 +10,7 @@ export reports.
 * Next.js 16 (App Router) with React 19 and TypeScript
 * Supabase for auth and the Postgres database
 * AWS S3 for inspection photos (served with presigned URLs)
-* Tailwind CSS and MUI for the UI, MapLibre and Leaflet for maps, Chart.js for the dashboard
+* Tailwind CSS and MUI for the UI, MapLibre for maps, Chart.js for the dashboard
 * `@react-pdf/renderer` for PDF exports
 * Jest and Testing Library for unit tests, Cypress for E2E tests
 
