@@ -167,11 +167,11 @@ Run the files in this order.
 
 | Step | File | Note |
 | --- | --- | --- |
-| 0 | `20260925000000_local_app_schema.sql` | **Never run this on production.** It is only for a fresh local database: it creates the `W26_` tables, which production already has. It also enables row level security on `luperson` with no policy, so on production it would cut the F26 mobile app and the Google Sheet off from `luperson`. `create table if not exists` does not protect against this. |
+| 0 | `20260925000000_local_app_schema.sql` | **Never run this on production.** It is only for a fresh local database: it creates the `W26_` tables, which production already has. It no longer enables row level security on the legacy tables (`luperson` and the three `_fnr` tables), so it cannot cut the F26 mobile app and the Google Sheet off from `luperson`. It still creates `W26_` tables and policies production does not need, and `create table if not exists` does not make it safe there. |
 | 1 | `20261002000000_fix_questions_section_fk_name.sql` | Run only while `W26_questions` still exists. After the rename the file fails. It does nothing when the constraint already has the right name. |
 | 2 | `20261003000000_remove_w26_prefix.sql` | The rename. Do it in the cutover window. |
 | 3 | `20261004000000_create_user_model.sql` | Adds the trigger on `auth.users` and a `people` row for each existing login. Check the count after it (below). |
-| 4 | `20261004010000_create_protected_areas.sql` | Skip it if `protected_areas` already exists (the `protected_areas` result in the pre-check is not null). Also skip it if the table has a `folder` column, which means step 9 already ran. The header says safe to run twice, but after step 9 dropped `site_id` a second run fails on the `site_id` index. |
+| 4 | `20261004010000_create_protected_areas.sql` | Skip it if `protected_areas` already exists (the `protected_areas` result in the pre-check is not null). Also skip it if the table has a `folder` column, which means step 9 already ran. A second run is safe: the `site_id` index step skips itself once step 9 has dropped that column. |
 | 5 | `20261005000000_profile_distinct_site_count.sql` | |
 | 6 | `20261005010000_create_socials.sql` | |
 | 7 | `20261005020000_gallery_read_policies.sql` | |
@@ -196,8 +196,8 @@ Run the files in this order.
 | 26 | `20261024000000_add_site_priority_scores.sql` | Adds the three scores, saved date and saving Admin. Existing sites have no scores. Apply before deploying US 2.0.12 and 2.0.13. |
 | 27 | `20261024010000_create_export_jobs.sql` | Creates export jobs and the creator-only read policy. Only the service-role server writes jobs. Apply before deploying US 3.0.3. |
 | 28 | `20261024020000_check_gpx_track_path.sql` | From PR #312. Include only after it merges. It replaces the GPX insert policy with the path check; existing rows are not rewritten. |
-| 29 | `20261025000000_fix_site_delete_impact.sql` | Redefines the two site delete functions so the impact count includes GPX tracks and page fields. Service role only. Apply after step 28. |
-| 30 | `20261025000010_add_missing_fk_indexes.sql` | Adds five foreign key indexes. Each build locks its table while it runs, so apply outside peak use. |
+| 29 | `20261025000000_fix_site_delete_impact.sql` | Redefines the two site delete functions so the impact count includes GPX tracks and page fields. Service role only. Needs `site_page_fields`, `archived_at` and `gpx_tracks`, so apply it after steps 10, 11 and 21. |
+| 30 | `20261025000010_add_missing_fk_indexes.sql` | Adds eleven foreign key and filter indexes. Each build locks its table while it runs, so apply outside peak use. |
 
 PRs #234, #238 and #242 are merged on `main`. Steps 18 to 20 came with the Sprint 2 fixes, which
 are on `main` since [#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284)

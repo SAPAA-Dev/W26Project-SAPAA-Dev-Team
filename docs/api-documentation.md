@@ -785,7 +785,6 @@ Every table below has row level security on. "None" means no policy allows it.
 | `ab_counties`, `questions`, `question_options`, `question_keys`, `form_sections` | None | None | None | None | None | All | `20260925000000` |
 | `S26_pdf_jobs` | None | Read and insert own jobs | Read and insert own jobs | Same | None | All | `20260925000000` |
 | `luperson` | None | None | None | None | None | All | `20260925000000` (local only) |
-| `sites_report_fnr_test` | None | Read all | Read all | None | None | All | `20260925000000` (local only) |
 | Storage bucket `kml-imports` (private, 50 MiB) | None | None | None | None | Upload `.kml`/`.kmz`, read, delete | All | `20261006000000` |
 | RPC functions | See [Database RPC functions](#3-database-rpc-functions) | | | | | | |
 
