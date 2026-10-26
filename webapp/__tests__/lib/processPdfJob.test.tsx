@@ -21,7 +21,11 @@ jest.mock('@/lib/pdf/pdfDataFetcher', () => ({
 
 const mockS3Send = jest.fn();
 jest.mock('@aws-sdk/client-s3', () => ({
-  S3Client: jest.fn().mockImplementation(() => ({ send: mockS3Send })),
+  S3Client: jest.fn().mockImplementation(() => ({
+    get send() {
+      return mockS3Send;
+    },
+  })),
   PutObjectCommand: jest.fn().mockImplementation((input) => ({ input })),
 }));
 

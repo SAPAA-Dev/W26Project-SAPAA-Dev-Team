@@ -660,7 +660,7 @@ export const openApiSpec = {
         summary: "Generate a presigned S3 upload URL for inspection images",
         tags: ["Uploads"],
         description:
-          "Generates a short-lived presigned S3 URL for uploading an inspection attachment and returns the generated SAPAA filename.",
+          "Generates a short-lived presigned S3 URL for uploading an inspection attachment and returns the generated SAPAA filename. The signature pins the content length, so S3 refuses a body of a different size. The route checks the type before it signs. Only the report owner or an approved admin may request a URL for the report.",
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -762,6 +762,14 @@ export const openApiSpec = {
           },
           "401": {
             description: "Unauthorized",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" },
+              },
+            },
+          },
+          "403": {
+            description: "The report does not exist, or the caller is not its owner and is not an approved admin",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/ErrorResponse" },
@@ -1178,75 +1186,6 @@ export const openApiSpec = {
             content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } },
           },
           "503": { description: "The people table does not exist yet", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
-        },
-      },
-    },
-
-    "/api/geocode": {
-      get: {
-        summary: "Get the coordinates of a place name",
-        tags: ["Maps"],
-        description: "Calls the OpenCage Geocoding API. The handler has no caller check. The middleware requires an approved session.",
-        parameters: [
-          { name: "q", in: "query", required: true, schema: { type: "string" }, example: "Elk Island Provincial Park" },
-        ],
-        responses: {
-          "200": {
-            description: "The coordinates, or coords null when OpenCage finds nothing",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  properties: {
-                    latitude: { type: "number", example: 53.5731 },
-                    longitude: { type: "number", example: -112.8583 },
-                    coords: { type: "object", nullable: true, example: null },
-                  },
-                },
-              },
-            },
-          },
-          "400": { description: "Missing q param", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
-          "500": { description: "The OpenCage or network error message", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
-        },
-      },
-    },
-
-    "/api/heatmap": {
-      get: {
-        summary: "Count site reports whose name contains a keyword",
-        tags: ["Maps"],
-        description:
-          "Reads the view sites_report_fnr_test with the signed-in client and counts the rows of each site name. Without keyword, data is empty. The handler has no caller check.",
-        parameters: [
-          { name: "keyword", in: "query", required: false, schema: { type: "string" }, example: "park" },
-        ],
-        responses: {
-          "200": {
-            description: "Counts by site name, highest first. message is No sites found when nothing matches.",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  properties: {
-                    data: {
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          namesite: { type: "string", example: "Elk Island Provincial Park" },
-                          count: { type: "integer", example: 15 },
-                        },
-                      },
-                    },
-                    message: { type: "string", example: "No sites found" },
-                  },
-                },
-              },
-            },
-          },
-          "400": { description: "The Supabase error message", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
-          "500": { description: "The exception message", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
         },
       },
     },

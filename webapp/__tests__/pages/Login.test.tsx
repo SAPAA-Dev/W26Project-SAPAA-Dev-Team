@@ -48,6 +48,11 @@ describe('LoginPage', () => {
     expect(screen.getByRole('button', { name: /Continue with Microsoft/i })).toBeInTheDocument();
   });
 
+  it('5.0.2 AT1: links to the password reset page', () => {
+    render(<LoginPage />);
+    expect(screen.getByRole('link', { name: /Forgot password\?/i })).toHaveAttribute('href', '/forgot-password');
+  });
+
   it('shows error on failed login', async () => {
     (auth.login as jest.Mock).mockResolvedValue({ success: false, error: 'Invalid credentials' });
 

@@ -753,6 +753,45 @@ describe('AdminSiteDetails', () => {
       });
     });
 
+    it('keeps a hidden image marker when an admin saves the report', async () => {
+      const user = userEvent.setup();
+      mockGetFormResponsesBySiteAdmin.mockResolvedValue([{
+        ...mockFormResponses[0],
+        answers: [
+          ...mockFormResponses[0].answers,
+          {
+            question_id: 27,
+            question_text: 'Site photo',
+            obs_value: null,
+            obs_comm: null,
+            section_id: 2,
+            section_title: 'Environment',
+            is_hidden: true,
+          },
+        ],
+      }]);
+
+      render(<AdminSiteDetails />);
+      await screen.findByText(/Inspection Reports/);
+      await user.click(screen.getByTestId('edit-button-101'));
+      await screen.findByText(/Edit Report:/);
+      await user.click(screen.getByRole('button', { name: /Save Changes/i }));
+
+      await waitFor(() => {
+        expect(mockUpdateSiteInspectionAnswers).toHaveBeenCalledWith(
+          101,
+          expect.arrayContaining([
+            {
+              question_id: 27,
+              obs_value: null,
+              obs_comm: null,
+              is_hidden: true,
+            },
+          ])
+        );
+      });
+    });
+
     it('should NOT navigate away when editing - uses inline modal', async () => {
       const user = userEvent.setup();
       render(<AdminSiteDetails />);

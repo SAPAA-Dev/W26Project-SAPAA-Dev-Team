@@ -19,6 +19,6 @@ One Supabase database holds two different inspection systems:
 
 ## Schema changes
 
-* The repository has no migrations and no RLS policy files. The schema lives only in the Supabase dashboard.
+* Migrations live in `webapp/supabase/migrations/`, and nothing applies them to production. A human runs the files in the Supabase dashboard (see `docs/contributing.md`, Production database migrations).
 * Do not write DDL (`CREATE`, `ALTER`, `DROP`) or RLS policies to run against the database. Write the proposed SQL in the pull request description and ask the user. A human applies it in the dashboard.
 * Do not rename or remove a column that another client uses. Search `webapp/`, `FNR/`, and `googleSheets/` for the name first.

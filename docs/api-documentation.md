@@ -1,11 +1,13 @@
 # API Documentation
 
 *The Fall 2026 section is the reference for every route handler, server action and database
-function of the web app. It was checked on October 11, 2026 against `chore/sprint-2-integration`
-at `848fc22`: `main` at `9009d0d` plus the Sprint 2 fix branches (`fix/alpha-code-quality`,
-`fix/alpha-approval-screen-on-sites`, `fix/beta-sprint-2-gaps`, `fix/gamma-sprint-2-gaps`,
-`fix/report-read-caller-checks` and the CI branches). The Winter 2026 section is inherited. The
-Fall 2025 routes are now in the Fall 2026 section.*
+function of the web app. It describes `main` at `ceb5188`, the Sprint 2 release, merged in
+[#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284) on October 13, 2026. It was
+checked on October 11 and 12 against the Sprint 2 fix branches that #284 brought into `main`. The
+caller checks of `queries.ts` were checked again on `main` at `ceb5188`. The Winter 2026 section is
+inherited. The Fall 2025 routes are now in the Fall 2026 section.*
+
+Sprint 3 additions are labelled below and describe the sprint branch, not the Sprint 2 tag.
 
 ## API Documentation From Fall 2026
 
@@ -59,21 +61,19 @@ row level security.
 |---|---|---|---|
 | `GET /api/profile` | Approved user | Service role | [Get a profile](#get-apiprofile) |
 | `PATCH /api/profile` | Signed-in user, own profile | Signed-in | [Edit your own profile](#patch-apiprofile) |
-| `GET /api/site-images` | Signed-in user (RLS) | Signed-in | [List report images](#get-apisite-images) |
+| `GET /api/site-images` | Approved user; hidden photos only for owner/admin | Signed-in | [List report images](#get-apisite-images) |
 | `DELETE /api/site-images` | Admin | Signed-in | [Delete an image](#delete-apisite-images) |
 | `POST /api/pdf` | Admin, or steward for own report | Signed-in and service role | [Start a PDF export](#post-apipdf) |
 | `GET /api/pdf/status/{jobId}` | Job creator | Signed-in | [PDF job status](#get-apipdfstatusjobid) |
 | `GET /api/gallery` | Admin | Signed-in | [Admin report gallery](#get-apigallery) |
-| `GET /api/sites/{siteId}/gallery` | Signed-in user (RLS) | Signed-in | [Site report gallery](#get-apisitessiteidgallery) |
+| `GET /api/sites/{siteId}/gallery` | Approved user; hidden photos only for owner/admin | Signed-in | [Site report gallery](#get-apisitessiteidgallery) |
 | `GET /api/homepage-images` | Admin | Signed-in | [Admin homepage gallery](#get-apihomepage-images) |
 | `GET /api/homepage-images/{siteId}` | Signed-in user (RLS) | Signed-in | [Site homepage images](#get-apihomepage-imagessiteid) |
-| `POST /api/s3/presign` | Signed-in user | None | [Presign a report photo](#post-apis3presign) |
+| `POST /api/s3/presign` | Report owner or admin | None | [Presign a report photo](#post-apis3presign) |
 | `POST /api/s3/presign-homepage-images` | Signed-in user | None | [Presign a homepage photo](#post-apis3presign-homepage-images) |
-| `GET /api/user-gallery/sir-upload` | Signed-in user (RLS) | Signed-in | [User report gallery](#get-apiuser-gallerysir-upload) |
+| `GET /api/user-gallery/sir-upload` | Approved user; hidden photos only for owner/admin | Signed-in | [User report gallery](#get-apiuser-gallerysir-upload) |
 | `GET /api/user-gallery/homepage-upload` | Signed-in user (RLS) | Signed-in | [User homepage gallery](#get-apiuser-galleryhomepage-upload) |
 | `GET /api/openapi` | No check in the handler | None | [OpenAPI document](#get-apiopenapi) |
-| `GET /api/geocode` | Admin | Signed-in (auth only) | [Geocode a name](#get-apigeocode) |
-| `GET /api/heatmap` | Admin | Signed-in | [Heat map counts](#get-apiheatmap) |
 | `GET /auth/callback` | None (sign-in step) | Signed-in and service role | [OAuth callback](#get-authcallback) |
 | `GET /auth/confirm` | None (sign-in step) | Signed-in | [Email confirmation](#get-authconfirm) |
 
@@ -127,12 +127,12 @@ history (#138, #142). See [User Model](user-model.md).
 
 - `role` is `Admin` or `Steward`, read from `app_metadata` of the linked login. It is for display
   only and never authorizes a request.
-- The history and `inspectionCount` include only active reports that are not archived
-  (`is_active` is true and `archived_at` is null). `distinctSiteCount` comes from
+- The history and `inspectionCount` include only active reports that are not archived and still
+  have a site (`is_active` is true, `archived_at` is null and `site_id` is not null). `distinctSiteCount` comes from
   `get_distinct_inspected_site_count`, with the same filter.
 - `siteArchived` is true when the site of the report is archived. `siteInactive` is true when the
-  site is deactivated. The profile page does not link to such a site. `siteName` is
-  `Unknown site` when the site was permanently deleted.
+  site is deactivated. The profile page darkens the row, labels the state and does not link to the
+  report. A report whose site was permanently deleted is not in the history or counts.
 - `inspectionDate` is the inspection date, or the creation time when the report has no date.
 - A person with no linked login gets `role: "Steward"`, zero counts and an empty history.
 
@@ -186,14 +186,15 @@ valid for one hour.
 both are sent.
 
 **Response:** `{"items": [{id, response_id, question_id, storage_key, filename, content_type,
-file_size_bytes, caption, identifier, site_id, imageUrl}]}`. Images of archived reports are left
-out. A row whose `storage_key` is outside the image folders is left out and never signed.
+file_size_bytes, caption, identifier, site_id, is_hidden?, imageUrl}]}`. Images of archived reports
+are left out. A hidden image is returned only to the report owner or an admin. It has
+`is_hidden: true`. A row whose `storage_key` is outside the image folders is left out and never signed.
 
-**Errors:** 401 `Unauthorized` (no signed-in user). 400 `Provide at least one of: siteid,
-responseid`. 500 `Failed to fetch site images` (database or S3 error).
+**Errors:** 401 `Unauthorized` (no signed-in user). 403 `Forbidden` (user is not approved). 400
+`Provide at least one of: siteid, responseid`. 500 `Failed to fetch site images` (database or S3 error).
 
-**Caller rule:** any signed-in user. RLS on `attachments` and `form_responses` limits the rows to
-approved users, and hides archived reports from users who are not admins.
+**Caller rule:** an approved user. The route checks the session before its service-role read. It
+filters hidden photos before it creates signed URLs.
 
 #### DELETE /api/site-images
 
@@ -269,10 +270,10 @@ another user.
 
 Returns all report images (JPEG, PNG and WebP) for the admin gallery, newest first, each with
 `site_name` and a one-hour presigned `imageUrl`. Images of archived reports are left out. An image
-whose URL could not be signed is left out.
+whose URL could not be signed is left out. A hidden image has `is_hidden: true` for the admin.
 
 **Response:** `{"items": [{id, response_id, question_id, caption, identifier, date, storage_key,
-content_type, file_size_bytes, filename, site_id, site_name, imageUrl}]}`.
+content_type, file_size_bytes, filename, site_id, site_name, is_hidden?, imageUrl}]}`.
 
 **Errors:** 401 `Unauthorized`. 403 `Forbidden` (not an approved admin). 500 with the database
 message, or `Failed to load gallery`.
@@ -280,15 +281,17 @@ message, or `Failed to load gallery`.
 #### GET /api/sites/{siteId}/gallery
 
 Returns the report images of one site for the site page, newest first. Images of archived and of
-deactivated reports are left out.
+deactivated reports are left out. Hidden images are left out for other stewards. The owner and an
+admin receive the image with `is_hidden: true`.
 
 **Response:** `{"items": [{id, caption, identifier, filename, file_size_bytes, site_name,
-response_id, imageUrl}]}`.
+response_id, is_hidden?, imageUrl}]}`.
 
-**Errors:** 400 `Invalid site id`. 401 `Unauthorized`. 500 with the database message, or `Failed to
-load gallery`.
+**Errors:** 400 `Invalid site id`. 401 `Unauthorized`. 403 `Forbidden` (user is not approved). 500
+with the database message, or `Failed to load gallery`.
 
-**Caller rule:** any signed-in user. RLS limits the rows to approved users.
+**Caller rule:** an approved user. The route checks the session before its service-role read and
+filters hidden photos before it creates signed URLs.
 
 #### GET /api/homepage-images
 
@@ -313,12 +316,15 @@ approved users.
 
 #### POST /api/s3/presign
 
-Returns a presigned S3 `PUT` URL for one report photo. The URL is valid for 180 seconds.
+Returns a presigned S3 `PUT` URL for one report photo. The URL is valid for 180 seconds. The
+signature pins the `Content-Length`, so S3 refuses a body of a different size. The route checks
+the type before it signs. The browser sends the `Content-Type` header so S3 stores the correct
+object type.
 
 **Request body:** `filename`, `contentType` (`image/jpeg`, `image/png` or `image/webp`),
-`fileSize` (at most 10 MB), `siteId`, `responseId` and `questionId` (positive whole numbers),
-`siteName`, `date`, `photographer` (optional; the default is `user_metadata.full_name` or
-`UnknownUser`) and `identifier` (optional).
+`fileSize` (a positive whole number, at most 10 MB), `siteId`, `responseId` and `questionId`
+(positive whole numbers), `siteName`, `date`, `photographer` (optional; the default is
+`user_metadata.full_name` or `UnknownUser`) and `identifier` (optional).
 
 **Response:** `{"uploadUrl": "...", "key": "inspections/<siteId>/<responseId>/<questionId>/<file>",
 "generatedFilename": "<file>"}`.
@@ -327,16 +333,19 @@ Returns a presigned S3 `PUT` URL for one report photo. The URL is valid for 180 
 
 | Status | Body | When |
 |---|---|---|
-| 400 | `Invalid file data` | `filename` or `contentType` is missing. |
+| 400 | `Invalid file data` | `filename` or `contentType` is missing, or `fileSize` is not a positive whole number. |
 | 400 | `Missing ids` / `Invalid ids` | An id is missing, or is not a positive whole number. |
 | 400 | `Missing image metadata` | `siteName` or `date` is missing. |
 | 400 | `Unsupported file type` / `File too large` | The type or the size breaks the rule. |
 | 400 | `Invalid image metadata` | The made key is not in the folder of that site, report and question. |
 | 401 | `Unauthorized` | No signed-in user. |
-| 500 | `Failed to generate upload URL` | The body is not JSON, or signing failed. |
+| 403 | `Forbidden` | The report does not exist, or the caller is not its owner and is not an approved admin. |
+| 500 | `Failed to generate upload URL` | The body is not JSON, the owner check failed, or signing failed. |
 
-**Caller rule:** any signed-in user. The route does not check that the caller owns `responseId`.
-`insertInspectionAttachments` checks the owner and the key before it saves the row.
+**Caller rule:** only the report owner or an approved admin. The route reads
+`form_responses.user_id` for `responseId` and refuses any other caller with 403, so no one can
+upload into another user's report folder. `insertInspectionAttachments` checks the owner and the
+key again before it saves the row.
 
 #### POST /api/s3/presign-homepage-images
 
@@ -358,12 +367,15 @@ row.
 #### GET /api/user-gallery/sir-upload
 
 Returns the report images (JPEG, PNG and WebP) for the gallery of a signed-in user, newest first.
-Images of archived and of deactivated reports are left out. The items do not have `storage_key`.
+Images of archived and of deactivated reports are left out. Hidden images are left out for other
+stewards. The owner and an admin receive the image with `is_hidden: true`. The items do not have
+`storage_key`.
 
 **Response:** `{"items": [{id, response_id, question_id, caption, identifier, date, content_type,
-file_size_bytes, filename, site_id, site_name, imageUrl}]}`.
+file_size_bytes, filename, site_id, site_name, is_hidden?, imageUrl}]}`.
 
-**Errors:** 401 `Unauthorized`. 500 with the database message, or `Failed to load gallery`.
+**Errors:** 401 `Unauthorized`. 403 `Forbidden` (user is not approved). 500 with the database
+message, or `Failed to load gallery`.
 
 **Caller rule:** any signed-in user. RLS limits the rows to approved users.
 
@@ -383,50 +395,6 @@ filename, file_size_bytes, imageUrl}]}`.
 
 Returns the OpenAPI 3.0 document in `webapp/lib/swagger.ts`. `/api-docs` reads it. The handler has
 no check. The middleware requires an approved session.
-
-#### GET /api/geocode
-
-Gets the coordinates of a place name from the OpenCage Geocoding API (Fall 2025).
-
-**Query parameters:** `q` (required).
-
-**Response:** always `{"latitude": ..., "longitude": ...}`, for example
-`{"latitude": 53.5731, "longitude": -112.8583}`. Both values are `null`, with status 200, when
-OpenCage finds no match.
-
-**Errors:**
-
-| Status | Body | When |
-|---|---|---|
-| 400 | `Missing q param` | `q` is missing. The route checks this before the session. |
-| 401 | `Unauthorized` | No signed-in user, or the session check fails. |
-| 403 | `Forbidden` | The caller is not an approved admin. |
-| 500 | `Geocoding is not configured` | `OPENCAGE_API_KEY` is not set. The route reads it on each request and does not call OpenCage. |
-| 500 | The OpenCage or network message, or `Geocoding failed` | OpenCage fails, or does not answer in 8 seconds (`axios` timeout). |
-
-**Caller rule:** admin only (see [Admin rule](#admin-rule)). Only the heat map on the admin
-dashboard calls it. Each call uses the OpenCage quota: the free plan allows 2,500 requests each
-day.
-
-#### GET /api/heatmap
-
-Counts the rows of the view `sites_report_fnr_test` whose site name contains a keyword, for the
-heat map on the admin dashboard (Fall 2025).
-
-**Query parameters:** `keyword`. The route removes `*`, because PostgREST reads `*` as `%` in
-`ilike` and has no escape for it. It escapes `\`, `%` and `_`, so the keyword matches only those
-characters. A keyword that is empty after this returns `{"data": []}` with no query and no session
-check.
-
-**Response:** `{"data": [{"namesite": "Elk Island Provincial Park", "count": 15}]}`, sorted by
-count, most first, and at most 50 sites. The dashboard geocodes each site one second apart, so the
-cap keeps the wait short. When nothing matches: `{"data": [], "message": "No sites found"}`.
-
-**Errors:** 401 `Unauthorized` (no signed-in user). 403 `Forbidden` (not an approved admin). 500
-with the database message when the query fails, or with the exception message.
-
-**Caller rule:** admin only (see [Admin rule](#admin-rule)). It reads with the signed-in client, so
-RLS on `sites_report_fnr_test` also applies.
 
 #### Sign-in, sign-up and approval
 
@@ -470,6 +438,19 @@ With no `code`, or when the exchange fails, it redirects to `/auth/auth-code-err
 
 ---
 
+#### File export (Sprint 3)
+
+| Route | Caller and result |
+|---|---|
+| `POST /api/export` | Approved Admin only. Returns 202 and `jobId`; 409 when that Admin already has a recent pending or processing job. The server reads the file catalogs in pages of 1000. |
+| `GET /api/export/status/{jobId}` | Signed-in job creator or approved Admin. Returns the job state and, when complete, a one-hour signed download link. |
+
+The job includes inspection images, homepage images, GPX objects and completed PDF exports.
+It stops above 500 MiB of source files and fails if a stored object cannot be read. The ZIP is
+held in memory. The processor and status route use the shared S3 client. Each state write checks
+its error; if the failed state cannot be saved, the processor rejects to the existing background
+error handler. The app does not claim success for an unrecorded completed job.
+
 ### 2. Server actions
 
 A server action is an exported function in a `'use server'` file. The page calls it directly, but
@@ -487,24 +468,26 @@ copy.
 
 "No caller check" means that the action has no check of its own. Only the
 [middleware](#middleware) stands in front of it. GitHub issue #251 listed 13 read actions in
-`queries.ts` with no caller check. `fix/report-read-caller-checks` adds a check to each of them,
-changes `isSteward` and `getFormResponseById`, and deletes `addSiteInspection`. The issue closes
-when that branch reaches `main`. `getSitesOnline` was not on the #251 list but the browser calls it,
-so it checks the caller too. Issue #268 moved the PDF-only reads out of `queries.ts` into
-`webapp/lib/pdf/reportQueries.ts`, a server-only module that is not a server action (see
+`queries.ts` with no caller check. [PR #259](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/259)
+added a check to each of them, changed `isSteward` and `getFormResponseById`, and deleted
+`addSiteInspection`. Issue #251 is closed, and the fix is on `main` since #284. `getSitesOnline`
+was not on the #251 list but the browser calls it, so it checks the caller too.
+[PR #279](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/279) (issue #268) moved the
+PDF-only reads out of `queries.ts` into `webapp/lib/pdf/reportQueries.ts`, a server-only module
+that is not a server action (see
 [Server-only report reads](#server-only-report-reads-webapplibpdfreportqueriests)), and made
-`getNextFormInspectionNumber` private. No exported function in `queries.ts` now reads data without a
-caller check: each one calls `requireApprovedAdmin`, `requireApprovedCaller` or `requireReportWriter`
-first, or reads with the signed-in client under RLS (`getCurrentUserUid`, `getSitePageFields`,
-`getSiteLinks`, and the sign-in check of `getAllSiteReports`). Unless the table says otherwise, an
-action throws an `Error` with the database message when a query fails.
+`getNextFormInspectionNumber` private. No exported function in `queries.ts` on `main` reads data
+without a caller check: each one calls `requireApprovedAdmin`, `requireApprovedCaller` or
+`requireReportWriter` first, or reads with the signed-in client under RLS (`getCurrentUserUid`,
+`getSitePageFields` and `getSiteLinks`). Unless the table says otherwise, an action throws an
+`Error` with the database message when a query fails.
 
 #### Site inspection reports (`webapp/utils/supabase/queries.ts`)
 
 | Action | Caller check | Input | Returns | Errors |
 |---|---|---|---|---|
 | `addSiteInspectionReport` | `requireApprovedCaller` | `siteId`, `inspectionDate` | `{id}` of the new `form_responses` row. `user_id` is the caller. `inspection_no` is `<year>-<NNN>` from the private helper `getNextFormInspectionNumber`, which calls `get_max_inspection_number`. | `Only approved users can submit reports.`, `This site is not accepting new reports.` (archived or deactivated site). |
-| `uploadSiteInspectionAnswers` | `requireReportWriter` for each `response_id` | A list of `{response_id, question_id, obs_value, obs_comm}` | The insert result. | `You are not allowed to change this report.` |
+| `uploadSiteInspectionAnswers` | `requireReportWriter` for each `response_id` | A list of `{response_id, question_id, obs_value, obs_comm, is_hidden}` | The insert result. | `You are not allowed to change this report.` |
 | `insertInspectionAttachments` | `requireReportWriter` for each `response_id` | A list of attachment rows | The insert result. | `You are not allowed to change this report.` (also for a `null` `response_id`), `The photo storage key is not valid.` (the key is not in the folder of that site, report and question, or `site_id` does not match the report). |
 | `rollbackSiteInspectionSubmission` | `requireReportWriter` | `responseId` | Nothing. Deletes the attachments, answers and report, then the S3 objects of the attachments. | `You are not allowed to change this report.`, also when the report is more than 30 minutes old. |
 | `updateSiteInspectionAnswers` | `requireReportWriter` | `responseId`, a list of answers, `inspectionDate` | The insert result. Sets the date, deletes the old answers and inserts the new ones. | `You are not allowed to change this report.` |
@@ -517,8 +500,9 @@ action throws an `Error` with the database message when a query fails.
 | `getArchivedSiteInspectionReports` | `requireApprovedAdmin` | None | A list of `{id, inspectionNo, inspectionDate, createdAt, isActive, archivedAt, siteId, siteName, submitterId, submitterName}`, newest archive first. | `Only approved admins can manage reports.` |
 | `getFormResponsesBySiteAdmin` | `requireApprovedAdmin` | `siteName` | The reports of the site that are not archived, active and inactive, with `is_active`. | `Only admins can edit sites.`, `Site not found`. |
 | `getAllSiteReports` | Signed-in user. No approval check. | None | A list of `SiteReportSummary`: active reports that are not archived, with site and submitter. It reads in pages of 1000 rows until a short page, so no report past the first 1000 is cut off. | `Sign in to view inspection reports.` |
-| `getFormResponsesBySite` | `requireApprovedCaller` | `siteName` | The active reports of the site that are not archived, with their answers. | `Only approved users can view this data.`, `Site not found` |
+| `getFormResponsesBySite` | `requireApprovedCaller` | `siteName` | The active reports of the site that are not archived. Owners and admins receive all answers. Other approved stewards do not receive answers with `is_hidden: true`. | `Only approved users can view this data.`, `Site not found` |
 | `getFormResponseById` | `requireReportWriter`: the owner of the report or an approved admin, never an archived report | `responseId` | The answers of the report as `{questionId: value}`. | `You are not allowed to view this report.` (signed out, not approved, another user's report, archived or missing report), `A valid report ID is required.` |
+| `getHiddenQuestionIdsByResponseId` | `requireReportWriter`: the owner of the report or an approved admin, never an archived report | `responseId` | The unique question ids whose answers have `is_hidden: true`. | `You are not allowed to view this report.`, `A valid report ID is required.` |
 | `getResponseOwnerId` | `requireApprovedCaller` | `responseId` | The `user_id` of a report that is not archived, or `null`. | `Only approved users can view this data.` |
 | `getSiteIdForResponse` | `requireApprovedCaller` | `responseId` | The `site_id` of a report that is not archived, or `null`. | `Only approved users can view this data.` |
 | `getQuestionResponseType` | `requireApprovedCaller` | None | `{question_id, obs_value, obs_comm}` for each active question. | `Only approved users can view this data.` |
@@ -546,7 +530,7 @@ who exports one report they submitted, and `queries.ts` calls them only after it
 | `getAttachmentsForResponseIds` | `lib/pdf/pdfDataFetcher.ts` | `responseIds` | The attachment rows of the reports, read in chunks of 300 ids and pages of 1000 rows. | The database message. |
 | `getAttachmentsByResponseId` | `lib/pdf/pdfDataFetcher.ts`, `rollbackSiteInspectionSubmission` (after `requireReportWriter`) | `responseId` | The attachment rows of the report, with `storage_key`. | The database message. |
 | `getReportQuestionKeyMap` | `lib/pdf/pdfDataFetcher.ts`, `getFormResponsesBySite`, `getFormResponsesBySiteAdmin` | None | The ids of `Q31_Naturalness`, `Q32_Natural_Comm` and `Q13_FirstandLastNameForGuests`. The result is cached for the life of the server. A failed lookup is not cached, so the next call tries again. | The database message. |
-| `reduceAnswers` | `getFormResponsesForSiteIds`, `getFormResponsesBySite`, `getFormResponsesBySiteAdmin` | The answer rows of one report, the key map ids | `{answers, naturalness, naturalnessDetails, steward}`. Not async, no database read. | None. |
+| `reduceAnswers` | `getFormResponsesForSiteIds`, `getFormResponsesBySite`, `getFormResponsesBySiteAdmin` | The answer rows of one report, the key map ids | The grouped answers, special values, and their hidden flags. Not async, no database read. | None. |
 
 The PDF job calls read actions inside `after()`, when the response is already sent. When the access
 token refreshes there, `createClient` in `utils/supabase/server.ts` cannot write the new cookies.
@@ -746,7 +730,7 @@ Every table below has row level security on. "None" means no policy allows it.
 | `socials` | None (revoked) | Read own row | Read all | Insert and update own row (not `updated_at`) | None | All | `20261005010000`, `20261010000100` |
 | `site_stewards` | None (revoked) | None | Read all | None | None. `assignSiteSteward` writes with the service role. | All | `20261004000000`, `20261010000100` |
 | `form_responses` | None | None | Read rows that are not archived | None | Read archived rows | All. Every write goes through a server action. | `20261010000000` |
-| `answers` | None | None | None | None | None | All | `20260925000000` |
+| `answers` | None | None | None | None | None | All | `20260925000000`, `20261022000000` (`is_hidden`) |
 | `attachments` | None | None | Read all | None | Delete | All | `20261005020000` |
 | `homepage_image_uploads` | None | None | Read all | None | Delete | All | `20261005020000` |
 | `sites_pa` | None | None | Read all (archived and inactive too; the app filters them) | None | None | All | `20261005020000` |
@@ -755,7 +739,6 @@ Every table below has row level security on. "None" means no policy allows it.
 | `ab_counties`, `questions`, `question_options`, `question_keys`, `form_sections` | None | None | None | None | None | All | `20260925000000` |
 | `S26_pdf_jobs` | None | Read and insert own jobs | Read and insert own jobs | Same | None | All | `20260925000000` |
 | `luperson` | None | None | None | None | None | All | `20260925000000` (local only) |
-| `sites_report_fnr_test` | None | Read all | Read all | None | None | All | `20260925000000` (local only) |
 | Storage bucket `kml-imports` (private, 50 MiB) | None | None | None | None | Upload `.kml`/`.kmz`, read, delete | All | `20261006000000` |
 | RPC functions | See [Database RPC functions](#3-database-rpc-functions) | | | | | | |
 
@@ -789,6 +772,6 @@ For a detailed explanation of the API endpoints, see:
 
 ## API Documentation From Fall 2025
 
-The Fall 2025 routes (`GET /api/geocode`, `GET /api/heatmap`, `GET /auth/callback` and
-`GET /auth/confirm`) are now in the [route reference](#1-api-routes) above, corrected to match the
-code on `main`.
+The Fall 2025 routes `GET /auth/callback` and `GET /auth/confirm` are now in the
+[route reference](#1-api-routes) above, corrected to match the code on `main`. `GET /api/geocode`
+and `GET /api/heatmap` are gone from the code and from this document.

@@ -29,9 +29,11 @@ import {
     Pencil,
     ImageIcon,
     Loader2,
+    Map as MapIcon,
     Maximize2,
     X,
-    Search
+    Search,
+    EyeOff
 } from "lucide-react";
 import Image from 'next/image';
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -41,9 +43,11 @@ import { createClient } from '@/utils/supabase/client';
 import UserNavBar from "@/components/HeaderDropdown";
 import SiteLinks from "@/components/SiteLinks";
 import SiteSteward from "./SiteSteward";
+import SitePriority from "./SitePriority";
 import SitePageEditor from "./SitePageEditor";
 import SubmittedBy from "./SubmittedBy";
 import SirPdfExportButton from "@/components/SirPdfExportButton";
+import GpxTrackUpload, { canUploadGpxTracks } from "@/components/GpxTrackUpload";
 
 const TutorialOverlay = dynamic(() => import('@/components/TutorialOverlay'), { ssr: false });
 
@@ -59,6 +63,7 @@ interface QuestionComparison {
     date: string;        
     displayDate: string; 
     answer: string;
+    isHidden: boolean;
   }>;
 }
 
@@ -77,7 +82,17 @@ type GalleryItem = {
   site_name?: string | null;
   imageUrl: string;
   photographer?: string | null;
+  is_hidden?: boolean;
 };
+
+function HiddenAnswerBadge() {
+  return (
+    <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+      <EyeOff className="h-3 w-3" />
+      Answer Hidden
+    </span>
+  );
+}
 
 function getInspectionDate(response: FormResponse): string | null {
   return response.inspection_date ?? response.created_at ?? null;
@@ -409,6 +424,7 @@ export default function SiteDetailScreen() {
             date: inspectionDate ?? '',
             displayDate: formatInspectionDate(inspectionDate),
             answer: value,
+            isHidden: a.is_hidden === true,
           });
         }
       });
@@ -560,11 +576,20 @@ export default function SiteDetailScreen() {
             </div>
           )}
           {(isAdmin || !stewardHidden) && <SiteSteward siteId={site.id} isAdmin={isAdmin && currentUser?.approved === true} />}
+          <SitePriority siteId={site.id} isAdmin={isAdmin && currentUser?.approved === true} />
           {siteLinks && (
             <div className="mt-1">
               <SiteLinks {...siteLinks} />
             </div>
           )}
+          <button
+            onClick={() => router.push(`/sites?site=${encodeURIComponent(site.namesite)}`)}
+            className="mt-2 flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+            data-testid="view-on-map"
+          >
+            <MapIcon className="w-4 h-4" />
+            View on map
+          </button>
           {isAdmin && (
             <SitePageEditor
               siteId={site.id}
@@ -664,6 +689,11 @@ export default function SiteDetailScreen() {
           </button>
         </div>
 
+        {/* GPX Track Upload */}
+        {canUploadGpxTracks(currentUser) && (
+          <GpxTrackUpload siteId={site.id} />
+        )}
+
         {/* View Toggle */}
         <div id="tutorial-view-toggle" className="flex gap-1.5">
           <button
@@ -736,7 +766,10 @@ export default function SiteDetailScreen() {
                               day: 'numeric',
                             })}
                           </h3>
-                          <p className="text-sm text-[#7A8075]">Score: {normalizeScore(response.naturalness_score)}</p>
+                          <p className="text-sm text-[#7A8075]">
+                            Score: {normalizeScore(response.naturalness_score)}
+                            {response.naturalness_hidden && <HiddenAnswerBadge />}
+                          </p>
                         </div>
                       </div>
                       {isExpanded ? (
@@ -772,13 +805,19 @@ export default function SiteDetailScreen() {
                       {response.steward && (
                         <div>
                           <p className="text-sm font-semibold text-[#7A8075] mb-1">Steward</p>
-                          <p className="text-[#1E2520]">{response.steward}</p>
+                          <p className="text-[#1E2520]">
+                            {response.steward}
+                            {response.steward_hidden && <HiddenAnswerBadge />}
+                          </p>
                         </div>
                       )}
                       {response.naturalness_details && (
                         <div>
                           <p className="text-sm font-semibold text-[#7A8075] mb-1">Naturalness Details</p>
-                          <p className="text-[#1E2520]">{response.naturalness_details}</p>
+                          <p className="text-[#1E2520]">
+                            {response.naturalness_details}
+                            {response.naturalness_details_hidden && <HiddenAnswerBadge />}
+                          </p>
                         </div>
                       )}
                       {response.answers.length > 0 && (
@@ -804,6 +843,7 @@ export default function SiteDetailScreen() {
                                           {a.obs_value ? ` (Other: ${a.obs_comm})` : a.obs_comm}
                                         </span>
                                       )}
+                                      {a.is_hidden && <HiddenAnswerBadge />}
                                     </div>
                                   ))}
                                 </div>
@@ -867,7 +907,10 @@ export default function SiteDetailScreen() {
                                 <Calendar className="w-4 h-4 text-[#7A8075]" />
                                 <span className="text-sm font-semibold text-[#356B43]">{answer.displayDate}</span>
                               </div>
-                              <p className="text-[#1E2520]">{answer.answer}</p>
+                              <p className="text-[#1E2520]">
+                                {answer.answer}
+                                {answer.isHidden && <HiddenAnswerBadge />}
+                              </p>
                             </div>
                           ))}
                         </div>
@@ -959,6 +1002,7 @@ export default function SiteDetailScreen() {
                       </button>
 
                       <div className="p-4 sm:p-5 space-y-3">
+                        {item.is_hidden && <HiddenAnswerBadge />}
                         <div className="text-sm text-[#7A8075] flex items-start sm:items-center gap-2">
                           <MapPin className="w-4 h-4" />
                           <span>{item.site_name || site.namesite || "Unknown site"}</span>
@@ -1021,6 +1065,7 @@ export default function SiteDetailScreen() {
                 </div>
 
                 <div className="min-w-0 min-h-0 p-4 sm:p-6 bg-white space-y-4 sm:space-y-5 border-t lg:border-t-0 lg:border-l border-[#E4EBE4] overflow-y-auto">
+                  {selectedImage.is_hidden && <HiddenAnswerBadge />}
                   <div>
                     <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
                       Site

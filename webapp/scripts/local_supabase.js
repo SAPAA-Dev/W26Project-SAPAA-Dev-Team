@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-require-imports -- CommonJS script run directly by node */
-const { execFileSync, spawn } = require('node:child_process');
+const { spawn } = require('node:child_process');
 const { existsSync } = require('node:fs');
 const path = require('node:path');
 const dotenv = require('dotenv');
 const { createClient } = require('@supabase/supabase-js');
 const { ensureLocalS3 } = require('./local_s3');
+const { isWindows, runCommand, ensureSupabaseCli } = require('./local_deps');
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 const webappDir = path.resolve(__dirname, '..');
@@ -21,22 +22,26 @@ if (
   process.exit(1);
 }
 
+const supabaseCli = ensureSupabaseCli();
+
 function runSupabaseCommand(args, options = {}) {
   try {
-    return execFileSync('supabase', args, {
+    return runCommand(supabaseCli, args, {
       cwd: webappDir,
       encoding: 'utf8',
       stdio: options.stdio ?? ['ignore', 'pipe', 'inherit'],
     });
   } catch (error) {
     if (error.code === 'ENOENT') {
-      console.error('Supabase CLI is required. Install it, then run npm run dev again.');
+      console.error('The Supabase CLI in scripts/.deps could not run. Delete scripts/.deps and run npm run dev again.');
     }
     process.exit(error.status || 1);
   }
 }
 
-runSupabaseCommand(['start', '--exclude', 'postgres-meta,studio,edge-runtime'], { stdio: 'inherit' });
+// mailpit stays off: the seed accounts are pre-confirmed, and port 54324
+// stays occupied on some machines after a failed start.
+runSupabaseCommand(['start', '--exclude', 'postgres-meta,studio,edge-runtime,mailpit'], { stdio: 'inherit' });
 runSupabaseCommand(['migration', 'up', '--local'], { stdio: 'inherit' });
 runSupabaseCommand(['db', 'query', '--local', '--file', seedFile], { stdio: 'inherit' });
 
@@ -115,10 +120,12 @@ async function startDevServer() {
 
   const localS3Env = await ensureLocalS3(webappDir);
 
-  const child = spawn('next', ['dev'], {
+  // next comes from node_modules, not the global PATH.
+  const nextBinary = path.join(webappDir, 'node_modules', '.bin', isWindows ? 'next.cmd' : 'next');
+  const child = spawn(isWindows ? `"${nextBinary}"` : nextBinary, ['dev'], {
     cwd: webappDir,
     stdio: 'inherit',
-    shell: true,
+    shell: isWindows,
     env: {
       ...process.env,
       NEXT_PUBLIC_SUPABASE_URL: url,

@@ -10,7 +10,7 @@ export reports.
 * Next.js 16 (App Router) with React 19 and TypeScript
 * Supabase for auth and the Postgres database
 * AWS S3 for inspection photos (served with presigned URLs)
-* Tailwind CSS and MUI for the UI, MapLibre and Leaflet for maps, Chart.js for the dashboard
+* Tailwind CSS and MUI for the UI, MapLibre for maps, Chart.js for the dashboard
 * `@react-pdf/renderer` for PDF exports
 * Jest and Testing Library for unit tests, Cypress for E2E tests
 
@@ -35,10 +35,20 @@ where each value comes from.
 npm run dev
 ```
 
-`npm run dev` runs `scripts/local_supabase.js`. It starts a local Supabase (needs Docker and the
-Supabase CLI), applies the migrations, loads `supabase/seed.sql`, creates the seed admin and
-steward accounts, starts LocalStack for S3 (needs the `lstk` CLI), and then starts `next dev`
-on [http://localhost:3000](http://localhost:3000) with the local URLs and keys.
+`npm run dev` runs `scripts/local_dev.js`. It checks the missing tools and installs them into
+`scripts/.deps` (gitignored): the webapp npm packages go to `node_modules`, and the Supabase CLI is
+installed non-globally into `scripts/.deps`. It then starts a local Supabase, applies the migrations,
+loads `supabase/seed.sql`, creates the seed admin and steward accounts, starts LocalStack for S3
+(the LocalStack 3.x Docker image, no `lstk` CLI and no login), and then starts `next dev` on
+[http://localhost:3000](http://localhost:3000) with the local URLs and keys. Mailpit stays stopped:
+the seed accounts are already confirmed, so no local mail inbox is needed.
+
+The only tool you must install yourself is Docker. Docker is a system service, so the script cannot
+install it. The script uses only the tools it downloaded; it does not use a global Supabase CLI,
+a global LocalStack CLI, or a global `next`.
+
+LocalStack has no authentication and is published on all interfaces, so anything on your network
+can read or write the dev bucket. Run `npm run dev` on a network you trust.
 
 To run against a hosted Supabase project instead, set the variables in `.env.local` and run
 `npx next dev`. There is only one hosted Supabase project and it holds production data.

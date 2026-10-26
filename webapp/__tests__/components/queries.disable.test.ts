@@ -61,6 +61,40 @@ describe("Supabase disable site functions (US 2.0.3)", () => {
       ]);
     });
 
+    it("US 6.0.1 AT2: returns the boundary link or null for each site", async () => {
+      const mockData = [
+        {
+          id: 1,
+          namesite: "Linked Site",
+          ab_county: 10,
+          is_active: true,
+          protected_area_id: 42,
+          ab_counties: { county: "County1" },
+          form_responses: [],
+        },
+        {
+          id: 2,
+          namesite: "Free Site",
+          ab_county: null,
+          is_active: true,
+          protected_area_id: null,
+          ab_counties: null,
+          form_responses: [],
+        },
+      ];
+
+      const mockIs = jest.fn().mockReturnThis();
+      mockFrom.mockReturnValueOnce({
+        select: jest.fn().mockReturnThis(),
+        is: mockIs,
+        order: jest.fn().mockResolvedValue({ data: mockData, error: null }),
+      });
+
+      const result = await queries.getAllSites();
+
+      expect(result.map((site) => site.protected_area_id)).toEqual([42, null]);
+    });
+
     it("throws error if Supabase fails", async () => {
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),

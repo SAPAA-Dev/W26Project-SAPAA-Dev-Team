@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAllSites, getArchivedSites, getCounties, getProtectedAreaChoices, updateSite, toggleSiteActive, createSite, getTotalInspectionCount, getProtectedAreaBoundaries, SiteSummary, County, ProtectedAreaChoice, SiteDeleteImpact, archiveSite, getSiteDeleteImpact } from '@/utils/supabase/queries';
+import { getAllSites, getArchivedSites, getCounties, getProtectedAreaChoices, updateSite, toggleSiteActive, createSite, getTotalInspectionCount, getProtectedAreaBoundaries, setSiteBoundaryColor, setSiteTypeBoundaryColor, getGpxTracksForMap, SiteSummary, County, ProtectedAreaChoice, SiteDeleteImpact, archiveSite, getSiteDeleteImpact } from '@/utils/supabase/queries';
+import { gpxTracksToLineFeatureCollection } from '@/lib/map/gpxTrack';
+import type { GpxTrackLineFeatureCollection } from '@/lib/map/gpxTrack';
 import { Search, MapPin, Calendar, ArrowUpDown, AlertCircle, ChevronRight, ClipboardList, TrendingUp, Clock, Edit, Pencil, ArrowLeft, Download, Plus, Upload, LayoutGrid, Map as MapIcon, Archive } from 'lucide-react';
 import EditSiteModal from './components/EditSiteModal';
 import AddSiteModal from './components/AddSiteModal';
@@ -14,8 +16,9 @@ import PdfExportModal from '@/components/PdfExportModal';
 import PdfExportsDropdown from '@/components/PdfExportsDropdown';
 import KmlImportModal from '@/components/KmlImportModal';
 import ArchiveSiteModal from './components/ArchiveSiteModal';
-import type { BoundaryFeature, BoundaryFeatureCollection } from '@/lib/map/boundaries';
-import { boundaryFilterOptions, CARD_STATUS_OPTIONS, countyFilterOptions, defaultMapStatuses, filterBoundaryCollection, MAP_STATUS_OPTIONS, matchesActiveFilter, matchesCountyFilter } from '@/lib/map/boundaryFilters';
+import { applyBoundaryColor } from '@/lib/map/boundaries';
+import type { BoundaryColorRequest, BoundaryColorResult, BoundaryFeature, BoundaryFeatureCollection } from '@/lib/map/boundaries';
+import { boundaryFilterOptions, CARD_STATUS_OPTIONS, countyFilterOptions, defaultMapStatuses, filterBoundaryCollection, MAP_STATUS_OPTIONS, matchesActiveFilter, matchesCountyFilter, matchesSiteBoundaryFilter, SITE_BOUNDARY_OPTIONS } from '@/lib/map/boundaryFilters';
 import MapAreaFilters from '@/components/map/MapAreaFilters';
 import MapSearchInput from '@/components/map/MapSearchInput';
 import { availableProtectedAreas } from '@/lib/sites/availableProtectedAreas';
@@ -82,6 +85,7 @@ export default function AdminSitesPage() {
   const [selectedCounties, setSelectedCounties] = useState<ReadonlySet<string> | null>(null);
   const [selectedCardStatuses, setSelectedCardStatuses] = useState<ReadonlySet<string> | null>(null);
   const [selectedMapStatuses, setSelectedMapStatuses] = useState<ReadonlySet<string> | null>(defaultMapStatuses);
+  const [selectedSiteBoundaries, setSelectedSiteBoundaries] = useState<ReadonlySet<string> | null>(null);
 
   //Archiving states
   const [archiveTarget, setArchiveTarget] = useState<SiteSummary | null>(null);
@@ -105,6 +109,18 @@ export default function AdminSitesPage() {
   const [boundariesError, setBoundariesError] = useState<string | null>(null);
   const boundariesRequested = useRef(false);
   const [focusedArea, setFocusedArea] = useState<BoundaryFeature | null>(null);
+
+  const [gpxTracks, setGpxTracks] = useState<GpxTrackLineFeatureCollection | null>(null);
+  const gpxTracksRequested = useRef(false);
+
+  useEffect(() => {
+    if (viewMode !== 'map' || gpxTracksRequested.current) return;
+    gpxTracksRequested.current = true;
+
+    getGpxTracksForMap()
+      .then((tracks) => setGpxTracks(gpxTracksToLineFeatureCollection(tracks)))
+      .catch(() => setGpxTracks(null));
+  }, [viewMode]);
 
   useEffect(() => {
     if (viewMode !== 'map' || boundariesRequested.current) return;
@@ -210,7 +226,8 @@ export default function AdminSitesPage() {
         (s.namesite.toLowerCase().includes(lower) ||
           (s.county && s.county.toLowerCase().includes(lower))) &&
         matchesCountyFilter(s.county, selectedCounties) &&
-        matchesActiveFilter(s.is_active, selectedCardStatuses)
+        matchesActiveFilter(s.is_active, selectedCardStatuses) &&
+        matchesSiteBoundaryFilter(s.protected_area_id, selectedSiteBoundaries)
     );
 
     return filtered.sort((a, b) => {
@@ -223,7 +240,7 @@ export default function AdminSitesPage() {
       }
       return sortBy.direction === 'asc' ? comparison : -comparison;
     });
-  }, [sites, search, sortBy, selectedCounties, selectedCardStatuses]);
+  }, [sites, search, sortBy, selectedCounties, selectedCardStatuses, selectedSiteBoundaries]);
 
   const stats = useMemo(() => {
     const totalSites = sites.length;
@@ -291,12 +308,33 @@ export default function AdminSitesPage() {
   // The map reloads only when it has loaded once; otherwise its first open fetches fresh data.
   const handleKmlImported = () => {
     getProtectedAreaChoices().then(setProtectedAreas).catch(() => {});
+    // The import changes protected_area_id, so the site rows and the new boundary
+    // filter must read fresh values.
+    getAllSites().then(setSites).catch(() => {});
     if (boundariesRequested.current) {
       getProtectedAreaBoundaries()
         .then(setBoundaries)
         .catch(() => setBoundariesError('Site boundaries could not load.'));
     }
   };
+
+  const handleSetBoundaryColor = useCallback(
+    async (request: BoundaryColorRequest): Promise<BoundaryColorResult> => {
+      const result =
+        request.scope === 'site'
+          ? await setSiteBoundaryColor(request.protectedAreaId, request.color)
+          : await setSiteTypeBoundaryColor(request.areaType ?? '', request.color);
+
+      if (result.ok) {
+        // A type color must also recolor features that the current filters hide.
+        setBoundaries((current) =>
+          current === null ? current : applyBoundaryColor(current, request)
+        );
+      }
+      return result;
+    },
+    []
+  );
 
   const handleOpenArchive = async (site: SiteSummary) => {
   setArchiveTarget(site);
@@ -635,10 +673,13 @@ const handleCloseArchive = () => {
                   <MapAreaFilters
                     counties={cardCountyOptions}
                     statuses={CARD_STATUS_OPTIONS}
+                    siteBoundaries={SITE_BOUNDARY_OPTIONS}
                     selectedCounties={selectedCounties}
                     selectedStatuses={selectedCardStatuses}
+                    selectedSiteBoundaries={selectedSiteBoundaries}
                     onCountiesChange={setSelectedCounties}
                     onStatusesChange={setSelectedCardStatuses}
+                    onSiteBoundariesChange={setSelectedSiteBoundaries}
                   />
                 )}
                 {viewMode !== 'map' && (
@@ -691,6 +732,9 @@ const handleCloseArchive = () => {
               boundariesLoading={boundariesLoading}
               boundariesError={boundariesError}
               focusedArea={focusedArea}
+              canEditBoundaryColors={boundaries?.can_edit_colors === true}
+              onSetBoundaryColor={handleSetBoundaryColor}
+              gpxTracks={gpxTracks}
             />
           ) : (
             <>

@@ -3,10 +3,29 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, ReactNode, useCallback, useEffect, useState } from 'react';
-import { Archive, Check, ClipboardList, Leaf, Loader2, MapPin, Pencil, Save, UserCheck, UserRound } from 'lucide-react';
+import {
+  Archive,
+  Calendar,
+  ChartNoAxesColumnIncreasing,
+  Check,
+  ClipboardList,
+  Clock,
+  Flag,
+  Leaf,
+  Loader2,
+  Map as MapIcon,
+  MapPin,
+  Pencil,
+  Save,
+  Star,
+  UserCheck,
+  UserRound,
+} from 'lucide-react';
 import { getSitesForSteward, StewardedSite } from '@/utils/steward-actions';
 import { SOCIAL_FIELDS, SocialKey, Socials, socialHref } from '@/lib/socials';
 import UserNavBar from '@/components/HeaderDropdown';
+import TagPicker from '@/components/TagPicker';
+import { TagOptions } from '@/lib/profileTags';
 
 type HistoryItem = {
   id: number;
@@ -29,20 +48,22 @@ type ProfileData = {
     socials?: Socials;
   };
   isOwner: boolean;
-  stats: { inspectionCount: number; distinctSiteCount: number };
+  stats: {
+    inspectionCount: number;
+    distinctSiteCount: number;
+    topSite: { name: string; visitCount: number } | null;
+    mostRecentSite: { name: string; inspectionDate: string } | null;
+    reportsThisYear: number;
+    accountCreatedAt: string | null;
+    countyCount: number;
+    topCounty: { name: string; reportCount: number } | null;
+  };
   history: HistoryItem[];
   pagination: Pagination;
+  options?: TagOptions;
 };
 
-type ProfileForm = { displayName: string; skills: string; focusAreas: string; socials: Record<SocialKey, string> };
-
-function tagText(tags: string[]) {
-  return tags.join(', ');
-}
-
-function splitTags(value: string) {
-  return value.split(',').map((tag) => tag.trim()).filter(Boolean);
-}
+type ProfileForm = { displayName: string; skills: string[]; focusAreas: string[]; socials: Record<SocialKey, string> };
 
 function formatDate(value: string | null) {
   if (!value) return 'Date not recorded';
@@ -53,6 +74,34 @@ function formatDate(value: string | null) {
     return new Intl.DateTimeFormat('en-CA', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(value));
   }
   return new Intl.DateTimeFormat('en-CA', { dateStyle: 'medium' }).format(new Date(value));
+}
+
+function formatAccountAge(createdAt: string | null) {
+  if (!createdAt) return 'Not available';
+
+  const created = new Date(createdAt);
+  if (Number.isNaN(created.getTime())) return 'Not available';
+
+  const now = new Date();
+  let months = (now.getUTCFullYear() - created.getUTCFullYear()) * 12
+    + now.getUTCMonth() - created.getUTCMonth();
+  if (now.getUTCDate() < created.getUTCDate()) months -= 1;
+  months = Math.max(0, months);
+
+  if (months === 0) return 'Less than one month';
+
+  const years = Math.floor(months / 12);
+  const remainingMonths = months % 12;
+  const parts = [];
+  if (years > 0) parts.push(`${years} ${years === 1 ? 'year' : 'years'}`);
+  if (remainingMonths > 0) {
+    parts.push(`${remainingMonths} ${remainingMonths === 1 ? 'month' : 'months'}`);
+  }
+  return parts.join(', ');
+}
+
+function countLabel(count: number, singular: string, plural: string) {
+  return `${count} ${count === 1 ? singular : plural}`;
 }
 
 function socialsForm(socials: Socials | undefined) {
@@ -109,6 +158,7 @@ function ContactList({ socials }: { socials?: Socials }) {
 
 function ProfileEditForm({
   form,
+  options,
   onChange,
   onSubmit,
   onCancel,
@@ -116,6 +166,7 @@ function ProfileEditForm({
   saveError,
 }: {
   form: ProfileForm;
+  options: TagOptions;
   onChange: (form: ProfileForm) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onCancel: () => void;
@@ -141,14 +192,8 @@ function ProfileEditForm({
             title="Enter your name."
           />
         </label>
-        <label className="text-sm font-semibold text-[#254431]">
-          Skills <span className="font-normal">(comma-separated)</span>
-          <input value={form.skills} onChange={(event) => onChange({ ...form, skills: event.target.value })} className={inputClass} />
-        </label>
-        <label className="text-sm font-semibold text-[#254431]">
-          Focus areas <span className="font-normal">(comma-separated)</span>
-          <input value={form.focusAreas} onChange={(event) => onChange({ ...form, focusAreas: event.target.value })} className={inputClass} />
-        </label>
+        <TagPicker label="Skills" values={form.skills} options={options.skills} onChange={(skills) => onChange({ ...form, skills })} />
+        <TagPicker label="Focus areas" values={form.focusAreas} options={options.focusAreas} onChange={(focusAreas) => onChange({ ...form, focusAreas })} />
       </div>
       <h3 className="mt-6 text-base font-bold text-[#254431]">
         Contact <span className="text-sm font-normal text-[#5B655D]">(email required, the rest optional, visible to signed-in members)</span>
@@ -216,20 +261,28 @@ function StewardedSites({ sites }: { sites: StewardedSite[] }) {
   );
 }
 
-function StatCard({ icon, label, value }: { icon: ReactNode; label: string; value: number }) {
+function StatCard({
+  icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: ReactNode;
+  detail?: ReactNode;
+}) {
   return (
     <div className="rounded-2xl bg-white p-5 shadow-sm">
       {icon}
       <p className="mt-3 text-sm font-medium text-[#5B655D]">{label}</p>
-      <p className="text-3xl font-bold text-[#254431]">{value}</p>
+      <p className="text-2xl font-bold text-[#254431] sm:text-3xl">{value}</p>
+      {detail && <p className="mt-1 text-sm text-[#5B655D]">{detail}</p>}
     </div>
   );
 }
 
 function HistorySiteName({ inspection }: { inspection: HistoryItem }) {
-  if (inspection.siteId && !inspection.siteArchived && !inspection.siteInactive) {
-    return <Link href={`/detail/${encodeURIComponent(inspection.siteName)}`} className="hover:underline">{inspection.siteName}</Link>;
-  }
   return (
     <span>
       {inspection.siteName}
@@ -239,7 +292,7 @@ function HistorySiteName({ inspection }: { inspection: HistoryItem }) {
           className="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 align-middle"
         >
           <Archive className="h-3 w-3" />
-          Archived
+          Archived by Admin
         </span>
       )}
       {!inspection.siteArchived && inspection.siteInactive && (
@@ -247,7 +300,7 @@ function HistorySiteName({ inspection }: { inspection: HistoryItem }) {
           data-testid={`inactive-site-badge-${inspection.id}`}
           className="ml-2 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600 align-middle"
         >
-          Inactive
+          Deactivated by Admin
         </span>
       )}
     </span>
@@ -283,14 +336,37 @@ function InspectionHistory({
         <p className="py-8 text-sm text-[#5B655D]">No inspection reports recorded yet.</p>
       ) : (
         <ul className="mt-5 divide-y divide-[#E4EBE4]">
-          {history.map((inspection) => (
-            <li key={inspection.id} className="flex items-center justify-between gap-4 py-4">
-              <div>
+          {history.map((inspection) => {
+            const content = (
+              <>
                 <p className="font-semibold text-[#254431]"><HistorySiteName inspection={inspection} /></p>
                 <p className="mt-1 text-sm text-[#5B655D]">{formatDate(inspection.inspectionDate)}</p>
-              </div>
-            </li>
-          ))}
+              </>
+            );
+            const canOpenReport = inspection.siteId !== null
+              && !inspection.siteArchived
+              && !inspection.siteInactive;
+
+            return (
+              <li key={inspection.id}>
+                {canOpenReport ? (
+                  <Link
+                    href={`/detail/${encodeURIComponent(inspection.siteName)}?report=${inspection.id}`}
+                    className="block w-full rounded-lg py-4 hover:bg-[#F7F2EA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#356B43]"
+                  >
+                    {content}
+                  </Link>
+                ) : (
+                  <div
+                    data-testid={`unavailable-history-row-${inspection.id}`}
+                    className="py-4 opacity-60"
+                  >
+                    {content}
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
       {total > pageSize && (
@@ -338,7 +414,7 @@ export default function ProfilePage({ personId }: { personId?: string }) {
   const [pageLoading, setPageLoading] = useState(false);
   const [pageError, setPageError] = useState<string | null>(null);
   const router = useRouter();
-  const [form, setForm] = useState<ProfileForm>({ displayName: '', skills: '', focusAreas: '', socials: socialsForm(undefined) });
+  const [form, setForm] = useState<ProfileForm>({ displayName: '', skills: [], focusAreas: [], socials: socialsForm(undefined) });
   const [stewardedSites, setStewardedSites] = useState<StewardedSite[]>([]);
 
   const loadProfile = useCallback(async () => {
@@ -351,8 +427,8 @@ export default function ProfilePage({ personId }: { personId?: string }) {
       setData(payload);
       setForm({
         displayName: payload.profile.displayName,
-        skills: tagText(payload.profile.skills),
-        focusAreas: tagText(payload.profile.focusAreas),
+        skills: payload.profile.skills,
+        focusAreas: payload.profile.focusAreas,
         socials: socialsForm(payload.profile.socials),
       });
     } catch (err) {
@@ -380,7 +456,12 @@ export default function ProfilePage({ personId }: { personId?: string }) {
       const response = await fetch(`/api/profile${profileQuery(personId, page)}`);
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? 'Unable to load inspection history.');
-      setData((current) => current ? { ...current, history: payload.history, pagination: payload.pagination } : current);
+      setData((current) => current ? {
+        ...current,
+        stats: payload.stats,
+        history: payload.history,
+        pagination: payload.pagination,
+      } : current);
     } catch (err) {
       setPageError(err instanceof Error ? err.message : 'Unable to load inspection history.');
     } finally {
@@ -399,8 +480,8 @@ export default function ProfilePage({ personId }: { personId?: string }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           displayName: form.displayName,
-          skills: splitTags(form.skills),
-          focusAreas: splitTags(form.focusAreas),
+          skills: form.skills,
+          focusAreas: form.focusAreas,
           socials: form.socials,
         }),
       });
@@ -496,6 +577,7 @@ export default function ProfilePage({ personId }: { personId?: string }) {
         {editing && data.isOwner && (
           <ProfileEditForm
             form={form}
+            options={data.options ?? { skills: [], focusAreas: [] }}
             onChange={setForm}
             onSubmit={saveProfile}
             onCancel={() => { setEditing(false); setSaveError(null); }}
@@ -509,6 +591,39 @@ export default function ProfilePage({ personId }: { personId?: string }) {
         <section className="mt-6 grid gap-4 sm:grid-cols-2">
           <StatCard icon={<ClipboardList className="h-5 w-5 text-[#356B43]" />} label="Inspection reports submitted" value={stats.inspectionCount} />
           <StatCard icon={<MapPin className="h-5 w-5 text-[#356B43]" />} label="Distinct sites inspected" value={stats.distinctSiteCount} />
+          <StatCard
+            icon={<Star className="h-5 w-5 text-[#356B43]" />}
+            label="Top site visited"
+            value={stats.topSite?.name ?? 'No visits yet'}
+            detail={stats.topSite ? countLabel(stats.topSite.visitCount, 'visit', 'visits') : undefined}
+          />
+          <StatCard
+            icon={<Clock className="h-5 w-5 text-[#356B43]" />}
+            label="Most recent site visited"
+            value={stats.mostRecentSite?.name ?? 'No visits yet'}
+            detail={stats.mostRecentSite ? formatDate(stats.mostRecentSite.inspectionDate) : undefined}
+          />
+          <StatCard
+            icon={<ChartNoAxesColumnIncreasing className="h-5 w-5 text-[#356B43]" />}
+            label="Reports submitted this year"
+            value={stats.reportsThisYear}
+          />
+          <StatCard
+            icon={<Calendar className="h-5 w-5 text-[#356B43]" />}
+            label="Account age"
+            value={formatAccountAge(stats.accountCreatedAt)}
+          />
+          <StatCard
+            icon={<MapIcon className="h-5 w-5 text-[#356B43]" />}
+            label="Counties visited"
+            value={stats.countyCount}
+          />
+          <StatCard
+            icon={<Flag className="h-5 w-5 text-[#356B43]" />}
+            label="Top county visited"
+            value={stats.topCounty?.name ?? 'No county data'}
+            detail={stats.topCounty ? countLabel(stats.topCounty.reportCount, 'report', 'reports') : undefined}
+          />
         </section>
 
         <InspectionHistory

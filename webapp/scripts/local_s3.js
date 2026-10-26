@@ -1,74 +1,85 @@
 /* eslint-disable @typescript-eslint/no-require-imports -- CJS dev script loaded with require() */
-const { execFileSync } = require('node:child_process');
-const { existsSync, readdirSync, readFileSync } = require('node:fs');
+const { readdirSync, readFileSync } = require('node:fs');
 const path = require('node:path');
 const { S3Client, CreateBucketCommand, PutBucketCorsCommand, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { ensureDocker, runCommand } = require('./local_deps');
 
-// LocalStack only accepts virtual-hosted-style S3 requests when the host
-// starts with "s3." (https://docs.localstack.cloud/aws/services/s3/).
-const LOCAL_ENDPOINT = 'http://s3.localhost.localstack.cloud:4566';
+// Not s3.localhost.localstack.cloud: some networks block or proxy DNS answers
+// that point at loopback, and the browser fetches these URLs directly. The SDK
+// uses path-style addressing for an IP endpoint.
+const LOCAL_ENDPOINT = 'http://127.0.0.1:4566';
+// LocalStack 3.x needs no account; the 4.x "lstk" CLI asks for a login.
+const LOCALSTACK_IMAGE = 'localstack/localstack:3';
+const CONTAINER_NAME = 'sapaa-localstack';
+const HEALTH_URL = 'http://127.0.0.1:4566/_localstack/health';
 const READY_TIMEOUT_MS = 180000;
 const READY_POLL_MS = 5000;
 
-const isWindows = process.platform === 'win32';
-
-function findLstkCli() {
-  // On Windows the executable has an extension (.exe, or .cmd/.bat for npm installs).
-  const names = isWindows ? ['lstk.exe', 'lstk.cmd', 'lstk.bat'] : ['lstk'];
-  const found = (process.env.PATH || '')
-    .split(path.delimiter)
-    .flatMap((directory) => names.map((name) => path.join(directory, name)))
-    .find((candidate) => existsSync(candidate));
-  if (found) {
-    return found;
-  }
-  console.error(
-    'The lstk CLI is required for local S3. Install it (see https://docs.localstack.cloud), ' +
-    'then run `lstk login` once.'
-  );
-  process.exit(1);
+function sleepSync(milliseconds) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
 }
 
-// .cmd/.bat files can only be run through a shell on Windows. The path is
-// quoted because it may contain spaces. macOS/Linux behave exactly as before.
-function runLstk(cli, args, options = {}) {
-  if (isWindows) {
-    return execFileSync(`"${cli}"`, args, { ...options, shell: true });
-  }
-  return execFileSync(cli, args, options);
-}
-
-function isRunning(cli) {
+function isContainerRunning() {
   try {
-    const output = runLstk(cli, ['status', '--json'], { encoding: 'utf8' });
-    const status = JSON.parse(output);
-    return (status.data?.emulators ?? []).some((emulator) => emulator.running);
+    const output = runCommand(
+      'docker',
+      ['ps', '--filter', `name=^/${CONTAINER_NAME}$`, '--format', '{{.Names}}'],
+      { encoding: 'utf8' }
+    );
+    return output.trim() === CONTAINER_NAME;
   } catch {
     return false;
   }
 }
 
-function ensureContainer(cli) {
-  if (isRunning(cli)) {
-    return;
-  }
-  console.log('Starting LocalStack for local S3...');
+async function isLocalstackReady() {
   try {
-    runLstk(cli, ['start', '--non-interactive'], { stdio: 'inherit' });
-  } catch (error) {
-    console.error(error.message);
-    console.error('Could not start LocalStack. Is Docker running, and are you logged in (`lstk login`)?');
-    process.exit(error.status || 1);
+    const response = await fetch(HEALTH_URL);
+    return response.ok;
+  } catch {
+    return false;
   }
+}
+
+async function waitForLocalstack() {
   const deadline = Date.now() + READY_TIMEOUT_MS;
   while (Date.now() < deadline) {
-    if (isRunning(cli)) {
+    if (await isLocalstackReady()) {
       return;
     }
-    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, READY_POLL_MS);
+    sleepSync(READY_POLL_MS);
   }
-  console.error('LocalStack did not become ready. Check `lstk logs`.');
+  console.error(
+    `LocalStack did not answer on ${HEALTH_URL}. Check \`docker logs ${CONTAINER_NAME}\`, then \`docker rm -f ${CONTAINER_NAME}\` and run npm run dev again.`
+  );
   process.exit(1);
+}
+
+function ensureContainer() {
+  ensureDocker();
+  if (isContainerRunning()) {
+    return;
+  }
+  try {
+    runCommand('docker', ['rm', CONTAINER_NAME], { stdio: 'ignore' });
+  } catch {
+    // No container holds the name.
+  }
+  console.log(`Starting LocalStack ${LOCALSTACK_IMAGE} for local S3. Docker pulls the image on the first run.`);
+  try {
+    runCommand(
+      'docker',
+      // Not loopback only: a port forward from the host enters through the
+      // sandbox network interface. LocalStack has no auth, so this publish is
+      // for a sandbox network only.
+      ['run', '-d', '--name', CONTAINER_NAME, '-p', '4566:4566', LOCALSTACK_IMAGE],
+      { stdio: 'inherit' }
+    );
+  } catch (error) {
+    console.error(error.message);
+    console.error(`Could not start LocalStack. Is Docker running? Check \`docker logs ${CONTAINER_NAME}\`.`);
+    process.exit(error.status || 1);
+  }
 }
 
 async function ensureBucket(client, bucket) {
@@ -106,8 +117,8 @@ async function uploadSeedImages(client, bucket, webappDir) {
 }
 
 async function ensureLocalS3(webappDir) {
-  const cli = findLstkCli();
-  ensureContainer(cli);
+  ensureContainer();
+  await waitForLocalstack();
   const bucket = process.env.AWS_S3_BUCKET_NAME || 'sapaa-inspection-images';
   const client = new S3Client({
     region: 'us-east-1',
@@ -120,7 +131,24 @@ async function ensureLocalS3(webappDir) {
   });
   await ensureBucket(client, bucket);
   await uploadSeedImages(client, bucket, webappDir);
-  return { AWS_ENDPOINT_URL_S3: LOCAL_ENDPOINT };
+
+  // Without AWS_REGION the webapp routes cannot sign and silently drop every
+  // image, so fill the missing values. Shell values keep priority, except the
+  // endpoint, which must stay on LocalStack during npm run dev.
+  const localEnv = { AWS_ENDPOINT_URL_S3: LOCAL_ENDPOINT };
+  if (!process.env.AWS_REGION) {
+    localEnv.AWS_REGION = 'us-east-1';
+  }
+  if (!process.env.AWS_ACCESS_KEY_ID) {
+    localEnv.AWS_ACCESS_KEY_ID = 'test';
+  }
+  if (!process.env.AWS_SECRET_ACCESS_KEY) {
+    localEnv.AWS_SECRET_ACCESS_KEY = 'test';
+  }
+  if (!process.env.AWS_S3_BUCKET_NAME) {
+    localEnv.AWS_S3_BUCKET_NAME = bucket;
+  }
+  return localEnv;
 }
 
 module.exports = { ensureLocalS3 };

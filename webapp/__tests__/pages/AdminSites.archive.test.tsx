@@ -103,6 +103,8 @@ const impact: SiteDeleteImpact = {
   attachmentCount: 2,
   homepageImageCount: 4,
   siteStewardCount: 1,
+  gpxTrackCount: 0,
+  sitePageFieldCount: 0,
 };
 
 const archiveResult: SiteArchiveResult = {

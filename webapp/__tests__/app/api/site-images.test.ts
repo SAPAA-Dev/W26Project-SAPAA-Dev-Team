@@ -9,11 +9,12 @@ jest.mock("next/server", () => ({
 }));
 
 import { GET } from "@/app/api/site-images/route";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createServerSupabase } from "@/utils/supabase/server";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 jest.mock("@/utils/supabase/server", () => ({
   createClient: jest.fn(),
+  createServerSupabase: jest.fn(),
 }));
 
 jest.mock("@aws-sdk/client-s3", () => ({
@@ -38,6 +39,7 @@ describe("GET /api/site-images", () => {
       },
       from: mockFrom,
     });
+    (createServerSupabase as jest.Mock).mockReturnValue({ from: mockFrom });
   });
 
   it("returns 401 when user is unauthorized", async () => {
@@ -70,7 +72,7 @@ describe("GET /api/site-images", () => {
 
   it("returns 400 when neither siteid nor responseid is provided", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: { user: { id: "user-1", app_metadata: { role: "steward", authenticated: true } } },
       error: null,
     });
 
@@ -86,7 +88,7 @@ describe("GET /api/site-images", () => {
 
   it("returns items filtered by siteid (7.0.8 AT3)", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: { user: { id: "user-1", app_metadata: { role: "steward", authenticated: true } } },
       error: null,
     });
 
@@ -152,9 +154,83 @@ describe("GET /api/site-images", () => {
     });
   });
 
+  it("1.0.3 AT3: does not sign a hidden photo for another steward", async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: "viewer", app_metadata: { role: "steward", authenticated: true } } },
+      error: null,
+    });
+    const queryBuilder = {
+      is: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      then: jest.fn((resolve: (value: unknown) => unknown) => resolve({
+        data: [{
+          id: 14,
+          response_id: 3235,
+          question_id: 27,
+          storage_key: "inspections/207/3235/27/private.jpg",
+          filename: "private.jpg",
+          content_type: "image/jpeg",
+          file_size_bytes: 100,
+          caption: null,
+          identifier: null,
+          site_id: 207,
+          form_responses: {
+            user_id: "owner",
+            answers: [{ question_id: 27, is_hidden: true }],
+          },
+        }],
+        error: null,
+      })),
+    };
+    mockFrom.mockReturnValue({ select: jest.fn().mockReturnValue(queryBuilder) });
+
+    const response = await GET(new Request("http://localhost:3000/api/site-images?responseid=3235"));
+
+    expect(await response.json()).toEqual({ items: [] });
+    expect(getSignedUrl).not.toHaveBeenCalled();
+  });
+
+  it("1.0.3 AT3: signs a hidden photo for its owner and marks it as hidden", async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: "owner", app_metadata: { role: "steward", authenticated: true } } },
+      error: null,
+    });
+    const queryBuilder = {
+      is: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      then: jest.fn((resolve: (value: unknown) => unknown) => resolve({
+        data: [{
+          id: 14,
+          response_id: 3235,
+          question_id: 27,
+          storage_key: "inspections/207/3235/27/private.jpg",
+          filename: "private.jpg",
+          content_type: "image/jpeg",
+          file_size_bytes: 100,
+          caption: null,
+          identifier: null,
+          site_id: 207,
+          form_responses: {
+            user_id: "owner",
+            answers: [{ question_id: 27, is_hidden: true }],
+          },
+        }],
+        error: null,
+      })),
+    };
+    mockFrom.mockReturnValue({ select: jest.fn().mockReturnValue(queryBuilder) });
+    (getSignedUrl as jest.Mock).mockResolvedValue("https://signed-url.example.com/private.jpg");
+
+    const response = await GET(new Request("http://localhost:3000/api/site-images?responseid=3235"));
+
+    expect((await response.json()).items).toEqual([
+      expect.objectContaining({ id: 14, is_hidden: true }),
+    ]);
+  });
+
   it("returns items filtered by responseid", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: { user: { id: "user-1", app_metadata: { role: "steward", authenticated: true } } },
       error: null,
     });
 
@@ -220,7 +296,7 @@ describe("GET /api/site-images", () => {
 
   it("applies both siteid and responseid filters when both are provided", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: { user: { id: "user-1", app_metadata: { role: "steward", authenticated: true } } },
       error: null,
     });
 
@@ -289,7 +365,7 @@ describe("GET /api/site-images", () => {
 
   it("returns an empty items array when no attachments are found", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: { user: { id: "user-1", app_metadata: { role: "steward", authenticated: true } } },
       error: null,
     });
 
@@ -319,7 +395,7 @@ describe("GET /api/site-images", () => {
 
   it("returns 500 when the attachments query fails", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: { user: { id: "user-1", app_metadata: { role: "steward", authenticated: true } } },
       error: null,
     });
 
@@ -348,7 +424,7 @@ describe("GET /api/site-images", () => {
 
   it("returns 500 when signed URL generation fails", async () => {
     mockGetUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: { user: { id: "user-1", app_metadata: { role: "steward", authenticated: true } } },
       error: null,
     });
 
@@ -404,7 +480,7 @@ describe("GET /api/site-images", () => {
   });
 
   it("never signs a row whose key is outside the image folders", async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-1", app_metadata: { role: "steward", authenticated: true } } }, error: null });
 
     const queryBuilder = {
       is: jest.fn().mockReturnThis(),

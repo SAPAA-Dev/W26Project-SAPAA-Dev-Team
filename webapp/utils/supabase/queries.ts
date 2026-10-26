@@ -1,13 +1,17 @@
 'use server';
 
 import { createServerSupabase, createClient } from './server';
+import { requireApprovedAdmin, requireApprovedCaller } from '../auth-checks';
+import { refreshProtectedAreaLinks } from './siteLinks';
 import { deleteObjectsByKeys } from '../media/s3Delete';
 import { isAllowedStorageKey } from '../media/storageKeys';
 import {
+  normalizeBoundaryColor,
   toBoundaryFeatureCollection,
   type BoundaryFeatureCollection,
   type ProtectedAreaBoundaryRow,
 } from '../../lib/map/boundaries';
+import { parseGpxTrackFile, type GpxTrackForMap, type GpxTrackPoint } from '../../lib/map/gpxTrack';
 
 import { SITE_PAGE_FIELDS } from '@/lib/sitePageFields';
 import {
@@ -80,6 +84,7 @@ interface SupabaseAnswer {
   question_id: number;
   obs_value: string | null;
   obs_comm: string | null;
+  is_hidden?: boolean;
 }
 
 export interface FormResponse {
@@ -91,6 +96,9 @@ export interface FormResponse {
   naturalness_score: string | null;
   naturalness_details: string | null;  
   steward: string | null;
+  naturalness_hidden?: boolean;
+  naturalness_details_hidden?: boolean;
+  steward_hidden?: boolean;
   answers: FormAnswer[];
 }
 
@@ -114,6 +122,7 @@ export interface FormAnswer {
   obs_comm: string | null;
   section_id: number | null;
   section_title: string | null;
+  is_hidden?: boolean;
 }
 
 // One row of the all-reports page. siteName is null when the site was permanently
@@ -261,7 +270,7 @@ const REPORT_VIEW_DENIED = 'You are not allowed to view this report.';
 // Report writes run with the service role, so each one checks the caller first.
 // Only the report owner or an approved admin may change a report, and an archived
 // report changes only through the admin archive actions.
-async function requireReportWriter(responseId: number, errorMessage = REPORT_WRITE_DENIED): Promise<{
+export async function requireReportWriter(responseId: number, errorMessage = REPORT_WRITE_DENIED): Promise<{
   isAdmin: boolean;
   userId: string;
   siteId: number;
@@ -515,24 +524,6 @@ export async function getSitesOnline(): Promise<SiteSummary[]> {
   });
 }
 
-/**
- * Returns the boundaries the map draws, ready for MapLibre.
- *
- * The geometry column is jsonb that holds a GeoJSON MultiPolygon, so no conversion is
- * needed. The coordinates are rounded and the rings are simplified here, on the
- * server, to keep the payload small.
- */
-async function requireApprovedCaller(
-  errorMessage = 'You must be signed in to view site boundaries.'
-): Promise<{ isAdmin: boolean; userId: string; email: string | null }> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
-  const user = data.user;
-  const approved = !error && user?.app_metadata?.authenticated === true;
-  if (!approved || !user) throw new Error(errorMessage);
-  return { isAdmin: user.app_metadata?.role === 'admin', userId: user.id, email: user.email ?? null };
-}
-
 function countyFromEmbed(
   value: { county: string } | { county: string }[] | null
 ): string | null {
@@ -541,32 +532,93 @@ function countyFromEmbed(
   return value.county ?? null;
 }
 
+interface ProtectedAreaLink {
+  county: string | null;
+  is_active: boolean | null;
+  site_name: string | null;
+  last_inspection_date: string | null;
+}
+
+interface SiteLinkResponseRow {
+  inspection_date?: string | null;
+  created_at?: string | null;
+  archived_at?: string | null;
+}
+
+interface SiteLinkRow {
+  protected_area_id: number | null;
+  is_active: boolean | null;
+  namesite: string | null;
+  ab_counties: { county: string } | { county: string }[] | null;
+  latest_dated: SiteLinkResponseRow[] | null;
+  latest_undated: SiteLinkResponseRow[] | null;
+}
+
 // ab_counties has row level security and no select policy for signed-in users.
-// The caller is already approved. This read returns only the link, the county, and is_active.
-async function readProtectedAreaLinks(): Promise<Map<number, { county: string | null; is_active: boolean | null }>> {
+// The caller is already approved. This read returns only the link, the county, the status,
+// the site name and the newest report of the linked site.
+async function readProtectedAreaLinks(): Promise<Map<number, ProtectedAreaLink>> {
   const supabase = createServerSupabase();
   const { data, error } = await supabase
     .from('sites_pa')
-    .select('protected_area_id, is_active, ab_counties(county)')
+    .select(`
+      protected_area_id,
+      is_active,
+      namesite,
+      ab_counties (
+        county
+      ),
+      latest_dated:form_responses (
+        inspection_date,
+        created_at,
+        archived_at
+      ),
+      latest_undated:form_responses (
+        inspection_date,
+        created_at,
+        archived_at
+      )
+    `)
     .not('protected_area_id', 'is', null)
     // An archived site is hidden from the app, so it must not give a map area a county or status.
-    .is('archived_at', null);
+    .is('archived_at', null)
+    // The same newest-report rule as getSitesOnline, so the popup date matches the Site card.
+    .is('latest_dated.archived_at', null)
+    .not('latest_dated.inspection_date', 'is', null)
+    .order('inspection_date', { referencedTable: 'latest_dated', ascending: false })
+    .limit(1, { referencedTable: 'latest_dated' })
+    .is('latest_undated.archived_at', null)
+    .is('latest_undated.inspection_date', null)
+    .order('created_at', { referencedTable: 'latest_undated', ascending: false })
+    .limit(1, { referencedTable: 'latest_undated' });
 
   if (error) throw new Error(error.message || 'Failed to fetch site links');
 
-  const links = new Map<number, { county: string | null; is_active: boolean | null }>();
-  for (const row of data ?? []) {
-    const areaId = row.protected_area_id as number | null;
+  const links = new Map<number, ProtectedAreaLink>();
+  for (const row of (data ?? []) as unknown as SiteLinkRow[]) {
+    const areaId = row.protected_area_id;
     if (areaId === null || links.has(areaId)) continue;
     links.set(areaId, {
-      county: countyFromEmbed(row.ab_counties as { county: string } | { county: string }[] | null),
+      county: countyFromEmbed(row.ab_counties),
       // A null is_active means active, the same as getSitesOnline and getAllSites.
-      is_active: (row.is_active as boolean | null) ?? true,
+      is_active: row.is_active ?? true,
+      site_name: row.namesite ?? null,
+      last_inspection_date: getLatestInspectionDate([
+        ...(row.latest_dated ?? []),
+        ...(row.latest_undated ?? []),
+      ]),
     });
   }
   return links;
 }
 
+/**
+ * Returns the boundaries the map draws, ready for MapLibre.
+ *
+ * The geometry column is jsonb that holds a GeoJSON MultiPolygon, so no conversion is
+ * needed. The coordinates are rounded and the rings are simplified here, on the
+ * server, to keep the payload small.
+ */
 export async function getProtectedAreaBoundaries(): Promise<BoundaryFeatureCollection> {
   const caller = await requireApprovedCaller();
   // The cookie client, not createServerSupabase. RLS grants select on protected_areas
@@ -577,7 +629,7 @@ export async function getProtectedAreaBoundaries(): Promise<BoundaryFeatureColle
   const { data, error } = await supabase
     .from('protected_areas')
     .select(
-      'id, name, fid, area_type, subtype, iucn, oc_no, acres, hectares, oc_date, date_est, oc_name, notes, geometry'
+      'id, name, fid, area_type, subtype, iucn, oc_no, acres, hectares, oc_date, date_est, oc_name, notes, geometry, boundary_color'
     );
 
   if (error) throw new Error(error.message || 'Failed to fetch protected area boundaries');
@@ -589,15 +641,21 @@ export async function getProtectedAreaBoundaries(): Promise<BoundaryFeatureColle
       ...row,
       county: link?.county ?? null,
       is_active: link ? link.is_active : null,
+      site_name: link?.site_name ?? null,
+      last_inspection_date: link?.last_inspection_date ?? null,
     };
   });
 
   const collection = toBoundaryFeatureCollection(rows);
-  if (caller.isAdmin) return collection;
+  // The map shows the color control from this server-verified flag, not from the
+  // client session. A steward always gets false, even if the browser holds a stale role.
+  const can_edit_colors = caller.isAdmin;
+  if (caller.isAdmin) return { ...collection, can_edit_colors };
 
   return {
     type: 'FeatureCollection',
     features: collection.features.filter((feature) => feature.properties.is_active !== false),
+    can_edit_colors,
   };
 }
 
@@ -704,19 +762,6 @@ async function siteActionResult(run: () => Promise<void>): Promise<SiteActionRes
   }
 }
 
-// Site edits run with the service role, so each one checks the caller first.
-// The check reads the signed-in session, never a value the caller sends.
-async function requireApprovedAdmin(
-  errorMessage = 'Only admins can edit sites.'
-): Promise<void> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
-  const approved = !error
-    && data.user?.app_metadata?.role === 'admin'
-    && data.user?.app_metadata?.authenticated === true;
-  if (!approved) throw new Error(errorMessage);
-}
-
 export async function updateSite(
   id: number,
   namesite: string,
@@ -745,6 +790,11 @@ async function updateSiteOrThrow(
     .eq('id', id);
 
   if (error) throw siteWriteError(error, 'Failed to update site');
+
+  // #181: a manual link or unlink changes the centre. shouldLink stays false so an
+  // unlink is not undone by the strict name match. The helper logs a failed lookup;
+  // the site write above already succeeded, so the action stays ok.
+  await refreshProtectedAreaLinks(supabase, false);
 }
 
 export async function createSite(
@@ -772,6 +822,55 @@ async function createSiteOrThrow(
     .insert({ namesite: name, ab_county, is_active: true, protected_area_id });
 
   if (error) throw siteWriteError(error, 'Failed to create site');
+
+  // #181: a new site whose exact name matches a KML area links here.
+  await refreshProtectedAreaLinks(supabase);
+}
+
+// Boundary color writes run with the service role, so the admin check runs first.
+export async function setSiteBoundaryColor(
+  protectedAreaId: number,
+  color: string
+): Promise<SiteActionResult> {
+  return siteActionResult(async () => {
+    await requireApprovedAdmin('Only admins can change boundary colors.');
+    if (!Number.isSafeInteger(protectedAreaId) || protectedAreaId <= 0) {
+      throw new Error('The protected area is not valid.');
+    }
+    const normalized = normalizeBoundaryColor(color);
+    if (normalized === null) throw new Error('The color is not valid.');
+
+    const supabase = createServerSupabase();
+    const { error, count } = await supabase
+      .from('protected_areas')
+      .update({ boundary_color: normalized }, { count: 'exact' })
+      .eq('id', protectedAreaId);
+
+    // A zero count means the id no longer exists, so the admin must not read a false success.
+    if (error || count === 0) throw new Error('The color could not be saved.');
+  });
+}
+
+// This writes every row of the type, so it also replaces individual colors of that type.
+export async function setSiteTypeBoundaryColor(
+  areaType: string,
+  color: string
+): Promise<SiteActionResult> {
+  return siteActionResult(async () => {
+    await requireApprovedAdmin('Only admins can change boundary colors.');
+    const type = typeof areaType === 'string' ? areaType.trim() : '';
+    if (type === '') throw new Error('A site type is required.');
+    const normalized = normalizeBoundaryColor(color);
+    if (normalized === null) throw new Error('The color is not valid.');
+
+    const supabase = createServerSupabase();
+    const { error, count } = await supabase
+      .from('protected_areas')
+      .update({ boundary_color: normalized }, { count: 'exact' })
+      .eq('area_type', type);
+
+    if (error || count === 0) throw new Error('The color could not be saved.');
+  });
 }
 
 /**
@@ -1334,6 +1433,121 @@ export async function getSitePageFields(siteId: number): Promise<SitePageFieldVa
   }));
 }
 
+// The bucket that 20261020000000_create_gpx_tracks.sql creates.
+const GPX_TRACKS_BUCKET = 'gpx-tracks';
+const GPX_READ_DENIED = 'Only approved stewards and admins can view GPX tracks.';
+
+// The gpx_tracks RLS policies allow only approved stewards and admins, and
+// these reads run with the service role, which bypasses RLS. requireApprovedCaller
+// checks only the approval flag, so the role is checked separately here.
+async function requireApprovedTrackReader(): Promise<void> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+  const user = data.user;
+  const role = user?.app_metadata?.role;
+  if (
+    error !== null
+    || !user
+    || user.app_metadata?.authenticated !== true
+    || (role !== 'steward' && role !== 'admin')
+  ) {
+    throw new Error(GPX_READ_DENIED);
+  }
+}
+
+export interface GpxTrackSummary {
+  id: number;
+  originalFileName: string;
+  trackPointCount: number;
+  createdAt: string;
+}
+
+export async function getGpxTracksBySite(siteId: number): Promise<GpxTrackSummary[]> {
+  await requireApprovedTrackReader();
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('gpx_tracks')
+    .select('id, original_file_name, track_point_count, created_at')
+    .eq('site_id', siteId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message || 'Failed to load the GPX tracks of a site');
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    originalFileName: row.original_file_name,
+    trackPointCount: row.track_point_count,
+    createdAt: row.created_at,
+  }));
+}
+
+export async function getGpxTrackPoints(trackId: number): Promise<GpxTrackPoint[]> {
+  await requireApprovedTrackReader();
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('gpx_tracks')
+    .select('id, storage_path')
+    .eq('id', trackId)
+    .single();
+
+  if (error !== null || data === null) {
+    throw new Error('The GPX track could not be found.');
+  }
+
+  const { data: file, error: downloadError } = await supabase.storage
+    .from(GPX_TRACKS_BUCKET)
+    .download(data.storage_path);
+
+  if (downloadError !== null || file === null) {
+    throw new Error('The stored GPX file could not be read.');
+  }
+
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  try {
+    return parseGpxTrackFile(bytes);
+  } catch (parseError) {
+    console.error('Failed to parse a stored GPX track', parseError);
+    throw new Error('The stored GPX file is not a valid track.');
+  }
+}
+
+// One unreadable file must not hide the other tracks, so it is skipped, not thrown.
+export async function getGpxTracksForMap(): Promise<GpxTrackForMap[]> {
+  await requireApprovedTrackReader();
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('gpx_tracks')
+    .select('id, original_file_name, storage_path')
+    .order('created_at', { ascending: true });
+
+  if (error) throw new Error(error.message || 'Failed to load the GPX tracks');
+
+  const loaded = await Promise.all(
+    (data ?? []).map(async (row): Promise<GpxTrackForMap | null> => {
+      try {
+        const { data: file, error: downloadError } = await supabase.storage
+          .from(GPX_TRACKS_BUCKET)
+          .download(row.storage_path);
+        if (downloadError !== null || file === null) {
+          throw new Error('The stored GPX file could not be read.');
+        }
+        return {
+          id: row.id,
+          originalFileName: row.original_file_name,
+          points: parseGpxTrackFile(new Uint8Array(await file.arrayBuffer())),
+        };
+      } catch (readError) {
+        console.error('Failed to read a stored GPX track', readError);
+        return null;
+      }
+    })
+  );
+
+  return loaded.filter((track): track is GpxTrackForMap => track !== null);
+}
+
 // Only http and https links are saved, so a link like "javascript:..." can never reach the page.
 function cleanLink(value: string | null): string | null {
   const link = (value ?? '').trim();
@@ -1387,6 +1601,8 @@ export interface SiteDeleteImpact {
   attachmentCount: number;
   homepageImageCount: number;
   siteStewardCount: number;
+  gpxTrackCount: number;
+  sitePageFieldCount: number;
 }
 
 export interface SiteArchiveResult {
@@ -1570,7 +1786,7 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
     .select(`
       id, user_id, created_at, inspection_date, inspection_no, is_active,
       answers (
-        question_id, obs_value, obs_comm,
+        question_id, obs_value, obs_comm, is_hidden,
         questions ( id, form_question, section_id,
           form_sections!questions_section_id_fkey ( id, title ) )
       )
@@ -1583,7 +1799,15 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
   if (error) throw new Error(error.message || 'Failed to fetch form responses');
 
   return ((data ?? []) as unknown as (FormResponseRow & { is_active: boolean | null })[]).map((r) => {
-    const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.answers, ids);
+    const {
+      answers,
+      naturalness,
+      naturalnessDetails,
+      steward,
+      naturalnessHidden,
+      naturalnessDetailsHidden,
+      stewardHidden,
+    } = reduceAnswers(r.answers, ids);
     return {
       id: r.id,
       user_id: r.user_id ?? null,
@@ -1593,6 +1817,9 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
       naturalness_score: naturalness,
       naturalness_details: naturalnessDetails,
       steward,
+      naturalness_hidden: naturalnessHidden,
+      naturalness_details_hidden: naturalnessDetailsHidden,
+      steward_hidden: stewardHidden,
       is_active: r.is_active ?? true,
       answers,
     };
@@ -1601,7 +1828,7 @@ export async function getFormResponsesBySiteAdmin(siteName: string): Promise<(Fo
 
 // User viewing for sites, uses is_active flag to prevent users from viewing disabled responses
 export async function getFormResponsesBySite(siteName: string): Promise<FormResponse[]> {
-  await requireApprovedCaller(READ_DENIED);
+  const caller = await requireApprovedCaller(READ_DENIED);
   const supabase = createServerSupabase();
 
   const { data: siteData, error: siteError } = await supabase
@@ -1628,7 +1855,7 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
       .select(`
         id, user_id, created_at, inspection_date, inspection_no,
         answers (
-          question_id, obs_value, obs_comm,
+          question_id, obs_value, obs_comm, is_hidden,
           questions ( id, form_question, section_id,
             form_sections!questions_section_id_fkey ( id, title ) )
         )
@@ -1647,7 +1874,19 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
   }
 
   return data.map((r) => {
-    const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.answers, ids);
+    const canReadHiddenAnswers = caller.isAdmin || r.user_id === caller.userId;
+    const rawAnswers = canReadHiddenAnswers
+      ? r.answers
+      : r.answers.filter((answer) => answer.is_hidden !== true);
+    const {
+      answers,
+      naturalness,
+      naturalnessDetails,
+      steward,
+      naturalnessHidden,
+      naturalnessDetailsHidden,
+      stewardHidden,
+    } = reduceAnswers(rawAnswers, ids);
     return {
       id: r.id,
       user_id: r.user_id ?? null,
@@ -1657,6 +1896,9 @@ export async function getFormResponsesBySite(siteName: string): Promise<FormResp
       naturalness_score: naturalness,
       naturalness_details: naturalnessDetails,
       steward,
+      naturalness_hidden: naturalnessHidden,
+      naturalness_details_hidden: naturalnessDetailsHidden,
+      steward_hidden: stewardHidden,
       answers,
     };
   });
@@ -1791,6 +2033,20 @@ export async function getFormResponseById(responseId: number): Promise<Record<st
   return map;
 }
 
+export async function getHiddenQuestionIdsByResponseId(responseId: number): Promise<number[]> {
+  await requireReportWriter(responseId, REPORT_VIEW_DENIED);
+  const supabase = createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('answers')
+    .select('question_id')
+    .eq('response_id', responseId)
+    .eq('is_hidden', true);
+
+  if (error) throw new Error(error.message || 'Failed to fetch hidden answers');
+  return [...new Set((data ?? []).map((answer) => Number(answer.question_id)))];
+}
+
 
 // Updates caption and identifier for an existing attachments row
 export async function updateAttachmentMetadata(
@@ -1828,6 +2084,38 @@ export async function updateSiteInspectionAnswers(
 ) {
   await requireReportWriter(responseId);
   const supabase = createServerSupabase();
+
+  const { data: requiredQuestions, error: requiredQuestionsError } = await supabase
+    .from('questions')
+    .select('id, form_question, question_type')
+    .eq('is_active', true)
+    .eq('is_required', true);
+
+  if (requiredQuestionsError) {
+    throw new Error(requiredQuestionsError.message || 'Failed to validate required questions');
+  }
+
+  const missingRequiredQuestions = ((requiredQuestions ?? []) as Array<{
+    id: number;
+    form_question: string | null;
+    question_type: string;
+  }>).filter((question) => {
+    // Images are attachments, not answer rows. The edit page validates required
+    // image questions before it sends the answer update.
+    if (question.question_type.trim() === 'image') return false;
+
+    return !batchArray.some((answer) =>
+      answer.question_id === question.id &&
+      Boolean(answer.obs_value?.trim() || answer.obs_comm?.trim())
+    );
+  });
+
+  if (missingRequiredQuestions.length > 0) {
+    const labels = missingRequiredQuestions.map((question) =>
+      question.form_question?.trim() || `Question ${question.id}`
+    );
+    throw new Error(`Required questions are missing: ${labels.join(', ')}`);
+  }
 
   // Do not change answers while the report is in the archive.
   const { error: updateDateError } = await supabase

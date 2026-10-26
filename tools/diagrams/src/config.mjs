@@ -100,7 +100,6 @@ export const SERVICES = {
       { class: 'PdfJobProcessor', module: 'webapp/lib/pdf/processPdfJob.ts' },
       { class: 'PdfDataFetcher', module: 'webapp/lib/pdf/pdfDataFetcher.ts' },
       { class: 'PdfReportQueries', module: 'webapp/lib/pdf/reportQueries.ts' },
-      { class: 'GeocodeRoute', module: 'webapp/app/api/geocode/route.ts' },
     ],
     MobileApp: [
       { class: 'StewardLogGeocoder', module: 'FNR/src/services/openCage.ts', include: ['getCoordinatesFromName'] },

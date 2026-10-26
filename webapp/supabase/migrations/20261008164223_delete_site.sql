@@ -9,6 +9,8 @@ alter table public.sites_pa add column if not exists archived_at timestamptz;
 
 -- A permanent delete disconnects reports and homepage images instead of deleting them,
 -- so their site_id columns must allow null. attachments.site_id is already nullable.
+-- Both statements need an ACCESS EXCLUSIVE lock on the table: they queue behind running
+-- queries and block new ones while they queue. Run this file outside peak use.
 alter table public.form_responses alter column site_id drop not null;
 alter table public.homepage_image_uploads alter column site_id drop not null;
 

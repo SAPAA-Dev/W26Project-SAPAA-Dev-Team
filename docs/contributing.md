@@ -73,8 +73,9 @@ Each sprint has its own branch, `sprint-N`, made from `main`. Feature branches s
 their PRs go into it. At the end of the sprint, one PR merges `sprint-N` into `main`. The Scrum
 Master of the sprint reviews that PR (see [Scrum roles](project-management.md#scrum-roles)). The
 GitHub ruleset allows branch names that start with `sprint-`. Every sprint ends with a GitHub
-release built from `main` (step 7 below). `sprint-2` is the first sprint branch. The Sprint 2 work
-before it merged straight into `main`.
+release built from `main` (step 7 below). `sprint-2` was the first sprint branch. It was merged into
+`main` in [#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284) on October 13 and
+then deleted. The Sprint 2 work before it merged straight into `main`.
 
 The hosting project (Vercel) has its own production branch setting. It is not stored in this
 repository, so nobody can check it from here. The person who owns the hosting account must check
@@ -154,7 +155,7 @@ breaks before it. There is no way to avoid a short gap, so do it in a maintenanc
 before the deploy:
 
 1. Tell the stewards and admins that the app is down for a short time.
-2. Run steps 1 to 20 below, in order, in one sitting.
+2. Run only the missing migrations below, in order. Check the release commit and the current schema first. A production database that already has Sprint 2 does not need those steps again.
 3. Merge the release PR straight away ([Branch model](#branch-model)), so the new code deploys.
 4. Open the app and run the smoke test below. The window ends when it passes.
 
@@ -166,11 +167,11 @@ Run the files in this order.
 
 | Step | File | Note |
 | --- | --- | --- |
-| 0 | `20260925000000_local_app_schema.sql` | **Never run this on production.** It is only for a fresh local database: it creates the `W26_` tables, which production already has. It also enables row level security on `luperson` with no policy, so on production it would cut the F26 mobile app and the Google Sheet off from `luperson`. `create table if not exists` does not protect against this. |
+| 0 | `20260925000000_local_app_schema.sql` | **Never run this on production.** It is only for a fresh local database: it creates the `W26_` tables, which production already has. It no longer enables row level security on the legacy tables (`luperson` and the three `_fnr` tables), so it cannot cut the F26 mobile app and the Google Sheet off from `luperson`. It still creates `W26_` tables and policies production does not need, and `create table if not exists` does not make it safe there. |
 | 1 | `20261002000000_fix_questions_section_fk_name.sql` | Run only while `W26_questions` still exists. After the rename the file fails. It does nothing when the constraint already has the right name. |
 | 2 | `20261003000000_remove_w26_prefix.sql` | The rename. Do it in the cutover window. |
 | 3 | `20261004000000_create_user_model.sql` | Adds the trigger on `auth.users` and a `people` row for each existing login. Check the count after it (below). |
-| 4 | `20261004010000_create_protected_areas.sql` | Skip it if `protected_areas` already exists (the `protected_areas` result in the pre-check is not null). Also skip it if the table has a `folder` column, which means step 9 already ran. The header says safe to run twice, but after step 9 dropped `site_id` a second run fails on the `site_id` index. |
+| 4 | `20261004010000_create_protected_areas.sql` | Skip it if `protected_areas` already exists (the `protected_areas` result in the pre-check is not null). Also skip it if the table has a `folder` column, which means step 9 already ran. A second run is safe: the `site_id` index step skips itself once step 9 has dropped that column. |
 | 5 | `20261005000000_profile_distinct_site_count.sql` | |
 | 6 | `20261005010000_create_socials.sql` | |
 | 7 | `20261005020000_gallery_read_policies.sql` | |
@@ -187,10 +188,36 @@ Run the files in this order.
 | 18 | `20261011000000_revoke_public_execute_on_report_functions.sql` | From `fix/alpha-code-quality`. Run it after step 15. Only the service role can then call `get_distinct_inspected_site_count` and `get_max_inspection_number`. |
 | 19 | `20261011010000_revoke_public_execute_on_dashboard_functions.sql` | From `fix/gamma-sprint-2-gaps`. Run it after step 12. Revokes execute on `get_naturalness_distribution` and `get_top_sites_distribution` from `public` and `anon`. `authenticated` keeps it, because the StewardLog admin dashboard calls both functions after sign-in. |
 | 20 | `20261012000000_add_question_atomically.sql` | From `fix/form-editor-save-errors` (#273). Run it after step 2. Adds `add_question_atomically`, for the service role only. Until it exists, adding a question in the form editor fails. |
+| 21 | `20261020000000_create_gpx_tracks.sql` | Creates the private `gpx-tracks` bucket and GPX rows, indexes and access policies. Run after the site tables and user model exist. |
+| 22 | `20261020100000_link_sites_to_protected_areas.sql` | Adds centre coordinates and the service-role-only boundary-link RPC. It does not fill existing rows when applied. |
+| 23 | `20261021000000_link_sites_to_protected_areas.sql` | Same contents as step 22. Retain both versions in the migration history; the second run is safe. Do not invent a replacement migration. |
+| 24 | `20261022000000_add_answer_visibility.sql` | Adds `answers.is_hidden`. Existing answers stay visible. Apply before deploying US 1.0.3. |
+| 25 | `20261023000000_add_protected_area_boundary_color.sql` | Adds the optional boundary color and its `#rrggbb` constraint. Existing boundaries keep the default. |
+| 26 | `20261024000000_add_site_priority_scores.sql` | Adds the three scores, saved date and saving Admin. Existing sites have no scores. Apply before deploying US 2.0.12 and 2.0.13. |
+| 27 | `20261024010000_create_export_jobs.sql` | Creates export jobs and the creator-only read policy. Only the service-role server writes jobs. Apply before deploying US 3.0.3. |
+| 28 | `20261024020000_check_gpx_track_path.sql` | From PR #312. Include only after it merges. It replaces the GPX insert policy with the path check; existing rows are not rewritten. |
+| 29 | `20261025000000_fix_site_delete_impact.sql` | Redefines the two site delete functions so the impact count includes GPX tracks and page fields. Service role only. Needs `site_page_fields`, `archived_at` and `gpx_tracks`, so apply it after steps 10, 11 and 21. |
+| 30 | `20261025000010_add_missing_fk_indexes.sql` | Adds eleven foreign key and filter indexes. Each build locks its table while it runs, so apply outside peak use. |
+| 31 | `20261025000020_count_one_naturalness_answer_per_report.sql` | Redefines `get_naturalness_distribution` to count each report once per score. Keeps the existing grants. Apply after step 12. |
 
-PRs #234, #238 and #242 are merged on `main`. Steps 18 to 20 come from the Sprint 2 fix branches,
-which merge into `main` with the `sprint-2` PR. Run each step only when its file is on `main`.
+PRs #234, #238 and #242 are merged on `main`. Steps 18 to 20 came with the Sprint 2 fixes, which
+are on `main` since [#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284)
+(October 13). Run each step only when its file is on `main`.
 If a PR merges with a different file name, use the name in the merged PR.
+
+### Sprint 3 migration review
+
+The files above target the web schema. They do not rename legacy mobile inspection tables.
+Steps 22 and 23 are byte-identical. Both are retained because databases can already record one
+or both versions. The link function is `security invoker`, uses an empty search path, and grants
+execution only to the service role. Applying it adds the function and coordinates; an approved
+Admin still runs the import to fill site links.
+
+Green must confirm the final migration review in issue #183 before release. This document is
+an inventory and order, not an approval to run SQL on production. A human records which files
+were applied and the result of the checks in [Sprint 3 release checks](sprint-3-release.md).
+Do not apply step 28 from an unmerged branch. Do not assume that a successful local run proves
+the production schema is current.
 
 ### Checks
 
@@ -274,8 +301,9 @@ rebase, then force-push your branch.
 | --- | --- | --- |
 | `ci.yaml` | Every push to any branch, and by hand | `webapp-tests`: `npm ci`, `npx tsc --noEmit`, `npm run test:ci`, `npm run build`, then `npm run lint -- --max-warnings 0`. `docs-build`: `mkdocs build --clean`. `hook-tests`: `sh .githooks/test-hooks.sh`. |
 | `pr-checks.yaml` | PRs into `main`, `release` and `sprint-*` | `conventions` (branch name, PR title, commit messages) and `pr-size`. |
-| `reviewer-gate.yaml` | PRs into `main`, `release` and `sprint-*`, and reviews | `reviewers`, which posts the `reviewer-gate` status. |
+| `reviewer-gate.yaml` | PRs into `main`, `release` and `sprint-*`, and reviews. Skipped while the PR is a draft; it runs when the PR is marked ready for review. | `reviewers`, which posts the `reviewer-gate` status. |
 | `diagrams.yaml` | PRs into `main`, `release` and `sprint-*` | See [The diagrams workflow](#the-diagrams-workflow). |
+| `diagram-svg-check.yaml` | Every PR into `main`, `release` and `sprint-*`, on the self-hosted runner | `diagram-svg-check`: runs the diagram tests and `check --svg-only`. It fails when the source or SVG differs from the recorded render, the SVG is missing, or the manifest has no SVG hash. It renders and writes nothing. Run `npm run diagrams` and commit the result. |
 | `e2e.yaml` | PRs into `main` and `release`, and by hand | `cypress`: runs `cypress/e2e/logout.cy.ts` and `cypress/e2e/profile.cy.ts` against a local Supabase that it starts in the job (the migrations, `supabase/seed.sql` and `scripts/e2e_seed.js`). |
 
 Rules of the gates:
@@ -294,8 +322,11 @@ Rules of the gates:
   an app fix. The comment in `e2e.yaml` names each excluded spec and the reason. `cypress` is not a
   required check. To save Actions minutes, it does not run on PRs into `sprint-*`.
 
-As of October 11, 2026, GitHub Actions has not run since October 10, because the account's Actions
+As of October 13, 2026, GitHub Actions has not run since October 10, because the account's Actions
 payments failed. Until it runs again, the results of these gates come from local runs only.
+[#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284) and
+[#285](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/285) were merged with an admin
+bypass, after the gates ran locally on `main` at `ceb5188`.
 
 ## GitHub rules
 
@@ -393,9 +424,15 @@ Rules:
   hand-written. The tool warns when one of them names a table that a migration dropped or
   renamed, or a dropped or renamed column as `table.column`. It does not find a column name
   without its table.
-- The tool renders a `.mmd` again only when its content changes. The hashes are in
-  `docs/assets/.diagram-hashes.json`. A `.mmd` file is saved to the SVG name that
-  `docs/software-design.md` links, for example `ER_Diagram.mmd` to `ER_Diagram_mermaid.svg`.
+- The tool renders a `.mmd` again when its source, SVG, renderer version or configuration
+  differs from the last render. Source and SVG hashes are saved after a successful render in
+  `docs/assets/.diagram-hashes.json`. The first run with an old manifest renders every diagram
+  to record its SVG hash. A `.mmd` file is saved to the SVG name that `docs/software-design.md`
+  links, for example `ER_Diagram.mmd` to `ER_Diagram_mermaid.svg`.
+- `check --svg-only` checks these saved hashes without generating blocks or opening a browser.
+  It detects drift from the recorded render; it does not independently render and compare an SVG.
+  The workflow runs for every PR so its status is present even when no diagram changed.
+  It becomes a merge gate only when a repository admin makes `diagram-svg-check` required.
 - Running the tool twice gives no changes.
 - Self-check: `npm --prefix tools/diagrams test`. The workflow also runs it.
 - The services diagram does not read `webapp/node_modules`. A type from a package shows as

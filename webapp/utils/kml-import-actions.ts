@@ -1,6 +1,8 @@
 'use server';
 
-import { createClient, createServerSupabase } from './supabase/server';
+import { createServerSupabase } from './supabase/server';
+import { requireApprovedAdmin } from './auth-checks';
+import { refreshProtectedAreaLinks } from './supabase/siteLinks';
 import { KmlImportError, parseProtectedAreaFile } from '@/lib/map/kmlImport';
 
 export interface ImportKmlResult {
@@ -9,6 +11,9 @@ export interface ImportKmlResult {
   upserted?: number;
   skipped?: number;
   warnings?: string[];
+  // Names of the active sites that no protected area boundary points at, after the
+  // link step. Absent when the link step or the read failed.
+  unlinkedSites?: string[];
 }
 
 // Matches the bucket that 20261006000000_create_kml_imports_bucket.sql creates.
@@ -26,16 +31,8 @@ const MAX_FILE_BYTES = 50 * 1024 * 1024;
 
 const NOT_ADMIN_ERROR = 'Only admins can import protected areas.';
 const INVALID_PATH_ERROR = 'The import path is not valid.';
-
-// Every call below runs with the service role, so the caller is checked first.
-// The check reads the signed-in session, never a value the caller sends.
-async function isApprovedAdmin(): Promise<boolean> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) return false;
-  return data.user.app_metadata?.role === 'admin'
-    && data.user.app_metadata?.authenticated === true;
-}
+const LINK_WARNING =
+  'The protected areas were saved, but the site links were not updated. Link the sites by hand or run the import again.';
 
 const SWEEP_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const LIST_PAGE_SIZE = 100;
@@ -76,13 +73,45 @@ async function sweepStaleUploads(
   }
 }
 
+// The import has already succeeded at this point, so a failed read is a log line,
+// not an error.
+async function readUnlinkedSiteNames(
+  supabase: ReturnType<typeof createServerSupabase>
+): Promise<string[] | undefined> {
+  try {
+    const { data, error } = await supabase
+      .from('sites_pa')
+      .select('namesite')
+      .is('archived_at', null)
+      .is('protected_area_id', null)
+      .order('namesite', { ascending: true });
+
+    if (error !== null) {
+      console.error('Failed to read the sites with no boundary', error);
+      return undefined;
+    }
+
+    return ((data ?? []) as Array<{ namesite: string | null }>)
+      .map((row) => row.namesite)
+      .filter((name): name is string => name !== null && name.trim() !== '');
+  } catch (error) {
+    console.error('Failed to read the sites with no boundary', error);
+    return undefined;
+  }
+}
+
 /**
  * Reads a .kml or .kmz file that an admin staged in the kml-imports bucket,
  * upserts the protected areas it holds, and removes the staged file.
  */
 export async function importProtectedAreasFromStorage(storagePath: string): Promise<ImportKmlResult> {
-  if (!(await isApprovedAdmin())) {
-    return { success: false, error: NOT_ADMIN_ERROR };
+  try {
+    await requireApprovedAdmin(NOT_ADMIN_ERROR);
+  } catch (error) {
+    if (error instanceof Error && error.message === NOT_ADMIN_ERROR) {
+      return { success: false, error: NOT_ADMIN_ERROR };
+    }
+    throw error;
   }
 
   const normalizedPath = storagePath.replace(/\\/g, '/');
@@ -143,7 +172,21 @@ export async function importProtectedAreasFromStorage(storagePath: string): Prom
       upserted += chunk.length;
     }
 
-    return { success: true, upserted, skipped: stats.skipped, warnings };
+    // The boundaries now hold the imported geometry, so the matching site cards can
+    // link and their centres can refresh. The import already succeeded, so a failed
+    // lookup is a warning, not an error.
+    const linked = await refreshProtectedAreaLinks(supabase);
+    const importWarnings = linked ? warnings : [...warnings, LINK_WARNING];
+    // A failed link step already has LINK_WARNING. Do not report every active site
+    // as unbounded when the links were never updated.
+    const unlinkedSites = linked ? await readUnlinkedSiteNames(supabase) : undefined;
+    return {
+      success: true,
+      upserted,
+      skipped: stats.skipped,
+      warnings: importWarnings,
+      ...(unlinkedSites === undefined ? {} : { unlinkedSites }),
+    };
   } catch (error) {
     console.error('Failed to import the protected areas', error);
     return {

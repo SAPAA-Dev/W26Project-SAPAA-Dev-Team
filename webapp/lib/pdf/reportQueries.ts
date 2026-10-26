@@ -11,6 +11,7 @@ export interface RawAnswerRow {
   question_id: number;
   obs_value: string | null;
   obs_comm: string | null;
+  is_hidden?: boolean | null;
   questions: {
     id: number;
     form_question: string | null;
@@ -53,7 +54,15 @@ export async function getReportQuestionKeyMap() {
 export function reduceAnswers(
   rawAnswers: RawAnswerRow[],
   keyMap: { naturalnessId: number; naturalnessDetailsId: number; stewardId: number }
-): { answers: FormAnswer[]; naturalness: string | null; naturalnessDetails: string | null; steward: string | null } {
+): {
+  answers: FormAnswer[];
+  naturalness: string | null;
+  naturalnessDetails: string | null;
+  steward: string | null;
+  naturalnessHidden: boolean;
+  naturalnessDetailsHidden: boolean;
+  stewardHidden: boolean;
+} {
   const answers: FormAnswer[] = Object.values(
     (rawAnswers ?? []).reduce((acc: Record<number, Omit<FormAnswer, 'obs_value'> & { obs_value: string[] }>, a) => {
       const qid = a.question_id;
@@ -63,10 +72,12 @@ export function reduceAnswers(
           question_text: a.questions?.form_question ?? `Question ${qid}`,
           obs_value: [],
           obs_comm: null,
+          is_hidden: false,
           section_id: a.questions?.section_id ?? null,
           section_title: a.questions?.form_sections?.title ?? null,
         };
       }
+      acc[qid].is_hidden = acc[qid].is_hidden || a.is_hidden === true;
       if (a.obs_value === 'Other' && a.obs_comm) {
         acc[qid].obs_comm = a.obs_comm;
       } else if (a.obs_value) {
@@ -86,12 +97,18 @@ export function reduceAnswers(
     answers.find(a => a.question_id === keyMap.naturalnessDetailsId)?.obs_comm ??
     null;
   const steward = answers.find(a => a.question_id === keyMap.stewardId)?.obs_comm ?? null;
+  const naturalnessHidden = answers.find(a => a.question_id === keyMap.naturalnessId)?.is_hidden ?? false;
+  const naturalnessDetailsHidden = answers.find(a => a.question_id === keyMap.naturalnessDetailsId)?.is_hidden ?? false;
+  const stewardHidden = answers.find(a => a.question_id === keyMap.stewardId)?.is_hidden ?? false;
 
   return {
     answers: answers.filter(a => a.question_id !== keyMap.naturalnessId && a.question_id !== keyMap.stewardId),
     naturalness,
     naturalnessDetails,
     steward,
+    naturalnessHidden,
+    naturalnessDetailsHidden,
+    stewardHidden,
   };
 }
 
@@ -151,7 +168,7 @@ export async function getFormResponsesForSiteIds(
       .select(`
         id, site_id, user_id, created_at, inspection_date, inspection_no,
         answers (
-          question_id, obs_value, obs_comm,
+          question_id, obs_value, obs_comm, is_hidden,
           questions ( id, form_question, section_id,
             form_sections!questions_section_id_fkey ( id, title ) )
         )
@@ -178,7 +195,15 @@ export async function getFormResponsesForSiteIds(
 
   const bySite = new Map<number, FormResponse[]>();
   for (const r of allRows) {
-    const { answers, naturalness, naturalnessDetails, steward } = reduceAnswers(r.answers, ids);
+    const {
+      answers,
+      naturalness,
+      naturalnessDetails,
+      steward,
+      naturalnessHidden,
+      naturalnessDetailsHidden,
+      stewardHidden,
+    } = reduceAnswers(r.answers, ids);
     const formResponse: FormResponse = {
       id: r.id,
       user_id: r.user_id ?? null,
@@ -188,6 +213,9 @@ export async function getFormResponsesForSiteIds(
       naturalness_score: naturalness,
       naturalness_details: naturalnessDetails,
       steward,
+      naturalness_hidden: naturalnessHidden,
+      naturalness_details_hidden: naturalnessDetailsHidden,
+      steward_hidden: stewardHidden,
       answers,
     };
     const list = bySite.get(r.site_id) ?? [];

@@ -26,19 +26,19 @@ Labels used: `security`, `data`, `bug`, `feature`, `mobile`, `infra`, `docs`, `u
 
 Sorted by value. Cut the line wherever your capacity runs out.
 
-**Status** is as of October 11, 2026 (the Sprint 2 code freeze, `main` at `9009d0d`). It was
-checked against the pull requests merged into `main` up to #155 on October 7. On October 11 the
-items that PRs #156 to #250 changed were checked again: 1, 2, 4, 7, 16, 19, 23 and 26. Items 4,
-18, 19, 23 and 26 were then checked against `chore/sprint-2-integration` at `848fc22`, which
-merges the Sprint 2 fix branches for the `sprint-2` PR. "Open" means that no merged pull request
-resolves the item.
+**Status** is as of October 13, 2026 (the Sprint 2 release, `main` at `ceb5188`, merged in
+[#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284)). It was checked against the
+pull requests merged into `main` up to #155 on October 7. On October 11 the items that PRs #156 to
+#250 changed were checked again: 1, 2, 4, 7, 16, 19, 23 and 26. Items 4, 18, 19, 23 and 26 were
+then checked again against `main` at `ceb5188`, which has the Sprint 2 fix branches. "Open" means
+that no merged pull request resolves the item.
 
 | # | Title | Area | Impact | Effort | Value | Blocked by | Status |
 |---|---|---|---|---|---|---|---|
 | 1 | Stop `/gallery` leaking every user's photos | security | 5 | S | ★★★ | | Open |
 | 2 | Remove committed secrets from docs and tests | security | 4 | S | ★★★ | | Partly done (#240). See the note in item 2 |
 | 3 | Rotate service role key and remove it from the mobile bundle | security | 5 | S | ★★★ | | Open |
-| 4 | Enforce caller identity on every server action | security | 5 | M | ★★★ | | Mostly done (#144, #242, #251 fix branch). Four read actions still have no check. See the note in item 4 |
+| 4 | Enforce caller identity on every server action | security | 5 | M | ★★★ | | Mostly done (#144, #242, #259, #279). Every exported function in `queries.ts` checks the caller or reads under RLS. See the note in item 4 |
 | 5 | Move `role` out of `user_metadata` into `app_metadata` | security | 5 | M | ★★★ | | Done: PR #144 (closes #71) |
 | 6 | Decide the canonical database schema (spike) | data | 5 | S | ★★★ | | Open |
 | 7 | Add real coordinates to sites | data | 5 | M | ★★★ | | In progress (#132, #152, #167). Sites still have no coordinates. US 6.0.1 in Sprint 3 |
@@ -49,18 +49,18 @@ resolves the item.
 | 12 | Make site search work | bug | 4 | S | ★★★ | | Open |
 | 13 | Key site detail pages by id, not name | bug | 4 | S | ★★★ | | Open |
 | 14 | Instrument the events KPIs are built from | feature | 5 | M | ★★★ | | Open |
-| 15 | Add password reset | feature | 4 | S | ★★★ | | Open |
+| 15 | Add password reset | feature | 4 | S | ★★★ | | Done: PR #295 |
 | 16 | Show stewards a map | feature | 4 | S | ★★★ | 7 | Partly done (#159, #161, #166, #167, #241). US 2.0.6 done. US 2.0.1 in Sprint 3 |
 | 17 | Send the approval email the app already promises | bug | 3 | S | ★★★ | | Open |
-| 18 | Cache geocoding results and bound the quota | bug | 3 | S | ★★★ | 7 | Open. The fix branch limits `/api/geocode` to admins and the heat map to 50 sites. No cache |
+| 18 | Cache geocoding results and bound the quota | bug | 3 | S | ★★★ | 7 | Open. On `main`, `/api/geocode` and the heat map are for admins only, and the heat map returns at most 50 sites. No cache |
 | 19 | Fix logout | bug | 3 | S | ★★ | | Done: PR #120, #158, #238. US 5.0.4 (#64) done |
 | 20 | Paginate the sites list | bug | 3 | S | ★★ | | Open |
 | 21 | Build the user profile page | feature | 4 | M | ★★ | | Done: #138, #140, #141, #142. US 1.0.1 (#54) closed |
 | 22 | Port the KPIs that already exist in the mobile app | feature | 4 | M | ★★ | 14 | Open |
-| 23 | Put the database schema in version control | infra | 4 | M | ★★ | 6 | Partly done. 20 migrations in `webapp/supabase/migrations/` |
+| 23 | Put the database schema in version control | infra | 4 | M | ★★ | 6 | Partly done. 21 migrations in `webapp/supabase/migrations/` |
 | 24 | Add image deletion and clean up orphaned files | feature | 4 | M | ★★ | | Done: PR #148 (closes #65, US 7.0.5) |
 | 25 | Stand up a staging environment | infra | 4 | M | ★★ | | Open |
-| 26 | Make CI actually gate merges | infra | 3 | S | ★★ | | Mostly done (#124, #125, #235). The CI branches make lint and coverage blocking and add an E2E workflow |
+| 26 | Make CI actually gate merges | infra | 3 | S | ★★ | | Mostly done (#124, #125, #235, #257, #260, #262). On `main`, lint and coverage are blocking and an E2E workflow runs. GitHub Actions cannot run now (billing), so the gates were run locally |
 | 27 | Record inspection edit history | feature | 4 | M | ★★ | | Open |
 | 28 | Prepare for December field testing | infra | 4 | S | ★★ | | Open |
 | 29 | Clean the naturalness data | data | 3 | M | ★★ | | Open |
@@ -206,27 +206,24 @@ these three actions and in `updateAttachmentMetadata`, `addSiteInspectionReport`
 approval gate in `middleware.ts` and an admin check in `app/admin/layout.tsx`. No audit of every
 `'use server'` action is recorded.
 
-Status on `chore/sprint-2-integration` (October 11, 2026): `fix/report-read-caller-checks` adds
+Status on `main` at `ceb5188` (October 13, 2026, Sprint 2 release, merged in #284):
+[PR #259](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/259) added
 `requireApprovedCaller` to the 13 read actions that issue
-[#251](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/251) lists. `getFormResponseById`
-answers only the owner of the report or an approved admin, never for an archived report.
-`isSteward()` takes no argument and checks the signed-in user. `addSiteInspection` is deleted.
-`getSitesOnline` (called from the browser by `/sites` and `UploadImages`) now calls
-`requireApprovedCaller` too (commit `0c51647`, in
-[PR #262](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/262)). Still no caller check:
-`getAttachmentsByResponseId`, `getReportQuestionKeyMap` and `getNextFormInspectionNumber` (only
-server code imports them). See the
-[server action tables](api-documentation.md#2-server-actions).
-
-Status on `fix/pdf-queries-server-only` (October 12, 2026): issue
-[#268](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/268) moves
+[#251](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/251) lists, and #251 is closed.
+`getFormResponseById` answers only the owner of the report or an approved admin, never for an
+archived report. `isSteward()` takes no argument and checks the signed-in user. `addSiteInspection`
+is deleted. `getSitesOnline` (called from the browser by `/sites` and `UploadImages`) calls
+`requireApprovedCaller` too
+([PR #262](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/262)).
+[PR #279](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/279) (issue
+[#268](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/268)) moved
 `getAttachmentsByResponseId`, `getReportQuestionKeyMap` and the other PDF-only reads into the
-server-only module `webapp/lib/pdf/reportQueries.ts` and makes `getNextFormInspectionNumber`
-private. An audit of the 50 exported functions in `queries.ts` finds none that reads data before a
-caller check: each one starts with `requireApprovedAdmin`, `requireApprovedCaller` or
+server-only module `webapp/lib/pdf/reportQueries.ts` and made `getNextFormInspectionNumber`
+private. An audit of the 50 exported functions in `queries.ts` on `main` finds none that reads
+data before a caller check: each one calls `requireApprovedAdmin`, `requireApprovedCaller` or
 `requireReportWriter`, or reads with the signed-in client under RLS (`getCurrentUserUid`,
-`getSitePageFields`, `getSiteLinks`). `getAllSiteReports` checks only that the caller is signed in,
-not approved; the middleware blocks an unapproved caller.
+`getSitePageFields`, `getSiteLinks`). `getAllSiteReports` requires an approved caller. See the
+[server action tables](api-documentation.md#2-server-actions).
 
 #### 5. Move `role` out of `user_metadata` into `app_metadata`
 `Labels: security, data`
@@ -331,8 +328,13 @@ Acceptance: visits, inspections, and per user activity are recorded in a queryab
 #### 15. Add password reset
 `Labels: feature`
 
-No route, no link on the login page. Acceptance: a user who forgets their password can recover
-access without an admin.
+The web app now has a "Forgot password" link and the `/forgot-password` and `/reset-password`
+pages. US 5.0.2 requires an email, code verification, then a new password, with no admin
+intervention. The acceptance tests were updated on October 23, 2026 to remove the reset-link step.
+
+Existing Jest tests check the request, code verification and password update with mocked
+Supabase calls. Email delivery and sign-in with the new password, with rejection of the old
+password, still need a full acceptance check. See [the test mapping](traceability-matrix.md#5-access-and-accounts).
 
 #### 16. Show stewards a map
 `Labels: feature`
@@ -361,10 +363,9 @@ The dashboard re-geocodes every site on every load, one per second, uncached. Th
 tier allows 2,500 requests per day. Largely resolved by issue 7, but the guard is still worth
 having.
 
-Status on `chore/sprint-2-integration` (October 11, 2026): open. `fix/beta-sprint-2-gaps` lets only
-an approved admin call `/api/geocode` and `/api/heatmap`, gives each OpenCage call an 8 second
-timeout, and returns at most 50 sites from the heat map. There is still no cache and no daily
-count.
+Status on `main` at `ceb5188` (October 13, 2026): open. Only an approved admin can call
+`/api/geocode` and `/api/heatmap`, each OpenCage call has an 8 second timeout, and the heat map
+returns at most 50 sites. There is still no cache and no daily count.
 
 ### Tier 2, high value with moderate work
 
@@ -376,8 +377,8 @@ Specify and test that behaviour rather than treating logout as missing. US 5.0.4
 Status: done. #94 was closed by PR #120, which added the admin navigation bar to the admin site
 details page. [PR #158](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/158) added sign-out to the other signed-in pages and a guard for the
 Back button, and [PR #238](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/238) added it to the terms page. US 5.0.4 (#64) is done.
-On `chore/sprint-2-integration`, `fix/alpha-code-quality` sends every sign-out button through
-`useSignOut`, which keeps the user on the page with an error when sign-out fails.
+On `main` at `ceb5188`, every sign-out button goes through `useSignOut`
+([PR #255](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/255)), which keeps the user on the page with an error when sign-out fails.
 
 #### 20. Paginate the sites list
 `/sites` fetches every site and filters and sorts client side in a `useMemo`. `Labels: bug`
@@ -401,9 +402,10 @@ There are zero `.sql` files in the repo and no migrations directory. Two databas
 dashboard depends on exist only inside Supabase. The deployment manual says to contact the
 development team for the schema. `Labels: infra, data`
 
-Status as of October 11, 2026: partly done. `webapp/supabase/migrations/` has 18 migrations on
-`main` and 20 on `chore/sprint-2-integration`. The two new files revoke the default execute right
-on the report functions and the dashboard functions.
+Status on `main` at `ceb5188` (October 13, 2026): partly done. `webapp/supabase/migrations/` has 21
+migrations (18 at the October 11 code freeze). Two of the new files revoke the default execute
+right on the report functions and the dashboard functions. The third adds
+`add_question_atomically` for the form editor.
 `get_naturalness_distribution` and `get_top_sites_distribution` are defined in
 `20260925000000_local_app_schema.sql` and recreated in `20261003000000_remove_w26_prefix.sql`.
 Remaining: the production columns of the legacy tables are not in the repository (for example, the
@@ -441,10 +443,13 @@ Status as of October 11, 2026: mostly done. [PR #235](https://github.com/UAlbert
 fail the job. From October 11, CI did not start on `main` because the account's GitHub Actions
 payments failed (see [Project Management](project-management.md#sprint-2-status-as-of-october-11-2026)).
 
-Status on `chore/sprint-2-integration` (October 11, 2026): the lint step is blocking
+Status on `main` at `ceb5188` (October 13, 2026): the lint step is blocking
 (`--max-warnings 0`), `npm run test:ci` fails below the coverage thresholds in
-`webapp/jest.config.ts`, and `e2e.yaml` runs two Cypress specs against a local Supabase on PRs into
-`main` and `release`. `pr-checks`, `reviewer-gate` and `diagrams` also run on PRs into `sprint-*`.
+`webapp/jest.config.ts`, and `e2e.yaml` runs seven Cypress specs against a local Supabase on PRs
+into `main` and `release`. GitHub Actions still cannot run, because the organisation's billing
+failed. [#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284) and
+[#285](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/285) were merged with an admin
+bypass, after the CI steps ran locally on `main` at `ceb5188`. `pr-checks`, `reviewer-gate` and `diagrams` also run on PRs into `sprint-*`.
 Remaining: the rulesets require `reviewers`, not `reviewer-gate`, and `diagrams` and `cypress` are
 not required checks. See [Contributing](contributing.md#ci).
 

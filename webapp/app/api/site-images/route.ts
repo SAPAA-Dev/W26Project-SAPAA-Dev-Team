@@ -1,23 +1,24 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { createClient, createServerSupabase } from "@/utils/supabase/server";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { s3Client } from "@/lib/s3/client";
 import { deleteObjectsByKeys } from "@/utils/media/s3Delete";
 import { isAllowedStorageKey } from "@/utils/media/storageKeys";
 
-const REGION = process.env.AWS_REGION!;
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
-
-const s3 = new S3Client({
-  region: REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
 
 const IMAGE_TABLES = ["attachments", "homepage_image_uploads"] as const;
 type ImageTable = (typeof IMAGE_TABLES)[number];
+
+type ReportVisibility = {
+  user_id: string | null;
+  answers?: Array<{ question_id: number; is_hidden: boolean | null }> | null;
+};
+
+function getReportVisibility(value: ReportVisibility | ReportVisibility[] | null): ReportVisibility | null {
+  return Array.isArray(value) ? value[0] ?? null : value;
+}
 
 export async function GET(request: Request) {
   try {
@@ -25,6 +26,9 @@ export async function GET(request: Request) {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (user.app_metadata?.authenticated !== true) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -40,10 +44,11 @@ export async function GET(request: Request) {
     }
 
     // Archived reports keep their images for restore, but normal image lists must hide them.
-    let query = supabase
+    const admin = createServerSupabase();
+    let query = admin
       .from("attachments")
       .select(
-        "id, response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier, site_id, form_responses!inner(archived_at)"
+        "id, response_id, question_id, storage_key, filename, content_type, file_size_bytes, caption, identifier, site_id, form_responses!inner(archived_at, user_id, answers(question_id, is_hidden))"
       )
       .is("form_responses.archived_at", null);
 
@@ -62,13 +67,26 @@ export async function GET(request: Request) {
 
     // Generate a presigned GET URL for each attachment (1 hour expiry)
     // A row whose key is outside the image folders is never signed.
+    const visibleAttachments = attachments.filter((row) => {
+      const report = getReportVisibility(row.form_responses);
+      const isHidden = report?.answers?.some(
+        (answer) => answer.question_id === row.question_id && answer.is_hidden === true
+      ) ?? false;
+      const canReadHidden = user.app_metadata?.role === "admin" || report?.user_id === user.id;
+      return !isHidden || canReadHidden;
+    });
+
     const items = await Promise.all(
-      attachments.filter((row) => isAllowedStorageKey(row.storage_key)).map(async (row) => {
+      visibleAttachments.filter((row) => isAllowedStorageKey(row.storage_key)).map(async (row) => {
+        const report = getReportVisibility(row.form_responses);
+        const isHidden = report?.answers?.some(
+          (answer) => answer.question_id === row.question_id && answer.is_hidden === true
+        ) ?? false;
         const command = new GetObjectCommand({
           Bucket: BUCKET,
           Key: row.storage_key,
         });
-        const imageUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        const imageUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
 
         return {
           id:              row.id,
@@ -81,6 +99,7 @@ export async function GET(request: Request) {
           caption:         row.caption,
           identifier:      row.identifier,
           site_id:         row.site_id,
+          ...(isHidden ? { is_hidden: true } : {}),
           imageUrl,
         };
       })

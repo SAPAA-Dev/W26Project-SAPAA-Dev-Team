@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import AdminSitesPage, { daysSince } from '../../app/admin/sites/page';
 import * as supabaseQueries from '@/utils/supabase/queries';
 import { useRouter } from 'next/navigation';
@@ -102,6 +102,50 @@ describe('AdminSitesPage', () => {
 
     expect(screen.queryByText('Alpha')).not.toBeInTheDocument();
     expect(screen.getByText('Beta')).toBeInTheDocument();
+  });
+
+  it('US 6.0.1 AT4: shows only the unlinked sites when the Linked filter is cleared', async () => {
+    const mockSites = [
+      { id: 1, namesite: 'Bound Site', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: null, protected_area_id: 42 },
+      { id: 2, namesite: 'Free Site', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: null, protected_area_id: null },
+      { id: 3, namesite: 'Unknown Site', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: null },
+    ];
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue(mockSites);
+
+    render(<AdminSitesPage />);
+    await waitFor(() => screen.getByText('Bound Site'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Filter' }));
+    const group = screen.getByRole('region', { name: 'Site Boundaries' });
+    fireEvent.click(within(group).getByRole('checkbox', { name: 'Linked' }));
+
+    await waitFor(() => {
+      expect(screen.queryByText('Bound Site')).not.toBeInTheDocument();
+      expect(screen.getByText('Free Site')).toBeInTheDocument();
+      expect(screen.getByText('Unknown Site')).toBeInTheDocument();
+    });
+  });
+
+  it('US 6.0.1 AT4: shows only the linked sites when the Unlinked filter is cleared', async () => {
+    const mockSites = [
+      { id: 1, namesite: 'Bound Site', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: null, protected_area_id: 42 },
+      { id: 2, namesite: 'Free Site', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: null, protected_area_id: null },
+      { id: 3, namesite: 'Unknown Site', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: null },
+    ];
+    (supabaseQueries.getAllSites as jest.Mock).mockResolvedValue(mockSites);
+
+    render(<AdminSitesPage />);
+    await waitFor(() => screen.getByText('Bound Site'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Filter' }));
+    const group = screen.getByRole('region', { name: 'Site Boundaries' });
+    fireEvent.click(within(group).getByRole('checkbox', { name: 'Unlinked' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Bound Site')).toBeInTheDocument();
+      expect(screen.queryByText('Free Site')).not.toBeInTheDocument();
+      expect(screen.queryByText('Unknown Site')).not.toBeInTheDocument();
+    });
   });
 
   it('sorts sites by name', async () => {

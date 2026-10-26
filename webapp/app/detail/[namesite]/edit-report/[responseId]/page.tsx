@@ -4,6 +4,7 @@ import {
   getQuestionsOnline,
   isSteward,
   getFormResponseById,
+  getHiddenQuestionIdsByResponseId,
   updateSiteInspectionAnswers,
   getResponseOwnerId,
   getQuestionResponseType,
@@ -66,6 +67,7 @@ interface SupabaseAnswerRow {
   question_id: number;
   obs_value: string | null;
   obs_comm: string | null;
+  is_hidden: boolean;
 }
 
 interface SectionNavigationState {
@@ -85,6 +87,7 @@ export default function EditReportPage() {
   const responseId = Number(params.responseId);
 
   const [responses, setResponses] = useState<Record<number | string, ResponseValue>>({});
+  const [hiddenQuestionIds, setHiddenQuestionIds] = useState<Set<number>>(new Set());
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentUser, setCurrentUser] = useState<{
     id?: string; email: string; role: string; name: string; avatar: string;
@@ -139,10 +142,11 @@ export default function EditReportPage() {
       try {
         setIsLoading(true);
   
-        const [user, questionsData, existingAnswers, siteImagesRes, siteRow] = await Promise.all([
+        const [user, questionsData, existingAnswers, hiddenIds, siteImagesRes, siteRow] = await Promise.all([
           getCurrentUser(),
           getQuestionsOnline(),
           getFormResponseById(responseId),
+          getHiddenQuestionIdsByResponseId(responseId),
           fetch(`/api/site-images?responseid=${responseId}`),
           getSiteIdForResponse(responseId),
         ]);
@@ -151,6 +155,7 @@ export default function EditReportPage() {
         setCurrentUser(user);
         setQuestions(questionsData || []);
         setResponses(existingAnswers);
+        setHiddenQuestionIds(new Set(hiddenIds));
         const { items = [] } = await siteImagesRes.json();
   
         const hydrated: ExistingAttachment[] = items.map((a: SiteImageItem) => ({
@@ -235,6 +240,7 @@ export default function EditReportPage() {
     const putRes = await fetch(uploadUrl, {
       method: "PUT",
       mode: "cors",
+      headers: { "Content-Type": file.type },
       body: file,
     });
     if (!putRes.ok) {
@@ -374,6 +380,7 @@ export default function EditReportPage() {
               question_id: Number(questionId),
               obs_value: isValueType ? String(subAnswer) : null,
               obs_comm: isOther ? commValue : isCommType ? String(subAnswer) : null,
+              is_hidden: hiddenQuestionIds.has(Number(questionId)),
             });
           });
         } else {
@@ -381,9 +388,27 @@ export default function EditReportPage() {
             question_id: Number(questionId),
             obs_value: isValueType ? String(answer) : null,
             obs_comm: isCommType ? String(answer) : null,
+            is_hidden: hiddenQuestionIds.has(Number(questionId)),
           });
         }
         
+      }
+
+      for (const imageQuestion of questions.filter((question) => question.question_type.trim() === 'image')) {
+        const hasExistingImage = existingAttachments.some(
+          (attachment) => attachment.question_id === imageQuestion.id
+        );
+        const localImages = responses[imageQuestion.id];
+        const hasLocalImage = Array.isArray(localImages)
+          && localImages.some((image) => typeof image === 'object' && image !== null && 'file' in image);
+        if (hiddenQuestionIds.has(imageQuestion.id) && (hasExistingImage || hasLocalImage)) {
+          answersArray.push({
+            question_id: imageQuestion.id,
+            obs_value: null,
+            obs_comm: null,
+            is_hidden: true,
+          });
+        }
       }
       const dateOfVisitQuestionId = await getDateOfVisitQuestionId();
       const inspectionDate = responses[dateOfVisitQuestionId] as string;
@@ -455,10 +480,16 @@ export default function EditReportPage() {
           }
         }
       }
-      router.push(`/sites?edited=true`);
+      router.push(`/detail/${encodeURIComponent(namesite)}?report=${responseId}`);
     } catch (error) {
       console.error('Error saving report:', error);
-      // Optionally surface an error toast here
+      if (error instanceof Error && error.message.startsWith('Required questions are missing: ')) {
+        setMissingRequiredQuestionNumbers(
+          error.message.slice('Required questions are missing: '.length).split(', ')
+        );
+        setMissingImageMetadataDetails([]);
+        setShowRequiredPopup(true);
+      }
     } finally {
       setIsSaving(false);
     }
@@ -595,6 +626,8 @@ export default function EditReportPage() {
         currentUser={currentUser}
         existingAttachments={existingAttachments}
         onExistingAttachmentsChange={setExistingAttachments}
+        hiddenQuestionIds={hiddenQuestionIds}
+        onHiddenQuestionIdsChange={setHiddenQuestionIds}
       />
 
       <StickyFooter

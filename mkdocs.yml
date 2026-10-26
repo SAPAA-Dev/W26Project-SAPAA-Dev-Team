@@ -23,6 +23,7 @@ nav:
   - User Story Summaries: 'user-stories-summaries.md'
   - Project Management: 'project-management.md'
   - Software Design: 'software-design.md'
+  - UI/UX design: 'ui-design.md'
   - User Model: 'user-model.md'
   - API Documentation: 'api-documentation.md'
   - Wireframes: 'interactive-wireframe/index.md'
@@ -30,8 +31,8 @@ nav:
   - Meeting Minutes: 'meeting-minutes.md'
   - Contributing: 'contributing.md'
   - Issues Backlog: 'issues.md'
+  - Sprint 3 Test Plan: 'test-plan.md'
   - Archive (inherited):
-      - UI/UX design: 'ui-design.md'
       - Media Storage Architecture: 'aws-architecture.md'
       - User Manual: 'user-manual.md'
       - Admin Manual: 'admin-manual.md'
@@ -40,4 +41,5 @@ nav:
       - Static Analysis: 'sonar-qube.md'
       - Job Documentation: 'job-documentation.md'
       - Traceability Matrix: 'traceability-matrix.md'
+      - Sprint 3 release checks: sprint-3-release.md
       - Winter 2026 Requirements: 'index-WINTER2026.md'

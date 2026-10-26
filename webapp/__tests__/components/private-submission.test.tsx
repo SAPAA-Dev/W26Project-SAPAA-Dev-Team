@@ -24,6 +24,7 @@ const ALLOWED_ANSWER_KEYS = new Set([
   "question_id",
   "obs_value",
   "obs_comm",
+  "is_hidden",
 ]);
 
 
@@ -167,7 +168,7 @@ describe("Private user info – never submitted to the database", () => {
       expect(Array.isArray(rows)).toBe(true);
     });
 
-    it("every row contains only the four allowed columns", async () => {
+    it("every row contains only the allowed answer columns", async () => {
       const rows = await submitForm();
 
       rows.forEach((row, i) => {
@@ -212,6 +213,34 @@ describe("Private user info – never submitted to the database", () => {
         expect(row).not.toHaveProperty("avatar_url");
       });
     });
+  });
+
+  it("saves the answer as hidden when the steward selects the privacy option", async () => {
+    const questions = [{
+      id: 1,
+      title: "General observation",
+      text: null,
+      question_type: "text",
+      section: 4,
+      answers: [],
+      formorder: 1,
+      is_required: false,
+    }];
+    (getQuestionsOnline as jest.Mock).mockResolvedValue(questions);
+    (getQuestionResponseType as jest.Mock).mockResolvedValue([
+      { question_id: 1, obs_value: 1, obs_comm: 0 },
+    ]);
+
+    render(<NewReportPage />);
+    const input = await screen.findByTestId("question-input-1");
+    await userEvent.type(input, "Private observation");
+    await userEvent.click(screen.getByRole("checkbox", { name: /hide answer from other stewards/i }));
+    await userEvent.click(screen.getByRole("button", { name: /review & submit/i }));
+
+    await waitFor(() => expect(uploadSiteInspectionAnswers).toHaveBeenCalled());
+    expect((uploadSiteInspectionAnswers as jest.Mock).mock.calls[0][0]).toEqual([
+      expect.objectContaining({ question_id: 1, is_hidden: true }),
+    ]);
   });
 
 

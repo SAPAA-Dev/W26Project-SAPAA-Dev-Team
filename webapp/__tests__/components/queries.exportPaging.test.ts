@@ -178,4 +178,56 @@ describe('bulk export answers (US 7.0.6 AT2)', () => {
       expect(query.eq).toHaveBeenCalledWith('is_active', true);
     }
   });
+
+  it('1.0.3 AT3: removes hidden answers for another approved steward', async () => {
+    const { createClient } = jest.requireMock('../../utils/supabase/server');
+    (createClient as jest.Mock).mockResolvedValue({
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: { user: { id: 'viewer', app_metadata: { role: 'steward', authenticated: true } } },
+          error: null,
+        }),
+      },
+    });
+    const privateReport = [{
+      ...reportRows[0],
+      user_id: 'owner',
+      answers: [
+        { question_id: 4, obs_value: 'Visible', obs_comm: null, is_hidden: false, questions: question(4, 2) },
+        { question_id: 9, obs_value: null, obs_comm: 'Private', is_hidden: true, questions: question(9, 1) },
+      ],
+    }];
+    mockTables(pagedQuery([{ data: privateReport, error: null }]));
+
+    const reports = await getFormResponsesBySite('Beaver Hills');
+
+    expect(reports[0].answers).toHaveLength(1);
+    expect(reports[0].answers[0].obs_value).toBe('Visible');
+  });
+
+  it('1.0.3 AT3: gives the owner the hidden answer and its badge state', async () => {
+    const { createClient } = jest.requireMock('../../utils/supabase/server');
+    (createClient as jest.Mock).mockResolvedValue({
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: { user: { id: 'owner', app_metadata: { role: 'steward', authenticated: true } } },
+          error: null,
+        }),
+      },
+    });
+    const privateReport = [{
+      ...reportRows[0],
+      user_id: 'owner',
+      answers: [
+        { question_id: 9, obs_value: null, obs_comm: 'Private', is_hidden: true, questions: question(9, 1) },
+      ],
+    }];
+    mockTables(pagedQuery([{ data: privateReport, error: null }]));
+
+    const reports = await getFormResponsesBySite('Beaver Hills');
+
+    expect(reports[0].answers).toEqual([
+      expect.objectContaining({ question_id: 9, obs_comm: 'Private', is_hidden: true }),
+    ]);
+  });
 });

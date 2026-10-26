@@ -1,16 +1,20 @@
 import {
   ACTIVE_STATUS_LABEL,
   INACTIVE_STATUS_LABEL,
+  LINKED_LABEL,
   NO_STATUS_LABEL,
   NO_SUBTYPE_LABEL,
   NO_TYPE_LABEL,
+  SITE_BOUNDARY_OPTIONS,
   UNKNOWN_COUNTY_LABEL,
+  UNLINKED_LABEL,
   boundaryFilterOptions,
   countyFilterOptions,
   defaultMapStatuses,
   filterBoundaryFeatures,
   matchesActiveFilter,
   matchesCountyFilter,
+  matchesSiteBoundaryFilter,
   toggleAllCategoryValues,
   toggleCategoryValue,
 } from '@/lib/map/boundaryFilters';
@@ -29,9 +33,11 @@ function feature(
     type: 'Feature',
     id,
     properties: {
+      protected_area_id: id,
       name,
       fid: id,
       area_type: areaType,
+      boundary_color: null,
       subtype,
       iucn: null,
       oc_no: null,
@@ -43,6 +49,8 @@ function feature(
       notes: null,
       county,
       is_active: isActive,
+      site_name: null,
+      last_inspection_date: null,
     },
     geometry: { type: 'MultiPolygon', coordinates: [] },
   };
@@ -209,6 +217,27 @@ describe('list filters (US 2.0.6)', () => {
     expect(matchesActiveFilter(true, new Set([ACTIVE_STATUS_LABEL]))).toBe(true);
     expect(matchesActiveFilter(false, new Set([ACTIVE_STATUS_LABEL]))).toBe(false);
     expect(matchesActiveFilter(false, null)).toBe(true);
+  });
+});
+
+describe('site boundary filter (US 6.0.1 AT4)', () => {
+  it('offers Linked and Unlinked as one separate section', () => {
+    expect(SITE_BOUNDARY_OPTIONS).toEqual([LINKED_LABEL, UNLINKED_LABEL]);
+  });
+
+  it('matches a site by its protected area link', () => {
+    expect(matchesSiteBoundaryFilter(9, null)).toBe(true);
+    expect(matchesSiteBoundaryFilter(null, null)).toBe(true);
+    expect(matchesSiteBoundaryFilter(undefined, null)).toBe(true);
+
+    expect(matchesSiteBoundaryFilter(9, new Set([LINKED_LABEL]))).toBe(true);
+    expect(matchesSiteBoundaryFilter(9, new Set([UNLINKED_LABEL]))).toBe(false);
+    expect(matchesSiteBoundaryFilter(null, new Set([UNLINKED_LABEL]))).toBe(true);
+    expect(matchesSiteBoundaryFilter(undefined, new Set([UNLINKED_LABEL]))).toBe(true);
+    expect(matchesSiteBoundaryFilter(null, new Set([LINKED_LABEL]))).toBe(false);
+
+    expect(matchesSiteBoundaryFilter(9, new Set())).toBe(false);
+    expect(matchesSiteBoundaryFilter(null, new Set())).toBe(false);
   });
 });
 
