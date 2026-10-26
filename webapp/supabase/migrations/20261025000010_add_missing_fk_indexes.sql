@@ -19,7 +19,8 @@
 --
 -- Not added on purpose: unique (response_id, question_id) on answers. A multi-select
 -- question stores one answers row per selected option, and the report code joins those
--- rows with '; ', so the pair is not unique by design.
+-- rows with '; ', so the pair is not unique by design. Duplicate Q31 rows are handled in
+-- 20261025000020_count_one_naturalness_answer_per_report.sql instead.
 
 create index if not exists answers_response_id_idx on public.answers (response_id);
 create index if not exists answers_question_id_idx on public.answers (question_id);
