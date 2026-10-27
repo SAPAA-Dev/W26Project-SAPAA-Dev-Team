@@ -199,6 +199,7 @@ Run the files in this order.
 | 29 | `20261025000000_fix_site_delete_impact.sql` | Redefines the two site delete functions so the impact count includes GPX tracks and page fields. Service role only. Needs `site_page_fields`, `archived_at` and `gpx_tracks`, so apply it after steps 10, 11 and 21. |
 | 30 | `20261025000010_add_missing_fk_indexes.sql` | Adds eleven foreign key and filter indexes. Each build locks its table while it runs, so apply outside peak use. |
 | 31 | `20261025000020_count_one_naturalness_answer_per_report.sql` | Redefines `get_naturalness_distribution` to count each report once per score. Keeps the existing grants. Apply after step 12. |
+| 32 | `20261027000000_add_missing_count_to_export_jobs.sql` | Adds `export_jobs.missing_count`, the count of files that an export skipped because the object was missing from storage. Apply after step 27, before the export change is deployed. |
 
 PRs #234, #238 and #242 are merged on `main`. Steps 18 to 20 came with the Sprint 2 fixes, which
 are on `main` since [#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284)
