@@ -480,7 +480,7 @@ table measures coverage, not release approval.
 
 | Story | Team | ATs | Covered | Partial | None |
 |---|---|---|---|---|---|
-| US 1.0.3 | Green | 3 | AT2, AT3 | AT1 | - |
+| US 1.0.3 | Green | 3 | AT1, AT2, AT3 | - | - |
 | US 1.0.4 | Green | 2 | AT1, AT2 | - | - |
 | US 1.0.6 | Red | 3 | AT1, AT2, AT3 | - | - |
 | US 2.0.1 | Red | 4 | AT2, AT3, AT4 | AT1 | - |
@@ -494,10 +494,24 @@ table measures coverage, not release approval.
 | US 4.0.4 | Blue | 4 | AT1, AT2, AT3 | AT4 | - |
 | US 5.0.2 | Green | 4 | AT1, AT2, AT3, AT4 | - | - |
 | US 6.0.1 | Blue | 5 | AT1, AT2, AT3, AT4, AT5 | - | - |
-| **Total** | | **50** | **47** | **3** | **0** |
+| **Total** | | **50** | **48** | **2** | **0** |
 
 US 3.0.4 is removed, not an untested commitment. Every Sprint 3 AT now has at least one test,
-and every Sprint 3 story has a test name with its story and AT label.
+and every Sprint 3 story has a test name with its story and AT label. The two partial rows are
+2.0.1 AT1 and 4.0.4 AT4. 1.0.3 AT1 is covered: its row above lists `ProfilePage.test.tsx:141,161`
+with the result Pass, and this table used to count it as partial by mistake.
+
+**Local run, October 27, 2026.** GitHub Actions minutes ran out, so the checks were run on a local
+machine from `main` at `45f1cf99`, with a local Supabase and the local seed. Jest: 1900 passed, 36
+skipped, 0 failed. Database suites against the real local Supabase: 4 suites, 36 tests passed. Type
+check, lint and the production build passed. Cypress (the 10 specs of the CI list): 31 of 37 tests
+passed, 3 failed, 3 skipped. The failures are in `profile.cy.ts` (1.0.2 AT5, out of date after the
+1.0.6 dropdowns), `map_filter.cy.ts` (2.0.6, out of date after the old map was removed) and
+`map_site_popup.cy.ts` (2.0.8 AT2, popup shows "Jan 14, 2026" for a report dated 2026-01-15 in a
+time zone behind UTC). The results by spec are in the
+[test plan](test-plan.md#local-run-october-27-2026). The team also connected a Cybera instance,
+ran the tests there and had the results confirmed on it (reported by Saumya, October 27; the run
+link and counts are not recorded yet).
 
 ## Close-out evidence notes
 

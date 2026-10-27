@@ -165,7 +165,7 @@ The [traceability matrix](traceability-matrix.md) has one row per AT. Coverage i
 
 | Story | Team | ATs | Covered | Partial | None |
 |---|---|---|---|---|---|
-| US 1.0.3 | Green | 3 | AT2, AT3 | AT1 | - |
+| US 1.0.3 | Green | 3 | AT1, AT2, AT3 | - | - |
 | US 1.0.4 | Green | 2 | AT1, AT2 | - | - |
 | US 1.0.6 | Red | 3 | AT1, AT2, AT3 | - | - |
 | US 2.0.1 | Red | 4 | AT2, AT3, AT4 | AT1 | - |
@@ -179,11 +179,59 @@ The [traceability matrix](traceability-matrix.md) has one row per AT. Coverage i
 | US 4.0.4 | Blue | 4 | AT1, AT2, AT3 | AT4 | - |
 | US 5.0.2 | Green | 4 | AT1, AT2, AT3, AT4 | - | - |
 | US 6.0.1 | Blue | 5 | AT1, AT2, AT3, AT4, AT5 | - | - |
-| **Total** | | **50** | **47** | **3** | **0** |
+| **Total** | | **50** | **48** | **2** | **0** |
 
-US 3.0.4 is removed. The three partial rows still need evidence. The combined local suite passes
+US 3.0.4 is removed. The two partial rows (2.0.1 AT1 and 4.0.4 AT4) still need evidence. 1.0.3 AT1
+was counted as partial in this table only; its row above and in the matrix already listed its tests
+(`ProfilePage.test.tsx:141`, `:161`), so it is covered. The combined local suite passes
 1895 tests, with 36 skipped (131 passing suites; the four database suites skip without a local
 Supabase). Required CI must pass before release.
+
+### Local run, October 27, 2026
+
+GitHub Actions minutes ran out, so the checks were run on a local machine instead. The source was
+`main` at `45f1cf99` in a clean worktree, with a local Supabase and the local seed
+(`scripts/e2e_seed.js`). Production was not used. The tables below are this local run.
+
+**Cybera instance.** The team also connected a Cybera instance and ran
+the tests there, and the results were confirmed on that instance (reported by Saumya, October 27,
+2026). The run link, the commit and the per-spec counts of that run are not recorded here; add them
+when they are available.
+
+| Check | Result |
+|---|---|
+| Jest (`npm test`) | 1900 passed, 36 skipped, 0 failed (131 suites passed, 4 skipped) |
+| Database suites (`npm run test:db`, real local Supabase) | 4 suites, 36 tests, all passed |
+| Type check (`tsc --noEmit`) | Passed |
+| Lint (`eslint .`) | Passed |
+| Production build (`next build`) | Passed |
+| Cypress, the 10 specs of the CI list, Electron, against `next start` on port 3000 | 37 tests: 31 passed, 3 failed, 3 skipped. 7 of 10 specs passed. |
+
+Cypress results by spec:
+
+| Spec | Result |
+|---|---|
+| `logout.cy.ts` (5.0.4) | 5 passed |
+| `authorized_check.cy.ts` (3.0.8) | 1 passed |
+| `add_site.cy.ts` (2.0.2) | 6 passed |
+| `archive_report.cy.ts` (7.0.8) | 5 passed |
+| `deactivate_site.cy.ts` (2.0.3) | 6 passed |
+| `edit_own_report.cy.ts` (4.0.4 AT1, AT2) | 2 passed |
+| `password_reset_wrong_code.cy.ts` (5.0.2) | 3 passed |
+| `profile.cy.ts` (1.0.2) | 1 passed, 1 failed: AT5 looks for a `label` with the text "Skills", and the 1.0.6 dropdowns replaced it. The spec is out of date, not the app. |
+| `map_site_popup.cy.ts` (2.0.8) | 2 passed, 1 failed: AT2 expects "Jan 15, 2026" and the popup shows "Jan 14, 2026". The seed date is `2026-01-15`, so the popup date moves back one day in a time zone behind UTC (this run was in MDT). Possible app bug to confirm. |
+| `map_filter.cy.ts` (2.0.6) | 1 failed, 3 skipped: the `before each` hook waits for "3 protected areas found", and the map page no longer shows that text. The spec is out of date since the old map was removed (#320). |
+
+Limits of this run:
+
+- Several specs set `const APP = 'http://localhost:3000'` (for example `map_site_popup.cy.ts`,
+  `password_reset_wrong_code.cy.ts`, `archive_report.cy.ts` and `deactivate_site.cy.ts`), so the
+  server had to run on port 3000. The same constant makes these specs ignore `CYPRESS_BASE_URL`,
+  so they cannot run against the deployed site until it is replaced with `Cypress.config('baseUrl')`.
+- The three failures above are not yet fixed or re-run. The Cypress CI list still contains
+  `profile.cy.ts` and `map_filter.cy.ts`.
+- This document records no Cypress run against the deployed site. The Cybera run above is
+  reported, not recorded with counts or a link.
 
 ## How to run the tests
 
@@ -191,5 +239,5 @@ From `webapp/`:
 
 - Jest (unit and integration): `npm test`
 - One file: `npx jest __tests__/components/SiteMap.test.tsx`
-- Local browser checks: follow [Sprint 3 release checks](sprint-3-release.md). The recorded run used a local Supabase, local SMTP and disposable accounts. No Cypress run was made.
-- Existing Cypress CI jobs are in `.github/workflows/e2e.yaml`; follow the project rule that an agent does not run Cypress.
+- Local browser checks: follow [Sprint 3 release checks](sprint-3-release.md). The October 26 run used a local Supabase, local SMTP and disposable accounts and made no Cypress run. The October 27 local run above did run Cypress.
+- Existing Cypress CI jobs are in `.github/workflows/e2e.yaml`. `AGENTS.md` says an agent never runs Cypress; the October 27 run was made at the user's explicit request, against the local Supabase only.
