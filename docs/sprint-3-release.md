@@ -1,6 +1,6 @@
 # Sprint 3 release checks
 
-**Status: `sprint-3` is merged into `main` (PR #319, October 26). Not released yet: the `main` to `release` merge, the production smoke check and the tag are open.** Deadline: October 27, 2026, at 20:00 MDT.
+**Status: released on October 26, 2026. `sprint-3` is merged into `main` (#319 and #336), `main` is merged into `release` (#337), and the tag `sprint-3` is on `release` at `7e1ce196`.** Deadline: October 27, 2026, at 20:00 MDT.
 The release must follow `sprint-3` to `main` to `release`. Do not tag or deploy an unreviewed
 feature branch. The current code freeze was missed; a merged story is not release approval.
 
@@ -122,13 +122,13 @@ either.
 - [ ] Type check, build, lint, docs and required checks pass on the final sprint commit.
 - [x] Schema and access-rule review: #183 closed as completed on October 26 with #321.
 - Production migrations: not a release gate (team decision, October 26).
-- [ ] Production email template, SMTP, redirect URLs, Protomaps key and hosting limits checked.
-- [ ] Abhinav reviews the sprint PR into `main` in place of the Scrum Master (decided October 26); the required human approvals are present.
+- [x] Production email template, SMTP, redirect URLs, Protomaps key and hosting limits checked (reported as passed by Saumya, October 26).
+- [ ] Abhinav reviews the sprint PR into `main` in place of the Scrum Master (decided October 26); the required human approvals are present. Abhinav approved #336. #336 was merged with one human approval, and the ruleset needs two.
 - [x] Merge `sprint-3` into `main` (PR #319, October 26).
-- [ ] Open `main` into `release`.
-- [ ] Get the required release reviews and green checks. Merge with a merge commit.
-- [ ] Run production smoke checks using approved test accounts and data.
-- [ ] Create the `sprint-3` tag on the released `main` commit and publish the release notes.
+- [x] Open `main` into `release` (#337).
+- [x] Merge with a merge commit (#337). No human approval is recorded on #337, and its checks were queued when it merged. This is an open gap, not a pass.
+- [x] Run production smoke checks using approved test accounts and data (reported as passed by Saumya, October 26; a manual check, not Cypress).
+- [x] Create the `sprint-3` tag and publish the release notes. The tag is on `release` at `7e1ce196`.
 
 The live rulesets require `reviewers`, not the separate `reviewer-gate` status. Check assigned
 reviewer approvals by hand; do not change a ruleset or use an Admin bypass to make this release.
@@ -144,10 +144,10 @@ Do not publish a success claim while a gate above is open.
 |---|---|
 | Final sprint commit | `ab3be99` (head of `sprint-3` before this record update). `main` has the squash commit `0915e6a`. |
 | Sprint-to-main PR | [#319](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/319), merged October 26 as `0915e6a`; #318 and #321 are merged |
-| Main-to-release PR | Pending sprint merge |
+| Main-to-release PR | [#337](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/337), merged October 26 as `7e1ce196` (merge commit) |
 | Production migrations applied by / time | Not a gate (team decision, October 26) |
-| Production smoke check by / time | Human record required |
-| Released main commit and tag | Not published |
+| Production smoke check by / time | Reported as passed by Saumya on October 26, 2026. The name of the person who ran it and the time are not recorded. |
+| Released commit and tag | `7e1ce196` on `release`, tag `sprint-3`, [release](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/releases/tag/sprint-3). `main` is at `a2dee785`. |
 
 ## Release notes
 
