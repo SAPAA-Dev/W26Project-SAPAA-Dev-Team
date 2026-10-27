@@ -30,10 +30,6 @@ export default function ForgotPasswordPage() {
         setErr(body.error || 'Could not send a code. Try again.');
         return;
       }
-      if (body.providerRequired) {
-        setErr(body.error);
-        return;
-      }
       setStage('code');
       setNotice(body.message || 'Check your email for the verification code.');
     } catch {
@@ -88,7 +84,7 @@ export default function ForgotPasswordPage() {
         {stage !== 'sent' && (
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-[#254431] mb-3">Reset your password</h1>
-            <p className="text-lg text-[#7A8075]">
+            <p className="text-lg text-[#5B655D]">
               {stage === 'email'
                 ? 'Enter your email and we will send you a verification code.'
                 : `Enter the six-digit code sent to ${email}.`}
@@ -104,7 +100,7 @@ export default function ForgotPasswordPage() {
               </div>
             </div>
             <h1 className="text-2xl font-bold text-[#254431] mb-2">Check your email</h1>
-            <p className="text-[#7A8075] mb-6">
+            <p className="text-[#5B655D] mb-6">
               We sent a verification code to <span className="font-semibold text-[#254431]">{email}</span>.
               Enter the code to set a new password.
             </p>
@@ -136,7 +132,7 @@ export default function ForgotPasswordPage() {
                   </label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-0 pl-4 flex items-center">
-                      <Mail className="h-5 w-5 text-[#7A8075]" />
+                      <Mail className="h-5 w-5 text-[#5B655D]" />
                     </div>
                     <input
                       id="email"
@@ -146,7 +142,7 @@ export default function ForgotPasswordPage() {
                         setEmail(event.target.value);
                         if (err) setErr(null);
                       }}
-                      className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-4 py-3.5 text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
+                      className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-4 py-3.5 text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
                       placeholder="your.email@example.com"
                       required
                     />
@@ -154,7 +150,7 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 {err && (
-                  <div className="bg-[#FEE2E2] border-2 border-[#B91C1C] text-[#B91C1C] px-4 py-3.5 rounded-xl font-medium">
+                  <div role="alert" className="bg-[#FEE2E2] border-2 border-[#B91C1C] text-[#B91C1C] px-4 py-3.5 rounded-xl font-medium">
                     {err}
                   </div>
                 )}
@@ -188,7 +184,7 @@ export default function ForgotPasswordPage() {
                   </label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-0 pl-4 flex items-center">
-                      <KeyRound className="h-5 w-5 text-[#7A8075]" />
+                      <KeyRound className="h-5 w-5 text-[#5B655D]" />
                     </div>
                     <input
                       id="code"
@@ -200,7 +196,7 @@ export default function ForgotPasswordPage() {
                         setCode(event.target.value.replace(/\D/g, ''));
                         if (err) setErr(null);
                       }}
-                      className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-4 py-3.5 text-[#1E2520] tracking-[0.5em] placeholder:tracking-normal placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
+                      className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-4 py-3.5 text-[#1E2520] tracking-[0.5em] placeholder:tracking-normal placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
                       placeholder="000000"
                       required
                     />
@@ -208,7 +204,7 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 {err && (
-                  <div className="bg-[#FEE2E2] border-2 border-[#B91C1C] text-[#B91C1C] px-4 py-3.5 rounded-xl font-medium">
+                  <div role="alert" className="bg-[#FEE2E2] border-2 border-[#B91C1C] text-[#B91C1C] px-4 py-3.5 rounded-xl font-medium">
                     {err}
                   </div>
                 )}
@@ -250,7 +246,7 @@ export default function ForgotPasswordPage() {
 
             <Link
               href="/login"
-              className="flex items-center justify-center gap-2 text-[#7A8075] hover:text-[#254431] transition-colors font-medium"
+              className="flex items-center justify-center gap-2 text-[#5B655D] hover:text-[#254431] transition-colors font-medium"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to Login

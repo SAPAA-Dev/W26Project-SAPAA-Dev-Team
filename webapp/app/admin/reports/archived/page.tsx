@@ -133,7 +133,7 @@ export default function ArchivedReportsPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
         <div className="h-16 w-16 animate-spin rounded-full border-4 border-[#E4EBE4] border-t-[#356B43]" />
-        <p className="font-medium text-[#7A8075]">Loading archived reports...</p>
+        <p className="font-medium text-[#5B655D]">Loading archived reports...</p>
       </div>
     );
   }
@@ -144,7 +144,7 @@ export default function ArchivedReportsPage() {
         <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-lg">
           <AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-700" />
           <h2 className="mb-2 text-2xl font-bold text-[#254431]">Unable to Load Archived Reports</h2>
-          <p className="text-[#7A8075]">{error}</p>
+          <p className="text-[#5B655D]">{error}</p>
         </div>
       </div>
     );
@@ -176,7 +176,7 @@ export default function ArchivedReportsPage() {
 
         <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
           <div className="relative mb-4">
-            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#7A8075]" />
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#5B655D]" />
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -184,7 +184,7 @@ export default function ArchivedReportsPage() {
               className="w-full rounded-xl border-2 border-[#E4EBE4] bg-white py-3 pl-12 pr-4 text-[#1E2520] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#356B43]"
             />
           </div>
-          <p className="mb-6 font-medium text-[#7A8075]">
+          <p className="mb-6 font-medium text-[#5B655D]">
             {filteredReports.length} {filteredReports.length === 1 ? 'report' : 'reports'} archived
           </p>
 
@@ -192,7 +192,7 @@ export default function ArchivedReportsPage() {
 
           {filteredReports.length === 0 ? (
             <div className="py-16 text-center">
-              <Archive className="mx-auto mb-4 h-12 w-12 text-[#7A8075]" />
+              <Archive className="mx-auto mb-4 h-12 w-12 text-[#5B655D]" />
               <h2 className="text-xl font-bold text-[#254431]">No archived reports</h2>
             </div>
           ) : (
@@ -207,7 +207,7 @@ export default function ArchivedReportsPage() {
                     <p className="text-sm text-[#5B655D]">
                       Submitted by {report.submitterName ?? 'Unknown steward'}
                     </p>
-                    <p className="mt-1 flex items-center gap-1 text-xs text-[#7A8075]">
+                    <p className="mt-1 flex items-center gap-1 text-xs text-[#5B655D]">
                       <Calendar className="h-3 w-3" /> Archived {formatDate(report.archivedAt)}
                       {!report.isActive && ' · Was inactive'}
                     </p>

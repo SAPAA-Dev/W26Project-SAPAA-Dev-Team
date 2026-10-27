@@ -67,7 +67,7 @@ export default function ProtectedAreaField({
             <p data-testid={`${testIdPrefix}-selected-name`} className="text-sm font-medium text-[#1E2520]">
               {selected?.name ?? "Unknown protected area"}
             </p>
-            <p data-testid={`${testIdPrefix}-selected-detail`} className="text-xs text-[#7A8075]">
+            <p data-testid={`${testIdPrefix}-selected-detail`} className="text-xs text-[#5B655D]">
               {selected ? detailLine(selected) : `Id ${selectedId}`}
             </p>
           </div>
@@ -80,21 +80,21 @@ export default function ProtectedAreaField({
               setQuery("");
             }}
             disabled={disabled}
-            className="text-[#7A8075] hover:text-[#254431] transition-colors ml-2 flex-shrink-0"
+            className="text-[#5B655D] hover:text-[#254431] transition-colors ml-2 flex-shrink-0"
           >
             <X size={14} />
           </button>
         </div>
       ) : (
         <div className="relative">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8075] pointer-events-none" />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5B655D] pointer-events-none" />
           <input
             data-testid={`${testIdPrefix}-search`}
             {...listbox.inputProps}
             type="text"
             aria-label="Search protected areas"
             autoComplete="off"
-            className="w-full pl-8 pr-3 py-3 text-sm bg-[#F7F2EA] border-2 border-[#86A98A] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] transition-all"
+            className="w-full pl-8 pr-3 py-3 text-sm bg-[#F7F2EA] border-2 border-[#86A98A] rounded-xl text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] transition-all"
             placeholder="Search by name, FID, or type"
             value={query}
             onChange={(event) => {
@@ -109,7 +109,7 @@ export default function ProtectedAreaField({
           {open && (
             <div className="mt-1 bg-white border-2 border-[#E4EBE4] rounded-xl shadow-lg z-10 max-h-40 overflow-y-auto">
               {matches.length === 0 ? (
-                <p className="text-xs text-[#7A8075] text-center py-3">No protected areas found</p>
+                <p className="text-xs text-[#5B655D] text-center py-3">No protected areas found</p>
               ) : (
                 <ul {...listbox.listProps} aria-label="Protected areas">
                   {matches.map((area, index) => (
@@ -120,7 +120,7 @@ export default function ProtectedAreaField({
                       className="w-full text-left px-3 py-2 cursor-pointer hover:bg-green-50 aria-selected:bg-green-50 transition-colors"
                     >
                       <p className="text-sm font-medium text-[#1E2520]">{area.name}</p>
-                      <p className="text-xs text-[#7A8075]">{detailLine(area)}</p>
+                      <p className="text-xs text-[#5B655D]">{detailLine(area)}</p>
                     </li>
                   ))}
                 </ul>

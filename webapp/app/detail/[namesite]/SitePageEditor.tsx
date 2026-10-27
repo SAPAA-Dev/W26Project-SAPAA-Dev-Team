@@ -147,7 +147,7 @@ export default function SitePageEditor({ siteId, fields, onSaved }: SitePageEdit
                     className="mt-2 w-full px-3 py-2 bg-white border-2 border-[#E4EBE4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#356B43]"
                   />
                 ) : (
-                  <p className="mt-2 text-sm text-[#7A8075]">
+                  <p className="mt-2 text-sm text-[#5B655D]">
                     Assign the steward with the Steward control on the site page. This only shows or hides it.
                   </p>
                 )}

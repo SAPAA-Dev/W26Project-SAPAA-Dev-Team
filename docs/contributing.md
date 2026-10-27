@@ -279,7 +279,7 @@ If you cloned before the hook existed, or you skipped `npm install`, wire it up 
 git config core.hooksPath .githooks
 ```
 
-`main`, `master` and `release` are exempt from the branch check, and git's own merge, revert, and
+`main`, `master`, `release` and the sprint branches (`sprint-3`, `sprint-4`) are exempt from the branch check, and git's own merge, revert, and
 autosquash messages are left alone.
 
 After editing the hook, check it still behaves:

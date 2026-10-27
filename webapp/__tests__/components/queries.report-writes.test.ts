@@ -154,7 +154,7 @@ describe('report write server actions', () => {
   describe('updateSiteInspectionAnswers (B2)', () => {
     const answers = [{ question_id: 3, obs_value: 'Good', obs_comm: null }];
 
-    it('refuses a different user and changes nothing', async () => {
+    it('refuses a different user and changes nothing (4.0.4 AT2)', async () => {
       mockCaller(OTHER);
       queueReport(OWNER);
       await expect(updateSiteInspectionAnswers(41, answers, '2026-10-01')).rejects.toThrow(
@@ -172,7 +172,7 @@ describe('report write server actions', () => {
       expect(mockFrom).not.toHaveBeenCalled();
     });
 
-    it('lets the owner replace the answers', async () => {
+    it('lets the owner replace the answers (4.0.4 AT1)', async () => {
       queueReport(OWNER);
       queueRequiredQuestions();
       queue('form_responses', { data: { id: 41 }, error: null });
@@ -197,7 +197,7 @@ describe('report write server actions', () => {
       expect(insert.insert).toHaveBeenCalledWith([{ ...answers[0], response_id: 41 }]);
     });
 
-    it('refuses an update that clears a required answer and names the question', async () => {
+    it('refuses an update that clears a required answer and names the question (4.0.4 AT3)', async () => {
       queueReport(OWNER);
       queueRequiredQuestions([
         { id: 3, form_question: 'Site condition', question_type: 'text' },
@@ -209,7 +209,7 @@ describe('report write server actions', () => {
       expect(mockFrom).not.toHaveBeenCalledWith('answers');
     });
 
-    it('accepts an answer to every required question', async () => {
+    it('accepts an answer to every required question (4.0.4 AT3)', async () => {
       queueReport(OWNER);
       queueRequiredQuestions([
         { id: 3, form_question: 'Site condition', question_type: 'text' },

@@ -175,7 +175,7 @@ export default function AccountManagementPage() {
                   <Users className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Total Users</div>
+                  <div className="text-sm font-semibold text-[#5B655D] uppercase tracking-wide">Total Users</div>
                   <div className="text-3xl font-bold text-[#254431]">{users.length}</div>
                 </div>
               </div>
@@ -187,7 +187,7 @@ export default function AccountManagementPage() {
                   <Clock className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Pending</div>
+                  <div className="text-sm font-semibold text-[#5B655D] uppercase tracking-wide">Pending</div>
                   <div className="text-3xl font-bold text-[#254431]">
                     {users.filter(u => !u.authenticated).length}
                   </div>
@@ -201,7 +201,7 @@ export default function AccountManagementPage() {
                   <CheckCircle className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Approved</div>
+                  <div className="text-sm font-semibold text-[#5B655D] uppercase tracking-wide">Approved</div>
                   <div className="text-3xl font-bold text-[#254431]">
                     {users.filter(u => u.authenticated).length}
                   </div>
@@ -215,7 +215,7 @@ export default function AccountManagementPage() {
                   <Shield className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Admins</div>
+                  <div className="text-sm font-semibold text-[#5B655D] uppercase tracking-wide">Admins</div>
                   <div className="text-3xl font-bold text-[#254431]">
                     {users.filter(u => u.role === 'admin').length}
                   </div>
@@ -228,9 +228,9 @@ export default function AccountManagementPage() {
           <div className="bg-white rounded-2xl p-6 border-2 border-[#E4EBE4] shadow-sm mb-6">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A8075]" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#5B655D]" />
                 <input
-                  className="w-full pl-12 pr-4 py-3.5 bg-[#F7F2EA] border-2 border-[#86A98A] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-all"
+                  className="w-full pl-12 pr-4 py-3.5 bg-[#F7F2EA] border-2 border-[#86A98A] rounded-xl text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-all"
                   placeholder="Search by email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -263,8 +263,8 @@ export default function AccountManagementPage() {
               ) : displayedUsers.length === 0 ? (
                 <div className="text-center py-12">
                   <Users className="w-16 h-16 text-[#E4EBE4] mx-auto mb-4" />
-                  <p className="text-[#7A8075] text-lg">No users found</p>
-                  <p className="text-[#7A8075] text-sm">Try adjusting your search or filters</p>
+                  <p className="text-[#5B655D] text-lg">No users found</p>
+                  <p className="text-[#5B655D] text-sm">Try adjusting your search or filters</p>
                 </div>
               ) : (
                 <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
@@ -303,7 +303,7 @@ export default function AccountManagementPage() {
                             </div>
                           </div>
                         </div>
-                        <div className="text-[#7A8075] group-hover:text-[#356B43] transition-colors">
+                        <div className="text-[#5B655D] group-hover:text-[#356B43] transition-colors">
                           <ChevronDown className="w-5 h-5 rotate-[-90deg]" />
                         </div>
                       </div>
@@ -369,7 +369,7 @@ export default function AccountManagementPage() {
                 </button>
 
                 <div className="border-t border-[#E4EBE4] pt-2 mt-2">
-                  <p className="text-xs font-semibold text-[#7A8075] uppercase px-4 py-1">Approval Status</p>
+                  <p className="text-xs font-semibold text-[#5B655D] uppercase px-4 py-1">Approval Status</p>
                   <button
                     className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${
                       sortOption === 'pending'
@@ -400,7 +400,7 @@ export default function AccountManagementPage() {
                 </div>
 
                 <div className="border-t border-[#E4EBE4] pt-2 mt-2">
-                  <p className="text-xs font-semibold text-[#7A8075] uppercase px-4 py-1">Sorting</p>
+                  <p className="text-xs font-semibold text-[#5B655D] uppercase px-4 py-1">Sorting</p>
                   <button
                     className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${
                       sortOption === 'emailAsc'
@@ -431,7 +431,7 @@ export default function AccountManagementPage() {
                 </div>
 
                 <div className="border-t border-[#E4EBE4] pt-2 mt-2">
-                  <p className="text-xs font-semibold text-[#7A8075] uppercase px-4 py-1">Role</p>
+                  <p className="text-xs font-semibold text-[#5B655D] uppercase px-4 py-1">Role</p>
                   <button
                     className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all ${
                       sortOption === 'stewardOnly'

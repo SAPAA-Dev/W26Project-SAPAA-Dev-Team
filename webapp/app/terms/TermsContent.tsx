@@ -46,7 +46,7 @@ export default function TermsContent() {
             </h2>
           </div>
 
-            <div className="p-6 space-y-10 text-[#7A8075] leading-relaxed text-sm sm:text-base">
+            <div className="p-6 space-y-10 text-[#5B655D] leading-relaxed text-sm sm:text-base">
             <section className="space-y-2">
                 <h3 className="text-lg font-bold text-[#254431]">
                 1. Accuracy of Information
@@ -257,7 +257,7 @@ export default function TermsContent() {
             </div>
 
           <div className="p-6 border-t border-[#E4EBE4] bg-[#F7F2EA]/60 flex flex-col sm:flex-row gap-3 sm:justify-between">
-            <p className="text-xs text-[#7A8075]">
+            <p className="text-xs text-[#5B655D]">
               Last updated: January 2026
             </p>
             <button

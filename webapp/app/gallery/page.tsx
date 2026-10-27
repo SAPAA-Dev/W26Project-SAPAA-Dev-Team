@@ -168,7 +168,7 @@ export default function GalleryPage() {
           <div className="mb-6 sm:mb-8">
             <div className="relative w-full">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-[#7A8075]" />
+                <Search className="h-5 w-5 text-[#5B655D]" />
               </div>
               <input
                 type="text"
@@ -176,7 +176,7 @@ export default function GalleryPage() {
                 data-testid="admin-gallery-search-bar"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="block w-full pl-10 pr-10 py-3 sm:py-2.5 border-2 border-[#E4EBE4] rounded-xl bg-white text-sm sm:text-base placeholder-[#7A8075] focus:outline-none focus:border-[#356B43] focus:ring-1 focus:ring-[#356B43] shadow-sm transition-all"
+                className="block w-full pl-10 pr-10 py-3 sm:py-2.5 border-2 border-[#E4EBE4] rounded-xl bg-white text-sm sm:text-base placeholder-[#5B655D] focus:outline-none focus:border-[#356B43] focus:ring-1 focus:ring-[#356B43] shadow-sm transition-all"
               />
               {searchQuery && (
                 <button
@@ -184,7 +184,7 @@ export default function GalleryPage() {
                   onClick={() => setSearchQuery("")}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
-                  <X className="h-4 w-4 text-[#7A8075] hover:text-red-500 transition-colors" />
+                  <X className="h-4 w-4 text-[#5B655D] hover:text-red-500 transition-colors" />
                 </button>
               )}
             </div>
@@ -193,18 +193,18 @@ export default function GalleryPage() {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
               <Loader2 className="w-10 h-10 animate-spin text-[#356B43]" />
-              <p className="text-[#7A8075]">Loading gallery...</p>
+              <p className="text-[#5B655D]">Loading gallery...</p>
             </div>
           ) : filteredItems.length === 0 ? (
             <div className="text-center py-16 sm:py-20 px-4 bg-white rounded-2xl border-2 border-dashed border-[#E4EBE4]">
               <div className="bg-[#F7F2EA] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="text-[#7A8075]" size={32} />
+                <Search className="text-[#5B655D]" size={32} />
               </div>
               <p className="text-[#254431] font-semibold text-lg">
                 {items.length === 0 ? "No images found." : "No matching images found."}
               </p>
               {items.length > 0 && (
-                <p className="text-[#7A8075] mt-1">Try adjusting your search query.</p>
+                <p className="text-[#5B655D] mt-1">Try adjusting your search query.</p>
               )}
             </div>
           ) : (
@@ -235,12 +235,12 @@ export default function GalleryPage() {
                   </button>
 
                   <div className="p-4 sm:p-5 space-y-3">
-                    <div className="text-sm text-[#7A8075] flex items-start sm:items-center gap-2">
+                    <div className="text-sm text-[#5B655D] flex items-start sm:items-center gap-2">
                       <MapPin className="w-4 h-4" />
                       <span>{item.site_name || "Unknown site"}</span>
                     </div>
 
-                    <div className="text-sm text-[#7A8075] flex items-start gap-2">
+                    <div className="text-sm text-[#5B655D] flex items-start gap-2">
                       <ImageIcon className="w-4 h-4 mt-0.5" />
                       <div>
                         <p className="font-semibold text-[#254431] break-words leading-snug">
@@ -249,10 +249,10 @@ export default function GalleryPage() {
                       </div>
                     </div>
 
-                    <div className="text-sm text-[#7A8075] flex items-start gap-2">
+                    <div className="text-sm text-[#5B655D] flex items-start gap-2">
                         <Calendar className="w-4 h-4 mt-0.5" />
                         <div>
-                          <p className="text-xs text-[#7A8075] mt-0.5">
+                          <p className="text-xs text-[#5B655D] mt-0.5">
                             {item.date || "No date"}
                           </p>
                         </div>
@@ -293,7 +293,7 @@ export default function GalleryPage() {
 
                 <div className="min-w-0 min-h-0 p-4 sm:p-6 bg-white space-y-4 sm:space-y-5 border-t lg:border-t-0 lg:border-l border-[#E4EBE4] overflow-y-auto">
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
+                    <p className="text-xs uppercase tracking-wide text-[#5B655D] mb-1">
                       Site
                     </p>
                     <p className="text-base sm:text-lg font-semibold text-[#254431] break-words">
@@ -302,7 +302,7 @@ export default function GalleryPage() {
                   </div>
 
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
+                    <p className="text-xs uppercase tracking-wide text-[#5B655D] mb-1">
                       Caption
                     </p>
                     <p className="text-base font-medium text-[#254431]">
@@ -311,7 +311,7 @@ export default function GalleryPage() {
                   </div>
 
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
+                    <p className="text-xs uppercase tracking-wide text-[#5B655D] mb-1">
                       Identifier
                     </p>
                     <p className="text-sm text-[#4B5563] leading-6 break-words">
@@ -320,7 +320,7 @@ export default function GalleryPage() {
                   </div>
 
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
+                    <p className="text-xs uppercase tracking-wide text-[#5B655D] mb-1">
                       Date
                     </p>
                     <p className="text-sm text-[#4B5563] leading-6 break-words">
@@ -330,7 +330,7 @@ export default function GalleryPage() {
 
                   {selectedImage.photographer && (
                     <div>
-                      <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
+                      <p className="text-xs uppercase tracking-wide text-[#5B655D] mb-1">
                         Photographer
                       </p>
                       <p className="text-sm text-[#4B5563]">
@@ -341,7 +341,7 @@ export default function GalleryPage() {
 
 
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
+                    <p className="text-xs uppercase tracking-wide text-[#5B655D] mb-1">
                       Filename
                     </p>
                     <p className="text-sm text-[#4B5563] break-all">

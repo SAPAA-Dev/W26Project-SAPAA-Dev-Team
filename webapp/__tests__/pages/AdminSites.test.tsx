@@ -104,7 +104,7 @@ describe('AdminSitesPage', () => {
     expect(screen.getByText('Beta')).toBeInTheDocument();
   });
 
-  it('US 6.0.1 AT4: shows only the unlinked sites when the Linked filter is cleared', async () => {
+  it('(6.0.1 AT4) shows only the unlinked sites when the Linked filter is cleared', async () => {
     const mockSites = [
       { id: 1, namesite: 'Bound Site', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: null, protected_area_id: 42 },
       { id: 2, namesite: 'Free Site', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: null, protected_area_id: null },
@@ -126,7 +126,7 @@ describe('AdminSitesPage', () => {
     });
   });
 
-  it('US 6.0.1 AT4: shows only the linked sites when the Unlinked filter is cleared', async () => {
+  it('(6.0.1 AT4) shows only the linked sites when the Unlinked filter is cleared', async () => {
     const mockSites = [
       { id: 1, namesite: 'Bound Site', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: null, protected_area_id: 42 },
       { id: 2, namesite: 'Free Site', county: 'CountyA', ab_county: 10, is_active: true, inspectdate: null, protected_area_id: null },

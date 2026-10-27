@@ -59,6 +59,7 @@ describe("SitePriority", () => {
     await waitFor(() => expect(screen.getByTestId("site-priority-value")).toHaveTextContent("9"));
     expect(saveSitePriorityScores).toHaveBeenCalledWith(7, { abuses: 2, biological: 3, time: 4 });
     expect(screen.queryByTestId("site-priority-save")).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Saved.");
   });
 
   it("starts the form from the saved scores", async () => {

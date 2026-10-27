@@ -53,7 +53,7 @@ export default function DeleteImageButton({
 
   return (
     <div className="space-y-2">
-      <p className="text-sm text-[#7A8075]">
+      <p className="text-sm text-[#5B655D]">
         Delete this image? The file leaves storage for good.
       </p>
       <div className="flex gap-2">

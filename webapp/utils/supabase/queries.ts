@@ -11,7 +11,14 @@ import {
   type BoundaryFeatureCollection,
   type ProtectedAreaBoundaryRow,
 } from '../../lib/map/boundaries';
-import { parseGpxTrackFile, type GpxTrackForMap, type GpxTrackPoint } from '../../lib/map/gpxTrack';
+import {
+  mapTrackCache,
+  MAP_TRACK_CACHE_LIMIT,
+  parseGpxTrackFile,
+  thinMapTrack,
+  type GpxTrackForMap,
+  type GpxTrackPoint,
+} from '../../lib/map/gpxTrack';
 
 import { SITE_PAGE_FIELDS } from '@/lib/sitePageFields';
 import {
@@ -1527,17 +1534,22 @@ export async function getGpxTracksForMap(): Promise<GpxTrackForMap[]> {
   const loaded = await Promise.all(
     (data ?? []).map(async (row): Promise<GpxTrackForMap | null> => {
       try {
+        const cached = mapTrackCache.get(row.storage_path);
+        if (cached !== undefined) {
+          return { id: row.id, originalFileName: row.original_file_name, points: cached };
+        }
         const { data: file, error: downloadError } = await supabase.storage
           .from(GPX_TRACKS_BUCKET)
           .download(row.storage_path);
         if (downloadError !== null || file === null) {
           throw new Error('The stored GPX file could not be read.');
         }
-        return {
-          id: row.id,
-          originalFileName: row.original_file_name,
-          points: parseGpxTrackFile(new Uint8Array(await file.arrayBuffer())),
-        };
+        const points = thinMapTrack(parseGpxTrackFile(new Uint8Array(await file.arrayBuffer())));
+        if (mapTrackCache.size >= MAP_TRACK_CACHE_LIMIT) {
+          mapTrackCache.delete(mapTrackCache.keys().next().value as string);
+        }
+        mapTrackCache.set(row.storage_path, points);
+        return { id: row.id, originalFileName: row.original_file_name, points };
       } catch (readError) {
         console.error('Failed to read a stored GPX track', readError);
         return null;

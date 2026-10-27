@@ -138,6 +138,62 @@ describe('ProfilePage', () => {
     expect(within(reportLink).getByText('Sep 12, 2026')).toBeInTheDocument();
   });
 
+  it('shows the site and date of every inspection in the history (1.0.3 AT1)', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ...profilePayload,
+        history: [
+          { id: 7, siteId: 5, siteName: 'Beaver Hills', siteArchived: false, siteInactive: false, inspectionDate: '2026-09-12' },
+          { id: 8, siteId: 6, siteName: 'Duck Lake', siteArchived: false, siteInactive: false, inspectionDate: '2026-08-01' },
+        ],
+      }),
+    });
+    render(<ProfilePage />);
+
+    const historySection = (await screen.findByRole('heading', { name: 'Inspection history' })).closest('section')!;
+    expect(within(historySection).getByText('Beaver Hills')).toBeInTheDocument();
+    expect(within(historySection).getByText('Sep 12, 2026')).toBeInTheDocument();
+    expect(within(historySection).getByText('Duck Lake')).toBeInTheDocument();
+    expect(within(historySection).getByText('Aug 1, 2026')).toBeInTheDocument();
+  });
+
+  it('shows an empty history when the person has no reports (1.0.3 AT1)', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ ...profilePayload, history: [], pagination: { page: 1, pageSize: 10, total: 0 } }),
+    });
+    render(<ProfilePage />);
+
+    const historySection = (await screen.findByRole('heading', { name: 'Inspection history' })).closest('section')!;
+    expect(within(historySection).getByText('No inspection reports recorded yet.')).toBeInTheDocument();
+    expect(within(historySection).queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('adds one to the SIR count after a new report and a reload (1.0.4 AT2)', async () => {
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => profilePayload })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ...profilePayload,
+          stats: { ...profilePayload.stats, inspectionCount: 4 },
+        }),
+      });
+    const { unmount } = render(<ProfilePage />);
+
+    const before = (await screen.findByText('Inspection reports submitted')).parentElement!;
+    expect(before).toHaveTextContent('3');
+
+    // A new report is saved and the page is loaded again.
+    unmount();
+    render(<ProfilePage />);
+
+    const after = (await screen.findByText('Inspection reports submitted')).parentElement!;
+    expect(after).toHaveTextContent('4');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it('shows profile data and derived inspection summaries (1.0.1 AT1)', async () => {
     render(<ProfilePage />);
 

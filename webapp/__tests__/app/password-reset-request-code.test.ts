@@ -9,14 +9,10 @@ jest.mock('next/server', () => ({
 
 import { POST } from '@/app/auth/password-reset/request-code/route';
 import { createAnonSupabase } from '@/utils/supabase/server';
-import { supabaseAdmin } from '@/utils/supabase/admin';
+import { clearRateLimits } from '@/lib/rateLimit';
 
 jest.mock('@/utils/supabase/server', () => ({
   createAnonSupabase: jest.fn(),
-}));
-
-jest.mock('@/utils/supabase/admin', () => ({
-  supabaseAdmin: { auth: { admin: { listUsers: jest.fn() } } },
 }));
 
 function makeRequest(body: unknown) {
@@ -31,13 +27,12 @@ function makeRequest(body: unknown) {
 }
 
 describe('POST /auth/password-reset/request-code', () => {
-  const mockListUsers = supabaseAdmin.auth.admin.listUsers as jest.Mock;
   const mockSignInWithOtp = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
+    clearRateLimits();
     (createAnonSupabase as jest.Mock).mockReturnValue({ auth: { signInWithOtp: mockSignInWithOtp } });
-    mockListUsers.mockResolvedValue({ data: { users: [] }, error: null });
     mockSignInWithOtp.mockResolvedValue({ data: {}, error: null });
   });
 
@@ -45,7 +40,6 @@ describe('POST /auth/password-reset/request-code', () => {
     const response = await POST(makeRequest({ email: 'not-an-email' }) as never);
 
     expect(response.status).toBe(400);
-    expect(mockListUsers).not.toHaveBeenCalled();
     expect(mockSignInWithOtp).not.toHaveBeenCalled();
   });
 
@@ -55,53 +49,7 @@ describe('POST /auth/password-reset/request-code', () => {
     expect(response.status).toBe(400);
   });
 
-  it('5.0.2 AT1: tells a Google-only user to reset through Google and sends no code', async () => {
-    mockListUsers.mockResolvedValue({
-      data: { users: [{ id: 'u1', email: 'g@example.com', app_metadata: { providers: ['google'] } }] },
-      error: null,
-    });
-
-    const response = await POST(makeRequest({ email: 'g@example.com' }) as never);
-    const body = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(body.providerRequired).toBe('google');
-    expect(body.error).toMatch(/Google/);
-    expect(mockSignInWithOtp).not.toHaveBeenCalled();
-  });
-
-  it('5.0.2 AT1: tells a Microsoft-only user to reset through Microsoft', async () => {
-    mockListUsers.mockResolvedValue({
-      data: { users: [{ id: 'u1', email: 'm@example.com', app_metadata: { providers: ['azure'] } }] },
-      error: null,
-    });
-
-    const response = await POST(makeRequest({ email: 'm@example.com' }) as never);
-    const body = await response.json();
-
-    expect(body.providerRequired).toBe('azure');
-    expect(body.error).toMatch(/Microsoft/);
-    expect(mockSignInWithOtp).not.toHaveBeenCalled();
-  });
-
-  it('5.0.2 AT1: falls back to the identities when app_metadata has no providers', async () => {
-    mockListUsers.mockResolvedValue({
-      data: { users: [{ id: 'u1', email: 'g@example.com', app_metadata: {}, identities: [{ provider: 'google' }] }] },
-      error: null,
-    });
-
-    const response = await POST(makeRequest({ email: 'g@example.com' }) as never);
-
-    expect((await response.json()).providerRequired).toBe('google');
-    expect(mockSignInWithOtp).not.toHaveBeenCalled();
-  });
-
-  it('5.0.2 AT1: sends a code for an email account', async () => {
-    mockListUsers.mockResolvedValue({
-      data: { users: [{ id: 'u1', email: 'e@example.com', app_metadata: { providers: ['email'] } }] },
-      error: null,
-    });
-
+  it('5.0.2 AT1: sends a code for any account, whatever sign-in method it has, with no user lookup', async () => {
     const response = await POST(makeRequest({ email: 'E@Example.com ' }) as never);
     const body = await response.json();
 
@@ -132,12 +80,16 @@ describe('POST /auth/password-reset/request-code', () => {
     expect((await response.json()).sent).toBe(true);
   });
 
-  it('5.0.2 AT1: answers 500 when the user lookup fails', async () => {
-    mockListUsers.mockResolvedValue({ data: null, error: { message: 'boom' } });
+  it('5.0.2 AT1: refuses the fourth request for the same email in ten minutes, with the same answer for any email', async () => {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      expect((await POST(makeRequest({ email: 'busy@example.com' }) as never)).status).toBe(200);
+    }
 
-    const response = await POST(makeRequest({ email: 'e@example.com' }) as never);
+    const limited = await POST(makeRequest({ email: 'BUSY@example.com' }) as never);
+    const other = await POST(makeRequest({ email: 'other@example.com' }) as never);
 
-    expect(response.status).toBe(500);
-    expect(mockSignInWithOtp).not.toHaveBeenCalled();
+    expect(limited.status).toBe(429);
+    expect(other.status).toBe(200);
+    expect(mockSignInWithOtp).toHaveBeenCalledTimes(4);
   });
 });

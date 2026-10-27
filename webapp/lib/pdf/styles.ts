@@ -48,7 +48,7 @@ export const styles = StyleSheet.create({
   },
   coverMetaLabel: {
     fontSize: 10,
-    color: '#7A8075',
+    color: '#5B655D',
     fontFamily: 'Helvetica-Bold',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -115,7 +115,7 @@ export const styles = StyleSheet.create({
   summaryAvgLabel: {
     fontSize: 10,
     fontFamily: 'Helvetica-Bold',
-    color: '#7A8075',
+    color: '#5B655D',
   },
   summaryAvgValue: {
     fontSize: 14,
@@ -164,7 +164,7 @@ export const styles = StyleSheet.create({
   },
   county: {
     fontSize: 11,
-    color: '#7A8075',
+    color: '#5B655D',
     marginTop: 2,
   },
   logo: {
@@ -193,7 +193,7 @@ export const styles = StyleSheet.create({
   },
   inspectionMetaItem: {
     fontSize: 9,
-    color: '#7A8075',
+    color: '#5B655D',
   },
 
   // ── Sections ──
@@ -248,7 +248,7 @@ export const styles = StyleSheet.create({
   detailsLabel: {
     fontSize: 9,
     fontFamily: 'Helvetica-Bold',
-    color: '#7A8075',
+    color: '#5B655D',
     marginBottom: 2,
   },
   detailsText: {
@@ -283,7 +283,7 @@ export const styles = StyleSheet.create({
   },
   attachmentCaption: {
     fontSize: 8,
-    color: '#7A8075',
+    color: '#5B655D',
     marginTop: 2,
     textAlign: 'center',
   },
@@ -303,10 +303,10 @@ export const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 8,
-    color: '#7A8075',
+    color: '#5B655D',
   },
   pageNumber: {
     fontSize: 8,
-    color: '#7A8075',
+    color: '#5B655D',
   },
 });

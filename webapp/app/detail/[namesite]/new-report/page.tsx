@@ -705,7 +705,7 @@ export default function NewReportPage() {
     return (
            <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex flex-col items-center justify-center gap-4">
         <div className="w-16 h-16 border-4 border-[#E4EBE4] border-t-[#356B43] rounded-full animate-spin"></div>
-        <p className="text-[#7A8075] font-medium">Loading inspection form...</p>
+        <p className="text-[#5B655D] font-medium">Loading inspection form...</p>
       </div>
     );
   }
@@ -741,7 +741,7 @@ export default function NewReportPage() {
               
               <div className="bg-[#F7F2EA] p-4 rounded-xl flex gap-3 items-start">
                 <AlertCircle className="w-5 h-5 text-[#356B43] flex-shrink-0 mt-0.5" />
-                <div className="text-sm leading-relaxed text-[#7A8075]">
+                <div className="text-sm leading-relaxed text-[#5B655D]">
                   <p className="font-semibold text-[#254431] mb-2">Important Notice:</p>
                   <section className="space-y-4">
                     <p>
@@ -814,7 +814,7 @@ export default function NewReportPage() {
                 <button
                   type="button"
                   onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
-                  className="w-full sm:flex-1 py-3 text-[#7A8075] font-bold hover:bg-[#E4EBE4] rounded-xl transition-colors"
+                  className="w-full sm:flex-1 py-3 text-[#5B655D] font-bold hover:bg-[#E4EBE4] rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
@@ -858,7 +858,7 @@ export default function NewReportPage() {
                   <p className="text-sm font-semibold text-[#254431] mb-2">
                     Missing required question numbers:
                   </p>
-                  <ul className="list-disc pl-5 text-sm text-[#7A8075] space-y-1">
+                  <ul className="list-disc pl-5 text-sm text-[#5B655D] space-y-1">
                     {missingRequiredQuestionNumbers.map((questionNumber) => (
                       <li key={questionNumber}>{questionNumber}</li>
                     ))}
@@ -870,7 +870,7 @@ export default function NewReportPage() {
                   <p className="text-sm font-semibold text-[#254431] mb-2">
                     Missing required image fields:
                   </p>
-                  <ul className="list-disc pl-5 text-sm text-[#7A8075] space-y-1">
+                  <ul className="list-disc pl-5 text-sm text-[#5B655D] space-y-1">
                     {missingImageMetadataDetails.map((detail) => (
                       <li key={detail}>{detail}</li>
                     ))}

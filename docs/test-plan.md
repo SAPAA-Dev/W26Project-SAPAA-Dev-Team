@@ -6,7 +6,7 @@ that checks the AT now, or the test that the team plans to add. The
 [Traceability Matrix](traceability-matrix.md) records the results of these tests
 ([#214](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/214)).
 
-Status was updated on October 26, 2026. The scope is 14 stories and 50 ATs after US 3.0.4 was removed. See [release checks](sprint-3-release.md) for local browser evidence and open release checks.
+Status was updated on October 27, 2026. The scope is 14 stories and 50 ATs after US 3.0.4 was removed. See [release checks](sprint-3-release.md) for local browser evidence and open release checks.
 
 ## Test types
 
@@ -40,7 +40,7 @@ Rules:
 
 | AT | Type | Test | Status |
 |---|---|---|---|
-| AT1: the profile lists previous inspections with site and date | Integration | `__tests__/components/ProfilePage.test.tsx:117`, `:191` (inspection history paging) | Partial: add a test named `(1.0.3 AT1)` that checks the site name and the date of each row |
+| AT1: the profile lists previous inspections with site and date | Integration | `__tests__/components/ProfilePage.test.tsx:141` (site and date of each row), `:161` (empty history), `:256`, `:262`, `:282` (paging) | Exists |
 | AT2: a past inspection opens with its submitted information | Integration | `__tests__/components/ProfilePage.test.tsx:108` | Exists |
 | AT3: hidden answers are not shown to other stewards | Unit, Integration | `__tests__/components/queries.exportPaging.test.ts:182`, `:208`; `__tests__/app/api/site-images.test.ts:157`, `:193`; `__tests__/pages/SiteDetails.test.tsx:564` | Exists |
 
@@ -49,7 +49,7 @@ Rules:
 | AT | Type | Test | Status |
 |---|---|---|---|
 | AT1: the aggregates match the user's data | Unit, Integration | `__tests__/app/api/profile.test.ts` (contribution statistics), `__tests__/components/ProfilePage.test.tsx` | Passed locally after the shared-branch profile test fixes; required CI pending |
-| AT2: a new report adds 1 to the SIR count | Integration | Planned: `ProfilePage.test.tsx`, `(1.0.4 AT2)` reload after a new report | Planned |
+| AT2: a new report adds 1 to the SIR count | Integration | `__tests__/components/ProfilePage.test.tsx:173` loads the profile, remounts it after a new report and checks the count from 3 to 4 | Exists |
 
 ## 1.0.6 Select and Edit Skills and Focus Areas (Red)
 
@@ -63,7 +63,7 @@ Rules:
 
 | AT | Type | Test | Status |
 |---|---|---|---|
-| AT1: every active Site is drawn with its boundary | Integration, E2E | `__tests__/components/SiteMap.test.tsx` (boundary layer and load notes, `:1104`, `:1110`); `cypress/e2e/map_filter.cy.ts` | Partial: add a `(2.0.1 AT1)` test that checks inactive sites are not drawn |
+| AT1: every active Site is drawn with its boundary | Integration, E2E | `__tests__/components/SiteMap.test.tsx` (boundary layer and error note, `:324`, `:1160`); `cypress/e2e/map_filter.cy.ts` | Partial: add a `(2.0.1 AT1)` test that checks inactive sites are not drawn |
 | AT2: a GPX track is drawn in a style different from the boundary | Unit, Integration | `__tests__/lib/gpxTrack.test.ts:78`; `__tests__/components/SiteMap.test.tsx:1619` | Exists |
 | AT3: the Site page links to its location on the map | Integration | `__tests__/pages/SiteDetails.test.tsx:300` | Exists |
 | AT4: only the newly selected Site is highlighted | Integration | `__tests__/components/SiteMap.test.tsx:1541`, `:1550`, `:1565`; `__tests__/pages/Sites.test.tsx:960` | Exists |
@@ -72,9 +72,9 @@ Rules:
 
 | AT | Type | Test | Status |
 |---|---|---|---|
-| AT1: selecting a Site opens its detail view | Integration | `__tests__/components/SiteMap.test.tsx:631`, `:647` | Exists |
-| AT2: the detail view shows the same name, county and last inspection date as the Site page | Unit, Integration | `__tests__/components/queries.boundaries.test.ts:150`, `:171`, `:191`, `:201`; `__tests__/lib/boundaries.test.ts:230`, `:239`; `__tests__/components/SiteMap.test.tsx:655`, `:701`, `:718` | Exists |
-| AT3: "View SIRs" goes to the past SIRs | Integration | `__tests__/components/SiteMap.test.tsx:739`, `:755` | Exists |
+| AT1: selecting a Site opens its detail view | Integration, E2E | `__tests__/components/SiteMap.test.tsx:681`, `:697`; `cypress/e2e/map_site_popup.cy.ts` | Exists |
+| AT2: the detail view shows the same name, county and last inspection date as the Site page | Unit, Integration, E2E | `__tests__/components/queries.boundaries.test.ts:150`, `:171`, `:191`, `:201`; `__tests__/lib/boundaries.test.ts:230`, `:239`; `__tests__/components/SiteMap.test.tsx:705`, `:751`, `:768`; `cypress/e2e/map_site_popup.cy.ts` | Exists |
+| AT3: "View SIRs" goes to the past SIRs | Integration, E2E | `__tests__/components/SiteMap.test.tsx:789`, `:805`; `cypress/e2e/map_site_popup.cy.ts` | Exists |
 
 ## 2.0.9 Upload a GPX Track of a Site Visit (Red)
 
@@ -132,8 +132,8 @@ Rules:
 
 | AT | Type | Test | Status |
 |---|---|---|---|
-| AT1: the author opens a past SIR and enters edit mode | Integration | `__tests__/pages/UserEditSiteInspectionForm.test.tsx:616`, `:641` | Exists: add the `(4.0.4 AT1)` label |
-| AT2: another steward cannot enter edit mode or change the SIR | Unit, Integration, E2E | `__tests__/components/queries.report-writes.test.ts:157,167`, `__tests__/pages/UserEditSiteInspectionForm.test.tsx:623`; [local browser run](sprint-3-release.md#acceptance-evidence) | Exists |
+| AT1: the author opens a past SIR and enters edit mode | Integration, E2E | `__tests__/pages/UserEditSiteInspectionForm.test.tsx:616`, `:641`; `cypress/e2e/edit_own_report.cy.ts` | Exists |
+| AT2: another steward cannot enter edit mode or change the SIR | Unit, Integration, E2E | `__tests__/components/queries.report-writes.test.ts:157,167`, `__tests__/pages/UserEditSiteInspectionForm.test.tsx:623`; [local browser run](sprint-3-release.md#acceptance-evidence); `cypress/e2e/edit_own_report.cy.ts` | Exists |
 | AT3: clearing a required answer blocks submit and lists missing questions | Unit, Integration, E2E | `__tests__/components/queries.report-writes.test.ts:200,212`, `__tests__/pages/UserEditSiteInspectionForm.test.tsx:723`; [local browser run](sprint-3-release.md#acceptance-evidence) | Exists |
 | AT4: saved edits show everywhere the report is rendered | Integration, E2E | `__tests__/pages/UserEditSiteInspectionForm.test.tsx:825`, `:842`; `cypress/e2e/edit_site_inspection_form.cy.ts` | Partial: add tests for the profile history and the PDF export ([#210](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/210)) |
 
@@ -141,8 +141,8 @@ Rules:
 
 | AT | Type | Test | Status |
 |---|---|---|---|
-| AT1: "Forgot password" with an email sends an email | Integration | `__tests__/app/password-reset-request-code.test.ts:44` to `:135`; `__tests__/pages/ForgotPassword.test.tsx:33`, `:41`, `:55`; `__tests__/pages/Login.test.tsx:51` | Exists |
-| AT2: the user verifies a code before the reset | Integration | `__tests__/app/password-reset-verify-code.test.ts:48`, `:55`, `:63`; `__tests__/pages/ForgotPassword.test.tsx:68`, `:87`; `__tests__/pages/ResetPassword.test.tsx:32` | Exists |
+| AT1: "Forgot password" with an email sends an email | Integration, E2E | `__tests__/app/password-reset-request-code.test.ts:44` to `:135`; `__tests__/pages/ForgotPassword.test.tsx:33`, `:41`, `:55`; `__tests__/pages/Login.test.tsx:51`; `cypress/e2e/password_reset_wrong_code.cy.ts` | Exists |
+| AT2: the user verifies a code before the reset | Integration, E2E | `__tests__/app/password-reset-verify-code.test.ts:48`, `:55`, `:63`; `__tests__/pages/ForgotPassword.test.tsx:68`, `:87`; `__tests__/pages/ResetPassword.test.tsx:32`; `cypress/e2e/password_reset_wrong_code.cy.ts` | Exists |
 | AT3: the new password works and the old one does not | Integration, E2E | `__tests__/pages/ResetPassword.test.tsx`; [local SMTP and browser run](sprint-3-release.md#acceptance-evidence) | Exists; real local Auth passed |
 | AT4: no admin step is needed | Integration | `__tests__/pages/ForgotPassword.test.tsx:41`, `:68`; `__tests__/pages/ResetPassword.test.tsx:61` | Exists |
 
@@ -166,7 +166,7 @@ The [traceability matrix](traceability-matrix.md) has one row per AT. Coverage i
 | Story | Team | ATs | Covered | Partial | None |
 |---|---|---|---|---|---|
 | US 1.0.3 | Green | 3 | AT2, AT3 | AT1 | - |
-| US 1.0.4 | Green | 2 | AT1 | - | AT2 |
+| US 1.0.4 | Green | 2 | AT1, AT2 | - | - |
 | US 1.0.6 | Red | 3 | AT1, AT2, AT3 | - | - |
 | US 2.0.1 | Red | 4 | AT2, AT3, AT4 | AT1 | - |
 | US 2.0.8 | Blue | 3 | AT1, AT2, AT3 | - | - |
@@ -179,10 +179,11 @@ The [traceability matrix](traceability-matrix.md) has one row per AT. Coverage i
 | US 4.0.4 | Blue | 4 | AT1, AT2, AT3 | AT4 | - |
 | US 5.0.2 | Green | 4 | AT1, AT2, AT3, AT4 | - | - |
 | US 6.0.1 | Blue | 5 | AT1, AT2, AT3, AT4, AT5 | - | - |
-| **Total** | | **50** | **46** | **3** | **1** |
+| **Total** | | **50** | **47** | **3** | **0** |
 
-US 3.0.4 is removed. Activity-count AT2 and the remaining partial rows still need evidence.
-The combined local suite passes 1912 tests (25 skipped). Required CI must pass before release.
+US 3.0.4 is removed. The three partial rows still need evidence. The combined local suite passes
+1895 tests, with 36 skipped (131 passing suites; the four database suites skip without a local
+Supabase). Required CI must pass before release.
 
 ## How to run the tests
 

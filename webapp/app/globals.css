@@ -67,10 +67,16 @@ textarea::placeholder {
 }
 
 /* Specific fix for the focused state to ensure readability while typing */
-input:focus, 
+input:focus,
 textarea:focus {
   color: #000000 !important;
-  outline: none;
+}
+
+/* Keep a visible focus ring for every keyboard-reachable control. Inputs that draw their
+   own ring still get this outline, which is the same green and does not hide it. */
+:focus-visible {
+  outline: 2px solid #356B43;
+  outline-offset: 2px;
 }
 
 /* The site map popup draws its own card, so the MapLibre frame adds no padding. */

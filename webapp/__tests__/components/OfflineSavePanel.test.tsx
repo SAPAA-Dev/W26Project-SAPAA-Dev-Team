@@ -215,7 +215,7 @@ describe('OfflineSavePanel (US 4.0.2)', () => {
     ).toBeInTheDocument();
   });
 
-  it('downloads the area, reports progress and calls onSaved on success', async () => {
+  it('downloads the area, reports progress and calls onSaved on success (4.0.2 AT1)', async () => {
     const region: SavedRegion = {
       id: 'new-region',
       bounds: { ...AREA },
@@ -288,7 +288,7 @@ describe('OfflineSavePanel (US 4.0.2)', () => {
     expect(screen.getByRole('button', { name: 'Save area' })).toBeEnabled();
   });
 
-  it('shows the error message when the download fails for another reason', async () => {
+  it('shows the error message when the download fails for another reason (4.0.2 AT1)', async () => {
     downloadAreaMock.mockRejectedValue(
       new RangeError('The area has 9000 tiles, which is above the download cap of 4000 tiles.')
     );

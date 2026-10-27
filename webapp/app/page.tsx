@@ -25,7 +25,7 @@ export default function Home() {
           className="h-auto w-64 mx-auto mb-6"
         />
         <div className="w-16 h-16 border-4 border-[#E4EBE4] border-t-[#356B43] rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-[#7A8075] font-medium">Redirecting to login...</p>
+        <p className="text-[#5B655D] font-medium">Redirecting to login...</p>
       </div>
     </div>
   );

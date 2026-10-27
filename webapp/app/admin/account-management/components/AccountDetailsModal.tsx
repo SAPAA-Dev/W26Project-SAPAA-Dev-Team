@@ -95,7 +95,7 @@ export default function AccountDetailsModal({
             </label>
             <input
               type="email"
-              className="w-full px-4 py-3 bg-[#F7F2EA] border-2 border-[#86A98A] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-all"
+              className="w-full px-4 py-3 bg-[#F7F2EA] border-2 border-[#86A98A] rounded-xl text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-all"
               placeholder="user@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -168,12 +168,12 @@ export default function AccountDetailsModal({
           <div>
             <label className="block text-sm font-semibold text-[#254431] mb-2 flex items-center gap-2">
               <Lock className="w-4 h-4 text-[#356B43]" />
-              Password {user && <span className="text-[#7A8075] text-xs font-normal">(leave blank to keep existing)</span>}
+              Password {user && <span className="text-[#5B655D] text-xs font-normal">(leave blank to keep existing)</span>}
             </label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
-                className="w-full px-4 py-3 pr-12 bg-[#F7F2EA] border-2 border-[#86A98A] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-all"
+                className="w-full px-4 py-3 pr-12 bg-[#F7F2EA] border-2 border-[#86A98A] rounded-xl text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-all"
                 placeholder={user ? "Leave blank to keep current" : "Enter password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -181,7 +181,7 @@ export default function AccountDetailsModal({
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7A8075] hover:text-[#356B43] transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5B655D] hover:text-[#356B43] transition-colors"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -197,7 +197,7 @@ export default function AccountDetailsModal({
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}
-                className="w-full px-4 py-3 pr-12 bg-[#F7F2EA] border-2 border-[#86A98A] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-all"
+                className="w-full px-4 py-3 pr-12 bg-[#F7F2EA] border-2 border-[#86A98A] rounded-xl text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-all"
                 placeholder="Confirm password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -205,7 +205,7 @@ export default function AccountDetailsModal({
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7A8075] hover:text-[#356B43] transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5B655D] hover:text-[#356B43] transition-colors"
               >
                 {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>

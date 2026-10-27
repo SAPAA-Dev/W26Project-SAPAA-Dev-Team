@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { AlertCircle, CheckCircle2, FileUp, Loader2, Route, Upload, X } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { saveGpxTrack } from '@/utils/gpx-track-actions';
@@ -43,6 +43,7 @@ function safeFileName(filename: string): string {
 
 export default function GpxTrackUpload({ siteId }: { siteId: number }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const titleId = useId();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -70,6 +71,18 @@ export default function GpxTrackUpload({ siteId }: { siteId: number }) {
     setOpen(false);
     setStatuses([]);
   };
+
+  // Escape closes the dialog, unless an upload is running.
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || busy) return;
+      setOpen(false);
+      setStatuses([]);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [open, busy]);
 
   const runUploads = async (files: File[]) => {
     if (files.length === 0 || busy) return;
@@ -172,21 +185,28 @@ export default function GpxTrackUpload({ siteId }: { siteId: number }) {
           className="fixed inset-0 bg-[#254431]/60 backdrop-blur-md flex items-center justify-center p-4 z-50"
           onClick={(event) => event.target === event.currentTarget && close()}
         >
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+          >
             <div className="bg-gradient-to-r from-[#254431] to-[#356B43] px-6 py-5 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                   <FileUp className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white">Upload GPX Tracks</h2>
-                  <p className="text-sm text-[#86A98A]">Save the track of a site visit on this site</p>
+                  <h2 id={titleId} className="text-xl font-bold text-white">Upload GPX Tracks</h2>
+                  <p className="text-sm text-[#E4EBE4]">Save the track of a site visit on this site</p>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={close}
                 disabled={busy}
-                className="text-white/60 hover:text-white transition-colors p-1 disabled:opacity-40"
+                aria-label="Close upload dialog"
+                className="flex h-11 w-11 items-center justify-center text-white/60 hover:text-white transition-colors disabled:opacity-40"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -200,14 +220,23 @@ export default function GpxTrackUpload({ siteId }: { siteId: number }) {
                   if (!busy) setDragging(true);
                 }}
                 onDragLeave={() => setDragging(false)}
-                onClick={() => !busy && fileInputRef.current?.click()}
                 className={`border-2 border-dashed rounded-xl px-6 py-10 text-center transition-all ${
                   dragging ? 'border-[#356B43] bg-[#F7F2EA]' : 'border-[#E4EBE4]'
-                } ${busy ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-[#F7F2EA] hover:border-[#86A98A]'}`}
+                } ${busy ? 'opacity-60' : ''}`}
               >
-                <Upload className="w-10 h-10 text-[#7A8075] mx-auto mb-3" />
-                <p className="text-[#254431] font-medium">Drop .gpx files here, or click to choose them</p>
-                <p className="text-sm text-[#7A8075] mt-1">Maximum size 50 MB per file. Only GPX files are accepted.</p>
+                <Upload className="w-10 h-10 text-[#5B655D] mx-auto mb-3" />
+                <p className="text-[#254431] font-medium">Drop .gpx files here</p>
+                <p className="text-sm text-[#5B655D] mt-1">Maximum size 50 MB per file. Only GPX files are accepted.</p>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={busy}
+                  className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#356B43] px-5 py-3 font-semibold text-white disabled:opacity-60"
+                  data-testid="gpx-choose-files"
+                >
+                  <Upload className="w-4 h-4" />
+                  Choose GPX files
+                </button>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -226,7 +255,7 @@ export default function GpxTrackUpload({ siteId }: { siteId: number }) {
               )}
 
               {statuses.length > 0 && (
-                <div className="mt-5 space-y-2">
+                <div className="mt-5 space-y-2" role="status">
                   {statuses.map((status, index) => (
                     <div
                       key={`${status.fileName}-${index}`}
@@ -256,7 +285,7 @@ export default function GpxTrackUpload({ siteId }: { siteId: number }) {
                   <p className="text-sm font-medium text-[#254431]">
                     {tracks.length} saved {tracks.length === 1 ? 'track' : 'tracks'} on this site
                   </p>
-                  <ul className="mt-2 max-h-40 overflow-y-auto text-sm text-[#7A8075] space-y-1 list-disc pl-5">
+                  <ul className="mt-2 max-h-40 overflow-y-auto text-sm text-[#5B655D] space-y-1 list-disc pl-5">
                     {tracks.map((track) => (
                       <li key={track.id}>
                         {track.originalFileName} ({track.trackPointCount} track{' '}

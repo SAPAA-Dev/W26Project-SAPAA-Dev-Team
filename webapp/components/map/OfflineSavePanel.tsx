@@ -227,13 +227,13 @@ export default function OfflineSavePanel({
 
       <div className="absolute left-0 right-0 top-[calc(86%+0.5rem)] flex justify-center">
         {bounds === null ? (
-          <span className="rounded-full border border-[#E4EBE4] bg-white/95 px-3 py-1 text-xs text-[#7A8075] shadow-sm">
+          <span className="rounded-full border border-[#E4EBE4] bg-white/95 px-3 py-1 text-xs text-[#5B655D] shadow-sm">
             Pan or zoom the map to set the area.
           </span>
         ) : (
           <span className="rounded-full border border-[#E4EBE4] bg-white/95 px-3 py-1 text-xs text-[#254431] shadow-sm">
             <span>{tileCount} tiles</span>
-            <span className="mx-1.5 text-[#7A8075]">·</span>
+            <span className="mx-1.5 text-[#5B655D]">·</span>
             <span>{formatBytes(bytes)}</span>
           </span>
         )}
@@ -246,14 +246,14 @@ export default function OfflineSavePanel({
             type="button"
             onClick={handleClose}
             aria-label="Close panel"
-            className="rounded p-1 text-[#7A8075] hover:bg-[#E4EBE4] hover:text-[#254431]"
+            className="rounded p-1 text-[#5B655D] hover:bg-[#E4EBE4] hover:text-[#254431]"
           >
             <X className="h-4 w-4" />
           </button>
         </header>
 
         <div className="mt-3 flex items-center gap-2">
-          <label htmlFor="offline-zoom-min" className="text-xs font-medium text-[#7A8075]">
+          <label htmlFor="offline-zoom-min" className="text-xs font-medium text-[#5B655D]">
             From zoom
           </label>
           <select
@@ -269,7 +269,7 @@ export default function OfflineSavePanel({
               </option>
             ))}
           </select>
-          <label htmlFor="offline-zoom-max" className="text-xs font-medium text-[#7A8075]">
+          <label htmlFor="offline-zoom-max" className="text-xs font-medium text-[#5B655D]">
             To zoom
           </label>
           <select
@@ -297,7 +297,7 @@ export default function OfflineSavePanel({
             >
               Save area
             </button>
-            {saveMessage !== null && <p className="mt-2 text-xs text-[#7A8075]">{saveMessage}</p>}
+            {saveMessage !== null && <p className="mt-2 text-xs text-[#5B655D]">{saveMessage}</p>}
           </div>
         )}
 
@@ -315,7 +315,7 @@ export default function OfflineSavePanel({
                   {`${progress.phase}: ${progress.done}/${progress.total}`}
                 </p>
                 {progress.failed > 0 && (
-                  <p className="text-xs text-[#7A8075]">{`${progress.failed} failed`}</p>
+                  <p className="text-xs text-[#5B655D]">{`${progress.failed} failed`}</p>
                 )}
               </>
             ) : (
@@ -357,7 +357,7 @@ export default function OfflineSavePanel({
 
         {savedRegions.length > 0 && (
           <div className="mt-4">
-            <h4 className="text-xs font-bold uppercase tracking-wide text-[#7A8075]">
+            <h4 className="text-xs font-bold uppercase tracking-wide text-[#5B655D]">
               Saved areas
             </h4>
             <ul className="mt-2 space-y-1.5">
@@ -370,7 +370,7 @@ export default function OfflineSavePanel({
                     <p className="text-xs font-medium text-[#254431]">
                       {`z${region.zoomMin} to z${region.zoomMax}`}
                     </p>
-                    <p className="text-xs text-[#7A8075]">
+                    <p className="text-xs text-[#5B655D]">
                       {`${region.tileCount} tiles · ${formatSavedDate(region.savedAt)}`}
                     </p>
                   </div>
@@ -379,7 +379,7 @@ export default function OfflineSavePanel({
                     aria-label="Delete saved area"
                     disabled={downloading}
                     onClick={() => void handleRemove(region.id)}
-                    className="rounded p-1 text-[#7A8075] hover:bg-[#E4EBE4] hover:text-[#254431] disabled:opacity-50"
+                    className="rounded p-1 text-[#5B655D] hover:bg-[#E4EBE4] hover:text-[#254431] disabled:opacity-50"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>

@@ -281,7 +281,7 @@ describe('/api/profile', () => {
       );
     });
 
-    it('answers 500 when the contribution statistics cannot be loaded', async () => {
+    it('answers 500 when the contribution statistics cannot be loaded (1.0.4 AT1)', async () => {
       const peopleQuery = makeQuery({ data: PERSON, error: null });
       const historyQuery: Record<string, unknown> = { data: [], error: null, count: 0 };
       const aggregateQuery: Record<string, unknown> = { data: null, error: { message: 'boom' } };

@@ -326,7 +326,7 @@ export default function MainContent({
                   delete newResponses[question.id];
                   onResponsesChange(newResponses);
                 }}
-                className="text-sm font-semibold text-[#7A8075] hover:text-[#B91C1C] transition-colors"
+                className="text-sm font-semibold text-[#5B655D] hover:text-[#B91C1C] transition-colors"
               >
                 ✕ Clear selection
               </button>
@@ -389,7 +389,7 @@ export default function MainContent({
                     }
                     placeholder='Describe what "Other" means here...'
                     rows={3}
-                    className="w-full px-4 py-3 border-2 border-[#E4EBE4] rounded-xl focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] font-medium resize-none placeholder:text-[#7A8075]"
+                    className="w-full px-4 py-3 border-2 border-[#E4EBE4] rounded-xl focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] font-medium resize-none placeholder:text-[#5B655D]"
                   />
                 </div>
               )}
@@ -413,7 +413,7 @@ export default function MainContent({
             data-testid={`question-input-${question.id}`}
             placeholder="Enter your response here..."
             rows={4}
-            className="w-full px-4 py-3 border-2 border-[#E4EBE4] rounded-xl focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] font-medium resize-none placeholder:text-[#7A8075]"
+            className="w-full px-4 py-3 border-2 border-[#E4EBE4] rounded-xl focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] font-medium resize-none placeholder:text-[#5B655D]"
           />
         );
 
@@ -448,19 +448,19 @@ export default function MainContent({
                 }}
                 readOnly={isLockedSiteName}
                 placeholder="Start typing to search for a protected area..."
-                className={`w-full px-4 py-3 border-2 rounded-xl transition-colors font-medium placeholder:text-[#7A8075] ${
+                className={`w-full px-4 py-3 border-2 rounded-xl transition-colors font-medium placeholder:text-[#5B655D] ${
                   isLockedSiteName
-                    ? 'border-[#E4EBE4] bg-[#F7F2EA] text-[#7A8075]'
+                    ? 'border-[#E4EBE4] bg-[#F7F2EA] text-[#5B655D]'
                     : 'border-[#E4EBE4] focus:border-[#356B43] focus:outline-none text-[#254431]'
                 }`}
               />
 
               {isLockedSiteName && (
-                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8075]" />
+                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5B655D]" />
               )}
             </div>
 
-            <p className="text-xs text-[#7A8075]">
+            <p className="text-xs text-[#5B655D]">
               {isLockedSiteName
                 ? 'This site name is automatically filled and cannot be changed.'
                 : 'Enter the name of the protected area you visited'}
@@ -477,9 +477,9 @@ export default function MainContent({
               value={(response as string) || ''}
               max={today}
               onChange={(e) => handleResponse(question.id, e.target.value)}
-              className="w-full px-4 py-3 border-2 border-[#E4EBE4] rounded-xl focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] font-medium placeholder:text-[#7A8075]"
+              className="w-full px-4 py-3 border-2 border-[#E4EBE4] rounded-xl focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] font-medium placeholder:text-[#5B655D]"
             />
-            <p className="text-xs text-[#7A8075]">Enter the date you visited the site</p>
+            <p className="text-xs text-[#5B655D]">Enter the date you visited the site</p>
           </div>
         );
 
@@ -587,7 +587,7 @@ export default function MainContent({
                       ? "Drop images here"
                       : "Click to upload images"}
                   </p>
-                  <p className="text-sm text-[#7A8075] mt-1">
+                  <p className="text-sm text-[#5B655D] mt-1">
                     PNG, JPG, WEBP up to 10MB each
                   </p>
                 </div>
@@ -624,8 +624,8 @@ export default function MainContent({
                   <div className="flex-1 min-w-0">
                     {/* Lock badge */}
                     <div className="flex items-center gap-1 mb-1">
-                      <Lock className="w-3 h-3 text-[#7A8075]" />
-                      <span className="text-xs text-[#7A8075] font-medium truncate">
+                      <Lock className="w-3 h-3 text-[#5B655D]" />
+                      <span className="text-xs text-[#5B655D] font-medium truncate">
                         {image.filename ?? 'Uploaded image'}
                       </span>
                     </div>
@@ -638,7 +638,7 @@ export default function MainContent({
                       {image.identifier?.trim() || "No identifier"}
                     </div>
 
-                    <p className="mt-1 text-xs text-[#7A8075] italic flex items-center gap-1">
+                    <p className="mt-1 text-xs text-[#5B655D] italic flex items-center gap-1">
                       <Lock className="w-3 h-3" /> Previously uploaded — cannot be removed or edited
                     </p>
                   </div>
@@ -665,7 +665,7 @@ export default function MainContent({
                       <p className="font-semibold text-[#254431] truncate text-sm">
                         {image.file.name}
                       </p>
-                      <p className="text-xs text-[#7A8075] mt-1">
+                      <p className="text-xs text-[#5B655D] mt-1">
                         Site: {siteName || "Unknown site"}
                       </p>
                     </div>
@@ -705,7 +705,7 @@ export default function MainContent({
                         placeholder="Short Description"
                         className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
                       />
-                      <p className="mt-1 text-xs text-[#7A8075]">
+                      <p className="mt-1 text-xs text-[#5B655D]">
                         {(image.identifier ?? '').replace(/\s/g, '').length}/20 characters
                       </p>
                     </div>
@@ -724,7 +724,7 @@ export default function MainContent({
                       placeholder="Owner of digital file"
                       className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
                     />
-                    <p className="mt-1 text-xs text-[#7A8075]">
+                    <p className="mt-1 text-xs text-[#5B655D]">
                       {(image.photographer ?? "").replace(/\s/g, '').length}/25 characters
                     </p>
                   </div>
@@ -740,7 +740,7 @@ export default function MainContent({
                       onChange={(e) => updateLocalField(image.id, 'date', e.target.value)}
                       className="w-full px-3 py-2 border-2 border-[#E4EBE4] rounded-lg focus:border-[#356B43] focus:outline-none transition-colors text-[#254431] text-sm"
                     />
-                    <p className="text-xs text-[#7A8075] mt-1">
+                    <p className="text-xs text-[#5B655D] mt-1">
                       Enter the date when this image was taken (Date of Visit)
                     </p>
                   </div>
@@ -756,7 +756,7 @@ export default function MainContent({
 
       default:
         return (
-          <div className="p-4 bg-[#F7F2EA] rounded-lg text-[#7A8075] border border-[#E4EBE4]">
+          <div className="p-4 bg-[#F7F2EA] rounded-lg text-[#5B655D] border border-[#E4EBE4]">
             <p className="text-sm">
               Unknown question type: <span className="font-mono">{questionType}</span>
             </p>
@@ -770,7 +770,7 @@ export default function MainContent({
       <main className="flex-1 max-w-7xl mx-auto w-full flex items-center justify-center p-8">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-12 h-12 text-[#356B43] animate-spin" />
-          <p className="text-[#7A8075] font-medium">Loading questions...</p>
+          <p className="text-[#5B655D] font-medium">Loading questions...</p>
         </div>
       </main>
     );
@@ -795,13 +795,13 @@ export default function MainContent({
                 className={`flex-shrink-0 flex items-center justify-between gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
                   activeSection === sectionNum
                     ? 'bg-[#356B43] text-white shadow-md'
-                    : 'text-[#7A8075] hover:bg-[#E4EBE4]'
+                    : 'text-[#5B655D] hover:bg-[#E4EBE4]'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <span
                     className={`w-6 h-6 rounded-full flex items-center justify-center text-xs border ${
-                      activeSection === sectionNum ? 'border-white' : 'border-[#7A8075]'
+                      activeSection === sectionNum ? 'border-white' : 'border-[#5B655D]'
                     }`}
                   >
                     {sectionNum}
@@ -830,10 +830,10 @@ export default function MainContent({
             {sectionMetadata[activeSection ?? sections[0] ?? 1]?.description && (
               <MarkdownText
                 content={sectionMetadata[activeSection ?? sections[0] ?? 1].description}
-                className="text-[#7A8075] mt-1"
+                className="text-[#5B655D] mt-1"
               />
             )}
-            <p className="text-[#7A8075]">
+            <p className="text-[#5B655D]">
               There are {currentQuestions.length} question{currentQuestions.length !== 1 ? 's' : ''} in this section.
             </p>
           </div>
@@ -841,7 +841,7 @@ export default function MainContent({
           <div className="space-y-6">
             {currentQuestions.length === 0 ? (
               <div className="text-center py-16 bg-white rounded-2xl border-2 border-dashed border-[#E4EBE4]">
-                <p className="text-[#7A8075] font-medium">No questions available for this section.</p>
+                <p className="text-[#5B655D] font-medium">No questions available for this section.</p>
               </div>
             ) : (
               currentQuestions.map((question, index) => {
@@ -895,7 +895,7 @@ export default function MainContent({
                             className="mt-1 text-sm text-[#254431]/70 leading-snug font-normal"
                           />
                           <div className="flex items-center gap-2 mt-2">
-                            <span className="text-xs px-2 py-1 rounded-full bg-[#F7F2EA] text-[#7A8075] font-medium">
+                            <span className="text-xs px-2 py-1 rounded-full bg-[#F7F2EA] text-[#5B655D] font-medium">
                               {question.question_type.trim()}
                             </span>
                             {question.is_required === true && (

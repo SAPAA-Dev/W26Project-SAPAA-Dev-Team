@@ -122,7 +122,7 @@ describeDb('site and protected area links (#181)', () => {
     await must(service.rpc('link_sites_to_protected_areas', { p_link: shouldLink }));
   }
 
-  it('US 6.0.1 AT1: links the Site to the parsed KML boundary and reads the same geometry', async () => {
+  it('(6.0.1 AT1) links the Site to the parsed KML boundary and reads the same geometry', async () => {
     const name = `${PREFIX} Kml`;
     const record = parseProtectedAreaKmlText(kmlText(name)).records[0];
     if (record === undefined) throw new Error('the KML fixture has no record');
@@ -140,7 +140,7 @@ describeDb('site and protected area links (#181)', () => {
     expect(data!.geometry).toEqual(record.geometry);
   });
 
-  it('US 6.0.1 AT2: links an exact "Name (TYPE)" site name and stores the bounding-box centre', async () => {
+  it('(6.0.1 AT2) links an exact "Name (TYPE)" site name and stores the bounding-box centre', async () => {
     const areaId = await addArea(`${PREFIX} Alexo`, 'NA', square(-113, 53));
     const siteId = await addSite(`${PREFIX} Alexo (NA)`);
 
@@ -152,7 +152,7 @@ describeDb('site and protected area links (#181)', () => {
     expect(site.centre_latitude).toBeCloseTo(54, 6);
   });
 
-  it('US 6.0.1 AT2: leaves a site with no exact match unlinked', async () => {
+  it('(6.0.1 AT2) leaves a site with no exact match unlinked', async () => {
     const siteId = await addSite(`${PREFIX} No Match (NA)`);
 
     await runLinker();
@@ -163,7 +163,7 @@ describeDb('site and protected area links (#181)', () => {
     expect(site.centre_longitude).toBeNull();
   });
 
-  it('US 6.0.1 AT2: leaves an ambiguous area name unlinked', async () => {
+  it('(6.0.1 AT2) leaves an ambiguous area name unlinked', async () => {
     await addArea(`${PREFIX} Twin`, 'NA', square(-100, 50));
     await addArea(`${PREFIX} Twin`, 'NA', square(-90, 50));
     const siteId = await addSite(`${PREFIX} Twin (NA)`);
@@ -173,7 +173,7 @@ describeDb('site and protected area links (#181)', () => {
     expect((await readSite(siteId)).protected_area_id).toBeNull();
   });
 
-  it('US 6.0.1 AT2: does not overwrite a manual link and uses the manual area for the centre', async () => {
+  it('(6.0.1 AT2) does not overwrite a manual link and uses the manual area for the centre', async () => {
     const manualAreaId = await addArea(`${PREFIX} Manual Target`, 'NA', square(-80, 50));
     await addArea(`${PREFIX} Manual`, 'NA', square(-70, 50));
     const siteId = await addSite(`${PREFIX} Manual (NA)`, manualAreaId);
@@ -186,7 +186,7 @@ describeDb('site and protected area links (#181)', () => {
     expect(site.centre_latitude).toBeCloseTo(51, 6);
   });
 
-  it('US 6.0.1 AT2: does not link an archived site', async () => {
+  it('(6.0.1 AT2) does not link an archived site', async () => {
     await addArea(`${PREFIX} Archived`, 'NA', square(-60, 50));
     const siteId = await addSite(`${PREFIX} Archived (NA)`, null, new Date().toISOString());
 
@@ -195,7 +195,7 @@ describeDb('site and protected area links (#181)', () => {
     expect((await readSite(siteId)).protected_area_id).toBeNull();
   });
 
-  it('US 6.0.1 AT2: clears the centre on an unlink and does not link the site again', async () => {
+  it('(6.0.1 AT2) clears the centre on an unlink and does not link the site again', async () => {
     const areaId = await addArea(`${PREFIX} Unlink`, 'NA', square(-40, 50));
     const siteId = await addSite(`${PREFIX} Unlink (NA)`);
     await runLinker();

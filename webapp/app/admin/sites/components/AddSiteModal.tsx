@@ -133,7 +133,7 @@ export default function AddSiteModal({
                 type="text"
                 autoComplete="off"
                 aria-invalid={nameMissing}
-                className={`w-full px-4 py-3 bg-[#F7F2EA] border-2 rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] transition-all ${
+                className={`w-full px-4 py-3 bg-[#F7F2EA] border-2 rounded-xl text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] transition-all ${
                   nameMissing ? "border-red-500" : "border-[#86A98A]"
                 }`}
                 placeholder="Enter site name"
@@ -158,7 +158,7 @@ export default function AddSiteModal({
                   data-testid="add-site-suggestions"
                   className="absolute top-full mt-1 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg z-10 max-h-60 overflow-y-auto"
                 >
-                  <li role="presentation" className="px-3 pt-2 pb-1 text-xs text-[#7A8075]">Suggestions from the SAPAA map</li>
+                  <li role="presentation" className="px-3 pt-2 pb-1 text-xs text-[#5B655D]">Suggestions from the SAPAA map</li>
                   {matchingSuggestions.map((suggestion, index) => (
                     <li
                       key={suggestion.name}
@@ -166,7 +166,7 @@ export default function AddSiteModal({
                       className="w-full text-left px-3 py-2 cursor-pointer hover:bg-green-50 aria-selected:bg-green-50 transition-colors"
                     >
                       <span className="text-sm font-medium text-gray-800">{suggestion.name}</span>
-                      <span className="ml-2 text-xs text-[#7A8075]">{suggestion.category}</span>
+                      <span className="ml-2 text-xs text-[#5B655D]">{suggestion.category}</span>
                     </li>
                   ))}
                 </ul>

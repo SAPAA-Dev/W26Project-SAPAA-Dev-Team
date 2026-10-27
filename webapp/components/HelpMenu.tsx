@@ -46,7 +46,7 @@ export default function HelpMenu({ onStartTutorial }: HelpMenuProps) {
             <Mail className="w-4 h-4 text-[#356B43] flex-shrink-0" />
             <div>
               <div className="text-sm font-semibold">Contact Us</div>
-              <div className="text-xs text-[#7A8075]">Send us a message</div>
+              <div className="text-xs text-[#5B655D]">Send us a message</div>
             </div>
           </a>
 
@@ -61,7 +61,7 @@ export default function HelpMenu({ onStartTutorial }: HelpMenuProps) {
             <BookOpen className="w-4 h-4 text-[#356B43] flex-shrink-0" />
             <div>
               <div className="text-sm font-semibold">App Tutorial</div>
-              <div className="text-xs text-[#7A8075]">Replay the walkthrough</div>
+              <div className="text-xs text-[#5B655D]">Replay the walkthrough</div>
             </div>
           </button>
         </div>

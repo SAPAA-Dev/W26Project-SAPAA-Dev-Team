@@ -34,7 +34,7 @@ function FilterSection({ label, options, selected, onChange }: FilterSectionProp
         >
           <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${expanded ? '' : '-rotate-90'}`} />
           <span>{label}</span>
-          <span className="font-medium text-[#7A8075]">
+          <span className="font-medium text-[#5B655D]">
             {options.length === 0 ? 'None' : allSelected ? 'All' : `${selectedCount} selected`}
           </span>
         </button>
@@ -56,11 +56,11 @@ function FilterSection({ label, options, selected, onChange }: FilterSectionProp
             aria-label={searchLabel}
             placeholder={searchLabel}
             onChange={(event) => setQuery(event.target.value)}
-            className="mb-2 w-full rounded-lg border border-[#E4EBE4] px-3 py-2 text-sm text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43]"
+            className="mb-2 w-full rounded-lg border border-[#E4EBE4] px-3 py-2 text-sm text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43]"
           />}
           <div className="max-h-40 overflow-y-auto rounded-lg border border-[#E4EBE4]">
             {visibleOptions.length === 0 ? (
-              <p className="px-1 py-2 text-sm text-[#7A8075]">No matches</p>
+              <p className="px-1 py-2 text-sm text-[#5B655D]">No matches</p>
             ) : (
               visibleOptions.map((option) => {
                 const checked = selected === null || selected.has(option);

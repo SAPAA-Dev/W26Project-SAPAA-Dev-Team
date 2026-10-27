@@ -321,7 +321,7 @@ describe('tile cache', () => {
 });
 
 describe('downloadArea', () => {
-  it('downloads the style, the resources, and every tile', async () => {
+  it('downloads the style, the resources, and every tile (4.0.2 AT2)', async () => {
     const fetchMock = installFetch({ [STYLE_URL]: jsonResponse(VECTOR_STYLE) });
     const progress: DownloadProgress[] = [];
 

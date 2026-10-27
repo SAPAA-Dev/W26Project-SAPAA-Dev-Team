@@ -140,7 +140,7 @@ describe('importProtectedAreasFromStorage', () => {
     mockParse(1);
   });
 
-  it('US 6.0.1 AT5: refuses a steward and touches neither storage nor the table', async () => {
+  it('(6.0.1 AT5) refuses a steward and touches neither storage nor the table', async () => {
     mockCaller('steward');
 
     const result = await importProtectedAreasFromStorage(VALID_PATH);
@@ -184,7 +184,7 @@ describe('importProtectedAreasFromStorage', () => {
     expect(result).toEqual({ success: true, upserted: 2, skipped: 0, warnings: [], unlinkedSites: [] });
   });
 
-  it('US 6.0.1 AT1: stores the exact KML coordinates and links the site', async () => {
+  it('(6.0.1 AT1) stores the exact KML coordinates and links the site', async () => {
     mockCaller('admin');
     const actual = jest.requireActual('../../lib/map/kmlImport') as typeof import('../../lib/map/kmlImport');
     mockParseProtectedAreaFile.mockImplementation(actual.parseProtectedAreaFile);
@@ -372,7 +372,7 @@ describe('importProtectedAreasFromStorage', () => {
     expect(mockRemove).toHaveBeenCalledWith(['kml-imports/old-upload/orphan.kml']);
   });
 
-  it('US 6.0.1 AT3: reads the non-archived sites that have no protected area link', async () => {
+  it('(6.0.1 AT3) reads the non-archived sites that have no protected area link', async () => {
     mockCaller('admin');
 
     await importProtectedAreasFromStorage(VALID_PATH);
@@ -384,7 +384,7 @@ describe('importProtectedAreasFromStorage', () => {
     expect(mockOrder).toHaveBeenCalledWith('namesite', { ascending: true });
   });
 
-  it('US 6.0.1 AT3: reports the site names and drops blank names', async () => {
+  it('(6.0.1 AT3) reports the site names and drops blank names', async () => {
     mockCaller('admin');
     mockOrder.mockResolvedValue({
       data: [{ namesite: 'Zeta' }, { namesite: ' ' }, { namesite: null }, { namesite: 'Alpha' }],

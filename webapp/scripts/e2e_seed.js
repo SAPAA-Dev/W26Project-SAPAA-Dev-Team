@@ -35,6 +35,7 @@ async function main() {
 
   const { data: list, error: listError } = await admin.auth.admin.listUsers({ perPage: 1000 });
   if (listError) throw listError;
+  const seededUsers = {};
   for (const [key, user] of Object.entries(USERS)) {
     const attributes = {
       email: user.email,
@@ -44,10 +45,11 @@ async function main() {
       app_metadata: { role: user.role, authenticated: user.authenticated },
     };
     const existing = list.users.find((u) => u.email === user.email);
-    const { error } = existing
+    const { data, error } = existing
       ? await admin.auth.admin.updateUserById(existing.id, attributes)
       : await admin.auth.admin.createUser(attributes);
     if (error) throw error;
+    seededUsers[key] = data.user;
   }
 
   // Several specs (edit/disable site, PDF export, site gallery) look for this site by name.
@@ -99,15 +101,23 @@ async function main() {
     if (linkError) throw linkError;
   }
 
-  // Archive spec (7.0.8) and deactivate spec (2.0.3 AT4): one report on Riverlot 56 with an answer
-  // and an image row, reset to active and not archived on every run.
+  // Archive spec (7.0.8), deactivate spec (2.0.3 AT4) and report-edit spec (4.0.4): one report on
+  // Riverlot 56 with an answer and an image row, owned by the seeded steward and reset to active
+  // and not archived on every run.
   const { data: riverlot, error: riverlotError } = await admin
     .from('sites_pa').select('id').eq('namesite', 'Riverlot 56 (NA)').single();
   if (riverlotError) throw riverlotError;
   const { data: report, error: reportError } = await admin
     .from('form_responses')
     .upsert(
-      { site_id: riverlot.id, inspection_no: 'E2E-ARCHIVE-1', inspection_date: '2026-01-15', is_active: true, archived_at: null },
+      {
+        site_id: riverlot.id,
+        inspection_no: 'E2E-ARCHIVE-1',
+        inspection_date: '2026-01-15',
+        is_active: true,
+        archived_at: null,
+        user_id: seededUsers.STEWARD.id,
+      },
       { onConflict: 'inspection_no' }
     )
     .select('id')

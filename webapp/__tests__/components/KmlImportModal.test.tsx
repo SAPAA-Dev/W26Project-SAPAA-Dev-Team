@@ -38,7 +38,7 @@ describe('KmlImportModal', () => {
     expect(onImported).toHaveBeenCalledTimes(1);
   });
 
-  it('US 6.0.1 AT3: lists the sites that have no boundary after an import', async () => {
+  it('(6.0.1 AT3) lists the sites that have no boundary after an import', async () => {
     mockImport.mockResolvedValue({
       success: true,
       upserted: 1,
@@ -56,7 +56,7 @@ describe('KmlImportModal', () => {
     expect(within(block).getByText('Beta (WPP)')).toBeInTheDocument();
   });
 
-  it('US 6.0.1 AT3: hides the boundary list when every site has a boundary', async () => {
+  it('(6.0.1 AT3) hides the boundary list when every site has a boundary', async () => {
     mockImport.mockResolvedValue({
       success: true,
       upserted: 1,

@@ -321,7 +321,7 @@ describe('SiteMap (US 2.0.6)', () => {
       process.env.NEXT_PUBLIC_PROTOMAPS_API_KEY = 'test-key';
     });
 
-    it('adds the source and the two layers once the style is loaded', () => {
+    it('adds the source and the two layers once the style is loaded (2.0.1 AT1)', () => {
       render(<SiteMap boundaries={COLLECTION} />);
 
       expect(mapInstance.addSource).toHaveBeenCalledTimes(1);
@@ -678,7 +678,7 @@ describe('SiteMap (US 2.0.6)', () => {
       expect(content.querySelector('[data-boundary-name]')?.textContent).toBe('Protected area');
     });
 
-    it('US 2.0.8 AT1: opens the detail popup for the selected site', () => {
+    it('(2.0.8 AT1) opens the detail popup for the selected site', () => {
       render(<SiteMap boundaries={COLLECTION} />);
 
       const lngLat = { lng: -110.5, lat: 52.6 };
@@ -694,7 +694,7 @@ describe('SiteMap (US 2.0.6)', () => {
       expect(popupInstance.addTo).toHaveBeenCalledWith(mapInstance);
     });
 
-    it('US 2.0.8 AT1: opens no popup when the click carries no feature', () => {
+    it('(2.0.8 AT1) opens no popup when the click carries no feature', () => {
       render(<SiteMap boundaries={COLLECTION} />);
 
       act(() => layerHandler('click')({ lngLat: { lng: 0, lat: 0 }, features: [] }));
@@ -702,7 +702,7 @@ describe('SiteMap (US 2.0.6)', () => {
       expect(popupInstance.setDOMContent).not.toHaveBeenCalled();
     });
 
-    it('US 2.0.8 AT2: puts the site name, county and last inspection date at the top', () => {
+    it('(2.0.8 AT2) puts the site name, county and last inspection date at the top', () => {
       render(<SiteMap boundaries={COLLECTION} />);
 
       act(() =>
@@ -748,7 +748,7 @@ describe('SiteMap (US 2.0.6)', () => {
       );
     });
 
-    it('US 2.0.8 AT2: shows "Never inspected" when the site has no report date', () => {
+    it('(2.0.8 AT2) shows "Never inspected" when the site has no report date', () => {
       render(<SiteMap boundaries={COLLECTION} />);
 
       act(() =>
@@ -765,7 +765,7 @@ describe('SiteMap (US 2.0.6)', () => {
       ).toBe('Never inspected');
     });
 
-    it('US 2.0.8 AT2: shows "No linked site" for an area with no site', () => {
+    it('(2.0.8 AT2) shows "No linked site" for an area with no site', () => {
       render(<SiteMap boundaries={COLLECTION} />);
 
       act(() =>
@@ -786,7 +786,7 @@ describe('SiteMap (US 2.0.6)', () => {
       expect(content.querySelector('[data-boundary-name]')?.textContent).toBe('Some Area');
     });
 
-    it('US 2.0.8 AT3: links "View site & SIRs" to the encoded detail path', () => {
+    it('(2.0.8 AT3) links "View site & SIRs" to the encoded detail path', () => {
       render(<SiteMap boundaries={COLLECTION} />);
 
       act(() =>
@@ -802,7 +802,7 @@ describe('SiteMap (US 2.0.6)', () => {
       expect(link?.getAttribute('href')).toBe('/detail/Bilby%20%232%20%2F%20East');
     });
 
-    it('US 2.0.8 AT3: shows no View site & SIRs link for an area with no linked site', () => {
+    it('(2.0.8 AT3) shows no View site & SIRs link for an area with no linked site', () => {
       render(<SiteMap boundaries={COLLECTION} />);
 
       act(() =>
@@ -1157,7 +1157,7 @@ describe('SiteMap (US 2.0.6)', () => {
       expect(screen.getByText('Loading boundaries…')).toBeInTheDocument();
     });
 
-    it('shows the error note when the boundaries fail', () => {
+    it('shows the error note when the boundaries fail (2.0.1 AT1)', () => {
       render(<SiteMap boundariesError="Site boundaries could not load." />);
 
       expect(screen.getByText('Site boundaries could not load.')).toBeInTheDocument();
@@ -1209,7 +1209,7 @@ describe('SiteMap (US 2.0.6)', () => {
       expect(removeProtocolMock).toHaveBeenCalledWith('sapaa-offline');
     });
 
-    it('rejects a protocol request that is not in the offline cache', async () => {
+    it('rejects a protocol request that is not in the offline cache (4.0.2 AT3)', async () => {
       render(<SiteMap />);
       const handler = addProtocolMock.mock.calls[0][1];
 
@@ -1222,7 +1222,7 @@ describe('SiteMap (US 2.0.6)', () => {
       ).rejects.toThrow('Not in offline cache: https://api.protomaps.com/tiles/6/33/21');
     });
 
-    it('serves a cached tile through the protocol handler', async () => {
+    it('serves a cached tile through the protocol handler (4.0.2 AT2)', async () => {
       render(<SiteMap />);
       const handler = addProtocolMock.mock.calls[0][1];
 
@@ -1273,15 +1273,14 @@ describe('SiteMap (US 2.0.6)', () => {
       expect(mapInstance.setStyle).toHaveBeenCalledTimes(2);
     });
 
-    it('shows the offline badge and counts missing tiles until the view moves', () => {
+    it('shows the offline badge and counts missing tiles until the view moves (4.0.2 AT3)', () => {
       jest.useFakeTimers();
       try {
         Object.defineProperty(navigator, 'onLine', { value: false, configurable: true });
         render(<SiteMap />);
 
-        expect(
-          screen.getByText('Offline map. Tiles outside saved areas are missing.')
-        ).toBeInTheDocument();
+        const badge = screen.getByRole('status');
+        expect(badge).toHaveTextContent('Offline map. Tiles outside saved areas are missing.');
         expect(screen.queryByText('8 tiles missing in this view.')).not.toBeInTheDocument();
 
         const error = mapHandler('error');
@@ -1551,6 +1550,7 @@ describe('SiteMap (US 2.0.6)', () => {
 });
 
 const GPX_SOURCE_ID = 'gpx-tracks';
+const GPX_CASING_LAYER_ID = 'gpx-tracks-casing';
 const GPX_LINE_LAYER_ID = 'gpx-tracks-line';
 
 const GPX_TRACKS: GpxTrackLineFeatureCollection = {
@@ -1708,6 +1708,21 @@ describe('SiteMap site selection and GPX tracks (US 2.0.1)', () => {
       expect(trackLayer.paint['line-color']).not.toBe(outline.paint['line-color']);
       expect(trackLayer.paint['line-dasharray']).toBeDefined();
       expect(outline.paint['line-dasharray']).toBeUndefined();
+    });
+
+    it('draws a white casing under the track so the orange line separates from the green fill', () => {
+      render(<SiteMap boundaries={COLLECTION} gpxTracks={GPX_TRACKS} />);
+
+      const layers = mapInstance.addLayer.mock.calls.map(([layer]) => layer);
+      const casing = layers.find((layer) => layer.id === GPX_CASING_LAYER_ID);
+      const track = layers.find((layer) => layer.id === GPX_LINE_LAYER_ID);
+
+      expect(casing.type).toBe('line');
+      expect(casing.source).toBe(GPX_SOURCE_ID);
+      expect(casing.paint['line-color']).toBe('#FFFFFF');
+      expect(casing.paint['line-width']).toBeGreaterThan(track.paint['line-width']);
+      expect(casing.paint['line-dasharray']).toBeUndefined();
+      expect(layers.indexOf(casing)).toBeLessThan(layers.indexOf(track));
     });
 
     it('adds no track source when the prop is absent', () => {

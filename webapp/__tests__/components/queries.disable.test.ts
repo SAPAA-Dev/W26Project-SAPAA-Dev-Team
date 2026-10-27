@@ -61,7 +61,7 @@ describe("Supabase disable site functions (US 2.0.3)", () => {
       ]);
     });
 
-    it("US 6.0.1 AT2: returns the boundary link or null for each site", async () => {
+    it("(6.0.1 AT2) returns the boundary link or null for each site", async () => {
       const mockData = [
         {
           id: 1,

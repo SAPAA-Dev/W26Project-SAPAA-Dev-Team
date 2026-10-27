@@ -44,9 +44,13 @@ const FILL_LAYER_ID = 'protected-areas-fill';
 const OUTLINE_LAYER_ID = 'protected-areas-outline';
 
 // The track reads as a path a steward walked, not a boundary: a dashed orange
-// line over the solid green outline (US 2.0.1 AT2).
+// line over the solid green outline (US 2.0.1 AT2). The orange is 1.22:1 against
+// the green fill, so a white casing under the line separates the two shapes.
 const GPX_SOURCE_ID = 'gpx-tracks';
+const GPX_CASING_LAYER_ID = 'gpx-tracks-casing';
 const GPX_LINE_LAYER_ID = 'gpx-tracks-line';
+const GPX_CASING_COLOR = '#FFFFFF';
+const GPX_CASING_WIDTH = 7;
 const GPX_LINE_COLOR = '#C2410C';
 const GPX_LINE_WIDTH = 3;
 const GPX_LINE_DASHARRAY = [2, 1];
@@ -274,7 +278,7 @@ function createSiteSection(properties: unknown): HTMLElement {
 
   if (siteName === null) {
     const unlinked = document.createElement('div');
-    unlinked.className = 'mt-1 text-base font-semibold text-[#7A8075]';
+    unlinked.className = 'mt-1 text-base font-semibold text-[#5B655D]';
     unlinked.dataset.noLinkedSite = 'true';
     unlinked.textContent = 'No linked site';
     section.appendChild(unlinked);
@@ -849,6 +853,15 @@ export default function SiteMap({
       }
       map.addSource(GPX_SOURCE_ID, { type: 'geojson', data: gpxTracks });
       map.addLayer({
+        id: GPX_CASING_LAYER_ID,
+        type: 'line',
+        source: GPX_SOURCE_ID,
+        paint: {
+          'line-color': GPX_CASING_COLOR,
+          'line-width': GPX_CASING_WIDTH,
+        },
+      });
+      map.addLayer({
         id: GPX_LINE_LAYER_ID,
         type: 'line',
         source: GPX_SOURCE_ID,
@@ -1067,7 +1080,7 @@ export default function SiteMap({
             <KeyRound className="h-8 w-8 text-[#356B43]" />
           </div>
           <h3 className="mb-2 text-lg font-bold text-[#254431]">Map key not set</h3>
-          <p className="mb-4 text-sm leading-relaxed text-[#7A8075]">
+          <p className="mb-4 text-sm leading-relaxed text-[#5B655D]">
             Add{' '}
             <code className="rounded bg-[#F7F2EA] px-1.5 py-0.5 font-mono text-[#254431]">
               NEXT_PUBLIC_PROTOMAPS_API_KEY
@@ -1082,7 +1095,7 @@ export default function SiteMap({
             </code>
             . The server inlines the value at start, so a restart is necessary.
           </p>
-          <p className="text-xs text-[#7A8075]">
+          <p className="text-xs text-[#5B655D]">
             Get a key at{' '}
             <a
               href="https://maps.protomaps.com"
@@ -1136,7 +1149,10 @@ export default function SiteMap({
         </div>
       )}
       {!isOnline && (
-        <div className="pointer-events-none absolute bottom-4 left-4 rounded-full border border-[#E4EBE4] bg-white/95 px-3 py-1.5 text-xs font-medium text-[#254431] shadow-sm">
+        <div
+          role="status"
+          className="pointer-events-none absolute bottom-4 left-4 rounded-full border border-[#E4EBE4] bg-white/95 px-3 py-1.5 text-xs font-medium text-[#254431] shadow-sm"
+        >
           <div>Offline map. Tiles outside saved areas are missing.</div>
           {missingTiles > 0 && (
             <div>

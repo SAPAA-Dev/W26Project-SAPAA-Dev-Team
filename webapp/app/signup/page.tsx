@@ -167,7 +167,7 @@ export default function SignupPage() {
               <h1 className="text-4xl font-bold text-[#254431] mb-3">
                 Create Account
               </h1>
-              <p className="text-lg text-[#7A8075]">
+              <p className="text-lg text-[#5B655D]">
                 Join the community of Alberta&apos;s environmental stewards.
               </p>
             </div>
@@ -212,7 +212,7 @@ export default function SignupPage() {
                 <div className="w-full border-t-2 border-[#E4EBE4]" />
               </div>
               <div className="relative flex justify-center">
-                <span className="px-4 bg-[#F7F2EA] text-sm font-medium text-[#7A8075]">
+                <span className="px-4 bg-[#F7F2EA] text-sm font-medium text-[#5B655D]">
                   Or sign up with email
                 </span>
               </div>
@@ -225,7 +225,7 @@ export default function SignupPage() {
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 pl-4 flex items-center">
-                    <Mail className="h-5 w-5 text-[#7A8075]" />
+                    <Mail className="h-5 w-5 text-[#5B655D]" />
                   </div>
                   <input
                     id="email"
@@ -235,7 +235,7 @@ export default function SignupPage() {
                       setEmail(e.target.value);
                       if (err) setErr(null);
                     }}
-                    className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-4 py-3.5 text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
+                    className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-4 py-3.5 text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
                     placeholder="your.email@example.com"
                     required
                   />
@@ -248,7 +248,7 @@ export default function SignupPage() {
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 pl-4 flex items-center">
-                    <Lock className="h-5 w-5 text-[#7A8075]" />
+                    <Lock className="h-5 w-5 text-[#5B655D]" />
                   </div>
                   <input
                     id="password"
@@ -258,7 +258,7 @@ export default function SignupPage() {
                       setPassword(e.target.value);
                       if (err) setErr(null);
                     }}
-                    className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-12 py-3.5 text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
+                    className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-12 py-3.5 text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
                     placeholder="Create a strong password"
                     required
                     minLength={6}
@@ -269,16 +269,16 @@ export default function SignupPage() {
                     className="absolute inset-y-0 right-0 pr-4 flex items-center hover:bg-[#F7F2EA] rounded-r-xl transition-colors"
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-[#7A8075] hover:text-[#1E2520]" />
+                      <EyeOff className="h-5 w-5 text-[#5B655D] hover:text-[#1E2520]" />
                     ) : (
-                      <Eye className="h-5 w-5 text-[#7A8075] hover:text-[#1E2520]" />
+                      <Eye className="h-5 w-5 text-[#5B655D] hover:text-[#1E2520]" />
                     )}
                   </button>
                 </div>
                 {password && passwordStrength > 0 && (
                   <div className="mt-3">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-[#7A8075]">Password strength</span>
+                      <span className="text-xs font-medium text-[#5B655D]">Password strength</span>
                       <span
                         className="text-xs font-bold"
                         style={{ color: strengthColors[passwordStrength - 1] }}
@@ -305,7 +305,7 @@ export default function SignupPage() {
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 pl-4 flex items-center">
-                    <Lock className="h-5 w-5 text-[#7A8075]" />
+                    <Lock className="h-5 w-5 text-[#5B655D]" />
                   </div>
                   <input
                     id="confirmPassword"
@@ -315,7 +315,7 @@ export default function SignupPage() {
                       setConfirmPassword(e.target.value);
                       if (err) setErr(null);
                     }}
-                    className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-12 py-3.5 text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
+                    className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-12 py-3.5 text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
                     placeholder="Re-enter your password"
                     required
                     minLength={6}
@@ -326,9 +326,9 @@ export default function SignupPage() {
                     className="absolute inset-y-0 right-0 pr-4 flex items-center hover:bg-[#F7F2EA] rounded-r-xl transition-colors"
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="h-5 w-5 text-[#7A8075] hover:text-[#1E2520]" />
+                      <EyeOff className="h-5 w-5 text-[#5B655D] hover:text-[#1E2520]" />
                     ) : (
-                      <Eye className="h-5 w-5 text-[#7A8075] hover:text-[#1E2520]" />
+                      <Eye className="h-5 w-5 text-[#5B655D] hover:text-[#1E2520]" />
                     )}
                   </button>
                 </div>
@@ -357,7 +357,7 @@ export default function SignupPage() {
             </div>
 
             <div className="mt-8 text-center">
-              <p className="text-[#7A8075]">
+              <p className="text-[#5B655D]">
                 Already have an account?{' '}
                 <a
                   href="/login"
@@ -389,7 +389,7 @@ export default function SignupPage() {
             <h2 className="text-3xl font-bold text-[#254431] text-center mb-2">
               One more step to go
             </h2>
-            <p className="text-[#7A8075] text-center leading-relaxed mb-6">
+            <p className="text-[#5B655D] text-center leading-relaxed mb-6">
               We&apos;ve sent a confirmation link to{' '}
               <span className="font-semibold text-[#1E2520]">{email}</span>.{' '}
               After verifying, your account will be reviewed for access.
@@ -401,7 +401,7 @@ export default function SignupPage() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-[#1E2520]">Account created</p>
-                  <p className="text-xs text-[#7A8075]">Your details have been saved.</p>
+                  <p className="text-xs text-[#5B655D]">Your details have been saved.</p>
                 </div>
               </div>
 
@@ -411,7 +411,7 @@ export default function SignupPage() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-[#1E2520]">Verify your email</p>
-                  <p className="text-xs text-[#7A8075]">Click the link we sent to your inbox.</p>
+                  <p className="text-xs text-[#5B655D]">Click the link we sent to your inbox.</p>
                 </div>
               </div>
 
@@ -421,7 +421,7 @@ export default function SignupPage() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-[#1E2520]">Admin approval</p>
-                  <p className="text-xs text-[#7A8075]">An administrator will review and grant access.</p>
+                  <p className="text-xs text-[#5B655D]">An administrator will review and grant access.</p>
                 </div>
               </div>
             </div>
@@ -436,7 +436,7 @@ export default function SignupPage() {
               Go to login
             </button>
 
-            <p className="text-center text-xs text-[#7A8075] mt-4">
+            <p className="text-center text-xs text-[#5B655D] mt-4">
               Didn&apos;t receive an email?{' '}
               
               <button className="text-[#1C7C4D] font-medium hover:underline"
