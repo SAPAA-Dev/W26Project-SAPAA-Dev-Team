@@ -622,3 +622,5 @@ and clears the error after a successful read. See [Branch Integration Audit](bra
 | release AT4 | Vercel Production tracks SAPAA-Dev main, automatic domain assignment disabled; release requires manual promotion | Settings verified; restricted App authentication and scope verified; full prod run and staged build need live verification |
 
 This is a release configuration change with no app UI change. No Cypress test applies. The workflow is checked with `actionlint`; the full cross-repository run also requires the App installation and a reviewed workflow on course main.
+
+Release runner check: CI and sync use the existing `self-hosted` runner after the owner decision. `actionlint` checks both workflows. The hosted run [41249841693](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/actions/runs/41249841693) failed before startup because of account billing; it is not a failed application test or a completed pipeline check.

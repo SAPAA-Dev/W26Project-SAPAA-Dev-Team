@@ -33,7 +33,7 @@ Course main → course prod → CI passes → SAPAA-Dev main
 
 Vercel tracks SAPAA-Dev **main**. **Auto-assign Custom Production Domains is disabled**, as verified in Settings → Environments → Production on October 31. A new build must be promoted before it changes the stable website. The existing live deployment stays in place while the next build runs.
 
-The sync workflow was merged to course `main` in [PR #345](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/345). The restricted App and Actions credentials are configured. The first full run is still being checked. See section 6 for setup and release checks. A push to course `main` alone is not a release. The course repository is private: use a GitHub account with course access for its links. SAPAA-Dev and Vercel access are separate.
+The sync workflow was merged to course `main` in [PR #345](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/345). The restricted App and Actions credentials are configured. The first hosted run was blocked before tests by the course account billing settings. The owner selected the existing self-hosted runner for CI and release sync. The full run must still be verified after that configuration is merged. See section 6 for setup and release checks. A push to course `main` alone is not a release. The course repository is private: use a GitHub account with course access for its links. SAPAA-Dev and Vercel access are separate.
 
 ## 2. PostgreSQL usernames and connection details
 
@@ -212,7 +212,7 @@ Frank does not need a terminal, database password, AWS key, or App private key t
    This creates `prod` on the first release. Never force push it. If the push fails, inspect the branch difference. Do not delete or reset a branch to clear the failure.
 3. Open [course GitHub Actions → CI](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/actions/workflows/ci.yaml). Select the newest run for **prod**, not a feature branch or the main merge run. Open its **Summary**. Check that the commit ID matches the one recorded in step 2. Wait for **webapp-tests**, **docs-build**, and **hook-tests** to pass. A failed CI run does not sync to the deployment repository.
 
-   The screenshot shows the first run waiting in **Queued**. Queued is not a pass. The `prod` runner change uses GitHub-hosted runners; other branch checks keep the existing self-hosted runner.
+   The screenshot shows the first run waiting in **Queued**. Queued is not a pass. All CI jobs and the release sync use the existing self-hosted runner. A release can wait behind other jobs. GitHub-hosted jobs are not used for this pipeline because the course account blocked them before startup.
 
    ![GitHub CI Summary shows the prod branch, commit, overall status and three jobs. This example is queued and must not be treated as passed.](images/deployment/github-prod-ci.png)
 4. Open [Actions → Stage SAPAA Dev release](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/actions/workflows/sapaa-dev-release.yaml). A run starts automatically after successful prod CI. There is no separate Run workflow button. Select the run for that release, open **sync-main**, and expand **Copy the checked release to SAPAA-Dev main**. The sync step must say that SAPAA-Dev main is at the exact release commit. The screenshot below shows the workflow before its first completed CI run. The run list fills automatically after CI passes; an empty list is not a successful release.
@@ -256,7 +256,8 @@ The older screenshot below shows the promotion review controls. Its feature bran
 
 | Failure | Action |
 | --- | --- |
-| CI stays queued | Check the selected runner and GitHub Actions availability. Prod uses GitHub-hosted runners after the runner update; older queued runs retain their old runner setting. The sync waits for a successful CI result; it does not bypass tests |
+| CI stays queued | Open repository Settings → Actions → Runners. The existing runner must show Online. Busy means it is working on another job. Wait for the queue; ask the runner owner to check an offline or stalled runner. Do not remove checks to bypass the queue. The sync waits for a successful CI result; it does not bypass tests |
+| Hosted job fails before it starts with a payment/spending-limit error | Use the approved self-hosted workflow version. Re-running an old hosted run keeps its original workflow settings; advance prod to the corrected reviewed main commit instead |
 | App token step fails | Check installation repository, permissions, App ID, and secret with the App owner. Do not print key values |
 | Old CI result skipped | Inspect the latest course `prod` CI run |
 | Release is not in course main | Merge and review the change on course `main` first |

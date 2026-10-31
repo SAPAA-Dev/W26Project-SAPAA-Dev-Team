@@ -1190,7 +1190,8 @@ Owner: Tars, at the user's request. Design approved by the user: course prod, su
 | Sync workflow and local success/failure tests | Implemented; shell tests and actionlint passed |
 | Restricted GitHub App and course Actions credentials | Installed on the one deployment repository; App authentication and scope verified; encrypted secret and App ID saved; temporary key removed |
 | Workflow review and merge | PR #345 merged at 38cbeee6; independent review approved |
-| Private source checkout, prod runner, and detailed screenshot guide | Follow-up prepared; source tests and actionlint passed |
-| Real prod-branch pipeline run | First run queued; awaiting the runner and private-source follow-up |
+| Private source checkout and detailed screenshot guide | PR #346 merged at 8bba6f08; source tests and actionlint passed |
+| Release runner | Hosted CI run 41249841693 blocked by account billing before tests. Owner selected the existing self-hosted runner for CI and sync; configuration prepared |
+| Real prod-branch pipeline run | Awaiting the runner configuration merge and a new prod push |
 
 See the [production guide](sapaa-dev-production-deployment.md) for the release procedure. Do not call the automatic pipeline complete until the real run and Vercel staged source are verified.
