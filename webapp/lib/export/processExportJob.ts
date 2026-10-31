@@ -1,12 +1,11 @@
 import { createServerSupabase } from '@/utils/supabase/server';
-import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, GetObjectCommand, HeadObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { Zip, ZipPassThrough } from 'fflate';
 import { s3Client } from '@/lib/s3/client';
 
 export const MAX_EXPORT_BYTES = 500 * 1024 * 1024;
 const GPX_BUCKET = 'gpx-tracks';
 const PAGE_SIZE = 1000;
-const MAX_NAMES_IN_ERROR = 10;
 
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
 
@@ -78,16 +77,39 @@ export async function collectExportEntries(supabase: ServerSupabase): Promise<Ex
   return withUniquePaths(distinct);
 }
 
-async function readFile(entry: ExportEntry, supabase: ServerSupabase, s3: S3Client): Promise<Uint8Array> {
+// A stale storage key is a normal state, so only a "not found" answer counts as missing;
+// any other error (throttling, credentials, a wrong bucket name) must fail the job.
+function objectMissing(error: unknown): boolean {
+  if (error == null || typeof error !== 'object') return false;
+  const record = error as { name?: unknown; message?: unknown; $metadata?: { httpStatusCode?: unknown } };
+  if (record.name === 'NoSuchBucket') return false;
+  if (record.name === 'NoSuchKey' || record.name === 'NotFound') return true;
+  if (record.$metadata?.httpStatusCode === 404) return true;
+  return typeof record.message === 'string' && /not found/i.test(record.message);
+}
+
+// Returns null when the object is not in storage.
+async function readFile(entry: ExportEntry, supabase: ServerSupabase, s3: S3Client): Promise<Uint8Array | null> {
   if (entry.source === 'gpx') {
     const { data, error } = await supabase.storage.from(GPX_BUCKET).download(entry.key);
-    if (error || !data) throw new Error('missing');
+    if (error) {
+      if (objectMissing(error)) return null;
+      throw error;
+    }
+    if (!data) return null;
     return new Uint8Array(await data.arrayBuffer());
   }
-  const response = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: entry.key }));
-  if (!response.Body) throw new Error('missing');
-  return response.Body.transformToByteArray();
+  try {
+    const response = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: entry.key }));
+    if (!response.Body) return null;
+    return response.Body.transformToByteArray();
+  } catch (error) {
+    if (objectMissing(error)) return null;
+    throw error;
+  }
 }
+
+export type ExportZip = { zip: Uint8Array; missing: string[] };
 
 // ponytail: one file at a time and the whole zip in memory. The 500 MB cap keeps that safe;
 // switch to a multipart upload (@aws-sdk/lib-storage) if the cap must go up.
@@ -95,7 +117,7 @@ export async function buildExportZip(
   entries: ExportEntry[],
   supabase: ServerSupabase,
   s3: S3Client,
-): Promise<Uint8Array> {
+): Promise<ExportZip> {
   const chunks: Uint8Array[] = [];
   let finished: (() => void) | undefined;
   let failed: ((error: Error) => void) | undefined;
@@ -109,16 +131,31 @@ export async function buildExportZip(
   const missing: string[] = [];
   let totalBytes = 0;
   for (const entry of entries) {
-    let bytes: Uint8Array;
-    try {
-      bytes = await readFile(entry, supabase, s3);
-    } catch {
+    if (entry.source === 's3') {
+      try {
+        // The cap is checked from ContentLength before the download, so an oversized file is never read into memory.
+        const head = await s3.send(new HeadObjectCommand({ Bucket: BUCKET, Key: entry.key }));
+        totalBytes += head.ContentLength ?? 0;
+        if (totalBytes > MAX_EXPORT_BYTES) {
+          throw new ExportError(`The files are larger than ${MAX_EXPORT_BYTES / (1024 * 1024)} MB, which is the most that one export can hold.`);
+        }
+      } catch (error) {
+        if (error instanceof ExportError || !objectMissing(error)) throw error;
+        missing.push(entry.zipPath);
+        continue;
+      }
+    }
+    const bytes = await readFile(entry, supabase, s3);
+    if (bytes === null) {
       missing.push(entry.zipPath);
       continue;
     }
-    totalBytes += bytes.length;
-    if (totalBytes > MAX_EXPORT_BYTES) {
-      throw new ExportError(`The files are larger than ${MAX_EXPORT_BYTES / (1024 * 1024)} MB, which is the most that one export can hold.`);
+    if (entry.source === 'gpx') {
+      // Supabase storage has no object head, so a GPX size is known only after the download.
+      totalBytes += bytes.length;
+      if (totalBytes > MAX_EXPORT_BYTES) {
+        throw new ExportError(`The files are larger than ${MAX_EXPORT_BYTES / (1024 * 1024)} MB, which is the most that one export can hold.`);
+      }
     }
     // Images and PDFs are already compressed, so the files are stored as they are.
     const file = new ZipPassThrough(entry.zipPath);
@@ -127,14 +164,14 @@ export async function buildExportZip(
   }
 
   if (missing.length > 0) {
-    const names = missing.slice(0, MAX_NAMES_IN_ERROR).join(', ');
-    const more = missing.length > MAX_NAMES_IN_ERROR ? ` and ${missing.length - MAX_NAMES_IN_ERROR} more` : '';
-    throw new ExportError(`These files could not be read: ${names}${more}.`);
+    const manifest = new ZipPassThrough('MISSING.txt');
+    zip.add(manifest);
+    manifest.push(new TextEncoder().encode(`${missing.join('\n')}\n`), true);
   }
 
   zip.end();
   await done;
-  return Buffer.concat(chunks);
+  return { zip: Buffer.concat(chunks), missing };
 }
 
 export async function processExportJob(jobId: string) {
@@ -151,7 +188,7 @@ export async function processExportJob(jobId: string) {
     if (processingError) throw processingError;
 
     const entries = await collectExportEntries(supabase);
-    const zipBytes = await buildExportZip(entries, supabase, s3Client);
+    const { zip: zipBytes, missing } = await buildExportZip(entries, supabase, s3Client);
 
     const dateStamp = new Date().toISOString().split('T')[0];
     const key = `exports/${job.created_by}/${jobId}/SAPAA_All_Files_${dateStamp}.zip`;
@@ -159,7 +196,7 @@ export async function processExportJob(jobId: string) {
 
     const { error: completionError } = await supabase
       .from('export_jobs')
-      .update({ status: 'complete', storage_path: key, file_count: entries.length, finished_at: new Date().toISOString() })
+      .update({ status: 'complete', storage_path: key, file_count: entries.length, missing_count: missing.length, finished_at: new Date().toISOString() })
       .eq('id', jobId);
     if (completionError) throw completionError;
   } catch (error) {

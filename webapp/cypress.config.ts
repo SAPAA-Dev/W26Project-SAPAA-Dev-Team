@@ -8,6 +8,8 @@ dotenv.config({ path: path.resolve(__dirname, ".env") });
 export default defineConfig({
   projectId: '9drph3',
   e2e: {
+    // Set by the E2E workflow: the deployed site for a hand run, or the chosen local port.
+    baseUrl: process.env.CYPRESS_BASE_URL || "http://localhost:3000",
     setupNodeEvents(on) {
       on('task', {
         async cleanupTestQuestion(questionText: string) {

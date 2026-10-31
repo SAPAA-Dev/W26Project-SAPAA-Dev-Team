@@ -2,10 +2,17 @@ name: E2E
 
 # Cypress specs against a throwaway local Supabase (migrations + supabase/seed.sql +
 # scripts/e2e_seed.js). Runs on PRs into main/release and by hand only, to save Actions minutes.
+# A hand run can give the url input of the deployed site; the local Supabase and the Next.js
+# server are then skipped. The CYPRESS_* test-account logins are set on the runner.
 on:
   pull_request:
     branches: [main, release]
   workflow_dispatch:
+    inputs:
+      url:
+        description: 'Base URL of the deployed site. Leave empty to run against the local stack.'
+        required: false
+        default: ''
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,6 +30,8 @@ jobs:
         working-directory: webapp
     env:
       NEXT_TELEMETRY_DISABLED: 1
+      # Empty on PR runs.
+      DEPLOYED_URL: ${{ github.event.inputs.url }}
       # The map is not under test, so it needs no real Protomaps key.
       NEXT_PUBLIC_PROTOMAPS_API_KEY: ci-placeholder
       # Specs run in CI: they need only the seeded users, sites, boundaries and report from
@@ -44,12 +53,31 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: webapp/package-lock.json
+
+      # 3000 is the first choice; another job on the runner can hold it, so take the next free port.
+      - name: Find a free port for the local server
+        if: env.DEPLOYED_URL == ''
+        run: |
+          port=$(node -e '
+            const net = require("net");
+            const free = (candidate) => new Promise((resolve) => {
+              const server = net.createServer();
+              server.once("error", () => resolve(false));
+              server.once("listening", () => server.close(() => resolve(true)));
+              server.listen(candidate);
+            });
+            (async () => { for (let candidate = 3000; ; candidate++) if (await free(candidate)) { console.log(candidate); return; } })();
+          ')
+          echo "E2E_PORT=$port" >> "$GITHUB_ENV"
+
       - uses: supabase/setup-cli@v3.0.1
+        if: env.DEPLOYED_URL == ''
         with:
           version: 2.118.0
 
       # Only the services the app uses: Postgres, Auth, PostgREST and the Kong gateway.
       - name: Start local Supabase (applies migrations and seed.sql)
+        if: env.DEPLOYED_URL == ''
         run: supabase start -x studio,postgres-meta,edge-runtime,storage-api,imgproxy,logflare,vector,mailpit,realtime,supavisor
 
       - uses: actions/cache@v4
@@ -60,19 +88,36 @@ jobs:
 
       # Creates the E2E users and rows, and exports the local URL/keys and CYPRESS_* logins.
       - name: Seed E2E data
+        if: env.DEPLOYED_URL == ''
         run: node scripts/e2e_seed.js >> "$GITHUB_ENV"
 
       - run: npm run build
+        if: env.DEPLOYED_URL == ''
 
-      - uses: cypress-io/github-action@v7.4.6
+      - name: Run the specs against the local server
+        if: env.DEPLOYED_URL == ''
+        uses: cypress-io/github-action@v7.4.6
         with:
           working-directory: webapp
           install: false
           browser: electron
-          start: npx next start -p 3000
-          wait-on: http://localhost:3000/login
+          start: npx next start -p ${{ env.E2E_PORT }}
+          wait-on: http://localhost:${{ env.E2E_PORT }}/login
           wait-on-timeout: 120
           spec: ${{ env.E2E_SPECS }}
+        env:
+          CYPRESS_BASE_URL: http://localhost:${{ env.E2E_PORT }}
+
+      - name: Run the specs against the deployed site
+        if: env.DEPLOYED_URL != ''
+        uses: cypress-io/github-action@v7.4.6
+        with:
+          working-directory: webapp
+          install: false
+          browser: electron
+          spec: ${{ env.E2E_SPECS }}
+        env:
+          CYPRESS_BASE_URL: ${{ env.DEPLOYED_URL }}
 
       - uses: actions/upload-artifact@v4
         if: failure()
