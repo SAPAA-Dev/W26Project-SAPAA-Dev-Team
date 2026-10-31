@@ -62,7 +62,7 @@ export default function SiteCard({ site, index, total, direction, onStep, onClos
     <div
       className="px-5 pb-5"
       onKeyDown={(e) => {
-        if (e.key === 'Escape') onClose(true);
+        if (e.key === 'Escape') { e.stopPropagation(); onClose(true); }
         if ((e.target as HTMLElement).closest('input, textarea')) return;
         if (e.key === 'ArrowLeft' && index > 0) onStep(-1);
         if (e.key === 'ArrowRight' && index < total - 1) onStep(1);

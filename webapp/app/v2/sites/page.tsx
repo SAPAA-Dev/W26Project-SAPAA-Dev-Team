@@ -1,6 +1,9 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
+import { prefetch } from '../_lib/useApi';
+import { api } from '@/lib/api/v1/client';
+import { preloadMap } from '../_components/map/preload';
 import dynamic from 'next/dynamic';
 import { useSiteQuery } from '../_lib/siteQuery';
 import SitesList, { SitesSkeleton } from '../_components/sites/SitesList';
@@ -22,5 +25,13 @@ export default function SitesPage() {
 
 function Sites() {
   const { query } = useSiteQuery();
+  useEffect(() => {
+    if (query.mode !== 'map') return;
+    preloadMap();
+    prefetch('sites:map', () => api.sites({ includeInactive: true }));
+    prefetch('me', api.me);
+    prefetch('boundaries', api.boundaries);
+    prefetch('tracks', api.tracks);
+  }, [query.mode]);
   return query.mode === 'map' ? <SitesMap /> : <SitesList />;
 }

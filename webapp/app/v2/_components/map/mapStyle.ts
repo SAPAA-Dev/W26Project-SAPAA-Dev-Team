@@ -9,11 +9,6 @@ import { protomapsStyleUrl } from '@/lib/map/basemap';
 
 export const STYLE_URL = protomapsStyleUrl();
 
-/** Panning stops a little past the province so edge sites can still sit mid-screen. */
-export const MAX_BOUNDS: [[number, number], [number, number]] = [
-  [-124.5, 47.5],
-  [-105.5, 61.5],
-];
 /** The province itself: the first view before sites load. */
 export const ALBERTA: [[number, number], [number, number]] = [
   [-120, 49],

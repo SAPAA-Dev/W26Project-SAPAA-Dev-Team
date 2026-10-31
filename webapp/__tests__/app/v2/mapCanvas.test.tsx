@@ -1,6 +1,8 @@
 import React from 'react';
 import { act, render } from '@testing-library/react';
 import MapCanvas from '@/app/v2/_components/map/MapCanvas';
+import { Map as MapLibreMap } from 'maplibre-gl';
+import { createPopupContent } from '@/components/map/SiteMap';
 
 const mockHandlers: Record<string, (event: { error?: Error }) => void> = {};
 const mockSetStyle = jest.fn();
@@ -131,4 +133,27 @@ it('loads overlays, keeps the nearest pin selectable, and fits the filtered site
   expect(mockCanvas.style.cursor).toBe('');
   view.rerender(<MapCanvas {...props} />);
   expect(mockMap.setFeatureState).toHaveBeenCalledWith({ source: 'sites', id: 1 }, { selected: false });
+});
+
+
+it('allows world zoom without province pan limits', () => {
+  mount(true);
+  const options = (MapLibreMap as unknown as jest.Mock).mock.calls[0][0];
+  expect(options).not.toHaveProperty('maxBounds');
+  expect(options.minZoom).toBe(0);
+});
+
+it('puts boundary details in the mobile panel instead of a popup', () => {
+  const onBoundaryDetails = jest.fn();
+  const content = document.createElement('div');
+  content.textContent = 'Boundary metadata';
+  (createPopupContent as jest.Mock).mockReturnValue(content);
+  mockMap.queryRenderedFeatures.mockReturnValue([{ id: 8, geometry: { type: 'Polygon', coordinates: [] }, properties: { name: 'Unlinked park' } }]);
+  render(<MapCanvas sites={[]} boundaries={undefined} online regions={[]} selected={null} hoverId={null}
+    inset={{ top: 0, right: 0, bottom: 0, left: 0 }} onSelect={jest.fn()} onReady={jest.fn()} onOffline={jest.fn()} onMissingTiles={jest.fn()} onBoundaryDetails={onBoundaryDetails} />);
+  const click = mockHandlers.click as (event: unknown) => void;
+  // Hit testing checks pins first, then polygons.
+  mockMap.queryRenderedFeatures.mockReturnValueOnce([]).mockReturnValueOnce([{ id: 8, properties: { name: 'Unlinked park' } }]);
+  act(() => click({ point: { x: 5, y: 5 }, lngLat: [-113, 53] }));
+  expect(onBoundaryDetails).toHaveBeenLastCalledWith({ name: 'Unlinked park', content });
 });

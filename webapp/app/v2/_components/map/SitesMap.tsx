@@ -7,9 +7,9 @@ import Link from 'next/link';
 import type { Map as MlMap } from 'maplibre-gl';
 import { AnimatePresence, useReducedMotion } from 'motion/react';
 import * as m from 'motion/react-m';
-import { CloudOff, RotateCw } from 'lucide-react';
+import { CloudOff, RotateCw, Maximize2, Minimize2, SlidersHorizontal, ChevronRight } from 'lucide-react';
 import { api, ApiError } from '@/lib/api/v1/client';
-import { applySiteQuery, useSiteQuery } from '../../_lib/siteQuery';
+import { applySiteQuery, STATUS_LABEL, useSiteQuery } from '../../_lib/siteQuery';
 import { useApi } from '../../_lib/useApi';
 import MotionProvider from '../../_lib/MotionProvider';
 import QueryBar from '../sites/QueryBar';
@@ -36,7 +36,7 @@ const SORT_NOTE = { urgency: 'most urgent first', name: 'A to Z', recent: 'recen
 // the canvas fills in behind them (preloadMap usually has it ready by then).
 const MapCanvas = dynamic(() => import('./MapCanvas'), { ssr: false });
 
-const DESKTOP = '(min-width: 768px)';
+const DESKTOP = '(min-width: 768px) and (min-height: 500px)';
 const subscribe = (cb: () => void) => {
   const m = window.matchMedia(DESKTOP);
   m.addEventListener('change', cb);
@@ -74,6 +74,9 @@ function SitesMapView() {
   const areas = useApi('boundaries', api.boundaries);
   const tracks = useApi('tracks', api.tracks); // stewards and admins only; for anyone else the read is refused and no lines draw
   const [importOpen, setImportOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [boundaryDetails, setBoundaryDetails] = useState<{ name: string; content: HTMLElement } | null>(null);
   const [areaSearch, setAreaSearch] = useState('');
   const [focusedArea, setFocusedArea] = useState<BoundaryFeature | null>(null);
   const [areaFilters, setAreaFilters] = useState<BoundaryFilterSelection>({ types: null, subtypes: null, counties: null, statuses: defaultMapStatuses() });
@@ -102,20 +105,22 @@ function SitesMapView() {
   const [cover, setCover] = useState(120);
   const chrome = useRef<HTMLDivElement>(null);
   const chromeH = useHeight(chrome);
-  const restoreFocus = useRef<string | null>(null);
+  const restoreFocus = useRef<{ slug: string | null } | null>(null);
+  const previewFocus = useRef<HTMLElement | null>(null);
+  const expandFocus = useRef<HTMLButtonElement | null>(null);
+  const previousExpanded = useRef(expanded);
 
   // Filtering (and the map redraw it causes) runs behind typing; a selection change keeps the same array.
   const shownQuery = useDeferredValue(query);
   const hasAreaFilters = areaSearch.trim() !== '' || areaFilters.types !== null || areaFilters.subtypes !== null || areaFilters.counties !== null ||
     (areaFilters.statuses !== null && (!areaFilters.statuses.has('Active') || !areaFilters.statuses.has('No status')));
+  const queriedSites = useMemo(() => sites.data ? applySiteQuery(sites.data, shownQuery, me.data ?? null) : null, [sites.data, shownQuery, me.data]);
+  const matchedNames = useMemo(() => hasAreaFilters ? new Set(areaMatches.map((area) => area.properties.site_name)) : null, [hasAreaFilters, areaMatches]);
   const results = useMemo(() => {
-    if (!sites.data) return null;
-    const matches = applySiteQuery(sites.data, shownQuery, me.data ?? null)
-      .filter((site) => site.isActive !== false || areaFilters.statuses === null || areaFilters.statuses.has('Inactive'));
-    if (!hasAreaFilters) return matches;
-    const names = new Set(areaMatches.map((area) => area.properties.site_name));
-    return matches.filter((site) => names.has(site.name));
-  }, [sites.data, shownQuery, me.data, hasAreaFilters, areaMatches, areaFilters.statuses]);
+    if (!queriedSites) return null;
+    const matches = queriedSites.filter((site) => site.isActive !== false || areaFilters.statuses === null || areaFilters.statuses.has('Inactive'));
+    return matchedNames ? matches.filter((site) => matchedNames.has(site.name)) : matches;
+  }, [queriedSites, matchedNames, areaFilters.statuses]);
   const index = results?.findIndex((s) => s.slug === query.selected) ?? -1;
   const selected = index >= 0 ? results![index] : null;
 
@@ -126,6 +131,8 @@ function SitesMapView() {
   }, [selectedSlug]);
 
   const select = (slug: string | null) => {
+    setBoundaryDetails(null);
+    if (slug) setExpanded(false);
     setFocusedArea(null);
     if (slug === query.selected) return;
     if (slug) setDir(1);
@@ -138,10 +145,12 @@ function SitesMapView() {
     update({ selected: next.slug });
   };
   const close = (viaKeyboard: boolean) => {
-    restoreFocus.current = viaKeyboard ? query.selected : null;
+    setBoundaryDetails(null);
+    restoreFocus.current = viaKeyboard ? { slug: query.selected } : null;
     update({ selected: null });
   };
   const clearFilters = () => {
+    setBoundaryDetails(null);
     setAreaSearch('');
     setAreaFilters({ types: null, subtypes: null, counties: null, statuses: defaultMapStatuses() });
     setFocusedArea(null);
@@ -150,28 +159,39 @@ function SitesMapView() {
 
   // Closing the card by keyboard puts focus back on the row it came from.
   useEffect(() => {
-    const slug = restoreFocus.current;
-    if (query.selected || !slug) return;
+    const target = restoreFocus.current;
+    if (query.selected || !target) return;
     restoreFocus.current = null;
-    document.querySelector<HTMLElement>(`[data-slug="${CSS.escape(slug)}"] button`)?.focus();
-  }, [query.selected]);
+    const element = target.slug ? document.querySelector<HTMLElement>(`[data-slug="${CSS.escape(target.slug)}"] button`) : document.getElementById('site-search');
+    element?.focus();
+  }, [query.selected, boundaryDetails]);
 
-  const inset: Inset = desktop
+  useEffect(() => {
+    if (previousExpanded.current === expanded) return;
+    previousExpanded.current = expanded;
+    if (expanded || (!selectedSlug && !boundaryDetails)) expandFocus.current?.focus({ preventScroll: true });
+  }, [expanded, selectedSlug, boundaryDetails]);
+
+  useEffect(() => { previewFocus.current?.focus({ preventScroll: true }); }, [selectedSlug, boundaryDetails?.name]);
+
+  const inset: Inset = expanded
+    ? { top: 16, left: 16, right: 68, bottom: 16 }
+    : desktop
     ? { top: 16, left: 404, right: 72, bottom: 96 }
-    : { top: chromeH + 72, left: 16, right: 68, bottom: cover };
+    : { top: chromeH + 12, left: 16, right: 68, bottom: cover };
 
   // ---------------------------------------------------------------- shared pieces
   const n = results?.length ?? 0;
   const areaTools = (
-    <div className="pointer-events-auto relative z-30 mt-2 flex flex-wrap items-center gap-2 rounded-xl bg-[var(--surface)] p-2 shadow-sm" aria-label="Protected area search and filters">
-      <div className="relative min-w-0 flex-1">
+    <div className="pointer-events-auto relative z-30 mt-2 grid grid-cols-2 items-center gap-2 rounded-xl bg-[var(--surface)] p-2 shadow-sm" aria-label="Protected area search and filters">
+      <div className="relative col-span-2 min-w-0">
         <MapSearchInput
           value={areaSearch}
           onChange={(value) => { setFocusedArea(null); setAreaSearch(value); }}
           placeholder="Search protected areas"
           className="h-11 w-full rounded-lg border border-[var(--line)] px-3 text-sm"
           matches={areaMatches}
-          onPick={(area) => { update({ selected: null }); setFocusedArea(area); }}
+          onPick={(area) => { setBoundaryDetails(null); update({ selected: null }); setFocusedArea(area); }}
         />
       </div>
       {hasAreaFilters && <button type="button" onClick={clearFilters} className="min-h-11 px-2 text-sm font-semibold">Clear area filters</button>}
@@ -284,6 +304,7 @@ function SitesMapView() {
     <>
       <MapCanvas
         sites={results ?? []}
+        expanded={expanded}
         boundaries={shownAreas}
         focusedArea={focusedArea}
         tracks={tracks.data}
@@ -296,6 +317,7 @@ function SitesMapView() {
         onReady={setMap}
         onOffline={() => setOffline(true)}
         onMissingTiles={setMissingTiles}
+        onBoundaryDetails={(details) => { setBoundaryDetails(details); if (details) setExpanded(false); }}
       />
       {importOpen && <KmlImportSheet open onClose={() => setImportOpen(false)} />}
       {saving && map && STYLE_URL && (
@@ -314,13 +336,30 @@ function SitesMapView() {
     </>
   );
 
+  const expandButton = <button ref={expandFocus} type="button" onClick={() => {
+    if (!expanded) { setBoundaryDetails(null); setFocusedArea(null); update({ selected: null }); }
+    setExpanded((value) => !value);
+  }} aria-label={expanded ? 'Restore map controls' : 'Expand map'} aria-pressed={expanded} className={`press grid size-11 shrink-0 place-items-center rounded-full ${CHROME}`}>
+    {expanded ? <Minimize2 size={20} aria-hidden /> : <Maximize2 size={20} aria-hidden />}
+  </button>;
+  const preview = selected ? <div className="px-5 pb-3" onKeyDown={(event) => {
+    if (event.key === 'ArrowLeft' && index > 0) step(-1);
+    if (event.key === 'ArrowRight' && index < n - 1) step(1);
+  }}>
+    <Link ref={(node) => { previewFocus.current = node; }} href={`/v2/sites/${encodeURIComponent(selected.slug)}`} className="flex min-h-11 items-center justify-between gap-2 text-base font-bold"><span className="line-clamp-2">{selected.name}</span><ChevronRight size={20} aria-hidden /></Link>
+    <p className="text-sm text-[var(--ink-2)]">{STATUS_LABEL[selected.status]}{selected.county ? ` · ${selected.county}` : ''}</p>
+  </div> : <h2 tabIndex={-1} ref={(node) => { previewFocus.current = node; }} className="px-5 pb-4 text-base font-bold">{boundaryDetails?.name}</h2>;
+  const boundaryContent = boundaryDetails && <div className="px-4 pb-4" ref={(node) => {
+    if (node && !node.contains(boundaryDetails.content)) node.replaceChildren(boundaryDetails.content);
+  }} />;
+
   // ---------------------------------------------------------------- desktop: left panel
   if (desktop) {
     const slide = reduce ? 0 : 16;
     return (
-      <div className="relative h-dvh w-full overflow-hidden bg-[var(--bg)]">
+      <div data-map-expanded={expanded} className="relative h-dvh w-full overflow-hidden bg-[var(--bg)]">
         {canvas}
-        <div className="pointer-events-none absolute top-3 bottom-[92px] left-3 z-20 flex w-[380px] flex-col gap-3 xl:bottom-3">
+        <div style={expanded ? { display: 'none' } : undefined} className="pointer-events-none absolute top-3 bottom-[92px] left-3 z-20 flex w-[380px] flex-col gap-3 xl:bottom-3">
           <div className="pointer-events-auto">
             <QueryBar tone="floating" />
             {areaTools}
@@ -365,6 +404,7 @@ function SitesMapView() {
         </div>
         <div className="pointer-events-none absolute top-3 right-3 z-20 flex items-start gap-2">
           <div className="flex flex-col items-end gap-2 [&>*]:pointer-events-auto">
+            {expandButton}
             <MapKey align="right" />
             {notices}
           </div>
@@ -376,38 +416,32 @@ function SitesMapView() {
 
   // ---------------------------------------------------------------- phone: bottom sheet
   return (
-    <div className="relative h-dvh w-full overflow-hidden bg-[var(--bg)]">
+    <div data-map-expanded={expanded} className="relative h-dvh w-full overflow-hidden bg-[var(--bg)]" style={expanded ? { '--nav-h': '0px' } as React.CSSProperties : undefined}>
       {canvas}
-      <div
-        ref={chrome}
-        className="pointer-events-none absolute inset-x-0 top-0 z-20 px-4 pt-[max(12px,env(safe-area-inset-top))]"
-      >
+      <div ref={chrome} style={expanded ? { display: 'none' } : undefined} className="pointer-events-none absolute inset-x-0 top-0 z-20 px-3 pt-[max(8px,env(safe-area-inset-top))]">
         <div className="pointer-events-auto">
-          <QueryBar tone="floating" />
-          {areaTools}
+          <QueryBar tone="floating" compact={!toolsOpen} />
+          {toolsOpen && areaTools}
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <button type="button" aria-expanded={toolsOpen} onClick={() => setToolsOpen((value) => !value)} className={`press flex h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold ${CHROME}`}><SlidersHorizontal size={17} aria-hidden />{toolsOpen ? 'Hide filters' : 'Filters'}</button>
+            <MapKey />
+            {!expanded && expandButton}
+          </div>
         </div>
       </div>
-      <div
-        className="pointer-events-none absolute inset-x-0 z-10 flex items-start justify-between gap-2 px-4"
-        style={{ top: chromeH + 8 }}
-      >
+      <div className="pointer-events-none absolute inset-x-0 z-10 flex items-start justify-between gap-2 px-3" style={{ top: expanded ? 12 : chromeH + 8 }}>
         <div className="flex min-w-0 flex-col items-start gap-2 [&>*]:pointer-events-auto">
-          <MapKey />
+          {expanded && expandButton}
           {notices}
         </div>
         <MapButtons map={map} inset={inset} className="pointer-events-auto" onSaveOffline={() => setSaving(true)} />
       </div>
-      <MapSheet
-        mode={card ? 'card' : 'list'}
-        header={header}
-        top={chromeH + 8}
-        onCover={setCover}
-        onDismissCard={() => close(false)}
-      >
-        <m.div key={card ? `card` : 'list'} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
-          {card || list}
+      {!expanded && <MapSheet key={selected?.slug ?? boundaryDetails?.name ?? 'list'} mode={card || boundaryDetails ? 'card' : 'list'} header={header} preview={preview} top={chromeH + 8} onCover={setCover} onDismissCard={close}>
+        <m.div key={card || boundaryDetails ? 'card' : 'list'} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
+          {card || (boundaryDetails ? null : list)}
+          {boundaryContent}
         </m.div>
-      </MapSheet>
+      </MapSheet>}
     </div>
   );
 }

@@ -5,7 +5,7 @@ import type { ReactNode, RefObject } from 'react';
 import { animate, useDragControls, useMotionValue, useReducedMotion } from 'motion/react';
 import * as m from 'motion/react-m';
 import type { PanInfo } from 'motion/react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, X } from 'lucide-react';
 
 export type Detent = 'peek' | 'half' | 'full';
 
@@ -33,19 +33,20 @@ interface Props {
   mode: 'list' | 'card';
   /** List header (count, sort). Lives in the drag strip, so it stays visible at peek. */
   header?: ReactNode;
+  preview?: ReactNode;
   children: ReactNode;
   /** Top edge at the full detent, in px from the top of the map: just under the floating chrome. */
   top: number;
   /** Height of the map the sheet covers at rest, for camera padding. */
   onCover: (px: number) => void;
-  onDismissCard: () => void;
+  onDismissCard: (viaKeyboard: boolean) => void;
 }
 
 /**
  * Trailhead bottom sheet: non-modal, three detents for the list, one fitted detent for a site card.
  * The sheet is always full height and slides on y, so the list can scroll without layout work.
  */
-export default function MapSheet({ mode, header, children, top, onCover, onDismissCard }: Props) {
+export default function MapSheet({ mode, header, preview, children, top, onCover, onDismissCard }: Props) {
   const sheet = useRef<HTMLElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const H = useHeight(sheet);
@@ -61,9 +62,10 @@ export default function MapSheet({ mode, header, children, top, onCover, onDismi
       : d === 'half'
         ? Math.round(H * (1 - HALF))
         : d === 'card'
-          ? Math.max(0, H - Math.min(H, GRAB + contentH))
+          ? Math.max(0, H - Math.min(H, Math.max(112, GRAB + 44 + contentH)))
           : Math.max(0, H - PEEK);
-  const resting = mode === 'card' ? 'card' : detent;
+  const cardExpanded = detent === 'full';
+  const resting = mode === 'card' ? cardExpanded ? 'half' : 'card' : detent;
   const target = H ? yFor(resting) : 800;
 
   const settle = (to: number) => animate(y, to, reduce ? { duration: 0 } : SPRING);
@@ -72,21 +74,22 @@ export default function MapSheet({ mode, header, children, top, onCover, onDismi
     if (!H) return;
     // A card that just replaced the list is measured here, after it rendered: contentH (from the observer)
     // still holds the list's height for a frame, which would fling the sheet to full and back.
-    const to = mode === 'card' && content.current ? Math.max(0, H - Math.min(H, GRAB + content.current.offsetHeight)) : target;
+    const to = target;
     settle(to);
-    onCover(H - to);
+    const bottomGap = Math.max(0, (sheet.current?.parentElement?.clientHeight ?? 0) - (sheet.current?.offsetTop ?? 0) - H);
+    onCover(H - to + bottomGap);
     // settle/onCover are stable in effect; the target is what moves the sheet.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target, H, mode]);
 
   const go = (d: Detent) => {
     setDetent(d);
-    settle(yFor(d)); // also snaps back when the detent did not change
+    settle(yFor(mode === 'card' ? d === 'full' ? 'half' : 'card' : d)); // also snaps back when the detent did not change
   };
 
   const onDragEnd = (_: unknown, info: PanInfo) => {
     if (mode === 'card') {
-      if (info.offset.y > 90 || info.velocity.y > 600) onDismissCard();
+      if (info.offset.y > 90 || info.velocity.y > 600) onDismissCard(false);
       else settle(target);
       return;
     }
@@ -104,6 +107,9 @@ export default function MapSheet({ mode, header, children, top, onCover, onDismi
     <m.section
       ref={sheet}
       aria-label={mode === 'card' ? 'Selected site' : 'Sites'}
+      onKeyDown={(event) => {
+        if (mode === 'card' && event.key === 'Escape') { event.stopPropagation(); onDismissCard(true); }
+      }}
       className="absolute inset-x-0 z-30 flex flex-col rounded-t-[var(--radius-l)] bg-[var(--surface)] shadow-[0_-10px_30px_rgba(18,42,28,0.16)]"
       style={{ top, bottom: 'calc(var(--nav-h) + var(--safe-b))', y }}
       drag="y"
@@ -113,16 +119,23 @@ export default function MapSheet({ mode, header, children, top, onCover, onDismi
       dragElastic={{ top: 0.06, bottom: 0.3 }}
       dragMomentum={false}
       onDragEnd={onDragEnd}
-      // A card has nothing to scroll, so all of it is a drag handle (taps still click).
-      onPointerDown={mode === 'card' ? (e) => controls.start(e) : undefined}
     >
       <div
         className="shrink-0 touch-none select-none"
-        onPointerDown={mode === 'list' ? (e) => controls.start(e) : undefined}
+        onPointerDown={(event) => controls.start(event)}
       >
         <div className="flex justify-center" style={{ height: GRAB }} aria-hidden>
           <span className="mt-2 h-[5px] w-10 rounded-full bg-[var(--lichen)]" />
         </div>
+        {mode === 'card' && (
+          <div className="flex items-center justify-end gap-2 px-3">
+            <button type="button" className="press flex min-h-11 items-center gap-1 rounded-full px-3 text-sm font-semibold" aria-expanded={cardExpanded} onClick={() => go(cardExpanded ? 'peek' : 'full')}>
+              {cardExpanded ? 'Back to map' : 'Details'}
+              {cardExpanded ? <ChevronDown size={18} aria-hidden /> : <ChevronUp size={18} aria-hidden />}
+            </button>
+            <button type="button" className="press grid size-11 place-items-center rounded-full" aria-label="Close details" onClick={(event) => onDismissCard(event.detail === 0)}><X size={20} aria-hidden /></button>
+          </div>
+        )}
         {mode === 'list' && (
           <div className="flex items-center gap-2 pr-2 pl-5">
             <div className="min-w-0 flex-1">{header}</div>
@@ -145,13 +158,13 @@ export default function MapSheet({ mode, header, children, top, onCover, onDismi
       </div>
 
       <div
-        className={`min-h-0 flex-1 overscroll-contain ${mode === 'list' ? 'overflow-y-auto' : 'overflow-hidden'}`}
+        className={`min-h-0 flex-1 overscroll-contain ${mode === 'list' || cardExpanded ? 'overflow-y-auto' : 'overflow-hidden'}`}
         // The part below the screen edge at this detent; padding lets the last rows scroll into view.
-        style={{ paddingBottom: mode === 'list' ? target : 0 }}
+        style={{ paddingBottom: mode === 'list' || cardExpanded ? target : 0 }}
         // Tabbing into a peeking list opens it, so focus never lands off screen.
         onFocus={() => mode === 'list' && detent === 'peek' && go('half')}
       >
-        <div ref={content}>{children}</div>
+        <div ref={content}>{mode === 'card' && !cardExpanded ? preview : children}</div>
       </div>
     </m.section>
   );

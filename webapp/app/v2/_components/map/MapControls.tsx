@@ -5,7 +5,7 @@ import type { GeoJSONSource, Map as MlMap } from 'maplibre-gl';
 import { Download, LoaderCircle, Locate, LocateFixed, Minus, Plus } from 'lucide-react';
 import type { InspectionStatus } from '@/lib/api/v1/types';
 import { STATUS_COLOR, STATUS_INK } from '../../_lib/siteQuery';
-import { MAX_BOUNDS, SRC, TRACK_COLOR } from './mapStyle';
+import { SRC, TRACK_COLOR } from './mapStyle';
 import type { Inset } from './MapCanvas';
 
 /** Dark instrument chrome floating over the light map. */
@@ -55,12 +55,6 @@ export function MapButtons({
           type: 'FeatureCollection',
           features: [{ type: 'Feature', geometry: { type: 'Point', coordinates: c }, properties: {} }],
         });
-        const [[w, s], [e, n]] = MAX_BOUNDS;
-        if (c[0] < w || c[0] > e || c[1] < s || c[1] > n) {
-          setLoc('error');
-          setNote('You are outside Alberta, so the map stays where it is.');
-          return;
-        }
         setLoc('on');
         setNote('Showing your location');
         const camera = {

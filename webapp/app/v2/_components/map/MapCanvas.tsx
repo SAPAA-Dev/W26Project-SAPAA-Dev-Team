@@ -20,7 +20,6 @@ import {
   ALBERTA,
   C,
   LAYER,
-  MAX_BOUNDS,
   OVERLAY_LAYERS,
   RANK,
   SRC,
@@ -33,6 +32,7 @@ export type Inset = { top: number; right: number; bottom: number; left: number }
 interface Props {
   /** Filtered sites, already in list order. */
   sites: SiteSummary[];
+  expanded?: boolean;
   boundaries: BoundaryCollection | undefined;
   tracks?: TrackCollection;
   focusedArea?: BoundaryFeature | null;
@@ -50,6 +50,7 @@ interface Props {
   /** The basemap failed and the map fell back to a plain background. */
   onOffline: () => void;
   onMissingTiles: (count: number) => void;
+  onBoundaryDetails?: (details: { name: string; content: HTMLElement } | null) => void;
 }
 
 const EMPTY: FeatureCollection = { type: 'FeatureCollection', features: [] };
@@ -98,6 +99,7 @@ const usable = (m: MlMap | null): m is MlMap => m !== null && !isRemoved(m);
 
 export default function MapCanvas({
   sites,
+  expanded,
   boundaries,
   tracks,
   focusedArea,
@@ -110,8 +112,10 @@ export default function MapCanvas({
   onReady,
   onOffline,
   onMissingTiles,
+  onBoundaryDetails,
 }: Props) {
   const el = useRef<HTMLDivElement>(null);
+  const detailsPopup = useRef<Popup | null>(null);
   const [map, setMap] = useState<MlMap | null>(null);
   // Bumps on every style load, so the data effects re-push into fresh sources.
   const [styleGen, setStyleGen] = useState(0);
@@ -121,6 +125,8 @@ export default function MapCanvas({
   const offline = useEffectEvent(() => onOffline());
   const reportMissingTiles = useEffectEvent((count: number) => onMissingTiles(count));
   const currentInset = useEffectEvent(() => inset);
+  const boundaryDetails = useEffectEvent((value: { name: string; content: HTMLElement } | null) => onBoundaryDetails?.(value));
+  const hasBoundaryPanel = useEffectEvent(() => !!onBoundaryDetails && !window.matchMedia('(min-width: 768px) and (min-height: 500px)').matches);
   const currentFocus = useEffectEvent(() => focusedArea);
   const canEditColors = useEffectEvent(() => boundaries?.canEditColors === true);
   // transformRequest reads this, so the map picks the offline path without being rebuilt.
@@ -135,7 +141,7 @@ export default function MapCanvas({
       style: STYLE_URL ?? OFFLINE_STYLE,
       transformRequest: makeOfflineTransform(() => onlineRef.current),
       bounds: ALBERTA,
-      maxBounds: MAX_BOUNDS,
+      minZoom: 0,
       renderWorldCopies: false,
       attributionControl: { compact: true },
       dragRotate: false,
@@ -204,14 +210,18 @@ export default function MapCanvas({
     };
 
     const details = new Popup({ closeButton: true, maxWidth: '340px' });
+    detailsPopup.current = details;
     m.on('click', (e) => {
       const { pin, area } = pick(e, coarse() ? 18 : 8);
       details.remove();
       const boundary = area ?? (m.getLayer(LAYER.boundaryFill)
         ? m.queryRenderedFeatures(e.point, { layers: [LAYER.boundaryFill] })[0]
         : undefined);
+      const slug = (pin ?? area)?.properties?.slug as string | undefined;
+      select(slug || null);
+      boundaryDetails(null);
       if (boundary) {
-        details.setLngLat(e.lngLat).setDOMContent(createPopupContent(boundary.properties, canEditColors() ? {
+        const content = createPopupContent(boundary.properties, canEditColors() ? {
           preservePopup: () => {},
           releasePopup: () => {},
           onSet: async (request) => {
@@ -225,10 +235,10 @@ export default function MapCanvas({
               return { ok: false, error: error instanceof Error ? error.message : 'The color could not be saved.' };
             }
           },
-        } : undefined)).addTo(m);
+        } : undefined);
+        if (hasBoundaryPanel()) boundaryDetails({ name: String(boundary.properties.name ?? 'Protected area'), content });
+        else details.setLngLat(e.lngLat).setDOMContent(content).addTo(m);
       }
-      const slug = (pin ?? area)?.properties?.slug as string | undefined;
-      select(slug || null);
     });
 
     // ---- hover (mouse only): grow the pin, tint the polygon, name it in a tooltip
@@ -250,6 +260,8 @@ export default function MapCanvas({
         m.getCanvas().style.cursor = '';
         return;
       }
+      const source = pin ? SRC.sites : SRC.boundaries;
+      if (hovered?.source === source && hovered.id === f.id) return;
       const linked = Boolean(f.properties.slug);
       setHover({ source: pin ? SRC.sites : SRC.boundaries, id: f.id });
       m.getCanvas().style.cursor = linked ? 'pointer' : '';
@@ -274,6 +286,8 @@ export default function MapCanvas({
       releaseOfflineProtocol();
     };
   }, []);
+
+  useEffect(() => { if (expanded) detailsPopup.current?.remove(); }, [expanded]);
 
   // ---------------------------------------------------------------- offline
   // In-flight and cached basemap requests only change path with a new style, so a change of connection

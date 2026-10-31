@@ -252,3 +252,6 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+body:has([data-map-expanded="true"]) nav[aria-label="Main"] { display: none; }
+.v2 .maplibregl-popup-content { max-height: 65dvh; overflow-y: auto; }

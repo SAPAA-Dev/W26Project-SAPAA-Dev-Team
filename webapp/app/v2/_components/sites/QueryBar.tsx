@@ -27,7 +27,7 @@ const FLOATING = {
   '--on-accent': 'var(--canopy)',
 } as CSSProperties;
 
-export default function QueryBar({ tone }: { tone: 'paper' | 'floating' }) {
+export default function QueryBar({ tone, compact = false }: { tone: 'paper' | 'floating'; compact?: boolean }) {
   const { query, update } = useSiteQuery();
   const { sites, me, meSettled } = useSites();
   const [filterOpen, setFilterOpen] = useState(false);
@@ -137,7 +137,7 @@ export default function QueryBar({ tone }: { tone: 'paper' | 'floating' }) {
                 }`}
               >
                 <Icon size={16} aria-hidden />
-                {m === 'list' ? 'List' : 'Map'}
+                <span className={compact ? 'sr-only sm:not-sr-only' : undefined}>{m === 'list' ? 'List' : 'Map'}</span>
               </button>
             );
           })}
@@ -145,7 +145,7 @@ export default function QueryBar({ tone }: { tone: 'paper' | 'floating' }) {
       </div>
 
       {/* One scrolling row: Filter first so it is never clipped, then the saved views. */}
-      <ChipRail padY={floating}>
+      {!compact && <ChipRail padY={floating}>
         <button
           type="button"
           onClick={() => setFilterOpen(true)}
@@ -166,7 +166,7 @@ export default function QueryBar({ tone }: { tone: 'paper' | 'floating' }) {
             </button>
           );
         })}
-      </ChipRail>
+      </ChipRail>}
 
       <FilterSheet
         open={filterOpen}
