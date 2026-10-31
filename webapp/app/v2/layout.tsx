@@ -10,7 +10,7 @@ import { ListSkeleton } from './_components/flows/ui';
 // Avenir Next is native on Apple devices (the deck's face); Nunito Sans is the close web fallback.
 const nunito = Nunito_Sans({ subsets: ['latin'], variable: '--font-nunito', display: 'swap', axes: ['wdth'] });
 
-export const metadata = { title: 'SAPAA · Boreal prototype' };
+export const metadata = { title: 'SAPAA - Stewards Helping Stewards' };
 
 // Without viewport-fit=cover, iOS reports env(safe-area-inset-*) as 0 and the tab bar can't clear the home indicator.
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover' };

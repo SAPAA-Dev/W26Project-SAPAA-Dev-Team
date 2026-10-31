@@ -10,6 +10,7 @@ import { useApi } from '@/app/v2/_lib/useApi';
 import { formatDate, questionNumber, reportPerson, siteHref } from '@/app/v2/_components/flows/format';
 import { EditReportSheet } from '@/app/v2/_components/flows/EditReport';
 import { HiddenTag } from '@/app/v2/_components/flows/HiddenTag';
+import SirPdfExportButton from '@/components/SirPdfExportButton';
 import PhotoHero from '@/app/v2/_components/sites/PhotoHero';
 import { HEADING } from '@/app/v2/_components/sites/ui';
 import { ErrorState, SectionTitle, btn, card, heroTitle, raised, tabBarPadding } from '@/app/v2/_components/flows/ui';
@@ -129,6 +130,8 @@ export default function ReportDetailPage() {
               <span className="flex-1 font-semibold">View site page</span>
               <ChevronRight size={18} aria-hidden className="shrink-0 text-[var(--ink-2)]" />
             </Link>
+
+            {(r.isOwn || isAdmin) && <div className="mt-3"><SirPdfExportButton responseId={r.id} /></div>}
 
             {/* The report's owner or an admin; the server checks it again. */}
             {(r.isOwn || isAdmin) && (

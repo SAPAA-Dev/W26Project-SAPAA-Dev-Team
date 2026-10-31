@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { AlertCircle, Facebook, Globe, Instagram, Link2, Linkedin, Loader2, Mail, Phone, Plus, X, type LucideIcon } from 'lucide-react';
+import TagPicker from '@/components/TagPicker';
 import { SOCIAL_FIELDS, type SocialKey, type Socials } from '@/lib/socials';
 import PhotoHero from '@/app/v2/_components/sites/PhotoHero';
 import { HEADING } from '@/app/v2/_components/sites/ui';
@@ -110,6 +111,7 @@ export function EditProfileSheet({
   onClose,
   profile,
   accountEmail,
+  options,
   onSaved,
 }: {
   open: boolean;
@@ -117,6 +119,7 @@ export function EditProfileSheet({
   profile: Profile;
   /** The sign-in email, the default for the required contact email. */
   accountEmail?: string | null;
+  options: { skills: string[]; focusAreas: string[] };
   /** Called with whatever the server stored, including after a partial save. */
   onSaved: (saved: Partial<Profile>, done: boolean) => void;
 }) {
@@ -278,25 +281,8 @@ export function EditProfileSheet({
             </Group>
 
             <Group title="Skills and focus areas" note="What you know and what you look for, so other stewards know who to ask.">
-              {(
-                [
-                  ['skills', 'Skills', 'Add a skill, like Botany'],
-                  ['focusAreas', 'Focus areas', 'Add a focus area, like Wetlands'],
-                ] as const
-              ).map(([key, label, placeholder]) => (
-                <TagEditor
-                  key={key}
-                  id={id(key)}
-                  label={label}
-                  placeholder={placeholder}
-                  tags={draft[key]}
-                  text={draft.pending[key]}
-                  error={errors[key]}
-                  onTags={(tags) => set({ [key]: tags })}
-                  onText={(text) => set({ pending: { ...draft.pending, [key]: text } })}
-                  onBlur={touch(key)}
-                />
-              ))}
+              <TagPicker label="Skills" values={draft.skills} options={options.skills} onChange={(skills) => set({ skills })} />
+              <TagPicker label="Focus areas" values={draft.focusAreas} options={options.focusAreas} onChange={(focusAreas) => set({ focusAreas })} />
             </Group>
 
             <Group title="Contact" note="Signed-in members can see these. Email is required, the rest are optional.">
@@ -463,111 +449,3 @@ function Row({
 }
 
 /** Removable chips plus an add field. Enter or a comma adds; Backspace in an empty field removes the last one. */
-function TagEditor({
-  id,
-  label,
-  placeholder,
-  tags,
-  text,
-  error,
-  onTags,
-  onText,
-  onBlur,
-}: {
-  id: string;
-  label: string;
-  placeholder: string;
-  tags: string[];
-  text: string;
-  error?: string;
-  onTags: (tags: string[]) => void;
-  onText: (text: string) => void;
-  onBlur: () => void;
-}) {
-  const [note, setNote] = useState<string | null>(null);
-  const full = tags.length >= MAX_TAGS;
-
-  const add = (raw: string) => {
-    const fresh = raw
-      .split(',')
-      .map((t) => t.trim())
-      .filter((t) => t && !tags.some((x) => x.toLowerCase() === t.toLowerCase()));
-    const tooLong = fresh.find((t) => t.length > TAG_MAX);
-    if (tooLong) return setNote(`Keep each one to ${TAG_MAX} characters or fewer.`);
-    if (tags.length + fresh.length > MAX_TAGS) return setNote(`You can add up to ${MAX_TAGS}.`);
-    setNote(null);
-    onTags([...tags, ...fresh]);
-    onText('');
-  };
-
-  const message = error ?? note;
-  return (
-    <div className="px-4 pt-2.5 pb-3 focus-within:shadow-[inset_3px_0_0_var(--honey)]">
-      <div className="flex items-baseline justify-between gap-3">
-        <label htmlFor={id} className="text-[13px] font-semibold text-[var(--ink-2)]">
-          {label}
-        </label>
-        <span className="num text-xs text-[var(--ink-2)]">
-          {tags.length}/{MAX_TAGS}
-        </span>
-      </div>
-      {tags.length > 0 && (
-        <ul aria-label={label} className="mt-2 flex flex-wrap gap-2">
-          {tags.map((t) => (
-            <li key={t} className="inline-flex h-9 max-w-full items-center gap-0.5 rounded-full bg-[var(--bg-sunken)] pr-1 pl-3 text-[15px] font-semibold">
-              <span className="truncate">{t}</span>
-              <button
-                type="button"
-                onClick={() => onTags(tags.filter((x) => x !== t))}
-                aria-label={`Remove ${t}`}
-                className="press relative grid size-7 shrink-0 place-items-center rounded-full text-[var(--ink-2)] after:absolute after:-inset-2 after:content-[''] hover:bg-[var(--bark)] hover:text-[var(--ink)]"
-              >
-                <X size={14} aria-hidden />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      <div className="mt-1.5 flex items-center gap-2">
-        <input
-          id={id}
-          value={text}
-          disabled={full}
-          placeholder={full ? `${MAX_TAGS} added, remove one to add another` : placeholder}
-          enterKeyHint="done"
-          aria-invalid={message ? true : undefined}
-          aria-describedby={message ? `${id}-msg` : undefined}
-          onChange={(e) => {
-            setNote(null);
-            const v = e.target.value;
-            if (v.includes(',')) add(v);
-            else onText(v);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              if (text.trim()) add(text);
-            } else if (e.key === 'Backspace' && !text && tags.length) {
-              onTags(tags.slice(0, -1));
-            }
-          }}
-          onBlur={onBlur}
-          style={{ outline: 'none' }}
-          className="h-10 min-w-0 flex-1 bg-transparent text-[16px] text-[var(--ink)] disabled:opacity-60"
-        />
-        {text.trim() && (
-          <button type="button" onClick={() => add(text)} className={`${btn.secondary} min-h-10 shrink-0 rounded-full px-3 text-[15px]`}>
-            <Plus size={16} aria-hidden />
-            Add
-          </button>
-        )}
-      </div>
-      {message && (
-        <p id={`${id}-msg`} className="mt-1 flex items-start gap-1.5 text-sm font-semibold text-[var(--clay-ink)]">
-          <AlertCircle size={16} aria-hidden className="mt-0.5 shrink-0" />
-          {message}
-        </p>
-      )}
-    </div>
-  );
-}

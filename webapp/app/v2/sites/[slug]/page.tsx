@@ -23,6 +23,7 @@ import type { SiteSummary } from '@/lib/api/v1/types';
 import { useApi } from '../../_lib/useApi';
 import MotionProvider from '../../_lib/MotionProvider';
 import { STATUS_COLOR, STATUS_LABEL } from '../../_lib/siteQuery';
+import SitePriority from '@/app/detail/[namesite]/SitePriority';
 import PhotoHero from '../../_components/sites/PhotoHero';
 import QuickActions from '../../_components/sites/QuickActions';
 import { HEADING, sinceVisit, siteHref, TNUM } from '../../_components/sites/ui';
@@ -64,6 +65,7 @@ export default function SitePage({ params }: { params: Promise<{ slug: string }>
 
 function SiteView({ slug }: { slug: string }) {
   const router = useRouter();
+  const me = useApi('me', api.me);
   const reduce = useReducedMotion();
   const site = useApi(`site:${slug}`, () => api.site(slug));
   // The list already has the summary: the header renders instantly while the detail loads.
@@ -185,6 +187,7 @@ function SiteView({ slug }: { slug: string }) {
             </ul>
           )}
 
+          {s && <div className="mt-5"><SitePriority siteId={s.id} isAdmin={me.data?.role === 'admin'} /></div>}
           <Link
             href={inspectHref}
             className="press mt-6 hidden h-12 items-center gap-2 rounded-full bg-[var(--honey)] px-6 text-base font-bold text-[var(--canopy)] md:inline-flex"

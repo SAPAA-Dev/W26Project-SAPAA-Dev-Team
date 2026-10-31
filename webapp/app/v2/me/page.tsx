@@ -18,6 +18,7 @@ import { EditProfileSheet, type Profile } from './EditProfileSheet';
 interface ProfilePayload {
   profile: Profile;
   isOwner: boolean;
+  options?: { skills: string[]; focusAreas: string[] };
   stats: { inspectionCount: number; distinctSiteCount: number };
 }
 
@@ -330,6 +331,7 @@ export default function YouPage() {
           onClose={closeEditor}
           profile={p}
           accountEmail={me.data?.email}
+          options={profile.data?.options ?? { skills: [], focusAreas: [] }}
           onSaved={(saved, done) => {
             setPatch((cur) => ({ ...cur, ...saved }));
             invalidate('me');
