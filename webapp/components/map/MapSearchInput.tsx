@@ -74,7 +74,7 @@ export default function MapSearchInput({
             >
               <span className="block text-sm font-medium text-[#254431]">{area.properties.name}</span>
               {area.properties.oc_name && (
-                <span className="block text-xs text-[#7A8075]">{area.properties.oc_name}</span>
+                <span className="block text-xs text-[#5B655D]">{area.properties.oc_name}</span>
               )}
             </li>
           ))}

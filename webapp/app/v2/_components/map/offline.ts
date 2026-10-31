@@ -1,22 +1,6 @@
-import type { RequestTransformFunction } from 'maplibre-gl';
 import type { SavedRegion } from '@/lib/map/offline/tileCache';
 import { mergeToDisjointRectangles } from '@/lib/map/offline/tileMath';
-
-// Offline maps: the tile cache, the downloader and the `sapaa-offline://` protocol belong to the offline-tiles
-// feature (lib/map/offline, components/map/offlineProtocol) and are used here unchanged. The downloader works
-// on any style; only the protocol's request rewrite is tied to Protomaps, so v2 (OpenFreeMap) has its own.
-
-export const BASEMAP_ORIGIN = 'https://tiles.openfreemap.org/';
-// The scheme components/map/offlineProtocol registers (not exported there). offline.test.ts keeps the two in step.
-export const OFFLINE_PREFIX = 'sapaa-offline://';
-
-/** While offline, send basemap requests (style, TileJSON, tiles, glyphs, sprites) to the saved copies. */
-export function makeOfflineTransform(online: () => boolean): RequestTransformFunction {
-  return (url) => {
-    if (online() || !url.startsWith(BASEMAP_ORIGIN)) return undefined;
-    return { url: `${OFFLINE_PREFIX}${url}` };
-  };
-}
+export { makeTransformRequest as makeOfflineTransform } from '@/components/map/offlineProtocol';
 
 type FeatureCollection = { type: 'FeatureCollection'; features: unknown[] };
 

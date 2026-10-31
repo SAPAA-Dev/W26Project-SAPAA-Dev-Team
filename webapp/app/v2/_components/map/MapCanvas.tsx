@@ -11,6 +11,10 @@ import { releaseOfflineProtocol, retainOfflineProtocol } from '@/components/map/
 import type { SavedRegion } from '@/lib/map/offline/tileCache';
 import { makeOfflineTransform, offlineMask, regionOutlines } from './offline';
 import type { BoundaryCollection, SiteSummary, TrackCollection } from '@/lib/api/v1/types';
+import { createPopupContent } from '@/components/map/SiteMap';
+import { boundaryBounds, type BoundaryFeature } from '@/lib/map/boundaries';
+import { api } from '@/lib/api/v1/client';
+import { invalidate } from '../../_lib/useApi';
 import { STATUS_LABEL } from '../../_lib/siteQuery';
 import {
   ALBERTA,
@@ -22,7 +26,6 @@ import {
   SRC,
   STYLE_URL,
   firstSymbolLayer,
-  recolorBasemap,
 } from './mapStyle';
 
 export type Inset = { top: number; right: number; bottom: number; left: number };
@@ -32,6 +35,7 @@ interface Props {
   sites: SiteSummary[];
   boundaries: BoundaryCollection | undefined;
   tracks?: TrackCollection;
+  focusedArea?: BoundaryFeature | null;
   /** navigator.onLine. Offline, basemap requests are answered from the saved areas. */
   online: boolean;
   /** Areas saved for offline use (outlined, and the only places the basemap draws while offline). */
@@ -95,6 +99,7 @@ export default function MapCanvas({
   sites,
   boundaries,
   tracks,
+  focusedArea,
   online,
   regions,
   selected,
@@ -113,6 +118,8 @@ export default function MapCanvas({
   const ready = useEffectEvent((m: MlMap) => onReady(m));
   const offline = useEffectEvent(() => onOffline());
   const currentInset = useEffectEvent(() => inset);
+  const currentFocus = useEffectEvent(() => focusedArea);
+  const canEditColors = useEffectEvent(() => boundaries?.canEditColors === true);
   // transformRequest reads this, so the map picks the offline path without being rebuilt.
   const onlineRef = useRef(online);
 
@@ -122,7 +129,7 @@ export default function MapCanvas({
     retainOfflineProtocol();
     const m = new MlMap({
       container: el.current,
-      style: STYLE_URL,
+      style: STYLE_URL ?? OFFLINE_STYLE,
       transformRequest: makeOfflineTransform(() => onlineRef.current),
       bounds: ALBERTA,
       maxBounds: MAX_BOUNDS,
@@ -138,7 +145,6 @@ export default function MapCanvas({
     let fellBack = false;
     m.on('style.load', () => {
       styled = true;
-      recolorBasemap(m);
       const below = firstSymbolLayer(m);
       for (const id of Object.values(SRC)) m.addSource(id, { type: 'geojson', data: EMPTY });
       for (const { layer, belowLabels } of OVERLAY_LAYERS) {
@@ -178,8 +184,30 @@ export default function MapCanvas({
       return { pin, area };
     };
 
+    const details = new Popup({ closeButton: true, maxWidth: '340px' });
     m.on('click', (e) => {
       const { pin, area } = pick(e, coarse() ? 18 : 8);
+      details.remove();
+      const boundary = area ?? (m.getLayer(LAYER.boundaryFill)
+        ? m.queryRenderedFeatures(e.point, { layers: [LAYER.boundaryFill] })[0]
+        : undefined);
+      if (boundary) {
+        details.setLngLat(e.lngLat).setDOMContent(createPopupContent(boundary.properties, canEditColors() ? {
+          preservePopup: () => {},
+          releasePopup: () => {},
+          onSet: async (request) => {
+            try {
+              await api.setBoundaryColor(request.scope === 'site'
+                ? { scope: 'site', areaId: request.protectedAreaId, color: request.color }
+                : { scope: 'type', areaType: request.areaType ?? '', color: request.color });
+              invalidate('boundaries');
+              return { ok: true };
+            } catch (error) {
+              return { ok: false, error: error instanceof Error ? error.message : 'The color could not be saved.' };
+            }
+          },
+        } : undefined)).addTo(m);
+      }
       const slug = (pin ?? area)?.properties?.slug as string | undefined;
       select(slug || null);
     });
@@ -221,6 +249,7 @@ export default function MapCanvas({
 
     return () => {
       tip.remove();
+      details.remove();
       m.remove();
       releaseOfflineProtocol();
     };
@@ -233,7 +262,7 @@ export default function MapCanvas({
   useEffect(() => {
     if (onlineRef.current === online) return;
     onlineRef.current = online;
-    if (usable(map)) map.setStyle(STYLE_URL, { diff: false });
+    if (usable(map)) map.setStyle(STYLE_URL ?? OFFLINE_STYLE, { diff: false });
   }, [map, online]);
 
   useEffect(() => {
@@ -274,6 +303,7 @@ export default function MapCanvas({
               id: f.id,
               geometry: f.geometry as Geometry,
               properties: {
+                ...f.properties.details,
                 name: f.properties.name,
                 slug: f.properties.siteSlug ?? '',
                 st: f.properties.status ?? 'none',
@@ -348,6 +378,12 @@ export default function MapCanvas({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, selectedSlug, cover]);
 
+  useEffect(() => {
+    if (!usable(map) || !focusedArea) return;
+    const bounds = boundaryBounds(focusedArea.geometry);
+    if (bounds) map.fitBounds(bounds, { padding: pad(currentInset(), 32), duration: reducedMotion() ? 0 : 900 });
+  }, [map, focusedArea]);
+
   // ---------------------------------------------------------------- list hover
   useEffect(() => {
     if (!usable(map) || hoverId === null) return;
@@ -362,7 +398,7 @@ export default function MapCanvas({
   const fitKey = sites.map((s) => s.id).join(',');
   const fitted = useRef(false);
   const fit = useEffectEvent(() => {
-    if (!usable(map) || selectedSlug) return; // a selection owns the camera
+    if (!usable(map) || selectedSlug || currentFocus()) return; // a selection owns the camera
     const b = boundsOf(sites);
     if (!b) return;
     const first = !fitted.current;

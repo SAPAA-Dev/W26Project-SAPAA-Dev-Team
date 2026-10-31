@@ -1,6 +1,3 @@
-// Boreal field-map look: the OpenFreeMap Positron basemap recoloured to the deck palette,
-// plus the SAPAA overlay layers. Every colour the map paints lives here, so a visual tweak
-// is a one-line change. MapLibre paints literal colours, not CSS vars: these mirror forest.css.
 import type {
   AddLayerObject,
   ExpressionSpecification,
@@ -8,7 +5,9 @@ import type {
 } from 'maplibre-gl';
 import type { InspectionStatus } from '@/lib/api/v1/types';
 
-export const STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
+import { protomapsStyleUrl } from '@/lib/map/basemap';
+
+export const STYLE_URL = protomapsStyleUrl();
 
 /** Panning stops a little past the province so edge sites can still sit mid-screen. */
 export const MAX_BOUNDS: [[number, number], [number, number]] = [
@@ -65,45 +64,6 @@ export const STATUS_LINE: Record<InspectionStatus, string> = {
 
 // ---------------------------------------------------------------- basemap
 
-/** Recolours Positron in place. Matches on layer ids, so new style layers just keep their colour. */
-export function recolorBasemap(map: MlMap) {
-  for (const layer of map.getStyle().layers ?? []) {
-    const { id, type } = layer;
-    const paint = (prop: string, value: Parameters<MlMap['setPaintProperty']>[2]) =>
-      map.setPaintProperty(id, prop as Parameters<MlMap['setPaintProperty']>[1], value);
-
-    if (type === 'background') paint('background-color', C.land);
-    else if (type === 'fill') {
-      if (id === 'park') paint('fill-color', C.park);
-      else if (id.includes('wood')) paint('fill-color', C.wood);
-      else if (id === 'water') paint('fill-color', C.water);
-      else if (id.includes('ice') || id.includes('glacier')) paint('fill-color', C.ice);
-      else if (id === 'road_area_pier') paint('fill-color', C.land);
-      else {
-        paint('fill-color', C.built);
-        if (id === 'building') paint('fill-outline-color', C.roadCasing);
-      }
-    } else if (type === 'line') {
-      if (id === 'waterway') paint('line-color', C.waterLine);
-      else if (id.startsWith('boundary')) paint('line-color', C.border);
-      else if (id.includes('dashline') || id === 'road_pier') paint('line-color', C.land);
-      else if (id.includes('casing') || id.startsWith('railway')) paint('line-color', C.roadCasing);
-      else if (id.includes('inner') || id === 'aeroway-runway') paint('line-color', C.roadMajor);
-      else paint('line-color', C.road);
-    } else if (type === 'symbol') {
-      // Road shields are noise on a field map.
-      if (id.includes('shield')) {
-        map.setLayoutProperty(id, 'visibility', 'none');
-        continue;
-      }
-      const water = id.startsWith('water');
-      const strong = id.startsWith('label_city') || id.startsWith('label_town');
-      paint('text-color', water ? C.waterInk : strong ? C.labelStrong : C.label);
-      paint('text-halo-color', C.halo);
-    }
-  }
-}
-
 /** First basemap label layer: our polygons go under it so place names stay readable. */
 export function firstSymbolLayer(map: MlMap): string | undefined {
   return map.getStyle().layers?.find((l) => l.type === 'symbol')?.id;
@@ -123,6 +83,7 @@ export const LAYER = {
   boundaryFill: 'boundary-fill',
   boundaryLine: 'boundary-line',
   tracks: 'gpx-tracks',
+  trackCasing: 'gpx-tracks-casing',
   offlineMask: 'offline-mask',
   offlineRegions: 'offline-regions',
   halo: 'site-halo',
@@ -196,6 +157,15 @@ export const OVERLAY_LAYERS: { layer: AddLayerObject; belowLabels: boolean }[] =
         'line-width': ['interpolate', ['linear'], ['zoom'], 5, ['case', SELECTED, 2, 0.6], 11, ['case', SELECTED, 3, 1.6]],
         'line-opacity': ['case', ['==', ['get', 'st'], 'none'], 0.6, 0.9],
       },
+    },
+  },
+  {
+    belowLabels: true,
+    layer: {
+      id: LAYER.trackCasing,
+      type: 'line',
+      source: SRC.tracks,
+      paint: { 'line-color': '#FFFFFF', 'line-width': 7 },
     },
   },
   {

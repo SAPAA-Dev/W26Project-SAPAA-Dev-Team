@@ -1,4 +1,5 @@
 import { getGpxTrackPoints, getGpxTracksBySite, getGpxTracksForMap } from '../../utils/supabase/queries';
+import { clearGpxMapTrackCache } from '../../lib/map/gpxTrack';
 import { createServerSupabase, createClient } from '../../utils/supabase/server';
 
 jest.mock('../../utils/supabase/server', () => ({
@@ -31,6 +32,7 @@ function mockCaller(role: string, approved = true) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  clearGpxMapTrackCache();
   mockCaller('steward');
   (createServerSupabase as jest.Mock).mockReturnValue({
     from: mockServiceFrom,
@@ -219,6 +221,39 @@ describe('getGpxTracksForMap', () => {
 
     expect(tracks).toHaveLength(1);
     expect(tracks[0].id).toBe(9);
+  });
+
+  it('reads a saved track from storage once and reuses it on the next map load (US 2.0.1)', async () => {
+    mockOrder.mockResolvedValue({ data: [TRACK_ROWS[0]], error: null });
+    mockDownload.mockResolvedValue({
+      data: { arrayBuffer: async () => encode(VALID_GPX).buffer },
+      error: null,
+    });
+
+    await getGpxTracksForMap();
+    const second = await getGpxTracksForMap();
+
+    expect(mockDownload).toHaveBeenCalledTimes(1);
+    expect(second[0].points).toHaveLength(2);
+  });
+
+  it('keeps 2000 evenly spaced points, first and last included, of a very long track (US 2.0.1)', async () => {
+    const trackPoints = Array.from(
+      { length: 5001 },
+      (_, index) => `<trkpt lat="${53 + index / 100000}" lon="-113.5"/>`
+    ).join('');
+    const longGpx = `<gpx version="1.1"><trk><trkseg>${trackPoints}</trkseg></trk></gpx>`;
+    mockOrder.mockResolvedValue({ data: [TRACK_ROWS[0]], error: null });
+    mockDownload.mockResolvedValue({
+      data: { arrayBuffer: async () => encode(longGpx).buffer },
+      error: null,
+    });
+
+    const [track] = await getGpxTracksForMap();
+
+    expect(track.points).toHaveLength(2000);
+    expect(track.points[0].lat).toBe(53);
+    expect(track.points[1999].lat).toBeCloseTo(53.05, 5);
   });
 
   it('refuses a caller who is not approved', async () => {

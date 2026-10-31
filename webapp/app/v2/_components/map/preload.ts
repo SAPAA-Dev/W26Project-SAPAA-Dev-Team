@@ -10,7 +10,7 @@ let started = false;
 export function preloadMap() {
   if (started) return;
   started = true;
-  preconnect(new URL(STYLE_URL).origin, { crossOrigin: 'anonymous' });
+  if (STYLE_URL) preconnect(new URL(STYLE_URL).origin, { crossOrigin: 'anonymous' });
   Promise.all([import('./SitesMap'), import('./MapCanvas')]).catch(() => {
     started = false; // offline: the next intent tries again
   });

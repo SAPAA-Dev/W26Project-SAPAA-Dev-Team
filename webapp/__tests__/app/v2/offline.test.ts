@@ -3,7 +3,7 @@ jest.mock('maplibre-gl', () => ({ addProtocol: jest.fn(), removeProtocol: jest.f
 jest.mock('@/lib/map/offline/tileCache', () => ({ getCachedResponse: jest.fn() }));
 
 import { makeTransformRequest } from '@/components/map/offlineProtocol';
-import { BASEMAP_ORIGIN, OFFLINE_PREFIX, makeOfflineTransform, offlineMask, regionOutlines } from '@/app/v2/_components/map/offline';
+import { makeOfflineTransform, offlineMask, regionOutlines } from '@/app/v2/_components/map/offline';
 
 const region = (id: string, west: number, south: number, east: number, north: number) => ({
   id,
@@ -15,7 +15,8 @@ const region = (id: string, west: number, south: number, east: number, north: nu
 });
 
 describe('v2 offline basemap requests (US 4.0.2 wiring)', () => {
-  const tile = `${BASEMAP_ORIGIN}planet/20261001_000000_pt/8/45/80.pbf`;
+  const tile = 'https://api.protomaps.com/tiles/v4/8/45/80.mvt?key=test-key';
+  const OFFLINE_PREFIX = 'sapaa-offline://';
   const call = (t: ReturnType<typeof makeOfflineTransform>, url: string) => t(url, 'Tile' as never);
 
   it('leaves requests alone while online', () => {
@@ -25,7 +26,7 @@ describe('v2 offline basemap requests (US 4.0.2 wiring)', () => {
   it('sends basemap requests to the saved copies while offline, and nothing else', () => {
     const offline = makeOfflineTransform(() => false);
     expect(call(offline, tile)).toEqual({ url: `${OFFLINE_PREFIX}${tile}` });
-    expect(call(offline, 'https://tiles.openfreemap.org.evil.example/x')).toBeUndefined();
+    expect(call(offline, 'https://api.protomaps.com.evil.example/x')).toBeUndefined();
     expect(call(offline, '/api/v1/sites')).toBeUndefined();
   });
 

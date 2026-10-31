@@ -91,6 +91,7 @@ export interface Photo {
 }
 
 export interface BoundaryProperties {
+  details?: import('@/lib/map/boundaries').BoundaryProperties;
   areaId: number;
   name: string;
   areaType: string | null;

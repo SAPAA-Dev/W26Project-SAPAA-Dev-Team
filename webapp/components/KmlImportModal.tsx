@@ -168,9 +168,9 @@ export default function KmlImportModal({ open, onClose, onImported }: KmlImportM
               dragging ? 'border-[#356B43] bg-[#F7F2EA]' : 'border-[#E4EBE4]'
             } ${busy ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-[#F7F2EA] hover:border-[#86A98A]'}`}
           >
-            <Upload className="w-10 h-10 text-[#7A8075] mx-auto mb-3" />
+            <Upload className="w-10 h-10 text-[#5B655D] mx-auto mb-3" />
             <p className="text-[#254431] font-medium">Drop a KML or KMZ file here, or click to choose one</p>
-            <p className="text-sm text-[#7A8075] mt-1">Maximum size 50 MB</p>
+            <p className="text-sm text-[#5B655D] mt-1">Maximum size 50 MB</p>
             <input
               ref={fileInputRef}
               type="file"
@@ -218,7 +218,7 @@ export default function KmlImportModal({ open, onClose, onImported }: KmlImportM
               <p className="text-sm font-medium text-[#254431]">
                 {warnings.length} {warnings.length === 1 ? 'note' : 'notes'}
               </p>
-              <ul className="mt-2 max-h-40 overflow-y-auto text-sm text-[#7A8075] space-y-1 list-disc pl-5">
+              <ul className="mt-2 max-h-40 overflow-y-auto text-sm text-[#5B655D] space-y-1 list-disc pl-5">
                 {warnings.map((warning) => (
                   <li key={warning}>{warning}</li>
                 ))}

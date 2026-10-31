@@ -11,8 +11,7 @@ export async function getBoundaries(caller: Caller): Promise<BoundaryCollection>
     fetchAll<ProtectedAreaBoundaryRow>((from, to) =>
       db()
         .from('protected_areas')
-        // Only what the response carries; the other boundary columns were read and dropped.
-        .select('id, name, area_type, geometry, boundary_color')
+        .select('id, name, fid, area_type, subtype, iucn, oc_no, acres, hectares, oc_date, date_est, oc_name, notes, geometry, boundary_color')
         .order('id')
         .range(from, to)
     ),
@@ -53,6 +52,13 @@ export async function getBoundaries(caller: Caller): Promise<BoundaryCollection>
           siteSlug: site?.slug ?? null,
           status: site?.status ?? null,
           color: feature.properties.boundary_color,
+          details: {
+            ...feature.properties,
+            county: site?.county ?? null,
+            is_active: site?.isActive ?? null,
+            site_name: site?.name ?? null,
+            last_inspection_date: site?.lastInspection ?? null,
+          },
         },
         geometry: feature.geometry,
       };

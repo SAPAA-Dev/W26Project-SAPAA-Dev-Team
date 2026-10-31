@@ -237,8 +237,8 @@ export function MapKey({
               OpenStreetMap
             </a>{' '}
             contributors, served by{' '}
-            <a className="underline" href="https://openfreemap.org" target="_blank" rel="noreferrer">
-              OpenFreeMap
+            <a className="underline" href="https://protomaps.com" target="_blank" rel="noreferrer">
+              Protomaps
             </a>
           </p>
         </div>

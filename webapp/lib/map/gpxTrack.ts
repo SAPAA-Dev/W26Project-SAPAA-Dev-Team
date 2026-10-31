@@ -98,6 +98,24 @@ export interface GpxTrackForMap {
   points: GpxTrackPoint[];
 }
 
+// A saved track never changes, so a parsed track is reused until the server restarts.
+// ponytail: per-instance memo, move to a shared cache if the sites page is still slow.
+// This lives here, not in utils/supabase/queries.ts: that file is 'use server' and may export only async functions.
+export const MAP_TRACK_CACHE_LIMIT = 200;
+const MAP_TRACK_MAX_POINTS = 2000;
+export const mapTrackCache = new Map<string, GpxTrackPoint[]>();
+
+export function clearGpxMapTrackCache(): void {
+  mapTrackCache.clear();
+}
+
+// The map draws a line, so a long track keeps evenly spaced points, first and last included.
+export function thinMapTrack(points: GpxTrackPoint[]): GpxTrackPoint[] {
+  if (points.length <= MAP_TRACK_MAX_POINTS) return points;
+  const step = (points.length - 1) / (MAP_TRACK_MAX_POINTS - 1);
+  return Array.from({ length: MAP_TRACK_MAX_POINTS }, (_, index) => points[Math.round(index * step)]);
+}
+
 export interface GpxTrackLineFeature {
   type: 'Feature';
   properties: {

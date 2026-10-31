@@ -24,6 +24,10 @@ import { listRegions } from '@/lib/map/offline/tileCache';
 import type { SavedRegion } from '@/lib/map/offline/tileCache';
 import { STYLE_URL } from './mapStyle';
 import SiteCard from './SiteCard';
+import MapAreaFilters from '@/components/map/MapAreaFilters';
+import MapSearchInput from '@/components/map/MapSearchInput';
+import { boundaryFilterOptions, defaultMapStatuses, filterBoundaryFeatures, MAP_STATUS_OPTIONS, type BoundaryFilterSelection } from '@/lib/map/boundaryFilters';
+import type { BoundaryFeature } from '@/lib/map/boundaries';
 
 const SORT_NOTE = { urgency: 'most urgent first', name: 'A to Z', recent: 'recently visited first' } as const;
 
@@ -64,10 +68,23 @@ export default function SitesMap() {
 
 function SitesMapView() {
   const { query, update } = useSiteQuery();
-  const sites = useApi('sites', api.sites);
+  const sites = useApi('sites:map', () => api.sites({ includeInactive: true }));
   const me = useApi('me', api.me);
   const areas = useApi('boundaries', api.boundaries);
   const tracks = useApi('tracks', api.tracks); // stewards and admins only; for anyone else the read is refused and no lines draw
+  const [areaSearch, setAreaSearch] = useState('');
+  const [focusedArea, setFocusedArea] = useState<BoundaryFeature | null>(null);
+  const [areaFilters, setAreaFilters] = useState<BoundaryFilterSelection>({ types: null, subtypes: null, counties: null, statuses: defaultMapStatuses() });
+  const classicAreas = useMemo(() => (areas.data?.features ?? []).flatMap((feature): BoundaryFeature[] =>
+    feature.properties.details ? [{ type: 'Feature', id: feature.id, properties: feature.properties.details, geometry: feature.geometry as BoundaryFeature['geometry'] }] : []
+  ), [areas.data]);
+  const areaOptions = useMemo(() => boundaryFilterOptions({ type: 'FeatureCollection', features: classicAreas }), [classicAreas]);
+  const areaMatches = useMemo(() => filterBoundaryFeatures(classicAreas, areaSearch, areaFilters), [classicAreas, areaSearch, areaFilters]);
+  const shownAreas = useMemo(() => {
+    if (!areas.data) return undefined;
+    const ids = new Set(areaMatches.map((area) => area.id));
+    return { ...areas.data, features: areas.data.features.filter((area) => ids.has(area.id)) };
+  }, [areas.data, areaMatches]);
   const desktop = useDesktop();
   const online = useOnline();
   // Areas saved for offline use (kept in this browser by lib/map/offline).
@@ -86,10 +103,16 @@ function SitesMapView() {
 
   // Filtering (and the map redraw it causes) runs behind typing; a selection change keeps the same array.
   const shownQuery = useDeferredValue(query);
-  const results = useMemo(
-    () => (sites.data ? applySiteQuery(sites.data, shownQuery, me.data ?? null) : null),
-    [sites.data, shownQuery, me.data],
-  );
+  const hasAreaFilters = areaSearch.trim() !== '' || areaFilters.types !== null || areaFilters.subtypes !== null || areaFilters.counties !== null ||
+    (areaFilters.statuses !== null && (!areaFilters.statuses.has('Active') || !areaFilters.statuses.has('No status')));
+  const results = useMemo(() => {
+    if (!sites.data) return null;
+    const matches = applySiteQuery(sites.data, shownQuery, me.data ?? null)
+      .filter((site) => site.isActive !== false || areaFilters.statuses === null || areaFilters.statuses.has('Inactive'));
+    if (!hasAreaFilters) return matches;
+    const names = new Set(areaMatches.map((area) => area.properties.site_name));
+    return matches.filter((site) => names.has(site.name));
+  }, [sites.data, shownQuery, me.data, hasAreaFilters, areaMatches, areaFilters.statuses]);
   const index = results?.findIndex((s) => s.slug === query.selected) ?? -1;
   const selected = index >= 0 ? results![index] : null;
 
@@ -100,6 +123,7 @@ function SitesMapView() {
   }, [selectedSlug]);
 
   const select = (slug: string | null) => {
+    setFocusedArea(null);
     if (slug === query.selected) return;
     if (slug) setDir(1);
     update({ selected: slug });
@@ -114,7 +138,12 @@ function SitesMapView() {
     restoreFocus.current = viaKeyboard ? query.selected : null;
     update({ selected: null });
   };
-  const clearFilters = () => update({ q: '', view: 'all', status: [], county: [], boundary: undefined, selected: null });
+  const clearFilters = () => {
+    setAreaSearch('');
+    setAreaFilters({ types: null, subtypes: null, counties: null, statuses: defaultMapStatuses() });
+    setFocusedArea(null);
+    update({ q: '', view: 'all', status: [], county: [], boundary: undefined, selected: null });
+  };
 
   // Closing the card by keyboard puts focus back on the row it came from.
   useEffect(() => {
@@ -130,6 +159,29 @@ function SitesMapView() {
 
   // ---------------------------------------------------------------- shared pieces
   const n = results?.length ?? 0;
+  const areaTools = (
+    <div className="pointer-events-auto relative z-30 mt-2 flex items-center gap-2 rounded-xl bg-[var(--surface)] p-2 shadow-sm" aria-label="Protected area search and filters">
+      <div className="relative min-w-0 flex-1">
+        <MapSearchInput
+          value={areaSearch}
+          onChange={(value) => { setFocusedArea(null); setAreaSearch(value); }}
+          placeholder="Search protected areas"
+          className="h-11 w-full rounded-lg border border-[var(--line)] px-3 text-sm"
+          matches={areaMatches}
+          onPick={(area) => { update({ selected: null }); setFocusedArea(area); }}
+        />
+      </div>
+      {hasAreaFilters && <button type="button" onClick={clearFilters} className="min-h-11 px-2 text-sm font-semibold">Clear area filters</button>}
+      <MapAreaFilters
+        types={areaOptions.types} subtypes={areaOptions.subtypes} counties={areaOptions.counties} statuses={MAP_STATUS_OPTIONS}
+        selectedTypes={areaFilters.types} selectedSubtypes={areaFilters.subtypes} selectedCounties={areaFilters.counties} selectedStatuses={areaFilters.statuses}
+        onTypesChange={(types) => { setFocusedArea(null); setAreaFilters((current) => ({ ...current, types })); }}
+        onSubtypesChange={(subtypes) => { setFocusedArea(null); setAreaFilters((current) => ({ ...current, subtypes })); }}
+        onCountiesChange={(counties) => { setFocusedArea(null); setAreaFilters((current) => ({ ...current, counties })); }}
+        onStatusesChange={(statuses) => { setFocusedArea(null); setAreaFilters((current) => ({ ...current, statuses })); }}
+      />
+    </div>
+  );
   const header = (
     <p aria-live="polite" className={`truncate py-2 text-[15px] text-[var(--ink-2)] ${TNUM}`}>
       {sites.error ? (
@@ -193,6 +245,9 @@ function SitesMapView() {
   // Map-level problems: the sites still work, so these are notes, not walls.
   const notices = (
     <>
+      {!STYLE_URL && (
+        <Notice>Map key not set. Add NEXT_PUBLIC_PROTOMAPS_API_KEY in Vercel and deploy again.</Notice>
+      )}
       {offline && (
         <Notice icon={<CloudOff size={16} aria-hidden />}>Basemap offline. Sites still show.</Notice>
       )}
@@ -218,7 +273,8 @@ function SitesMapView() {
     <>
       <MapCanvas
         sites={results ?? []}
-        boundaries={areas.data}
+        boundaries={shownAreas}
+        focusedArea={focusedArea}
         tracks={tracks.data}
         online={online}
         regions={regions}
@@ -229,7 +285,7 @@ function SitesMapView() {
         onReady={setMap}
         onOffline={() => setOffline(true)}
       />
-      {saving && map && (
+      {saving && map && STYLE_URL && (
         // The save-area panel (unchanged from the classic map) frames the part of the map to keep.
         <div className="pointer-events-none absolute inset-0 z-40">
           <OfflineSavePanel
@@ -254,6 +310,7 @@ function SitesMapView() {
         <div className="pointer-events-none absolute top-3 bottom-[92px] left-3 z-20 flex w-[380px] flex-col gap-3 xl:bottom-3">
           <div className="pointer-events-auto">
             <QueryBar tone="floating" />
+            {areaTools}
           </div>
           <section
             aria-label={selected ? 'Selected site' : 'Sites'}
@@ -314,6 +371,7 @@ function SitesMapView() {
       >
         <div className="pointer-events-auto">
           <QueryBar tone="floating" />
+          {areaTools}
         </div>
       </div>
       <div
