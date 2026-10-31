@@ -21,7 +21,7 @@ export default function MarkdownText({ content, className }: MarkdownTextProps) 
           p: ({ children }) => <span>{children}</span>,
           a: ({ href, children }) => {
             const url =
-              href && !/^https?:\/\//i.test(href) ? `https://${href}` : href;
+              href && !/^(https?:\/\/|mailto:|tel:)/i.test(href) ? `https://${href}` : href;
             return (
               <a
                 href={url}
