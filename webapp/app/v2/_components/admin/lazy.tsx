@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import type { ComponentType } from 'react';
+import type { ComponentProps, ComponentType } from 'react';
 import { api } from '@/lib/api/v1/client';
 import { useApi } from '@/app/v2/_lib/useApi';
 
@@ -23,5 +23,9 @@ export const KmlImportSheet = adminOnly(() => import('./KmlImportSheet'));
 export const AdminSiteTools = adminOnly(() => import('./AdminSiteTools'));
 export const AdminReportActions = adminOnly(() => import('./AdminReportActions'));
 export const AdminArchivedReports = adminOnly(() => import('./AdminArchivedReports'));
-export const AdminPhotoActions = adminOnly(() => import('./AdminPhotoActions'));
+const PhotoActions = dynamic(() => import('./AdminPhotoActions'));
+export function AdminPhotoActions(props: ComponentProps<typeof PhotoActions>) {
+  const isAdmin = useApi('me', api.me).data?.role === 'admin';
+  return props.photo.canEdit || isAdmin ? <PhotoActions {...props} /> : null;
+}
 export const AdminSettingsLinks = adminOnly(() => import('./AdminSettingsLinks'));

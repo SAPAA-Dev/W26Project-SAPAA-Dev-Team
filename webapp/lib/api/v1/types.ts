@@ -79,6 +79,7 @@ export interface Report {
 export interface Photo {
   id: number;
   kind: 'attachments' | 'homepage_image_uploads';
+  canEdit?: boolean;
   url: string;
   caption: string | null;
   identifier: string | null;

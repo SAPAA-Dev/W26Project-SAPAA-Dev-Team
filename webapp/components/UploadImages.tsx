@@ -111,6 +111,12 @@ export default function UploadImages({ open, onClose, onUploaded }: { open?: boo
     );
   };
 
+  const carryForward = () => {
+    setFiles((previous) => previous.map((entry, index) => index <= currentIndex ? entry : {
+      ...entry, site: previous[currentIndex].site, siteSearch: '', date: previous[currentIndex].date, who: previous[currentIndex].who,
+    }));
+  };
+
   const removeCurrentFile = () => {
     setFiles((prev) => {
       const updated = prev.filter((_, i) => i !== currentIndex);
@@ -337,6 +343,7 @@ export default function UploadImages({ open, onClose, onUploaded }: { open?: boo
                       <button
                         onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
                         disabled={currentIndex === 0}
+                        aria-label="Previous upload photo"
                         className="w-7 h-7 flex items-center justify-center rounded-lg border-2 border-[#E4EBE4] text-[#254431] hover:bg-[#E4EBE4] disabled:opacity-30 transition-colors"
                       >
                         <ChevronLeft size={14} />
@@ -347,6 +354,7 @@ export default function UploadImages({ open, onClose, onUploaded }: { open?: boo
                       <button
                         onClick={() => setCurrentIndex((i) => Math.min(files.length - 1, i + 1))}
                         disabled={currentIndex === files.length - 1}
+                        aria-label="Next upload photo"
                         className="w-7 h-7 flex items-center justify-center rounded-lg border-2 border-[#E4EBE4] text-[#254431] hover:bg-[#E4EBE4] disabled:opacity-30 transition-colors"
                       >
                         <ChevronRight size={14} />
@@ -544,6 +552,7 @@ export default function UploadImages({ open, onClose, onUploaded }: { open?: boo
                   <p className="text-sm text-[#B91C1C]">{uploadError}</p>
                 </div>
               )}
+              {currentIndex < files.length - 1 && <button type="button" disabled={isSubmitting} onClick={carryForward} className="mb-3 w-full rounded-xl border border-[#356B43] px-4 py-3 text-sm font-semibold text-[#254431]">Copy site, date and photographer to remaining photos</button>}
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm text-[#5B655D] shrink-0">
                   {files.length > 0 ? (

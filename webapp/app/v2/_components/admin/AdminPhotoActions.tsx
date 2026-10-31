@@ -1,9 +1,10 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import type { Photo } from '@/lib/api/v1/types';
 import { Confirm, errMsg, toast, useIsAdmin } from './shared';
+import { Sheet, btn } from '../flows/ui';
 import { invalidate } from '@/app/v2/_lib/useApi';
 
 /**
@@ -20,7 +21,8 @@ export default function AdminPhotoActions({ photo, onDeleted }: { photo: Photo; 
   const trigger = useRef<HTMLButtonElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  if (!isAdmin) return null;
+  const [editing, setEditing] = useState(false);
+  if (!isAdmin && !photo.canEdit) return null;
 
   const remove = async () => {
     setBusy(true);
@@ -43,7 +45,11 @@ export default function AdminPhotoActions({ photo, onDeleted }: { photo: Photo; 
 
   return (
     <>
-      <button
+      <div {...KEEP_INSIDE} className="contents">
+        <button type="button" className={`${btn.onPhoto} mt-3 px-4`} onClick={() => setEditing(true)}><Pencil size={15} aria-hidden />Edit photo details</button>
+        {editing && <PhotoMetadata key={`${photo.kind}-${photo.id}`} photo={photo} onClose={() => setEditing(false)} onSaved={onDeleted} />}
+      </div>
+      {isAdmin && <button
         ref={trigger}
         type="button"
         onClick={() => {
@@ -54,7 +60,7 @@ export default function AdminPhotoActions({ photo, onDeleted }: { photo: Photo; 
       >
         <Trash2 size={15} aria-hidden />
         Delete photo
-      </button>
+      </button>}
       {open && (
         // React bubbles Escape (cancel) and arrow keys to the lightbox dialog around us; keep them here.
         <div className="contents" {...KEEP_INSIDE}>
@@ -75,4 +81,31 @@ export default function AdminPhotoActions({ photo, onDeleted }: { photo: Photo; 
       )}
     </>
   );
+}
+
+
+function PhotoMetadata({ photo, onClose, onSaved }: { photo: Photo; onClose: () => void; onSaved: () => void }) {
+  const [fields, setFields] = useState({ caption: photo.caption ?? '', identifier: photo.identifier ?? '', photographer: photo.photographer ?? '', date: photo.date ?? '' });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const save = async (event: React.FormEvent) => {
+    event.preventDefault(); setBusy(true); setError(null);
+    try {
+      const response = await fetch(`/api/site-images?id=${photo.id}&kind=${photo.kind}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fields) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Photo details were not saved.');
+      invalidate('photos'); invalidate('site-photos');
+      toast('Photo details saved.'); onClose(); onSaved();
+    } catch (reason) { setError(errMsg(reason, 'Photo details were not saved.')); }
+    finally { setBusy(false); }
+  };
+  return <Sheet open title="Edit photo details" onClose={() => { if (!busy) onClose(); }}>
+    <form onSubmit={save} className="space-y-4">
+      {(['caption', 'identifier', 'photographer', 'date'] as const).map((field) => <label key={field} className="block text-sm font-semibold capitalize">{field}
+        <input type={field === 'date' ? 'date' : 'text'} value={fields[field]} maxLength={field === 'caption' ? 10000 : 200} onChange={(event) => setFields((previous) => ({ ...previous, [field]: event.target.value }))} className="mt-1 min-h-11 w-full rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 text-base text-[var(--ink)]" />
+      </label>)}
+      {error && <p role="alert">{error}</p>}
+      <button type="submit" disabled={busy} className={btn.primary}>{busy ? 'Saving' : 'Save photo details'}</button>
+    </form>
+  </Sheet>;
 }
