@@ -21,6 +21,8 @@ interface Question {
 }
 
 interface MainContentProps {
+  editing?: boolean;
+  showValidation?: boolean;
   responses: Record<number, ResponseValue>;
   onResponsesChange: (responses: Record<number, ResponseValue>) => void;
   onSectionStateChange?: (state: {
@@ -80,6 +82,8 @@ export interface LocalImage {
 export type ResponseValue = string | string[] | boolean | LocalImage[];
 
 export default function MainContent({
+  editing = false,
+  showValidation = false,
   responses,
   onResponsesChange,
   onSectionStateChange,
@@ -136,7 +140,7 @@ export default function MainContent({
 
   // Autofill known fields (name, email, etc.) on first load
   useEffect(() => {
-    if (questions.length === 0 || hasAutofilled.current) return;
+    if (editing || questions.length === 0 || hasAutofilled.current) return;
 
     const autofilled: Record<number, ResponseValue> = {};
     const autofillValues: Record<string, string | undefined> = {
@@ -161,7 +165,7 @@ export default function MainContent({
     }
 
     hasAutofilled.current = true;
-  }, [questions, responses, currentUser?.email, currentUser?.name, currentUser?.phone, onResponsesChange, siteName, today]);
+  }, [editing, questions, responses, currentUser?.email, currentUser?.name, currentUser?.phone, onResponsesChange, siteName, today]);
 
   // ── Section / question organisation ────────────────────────────────────────
   const questionsBySection = questions.reduce((acc, question) => {
@@ -784,7 +788,7 @@ export default function MainContent({
             const sectionQuestions = questionsBySection[sectionNum] || [];
             const answeredCount = sectionQuestions.filter((q) => {
               const val = responses[q.id];
-              return val !== undefined && val !== null && val !== '' && (!Array.isArray(val) || val.length > 0);
+              return val !== undefined && val !== null && val !== false && (typeof val !== 'string' || val.trim() !== '') && (!Array.isArray(val) || val.length > 0);
             }).length;
             const totalCount = sectionQuestions.length;
 
@@ -865,13 +869,16 @@ export default function MainContent({
                       existingForQuestion(question.id).length > 0
                     );
                   }
-                  return val !== undefined && val !== null && val !== '' && (!Array.isArray(val) || val.length > 0);
+                  return val !== undefined && val !== null && val !== false && (typeof val !== 'string' || val.trim() !== '') && (!Array.isArray(val) || val.length > 0);
                 })();
 
                 return (
                   <div
                     key={question.id}
-                    className={`bg-white p-6 rounded-2xl border-2 transition-all ${
+                    role="group"
+                    aria-label={formattedTitle.trim()}
+                    aria-invalid={showValidation && question.is_required === true && !isAnswered && (!editing || currentUser?.role !== 'admin') || undefined}
+                    className={`aria-invalid:border-[#B91C1C] bg-white p-6 rounded-2xl border-2 transition-all ${
                       isAnswered ? 'border-[#356B43] shadow-md' : 'border-[#E4EBE4] shadow-sm'
                     }`}
                   >
@@ -898,9 +905,9 @@ export default function MainContent({
                             <span className="text-xs px-2 py-1 rounded-full bg-[#F7F2EA] text-[#5B655D] font-medium">
                               {question.question_type.trim()}
                             </span>
-                            {question.is_required === true && (
+                            {question.is_required === true && (!editing || currentUser?.role !== 'admin') && (
                               <span className="text-xs px-2 py-1 rounded-full bg-[#FEE2E2] text-[#B91C1C] font-semibold">
-                                Required
+                                {showValidation && !isAnswered ? 'Required — answer missing' : 'Required'}
                               </span>
                             )}
                             {isAnswered && (

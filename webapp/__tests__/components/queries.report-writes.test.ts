@@ -224,6 +224,32 @@ describe('report write server actions', () => {
     });
   });
 
+  it('(V3-04 AT1) lets an approved admin correct an incomplete historic report and keeps its date', async () => {
+    mockCaller(ADMIN, 'admin');
+    queue('form_responses', { data: { user_id: OWNER, site_id: 7, inspection_date: '2023-07-23' }, error: null });
+    const update = queue('form_responses', { data: { id: 41 }, error: null });
+    queue('answers', { data: null, error: null });
+    const insert = queue('answers', { data: null, error: null });
+    await updateSiteInspectionAnswers(41, [{ question_id: 11, obs_comm: 'orgbio@gmail.com', obs_value: null }], undefined);
+    expect(mockFrom).not.toHaveBeenCalledWith('questions');
+    expect(update.update).toHaveBeenCalledWith({ inspection_date: '2023-07-23' });
+    expect(insert.insert).toHaveBeenCalledWith([{ question_id: 11, obs_comm: 'orgbio@gmail.com', obs_value: null, response_id: 41 }]);
+  });
+
+  it('(V3-09 AT1) loads the original visit date when its answer row is absent', async () => {
+    queue('form_responses', { data: { user_id: OWNER, site_id: 7, inspection_date: '2023-07-23' }, error: null });
+    queue('answers', { data: [{ question_id: 11, obs_comm: 'old@example.com', obs_value: null }], error: null });
+    queue('questions', { data: { id: 21 }, error: null });
+    await expect(getFormResponseById(41)).resolves.toEqual({ 11: 'old@example.com', 21: '2023-07-23' });
+  });
+
+  it('(V3-09 AT1) keeps a saved visit answer instead of replacing it with the header date', async () => {
+    queue('form_responses', { data: { user_id: OWNER, site_id: 7, inspection_date: '2023-07-23' }, error: null });
+    queue('answers', { data: [{ question_id: 21, obs_value: '2023-07-22' }], error: null });
+    queue('questions', { data: { id: 21 }, error: null });
+    await expect(getFormResponseById(41)).resolves.toEqual({ 21: '2023-07-22' });
+  });
+
   describe('updateAttachmentMetadata (B2)', () => {
     it('refuses a different user and changes nothing', async () => {
       mockCaller(OTHER);
