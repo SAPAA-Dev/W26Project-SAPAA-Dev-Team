@@ -602,3 +602,12 @@ Supabase and S3. Browser checks are read-only; the release record is in
 No Cypress test was run or added to the production release checks. Repository rules prohibit
 running Cypress because its tasks write to the shared production database. React interaction
 tests cover the changed controls. Physical phone and real data write checks remain human checks.
+
+
+### Remaining map-branch integration
+
+The branch audit adds recovery coverage for US 2.0.1 AT2/AT3 in
+`webapp/__tests__/pages/Sites.test.tsx`, `webapp/__tests__/components/SiteMap.test.tsx`, and
+`webapp/__tests__/app/v2/map.test.tsx`. Failed boundary reads can be retried on map entry;
+failed track reads show a note instead of a false empty success. The v2 retry retains the map
+and clears the error after a successful read. See [Branch Integration Audit](branch-integration-audit.md).

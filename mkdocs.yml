@@ -27,6 +27,7 @@ nav:
   - User Model: 'user-model.md'
   - API Documentation: 'api-documentation.md'
   - SAPAA Dev Production: 'sapaa-dev-production-deployment.md'
+  - Branch Integration Audit: 'branch-integration-audit.md'
   - Wireframes: 'interactive-wireframe/index.md'
   - Teamwork: 'teamwork.md'
   - Meeting Minutes: 'meeting-minutes.md'

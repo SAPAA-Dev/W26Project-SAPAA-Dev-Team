@@ -241,7 +241,7 @@ Made on October 26, 2026, from `sprint-3` at the merge of PR #319. The formula i
 | Done, every AT covered | 55 / 7 / 2 | 3.93 |
 | **Planning rate** (midpoint of 55 and 68 = 61.5 points) | 61.5 / 7 / 2 | **4.39** |
 
-The planning rate is a little above the Sprint 2 rate of 4.07. The midpoint is used for the same reason as in Sprint 2: the merged figure includes four stories that still have a partly covered AT. The load was also uneven. Saumya and Chris made 87 of the 124 non-merge commits since October 14 (see [Teamwork](teamwork.md#sprint-3-contributions)), so the team cannot plan on the 68 as an even rate.
+The planning rate is a little above the Sprint 2 rate of 4.07. The midpoint is used for the same reason as in Sprint 2: the merged figure includes two stories that still have a partly covered AT. The load was also uneven. Saumya and Chris made 87 of the 124 non-merge commits since October 14 (see [Teamwork](teamwork.md#sprint-3-contributions)), so the team cannot plan on the 68 as an even rate.
 
 | Sprint | Dates | Working weeks | Arithmetic | Re-estimate | Committed | Difference | Plan |
 |---|---|---|---|---|---|---|---|
