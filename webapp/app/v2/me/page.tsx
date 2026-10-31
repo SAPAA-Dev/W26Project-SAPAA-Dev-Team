@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { ArrowLeft, ChevronRight, Globe, Leaf, Link2, Mail, Pencil, Phone, Settings, ShieldCheck } from 'lucide-react';
 import { ApiError, api } from '@/lib/api/v1/client';
-import type { Report } from '@/lib/api/v1/types';
+import type { Report, InspectionHistory, InspectionHistoryItem } from '@/lib/api/v1/types';
 import { SOCIAL_FIELDS, socialHref } from '@/lib/socials';
 import { useApi, invalidate } from '@/app/v2/_lib/useApi';
 import { STATUS_COLOR, STATUS_INK, STATUS_LABEL, ago } from '@/app/v2/_lib/siteQuery';
@@ -18,6 +18,8 @@ import { EditProfileSheet, type Profile } from './EditProfileSheet';
 interface ProfilePayload {
   profile: Profile;
   isOwner: boolean;
+  history?: InspectionHistoryItem[];
+  pagination?: Omit<InspectionHistory, 'items'>;
   options?: { skills: string[]; focusAreas: string[] };
   stats: { inspectionCount: number; distinctSiteCount: number };
 }
@@ -46,9 +48,10 @@ export default function YouPage() {
   const reports = useApi('reports', api.reports);
   // Inspection history, ten a page: reports on an archived or deactivated site are listed but not opened.
   const [historyPage, setHistoryPage] = useState(1);
-  const history = useApi(`profile:history:${person ?? 'me'}:${historyPage}`, () =>
-    api.inspectionHistory({ person, page: historyPage }),
-  );
+  const firstPage = profile.data?.history?.every((row) => typeof row.canOpen === 'boolean' && typeof row.siteSlug === 'string' && (row.date === null || typeof row.date === 'string')) && profile.data.pagination ? { ...profile.data.pagination, items: profile.data.history } : undefined;
+  const separateHistory = historyPage > 1 || !!profile.error || (!!profile.data && !firstPage);
+  const pagedHistory = useApi(separateHistory ? `profile:history:${person ?? 'me'}:${historyPage}` : null, () => api.inspectionHistory({ person, page: historyPage }));
+  const history = separateHistory ? pagedHistory : { data: firstPage, error: profile.error, refetch: profile.refetch };
   const [patch, setPatch] = useState<Partial<Profile>>({});
   // Settings links here with ?edit=1 to open the editor.
   const [editing, setEditing] = useState(() => params.get('edit') === '1');

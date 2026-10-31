@@ -333,13 +333,15 @@ describe('/api/profile', () => {
         'id, site_id, inspection_date, created_at, sites_pa(id, namesite, archived_at, is_active)',
         { count: 'exact' }
       );
+      expect(responsesQuery.order).toHaveBeenCalledWith('created_at', { ascending: false });
+      expect(responsesQuery.order).toHaveBeenCalledWith('id', { ascending: false });
       expect(responsesQuery.is).toHaveBeenCalledWith('archived_at', null);
       expect(responsesQuery.not).toHaveBeenCalledWith('site_id', 'is', null);
       expect(body.history).toEqual([
-        { id: 7, siteId: 5, siteName: 'Beaver Hills', siteArchived: false, siteInactive: false, inspectionDate: '2026-09-12' },
-        { id: 8, siteId: 6, siteName: 'Duck Lake', siteArchived: true, siteInactive: false, inspectionDate: '2026-09-01' },
+        { id: 7, siteId: 5, siteName: 'Beaver Hills', siteSlug: 'Beaver Hills', date: '2026-09-12', canOpen: true, siteArchived: false, siteInactive: false, inspectionDate: '2026-09-12' },
+        { id: 8, siteId: 6, siteName: 'Duck Lake', siteSlug: 'Duck Lake', date: '2026-09-01', canOpen: false, siteArchived: true, siteInactive: false, inspectionDate: '2026-09-01' },
         // US 2.0.3 (M25): a deactivated site is flagged so the profile does not link to it.
-        { id: 10, siteId: 7, siteName: 'Elk Island', siteArchived: false, siteInactive: true, inspectionDate: '2026-08-15' },
+        { id: 10, siteId: 7, siteName: 'Elk Island', siteSlug: 'Elk Island', date: '2026-08-15', canOpen: false, siteArchived: false, siteInactive: true, inspectionDate: '2026-08-15' },
       ]);
     });
 
@@ -397,7 +399,7 @@ describe('/api/profile', () => {
         // PostgREST refuses an offset past the last row with PGRST103 and sends no count.
         const page = responsesQuery({ data: null, error: { code: 'PGRST103', message: 'Requested range not satisfiable' }, count: null });
         const total = responsesQuery({ data: null, error: null, count: 14 });
-        mockResponses(page, total);
+        mockResponses(page, responsesQuery({ data: [], error: null, count: 0 }), total);
 
         const response = await GET(makeRequest({ personId: '42', page: '5' }) as never);
         const body = await response.json();
