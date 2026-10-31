@@ -19,6 +19,7 @@ function adminOnly<P extends object>(load: () => Promise<{ default: ComponentTyp
 }
 
 export const AdminSitesBar = adminOnly(() => import('./AdminSitesBar'));
+export const KmlImportSheet = adminOnly(() => import('./KmlImportSheet'));
 export const AdminSiteTools = adminOnly(() => import('./AdminSiteTools'));
 export const AdminReportActions = adminOnly(() => import('./AdminReportActions'));
 export const AdminArchivedReports = adminOnly(() => import('./AdminArchivedReports'));

@@ -24,6 +24,7 @@ import { listRegions } from '@/lib/map/offline/tileCache';
 import type { SavedRegion } from '@/lib/map/offline/tileCache';
 import { STYLE_URL } from './mapStyle';
 import SiteCard from './SiteCard';
+import { KmlImportSheet } from '../admin/lazy';
 import MapAreaFilters from '@/components/map/MapAreaFilters';
 import MapSearchInput from '@/components/map/MapSearchInput';
 import { boundaryFilterOptions, defaultMapStatuses, filterBoundaryFeatures, MAP_STATUS_OPTIONS, type BoundaryFilterSelection } from '@/lib/map/boundaryFilters';
@@ -72,6 +73,7 @@ function SitesMapView() {
   const me = useApi('me', api.me);
   const areas = useApi('boundaries', api.boundaries);
   const tracks = useApi('tracks', api.tracks); // stewards and admins only; for anyone else the read is refused and no lines draw
+  const [importOpen, setImportOpen] = useState(false);
   const [areaSearch, setAreaSearch] = useState('');
   const [focusedArea, setFocusedArea] = useState<BoundaryFeature | null>(null);
   const [areaFilters, setAreaFilters] = useState<BoundaryFilterSelection>({ types: null, subtypes: null, counties: null, statuses: defaultMapStatuses() });
@@ -94,6 +96,7 @@ function SitesMapView() {
 
   const [map, setMap] = useState<MlMap | null>(null);
   const [offline, setOffline] = useState(false);
+  const [missingTiles, setMissingTiles] = useState(0);
   const [hoverId, setHoverId] = useState<number | null>(null);
   const [dir, setDir] = useState<1 | -1>(1);
   const [cover, setCover] = useState(120);
@@ -160,7 +163,7 @@ function SitesMapView() {
   // ---------------------------------------------------------------- shared pieces
   const n = results?.length ?? 0;
   const areaTools = (
-    <div className="pointer-events-auto relative z-30 mt-2 flex items-center gap-2 rounded-xl bg-[var(--surface)] p-2 shadow-sm" aria-label="Protected area search and filters">
+    <div className="pointer-events-auto relative z-30 mt-2 flex flex-wrap items-center gap-2 rounded-xl bg-[var(--surface)] p-2 shadow-sm" aria-label="Protected area search and filters">
       <div className="relative min-w-0 flex-1">
         <MapSearchInput
           value={areaSearch}
@@ -180,6 +183,11 @@ function SitesMapView() {
         onCountiesChange={(counties) => { setFocusedArea(null); setAreaFilters((current) => ({ ...current, counties })); }}
         onStatusesChange={(statuses) => { setFocusedArea(null); setAreaFilters((current) => ({ ...current, statuses })); }}
       />
+      {me.data?.role === 'admin' && (
+        <button type="button" onClick={() => setImportOpen(true)} className="min-h-11 rounded-lg border border-[var(--line)] px-3 text-sm font-semibold">
+          Upload KML/KMZ
+        </button>
+      )}
     </div>
   );
   const header = (
@@ -254,6 +262,9 @@ function SitesMapView() {
       {!online && !offline && (
         <Notice icon={<CloudOff size={16} aria-hidden />}>Offline. The basemap only shows saved areas.</Notice>
       )}
+      {!online && missingTiles > 0 && (
+        <Notice>{missingTiles} map tiles missing from saved areas.</Notice>
+      )}
       {areas.error && (
         <Notice
           action={
@@ -284,7 +295,9 @@ function SitesMapView() {
         onSelect={select}
         onReady={setMap}
         onOffline={() => setOffline(true)}
+        onMissingTiles={setMissingTiles}
       />
+      {importOpen && <KmlImportSheet open onClose={() => setImportOpen(false)} />}
       {saving && map && STYLE_URL && (
         // The save-area panel (unchanged from the classic map) frames the part of the map to keep.
         <div className="pointer-events-none absolute inset-0 z-40">

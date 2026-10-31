@@ -7,7 +7,7 @@ import type { Feature, FeatureCollection, Geometry, Point } from 'geojson';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@/components/map/enableMapLibreWorker';
 import './map.css';
-import { releaseOfflineProtocol, retainOfflineProtocol } from '@/components/map/offlineProtocol';
+import { OFFLINE_MISS_MARKER, releaseOfflineProtocol, retainOfflineProtocol } from '@/components/map/offlineProtocol';
 import type { SavedRegion } from '@/lib/map/offline/tileCache';
 import { makeOfflineTransform, offlineMask, regionOutlines } from './offline';
 import type { BoundaryCollection, SiteSummary, TrackCollection } from '@/lib/api/v1/types';
@@ -49,6 +49,7 @@ interface Props {
   onReady: (map: MlMap) => void;
   /** The basemap failed and the map fell back to a plain background. */
   onOffline: () => void;
+  onMissingTiles: (count: number) => void;
 }
 
 const EMPTY: FeatureCollection = { type: 'FeatureCollection', features: [] };
@@ -108,6 +109,7 @@ export default function MapCanvas({
   onSelect,
   onReady,
   onOffline,
+  onMissingTiles,
 }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<MlMap | null>(null);
@@ -117,6 +119,7 @@ export default function MapCanvas({
   const select = useEffectEvent((slug: string | null) => onSelect(slug));
   const ready = useEffectEvent((m: MlMap) => onReady(m));
   const offline = useEffectEvent(() => onOffline());
+  const reportMissingTiles = useEffectEvent((count: number) => onMissingTiles(count));
   const currentInset = useEffectEvent(() => inset);
   const currentFocus = useEffectEvent(() => focusedArea);
   const canEditColors = useEffectEvent(() => boundaries?.canEditColors === true);
@@ -156,11 +159,27 @@ export default function MapCanvas({
       setStyleGen((n) => n + 1);
       ready(m);
     });
-    m.on('error', () => {
+    let missingTiles = 0;
+    let flushTimer: number | null = null;
+    m.on('error', (event) => {
+      if (!onlineRef.current && event.error?.message?.includes(OFFLINE_MISS_MARKER)) {
+        missingTiles += 1;
+        if (flushTimer === null) {
+          flushTimer = window.setTimeout(() => {
+            flushTimer = null;
+            reportMissingTiles(missingTiles);
+          }, 500);
+        }
+      }
       if (styled || fellBack) return; // tile hiccups after load are MapLibre's to retry
       fellBack = true;
       offline();
       m.setStyle(OFFLINE_STYLE);
+    });
+
+    m.on('moveend', () => {
+      missingTiles = 0;
+      reportMissingTiles(0);
     });
 
     // ---- hit testing: a fingertip-sized box, nearest pin wins, then the polygon under it
@@ -250,6 +269,7 @@ export default function MapCanvas({
     return () => {
       tip.remove();
       details.remove();
+      if (flushTimer !== null) window.clearTimeout(flushTimer);
       m.remove();
       releaseOfflineProtocol();
     };

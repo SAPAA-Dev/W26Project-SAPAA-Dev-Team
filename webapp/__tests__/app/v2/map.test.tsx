@@ -3,6 +3,8 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import type { BoundaryProperties } from '@/lib/map/boundaries';
 
 const mockUpdate = jest.fn();
+let mockRole: 'steward' | 'admin' = 'steward';
+jest.mock('@/app/v2/_components/admin/lazy', () => ({ KmlImportSheet: () => <div role="dialog" aria-label="Upload site data" /> }));
 jest.mock('next/dynamic', () => () => function Canvas(props: { sites: { name: string }[]; boundaries?: { features: unknown[] } }) {
   return <div data-testid="canvas">{props.sites.map((site) => site.name).join(',')}:{props.boundaries?.features.length}</div>;
 });
@@ -30,13 +32,14 @@ const mockAreas = mockSites.map((site, index) => ({
   geometry: { type: 'MultiPolygon', coordinates: [] },
 }));
 jest.mock('@/app/v2/_lib/useApi', () => ({
-  useApi: (key: string) => ({ data: key === 'sites:map' ? mockSites : key === 'boundaries' ? { type: 'FeatureCollection', features: mockAreas } : undefined }),
+  useApi: (key: string) => ({ data: key === 'sites:map' ? mockSites : key === 'boundaries' ? { type: 'FeatureCollection', features: mockAreas } : key === 'me' ? { role: mockRole } : undefined }),
 }));
 
 import SitesMap from '@/app/v2/_components/map/SitesMap';
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockRole = 'steward';
   window.matchMedia = jest.fn().mockReturnValue({ matches: true, addEventListener: jest.fn(), removeEventListener: jest.fn() });
 });
 
@@ -67,4 +70,16 @@ it('shows inactive boundaries and site pins when their status is selected', () =
   for (const name of ['Active', 'No status', 'Inactive']) fireEvent.click(screen.getByRole('checkbox', { name }));
   expect(screen.getByTestId('canvas')).toHaveTextContent('Inactive:1');
   expect(screen.getByText('Inactive', { selector: 'span' })).toBeInTheDocument();
+});
+
+it('opens the shared KML/KMZ uploader from the admin map', () => {
+  mockRole = 'admin';
+  render(<SitesMap />);
+  fireEvent.click(screen.getByRole('button', { name: 'Upload KML/KMZ' }));
+  expect(screen.getByRole('dialog', { name: 'Upload site data' })).toBeInTheDocument();
+});
+
+it('does not show boundary upload to stewards', () => {
+  render(<SitesMap />);
+  expect(screen.queryByRole('button', { name: 'Upload KML/KMZ' })).not.toBeInTheDocument();
 });
