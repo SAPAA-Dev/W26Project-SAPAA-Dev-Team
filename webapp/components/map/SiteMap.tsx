@@ -116,6 +116,8 @@ interface SiteMapProps {
   onBoundarySelect?: (areaId: number) => void;
   /** GPX tracks of the selected site, drawn as lines over the boundaries. */
   gpxTracks?: GpxTrackLineFeatureCollection | null;
+  /** Set when the track load failed, so an empty map is not mistaken for success. */
+  gpxTracksError?: string | null;
 }
 
 interface BoundaryColorEditor {
@@ -567,6 +569,7 @@ export default function SiteMap({
   selectedAreaId,
   onBoundarySelect,
   gpxTracks,
+  gpxTracksError,
 }: SiteMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -1100,16 +1103,26 @@ export default function SiteMap({
     );
   }
 
-  // The map still works without the boundaries, so the two states are a note on top
-  // of the canvas rather than a replacement for it.
-  const status = boundariesError ?? (boundariesLoading ? 'Loading boundaries…' : null);
+  // The map still works without the boundaries and tracks, so the states are notes
+  // on top of the canvas rather than a replacement for it.
+  const statusNotes = [
+    boundariesError ?? (boundariesLoading ? 'Loading boundaries…' : null),
+    gpxTracksError ?? null,
+  ].filter((note): note is string => note !== null);
 
   return (
     <div className="relative">
       <div ref={containerRef} className={BOX_CLASSES} />
-      {status !== null && (
-        <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-[#E4EBE4] bg-white/95 px-3 py-1.5 text-xs font-medium text-[#254431] shadow-sm">
-          {status}
+      {statusNotes.length > 0 && (
+        <div className="pointer-events-none absolute left-4 top-4 flex flex-col gap-1.5">
+          {statusNotes.map((note) => (
+            <div
+              key={note}
+              className="rounded-full border border-[#E4EBE4] bg-white/95 px-3 py-1.5 text-xs font-medium text-[#254431] shadow-sm"
+            >
+              {note}
+            </div>
+          ))}
         </div>
       )}
       {!saveMode && (

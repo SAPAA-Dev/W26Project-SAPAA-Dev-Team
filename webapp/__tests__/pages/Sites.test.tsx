@@ -89,6 +89,7 @@ jest.mock('@/components/map/SiteMap', () => ({
     selectedAreaId,
     onBoundarySelect,
     gpxTracks,
+    gpxTracksError,
   }: {
     boundaries?: { features: Array<{ id: number; properties: { name: string } }> } | null;
     focusedArea?: { properties: { name: string } } | null;
@@ -97,6 +98,7 @@ jest.mock('@/components/map/SiteMap', () => ({
     selectedAreaId?: number | null;
     onBoundarySelect?: (areaId: number) => void;
     gpxTracks?: { features: unknown[] } | null;
+    gpxTracksError?: string | null;
   }) {
     return (
       <ul
@@ -106,6 +108,7 @@ jest.mock('@/components/map/SiteMap', () => ({
         data-can-set-color={String(typeof onSetBoundaryColor === 'function')}
         data-selected={selectedAreaId ?? ''}
         data-tracks={gpxTracks?.features.length ?? 0}
+        data-tracks-error={gpxTracksError ?? ''}
       >
         {(boundaries?.features ?? []).map((feature) => (
           <li key={feature.id}>
@@ -1066,5 +1069,69 @@ describe('Map site selection and GPX tracks (US 2.0.1)', () => {
     const siteMap = await screen.findByTestId('site-map');
     expect(siteMap).toHaveAttribute('data-selected', '');
     expect(siteMap).toHaveAttribute('data-focused', '');
+  });
+
+  it('retries a failed boundary load when the map view is entered again', async () => {
+    const user = userEvent.setup();
+    mockGetProtectedAreaBoundaries.mockRejectedValueOnce(new Error('network down'));
+
+    render(<HomeClient />);
+
+    await screen.findByText('Elk Island National Park');
+    await user.click(screen.getByRole('button', { name: /map view/i }));
+    await waitFor(() => expect(mockGetProtectedAreaBoundaries).toHaveBeenCalledTimes(1));
+
+    const siteMap = screen.getByTestId('site-map');
+    expect(siteMap.querySelectorAll('li')).toHaveLength(0);
+
+    await user.click(screen.getByRole('button', { name: /cards view/i }));
+    await user.click(screen.getByRole('button', { name: /map view/i }));
+
+    // The map unmounts in cards view, so the node must be read again after remount.
+    await waitFor(() => {
+      expect(mockGetProtectedAreaBoundaries).toHaveBeenCalledTimes(2);
+      expect(screen.getByTestId('site-map').querySelectorAll('li')).toHaveLength(3);
+    });
+  });
+
+  it('consumes a ?site= link that arrives after a failed boundary load (AT3)', async () => {
+    const user = userEvent.setup();
+    mockGetProtectedAreaBoundaries.mockRejectedValueOnce(new Error('network down'));
+
+    render(<HomeClient />);
+
+    await screen.findByText('Elk Island National Park');
+    await user.click(screen.getByRole('button', { name: /map view/i }));
+    await waitFor(() => expect(mockGetProtectedAreaBoundaries).toHaveBeenCalledTimes(1));
+
+    navigationMocks.__setSearchParams('site=Elk Island National Park');
+    // The listener reads the param on render, so a search keystroke delivers it.
+    await user.type(
+      screen.getByPlaceholderText('Search by name, OC name or county...'),
+      'e'
+    );
+
+    const siteMap = screen.getByTestId('site-map');
+    await waitFor(() => {
+      expect(mockGetProtectedAreaBoundaries).toHaveBeenCalledTimes(2);
+      expect(siteMap).toHaveAttribute('data-selected', '5');
+      expect(siteMap).toHaveAttribute('data-focused', 'Elk Island');
+    });
+  });
+
+  it('shows the track error note when the track load fails', async () => {
+    const user = userEvent.setup();
+    mockGetGpxTracksForMap.mockRejectedValueOnce(new Error('network down'));
+
+    render(<HomeClient />);
+
+    await screen.findByText('Elk Island National Park');
+    await user.click(screen.getByRole('button', { name: /map view/i }));
+
+    const siteMap = await screen.findByTestId('site-map');
+    await waitFor(() => {
+      expect(siteMap).toHaveAttribute('data-tracks-error', 'Visit tracks could not load.');
+      expect(siteMap).toHaveAttribute('data-tracks', '0');
+    });
   });
 });
