@@ -1,0 +1,59 @@
+name: Stage SAPAA Dev release
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [prod]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sapaa-dev-release
+  cancel-in-progress: false
+
+jobs:
+  sync-main:
+    if: >-
+      github.repository == 'UAlberta-CMPUT401/F26project-SAPAA' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'prod' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+          path: course
+      - name: Create deployment repository token
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.SAPAA_RELEASE_APP_ID }}
+          private-key: ${{ secrets.SAPAA_RELEASE_APP_KEY }}
+          owner: SAPAA-Dev
+          repositories: W26Project-SAPAA-Dev-Team
+          permission-contents: write
+          permission-workflows: write
+      - uses: actions/checkout@v4
+        with:
+          repository: SAPAA-Dev/W26Project-SAPAA-Dev-Team
+          ref: main
+          fetch-depth: 0
+          token: ${{ steps.token.outputs.token }}
+          path: deployment
+      - name: Copy the checked release to SAPAA-Dev main
+        working-directory: deployment
+        env:
+          SOURCE_COMMIT: ${{ github.event.workflow_run.head_sha }}
+        run: bash ../course/.github/scripts/sync-sapaa-dev.sh https://github.com/UAlberta-CMPUT401/F26project-SAPAA.git "$SOURCE_COMMIT"
+      - name: Record the release step
+        env:
+          SOURCE_COMMIT: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          echo "Release source: $SOURCE_COMMIT. Read the sync step for copied/skipped status." >> "$GITHUB_STEP_SUMMARY"
+          echo 'Open https://vercel.com/sapaa-devs-projects/w26-project-sapaa-dev-team/deployments and check main, the commit, and Ready before Promote to Production.' >> "$GITHUB_STEP_SUMMARY"

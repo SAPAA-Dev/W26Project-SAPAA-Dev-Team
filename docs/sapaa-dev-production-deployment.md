@@ -17,9 +17,23 @@ Verified on **October 31, 2026**. This guide describes the SAPAA Dev web app. It
 
 GitHub organizations are not shared login usernames. Sign in with your own GitHub account that has repository access. Supabase organization membership, Vercel membership, and app admin approval are separate permissions.
 
-The new UI is on **`feat/ui-prototypes`** in both repositories. Course `main` and `sprint-4` were merged into that branch. At this check, Vercel's automatic Production branch was still **`main`**. Releases of the new UI use a manual promotion from `feat/ui-prototypes`.
+The course `main` was copied to SAPAA-Dev `main` at `f5843c5def8104c872bfe479b4dc41d77a8e47f5`. Vercel deployment [H8mg9EMYMCyTbf4XE9qoEfwpsbAZ](https://vercel.com/sapaa-devs-projects/w26-project-sapaa-dev-team/H8mg9EMYMCyTbf4XE9qoEfwpsbAZ) showed **Ready**, source **main**, and the stable production domain. Do not deploy from `feat/ui-prototypes`.
 
-**A push to the course repository alone does not update the SAPAA Dev app.** Push the tested commit to the deployment repository, then promote the matching deployment. A later automatic release from deployment `main` can replace a manually promoted release. Check the source commit on every release.
+The approved release flow is:
+
+```text
+Course main → course prod → CI passes → SAPAA-Dev main
+                                             ↓
+                                  Vercel staged Production build
+                                             ↓
+                                  Frank selects Promote to Production
+                                             ↓
+                                  Stable production website changes
+```
+
+Vercel tracks SAPAA-Dev **main**. **Auto-assign Custom Production Domains is disabled**, as verified in Settings → Environments → Production on October 31. A new build must be promoted before it changes the stable website. The existing live deployment stays in place while the next build runs.
+
+The sync workflow and its credential setup must be present on course `main` before the automatic flow can run. See section 6 for setup and release checks. A push to course `main` alone is not a release.
 
 ## 2. PostgreSQL usernames and connection details
 
@@ -120,7 +134,7 @@ git fetch origin
 git fetch upstream
 ```
 
-For this release, work on `feat/ui-prototypes`. Preserve unrelated local files. Do not force push or reset work to make a deployment easier.
+For a release, use a reviewed commit from course `main`. Preserve unrelated local files. Do not force push or reset work to make a deployment easier.
 
 Check that the intended course branches are included:
 
@@ -153,30 +167,55 @@ mkdocs build --clean
 
 The GitHub Pages documentation workflow runs on course `main`. A guide committed to a feature branch is readable in GitHub, but does not reach the published Pages site until the normal review and merge occur.
 
-## 6. Push and promote the exact commit
+## 6. Set up and use the release pipeline
 
-1. Commit each logical change with the repository format, such as `(fix): preserve historic report dates`.
-2. Run the required review and checks. Record the commit:
+### One-time setup
+
+1. Merge `.github/workflows/sapaa-dev-release.yaml`, its sync script, tests, and this guide into course `main` through review. The workflow runs from the default branch when **CI** completes for a push to course `prod`.
+2. Register the **SAPAA course release sync** GitHub App under the SAPAA-Dev account. Disable webhooks and user authorization. Permit installation only on that account. Set repository **Contents: Read and write** and **Workflows: Read and write**. Metadata read access is required by GitHub. All other permissions stay off.
+3. Install the App on **only** `SAPAA-Dev/W26Project-SAPAA-Dev-Team`. Workflow permission is needed because a full source copy includes `.github/workflows/`. Do not grant repository administration or access to other repositories.
+4. Put the App ID in the course repository Actions variable `SAPAA_RELEASE_APP_ID`. Generate an App private key and put its full contents in the Actions secret `SAPAA_RELEASE_APP_KEY`. Keep it out of commits, logs, screenshots, and chat. A repository administrator must do this step. Use the team's approved secure process to remove temporary key files after setup.
+5. The workflow requests a short-lived installation token for the deployment repository only. GitHub's token action revokes it at the end of the job. It does not use a personal token or Vercel token. See [GitHub App authentication](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/making-authenticated-api-requests-with-a-github-app-in-a-github-actions-workflow).
+6. In the named Vercel project, confirm **Git → SAPAA-Dev/W26Project-SAPAA-Dev-Team**, **Production branch → main**, and **Auto-assign Custom Production Domains → disabled**. Keep the existing environment values and `webapp` root.
+
+### Make a release
+
+1. Finish the normal course reviews, merge into course `main`, and check the result. Apply only reviewed and approved database migrations by the existing manual process before incompatible code goes live. The pipeline runs no production SQL.
+2. In a clean checkout, fetch course `main` and move course `prod` forward to that reviewed commit. These commands do not switch or change the current local branch:
 
    ```sh
-   git rev-parse HEAD
-   git push origin HEAD
-   git push upstream HEAD
+   git fetch origin main
+   git log -1 --oneline origin/main
+   git push origin origin/main:refs/heads/prod
    ```
 
-3. Open the Vercel project → **Deployments**. Find the deployment from `feat/ui-prototypes` with that same commit. Wait for **Ready**. A successful push is not a successful deployment.
-4. Open the deployment. Check **Source**, the branch, and the commit link. Read build logs if it failed.
-5. Select **Deployment Actions → Promote to Production**.
-6. In the review dialog, check the commit, branch, and stable production domain. Stop if any value is wrong.
-7. Select **Promote to Production**. Complete Vercel's normal account verification if it appears. Do not put a verification code in project files.
-8. Wait for the production deployment to show **Ready**. In this project, promoting a Preview produced a new Production build. Use the resulting Production deployment, not the old Preview status, as proof.
-9. Check that **Domains** includes `w26-project-sapaa-dev-team.vercel.app` and that **Source** still has the intended commit.
+   This creates `prod` on the first release. Never force push it. If the push fails, inspect the branch difference. Do not delete or reset a branch to clear the failure.
+3. Open course GitHub **Actions → CI** and find the `prod` commit. Wait for success. A failed CI run does not sync to the deployment repository.
+4. Open **Actions → Stage SAPAA Dev release** for that CI result. The sync step must say that SAPAA-Dev main is at the exact release commit. An old CI result is skipped if course `prod` has moved. A commit absent from course `main`, or a release missing SAPAA-Dev history, fails. No force push or branch deletion is used.
+5. Open [Vercel Deployments](https://vercel.com/sapaa-devs-projects/w26-project-sapaa-dev-team/deployments). Find **main** with that exact commit. Wait for **Ready / Staged**. A successful GitHub job does not prove the Vercel build succeeded.
+6. Open the build. Check **Source → SAPAA-Dev main**, the commit, and the build logs. Select **Deployment Actions → Promote to Production**. Check the stable domain in the review dialog, then select **Promote**. Complete normal Vercel account verification if asked. Do not promote a `feat/ui-prototypes` preview.
+7. Verify the stable domain is attached to that deployment and check section 7. Staged production builds use Production environment values; a preview promotion can instead cause a rebuild. See [Vercel staged deployments](https://vercel.com/docs/deployments/promoting-a-deployment).
 
-![Review the exact source branch, commit and production domain before promotion.](images/deployment/vercel-promote-review.png)
+The existing screenshots below show the earlier photo fix release from a feature branch. They show the location of the controls only. Future releases must show **main** and the new release commit.
 
-![A ready production deployment shows the stable domain and its source commit. This example is the photo loading fix.](images/deployment/vercel-production-ready.png)
+![Review the source branch, commit and production domain before promotion. This is a historical example.](images/deployment/vercel-promote-review.png)
 
-The screenshots show the photo loading release `bfba34f9`. Later releases must show their own source commit. See [Vercel promotion documentation](https://vercel.com/docs/deployments/promoting-a-deployment).
+![A ready production deployment shows its stable domain and source. This is a historical example.](images/deployment/vercel-production-ready.png)
+
+### Failure and recovery
+
+| Failure | Action |
+| --- | --- |
+| CI stays queued | Check the course self-hosted runners. The sync waits for a successful CI result; it does not bypass tests |
+| App token step fails | Check installation repository, permissions, App ID, and secret with the App owner. Do not print key values |
+| Old CI result skipped | Inspect the latest course `prod` CI run |
+| Release is not in course main | Merge and review the change on course `main` first |
+| SAPAA-Dev main has extra commits | Bring those changes back to course main through review, then advance `prod` again |
+| Vercel does not build | Check Git integration, commit-author access, and deployment logs. The App push must have a Vercel build |
+| Build fails | Leave the stable app on the current deployment; fix the cause on course main and make a new release |
+| Wrong staged commit | Do not promote it. Find the exact release commit |
+
+Check the sync logic without a network or credentials with `bash .github/scripts/test-sync-sapaa-dev.sh`. It uses temporary local repositories. CI runs this test in `hook-tests`.
 
 ## 7. Check the stable production website
 

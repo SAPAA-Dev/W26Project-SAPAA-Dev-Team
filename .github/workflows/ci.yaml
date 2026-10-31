@@ -57,3 +57,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: sh .githooks/test-hooks.sh
+      - run: bash .github/scripts/test-sync-sapaa-dev.sh

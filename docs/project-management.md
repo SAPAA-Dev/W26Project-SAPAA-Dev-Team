@@ -1177,3 +1177,18 @@ The release does not change production data as a test. In particular, the exampl
 email correction in the client's note is a reproduction case. The implementation permits that
 correction; the release check does not change the saved report. Real uploads, imports, and field
 acceptance on physical devices remain team checks.
+
+## SAPAA Dev release pipeline — October 31, 2026
+
+Owner: Tars, at the user's request. Design approved by the user: course prod, successful CI, SAPAA-Dev main, staged Vercel build, and manual Vercel promotion.
+
+| Task | Status |
+| --- | --- |
+| Copy course main to SAPAA-Dev main | Verified at f5843c5d; same commit, history retained |
+| Deploy SAPAA-Dev main to stable Vercel app | Ready deployment H8mg9EMYMCyTbf4XE9qoEfwpsbAZ with stable domain verified |
+| Set Vercel manual release gate | Saved and verified; branch main, automatic domain assignment disabled |
+| Sync workflow and local success/failure tests | Implemented; shell tests and actionlint passed |
+| Restricted GitHub App and course Actions credentials | Setup pending |
+| Review, merge, and real prod-branch pipeline run | Pending |
+
+See the [production guide](sapaa-dev-production-deployment.md) for the release procedure. Do not call the automatic pipeline complete until the real run and Vercel staged source are verified.

@@ -77,6 +77,12 @@ release built from `main` (step 7 below). `sprint-2` was the first sprint branch
 `main` in [#284](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/284) on October 13 and
 then deleted. The Sprint 2 work before it merged straight into `main`.
 
+### SAPAA Dev release flow
+
+For the new SAPAA Dev app, the owner approved **course `prod` → successful CI → SAPAA-Dev `main` → staged Vercel build → manual promotion** on October 31, 2026. This replaces the older `release` hosting route for that app. The course sprint review and `main` rules still apply. Keep all branches. See [SAPAA Dev production deployment](sapaa-dev-production-deployment.md#6-set-up-and-use-the-release-pipeline) for setup, the release command, the manual button, and failure handling.
+
+The older course `release` process below remains recorded for the earlier hosting route.
+
 The hosting project (Vercel) has its own production branch setting. It is not stored in this
 repository, so nobody can check it from here. The person who owns the hosting account must check
 that the production branch is `release`. If it is `main`, every merged PR goes live.
