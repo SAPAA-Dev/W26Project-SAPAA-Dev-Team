@@ -26,8 +26,6 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n.toLocaleString
 
 export default function PhotosPage() {
   const photos = useApi('photos', api.photos);
-  const sites = useApi('sites', api.sites);
-  const me = useApi('me', api.me);
   const [q, setQ] = useUrlParam('q');
   const [site, setSite] = useUrlParam('site');
   const [open, setOpen] = useState<number | null>(null);
@@ -201,8 +199,6 @@ export default function PhotosPage() {
       <AddPhotosSheet
         open={adding}
         onClose={() => setAdding(false)}
-        siteNames={(sites.data ?? []).map((s) => s.name)}
-        photographer={me.data?.person?.name ?? ''}
       />
     </>
   );

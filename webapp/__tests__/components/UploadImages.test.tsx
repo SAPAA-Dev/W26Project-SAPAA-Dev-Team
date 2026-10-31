@@ -106,9 +106,11 @@ describe("W26 US 2.0.8 - User Upload of Standalone Site Images", () => {
     });
   });
 
-  it("submits and redirects to /sites after all fields are filled", async () => {
-    render(<UploadImages />);
-    fireEvent.click(screen.getByText("Upload Images"));
+  it.each([false, true])("submits all metadata with controlled mode %s", async (controlled) => {
+    const onUploaded = jest.fn();
+    const onClose = jest.fn();
+    render(<UploadImages {...(controlled ? { open: true, onUploaded, onClose } : {})} />);
+    if (!controlled) fireEvent.click(screen.getByText("Upload Images"));
 
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     fireEvent.change(fileInput, { target: { files: [makeFile()] } });
@@ -129,7 +131,11 @@ describe("W26 US 2.0.8 - User Upload of Standalone Site Images", () => {
 
     await waitFor(() => {
       expect(insertHomepageImageUpload).toHaveBeenCalled();
-      expect(mockPush).toHaveBeenCalledWith("/sites?image-upload=true");
+      if (controlled) {
+        expect(onUploaded).toHaveBeenCalledTimes(1);
+        expect(onClose).toHaveBeenCalledTimes(1);
+        expect(mockPush).not.toHaveBeenCalled();
+      } else expect(mockPush).toHaveBeenCalledWith("/sites?image-upload=true");
     });
   });
 });

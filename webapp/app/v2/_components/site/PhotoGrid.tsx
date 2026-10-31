@@ -2,9 +2,7 @@
 
 import { useState } from 'react';
 import { ImageOff, ImagePlus } from 'lucide-react';
-import { api } from '@/lib/api/v1/client';
 import type { Photo } from '@/lib/api/v1/types';
-import { useApi } from '../../_lib/useApi';
 import { Lightbox } from '../../photos/Lightbox';
 import { AddPhotosSheet } from '../../photos/AddPhotosSheet';
 import { btn } from '../flows/ui';
@@ -14,7 +12,7 @@ const describe = (p: Photo, i: number, siteName: string) => p.caption ?? p.ident
 /** The site's photos in the Photos tab's tile style, opening the same viewer (swipe, arrows, fade). */
 export default function PhotoGrid({ photos, siteName }: { photos: Photo[]; siteName: string }) {
   const [open, setOpen] = useState<number | null>(null);
-  if (!photos.length) return <NoPhotos siteName={siteName} />;
+  if (!photos.length) return <NoPhotos />;
 
   return (
     <>
@@ -54,9 +52,8 @@ function Tile({ photo: p, label, onOpen }: { photo: Photo; label: string; onOpen
 }
 
 /** Empty tab: say where photos come from, and offer the upload right here. */
-function NoPhotos({ siteName }: { siteName: string }) {
+function NoPhotos() {
   const [adding, setAdding] = useState(false);
-  const me = useApi('me', api.me);
   return (
     <>
       <div className="rounded-[var(--radius-m)] border border-dashed border-[var(--line)] px-5 py-8 text-center">
@@ -70,8 +67,6 @@ function NoPhotos({ siteName }: { siteName: string }) {
       <AddPhotosSheet
         open={adding}
         onClose={() => setAdding(false)}
-        siteNames={[siteName]}
-        photographer={me.data?.person?.name ?? ''}
       />
     </>
   );
