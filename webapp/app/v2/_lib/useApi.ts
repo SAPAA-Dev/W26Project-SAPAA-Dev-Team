@@ -10,8 +10,10 @@ const inflight = new Map<string, Promise<unknown>>();
 const live = new Set<(prefix: string) => void>();
 
 export function useApi<T>(key: string | null, fetcher: () => Promise<T>) {
-  const [data, setData] = useState<T | undefined>(() => (key ? (cache.get(key) as T | undefined) : undefined));
-  const [error, setError] = useState<Error | null>(null);
+  const [entry, setEntry] = useState(() => ({ key, data: key ? cache.get(key) as T | undefined : undefined }));
+  const [failure, setFailure] = useState<{ key: string | null; error: Error | null }>({ key, error: null });
+  const data = entry.key === key ? entry.data : key ? cache.get(key) as T | undefined : undefined;
+  const error = failure.key === key ? failure.error : null;
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
@@ -22,9 +24,12 @@ export function useApi<T>(key: string | null, fetcher: () => Promise<T>) {
     p.then(
       (d) => {
         cache.set(key, d);
-        if (live) setData(d as T);
+        if (live) {
+          setEntry({ key, data: d as T });
+          setFailure({ key, error: null });
+        }
       },
-      (e) => live && setError(e),
+      (e) => live && setFailure({ key, error: e }),
     );
     return () => {
       live = false;
@@ -37,7 +42,7 @@ export function useApi<T>(key: string | null, fetcher: () => Promise<T>) {
     if (!key) return;
     const revalidate = (prefix: string) => {
       if (!key.startsWith(prefix)) return;
-      setError(null);
+      setFailure({ key, error: null });
       setAttempt((n) => n + 1); // keeps the current data on screen until the new read lands
     };
     live.add(revalidate);
@@ -50,7 +55,7 @@ export function useApi<T>(key: string | null, fetcher: () => Promise<T>) {
   const refetch = () => {
     freshReads();
     if (key) cache.delete(key);
-    setError(null);
+    setFailure({ key, error: null });
     setAttempt((n) => n + 1);
   };
 

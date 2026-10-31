@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { ArrowLeft, ArrowUpRight, ChevronRight, FileText, Loader2, LogOut, Mail, Pencil, ShieldCheck, UserRound } from 'lucide-react';
 import { useSignOut } from '@/hooks/useSignOut';
@@ -14,9 +13,8 @@ const ROW = 'flex min-h-14 items-center gap-3 px-4 py-2 text-[15px]';
 const LINK_ROW = `${ROW} press font-semibold [--press-scale:0.99] hover:bg-[var(--bg)] active:bg-[var(--bg-sunken)]`;
 
 export default function SettingsPage() {
-  const router = useRouter();
   const me = useApi('me', api.me);
-  const { signOut, error } = useSignOut(() => router.replace('/login'));
+  const { signOut, error } = useSignOut(() => window.location.replace('/login'));
   const [signingOut, setSigningOut] = useState(false);
   const isAdmin = me.data?.role === 'admin';
 

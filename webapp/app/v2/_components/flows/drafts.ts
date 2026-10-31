@@ -28,9 +28,9 @@ export interface DraftEntry extends Draft {
 const isDraft = (d: unknown): d is Draft =>
   !!d && typeof d === 'object' && typeof (d as Draft).siteName === 'string' && typeof (d as Draft).answers === 'object';
 
-export function readDraft(slug: string): Draft | null {
+export function readDraft(slug: string, userId: string): Draft | null {
   try {
-    const d: unknown = JSON.parse(localStorage.getItem(DRAFT_PREFIX + slug) ?? 'null');
+    const d: unknown = JSON.parse(localStorage.getItem(DRAFT_PREFIX + userId + ':' + slug) ?? 'null');
     return isDraft(d) ? d : null;
   } catch {
     return null; // no storage (server render, private mode) or an unreadable draft
@@ -38,9 +38,9 @@ export function readDraft(slug: string): Draft | null {
 }
 
 /** False when storage is blocked or full, so the form can say the draft is not saved. */
-export function writeDraft(slug: string, draft: Draft): boolean {
+export function writeDraft(slug: string, draft: Draft, userId: string): boolean {
   try {
-    localStorage.setItem(DRAFT_PREFIX + slug, JSON.stringify(draft));
+    localStorage.setItem(DRAFT_PREFIX + userId + ':' + slug, JSON.stringify(draft));
     emit();
     return true;
   } catch {
@@ -48,9 +48,9 @@ export function writeDraft(slug: string, draft: Draft): boolean {
   }
 }
 
-export function clearDraft(slug: string) {
+export function clearDraft(slug: string, userId: string) {
   try {
-    localStorage.removeItem(DRAFT_PREFIX + slug);
+    localStorage.removeItem(DRAFT_PREFIX + userId + ':' + slug);
     emit();
   } catch {
     // nothing stored, nothing to clear
@@ -71,18 +71,20 @@ function subscribe(cb: () => void) {
 }
 
 // A string snapshot compares by value, so React only re-renders when a draft changes.
-function snapshot(): string {
+function snapshot(userId?: string): string {
+  if (!userId) return '[]';
+  const prefix = DRAFT_PREFIX + userId + ':';
   try {
-    const keys = Object.keys(localStorage).filter((k) => k.startsWith(DRAFT_PREFIX));
-    return JSON.stringify(keys.map((k) => [k.slice(DRAFT_PREFIX.length), localStorage.getItem(k)]));
+    const keys = Object.keys(localStorage).filter((k) => k.startsWith(prefix));
+    return JSON.stringify(keys.map((k) => [k.slice(prefix.length), localStorage.getItem(k)]));
   } catch {
     return '[]';
   }
 }
 
-/** Every draft on this device, newest first. Empty during the server render. */
-export function useDrafts(): DraftEntry[] {
-  const raw = useSyncExternalStore(subscribe, snapshot, () => '[]');
+/** Drafts owned by this account, newest first. Empty during the server render. */
+export function useDrafts(userId?: string): DraftEntry[] {
+  const raw = useSyncExternalStore(subscribe, () => snapshot(userId), () => '[]');
   return useMemo(() => {
     const out: DraftEntry[] = [];
     for (const [slug, json] of JSON.parse(raw) as [string, string | null][]) {

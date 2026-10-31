@@ -1,6 +1,8 @@
 'use client';
 
-import { memo, useDeferredValue, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useDrafts, type DraftEntry } from '@/app/v2/_components/flows/drafts';
+
+import { memo, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChevronRight, ClipboardPen, Images, Map as MapIcon, Search } from 'lucide-react';
@@ -37,7 +39,7 @@ function SitesHome({ onRetry }: { onRetry: () => void }) {
   const router = useRouter();
   const { query, update } = useSiteQuery();
   const { sites, me, meSettled, error } = useSites();
-  const drafts = useDrafts();
+  const drafts = useDrafts(me?.userId);
   const [picking, setPicking] = useState(false);
 
   // The URL (and so the query) updates as soon as typing pauses; the list catches up at lower priority.
@@ -393,54 +395,7 @@ function LoadError({ error, onRetry }: { error: Error; onRetry: () => void }) {
   );
 }
 
-/* ---------- Drafts: the inspection flow saves `boreal-draft:<slug>` to localStorage ---------- */
-
-interface Draft {
-  slug: string;
-  siteName: string;
-  sectionIndex: number;
-  sectionCount: number;
-  updatedAt: string;
-}
-
-const DRAFT_PREFIX = 'boreal-draft:';
-
-function readDrafts() {
-  try {
-    const out: [string, string | null][] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k?.startsWith(DRAFT_PREFIX)) out.push([k.slice(DRAFT_PREFIX.length), localStorage.getItem(k)]);
-    }
-    return JSON.stringify(out);
-  } catch {
-    return '[]'; // storage blocked (private mode)
-  }
-}
-const onStorage = (cb: () => void) => {
-  window.addEventListener('storage', cb);
-  return () => window.removeEventListener('storage', cb);
-};
-
-function useDrafts(): Draft[] {
-  const raw = useSyncExternalStore(onStorage, readDrafts, () => '[]');
-  return useMemo(
-    () =>
-      (JSON.parse(raw) as [string, string | null][])
-        .flatMap(([slug, v]) => {
-          try {
-            const d = JSON.parse(v ?? '');
-            return d?.siteName ? [{ ...d, slug } as Draft] : [];
-          } catch {
-            return [];
-          }
-        })
-        .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt))),
-    [raw],
-  );
-}
-
-function DraftBanner({ draft }: { draft: Draft }) {
+function DraftBanner({ draft }: { draft: DraftEntry }) {
   const count = Math.max(1, draft.sectionCount || 1);
   const done = Math.min(Math.max(draft.sectionIndex || 0, 0), count - 1); // sectionIndex is 0-based
   return (
@@ -454,7 +409,7 @@ function DraftBanner({ draft }: { draft: Draft }) {
           <p className="mt-0.5 text-base leading-snug font-bold">{draft.siteName}</p>
           <p className={`text-sm text-[var(--ink-2)] ${TNUM}`}>
             Section {done + 1} of {count}
-            {draft.updatedAt && `, saved ${fmtDate(draft.updatedAt, { weekday: 'short', hour: 'numeric', minute: '2-digit' })}`}
+            {draft.updatedAt && `, saved ${fmtDate(new Date(draft.updatedAt).toISOString(), { weekday: 'short', hour: 'numeric', minute: '2-digit' })}`}
           </p>
         </div>
         <Link

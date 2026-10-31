@@ -28,7 +28,8 @@ type Who = 'mine' | 'all';
 
 export default function ReportsPage() {
   const reports = useApi('reports', api.reports);
-  const drafts = useDrafts();
+  const me = useApi('me', api.me);
+  const drafts = useDrafts(me.data?.userId);
   const now = useNow(drafts.length ? 30_000 : null);
   const [whoParam, setWho] = useUrlParam('who', 'mine');
   const [q, setQ] = useUrlParam('q');
