@@ -5,7 +5,13 @@ import { useParams } from 'next/navigation';
 
 export default function InspectionPage() {
   const { slug } = useParams<{ slug: string }>();
-  const href = `/detail/${encodeURIComponent(slug)}/new-report`;
+  let siteName: string;
+  try {
+    siteName = decodeURIComponent(slug);
+  } catch {
+    siteName = slug;
+  }
+  const href = `/detail/${encodeURIComponent(siteName)}/new-report`;
   useEffect(() => {
     // A full navigation also clears cached report data before the main form takes over.
     window.location.replace(href);
