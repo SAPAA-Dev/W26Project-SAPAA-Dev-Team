@@ -14,7 +14,7 @@ import {
   type SiteDeleteImpact,
   type SiteSummary as AdminSite,
 } from '@/utils/supabase/queries';
-import { invalidate, useApi } from '@/app/v2/_lib/useApi';
+import { useApi } from '@/app/v2/_lib/useApi';
 import { btn, chip, EmptyState, ErrorState, ListSkeleton, Sheet } from '@/app/v2/_components/flows/ui';
 import { formatDate } from '@/app/v2/_components/flows/format';
 import { Confirm, errMsg, ImpactList, MenuRow, plural, refreshSite, toast, useIsAdmin } from './shared';
