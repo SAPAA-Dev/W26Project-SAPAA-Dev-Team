@@ -35,7 +35,8 @@ jobs:
       # The map is not under test, so it needs no real Protomaps key.
       NEXT_PUBLIC_PROTOMAPS_API_KEY: ci-placeholder
       # Specs run in CI: they need only the seeded users, sites, boundaries and report from
-      # scripts/e2e_seed.js. All passed locally on 2026-10-12.
+      # scripts/e2e_seed.js. The earlier specs passed locally on 2026-10-12. The three Sprint 3
+      # specs (map popup, own-report edit, wrong reset code) have not been run locally yet.
       # Not run here, with reasons:
       #   add_form_editor, hide_form_editor, modify_form_editor, edit_site_inspection_form,
       #   full_form_fill_persistence, required_questions_submit_block, image_caption_upload,
@@ -45,7 +46,7 @@ jobs:
       #   Not tried against the local seed yet: admin_gallery, user_gallery, site_details_gallery
       #   (API stubs), rich_text_editor, edit_site_profile, disable_site_profile, pdf_export,
       #   homepage_image_upload (seeded Riverlot 56 site, no S3 upload).
-      E2E_SPECS: cypress/e2e/logout.cy.ts,cypress/e2e/profile.cy.ts,cypress/e2e/authorized_check.cy.ts,cypress/e2e/add_site.cy.ts,cypress/e2e/archive_report.cy.ts,cypress/e2e/deactivate_site.cy.ts,cypress/e2e/map_filter.cy.ts
+      E2E_SPECS: cypress/e2e/logout.cy.ts,cypress/e2e/profile.cy.ts,cypress/e2e/authorized_check.cy.ts,cypress/e2e/add_site.cy.ts,cypress/e2e/archive_report.cy.ts,cypress/e2e/deactivate_site.cy.ts,cypress/e2e/map_filter.cy.ts,cypress/e2e/map_site_popup.cy.ts,cypress/e2e/edit_own_report.cy.ts,cypress/e2e/password_reset_wrong_code.cy.ts
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

@@ -501,7 +501,7 @@ export default function EditReportPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex flex-col items-center justify-center gap-4">
         <div className="w-16 h-16 border-4 border-[#E4EBE4] border-t-[#356B43] rounded-full animate-spin"></div>
-        <p className="text-[#7A8075] font-medium">Loading report...</p>
+        <p className="text-[#5B655D] font-medium">Loading report...</p>
       </div>
     );
   }
@@ -514,7 +514,7 @@ export default function EditReportPage() {
             <AlertCircle className="w-8 h-8 text-[#B91C1C]" />
           </div>
           <h2 className="text-2xl font-bold text-[#254431] mb-2">Access Denied</h2>
-          <p className="text-[#7A8075] mb-6">You can only edit reports that you submitted.</p>
+          <p className="text-[#5B655D] mb-6">You can only edit reports that you submitted.</p>
           <button
             onClick={() => router.push(`/detail/${encodeURIComponent(namesite)}`)}
             className="bg-gradient-to-r from-[#356B43] to-[#254431] text-white font-semibold px-6 py-3 rounded-xl hover:shadow-lg transition-all"
@@ -549,7 +549,7 @@ export default function EditReportPage() {
               {missingRequiredQuestionNumbers.length > 0 && (
                 <div className="bg-[#F7F2EA] border border-[#E4EBE4] rounded-xl p-4 max-h-64 overflow-y-auto">
                   <p className="text-sm font-semibold text-[#254431] mb-2">Missing required questions:</p>
-                  <ul className="list-disc pl-5 text-sm text-[#7A8075] space-y-1">
+                  <ul className="list-disc pl-5 text-sm text-[#5B655D] space-y-1">
                     {missingRequiredQuestionNumbers.map((n) => (
                       <li key={n}>{n}</li>
                     ))}
@@ -559,7 +559,7 @@ export default function EditReportPage() {
               {missingImageMetadataDetails.length > 0 && (
                 <div className="bg-[#F7F2EA] border border-[#E4EBE4] rounded-xl p-4 max-h-64 overflow-y-auto">
                   <p className="text-sm font-semibold text-[#254431] mb-2">Missing required image fields:</p>
-                  <ul className="list-disc pl-5 text-sm text-[#7A8075] space-y-1">
+                  <ul className="list-disc pl-5 text-sm text-[#5B655D] space-y-1">
                     {missingImageMetadataDetails.map((detail) => (
                       <li key={detail}>{detail}</li>
                     ))}

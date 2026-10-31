@@ -67,10 +67,38 @@ textarea::placeholder {
 }
 
 /* Specific fix for the focused state to ensure readability while typing */
-input:focus, 
+input:focus,
 textarea:focus {
   color: #000000 !important;
-  outline: none;
+}
+
+/* Keep a visible focus ring for every keyboard-reachable control. Inputs that draw their
+   own ring still get this outline, which is the same green and does not hide it. */
+:focus-visible {
+  outline: 2px solid #356B43;
+  outline-offset: 2px;
+}
+
+/* The site map popup draws its own card, so the MapLibre frame adds no padding. */
+.site-detail-popup .maplibregl-popup-content {
+  padding: 0;
+  border: 1px solid #e4ebe4;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgb(37 68 49 / 18%);
+}
+
+/* The tip must match the half of the card that meets it. */
+.site-detail-popup.maplibregl-popup-anchor-top .maplibregl-popup-tip,
+.site-detail-popup.maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+.site-detail-popup.maplibregl-popup-anchor-top-right .maplibregl-popup-tip {
+  border-bottom-color: #ffffff;
+}
+
+.site-detail-popup.maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+.site-detail-popup.maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+.site-detail-popup.maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+  border-top-color: #f1f5eb;
 }
 
 /* The site map popup draws its own card, so the MapLibre frame adds no padding. */

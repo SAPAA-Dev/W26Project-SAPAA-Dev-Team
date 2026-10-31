@@ -52,6 +52,7 @@ export default function TagPicker({ label, values, options, onChange }: {
                 type="button"
                 aria-label={`Remove ${value}`}
                 onClick={() => onChange(values.filter((existing) => existing !== value))}
+                className="flex h-11 w-11 items-center justify-center"
               >
                 <X className="h-3.5 w-3.5" aria-hidden />
               </button>

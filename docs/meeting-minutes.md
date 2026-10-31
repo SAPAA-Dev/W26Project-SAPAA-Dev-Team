@@ -620,7 +620,7 @@ The work due before this meeting (slide 13 of the October 2 deck):
 | Attendees | Frank (client), Chris, Aaron, Saumya, Alissa, Zanab, Jayden, Abhinav |
 | Absentees | Not recorded |
 | Minute-taker | No minute-taker; rebuilt from the transcript. |
-| Source | Raw transcript. The transcript continues after the meeting ends; the post-meeting chatter is excluded. |
+| Source | Raw transcript ([week7/2026_10_16_meeting_frank.txt](meetings/week7/2026_10_16_meeting_frank.txt)). The transcript continues after the meeting ends; the post-meeting chatter is excluded. |
 
 ## Agenda
 
@@ -712,7 +712,7 @@ Next meeting: Friday, October 23, 2026.
 | Attendees | Frank (client), Chris, Aaron, Alissa, Jayden, Abhinav |
 | Absentees | Saumya, Zanab |
 | Minute-taker | No minute-taker; rebuilt from the transcript. |
-| Source | Raw transcript. |
+| Source | Raw transcript ([week8/2026_10_23_meeting_frank.txt](meetings/week8/2026_10_23_meeting_frank.txt)). |
  
 ## Agenda
  

@@ -145,7 +145,7 @@ export default function ArchivedSitesPage() {
             <AlertCircle className="w-8 h-8 text-[#B91C1C]" />
           </div>
           <h2 className="text-2xl font-bold text-[#254431] mb-2">Unable to Load Archived Sites</h2>
-          <p className="text-[#7A8075] mb-6">{error}</p>
+          <p className="text-[#5B655D] mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
             className="bg-gradient-to-r from-[#356B43] to-[#254431] text-white font-semibold px-6 py-3 rounded-xl hover:shadow-lg transition-all"
@@ -161,7 +161,7 @@ export default function ArchivedSitesPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex flex-col items-center justify-center gap-4">
         <div className="w-16 h-16 border-4 border-[#E4EBE4] border-t-[#356B43] rounded-full animate-spin"></div>
-        <p className="text-[#7A8075] font-medium">Loading archived sites...</p>
+        <p className="text-[#5B655D] font-medium">Loading archived sites...</p>
       </div>
     );
   }
@@ -211,17 +211,17 @@ export default function ArchivedSitesPage() {
           {/* Search */}
           <div className="mb-6 space-y-4">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A8075]" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#5B655D]" />
               <input
                 type="text"
                 placeholder="Search by site name or county..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"
+                className="w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"
               />
             </div>
 
-            <p className="text-[#7A8075] font-medium">
+            <p className="text-[#5B655D] font-medium">
               {filteredSites.length} {filteredSites.length === 1 ? 'site' : 'sites'} archived
             </p>
           </div>
@@ -236,10 +236,10 @@ export default function ArchivedSitesPage() {
           {filteredSites.length === 0 ? (
             <div className="text-center py-16">
               <div className="w-20 h-20 bg-[#E4EBE4] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Archive className="w-10 h-10 text-[#7A8075]" />
+                <Archive className="w-10 h-10 text-[#5B655D]" />
               </div>
               <h3 className="text-xl font-bold text-[#254431] mb-2">No archived sites</h3>
-              <p className="text-[#7A8075]">Archived sites will show up here</p>
+              <p className="text-[#5B655D]">Archived sites will show up here</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -256,7 +256,7 @@ export default function ArchivedSitesPage() {
                       {item.namesite}
                     </h3>
                     {item.county && (
-                      <div className="flex items-start sm:items-center gap-1.5 text-[#7A8075]">
+                      <div className="flex items-start sm:items-center gap-1.5 text-[#5B655D]">
                         <MapPin className="w-4 h-4" />
                         <span className="text-sm">{item.county}</span>
                       </div>
@@ -264,7 +264,7 @@ export default function ArchivedSitesPage() {
                   </div>
 
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm text-[#7A8075]">
+                    <div className="flex items-center gap-2 text-sm text-[#5B655D]">
                       <Calendar className="w-4 h-4" />
                       <span>
                         Archived{' '}
@@ -278,7 +278,7 @@ export default function ArchivedSitesPage() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 text-sm text-[#7A8075]">
+                    <div className="flex items-center gap-2 text-sm text-[#5B655D]">
                       <Calendar className="w-4 h-4" />
                       <span>
                         {item.inspectdate

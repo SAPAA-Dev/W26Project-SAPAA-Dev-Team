@@ -415,7 +415,7 @@ const handleCloseArchive = () => {
             <AlertCircle className="w-8 h-8 text-[#B91C1C]" />
           </div>
           <h2 className="text-2xl font-bold text-[#254431] mb-2">Unable to Load Sites</h2>
-          <p className="text-[#7A8075] mb-6">{error}</p>
+          <p className="text-[#5B655D] mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
             className="bg-gradient-to-r from-[#356B43] to-[#254431] text-white font-semibold px-6 py-3 rounded-xl hover:shadow-lg transition-all"
@@ -431,7 +431,7 @@ const handleCloseArchive = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex flex-col items-center justify-center gap-4">
         <div className="w-16 h-16 border-4 border-[#E4EBE4] border-t-[#356B43] rounded-full animate-spin"></div>
-        <p className="text-[#7A8075] font-medium">Loading protected areas...</p>
+        <p className="text-[#5B655D] font-medium">Loading protected areas...</p>
       </div>
     );
   }
@@ -486,7 +486,7 @@ const handleCloseArchive = () => {
                 value: stats.totalSites,
                 tooltip: 'Total number of protected area sites in the system.',
                 bg: 'bg-white', border: 'border-[#E4EBE4]',
-                textColor: 'text-[#254431]', labelColor: 'text-[#7A8075]',
+                textColor: 'text-[#254431]', labelColor: 'text-[#5B655D]',
                 tooltipBg: 'bg-white', tooltipText: 'text-[#254431]', tooltipBorder: 'border-[#E4EBE4]', arrowColor: 'border-t-white',
               },
               {
@@ -495,7 +495,7 @@ const handleCloseArchive = () => {
                 value: stats.totalInspections,
                 tooltip: 'Sites that have had at least one inspection recorded.',
                 bg: 'bg-white', border: 'border-[#E4EBE4]',
-                textColor: 'text-[#254431]', labelColor: 'text-[#7A8075]',
+                textColor: 'text-[#254431]', labelColor: 'text-[#5B655D]',
                 tooltipBg: 'bg-white', tooltipText: 'text-[#254431]', tooltipBorder: 'border-[#E4EBE4]', arrowColor: 'border-t-white',
               },
               {
@@ -504,7 +504,7 @@ const handleCloseArchive = () => {
                 value: stats.totalResponses,
                 tooltip: 'Total inspection form submissions across all sites.',
                 bg: 'bg-white', border: 'border-[#E4EBE4]',
-                textColor: 'text-[#254431]', labelColor: 'text-[#7A8075]',
+                textColor: 'text-[#254431]', labelColor: 'text-[#5B655D]',
                 tooltipBg: 'bg-white', tooltipText: 'text-[#254431]', tooltipBorder: 'border-[#E4EBE4]', arrowColor: 'border-t-white',
               },
               {
@@ -555,7 +555,7 @@ const handleCloseArchive = () => {
           <div className="mb-6 space-y-4">
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A8075]" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#5B655D]" />
                 <MapSearchInput
                   placeholder={
                     viewMode === 'map'
@@ -567,7 +567,7 @@ const handleCloseArchive = () => {
                   matches={viewMode === 'map' ? mapBoundaries.features : null}
                   // A new object, so picking the same area again centres the map again.
                   onPick={(area) => setFocusedArea({ ...area })}
-                  className="w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"
+                  className="w-full pl-12 pr-4 py-3 sm:py-4 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"
                 />
               </div>
               <div className="flex gap-1.5 sm:shrink-0" role="group" aria-label="View mode">
@@ -578,7 +578,7 @@ const handleCloseArchive = () => {
                   className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-3 sm:py-4 rounded-xl font-semibold text-sm transition-all border-2 ${
                     viewMode === 'cards'
                       ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white shadow-md border-[#254431]'
-                      : 'bg-white text-[#7A8075] hover:bg-[#F7F2EA] border-[#E4EBE4]'
+                      : 'bg-white text-[#5B655D] hover:bg-[#F7F2EA] border-[#E4EBE4]'
                   }`}
                 >
                   <LayoutGrid className="w-5 h-5" />
@@ -591,7 +591,7 @@ const handleCloseArchive = () => {
                   className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-3 sm:py-4 rounded-xl font-semibold text-sm transition-all border-2 ${
                     viewMode === 'map'
                       ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white shadow-md border-[#254431]'
-                      : 'bg-white text-[#7A8075] hover:bg-[#F7F2EA] border-[#E4EBE4]'
+                      : 'bg-white text-[#5B655D] hover:bg-[#F7F2EA] border-[#E4EBE4]'
                   }`}
                 >
                   <MapIcon className="w-5 h-5" />
@@ -601,7 +601,7 @@ const handleCloseArchive = () => {
             </div>
             
             <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-[#7A8075] font-medium">
+                <p className="text-[#5B655D] font-medium">
                   {viewMode === 'map'
                     ? boundariesLoading
                       ? 'Loading map…'
@@ -741,10 +741,10 @@ const handleCloseArchive = () => {
           {filteredSites.length === 0 ? (
             <div className="text-center py-16">
               <div className="w-20 h-20 bg-[#E4EBE4] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="w-10 h-10 text-[#7A8075]" />
+                <Search className="w-10 h-10 text-[#5B655D]" />
               </div>
               <h3 className="text-xl font-bold text-[#254431] mb-2">No sites found</h3>
-              <p className="text-[#7A8075]">Try adjusting your search or filters</p>
+              <p className="text-[#5B655D]">Try adjusting your search or filters</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -781,17 +781,17 @@ const handleCloseArchive = () => {
                             {item.namesite}
                           </h3>
                           {item.county && (
-                            <div className="flex items-start sm:items-center gap-1.5 text-[#7A8075]">
+                            <div className="flex items-start sm:items-center gap-1.5 text-[#5B655D]">
                               <MapPin className="w-4 h-4" />
                               <span className="text-sm">{item.county}</span>
                             </div>
                           )}
                         </div>
-                        <ChevronRight className="w-5 h-5 text-[#7A8075] group-hover:text-[#356B43] group-hover:translate-x-1 transition-all" />
+                        <ChevronRight className="w-5 h-5 text-[#5B655D] group-hover:text-[#356B43] group-hover:translate-x-1 transition-all" />
                       </div>
 
                       <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-sm text-[#7A8075]">
+                        <div className="flex items-center gap-2 text-sm text-[#5B655D]">
                           <Calendar className="w-4 h-4" />
                           <span>
                             {item.inspectdate
@@ -811,7 +811,7 @@ const handleCloseArchive = () => {
                           >
                             {status.label}
                           </span>
-                          <span className="text-xs font-medium text-[#7A8075]">
+                          <span className="text-xs font-medium text-[#5B655D]">
                             {ageText}
                           </span>
                         </div>

@@ -8,14 +8,14 @@ and #276). The GitHub release
 [`sprint-2`](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/releases/tag/sprint-2) was
 published on October 13.
 
-Sprint 3 records were updated on **October 26, 2026** after the skills, export and activity
-PRs merged. The current scope is 14 stories and 50 acceptance tests. US 3.0.4 was removed when
+Sprint 3 records were updated on **October 27, 2026** after the missing acceptance tests and
+Cypress specs were added. The current scope is 14 stories and 50 acceptance tests. US 3.0.4 was removed when
 Frank required accounts and sign-in; PR #310 was closed without merge.
 
-The combined local close-out run on the Sprint 3 source after #305, #312 and #315, with the
-#318 changes and Chris's shared-branch test fixes, passed **1912 tests, 25 skipped, 0 failed**
-(132 passing suites). Type check and full lint passed. The prior sprint CI run failed the
-profile query-count and date tests; the current required CI result is still pending.
+The combined local close-out run on this Sprint 3 source passed **1895 tests, 36 skipped, 0
+failed** (131 passing suites; the four database suites skip without a local Supabase). Type
+check and full lint passed. The prior sprint CI run failed the profile query-count and date
+tests; the current required CI result is still pending.
 The database rule run passed **25 tests** on local Supabase after the merged Sprint 3 migrations.
 The export follow-up (#318) passed **38 tests**, including three state-write failure tests.
 
@@ -45,20 +45,22 @@ steps, open checks and final CI status. A covered AT does not make the full suit
   example `(5.0.4 AT2)` or `US 2.0.6 AT3:`. **Yes** means that a test of the row has the story ID
   and the AT number of the row in its name. **No** means that no test name of the row has that
   label.
-- **Status** comes from a full local run of `npm run test:ci` (Jest with coverage) on `main` at
-  `ceb5188`: 111 suites passed and 1 skipped, 1524 tests passed, 5 skipped, 0 failed (the
-  database rule suite skips without a local Supabase). These are local results.
+- **Status** comes from a full local run of `npm test` on this Sprint 3 source: 131 suites
+  passed and 4 skipped, 1895 tests passed, 36 skipped, 0 failed (the database rule suites skip
+  without a local Supabase). These are local results.
   GitHub Actions has not run since October 10, because the account's Actions payments failed. CI
   did not run on the commits from `e39cc8f` (PR #243) onward, on any fix branch, or on #284 and
   #285, which were merged with an admin bypass. The last CI run that ran the tests is
   [run 38092728953](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/actions/runs/38092728953)
   on `2cf69c6` (October 10: 96 suites, 1235 tests, all passed). When CI runs again, take the
   status from the CI run of `main` and remove this note.
-- **Cypress.** `.github/workflows/e2e.yaml` runs seven specs against a local Supabase on PRs into
+- **Cypress.** `.github/workflows/e2e.yaml` runs ten specs against a local Supabase on PRs into
   `main` and `release`, and by hand: `logout`, `profile`, `authorized_check`, `add_site`,
-  `archive_report`, `deactivate_site` and `map_filter`. Actions has not run it yet. The Cypress
-  results on this page come from the same seven specs run the same way on a local machine
-  (local run, October 12, 2026, commit `23aada5`: 7 specs, 29 tests, 29 passed).
+  `archive_report`, `deactivate_site`, `map_filter`, `map_site_popup`, `edit_own_report` and
+  `password_reset_wrong_code`. The last three are the Sprint 3 specs; they are in the CI list and
+  have not been run locally. The Cypress results on this page come from the earlier seven specs
+  run the same way on a local machine (local run, October 12, 2026, commit `23aada5`: 7 specs,
+  29 tests, 29 passed).
 - **Database rules.** `__tests__/db/rls.test.ts` (`npm run test:db`) checks the row level security
   policies and function grants against a local Supabase. Local run, October 12, 2026: 5 tests, 5
   passed. CI does not run it.
@@ -96,11 +98,11 @@ steps, open checks and final CI status. A covered AT does not make the full suit
 | US 1.0.2 | AT4 | After Save, the page shows the new values | `__tests__/components/ProfilePage.test.tsx:273,290,308`, `__tests__/app/api/profile.test.ts:345,410` | Component, API | S+F | Yes | Pass | - |
 | US 1.0.2 | AT5 | Saved values stay after sign-out and sign-in | `cypress/e2e/profile.cy.ts:64` | E2E | S | Yes | Pass | - |
 | US 1.0.2 | AT6 | Added skills and focus areas show on the profile after Save | `__tests__/components/ProfilePage.test.tsx:308`, `__tests__/app/api/profile.test.ts:419` | Component, API | S+F | Yes | Pass | - |
-| US 1.0.3 | AT1 | The profile lists previous inspections with site and date | `__tests__/components/ProfilePage.test.tsx:117,191` | Component | S | No | Pass (partial) | [#298](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/298) |
+| US 1.0.3 | AT1 | The profile lists previous inspections with site and date | `__tests__/components/ProfilePage.test.tsx:141,161` | Component | S+F | Yes | Pass | [#298](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/298) |
 | US 1.0.3 | AT2 | A past inspection opens with its submitted information | `__tests__/components/ProfilePage.test.tsx:108` | Component | S | Yes | Pass | [#298](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/298) |
-| US 1.0.3 | AT3 | Hidden answers are not shown to other stewards | `__tests__/components/queries.exportPaging.test.ts:182,208`, `__tests__/app/api/site-images.test.ts:157,193`, `__tests__/pages/SiteDetails.test.tsx:564` | Unit, API, Page | S+F | Yes | Pass | [#298](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/298) |
+| US 1.0.3 | AT3 | Hidden answers are not shown to other stewards | `__tests__/components/queries.exportPaging.test.ts:182,208`, `__tests__/app/api/site-images.test.ts:157,193`, `__tests__/pages/SiteDetails.test.tsx:567` | Unit, API, Page | S+F | Yes | Pass | [#298](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/298) |
 | US 1.0.4 | AT1 | The aggregates match the user's data (SIR count, activities) | `__tests__/app/api/profile.test.ts` (contribution statistics), `__tests__/components/ProfilePage.test.tsx` | API, Component | S+F | Yes | Pass | [#315](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/315) |
-| US 1.0.4 | AT2 | A new report adds 1 to the SIR count | - | - | - | No | Not yet tested | [#315](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/315) |
+| US 1.0.4 | AT2 | A new report adds 1 to the SIR count | `__tests__/components/ProfilePage.test.tsx:173` | Component | S | Yes | Pass | [#315](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/315) |
 | US 1.0.6 | AT1 | Skills and focus areas use dropdowns with an "Other" option | `__tests__/components/TagPicker.test.tsx:13,30` | Component | S+F | Yes | Pass | [#308](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/308) |
 | US 1.0.6 | AT2 | Typing a skill or focus area suggests similar existing values | `__tests__/components/TagPicker.test.tsx:41`, `__tests__/lib/profileTags.test.ts` | Component, Unit | S+F | Yes | Pass | [#308](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/308) |
 | US 1.0.6 | AT3 | An edited skill or focus area shows on the profile after Save | `__tests__/components/ProfilePage.test.tsx:372`, `__tests__/components/TagPicker.test.tsx:94` | Component | S | Yes | Pass | [#308](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/308) |
@@ -126,9 +128,11 @@ Notes:
 - 1.0.2 AT6: 'shows the saved values again after a reload' adds a skill and a focus area, checks
   that the save sends both, and checks that both show after the reload. `profile.test.ts:419`
   rejects more than twelve skills.
-- 1.0.3 AT1: `ProfilePage.test.tsx:117,191` check that the history is listed and paged. No test
-  checks the site name and the date of each row.
-- 1.0.4: PR #315 is merged. The aggregate tests cover AT1; the combined local run includes the corrected query-count assertion. AT2 still needs explicit count-plus-one evidence.
+- 1.0.3 AT1: `ProfilePage.test.tsx:141` checks the site name and the date of each row, and `:161`
+  checks the empty history. The paging tests remain at `:256,262,282`.
+- 1.0.4: PR #315 is merged. The aggregate tests cover AT1, including the 500 failure case.
+  `ProfilePage.test.tsx:173` loads the profile, remounts it after a new report, and checks that
+  the SIR count moves from 3 to 4 (AT2).
 - 1.0.6 and 3.0.3 merged through #308 and #309. US 3.0.4 was removed on October 26; #310 was closed without merge.
 
 ## 2 - Place Management
@@ -160,13 +164,13 @@ Notes:
 | US 2.0.10 | AT1 | A short link to the SAPAA website on the site page | `__tests__/components/SiteLinks.test.tsx:6,10,23`, `__tests__/components/queries.sitePageFields.test.ts:122,133` | Component, Unit | S+F | Yes | Pass | - |
 | US 2.0.10 | AT2 | A short link to iNaturalist on the site page | `__tests__/components/SiteLinks.test.tsx:23` | Component | S | Yes | Pass | - |
 | US 2.0.10 | AT3 | A link opens in a new window | `__tests__/components/SiteLinks.test.tsx:30` | Component | S | Yes | Pass | - |
-| US 2.0.1 | AT1 | Every active Site is drawn with its boundary | `__tests__/components/SiteMap.test.tsx:1104,1110` | Component | S | No | Pass (partial) | [#301](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/301) |
-| US 2.0.1 | AT2 | A GPX track is drawn in a style different from the boundary | `__tests__/lib/gpxTrack.test.ts:78`, `__tests__/components/SiteMap.test.tsx:1619` | Unit, Component | S | Yes | Pass | [#301](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/301) |
+| US 2.0.1 | AT1 | Every active Site is drawn with its boundary | `__tests__/components/SiteMap.test.tsx:324,1160` | Component | S+F | Yes | Pass (partial) | [#301](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/301) |
+| US 2.0.1 | AT2 | A GPX track is drawn in a style different from the boundary | `__tests__/lib/gpxTrack.test.ts:78`, `__tests__/components/SiteMap.test.tsx:1690` | Unit, Component | S | Yes | Pass | [#301](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/301) |
 | US 2.0.1 | AT3 | The Site page links to its location on the map | `__tests__/pages/SiteDetails.test.tsx:300` | Page | S | Yes | Pass | [#301](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/301) |
-| US 2.0.1 | AT4 | Only the newly selected Site is highlighted | `__tests__/components/SiteMap.test.tsx:1541,1550,1565`, `__tests__/pages/Sites.test.tsx:960` | Component, Page | S | Yes | Pass | [#301](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/301) |
-| US 2.0.8 | AT1 | Selecting a Site opens its detail view | `__tests__/components/SiteMap.test.tsx:631,647` | Component | S | Yes | Pass | [#297](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/297) |
-| US 2.0.8 | AT2 | The detail view shows the same name, county and last inspection date as the Site page | `__tests__/components/queries.boundaries.test.ts:150,171,191,201`, `__tests__/lib/boundaries.test.ts:230,239`, `__tests__/components/SiteMap.test.tsx:655,701,718` | Unit, Component | S+F | Yes | Pass | [#297](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/297) |
-| US 2.0.8 | AT3 | "View SIRs" goes to the past SIRs | `__tests__/components/SiteMap.test.tsx:739,755` | Component | S | Yes | Pass | [#297](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/297) |
+| US 2.0.1 | AT4 | Only the newly selected Site is highlighted | `__tests__/components/SiteMap.test.tsx:1612,1621,1636`, `__tests__/pages/Sites.test.tsx:960` | Component, Page | S | Yes | Pass | [#301](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/301) |
+| US 2.0.8 | AT1 | Selecting a Site opens its detail view | `__tests__/components/SiteMap.test.tsx:681,697`; `cypress/e2e/map_site_popup.cy.ts` | Component, E2E | S+F | Yes | Pass | [#297](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/297) |
+| US 2.0.8 | AT2 | The detail view shows the same name, county and last inspection date as the Site page | `__tests__/components/queries.boundaries.test.ts:150,171,191,201`, `__tests__/lib/boundaries.test.ts:230,239`, `__tests__/components/SiteMap.test.tsx:705,751,768`; `cypress/e2e/map_site_popup.cy.ts` | Unit, Component, E2E | S+F | Yes | Pass | [#297](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/297) |
+| US 2.0.8 | AT3 | "View SIRs" goes to the past SIRs | `__tests__/components/SiteMap.test.tsx:789,805`; `cypress/e2e/map_site_popup.cy.ts` | Component, E2E | S+F | Yes | Pass | [#297](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/297) |
 | US 2.0.9 | AT1 | A valid .gpx file is saved and linked to the Site and the account | `__tests__/lib/gpx-track-actions.test.ts:72,90`, `__tests__/components/GpxTrackUpload.test.tsx:68` | Unit, Component | S | Yes | Pass | [#296](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/296) |
 | US 2.0.9 | AT2 | A file without the .gpx extension shows "only GPX files" | `__tests__/lib/gpx-track-actions.test.ts:122`, `__tests__/components/GpxTrackUpload.test.tsx:99` | Unit, Component | F | Yes | Pass | [#296](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/296) |
 | US 2.0.9 | AT3 | An invalid .gpx file or one with no track points is refused and nothing is saved | `__tests__/lib/gpx-track-actions.test.ts:235,246`, `__tests__/components/GpxTrackUpload.test.tsx:140` | Unit, Component | F | Yes | Pass | [#296](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/296) |
@@ -182,7 +186,7 @@ Notes:
 | US 2.0.13 | AT2 | No reminder when the points are less than a year old | `__tests__/lib/sitePriority.test.ts:42`, `__tests__/lib/site-priority-actions.test.ts:131`, `__tests__/components/SitePriority.test.tsx:106` | Unit, Component | S | Yes | Pass | [#307](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/307) |
 | US 2.0.13 | AT3 | Saving new points removes the reminder and stores the new date | `__tests__/lib/site-priority-actions.test.ts:44`, `__tests__/components/SitePriority.test.tsx:113` | Unit, Component | S | Yes | Pass | [#307](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/307) |
 | US 2.0.13 | AT4 | A Steward does not see the Admin reminder | `__tests__/lib/site-priority-actions.test.ts:110`, `__tests__/components/SitePriority.test.tsx:106` | Unit, Component | F | Yes | Pass | [#307](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/307) |
-| US 2.0.14 | AT1 | Each boundary uses the color saved by an Admin for its site or site type (Sprint 3) | `__tests__/components/SiteMap.test.tsx:324,849,882,931`, `__tests__/lib/boundaries.test.ts:325,331,349,364`, `__tests__/components/queries.boundaryColors.test.ts:38,52,66,76`, `__tests__/components/queries.boundaries.test.ts:104,113` | Component, Unit | S+F | No | Pass | [#303](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/303) |
+| US 2.0.14 | AT1 | Each boundary uses the color saved by an Admin for its site or site type (Sprint 3) | `__tests__/components/SiteMap.test.tsx:324,849,882,931`, `__tests__/lib/boundaries.test.ts:325,331,349,364`, `__tests__/components/queries.boundaryColors.test.ts:38,52,66,76`, `__tests__/components/queries.boundaries.test.ts:104,113` | Component, Unit | S+F | Yes | Pass | [#303](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/303) |
 
 Notes:
 
@@ -226,8 +230,10 @@ Notes:
   `boundaries.test.ts` and `queries.boundaries.test.ts` test the boundary data that the map draws.
 - 2.0.10 AT1: `queries.sitePageFields.test.ts:122` gives the default links to a site with no saved
   links, and `:133` gives no link when the admin cleared or hid it.
-- 2.0.1 AT1: `SiteMap.test.tsx:1104,1110` check the boundary layer. No test checks that an inactive
-  site is not drawn.
+- 2.0.1 AT1: `SiteMap.test.tsx:324,1160` check the boundary layer and the error note. No test
+  checks that an inactive site is not drawn.
+- 2.0.8: `cypress/e2e/map_site_popup.cy.ts` checks AT1 to AT3 against the seeded boundaries. It
+  is in the CI spec list and has not been run locally.
 - 2.0.12 and 2.0.13: the tests mock the server actions and the database. No database test checks
   that the server refuses a Steward's change.
 
@@ -252,14 +258,14 @@ Notes:
 |---|---|---|---|---|---|---|---|---|
 | US 4.0.6 | AT1 | A SIR with an empty Identifier submits | `__tests__/pages/FormSubmissionPrevention.test.tsx:370,469`, `__tests__/pages/UserEditSiteInspectionForm.test.tsx:747`, `__tests__/app/api/s3-presign.test.ts:477` | Page, API | S+F | Yes | Pass | - |
 | US 4.0.6 | AT2 | No "required" note beside the Identifier field | `__tests__/pages/FormSubmissionPrevention.test.tsx:506` | Page | S | Yes | Pass | - |
-| US 4.0.2 | AT1 | Download a map area for offline use and see its download status | `__tests__/components/OfflineSavePanel.test.tsx:218,257,269,291` | Component | S+F | No | Pass | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293), [#299](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/299) |
-| US 4.0.2 | AT2 | Offline, downloaded tiles render and the map pans and zooms inside the area | [Local browser cache and zoom check](sprint-3-release.md#acceptance-evidence), `__tests__/components/SiteMap.test.tsx:1225` | Browser, Component | S | No | Pass | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293) |
-| US 4.0.2 | AT3 | Offline, missing tiles outside the area are indicated | [Local missing-tile check](sprint-3-release.md#acceptance-evidence), `__tests__/components/SiteMap.test.tsx` (offline badge) | Browser, Component | S+F | No | Pass | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293) |
+| US 4.0.2 | AT1 | Download a map area for offline use and see its download status | `__tests__/components/OfflineSavePanel.test.tsx:218,257,269,291` | Component | S+F | Yes | Pass | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293), [#299](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/299) |
+| US 4.0.2 | AT2 | Offline, downloaded tiles render and the map pans and zooms inside the area | [Local browser cache and zoom check](sprint-3-release.md#acceptance-evidence), `__tests__/components/SiteMap.test.tsx:1225`, `__tests__/lib/map/offline/tileCache.test.ts:324` | Browser, Component, Unit | S | Yes | Pass | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293) |
+| US 4.0.2 | AT3 | Offline, missing tiles outside the area are indicated | [Local missing-tile check](sprint-3-release.md#acceptance-evidence), `__tests__/components/SiteMap.test.tsx:1212,1276` | Browser, Component | S+F | Yes | Pass | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293) |
 | US 4.0.2 | AT4 | Online, the map uses live tiles and not the cache | [Local reconnect check](sprint-3-release.md#acceptance-evidence), `__tests__/components/SiteMap.test.tsx` (4.0.2 AT4) | Browser, Component | S | Yes | Pass | [#293](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/293) |
-| US 4.0.4 | AT1 | The author opens a past SIR and enters edit mode | `__tests__/pages/UserEditSiteInspectionForm.test.tsx:616,641` | Page | S | No | Pass | [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
-| US 4.0.4 | AT2 | Another steward cannot enter edit mode or change the SIR | `__tests__/components/queries.report-writes.test.ts:157,167`, `__tests__/pages/UserEditSiteInspectionForm.test.tsx:623`; [local browser check](sprint-3-release.md#acceptance-evidence) | Unit, Page, Browser | F | No | Pass | [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
-| US 4.0.4 | AT3 | Clearing a required answer blocks submit and lists the missing questions | `__tests__/components/queries.report-writes.test.ts:200,212`, `__tests__/pages/UserEditSiteInspectionForm.test.tsx:723` | Unit, Page | S+F | No | Pass | [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
-| US 4.0.4 | AT4 | Saved edits show everywhere the report is rendered | `__tests__/pages/UserEditSiteInspectionForm.test.tsx:825,842` | Page | S | No | Pass (partial) | [#298](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/298), [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
+| US 4.0.4 | AT1 | The author opens a past SIR and enters edit mode | `__tests__/pages/UserEditSiteInspectionForm.test.tsx:616,641`, `cypress/e2e/edit_own_report.cy.ts` | Page, E2E | S | Yes | Pass | [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
+| US 4.0.4 | AT2 | Another steward cannot enter edit mode or change the SIR | `__tests__/components/queries.report-writes.test.ts:157,167`, `__tests__/pages/UserEditSiteInspectionForm.test.tsx:623`; [local browser check](sprint-3-release.md#acceptance-evidence); `cypress/e2e/edit_own_report.cy.ts` | Unit, Page, Browser, E2E | F | Yes | Pass | [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
+| US 4.0.4 | AT3 | Clearing a required answer blocks submit and lists the missing questions | `__tests__/components/queries.report-writes.test.ts:200,212`, `__tests__/pages/UserEditSiteInspectionForm.test.tsx:723` | Unit, Page | S+F | Yes | Pass | [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
+| US 4.0.4 | AT4 | Saved edits show everywhere the report is rendered | `__tests__/pages/UserEditSiteInspectionForm.test.tsx:791,825,842` | Page | S | Yes | Pass (partial) | [#298](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/298), [#300](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/300) |
 Notes:
 
 - 4.0.6 AT1: 'submits a report whose image has an empty Identifier' saves `identifier: null`. The
@@ -269,7 +275,8 @@ Notes:
 - 4.0.4 AT2 and AT3: the server tests check ownership, approval and the names of missing required
   questions. The local browser run also checked denied edit mode and a blocked save after a
   required answer was cleared. AT4 stays partial because every export and summary view was not
-  checked after the same edit.
+  checked after the same edit. `cypress/e2e/edit_own_report.cy.ts` checks AT1 and AT2 against the
+  seeded report; it is in the CI spec list and has not been run locally.
 
 ## 5 - Access and Accounts
 
@@ -296,6 +303,9 @@ Notes:
 - 5.0.4 AT2: `SignedOutGuard.test.tsx` ([PR #158](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/158)) sends a signed-out user to `/login` when the
   Back button restores a cached page, and does nothing on public pages. The test fires the page
   event and does not press the real Back button.
+- 5.0.2: `cypress/e2e/password_reset_wrong_code.cy.ts` checks AT1 and AT2 with a wrong code and
+  a code shorter than six digits. It needs no SMTP message, because the request route answers the
+  same for a known and an unknown email. It is in the CI spec list and has not been run locally.
 - 5.0.4 AT3: the tests cover the user menu (`UserNavBar` in `HeaderDropdown.tsx`), the admin menu
   (`AdminNavBar`), the profile page, the terms page ([PR #238](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/238)) and the
   approval-pending screen. `logout.cy.ts:98` signs out from a page other than the sites list. `/api-docs` is the Swagger reference for developers and is exempt, as the
@@ -327,17 +337,17 @@ were removed on September 25, 2026 (see [Project Management](project-management.
 
 | US | AT | Acceptance test (short) | Test file(s) | Test type | S/F | Labelled in test name | Status | PR |
 |---|---|---|---|---|---|---|---|---|
-| US 6.0.1 | AT1 | A Site with a boundary in the KML is linked to it, with the same longitude and latitude values | `__tests__/lib/kmlImport.test.ts:205,214,253`, `__tests__/lib/kml-import-actions.test.ts:144`, `__tests__/db/site-boundary-links.test.ts:102,135` | Unit, DB | S | No | Pass | [#294](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/294) |
-| US 6.0.1 | AT2 | A Site read from the database has a boundary link or no link | `__tests__/db/site-boundary-links.test.ts:102,114,157` | DB | S+F | No | Pass | [#294](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/294) |
-| US 6.0.1 | AT3 | Each Site is linked or is on the list of Sites with no boundary for an Admin | `__tests__/lib/kml-import-actions.test.ts:325,337`, `__tests__/components/KmlImportModal.test.tsx:41,59`, `__tests__/db/site-boundary-links.test.ts:114,125,148` | Unit, Component, DB | S+F | No | Pass | [#294](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/294), [#303](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/303) |
-| US 6.0.1 | AT4 | The Unlinked filter shows only Sites with no boundary, and the Linked filter only Sites with one | `__tests__/lib/boundaryFilters.test.ts:228`, `__tests__/pages/AdminSites.test.tsx:107`, `__tests__/components/MapAreaFilters.test.tsx:36` | Unit, Page, Component | S | No | Pass | [#303](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/303) |
-| US 6.0.1 | AT5 | The server refuses a Steward who calls the Admin import, and returns no list | `__tests__/lib/kml-import-actions.test.ts:116,128,137` | Unit | F | No | Pass | [#294](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/294) |
+| US 6.0.1 | AT1 | A Site with a boundary in the KML is linked to it, with the same longitude and latitude values | `__tests__/lib/kmlImport.test.ts:205,214,253`, `__tests__/lib/kml-import-actions.test.ts:187`, `__tests__/db/site-boundary-links.test.ts:125` | Unit, DB | S | Yes | Pass | [#294](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/294) |
+| US 6.0.1 | AT2 | A Site read from the database has a boundary link or no link | `__tests__/components/queries.disable.test.ts:64`, `__tests__/db/site-boundary-links.test.ts:143,155,166,176,189,198` | Unit, DB | S+F | Yes | Pass | [#294](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/294) |
+| US 6.0.1 | AT3 | Each Site is linked or is on the list of Sites with no boundary for an Admin | `__tests__/lib/kml-import-actions.test.ts:375,387`, `__tests__/components/KmlImportModal.test.tsx:41,59` | Unit, Component | S+F | Yes | Pass | [#294](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/294), [#303](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/303) |
+| US 6.0.1 | AT4 | The Unlinked filter shows only Sites with no boundary, and the Linked filter only Sites with one | `__tests__/lib/boundaryFilters.test.ts:223`, `__tests__/pages/AdminSites.test.tsx:107,129`, `__tests__/components/MapAreaFilters.test.tsx:35` | Unit, Page, Component | S | Yes | Pass | [#303](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/303) |
+| US 6.0.1 | AT5 | The server refuses a Steward who calls the Admin import, and returns no list | `__tests__/lib/kml-import-actions.test.ts:143` | Unit | F | Yes | Pass | [#294](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/294) |
 
 Notes:
 
 - 6.0.1 uses the final wording of its 5 ATs. The geocoding AT was removed, because the team stopped
-  using OpenCage. Some test names still say `US 6.0.1 AT3` for the Linked and Unlinked filter, which
-  is AT4 now, so the Labelled column says No.
+  using OpenCage. The test names now use the `(6.0.1 ATn)` label, and the Linked and Unlinked
+  filter tests carry AT4.
 - 6.0.1 AT1, AT2 and AT3: `__tests__/db/site-boundary-links.test.ts` runs the real link function on a
   local Supabase (`npm run test:db -- --runInBand`). CI does not run it. It passed in the local run
   of October 26.
@@ -465,13 +475,13 @@ test.
 branches 74%, functions 78.61%, lines 87.56%. The run fails below the thresholds in
 `webapp/jest.config.ts` (statements 83, branches 72, functions 77, lines 85).
 
-Sprint 3 coverage after the October 26 close-out checks. This table measures coverage, not
-release approval. The full-suite failure above must be corrected before release.
+Sprint 3 coverage after the October 26 close-out checks and the Sprint 3 test additions. This
+table measures coverage, not release approval.
 
 | Story | Team | ATs | Covered | Partial | None |
 |---|---|---|---|---|---|
-| US 1.0.3 | Green | 3 | AT2, AT3 | AT1 | - |
-| US 1.0.4 | Green | 2 | AT1 | - | AT2 |
+| US 1.0.3 | Green | 3 | AT1, AT2, AT3 | - | - |
+| US 1.0.4 | Green | 2 | AT1, AT2 | - | - |
 | US 1.0.6 | Red | 3 | AT1, AT2, AT3 | - | - |
 | US 2.0.1 | Red | 4 | AT2, AT3, AT4 | AT1 | - |
 | US 2.0.8 | Blue | 3 | AT1, AT2, AT3 | - | - |
@@ -484,9 +494,24 @@ release approval. The full-suite failure above must be corrected before release.
 | US 4.0.4 | Blue | 4 | AT1, AT2, AT3 | AT4 | - |
 | US 5.0.2 | Green | 4 | AT1, AT2, AT3, AT4 | - | - |
 | US 6.0.1 | Blue | 5 | AT1, AT2, AT3, AT4, AT5 | - | - |
-| **Total** | | **50** | **46** | **3** | **1** |
+| **Total** | | **50** | **48** | **2** | **0** |
 
-US 3.0.4 is removed, not an untested commitment. Activity-count AT2 still needs explicit evidence.
+US 3.0.4 is removed, not an untested commitment. Every Sprint 3 AT now has at least one test,
+and every Sprint 3 story has a test name with its story and AT label. The two partial rows are
+2.0.1 AT1 and 4.0.4 AT4. 1.0.3 AT1 is covered: its row above lists `ProfilePage.test.tsx:141,161`
+with the result Pass, and this table used to count it as partial by mistake.
+
+**Local run, October 27, 2026.** GitHub Actions minutes ran out, so the checks were run on a local
+machine from `main` at `45f1cf99`, with a local Supabase and the local seed. Jest: 1900 passed, 36
+skipped, 0 failed. Database suites against the real local Supabase: 4 suites, 36 tests passed. Type
+check, lint and the production build passed. Cypress (the 10 specs of the CI list): 31 of 37 tests
+passed, 3 failed, 3 skipped. The failures are in `profile.cy.ts` (1.0.2 AT5, out of date after the
+1.0.6 dropdowns), `map_filter.cy.ts` (2.0.6, out of date after the old map was removed) and
+`map_site_popup.cy.ts` (2.0.8 AT2, popup shows "Jan 14, 2026" for a report dated 2026-01-15 in a
+time zone behind UTC). The results by spec are in the
+[test plan](test-plan.md#local-run-october-27-2026). The team also connected a Cybera instance,
+ran the tests there and had the results confirmed on it (reported by Saumya, October 27; the run
+link and counts are not recorded yet).
 
 ## Close-out evidence notes
 
@@ -504,11 +529,11 @@ US 3.0.4 is removed, not an untested commitment. Activity-count AT2 still needs 
 ## Known limits
 
 - `.github/workflows/ci.yaml` runs Jest with the coverage gate (`npm run test:ci`), the type check,
-  the build and a blocking lint (`--max-warnings 0`). `.github/workflows/e2e.yaml` runs seven
+  the build and a blocking lint (`--max-warnings 0`). `.github/workflows/e2e.yaml` runs ten
   specs against a local Supabase on PRs into `main` and `release`. The comment in the workflow names
   each excluded spec and the reason. The other specs, for example `disable_site_profile.cy.ts`, need
   the production inspection form, fixed report ids or S3, and are not run in CI. The E2E results on
-  this page are from a local run, not from CI.
+  this page are from a local run of the earlier seven, not from CI.
 - The Cypress specs read their logins from `Cypress.env()` ([PR #240](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/240)). Each developer copies
   `webapp/cypress.env.example.json` to `webapp/cypress.env.json` before a run.
 - Most unit and API tests mock Supabase and S3. They do not test row level security or a real

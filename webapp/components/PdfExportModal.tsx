@@ -355,9 +355,9 @@ export default function PdfExportModal({
                 <h3 className="text-sm font-bold text-[#254431] uppercase tracking-wide">Quick Options</h3>
               </div>
               {showQuickOptions ? (
-                <ChevronUp className="w-4 h-4 text-[#7A8075]" />
+                <ChevronUp className="w-4 h-4 text-[#5B655D]" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-[#7A8075]" />
+                <ChevronDown className="w-4 h-4 text-[#5B655D]" />
               )}
             </button>
 
@@ -375,11 +375,11 @@ export default function PdfExportModal({
                     }`}
                   >
                     <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${options.includeNaturalnessSummary ? 'bg-[#356B43]' : 'bg-[#E4EBE4]'}`}>
-                      <span className={`text-sm font-bold ${options.includeNaturalnessSummary ? 'text-white' : 'text-[#7A8075]'}`}>N</span>
+                      <span className={`text-sm font-bold ${options.includeNaturalnessSummary ? 'text-white' : 'text-[#5B655D]'}`}>N</span>
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-[#254431]">Score Summary</p>
-                      <p className="text-xs text-[#7A8075]">Naturalness table</p>
+                      <p className="text-xs text-[#5B655D]">Naturalness table</p>
                     </div>
                   </button>
 
@@ -393,11 +393,11 @@ export default function PdfExportModal({
                     }`}
                   >
                     <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${options.includeCoverPage ? 'bg-[#356B43]' : 'bg-[#E4EBE4]'}`}>
-                      <Sparkles className={`w-4 h-4 ${options.includeCoverPage ? 'text-white' : 'text-[#7A8075]'}`} />
+                      <Sparkles className={`w-4 h-4 ${options.includeCoverPage ? 'text-white' : 'text-[#5B655D]'}`} />
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-[#254431]">Cover Page</p>
-                      <p className="text-xs text-[#7A8075]">Title page with summary</p>
+                      <p className="text-xs text-[#5B655D]">Title page with summary</p>
                     </div>
                   </button>
 
@@ -411,11 +411,11 @@ export default function PdfExportModal({
                     }`}
                   >
                     <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${options.includeImages ? 'bg-[#356B43]' : 'bg-[#E4EBE4]'}`}>
-                      <ImageIcon className={`w-4 h-4 ${options.includeImages ? 'text-white' : 'text-[#7A8075]'}`} />
+                      <ImageIcon className={`w-4 h-4 ${options.includeImages ? 'text-white' : 'text-[#5B655D]'}`} />
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-[#254431]">Include Images</p>
-                      <p className="text-xs text-[#7A8075]">{options.includeImages ? `Max ${options.maxImagesPerInspection}/inspection` : 'Off'}</p>
+                      <p className="text-xs text-[#5B655D]">{options.includeImages ? `Max ${options.maxImagesPerInspection}/inspection` : 'Off'}</p>
                     </div>
                   </button>
 
@@ -429,11 +429,11 @@ export default function PdfExportModal({
                     }`}
                   >
                     <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${options.includeEmptyAnswers ? 'bg-[#356B43]' : 'bg-[#E4EBE4]'}`}>
-                      <span className={`text-sm font-bold ${options.includeEmptyAnswers ? 'text-white' : 'text-[#7A8075]'}`}>?</span>
+                      <span className={`text-sm font-bold ${options.includeEmptyAnswers ? 'text-white' : 'text-[#5B655D]'}`}>?</span>
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-[#254431]">Empty Answers</p>
-                      <p className="text-xs text-[#7A8075]">{options.includeEmptyAnswers ? 'Show all fields' : 'Only answered'}</p>
+                      <p className="text-xs text-[#5B655D]">{options.includeEmptyAnswers ? 'Show all fields' : 'Only answered'}</p>
                     </div>
                   </button>
 
@@ -442,7 +442,7 @@ export default function PdfExportModal({
                 {/* Max Images Slider - inline below grid when images enabled */}
                 {options.includeImages && (
                   <div className="px-1">
-                    <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide mb-2 block">
+                    <label className="text-xs font-semibold text-[#5B655D] uppercase tracking-wide mb-2 block">
                       Max images per inspection: {options.maxImagesPerInspection}
                     </label>
                     <input
@@ -453,7 +453,7 @@ export default function PdfExportModal({
                       onChange={(e) => setOptions((p) => ({ ...p, maxImagesPerInspection: parseInt(e.target.value) }))}
                       className="w-full accent-[#356B43]"
                     />
-                    <div className="flex justify-between text-xs text-[#7A8075]">
+                    <div className="flex justify-between text-xs text-[#5B655D]">
                       <span>1</span>
                       <span>20</span>
                     </div>
@@ -470,7 +470,7 @@ export default function PdfExportModal({
                 <div className="flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-[#356B43]" />
                   <h3 className="text-sm font-bold text-[#254431] uppercase tracking-wide">Select Sites</h3>
-                  <span className="text-xs text-[#7A8075] font-medium">
+                  <span className="text-xs text-[#5B655D] font-medium">
                     ({selectedSiteNames.length} of {siteNames.length} selected)
                   </span>
                 </div>
@@ -481,7 +481,7 @@ export default function PdfExportModal({
                   >
                     Select all
                   </button>
-                  <span className="text-xs text-[#7A8075]">|</span>
+                  <span className="text-xs text-[#5B655D]">|</span>
                   <button
                     onClick={deselectAllSites}
                     className="text-xs font-semibold text-[#356B43] hover:text-[#254431] transition-colors"
@@ -500,13 +500,13 @@ export default function PdfExportModal({
 
               {siteNames.length > 10 && (
                 <div className="relative mb-3">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8075]" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5B655D]" />
                   <input
                     type="text"
                     placeholder="Search sites..."
                     value={siteSearch}
                     onChange={(e) => setSiteSearch(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 border-2 border-[#E4EBE4] rounded-xl text-sm text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] bg-white"
+                    className="w-full pl-9 pr-3 py-2 border-2 border-[#E4EBE4] rounded-xl text-sm text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] bg-white"
                   />
                 </div>
               )}
@@ -527,14 +527,14 @@ export default function PdfExportModal({
                       {isSelected ? (
                         <CheckSquare className="w-4 h-4 text-[#356B43] flex-shrink-0" />
                       ) : (
-                        <Square className="w-4 h-4 text-[#7A8075] flex-shrink-0" />
+                        <Square className="w-4 h-4 text-[#5B655D] flex-shrink-0" />
                       )}
                       <p className="text-sm font-medium text-[#254431]">{name}</p>
                     </button>
                   );
                 })}
                 {filteredSiteList.length === 0 && siteSearch && (
-                  <p className="text-sm text-[#7A8075] text-center py-3">No sites match &ldquo;{siteSearch}&rdquo;</p>
+                  <p className="text-sm text-[#5B655D] text-center py-3">No sites match &ldquo;{siteSearch}&rdquo;</p>
                 )}
               </div>
             </div>
@@ -567,7 +567,7 @@ export default function PdfExportModal({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide mb-1 block">From</label>
+                  <label className="text-xs font-semibold text-[#5B655D] uppercase tracking-wide mb-1 block">From</label>
                   <input
                     type="date"
                     max={today}
@@ -577,7 +577,7 @@ export default function PdfExportModal({
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide mb-1 block">To</label>
+                  <label className="text-xs font-semibold text-[#5B655D] uppercase tracking-wide mb-1 block">To</label>
                   <input
                     type="date"
                     max={today}
@@ -659,11 +659,11 @@ export default function PdfExportModal({
                         {isSelected ? (
                           <CheckSquare className="w-4 h-4 text-[#356B43] flex-shrink-0" />
                         ) : (
-                          <Square className="w-4 h-4 text-[#7A8075] flex-shrink-0" />
+                          <Square className="w-4 h-4 text-[#5B655D] flex-shrink-0" />
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-[#254431]">{dateStr}</p>
-                          <p className="text-xs text-[#7A8075] truncate">
+                          <p className="text-xs text-[#5B655D] truncate">
                             {r.steward && `Steward: ${r.steward}`}
                             {r.steward && r.naturalness_score && ' · '}
                             {r.naturalness_score && `Score: ${r.naturalness_score}`}
@@ -691,9 +691,9 @@ export default function PdfExportModal({
                 <h3 className="text-sm font-bold text-[#254431] uppercase tracking-wide">Advanced Options</h3>
               </div>
               {showAdvanced ? (
-                <ChevronUp className="w-4 h-4 text-[#7A8075]" />
+                <ChevronUp className="w-4 h-4 text-[#5B655D]" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-[#7A8075]" />
+                <ChevronDown className="w-4 h-4 text-[#5B655D]" />
               )}
             </button>
 
@@ -702,7 +702,7 @@ export default function PdfExportModal({
 
                 {/* Sort Order */}
                 <div>
-                  <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide mb-2 block">Sort Order</label>
+                  <label className="text-xs font-semibold text-[#5B655D] uppercase tracking-wide mb-2 block">Sort Order</label>
                   <div className="flex gap-2">
                     {(['newest', 'oldest'] as const).map((order) => (
                       <button
@@ -711,7 +711,7 @@ export default function PdfExportModal({
                         className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-all border-2 ${
                           options.sortOrder === order
                             ? 'bg-[#356B43] text-white border-[#356B43]'
-                            : 'bg-white text-[#7A8075] border-[#E4EBE4] hover:border-[#86A98A]'
+                            : 'bg-white text-[#5B655D] border-[#E4EBE4] hover:border-[#86A98A]'
                         }`}
                       >
                         {order === 'newest' ? 'Newest First' : 'Oldest First'}
@@ -722,7 +722,7 @@ export default function PdfExportModal({
 
                 {/* Page Size */}
                 <div>
-                  <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide mb-2 block">Page Size</label>
+                  <label className="text-xs font-semibold text-[#5B655D] uppercase tracking-wide mb-2 block">Page Size</label>
                   <div className="flex gap-2">
                     {(['LETTER', 'A4'] as const).map((size) => (
                       <button
@@ -731,7 +731,7 @@ export default function PdfExportModal({
                         className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-all border-2 ${
                           options.pageSize === size
                             ? 'bg-[#356B43] text-white border-[#356B43]'
-                            : 'bg-white text-[#7A8075] border-[#E4EBE4] hover:border-[#86A98A]'
+                            : 'bg-white text-[#5B655D] border-[#E4EBE4] hover:border-[#86A98A]'
                         }`}
                       >
                         {size === 'LETTER' ? 'US Letter' : 'A4'}
@@ -743,7 +743,7 @@ export default function PdfExportModal({
                 {/* Sections and questions */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">Sections</label>
+                    <label className="text-xs font-semibold text-[#5B655D] uppercase tracking-wide">Sections</label>
                     {exportSections.length > 0 && (
                       <button
                         onClick={() => setOptions((p) => ({ ...p, hiddenQuestionIds: [] }))}
@@ -755,7 +755,7 @@ export default function PdfExportModal({
                   </div>
 
                   {questionsLoading && (
-                    <p className="text-xs text-[#7A8075]">Loading questions...</p>
+                    <p className="text-xs text-[#5B655D]">Loading questions...</p>
                   )}
 
                   {questionsError && (
@@ -791,7 +791,7 @@ export default function PdfExportModal({
                               ) : selection === 'some' ? (
                                 <MinusSquare className="w-4 h-4 text-[#356B43] flex-shrink-0" />
                               ) : (
-                                <Square className="w-4 h-4 text-[#7A8075] flex-shrink-0" />
+                                <Square className="w-4 h-4 text-[#5B655D] flex-shrink-0" />
                               )}
                               <p className={`text-sm ${selection === 'none' ? 'font-medium text-[#254431]' : 'font-bold text-[#356B43]'}`}>
                                 {section.title}
@@ -811,9 +811,9 @@ export default function PdfExportModal({
                                     {selected ? (
                                       <CheckSquare className="w-4 h-4 text-[#356B43] flex-shrink-0" />
                                     ) : (
-                                      <Square className="w-4 h-4 text-[#7A8075] flex-shrink-0" />
+                                      <Square className="w-4 h-4 text-[#5B655D] flex-shrink-0" />
                                     )}
-                                    <p className={`text-sm ${selected ? 'font-bold text-[#356B43]' : 'text-[#7A8075]'}`}>
+                                    <p className={`text-sm ${selected ? 'font-bold text-[#356B43]' : 'text-[#5B655D]'}`}>
                                       {item.text}
                                     </p>
                                   </button>
@@ -840,7 +840,7 @@ export default function PdfExportModal({
             </div>
           )}
           <div className="flex items-center justify-between">
-            <p className="text-sm text-[#7A8075]">
+            <p className="text-sm text-[#5B655D]">
               {mode === 'single'
                 ? '1 inspection'
                 : mode === 'multi-site'
@@ -851,7 +851,7 @@ export default function PdfExportModal({
               <button
                 onClick={onClose}
                 disabled={loading}
-                className="px-5 py-2.5 rounded-xl border-2 border-[#E4EBE4] text-[#7A8075] hover:bg-[#F7F2EA] font-medium transition-colors disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl border-2 border-[#E4EBE4] text-[#5B655D] hover:bg-[#F7F2EA] font-medium transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>

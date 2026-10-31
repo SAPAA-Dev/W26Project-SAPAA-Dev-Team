@@ -613,21 +613,21 @@ describe('W26 US 1.0.22 – (User) Edit My Site Inspections Form', () => {
       localStorage.clear();
     });
 
-    it('renders the edit form when user is authorized', async () => {
+    it('renders the edit form when user is authorized (4.0.4 AT1)', async () => {
         (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(mockQuestions);
         (queries.getFormResponseById as jest.Mock).mockResolvedValue(mockResponses);
         render(<EditReportPage />);
         await waitFor(() => expect(screen.getByText('Edit Inspection Report')).toBeInTheDocument());
     });
 
-    it('shows access denied when user is not the owner', async () => {
+    it('shows access denied when user is not the owner (4.0.4 AT2)', async () => {
         (queries.getFormResponseById as jest.Mock).mockResolvedValue(mockResponses);
         (queries.getResponseOwnerId as jest.Mock).mockResolvedValue('different-user');
         render(<EditReportPage />);
         await waitFor(() => expect(screen.getByText('Access Denied')).toBeInTheDocument());
     });
 
-    it('shows access denied when the server refuses the answers of the report (#251)', async () => {
+    it('shows access denied when the server refuses the answers of the report (4.0.4 AT2, #251)', async () => {
         (queries.getFormResponseById as jest.Mock).mockRejectedValue(
           new Error('You are not allowed to view this report.')
         );
@@ -638,7 +638,7 @@ describe('W26 US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         errorSpy.mockRestore();
     });
 
-    it("all previous responses are filled correctly", async () => {
+    it("all previous responses are filled correctly (4.0.4 AT1)", async () => {
         (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(mockQuestions);
         (queries.getFormResponseById as jest.Mock).mockResolvedValue(mockResponses);
       
@@ -720,7 +720,7 @@ describe('W26 US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         expect(screen.getByText(/click to upload images/i)).toBeInTheDocument();
       });
 
-    it("shows required popup if user clears a required question and attempts to submit", async () => {
+    it("shows required popup if user clears a required question and attempts to submit (4.0.4 AT3)", async () => {
         (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(mockQuestions);
         (queries.getFormResponseById as jest.Mock).mockResolvedValue(mockResponses);
         
@@ -788,7 +788,7 @@ describe('W26 US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         expect(queries.insertInspectionAttachments).not.toHaveBeenCalled();
     });
 
-    it("if user changes a required question, submission is changed", async () => {
+    it("if user changes a required question, submission is changed (4.0.4 AT4)", async () => {
         (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(mockQuestions);
         (queries.getFormResponseById as jest.Mock).mockResolvedValue(mockResponses);
         (queries.getQuestionResponseType as jest.Mock).mockResolvedValue([
@@ -822,7 +822,7 @@ describe('W26 US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         expect(emailAnswer.obs_comm).toBe('newemail@gmail.com');
     });
 
-    it('shows the saved report on its site page', async () => {
+    it('shows the saved report on its site page (4.0.4 AT4)', async () => {
         (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(mockQuestions);
         (queries.getFormResponseById as jest.Mock).mockResolvedValue(mockResponses);
 
@@ -839,7 +839,7 @@ describe('W26 US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         );
     });
 
-    it("keeps an answer hidden when its owner edits the report", async () => {
+    it("keeps an answer hidden when its owner edits the report (4.0.4 AT4)", async () => {
         (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(mockQuestions);
         (queries.getFormResponseById as jest.Mock).mockResolvedValue(mockResponses);
         (queries.getHiddenQuestionIdsByResponseId as jest.Mock).mockResolvedValue([32]);

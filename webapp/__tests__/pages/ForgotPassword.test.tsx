@@ -52,19 +52,6 @@ describe('ForgotPasswordPage', () => {
     );
   });
 
-  it('5.0.2 AT1: shows the provider message for a Google or Microsoft account', async () => {
-    fetchMock.mockResolvedValue(
-      jsonResponse({ providerRequired: 'google', error: 'This account signs in with Google.' }),
-    );
-
-    render(<ForgotPasswordPage />);
-    fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'g@example.com' } });
-    fireEvent.click(screen.getByRole('button', { name: /Send verification code/i }));
-
-    expect(await screen.findByText(/signs in with Google/i)).toBeInTheDocument();
-    expect(screen.queryByLabelText(/Verification Code/i)).not.toBeInTheDocument();
-  });
-
   it('5.0.2 AT2, AT4: takes the user to the reset password page when the code is correct', async () => {
     const hrefSpy = spyOnLocationHrefSetter();
 

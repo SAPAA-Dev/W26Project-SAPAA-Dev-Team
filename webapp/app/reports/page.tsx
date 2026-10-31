@@ -91,7 +91,7 @@ export default function ReportsPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex flex-col items-center justify-center gap-4">
         <div className="w-16 h-16 border-4 border-[#E4EBE4] border-t-[#356B43] rounded-full animate-spin"></div>
-        <p className="text-[#7A8075] font-medium">Loading inspection reports...</p>
+        <p className="text-[#5B655D] font-medium">Loading inspection reports...</p>
       </div>
     );
   }
@@ -104,7 +104,7 @@ export default function ReportsPage() {
             <AlertCircle className="w-8 h-8 text-[#B91C1C]" />
           </div>
           <h2 className="text-2xl font-bold text-[#254431] mb-2">Unable to Load Reports</h2>
-          <p className="text-[#7A8075] mb-6">{error}</p>
+          <p className="text-[#5B655D] mb-6">{error}</p>
           <button
             onClick={() => void load()}
             className="bg-gradient-to-r from-[#356B43] to-[#254431] text-white font-semibold px-6 py-3 rounded-xl hover:shadow-lg transition-all"
@@ -145,24 +145,24 @@ export default function ReportsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 mt-2">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A8075]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#5B655D]" />
               <input
                 type="text"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search by site, report number, or steward"
                 data-testid="reports-search"
-                className="w-full pl-12 pr-4 py-3 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"
+                className="w-full pl-12 pr-4 py-3 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all shadow-sm"
               />
             </div>
-            <p className="text-sm text-[#7A8075]">
+            <p className="text-sm text-[#5B655D]">
               {filteredReports.length} {filteredReports.length === 1 ? 'report' : 'reports'}
             </p>
           </div>
 
           {filteredReports.length === 0 ? (
             <div className="mt-6 bg-white rounded-2xl shadow-sm p-10 text-center">
-              <ClipboardList className="w-10 h-10 text-[#7A8075] mx-auto mb-4" />
+              <ClipboardList className="w-10 h-10 text-[#5B655D] mx-auto mb-4" />
               <p className="text-[#5B655D]">
                 {search.trim() ? 'No reports match your search.' : 'No inspection reports recorded yet.'}
               </p>

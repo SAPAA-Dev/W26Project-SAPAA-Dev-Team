@@ -83,7 +83,7 @@ export default function ProtectedRoute({
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA]">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-[#356B43] mx-auto mb-4" />
-          <p className="text-[#7A8075] font-medium">Loading...</p>
+          <p className="text-[#5B655D] font-medium">Loading...</p>
         </div>
       </div>
     );
@@ -103,10 +103,10 @@ export default function ProtectedRoute({
             <Clock className="w-8 h-8 text-[#D98C30]" />
           </div>
           <h2 className="text-2xl font-bold text-[#254431] mb-2">Awaiting Admin Approval</h2>
-          <p className="text-[#7A8075] mb-6">
+          <p className="text-[#5B655D] mb-6">
             Your account has been created successfully, but an administrator needs to review and approve your access before you can use the application.
           </p>
-          <p className="text-sm text-[#7A8075] mb-6">
+          <p className="text-sm text-[#5B655D] mb-6">
             You&apos;ll receive an email notification once you&apos;ve been approved. This typically happens within 24 hours.
           </p>
           <button
@@ -132,7 +132,7 @@ export default function ProtectedRoute({
             <ShieldAlert className="w-8 h-8 text-[#B91C1C]" />
           </div>
           <h2 className="text-2xl font-bold text-[#254431] mb-2">Access Denied</h2>
-          <p className="text-[#7A8075] mb-6">You need admin privileges to access this page.</p>
+          <p className="text-[#5B655D] mb-6">You need admin privileges to access this page.</p>
           <button
             onClick={() => router.push('/sites')}
             className="bg-gradient-to-r from-[#356B43] to-[#254431] text-white font-semibold px-6 py-3 rounded-xl hover:shadow-lg transition-all"

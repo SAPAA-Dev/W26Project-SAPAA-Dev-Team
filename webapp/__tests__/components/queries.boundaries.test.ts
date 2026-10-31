@@ -147,7 +147,7 @@ describe("getProtectedAreaBoundaries (US 2.0.6)", () => {
     expect(collection.features[0].properties.is_active).toBeNull();
   });
 
-  it("attaches the site name and inspection date from the linked site (US 2.0.8 AT2)", async () => {
+  it("attaches the site name and inspection date from the linked site (2.0.8 AT2)", async () => {
     mockAreas([area]);
     mockLinks([
       {
@@ -168,7 +168,7 @@ describe("getProtectedAreaBoundaries (US 2.0.6)", () => {
     expect(collection.features[0].properties.last_inspection_date).toBe("2024-03-15");
   });
 
-  it("uses created_at for the newest report with no inspection date (US 2.0.8 AT2)", async () => {
+  it("uses created_at for the newest report with no inspection date (2.0.8 AT2)", async () => {
     mockAreas([area]);
     mockLinks([
       {
@@ -188,7 +188,7 @@ describe("getProtectedAreaBoundaries (US 2.0.6)", () => {
     expect(collection.features[0].properties.last_inspection_date).toBe("2024-04-01T09:00:00Z");
   });
 
-  it("leaves the site name and date null when no site joins the area (US 2.0.8 AT2)", async () => {
+  it("leaves the site name and date null when no site joins the area (2.0.8 AT2)", async () => {
     mockAreas([area]);
     mockLinks([]);
 
@@ -198,7 +198,7 @@ describe("getProtectedAreaBoundaries (US 2.0.6)", () => {
     expect(collection.features[0].properties.last_inspection_date).toBeNull();
   });
 
-  it("ignores an archived report when it sets the date (US 2.0.8 AT2)", async () => {
+  it("ignores an archived report when it sets the date (2.0.8 AT2)", async () => {
     mockAreas([area]);
     mockLinks([
       {

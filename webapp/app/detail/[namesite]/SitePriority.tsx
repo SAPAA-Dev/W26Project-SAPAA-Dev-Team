@@ -24,6 +24,7 @@ export default function SitePriority({ siteId, isAdmin }: { siteId: number; isAd
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Record<keyof PriorityScores, string>>({ abuses: "", biological: "", time: "" });
   const [message, setMessage] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
   // One request at a time, so a double click does not save twice.
   const [busy, setBusy] = useState(false);
 
@@ -41,6 +42,7 @@ export default function SitePriority({ siteId, isAdmin }: { siteId: number; isAd
       time: scores ? String(scores.time) : "",
     });
     setMessage(null);
+    setSaved(false);
     setEditing(true);
   }
 
@@ -62,6 +64,7 @@ export default function SitePriority({ siteId, isAdmin }: { siteId: number; isAd
       setData(result.priority);
       setLoadFailed(false);
       setEditing(false);
+      setSaved(true);
     } catch {
       setMessage("The scores were not saved. Try again.");
     } finally {
@@ -84,11 +87,22 @@ export default function SitePriority({ siteId, isAdmin }: { siteId: number; isAd
           <span>To-visit priority not scored yet</span>
         )}
         {isAdmin && !editing && !loadFailed && (
-          <button type="button" onClick={startEditing} className="ml-2 text-sm underline" data-testid="site-priority-edit">
+          <button
+            type="button"
+            onClick={startEditing}
+            className="ml-2 inline-flex min-h-11 items-center rounded-lg px-2 text-sm underline"
+            data-testid="site-priority-edit"
+          >
             {data?.scores ? "Edit scores" : "Score site"}
           </button>
         )}
       </div>
+
+      {saved && (
+        <p role="status" className="ml-7 text-sm font-medium" data-testid="site-priority-saved">
+          Saved.
+        </p>
+      )}
 
       {data?.needsReassessment && (
         <p className="ml-7 flex items-center gap-1 text-sm font-semibold text-[#FFE9A8]" data-testid="site-priority-reminder">
@@ -125,8 +139,21 @@ export default function SitePriority({ siteId, isAdmin }: { siteId: number; isAd
           ))}
           <p className="text-xs">Each score is a whole number from {PRIORITY_SCORE_MIN} to {PRIORITY_SCORE_MAX}.</p>
           <div className="flex gap-2">
-            <button type="submit" disabled={busy} className="text-sm font-semibold px-2 disabled:opacity-60" data-testid="site-priority-save">Save</button>
-            <button type="button" onClick={() => setEditing(false)} className="text-sm px-2">Cancel</button>
+            <button
+              type="submit"
+              disabled={busy}
+              className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold disabled:opacity-60"
+              data-testid="site-priority-save"
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm"
+            >
+              Cancel
+            </button>
           </div>
           {message && <p className="text-sm text-red-700" role="alert">{message}</p>}
         </form>

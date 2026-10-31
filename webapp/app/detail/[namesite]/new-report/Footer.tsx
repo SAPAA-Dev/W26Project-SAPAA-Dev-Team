@@ -84,7 +84,7 @@ export default function StickyFooter({
         <div className="w-full min-w-0 lg:flex-1">
           <div className="flex justify-between mb-2">
             <span className="text-sm font-bold text-[#254431]">Overall Progress</span>
-            <span className="text-sm font-medium text-[#7A8075]">
+            <span className="text-sm font-medium text-[#5B655D]">
               {answeredCount} / {totalQuestions} answered
             </span>
           </div>

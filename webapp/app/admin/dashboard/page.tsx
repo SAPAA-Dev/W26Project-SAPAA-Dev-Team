@@ -167,7 +167,7 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex flex-col items-center justify-center gap-4">
         <div className="w-16 h-16 border-4 border-[#E4EBE4] border-t-[#356B43] rounded-full animate-spin"></div>
-        <p className="text-[#7A8075] font-medium">Loading dashboard...</p>
+        <p className="text-[#5B655D] font-medium">Loading dashboard...</p>
       </div>
     );
   }
@@ -223,7 +223,7 @@ export default function Dashboard() {
                   <FileText className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <div className="text-xs sm:text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Total Records</div>
+                  <div className="text-xs sm:text-sm font-semibold text-[#5B655D] uppercase tracking-wide">Total Records</div>
                   <div className="text-2xl sm:text-3xl font-bold text-[#254431]">{stats.totalInspections}</div>
                 </div>
               </div>
@@ -237,7 +237,7 @@ export default function Dashboard() {
                     <ImageIcon className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <div className="text-sm sm:text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Image Gallery</div>
+                    <div className="text-sm sm:text-sm font-semibold text-[#5B655D] uppercase tracking-wide">Image Gallery</div>
                     <div className="text-2xl sm:text-3xl font-bold text-[#254431]">{items.length} images</div>
                   </div>
                 </div>
@@ -251,7 +251,7 @@ export default function Dashboard() {
                   <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-white"/>
                 </div>
                 <div>
-                  <div className="text-sm sm:text-sm font-semibold text-[#7A8075] uppercase tracking-wide">Last Record</div>
+                  <div className="text-sm sm:text-sm font-semibold text-[#5B655D] uppercase tracking-wide">Last Record</div>
                   <div className="text-2xl sm:text-3xl font-bold text-[#254431]">
                     {stats.lastInspectionDate
                       ? new Date(stats.lastInspectionDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
@@ -316,7 +316,7 @@ export default function Dashboard() {
                 </ul>
               </div>
             ) : (
-              <p className="text-[#7A8075]">No data available</p>
+              <p className="text-[#5B655D]">No data available</p>
             )}
           </div>
 
@@ -357,7 +357,7 @@ export default function Dashboard() {
                 </ul>
               </div>
             ) : (
-              <p className="text-[#7A8075]">No data available</p>
+              <p className="text-[#5B655D]">No data available</p>
             )}
           </div>
         </div>

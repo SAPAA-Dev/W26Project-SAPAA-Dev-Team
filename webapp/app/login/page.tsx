@@ -150,7 +150,7 @@ export default function LoginPage() {
               <h1 className="text-4xl font-bold text-[#254431] mb-3">
                 Welcome Back
               </h1>
-              <p className="text-lg text-[#7A8075]">
+              <p className="text-lg text-[#5B655D]">
                 Sign in to access site inspections.
               </p>
             </div>
@@ -195,7 +195,7 @@ export default function LoginPage() {
                 <div className="w-full border-t-2 border-[#E4EBE4]" />
               </div>
               <div className="relative flex justify-center">
-                <span className="px-4 bg-[#E4EBE4] text-sm font-medium text-[#7A8075]">
+                <span className="px-4 bg-[#E4EBE4] text-sm font-medium text-[#5B655D]">
                   Or continue with email
                 </span>
               </div>
@@ -208,7 +208,7 @@ export default function LoginPage() {
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 pl-4 flex items-center">
-                    <Mail className="h-5 w-5 text-[#7A8075]" />
+                    <Mail className="h-5 w-5 text-[#5B655D]" />
                   </div>
                   <input
                     id="email"
@@ -219,7 +219,7 @@ export default function LoginPage() {
                       if (err) setErr(null);
                     }}
                     onKeyPress={handleKeyPress}
-                    className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-4 py-3.5 text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
+                    className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-4 py-3.5 text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
                     placeholder="your.email@example.com"
                     required
                   />
@@ -240,7 +240,7 @@ export default function LoginPage() {
                 </div>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 pl-4 flex items-center">
-                    <Lock className="h-5 w-5 text-[#7A8075]" />
+                    <Lock className="h-5 w-5 text-[#5B655D]" />
                   </div>
                   <input
                     id="password"
@@ -251,7 +251,7 @@ export default function LoginPage() {
                       if (err) setErr(null);
                     }}
                     onKeyPress={handleKeyPress}
-                    className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-12 py-3.5 text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
+                    className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-12 py-3.5 text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
                     placeholder="Enter your password"
                     required
                   />
@@ -261,9 +261,9 @@ export default function LoginPage() {
                     className="absolute inset-y-0 right-0 pr-4 flex items-center hover:bg-[#F7F2EA] rounded-r-xl transition-colors"
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-[#7A8075] hover:text-[#1E2520]" />
+                      <EyeOff className="h-5 w-5 text-[#5B655D] hover:text-[#1E2520]" />
                     ) : (
-                      <Eye className="h-5 w-5 text-[#7A8075] hover:text-[#1E2520]" />
+                      <Eye className="h-5 w-5 text-[#5B655D] hover:text-[#1E2520]" />
                     )}
                   </button>
                 </div>
@@ -292,7 +292,7 @@ export default function LoginPage() {
             </div>
 
             <div className="mt-8 text-center">
-              <p className="text-[#7A8075]">
+              <p className="text-[#5B655D]">
                 Don&apos;t have an account?{' '}
                 <a
                   href="/signup"
@@ -304,7 +304,7 @@ export default function LoginPage() {
             </div>
 
             <div className="mt-8 pt-6 border-t-2 border-[#E4EBE4]">
-              <p className="text-xs text-center text-[#7A8075] leading-relaxed">
+              <p className="text-xs text-center text-[#5B655D] leading-relaxed">
                 By signing in, you agree to help protect Alberta&apos;s natural spaces 
                 and contribute to the conservation of our protected areas.
               </p>

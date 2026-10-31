@@ -49,6 +49,31 @@ Only the work that GitHub or the minutes record is listed.
   ([#97](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/97)) and the demo and retrospective ([#98](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/98)), both open on October 11. The Sprint 2 and
   Sprint 3 backlog issues (50 and 51 issues) were written by Saumya, not by the Product Owner.
 
+### Sprint 3 role outputs
+
+Only the work that GitHub records is listed. Counts are for the PRs merged into `sprint-3`.
+
+- **Scrum Master, Jayden.** Authored 2 merged PRs and submitted reviews on 9 PRs of other members, the third most. Is the assigned reviewer of the `sprint-3` to `main` PR (#319). That review is not recorded on the PR.
+- **Product Owner, Aaron.** Authored 1 merged PR, submitted a review on 1 PR, and made 3 non-merge commits. Is assigned to the Sprint 3 release notes ([#217](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/217)) and the demo ([#218](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/218)); both are open on October 26. The Sprint 3 backlog issues were written by Saumya, not by the Product Owner.
+
+## Sprint 3 contributions
+
+This table covers October 14 to October 26, 2026. **Merged PRs** counts the 28 PRs merged into `sprint-3` by author (`gh pr list --base sprint-3 --state merged`). **Reviews** counts those PRs of other members on which the member submitted a review; the Copilot reviewer is not counted. **Commits** counts non-merge commits on `sprint-3` since October 14 (`git shortlog -sn --no-merges`). Work without a PR, such as client meetings and lab sessions, is not counted.
+
+| Member | Team | Merged PRs | Reviews | Commits | Role |
+|--------|------|-----------|---------|---------|------|
+| Saumya | Red | 6 | 3 | 56 | None |
+| Chris | Red | 7 | 16 | 31 | None |
+| Alissa | Green | 4 | 2 | 16 | None |
+| Abhinav | Blue | 6 | 13 | 8 | None |
+| Jayden | Green | 2 | 9 | 7 | Scrum Master, Sprint 3 |
+| Aaron | Blue | 1 | 1 | 3 | Product Owner, Sprint 3 |
+| Zanab | Blue | 2 | 1 | 3 | None |
+
+Saumya and Chris (Red) made 87 of the 124 commits. Red carried 47 of the 68 Sprint 3 points. The Product Owner and one other Blue member have the fewest commits and PRs. The load was uneven, and the team should say so.
+
+**How the team handles it.** After the Sprint 3 review, the remaining work was split by area and assigned: Chris has [#323](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/323) and [#324](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/324), and Abhinav has [#325](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/325) and [#326](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/326). In Sprint 4 the Product Owner (Zanab) spreads the stories across the three teams (see [Project Management](project-management.md#re-estimate-after-sprint-3)).
+
 ## Sprint 2 contributions
 
 This table counts the 71 pull requests merged after the Sprint 1 release (the `sprint-1` tag,

@@ -100,7 +100,7 @@ describe('TagPicker', () => {
     expect(within(screen.getByLabelText('Add skills')).getByRole('option', { name: 'Bird ID' })).toBeInTheDocument();
   });
 
-  it('stops at twelve values', () => {
+  it('stops at twelve values (1.0.6 AT1)', () => {
     const twelve = Array.from({ length: 12 }, (_, index) => `Skill ${index}`);
     render(<Harness initial={twelve} options={OPTIONS} />);
 

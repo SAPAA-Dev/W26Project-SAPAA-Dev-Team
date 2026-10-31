@@ -28,7 +28,7 @@ fi
 
 branch=${BRANCH:-$(git symbolic-ref --short -q HEAD || echo "")}
 case "$branch" in
-  ''|main|master|release) exit 0 ;;   # detached HEAD and long-lived branches are exempt
+  ''|main|master|release|sprint-[0-9]*) exit 0 ;;   # detached HEAD and long-lived branches are exempt
 esac
 
 if ! printf '%s' "$branch" | grep -Eq "^($TYPES)/[a-z0-9]+(-[a-z0-9]+)*$"; then

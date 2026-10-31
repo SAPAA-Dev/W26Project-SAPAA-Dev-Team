@@ -163,6 +163,38 @@ describe('GpxTrackUpload (US 2.0.9)', () => {
     expect(mockSave).not.toHaveBeenCalled();
   });
 
+  it('opens a modal dialog with an accessible name and closes it with Escape', () => {
+    render(<GpxTrackUpload siteId={7} />);
+    openModal();
+
+    const dialog = screen.getByRole('dialog', { name: 'Upload GPX Tracks' });
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(screen.getByRole('button', { name: 'Close upload dialog' })).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('offers a visible button that opens the file picker for keyboard users', () => {
+    const { container } = render(<GpxTrackUpload siteId={7} />);
+    openModal();
+
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const clickSpy = jest.spyOn(input, 'click').mockImplementation(() => {});
+    fireEvent.click(screen.getByRole('button', { name: 'Choose GPX files' }));
+
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('announces the file results to assistive technology', async () => {
+    const { container } = render(<GpxTrackUpload siteId={7} />);
+    openModal();
+    chooseFiles(container, [makeFile('visit.gpx')]);
+
+    const results = await screen.findByRole('status');
+    expect(results).toHaveTextContent('visit.gpx was saved.');
+  });
+
   it('lists the saved tracks of the site with their point counts (AT4)', async () => {
     mockTracks.mockResolvedValue([
       {

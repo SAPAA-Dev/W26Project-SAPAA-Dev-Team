@@ -17,7 +17,7 @@ export default function SubmittedBy({ userId }: { userId: string | null }) {
   if (!person) return null;
   return (
     <div>
-      <p className="text-sm font-semibold text-[#7A8075] mb-1">Submitted by</p>
+      <p className="text-sm font-semibold text-[#5B655D] mb-1">Submitted by</p>
       <Link href={`/people/${person.id}`} className="font-semibold text-[#356B43] underline" data-testid="inspection-submitter-link">
         {person.displayName}
       </Link>

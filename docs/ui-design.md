@@ -32,8 +32,20 @@ The profile page uses dark text on light surfaces. Its Save button uses white te
 | Save changes button | `#FFFFFF` | `#356B43` | 6.3:1 |
 | Profile headings | `#254431` | `#FFFFFF` | 10.77:1 |
 | Main profile text | `#1E2520` | `#F7F2EA` | 14.06:1 |
+| Muted Sage captions and placeholders | `#5B655D` | `#FFFFFF` | 6.06:1 |
+| GPX dialog subtitle | `#E4EBE4` | `#356B43` | 5.19:1 |
+| GPX track line | `#C2410C` | `#FFFFFF` casing | 5.18:1 |
 
-These pairs meet the WCAG requirements for normal text and were tested in [Accessibility Aid](https://accessibilityaid.com/free-tools/colour-contrast-checker). These are only a few examples and do not establish accessibility compliance for the full app.
+These pairs meet the WCAG requirements for normal text. The earlier rows were checked in
+[Accessibility Aid](https://accessibilityaid.com/free-tools/colour-contrast-checker); the new rows
+were calculated with the WCAG relative-luminance formula. These are only a few examples and do not
+establish accessibility compliance for the full app.
+
+The orange GPX line is only 1.22:1 against the green boundary fill, so a white casing layer
+separates the two shapes. Keyboard users get a 2px `#356B43` focus ring from `:focus-visible`,
+because the global input rule no longer removes the outline. The GPX dialog has `role="dialog"`,
+`aria-modal`, an accessible title and an Escape handler, and it offers a visible button that
+opens the file picker.
 
 Accessibility also needs more than colour. The profile form has visible labels. Save failures have an alert role, and save confirmation has a status role. Archive dialogs have accessible titles and labelled close buttons. Text such as “Archive Site” explains the action without relying on colour alone.
 
@@ -59,7 +71,7 @@ Sprint 2 extends the Winter navigation and button styles to new pages. Profile e
 
 ### 3.5 Error Prevention
 
-The profile form requires a name and email and checks email and link formats. Its Save button is disabled during a save if the requirements are not met. Archive confirmation names the site and shows the affected record counts before the admin proceeds.
+The profile form requires a name and email and checks email and link formats. Its Save button is disabled during a save. Missing or invalid values are caught by the browser's form checks before the save starts. Archive confirmation names the site and shows the affected record counts before the admin proceeds.
 
 ### 3.6 Recognition Rather than Recall
 
@@ -79,9 +91,52 @@ A failed profile save keeps the form and entered values so the user can retry. A
 
 ### 3.10 Help and Documentation
 
-The profile form explains comma-separated skills and focus areas, required email, and contact visibility. Archive dialogs explain what will be kept and how to restore it. The site-list menu retains the App tutorial and Contact us options from Winter. Tutorial availability depends on the page providing its walkthrough handler.
+The profile form offers skills and focus areas as dropdowns with an “Other…” option, and explains required email and contact visibility. Archive dialogs explain what will be kept and how to restore it. The site-list menu retains the App tutorial and Contact us options from Winter. Tutorial availability depends on the page providing its walkthrough handler.
 
 Implementation references: [profile UI](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/blob/ceb5188/webapp/components/ProfilePage.tsx), [site list](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/blob/ceb5188/webapp/app/sites/page.tsx), [archive confirmation](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/blob/ceb5188/webapp/app/admin/sites/components/ArchiveSiteModal.tsx), and [navigation menu](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/blob/ceb5188/webapp/components/HeaderDropdown.tsx).
+
+## 4. Sprint 3 additions
+
+Sprint 3 added the map page with GPX tracks and boundary colors, GPX upload, the to-visit priority score, the year-old flag, offline map areas, export of all files, password reset and the skill and focus-area dropdowns. This section applies the same heuristics to them and lists the accessibility gaps that remain. It comes from a code review on October 26, 2026. No screen reader or phone test has been run.
+
+### 4.1 Heuristics in the Sprint 3 UI
+
+| Heuristic | Where it shows in Sprint 3 |
+|---|---|
+| Visibility of system status | The GPX upload dialog shows a status for each file (saved or refused, with the reason). The offline map panel reports problems with an alert role. The year-old flag on the priority score uses colour, an icon and text. |
+| Match with the real world | Skills and focus areas are dropdowns of existing values, with “Other…” for a new one (US 1.0.6). The map popup shows the county and the last inspection date. |
+| User control and freedom | The GPX dialog and the offline panel have close buttons. “Other…” lets a user type a value that is not on the list. |
+| Consistency and standards | The map and priority pages reuse the green tokens, cards and Lucide icons. Exceptions: the priority form is a plain box with small text buttons, and the map popup is built from raw HTML strings. The map has no legend for the site-type colours that an Admin chooses. |
+| Error prevention | GPX upload accepts `.gpx` files up to 50 MiB and refuses the rest with a reason. Priority scores are checked on the server. Editing a report blocks Save and lists the missing required answers. Password reset needs a code sent by email. |
+| Recognition rather than recall | The map filter has labelled controls. “View on map” on the site page opens the map with that site highlighted. |
+| Flexibility and efficiency | The sites page switches between cards and the map. GPX upload takes several files at once. |
+| Aesthetic and minimalist design | Boundaries, tracks and sites share one map. The track line uses a dashed pattern so that it is not colour alone. |
+| Recover from errors | A refused GPX file names the reason. A failed priority save shows an alert. |
+| Help and documentation | The offline panel gives plain messages such as “Go online to download tiles.” and “No tiles in this area.” There is no in-app help page for the map yet. |
+
+### 4.2 Contrast
+
+Ratios use the WCAG 2.x relative-luminance formula, computed on October 27, 2026 from the colours in the code. Text needs 4.5:1 and non-text parts need 3:1.
+
+| Pair | Where | Ratio | Result |
+|---|---|---|---|
+| `#FFFFFF` on `#356B43` | Buttons | 6.30 | Pass |
+| `#254431` on `#FFFFFF` | Headings | 10.77 | Pass |
+| `#1E2520` on `#F7F2EA` | Body text | 14.06 | Pass |
+| `#FFE9A8` on `#356B43` | Year-old warning | 5.24 | Pass |
+| `#B91C1C` on `#FEE2E2` | Error text | 5.30 | Pass |
+| `#92400E` on `#FEF3C7`, `#9A3412` on `#FFEDD5`, `#7F1D1D` on `#FEE2E2`, `#065F46` on `#D1FAE5`, `#475569` on `#F1F5F9` | Visit-status badges | 6.4 to 8.2 | Pass |
+| `#5B655D` on `#FFFFFF` | Captions and placeholders | 6.06 | Pass |
+| `#5B655D` on `#F7F2EA` | Captions on cream | 5.44 | Pass |
+| `#E4EBE4` on `#356B43` | GPX dialog subtitle | 5.19 | Pass |
+| `#C2410C` on the white GPX casing | GPX track line | 5.18 | Pass |
+| `#E4EBE4` on `#FFFFFF` | Input borders | 1.21 | **Fail** (3:1 for non-text) |
+
+### 4.3 Known accessibility gaps
+
+The items in [#326](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/326) are fixed: the focus outline is restored, the GPX dialog has a dialog role, an Escape handler and a visible file button, the small buttons meet 44 px, the offline badge and priority save are announced, and the caption colour passes.
+
+The input borders (`#E4EBE4` on white, 1.21:1) are still below the 3:1 non-text limit. This gap is not part of #326.
 
 ---
 
@@ -371,7 +426,7 @@ All colours in the application are drawn from a forest-green and warm-cream pale
 |---|---|---|
 | Deep Charcoal | `#1E2520` | Primary body text, high-contrast content |
 | Forest Dark | `#254431` | Heading text, stat numbers, labels |
-| Muted Sage | `#7A8075` | Captions, metadata, labels, placeholder text |
+| Muted Sage | `#5B655D` | Captions, metadata, labels, placeholder text |
 
 ### 5.4 Status and Semantic Colours
 
@@ -406,8 +461,8 @@ The current web implementation loads Google Fonts `Inter` (body/UI) and `DM Sans
 | `text-3xl font-bold` | Page titles (always white inside headers) |
 | `text-2xl font-bold text-[#254431]` | Section headings within page body |
 | `text-xl font-bold text-[#254431]` | Sub-section headings, card titles |
-| `text-base` / `text-sm text-[#7A8075]` | Body text, subtitles in headers |
-| `text-sm font-semibold text-[#7A8075] uppercase tracking-wide` | Label / caption above inputs and stat cards |
+| `text-base` / `text-sm text-[#5B655D]` | Body text, subtitles in headers |
+| `text-sm font-semibold text-[#5B655D] uppercase tracking-wide` | Label / caption above inputs and stat cards |
 | `text-3xl font-bold text-[#254431]` | Stat numbers on cards |
 | `text-xs font-semibold` | Badges, chips, type indicators |
 | `text-[10px] font-bold uppercase tracking-tight` | Micro-labels (Hidden badge, Live Draft pill) |
@@ -577,7 +632,7 @@ Used on the Admin Dashboard, Account Management, and any new admin pages. Featur
       <Icon className="w-6 h-6 text-white" />
     </div>
     <div>
-      <div className="text-sm font-semibold text-[#7A8075] uppercase tracking-wide">
+      <div className="text-sm font-semibold text-[#5B655D] uppercase tracking-wide">
         Label
       </div>
       <div className="text-3xl font-bold text-[#254431]">{value}</div>
@@ -594,7 +649,7 @@ Used only in the HomeClient stats strip. Kept for backward compatibility but sho
 <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
   <div className="flex items-center gap-2 mb-2">
     <Icon className="w-5 h-5 text-[#356B43]" />
-    <div className="text-sm text-[#7A8075] font-medium uppercase tracking-wide">Label</div>
+    <div className="text-sm text-[#5B655D] font-medium uppercase tracking-wide">Label</div>
   </div>
   <div className="text-3xl font-bold text-[#254431]">{value}</div>
 </div>
@@ -698,7 +753,7 @@ Used for the main action on a page or section. Always uses the forest gradient.
 Used alongside a primary button for cancel or alternate actions.
 
 ```tsx
-<button className="px-4 py-2.5 border-2 border-[#E4EBE4] text-[#7A8075]
+<button className="px-4 py-2.5 border-2 border-[#E4EBE4] text-[#5B655D]
                    text-sm font-semibold rounded-xl hover:bg-[#E4EBE4]
                    transition-all">
   Cancel
@@ -724,7 +779,7 @@ Small icon buttons used inside cards and list rows:
 | Variant | Classes |
 |---|---|
 | Edit | `w-7 h-7 rounded-lg text-[#356B43] hover:bg-[#EEF5EF]` |
-| Toggle | `p-1.5 rounded-md` - active: `text-[#7A8075] hover:bg-[#F7F2EA]` / inactive: `text-amber-600 bg-amber-50 hover:bg-amber-100` |
+| Toggle | `p-1.5 rounded-md` - active: `text-[#5B655D] hover:bg-[#F7F2EA]` / inactive: `text-amber-600 bg-amber-50 hover:bg-amber-100` |
 | Delete | `w-8 h-8 rounded-lg text-[#B91C1C] hover:bg-[#FEE2E2]` |
 | Close | `ml-auto` on alert banners |
 
@@ -766,7 +821,7 @@ Small square icon button in a sidebar header:
 <input type="text"
   className="w-full px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm
              focus:outline-none focus:border-[#356B43] transition-colors
-             placeholder:text-[#7A8075]" />
+             placeholder:text-[#5B655D]" />
 ```
 
 ### 12.2 Textarea
@@ -775,7 +830,7 @@ Small square icon button in a sidebar header:
 <textarea rows={2}
   className="w-full px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm
              focus:outline-none focus:border-[#356B43] resize-none transition-colors
-             placeholder:text-[#7A8075]" />
+             placeholder:text-[#5B655D]" />
 ```
 
 ### 12.3 Checkbox
@@ -790,7 +845,7 @@ Small square icon button in a sidebar header:
 All input labels follow the same uppercase `tracking-wide` pattern and sit above the input with `mt-1` on the control:
 
 ```tsx
-<label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
+<label className="text-xs font-semibold text-[#5B655D] uppercase tracking-wide">
   Field Name
 </label>
 <input className="... mt-1" />
@@ -885,7 +940,7 @@ border-[#356B43] shadow-sm
 <div className="text-center py-16 bg-white rounded-2xl
                 border-2 border-dashed border-[#E4EBE4]">
   <Icon className="w-12 h-12 text-[#E4EBE4] mx-auto mb-3" />
-  <p className="text-[#7A8075] font-medium">No items yet.</p>
+  <p className="text-[#5B655D] font-medium">No items yet.</p>
   <button className="mt-4 text-sm text-[#356B43] font-semibold hover:underline">
     + Add one
   </button>
@@ -942,7 +997,7 @@ When a page is loading its initial data, render a centred spinner on the page ba
   <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4]
                   to-[#F7F2EA] flex flex-col items-center justify-center gap-4">
     <Loader2 className="w-12 h-12 text-[#356B43] animate-spin" />
-    <p className="text-[#7A8075] font-medium">Loading...</p>
+    <p className="text-[#5B655D] font-medium">Loading...</p>
   </div>
 </ProtectedRoute>
 ```
@@ -1013,7 +1068,7 @@ Each sortable item exposes only a grip handle (not the whole card) as the drag t
   className="touch-none flex-shrink-0 cursor-grab active:cursor-grabbing
              p-0.5 rounded hover:bg-[#E4EBE4] transition-colors"
   onClick={e => e.stopPropagation()}>
-  <GripVertical className="w-4 h-4 text-[#7A8075]" />
+  <GripVertical className="w-4 h-4 text-[#5B655D]" />
 </button>
 ```
 ![UI Drag Handle](images/ui_drag_drop.png) 
@@ -1208,10 +1263,10 @@ When no images are selected, the modal shows a dashed-border drop zone:
                 cursor-pointer transition-colors border-[#E4EBE4] bg-[#F7F2EA]
                 hover:border-[#356B43]">
   <ImageIcon size={32} className="mx-auto mb-3 text-[#86A98A]" />
-  <p className="text-sm text-[#7A8075]">
+  <p className="text-sm text-[#5B655D]">
     Drop images here or <span className="text-[#356B43] font-semibold underline">browse files</span>
   </p>
-  <p className="text-xs text-[#7A8075]/60 mt-1">JPEG, PNG, HEIC supported</p>
+  <p className="text-xs text-[#5B655D]/60 mt-1">JPEG, PNG, HEIC supported</p>
 </div>
 ```
 
@@ -1260,11 +1315,11 @@ Once images are added, the editor shows a carousel with navigation and a respons
 <div className="border-t-2 border-[#E4EBE4] px-4 sm:px-6 py-4 flex-shrink-0">
   {/* Error alert (if upload failed) */}
   <div className="flex items-center justify-between gap-3">
-    <p className="text-sm text-[#7A8075]">
+    <p className="text-sm text-[#5B655D]">
       <strong>{completed} / {total}</strong> complete
     </p>
     <div className="flex items-center gap-2 sm:gap-3">
-      <button className="... border-2 border-[#E4EBE4] text-[#7A8075] ...">Cancel</button>
+      <button className="... border-2 border-[#E4EBE4] text-[#5B655D] ...">Cancel</button>
       <button data-testid="upload-submit-btn" className="... bg-gradient-to-r from-[#356B43] to-[#254431] ...">
         Upload
       </button>
@@ -1288,7 +1343,7 @@ Within Site Inspection Reports, image-type questions render an inline upload zon
     <ImageIcon className="w-8 h-8 text-[#356B43]" />
   </div>
   <p className="text-[#254431] font-bold text-lg">Click to upload images</p>
-  <p className="text-sm text-[#7A8075] mt-1">PNG, JPG, WEBP up to 10MB each</p>
+  <p className="text-sm text-[#5B655D] mt-1">PNG, JPG, WEBP up to 10MB each</p>
 </div>
 ```
 
@@ -1692,7 +1747,7 @@ The following files contain significant responsive design implementation:
 | `--bg-warm` | `#F7F2EA` |
 | `--bg-cool` | `#E4EBE4` |
 | `--text-primary` | `#1E2520` |
-| `--text-muted` | `#7A8075` |
+| `--text-muted` | `#5B655D` |
 | `--status-red` | `#B91C1C` / `#FEE2E2` |
 | `--status-dark-red` | `#7F1D1D` / `#FEE2E2` |
 | `--status-green` | `#065F46` / `#D1FAE5` |

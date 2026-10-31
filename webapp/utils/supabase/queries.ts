@@ -11,7 +11,14 @@ import {
   type BoundaryFeatureCollection,
   type ProtectedAreaBoundaryRow,
 } from '../../lib/map/boundaries';
-import { MAP_TRACK_CACHE_LIMIT, mapTrackCache, thinMapTrack, parseGpxTrackFile, type GpxTrackForMap, type GpxTrackPoint } from '../../lib/map/gpxTrack';
+import {
+  mapTrackCache,
+  MAP_TRACK_CACHE_LIMIT,
+  parseGpxTrackFile,
+  thinMapTrack,
+  type GpxTrackForMap,
+  type GpxTrackPoint,
+} from '../../lib/map/gpxTrack';
 
 import { SITE_PAGE_FIELDS } from '@/lib/sitePageFields';
 import {

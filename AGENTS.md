@@ -44,6 +44,29 @@ Use one of these types for commit messages and branch names: feat, fix, docs, ch
 * Make small, frequent commits. Each commit holds one logical change. Do not batch unrelated changes into one large commit.
 * Format branch names as `{type}/{description}`. Use lowercase words separated by hyphens in the description.
 
+# Definition of done
+A story is done only when all of these are true. They are part of the story, not later work. Put them in the same PR as the code.
+* Each acceptance test (AT) of the story has a test. Each AT has a success case and a failure case.
+* Each test name has the story and the AT, for example `(2.0.9 AT2)`.
+* A UI story has a UI test (Cypress), or the PR says why it has none.
+* `docs/traceability-matrix.md` has a row for each AT with the test path and the status.
+* `docs/project-management.md` shows the story status and the tasks.
+* A UI change updates `docs/ui-design.md`: the heuristics, the contrast, and the use with a keyboard.
+* A change to a schema, an API or a user flow updates the docs that describe it.
+* You ran the test, type check and lint commands for the changed directory.
+If one item is not done, say which item and why in the PR. Do not call the work done.
+
+# Sprint rhythm
+Work is spread over the whole sprint. It is not saved for the last day.
+* One person owns a story from start to end. Another person reviews it against the ATs.
+* Open the story branch and push the first commit with a failing or empty test in the first days of the sprint.
+* Merge each finished story into `sprint-N` at once. Do not hold finished work in a branch.
+* Halfway through the sprint, each story has code, tests and docs started. Say at the standup if one does not.
+* The code freeze is 2 days before the release. After the freeze, only fixes and docs go in. No new story goes in.
+* No one person does the final integration. If two stories conflict, the two owners fix it when the second one merges.
+* The last days are for the integration test on `sprint-N`, the production checks and the release notes.
+* One PR for each story, and one PR from `sprint-N` into `main`. Fixes and review changes are commits on the story branch.
+
 # Repository map
 | Directory | What it is | Stack |
 | --- | --- | --- |

@@ -320,7 +320,7 @@ export default function FormEditorPage() {
       <ProtectedRoute requireAdmin>
         <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex flex-col items-center justify-center gap-4">
           <Loader2 className="w-12 h-12 text-[#356B43] animate-spin" />
-          <p className="text-[#7A8075] font-medium">Loading form editor...</p>
+          <p className="text-[#5B655D] font-medium">Loading form editor...</p>
         </div>
       </ProtectedRoute>
     );
@@ -438,7 +438,7 @@ export default function FormEditorPage() {
                     {currentSection?.title ?? "Select a section"}
                   </h2>
                   {currentSection?.description && (
-                    <MarkdownText content={currentSection.description} className="text-sm text-[#7A8075] mt-1" />
+                    <MarkdownText content={currentSection.description} className="text-sm text-[#5B655D] mt-1" />
                   )}
                 </div>
                 <div className="flex gap-2">
@@ -465,7 +465,7 @@ export default function FormEditorPage() {
                   return (
                     <div
                       key={type.value}
-                      className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-[#E4EBE4] rounded-lg text-xs font-medium text-[#7A8075] bg-white"
+                      className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-[#E4EBE4] rounded-lg text-xs font-medium text-[#5B655D] bg-white"
                     >
                       <Icon className="w-3.5 h-3.5" />
                       {type.label}
@@ -498,7 +498,7 @@ export default function FormEditorPage() {
               {currentQuestions.length === 0 && !showAddQuestion ? (
                 <div className="text-center py-16 bg-white rounded-2xl border-2 border-dashed border-[#E4EBE4]">
                   <FileText className="w-12 h-12 text-[#E4EBE4] mx-auto mb-3" />
-                  <p className="text-[#7A8075] font-medium">
+                  <p className="text-[#5B655D] font-medium">
                     No questions in this section yet.
                   </p>
                   <button
@@ -551,7 +551,7 @@ export default function FormEditorPage() {
             <div className="w-[340px] flex-shrink-0 hidden lg:block">
               <div className="bg-[#F7F2EA] rounded-2xl border-2 border-[#E4EBE4] p-5 sticky top-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xs font-bold text-[#7A8075] uppercase tracking-wider">
+                  <h3 className="text-xs font-bold text-[#5B655D] uppercase tracking-wider">
                     Preview
                   </h3>
                   {/* Badge to show user they are looking at the 'Add Question' draft */}
@@ -567,7 +567,7 @@ export default function FormEditorPage() {
                 ) : (
                   <div className="text-center py-12">
                     <Eye className="w-10 h-10 text-[#E4EBE4] mx-auto mb-3" />
-                    <p className="text-sm text-[#7A8075]">
+                    <p className="text-sm text-[#5B655D]">
                       Select a question or start adding one to see a preview
                     </p>
                   </div>
@@ -603,7 +603,7 @@ function SectionButton({
       className={`w-full text-left px-3 py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-between ${
         isActive
           ? "bg-[#EEF5EF] text-[#356B43] border-2 border-[#356B43]"
-          : "text-[#7A8075] border-2 border-[#E4EBE4] hover:border-[#86A98A]"
+          : "text-[#5B655D] border-2 border-[#E4EBE4] hover:border-[#86A98A]"
       }`}
     >
       <span className="truncate">
@@ -613,7 +613,7 @@ function SectionButton({
         className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
           isActive
             ? "bg-[#356B43] text-white"
-            : "bg-[#E4EBE4] text-[#7A8075]"
+            : "bg-[#E4EBE4] text-[#5B655D]"
         }`}
         data-testid={`section-count-${section.id}`}
       >
@@ -701,7 +701,7 @@ function SortableQuestionCard({
           className="touch-none flex-shrink-0 cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-[#E4EBE4] transition-colors"
           onClick={(e) => e.stopPropagation()}
         >
-          <GripVertical className="w-4 h-4 text-[#7A8075]" />
+          <GripVertical className="w-4 h-4 text-[#5B655D]" />
         </button>
         <div
           className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
@@ -724,7 +724,7 @@ function SortableQuestionCard({
             </span>
           )}
           <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs text-[#7A8075]">
+            <span className="text-xs text-[#5B655D]">
               {getTypeLabel(question.question_type)}
             </span>
             {question.is_required && (
@@ -755,7 +755,7 @@ function SortableQuestionCard({
           }}
           className={`p-1.5 rounded-md transition-colors ${
             question.is_active 
-              ? "text-[#7A8075] hover:text-[#254431] hover:bg-[#F7F2EA]" 
+              ? "text-[#5B655D] hover:text-[#254431] hover:bg-[#F7F2EA]"
               : "text-amber-600 bg-amber-50 hover:bg-amber-100"
           }`}
           title={question.is_active ? "Hide Question" : "Show Question"}
@@ -794,7 +794,7 @@ function EditQuestionForm({
 
       <div className="space-y-4">
         <div>
-          <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
+          <label className="text-xs font-semibold text-[#5B655D] uppercase tracking-wide">
             Question Title
           </label>
           <input
@@ -819,7 +819,7 @@ function EditQuestionForm({
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
+          <label className="text-xs font-semibold text-[#5B655D] uppercase tracking-wide">
             Description / Subtext
           </label>
           <RichTextEditor
@@ -833,7 +833,7 @@ function EditQuestionForm({
 
         <div className="flex gap-4">
           <div className="flex-1">
-            <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
+            <label className="text-xs font-semibold text-[#5B655D] uppercase tracking-wide">
               Question Type
             </label>
             <div className="grid grid-cols-5 gap-2 opacity-60 cursor-not-allowed">
@@ -846,7 +846,7 @@ function EditQuestionForm({
                     className={`flex flex-col items-center gap-1 p-1 rounded-xl border-2 transition-all ${
                       isSelected
                         ? "border-[#356B43] bg-[#356B43]/5 text-[#356B43]"
-                        : "border-[#E4EBE4] text-[#7A8075]"
+                        : "border-[#E4EBE4] text-[#5B655D]"
                     }`}
                   >
                     <Icon size={15} />
@@ -876,7 +876,7 @@ function EditQuestionForm({
         {/* Options Editor */}
         {needsOptions && (
           <div>
-            <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
+            <label className="text-xs font-semibold text-[#5B655D] uppercase tracking-wide">
               Options
             </label>
             <div className="mt-2 space-y-2">
@@ -941,7 +941,7 @@ function EditQuestionForm({
         </button>
         <button
           onClick={onCancel}
-          className="px-4 py-2.5 border-2 border-[#E4EBE4] text-[#7A8075] text-sm font-semibold rounded-xl hover:bg-[#E4EBE4] transition-all"
+          className="px-4 py-2.5 border-2 border-[#E4EBE4] text-[#5B655D] text-sm font-semibold rounded-xl hover:bg-[#E4EBE4] transition-all"
           data-testid="cancel-button"
         >
           Cancel
@@ -1011,7 +1011,7 @@ function AddQuestionForm({
 
       <div className="space-y-4">
         <div>
-          <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
+          <label className="text-xs font-semibold text-[#5B655D] uppercase tracking-wide">
             Question Title
           </label>
           <input
@@ -1020,7 +1020,7 @@ function AddQuestionForm({
             title="add-question-title"
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Must be in this format -> Question Test (Q70)"
-            className={`w-full mt-1 px-3 py-2.5 border-2 rounded-xl text-sm focus:outline-none transition-colors placeholder:text-[#7A8075] ${
+            className={`w-full mt-1 px-3 py-2.5 border-2 rounded-xl text-sm focus:outline-none transition-colors placeholder:text-[#5B655D] ${
               (title.trim() && !titleValid) || (titleValid && keyValid && !qMatch)
                 ? "border-red-500 focus:border-red-500"
                 : "border-[#E4EBE4] focus:border-[#356B43]"
@@ -1042,7 +1042,7 @@ function AddQuestionForm({
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
+          <label className="text-xs font-semibold text-[#5B655D] uppercase tracking-wide">
             Description / Subtext
           </label>
           <RichTextEditor
@@ -1056,7 +1056,7 @@ function AddQuestionForm({
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
+          <label className="text-xs font-semibold text-[#5B655D] uppercase tracking-wide">
             Question Key
           </label>
           <input
@@ -1065,7 +1065,7 @@ function AddQuestionForm({
             value={questionKey}
             onChange={(e) => setQuestionKey(e.target.value)}
             placeholder="Q70_QuestionTest (letters and numbers only after underscore)"
-            className={`w-full mt-1 px-3 py-2.5 border-2 rounded-xl text-sm focus:outline-none transition-colors placeholder:text-[#7A8075] ${
+            className={`w-full mt-1 px-3 py-2.5 border-2 rounded-xl text-sm focus:outline-none transition-colors placeholder:text-[#5B655D] ${
               questionKey.trim() && (!keyValid || (titleValid && keyValid && !qMatch))
                 ? "border-red-500 focus:border-red-500"
                 : "border-[#E4EBE4] focus:border-[#356B43]"
@@ -1088,7 +1088,7 @@ function AddQuestionForm({
 
         <div className="flex gap-4">
           <div className="flex-1">
-            <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
+            <label className="text-xs font-semibold text-[#5B655D] uppercase tracking-wide">
               Type
             </label>
             <div className="flex flex-wrap gap-2 mt-2">
@@ -1101,7 +1101,7 @@ function AddQuestionForm({
                     className={`flex items-center gap-1.5 px-3 py-2 border-2 rounded-lg text-xs font-medium transition-all ${
                       type === t.value
                         ? "border-[#356B43] bg-[#EEF5EF] text-[#356B43]"
-                        : "border-[#E4EBE4] text-[#7A8075] hover:border-[#86A98A]"
+                        : "border-[#E4EBE4] text-[#5B655D] hover:border-[#86A98A]"
                     }`}
                     data-testid={`question-type-${t.label}`}
                   >
@@ -1129,7 +1129,7 @@ function AddQuestionForm({
         {/* Options */}
         {needsOptions && (
           <div>
-            <label className="text-xs font-semibold text-[#7A8075] uppercase tracking-wide">
+            <label className="text-xs font-semibold text-[#5B655D] uppercase tracking-wide">
               Answer Options
             </label>
             <div className="mt-2 space-y-2">
@@ -1144,7 +1144,7 @@ function AddQuestionForm({
                       setOptions(newOpts);
                     }}
                     placeholder={`Option ${i + 1}`}
-                    className="flex-1 px-3 py-2 border-2 border-[#E4EBE4] rounded-lg text-sm focus:outline-none focus:border-[#356B43] transition-colors placeholder:text-[#7A8075]"
+                    className="flex-1 px-3 py-2 border-2 border-[#E4EBE4] rounded-lg text-sm focus:outline-none focus:border-[#356B43] transition-colors placeholder:text-[#5B655D]"
                   />
                   {options.length > 2 && (
                     <button
@@ -1196,7 +1196,7 @@ function AddQuestionForm({
         </button>
         <button
           onClick={onCancel}
-          className="px-4 py-2.5 border-2 border-[#E4EBE4] text-[#7A8075] text-sm font-semibold rounded-xl hover:bg-[#E4EBE4] transition-all"
+          className="px-4 py-2.5 border-2 border-[#E4EBE4] text-[#5B655D] text-sm font-semibold rounded-xl hover:bg-[#E4EBE4] transition-all"
         >
           Cancel
         </button>
@@ -1221,10 +1221,10 @@ function PreviewPanel({ question }: { question: FormQuestion }) {
             {question.form_question || "Untitled Question"}
           </h4>
           {question.subtext && (
-            <MarkdownText content={question.subtext} className="text-xs text-[#7A8075] mt-1" />
+            <MarkdownText content={question.subtext} className="text-xs text-[#5B655D] mt-1" />
           )}
           <div className="flex items-center gap-2 mt-2">
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#F7F2EA] text-[#7A8075] font-medium">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#F7F2EA] text-[#5B655D] font-medium">
               {getTypeLabel(questionType)}
             </span>
             {question.is_required && (
@@ -1262,14 +1262,14 @@ function PreviewPanel({ question }: { question: FormQuestion }) {
 
         {(questionType === "text" || questionType === "text\n") && (
           <div className="w-full h-20 border-2 border-[#E4EBE4] rounded-xl bg-[#F7F2EA]/30 flex items-start p-3">
-            <span className="text-xs text-[#7A8075]">
+            <span className="text-xs text-[#5B655D]">
               Text response area...
             </span>
           </div>
         )}
 
         {questionType === "date" && (
-          <div className="w-full px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm text-[#7A8075]">
+          <div className="w-full px-3 py-2.5 border-2 border-[#E4EBE4] rounded-xl text-sm text-[#5B655D]">
             mm/dd/yyyy
           </div>
         )}
@@ -1277,7 +1277,7 @@ function PreviewPanel({ question }: { question: FormQuestion }) {
         {questionType === "image" && (
           <div className="border-2 border-dashed border-[#E4EBE4] rounded-xl p-6 text-center bg-[#F7F2EA]/30">
             <ImageIcon className="w-8 h-8 text-[#E4EBE4] mx-auto mb-2" />
-            <p className="text-xs text-[#7A8075]">
+            <p className="text-xs text-[#5B655D]">
               Drag and drop or click to upload
             </p>
           </div>

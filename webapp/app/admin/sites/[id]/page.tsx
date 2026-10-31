@@ -629,7 +629,7 @@ export default function AdminSiteDetails() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F7F2EA] via-[#E4EBE4] to-[#F7F2EA] flex flex-col items-center justify-center gap-4">
         <div className="w-16 h-16 border-4 border-[#E4EBE4] border-t-[#356B43] rounded-full animate-spin"></div>
-        <p className="text-[#7A8075] font-medium">Loading site details...</p>
+        <p className="text-[#5B655D] font-medium">Loading site details...</p>
       </div>
     );
   }
@@ -642,7 +642,7 @@ export default function AdminSiteDetails() {
             <AlertCircle className="w-8 h-8 text-[#B91C1C]" />
           </div>
           <h2 className="text-2xl font-bold text-[#254431] mb-2">Unable to Load Site</h2>
-          <p className="text-[#7A8075] mb-6">{error || "Site not found"}</p>
+          <p className="text-[#5B655D] mb-6">{error || "Site not found"}</p>
           <button onClick={handleBack} className="flex items-center gap-2 text-[#E4EBE4] hover:text-white transition-colors mb-3 group">
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             <span className="text-base font-medium">Back to Admin Sites</span>
@@ -779,13 +779,13 @@ export default function AdminSiteDetails() {
           </button>
           <div className="w-full sm:flex-1 sm:min-w-[200px]">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8075]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5B655D]" />
               <input
                 type="text"
                 placeholder="Filter inspections..."
                 value={filterText}
                 onChange={(e) => setFilterText(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-sm text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] shadow-sm"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-sm text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] shadow-sm"
               />
             </div>
           </div>
@@ -804,7 +804,7 @@ export default function AdminSiteDetails() {
                 return (
                   <div key={response.id} className={`border-2 rounded-lg p-4 ${response.is_active ? 'border-[#E4EBE4]' : 'border-[#E4EBE4] opacity-50'}`}>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-[#7A8075]">
+                      <span className="text-sm font-medium text-[#5B655D]">
                         {formatInspectionDate(getInspectionDate(response), {
                           year: 'numeric',
                           month: 'numeric',
@@ -819,7 +819,7 @@ export default function AdminSiteDetails() {
                     {quality.issues.length > 0 ? (
                       <div className="space-y-1">
                         {quality.issues.map((issue, i) => (
-                          <div key={i} className="flex items-center gap-1 text-xs text-[#7A8075]"><AlertTriangle className="w-3 h-3 text-[#E0A63A]" />{issue}</div>
+                          <div key={i} className="flex items-center gap-1 text-xs text-[#5B655D]"><AlertTriangle className="w-3 h-3 text-[#E0A63A]" />{issue}</div>
                         ))}
                       </div>
                     ) : (
@@ -837,18 +837,18 @@ export default function AdminSiteDetails() {
           <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <ClipboardList className="w-5 h-5 text-[#356B43]" />
-              <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Total Reports</div>
+              <div className="text-xs text-[#5B655D] font-medium uppercase tracking-wide">Total Reports</div>
             </div>
             <div className="text-2xl sm:text-3xl font-bold text-[#254431]">{activeInspections.length}</div>
             {inspections.length !== activeInspections.length && (
-              <div className="text-xs text-[#7A8075] mt-1">{inspections.length - activeInspections.length} inactive</div>
+              <div className="text-xs text-[#5B655D] mt-1">{inspections.length - activeInspections.length} inactive</div>
             )}
           </div>
 
           <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <Award className="w-5 h-5 text-[#356B43]" />
-              <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Avg. Score</div>
+              <div className="text-xs text-[#5B655D] font-medium uppercase tracking-wide">Avg. Score</div>
             </div>
             <div className="text-2xl sm:text-3xl font-bold text-[#254431]">{average !== null ? average.toFixed(1) : 'N/A'}</div>
           </div>
@@ -856,7 +856,7 @@ export default function AdminSiteDetails() {
           <div className="bg-white rounded-xl p-4 border-2 border-[#E4EBE4] shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-5 h-5 text-[#356B43]" />
-              <div className="text-xs text-[#7A8075] font-medium uppercase tracking-wide">Condition</div>
+              <div className="text-xs text-[#5B655D] font-medium uppercase tracking-wide">Condition</div>
             </div>
             <div className="text-2xl sm:text-3xl font-bold text-[#254431]">{avgText}</div>
           </div>
@@ -868,7 +868,7 @@ export default function AdminSiteDetails() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-[#254431] mb-1">Naturalness Score</h2>
-                <p className="text-[#7A8075]">Average across active inspections</p>
+                <p className="text-[#5B655D]">Average across active inspections</p>
               </div>
               <div className="text-3xl sm:text-5xl font-bold text-[#356B43]">{average.toFixed(1)}</div>
             </div>
@@ -884,7 +884,7 @@ export default function AdminSiteDetails() {
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 sm:flex sm:justify-between gap-2 text-xs sm:text-sm font-medium text-[#7A8075] px-1">
+            <div className="grid grid-cols-2 sm:flex sm:justify-between gap-2 text-xs sm:text-sm font-medium text-[#5B655D] px-1">
               <span>1.0 Poor</span>
               <span>2.0 Fair</span>
               <span>3.0 Good</span>
@@ -900,7 +900,7 @@ export default function AdminSiteDetails() {
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 rounded-2xl font-semibold transition-all border-2 ${
               viewMode === 'by-date'
                 ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white shadow-md border-[#254431]'
-                : 'bg-white text-[#7A8075] hover:bg-[#F7F2EA] border-[#E4EBE4]'
+                : 'bg-white text-[#5B655D] hover:bg-[#F7F2EA] border-[#E4EBE4]'
             }`}
           >
             <Calendar className="w-5 h-5" />
@@ -912,7 +912,7 @@ export default function AdminSiteDetails() {
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 rounded-2xl font-semibold transition-all border-2 ${
               viewMode === 'by-question'
                 ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white shadow-md border-[#254431]'
-                : 'bg-white text-[#7A8075] hover:bg-[#F7F2EA] border-[#E4EBE4]'
+                : 'bg-white text-[#5B655D] hover:bg-[#F7F2EA] border-[#E4EBE4]'
             }`}
           >
             <FileText className="w-5 h-5" />
@@ -924,7 +924,7 @@ export default function AdminSiteDetails() {
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 rounded-2xl font-semibold transition-all border-2 ${
               viewMode === 'image-gallery'
                 ? 'bg-gradient-to-r from-[#356B43] to-[#254431] text-white shadow-md border-[#254431]'
-                : 'bg-white text-[#7A8075] hover:bg-[#F7F2EA] border-[#E4EBE4]'
+                : 'bg-white text-[#5B655D] hover:bg-[#F7F2EA] border-[#E4EBE4]'
             }`}
           >
             <ImageIcon className="w-5 h-5" />
@@ -941,7 +941,7 @@ export default function AdminSiteDetails() {
             </h2>
 
             {filteredInspections.length === 0 ? (
-              <div className="bg-white rounded-2xl border-2 border-[#E4EBE4] p-8 text-center text-[#7A8075]">
+              <div className="bg-white rounded-2xl border-2 border-[#E4EBE4] p-8 text-center text-[#5B655D]">
                 No inspections match your filter
               </div>
             ) : (
@@ -983,16 +983,16 @@ export default function AdminSiteDetails() {
                               )}
                               {quality.score < 80 && <div title={`Data quality: ${quality.score}%`}><AlertTriangle className="w-4 h-4 text-[#E0A63A]" /></div>}
                             </div>
-                            <p className="text-sm text-[#7A8075]">
+                            <p className="text-sm text-[#5B655D]">
                               Score: {normalizeScore(response.naturalness_score)}
                               {response.naturalness_hidden && <HiddenAnswerBadge />}
                             </p>
                           </div>
                         </div>
                         {isExpanded ? (
-                          <ChevronUp className="w-6 h-6 text-[#7A8075]" />
+                          <ChevronUp className="w-6 h-6 text-[#5B655D]" />
                         ) : (
-                          <ChevronDown className="w-6 h-6 text-[#7A8075]" />
+                          <ChevronDown className="w-6 h-6 text-[#5B655D]" />
                         )}
                       </button>
 
@@ -1031,7 +1031,7 @@ export default function AdminSiteDetails() {
                       <div className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-4 border-t-2 border-[#E4EBE4] pt-4">
                         {response.steward && (
                           <div>
-                            <p className="text-sm font-semibold text-[#7A8075] mb-1">Steward</p>
+                            <p className="text-sm font-semibold text-[#5B655D] mb-1">Steward</p>
                             <p className="text-[#1E2520]">
                               {response.steward}
                               {response.steward_hidden && <HiddenAnswerBadge />}
@@ -1040,7 +1040,7 @@ export default function AdminSiteDetails() {
                         )}
                         {response.naturalness_details && (
                           <div>
-                            <p className="text-sm font-semibold text-[#7A8075] mb-1">Naturalness Details</p>
+                            <p className="text-sm font-semibold text-[#5B655D] mb-1">Naturalness Details</p>
                             <p className="text-[#1E2520]">
                               {response.naturalness_details}
                               {response.naturalness_details_hidden && <HiddenAnswerBadge />}
@@ -1049,7 +1049,7 @@ export default function AdminSiteDetails() {
                         )}
                         {response.answers.length > 0 && (
                           <div>
-                            <p className="text-sm font-semibold text-[#7A8075] mb-2">Observations</p>
+                            <p className="text-sm font-semibold text-[#5B655D] mb-2">Observations</p>
                             <div className="space-y-1">
                               {groupAnswersBySection(response.answers).map((section, sIdx) => (
                                 <div key={sIdx}>
@@ -1081,12 +1081,12 @@ export default function AdminSiteDetails() {
                         )}
                         {quality.issues.length > 0 && (
                           <div className="border-t-2 border-[#E4EBE4] pt-4 mt-4">
-                            <p className="text-sm font-semibold text-[#7A8075] mb-2 flex items-center gap-2">
+                            <p className="text-sm font-semibold text-[#5B655D] mb-2 flex items-center gap-2">
                               <AlertTriangle className="w-4 h-4 text-[#E0A63A]" />Data Quality: {quality.score}%
                             </p>
                             <div className="space-y-1">
                               {quality.issues.map((issue, i) => (
-                                <div key={i} className="text-xs text-[#7A8075] bg-[#FEF3C7] rounded px-2 py-1">{issue}</div>
+                                <div key={i} className="text-xs text-[#5B655D] bg-[#FEF3C7] rounded px-2 py-1">{issue}</div>
                               ))}
                             </div>
                           </div>
@@ -1129,13 +1129,13 @@ export default function AdminSiteDetails() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-[#1E2520] font-medium break-words leading-snug">{qComp.questionText}</p>
-                            <p className="text-sm text-[#7A8075] mt-1">{qComp.answers.length} response{qComp.answers.length !== 1 ? 's' : ''} across inspections</p>
+                            <p className="text-sm text-[#5B655D] mt-1">{qComp.answers.length} response{qComp.answers.length !== 1 ? 's' : ''} across inspections</p>
                           </div>
                         </div>
                         {isExpanded ? (
-                          <ChevronUp className="w-6 h-6 text-[#7A8075] flex-shrink-0" />
+                          <ChevronUp className="w-6 h-6 text-[#5B655D] flex-shrink-0" />
                         ) : (
-                          <ChevronDown className="w-6 h-6 text-[#7A8075] flex-shrink-0" />
+                          <ChevronDown className="w-6 h-6 text-[#5B655D] flex-shrink-0" />
                         )}
                       </button>
 
@@ -1144,7 +1144,7 @@ export default function AdminSiteDetails() {
                           {qComp.answers.map((answer, idx) => (
                             <div key={`${answer.inspectionId}-${idx}`} className="bg-[#F7F2EA] rounded-lg p-4">
                               <div className="flex items-start sm:items-center gap-2 mb-2">
-                                <Calendar className="w-4 h-4 text-[#7A8075] flex-shrink-0 mt-0.5 sm:mt-0" />
+                                <Calendar className="w-4 h-4 text-[#5B655D] flex-shrink-0 mt-0.5 sm:mt-0" />
                                 <span className="text-sm font-semibold text-[#356B43]">{answer.displayDate}</span>
                               </div>
                               <p className="text-[#1E2520]">
@@ -1175,14 +1175,14 @@ export default function AdminSiteDetails() {
               <div className="mb-6">
                 <div className="relative w-full">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-[#7A8075]" />
+                    <Search className="h-5 w-5 text-[#5B655D]" />
                   </div>
                   <input
                     type="text"
                     placeholder="Filter by site, caption, photographer, identifier..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="block w-full pl-10 pr-10 py-2.5 border-2 border-[#E4EBE4] rounded-xl bg-white text-sm placeholder-[#7A8075] focus:outline-none focus:border-[#356B43] focus:ring-1 focus:ring-[#356B43] shadow-sm transition-all"
+                    className="block w-full pl-10 pr-10 py-2.5 border-2 border-[#E4EBE4] rounded-xl bg-white text-sm placeholder-[#5B655D] focus:outline-none focus:border-[#356B43] focus:ring-1 focus:ring-[#356B43] shadow-sm transition-all"
                   />
                   {searchQuery && (
                     <button
@@ -1190,7 +1190,7 @@ export default function AdminSiteDetails() {
                       onClick={() => setSearchQuery("")}
                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     >
-                      <X className="h-4 w-4 text-[#7A8075] hover:text-red-500 transition-colors" />
+                      <X className="h-4 w-4 text-[#5B655D] hover:text-red-500 transition-colors" />
                     </button>
                   )}
                 </div>
@@ -1199,21 +1199,21 @@ export default function AdminSiteDetails() {
               {galleryLoading ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-4">
                   <Loader2 className="w-10 h-10 animate-spin text-[#356B43]" />
-                  <p className="text-[#7A8075]">Loading gallery...</p>
+                  <p className="text-[#5B655D]">Loading gallery...</p>
                 </div>
               ) : galleryItems.length === 0 ? (
-                <div className="bg-white rounded-2xl border-2 border-[#E4EBE4] p-6 sm:p-8 text-center text-[#7A8075]">
+                <div className="bg-white rounded-2xl border-2 border-[#E4EBE4] p-6 sm:p-8 text-center text-[#5B655D]">
                   No images found for this site.
                 </div>
               ) : filteredGalleryItems.length === 0 ? (
                 <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-[#E4EBE4]">
                   <div className="bg-[#F7F2EA] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Search className="text-[#7A8075]" size={32} />
+                    <Search className="text-[#5B655D]" size={32} />
                   </div>
                   <p className="text-[#254431] font-semibold text-lg">
                     No matching images found.
                   </p>
-                  <p className="text-[#7A8075] mt-1">Try adjusting your search query.</p>
+                  <p className="text-[#5B655D] mt-1">Try adjusting your search query.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
@@ -1243,12 +1243,12 @@ export default function AdminSiteDetails() {
 
                       <div className="p-4 sm:p-5 space-y-3">
                         {item.is_hidden && <HiddenAnswerBadge />}
-                        <div className="text-sm text-[#7A8075] flex items-start sm:items-center gap-2">
+                        <div className="text-sm text-[#5B655D] flex items-start sm:items-center gap-2">
                           <MapPin className="w-4 h-4 flex-shrink-0" />
                           <span>{item.site_name || site.namesite || "Unknown site"}</span>
                         </div>
 
-                        <div className="text-sm text-[#7A8075] flex items-start gap-2">
+                        <div className="text-sm text-[#5B655D] flex items-start gap-2">
                           <ImageIcon className="w-4 h-4 mt-0.5" />
                           <div>
                             <p className="font-semibold text-[#254431] break-words leading-snug">
@@ -1258,10 +1258,10 @@ export default function AdminSiteDetails() {
                           </div>
                         </div>
 
-                        <div className="text-sm text-[#7A8075] flex items-start gap-2">
+                        <div className="text-sm text-[#5B655D] flex items-start gap-2">
                           <Calendar className="w-4 h-4 mt-0.5 flex-shrink-0" />
                           <div>
-                            <p className="text-xs text-[#7A8075] mt-0.5">
+                            <p className="text-xs text-[#5B655D] mt-0.5">
                               {item.date || "No date"}
                             </p>
                         </div>
@@ -1307,20 +1307,20 @@ export default function AdminSiteDetails() {
               <div className="min-w-0 min-h-0 p-4 sm:p-6 bg-white space-y-4 sm:space-y-5 border-t lg:border-t-0 lg:border-l border-[#E4EBE4] overflow-y-auto">
                 {selectedImage.is_hidden && <HiddenAnswerBadge />}
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">Site</p>
+                  <p className="text-xs uppercase tracking-wide text-[#5B655D] mb-1">Site</p>
                   <p className="text-base sm:text-lg font-semibold text-[#254431] break-words">{selectedImage.site_name || site.namesite || "Unknown site"}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">Caption</p>
+                  <p className="text-xs uppercase tracking-wide text-[#5B655D] mb-1">Caption</p>
                   <p className="text-base font-medium text-[#254431]">{selectedImage.caption || "No caption"}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">Identifier</p>
+                  <p className="text-xs uppercase tracking-wide text-[#5B655D] mb-1">Identifier</p>
                   <p className="text-sm text-[#4B5563] leading-6 break-words">{selectedImage.identifier || "No identifier"}</p>
                 </div>
 
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
+                  <p className="text-xs uppercase tracking-wide text-[#5B655D] mb-1">
                     Date
                   </p>
                   <p className="text-sm text-[#4B5563] leading-6 break-words">
@@ -1330,7 +1330,7 @@ export default function AdminSiteDetails() {
 
                 {selectedImage.photographer && (
                     <div>
-                      <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
+                      <p className="text-xs uppercase tracking-wide text-[#5B655D] mb-1">
                         Photographer
                       </p>
                       <p className="text-sm text-[#4B5563]">
@@ -1340,12 +1340,12 @@ export default function AdminSiteDetails() {
                   )}
 
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">Filename</p>
+                  <p className="text-xs uppercase tracking-wide text-[#5B655D] mb-1">Filename</p>
                   <p className="text-sm text-[#4B5563] break-all">{selectedImage.filename}</p>
                 </div>
 
                  <div>
-                    <p className="text-xs uppercase tracking-wide text-[#7A8075] mb-1">
+                    <p className="text-xs uppercase tracking-wide text-[#5B655D] mb-1">
                       Storage Path
                     </p>
                     <p className="text-sm text-[#4B5563] break-all">
@@ -1397,7 +1397,7 @@ export default function AdminSiteDetails() {
                 })}
               </h2>
               <button onClick={() => { setEditingResponse(null); setEditAnswers([]); }} disabled={isSaving} className="w-10 h-10 rounded-xl hover:bg-[#E4EBE4] flex items-center justify-center transition-colors disabled:opacity-50">
-                <X className="w-6 h-6 text-[#7A8075]" />
+                <X className="w-6 h-6 text-[#5B655D]" />
               </button>
             </div>
 
@@ -1424,14 +1424,14 @@ export default function AdminSiteDetails() {
                               type="text"
                               value={a.obs_value}
                               onChange={(e) => handleEditAnswerChange(a.question_id, 'obs_value', e.target.value)}
-                              className="w-full border-2 border-[#E4EBE4] rounded-lg p-3 text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] bg-white"
+                              className="w-full border-2 border-[#E4EBE4] rounded-lg p-3 text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] bg-white"
                               placeholder="Enter value..."
                             />
                           ) : (
                             <textarea
                               value={a.obs_comm}
                               onChange={(e) => handleEditAnswerChange(a.question_id, 'obs_comm', e.target.value)}
-                              className="w-full border-2 border-[#E4EBE4] rounded-lg p-3 text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] min-h-[80px] resize-y bg-white"
+                              className="w-full border-2 border-[#E4EBE4] rounded-lg p-3 text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] min-h-[80px] resize-y bg-white"
                               placeholder="Enter comment..."
                             />
                           )}
@@ -1444,7 +1444,7 @@ export default function AdminSiteDetails() {
             </div>
 
             <div className="p-4 border-t-2 border-[#E4EBE4] flex justify-end gap-3 flex-shrink-0">
-              <button onClick={() => { setEditingResponse(null); setEditAnswers([]); }} className="px-4 py-2 rounded-xl border-2 border-[#E4EBE4] text-[#7A8075] hover:bg-[#F7F2EA] font-medium transition-colors" disabled={isSaving}>
+              <button onClick={() => { setEditingResponse(null); setEditAnswers([]); }} className="px-4 py-2 rounded-xl border-2 border-[#E4EBE4] text-[#5B655D] hover:bg-[#F7F2EA] font-medium transition-colors" disabled={isSaving}>
                 Cancel
               </button>
               <button onClick={handleSaveEdit} disabled={isSaving} className="px-6 py-2 bg-[#356B43] text-white rounded-xl font-semibold hover:bg-[#254431] transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">

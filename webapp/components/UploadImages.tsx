@@ -307,13 +307,13 @@ export default function UploadImages() {
                     size={32}
                     className={`mx-auto mb-3 ${dragging ? "text-[#356B43]" : "text-[#86A98A]"}`}
                   />
-                  <p className="text-sm text-[#7A8075]">
+                  <p className="text-sm text-[#5B655D]">
                     Drop images here or{" "}
                     <span className="text-[#356B43] font-semibold underline underline-offset-2">
                       browse files
                     </span>
                   </p>
-                  <p className="text-xs text-[#7A8075]/60 mt-1">JPEG, PNG, HEIC supported</p>
+                  <p className="text-xs text-[#5B655D]/60 mt-1">JPEG, PNG, HEIC supported</p>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -393,7 +393,7 @@ export default function UploadImages() {
 
                       {/* Site selector */}
                       <div>
-                        <label className="block text-xs font-semibold uppercase tracking-wide text-[#7A8075] mb-1">
+                        <label className="block text-xs font-semibold uppercase tracking-wide text-[#5B655D] mb-1">
                           Site <span className="text-[#B91C1C]">*</span>
                         </label>
                         {current.site ? (
@@ -401,16 +401,16 @@ export default function UploadImages() {
                             <span className="font-medium">{current.site.name}</span>
                             <button
                               onClick={() => { updateField("site", null); updateField("siteSearch", ""); }}
-                              className="text-[#7A8075] hover:text-[#254431] transition-colors ml-2 flex-shrink-0"
+                              className="text-[#5B655D] hover:text-[#254431] transition-colors ml-2 flex-shrink-0"
                             >
                               <X size={14} />
                             </button>
                           </div>
                         ) : (
                           <div data-testid="upload-modal" className="relative">
-                            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8075] pointer-events-none" />
+                            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5B655D] pointer-events-none" />
                             <input
-                              className="w-full pl-8 pr-3 py-2 text-sm border-2 border-[#E4EBE4] rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-colors placeholder:text-[#7A8075]/60 text-[#1E2520]"
+                              className="w-full pl-8 pr-3 py-2 text-sm border-2 border-[#E4EBE4] rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-colors placeholder:text-[#5B655D]/60 text-[#1E2520]"
                               placeholder="Search by site name or county..."
                               value={current.siteSearch}
                               onChange={(e) => {
@@ -423,7 +423,7 @@ export default function UploadImages() {
                             {current.siteDropdownOpen && (
                               <div className="absolute top-full mt-1 left-0 right-0 bg-white border-2 border-[#E4EBE4] rounded-xl shadow-lg z-10 max-h-36 overflow-y-auto">
                                 {filteredSites.length === 0 ? (
-                                  <p className="text-xs text-[#7A8075] text-center py-3">No sites found</p>
+                                  <p className="text-xs text-[#5B655D] text-center py-3">No sites found</p>
                                 ) : (
                                   filteredSites.map((site) => (
                                     <div
@@ -436,7 +436,7 @@ export default function UploadImages() {
                                       }}
                                     >
                                       <p className="text-sm font-medium text-[#254431]">{site.name}</p>
-                                      {site.county && <p className="text-xs text-[#7A8075]">{site.county}</p>}
+                                      {site.county && <p className="text-xs text-[#5B655D]">{site.county}</p>}
                                     </div>
                                   ))
                                 )}
@@ -449,7 +449,7 @@ export default function UploadImages() {
                       {/* Date + Photographer - stacks on mobile */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <div>
-                          <label className="block text-xs font-semibold uppercase tracking-wide text-[#7A8075] mb-1">
+                          <label className="block text-xs font-semibold uppercase tracking-wide text-[#5B655D] mb-1">
                             Date of Visit <span className="text-[#B91C1C]">*</span>
                           </label>
                           <input
@@ -461,9 +461,9 @@ export default function UploadImages() {
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-semibold uppercase tracking-wide text-[#7A8075] mb-1">
+                          <label className="block text-xs font-semibold uppercase tracking-wide text-[#5B655D] mb-1">
                             Photographer <span className="text-[#B91C1C]">*</span>{" "}
-                            <span className={`normal-case font-normal ${current.who.replace(/\s/g, "").length >= 25 ? "text-[#B91C1C]" : "text-[#7A8075]"}`}>
+                            <span className={`normal-case font-normal ${current.who.replace(/\s/g, "").length >= 25 ? "text-[#B91C1C]" : "text-[#5B655D]"}`}>
                               ({current.who.replace(/\s/g, "").length}/25)
                             </span>
                           </label>
@@ -475,7 +475,7 @@ export default function UploadImages() {
                               const val = e.target.value;
                               if (val.replace(/\s/g, "").length <= 25) updateField("who", val);
                             }}
-                            className={`w-full px-3 py-2 text-sm border-2 rounded-xl bg-white focus:outline-none focus:ring-2 transition-colors placeholder:text-[#7A8075]/60 text-[#1E2520] ${
+                            className={`w-full px-3 py-2 text-sm border-2 rounded-xl bg-white focus:outline-none focus:ring-2 transition-colors placeholder:text-[#5B655D]/60 text-[#1E2520] ${
                               current.who.replace(/\s/g, "").length >= 25
                                 ? "border-[#B91C1C] focus:ring-[#B91C1C] focus:border-[#B91C1C]"
                                 : "border-[#E4EBE4] focus:ring-[#356B43] focus:border-[#356B43]"
@@ -489,9 +489,9 @@ export default function UploadImages() {
 
                       {/* Identifier */}
                       <div>
-                        <label className="block text-xs font-semibold uppercase tracking-wide text-[#7A8075] mb-1">
+                        <label className="block text-xs font-semibold uppercase tracking-wide text-[#5B655D] mb-1">
                           Identifier <span className="text-[#B91C1C]">*</span>{" "}
-                          <span className={`normal-case font-normal ${current.identifier.replace(/\s/g, "").length >= 20 ? "text-[#B91C1C]" : "text-[#7A8075]"}`}>
+                          <span className={`normal-case font-normal ${current.identifier.replace(/\s/g, "").length >= 20 ? "text-[#B91C1C]" : "text-[#5B655D]"}`}>
                             ({current.identifier.replace(/\s/g, "").length}/20)
                           </span>
                         </label>
@@ -503,7 +503,7 @@ export default function UploadImages() {
                             const val = e.target.value;
                             if (val.replace(/\s/g, "").length <= 20) updateField("identifier", val);
                           }}
-                          className={`w-full px-3 py-2 text-sm border-2 rounded-xl bg-white focus:outline-none focus:ring-2 transition-colors placeholder:text-[#7A8075]/60 text-[#1E2520] ${
+                          className={`w-full px-3 py-2 text-sm border-2 rounded-xl bg-white focus:outline-none focus:ring-2 transition-colors placeholder:text-[#5B655D]/60 text-[#1E2520] ${
                             current.identifier.replace(/\s/g, "").length >= 20
                               ? "border-[#B91C1C] focus:ring-[#B91C1C] focus:border-[#B91C1C]"
                               : "border-[#E4EBE4] focus:ring-[#356B43] focus:border-[#356B43]"
@@ -516,7 +516,7 @@ export default function UploadImages() {
 
                       {/* Caption */}
                       <div className="flex-1 flex flex-col">
-                        <label className="block text-xs font-semibold uppercase tracking-wide text-[#7A8075] mb-1">
+                        <label className="block text-xs font-semibold uppercase tracking-wide text-[#5B655D] mb-1">
                           Caption <span className="text-[#B91C1C]">*</span>
                         </label>
                         <textarea
@@ -524,7 +524,7 @@ export default function UploadImages() {
                           rows={3}
                           value={current.caption}
                           onChange={(e) => updateField("caption", e.target.value)}
-                          className="flex-1 w-full px-3 py-2 text-sm border-2 border-[#E4EBE4] rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-colors placeholder:text-[#7A8075]/60 text-[#1E2520] resize-none"
+                          className="flex-1 w-full px-3 py-2 text-sm border-2 border-[#E4EBE4] rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-colors placeholder:text-[#5B655D]/60 text-[#1E2520] resize-none"
                         />
                       </div>
 
@@ -543,7 +543,7 @@ export default function UploadImages() {
                 </div>
               )}
               <div className="flex items-center justify-between gap-3">
-                <p className="text-sm text-[#7A8075] shrink-0">
+                <p className="text-sm text-[#5B655D] shrink-0">
                   {files.length > 0 ? (
                     <><strong className="text-[#254431]">{files.filter(isComplete).length} / {files.length}</strong> complete</>
                   ) : (
@@ -553,7 +553,7 @@ export default function UploadImages() {
                 <div className="flex items-center gap-2 sm:gap-3">
                   <button
                     onClick={handleClose}
-                    className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl border-2 border-[#E4EBE4] text-[#7A8075] hover:bg-[#F7F2EA] font-medium transition-colors text-sm"
+                    className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl border-2 border-[#E4EBE4] text-[#5B655D] hover:bg-[#F7F2EA] font-medium transition-colors text-sm"
                   >
                     Cancel
                   </button>

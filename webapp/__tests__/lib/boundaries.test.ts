@@ -227,7 +227,7 @@ describe('toBoundaryFeatureCollection (US 2.0.6)', () => {
     });
   });
 
-  it('maps the linked site name and last inspection date (US 2.0.8 AT2)', () => {
+  it('maps the linked site name and last inspection date (2.0.8 AT2)', () => {
     const collection = toBoundaryFeatureCollection([
       row({ site_name: 'Wainwright Dunes', last_inspection_date: '2024-03-15' }),
     ]);
@@ -236,7 +236,7 @@ describe('toBoundaryFeatureCollection (US 2.0.6)', () => {
     expect(collection.features[0].properties.last_inspection_date).toBe('2024-03-15');
   });
 
-  it('maps null when the area has no linked site (US 2.0.8 AT2)', () => {
+  it('maps null when the area has no linked site (2.0.8 AT2)', () => {
     const collection = toBoundaryFeatureCollection([row({ site_name: null, last_inspection_date: null })]);
 
     expect(collection.features[0].properties.site_name).toBeNull();
@@ -361,7 +361,7 @@ describe('boundary colors', () => {
     ]);
   });
 
-  it('does nothing for a blank type, an invalid color, or no match', () => {
+  it('does nothing for a blank type, an invalid color, or no match (2.0.14 AT1)', () => {
     const collection = threeAreas();
 
     expect(

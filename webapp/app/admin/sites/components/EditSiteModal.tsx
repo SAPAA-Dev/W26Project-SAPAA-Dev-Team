@@ -97,7 +97,7 @@ export default function EditSiteModal({
             <input
               data-testid="edit-site-name-input"
               type="text"
-              className="w-full px-4 py-3 bg-[#F7F2EA] border-2 border-[#86A98A] rounded-xl text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-all"
+              className="w-full px-4 py-3 bg-[#F7F2EA] border-2 border-[#86A98A] rounded-xl text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-[#356B43] transition-all"
               placeholder="Enter site name"
               value={namesite}
               onChange={(e) => setNamesite(e.target.value)}
@@ -186,7 +186,7 @@ export default function EditSiteModal({
                 <p className={`text-sm font-medium ${isActive ? 'text-[#254431]' : 'text-gray-500'}`}>
                   {isActive ? 'Active' : 'Inactive'}
                 </p>
-                <p className="text-xs text-[#7A8075]">
+                <p className="text-xs text-[#5B655D]">
                   {isActive ? 'Visible to all users' : 'Hidden from users'}
                 </p>
               </div>

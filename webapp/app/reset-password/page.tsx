@@ -61,7 +61,7 @@ export default function ResetPasswordPage() {
         </div>
 
         {state === 'checking' && (
-          <div className="flex items-center justify-center py-12 text-[#7A8075]">
+          <div className="flex items-center justify-center py-12 text-[#5B655D]">
             <Loader2 className="h-6 w-6 animate-spin" />
           </div>
         )}
@@ -74,7 +74,7 @@ export default function ResetPasswordPage() {
               </div>
             </div>
             <h1 className="text-2xl font-bold text-[#254431] mb-2">Link expired</h1>
-              <p className="text-[#7A8075] mb-6">
+              <p className="text-[#5B655D] mb-6">
                 This session is invalid or has expired. Request a new code.
               </p>
               <Link
@@ -100,7 +100,7 @@ export default function ResetPasswordPage() {
               </div>
             </div>
             <h1 className="text-2xl font-bold text-[#254431] mb-2">Password updated</h1>
-            <p className="text-[#7A8075] mb-6">Your password has been changed. Sign in with your new password.</p>
+            <p className="text-[#5B655D] mb-6">Your password has been changed. Sign in with your new password.</p>
             <Link
               href="/login"
               className="block w-full bg-gradient-to-r from-[#356B43] to-[#254431] hover:from-[#254431] hover:to-[#356B43] text-white font-bold py-4 px-4 rounded-xl transition-all text-center"
@@ -114,7 +114,7 @@ export default function ResetPasswordPage() {
           <>
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-[#254431] mb-3">Set a new password</h1>
-              <p className="text-lg text-[#7A8075]">Choose a new password for your account.</p>
+              <p className="text-lg text-[#5B655D]">Choose a new password for your account.</p>
             </div>
 
             <form onSubmit={onSubmit} className="space-y-5">
@@ -124,7 +124,7 @@ export default function ResetPasswordPage() {
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 pl-4 flex items-center">
-                    <Lock className="h-5 w-5 text-[#7A8075]" />
+                    <Lock className="h-5 w-5 text-[#5B655D]" />
                   </div>
                   <input
                     id="password"
@@ -134,7 +134,7 @@ export default function ResetPasswordPage() {
                       setPassword(event.target.value);
                       if (err) setErr(null);
                     }}
-                    className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-12 py-3.5 text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
+                    className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-12 py-3.5 text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
                     placeholder="Enter a new password"
                     required
                   />
@@ -144,9 +144,9 @@ export default function ResetPasswordPage() {
                     className="absolute inset-y-0 right-0 pr-4 flex items-center hover:bg-[#F7F2EA] rounded-r-xl transition-colors"
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-[#7A8075] hover:text-[#1E2520]" />
+                      <EyeOff className="h-5 w-5 text-[#5B655D] hover:text-[#1E2520]" />
                     ) : (
-                      <Eye className="h-5 w-5 text-[#7A8075] hover:text-[#1E2520]" />
+                      <Eye className="h-5 w-5 text-[#5B655D] hover:text-[#1E2520]" />
                     )}
                   </button>
                 </div>
@@ -158,7 +158,7 @@ export default function ResetPasswordPage() {
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 pl-4 flex items-center">
-                    <Lock className="h-5 w-5 text-[#7A8075]" />
+                    <Lock className="h-5 w-5 text-[#5B655D]" />
                   </div>
                   <input
                     id="confirmPassword"
@@ -168,7 +168,7 @@ export default function ResetPasswordPage() {
                       setConfirmPassword(event.target.value);
                       if (err) setErr(null);
                     }}
-                    className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-4 py-3.5 text-[#1E2520] placeholder:text-[#7A8075] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
+                    className="block w-full rounded-xl border-2 border-[#E4EBE4] bg-white pl-11 pr-4 py-3.5 text-[#1E2520] placeholder:text-[#5B655D] focus:outline-none focus:ring-2 focus:ring-[#356B43] focus:border-transparent transition-all"
                     placeholder="Re-enter your new password"
                     required
                   />
@@ -176,7 +176,7 @@ export default function ResetPasswordPage() {
               </div>
 
               {err && (
-                <div className="bg-[#FEE2E2] border-2 border-[#B91C1C] text-[#B91C1C] px-4 py-3.5 rounded-xl font-medium">
+                <div role="alert" className="bg-[#FEE2E2] border-2 border-[#B91C1C] text-[#B91C1C] px-4 py-3.5 rounded-xl font-medium">
                   {err}
                 </div>
               )}
@@ -199,7 +199,7 @@ export default function ResetPasswordPage() {
 
             <Link
               href="/login"
-              className="mt-6 block text-center text-[#7A8075] hover:text-[#254431] transition-colors font-medium"
+              className="mt-6 block text-center text-[#5B655D] hover:text-[#254431] transition-colors font-medium"
             >
               Back to Login
             </Link>

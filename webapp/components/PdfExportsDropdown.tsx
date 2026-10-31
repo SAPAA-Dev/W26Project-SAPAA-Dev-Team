@@ -43,13 +43,13 @@ export default function PdfExportsDropdown({ onClose }: { onClose: () => void })
           Recent Exports
         </h3>
         <button onClick={onClose}>
-          <X className="w-4 h-4 text-[#7A8075]" />
+          <X className="w-4 h-4 text-[#5B655D]" />
         </button>
       </div>
       {loading ? (
-        <p className="p-4 text-sm text-[#7A8075]">Loading...</p>
+        <p className="p-4 text-sm text-[#5B655D]">Loading...</p>
       ) : jobs.length === 0 ? (
-        <p className="p-4 text-sm text-[#7A8075]">No exports yet.</p>
+        <p className="p-4 text-sm text-[#5B655D]">No exports yet.</p>
       ) : (
         jobs.map((job) => (
           <div key={job.id} className="px-4 py-3 border-b border-[#F0EDE8] flex items-center justify-between">
@@ -59,7 +59,7 @@ export default function PdfExportsDropdown({ onClose }: { onClose: () => void })
                   ? job.request_payload.siteName
                   : `${job.mode} export`}
               </p>
-              <p className="text-xs text-[#7A8075]">{new Date(job.created_at).toLocaleString()}</p>
+              <p className="text-xs text-[#5B655D]">{new Date(job.created_at).toLocaleString()}</p>
             </div>
             {job.status === 'complete' && (
               <button onClick={() => download(job.id)} className="text-xs font-semibold text-[#356B43] underline">
@@ -68,7 +68,7 @@ export default function PdfExportsDropdown({ onClose }: { onClose: () => void })
             )}
             {job.status === 'failed' && <span className="text-xs text-[#B91C1C]">Failed</span>}
             {(job.status === 'pending' || job.status === 'processing') && (
-              <span className="text-xs text-[#7A8075]">Processing…</span>
+              <span className="text-xs text-[#5B655D]">Processing…</span>
             )}
           </div>
         ))
