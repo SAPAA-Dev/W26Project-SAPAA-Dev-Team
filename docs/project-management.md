@@ -1153,3 +1153,27 @@ a workspace we do not have access to.
 |Finalize Sprint 5 acceptance tests|All US|Everyone|Mar 30th|
 |Project Portal Upload|Documentation|Harveer|Mar 29th|
 |Finalize documentation|Documentation|Everyone|Mar 31st|
+
+## V3 production feedback release — October 31, 2026
+
+Owner for this fix set: Tars, at the user's request. The independent code/security reviewer
+approved the implementation after the photo owner lazy-loading guard was corrected. Human
+acceptance remains with the SAPAA team. No new issue or pull request was opened.
+
+| Task | Status | Evidence |
+| --- | --- | --- |
+| Default A–Z, quick sort, and Z–A in list and map | Implemented; automated checks passed | V3-01, V3-02, V3-03, V3-05 in the traceability matrix |
+| Clear carried filters and center map filter dialogs | Implemented; automated checks passed | V3-06, V3-07 |
+| Admin corrections to incomplete historic reports | Implemented; mocked checks | V3-04; owner and approval guards retained |
+| Keep saved report values and visit date | Implemented; mocked checks | V3-09; no edit autofill |
+| Open content links separately | Checked and email/phone URL handling corrected | V3-08 |
+| Copy shared fields across a photo batch | Implemented; mocked checks | V3-10; explicit button, captions stay separate |
+| Show missing required fields | Implemented; mocked checks | V3-11; text and invalid state |
+| Edit photo fields as owner/admin | Implemented; mocked checks | V3-12; Delete remains admin-only |
+| Restore photo loading against current production schema | Deployed and real images read | `bfba34f9`; removed nonexistent photo-table `created_at` projection |
+| Deployment guide with verified database usernames and screenshots | Written; documentation build checked | [Production guide](sapaa-dev-production-deployment.md) |
+
+The release does not change production data as a test. In particular, the example Dussault Lake
+email correction in the client's note is a reproduction case. The implementation permits that
+correction; the release check does not change the saved report. Real uploads, imports, and field
+acceptance on physical devices remain team checks.

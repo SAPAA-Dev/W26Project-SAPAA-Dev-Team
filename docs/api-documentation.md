@@ -775,3 +775,27 @@ For a detailed explanation of the API endpoints, see:
 The Fall 2025 routes `GET /auth/callback` and `GET /auth/confirm` are now in the
 [route reference](#1-api-routes) above, corrected to match the code on `main`. `GET /api/geocode`
 and `GET /api/heatmap` are gone from the code and from this document.
+
+## V3 photo metadata and historic report corrections
+
+`PATCH /api/site-images?id=<positive integer>&kind=attachments|homepage_image_uploads`
+updates the existing photo row. It does not replace, rename, or delete its S3 object. The JSON
+body accepts only `caption` (up to 10,000 characters), `identifier` and `photographer` (up to
+200 characters each), and `date` (a valid `YYYY-MM-DD` calendar date). Values may be null.
+Unknown fields, invalid IDs/kinds, invalid types, and impossible dates return 400. Unchanged
+fields can be omitted. A successful update returns `{ "updated": true }`.
+
+The caller must have an approved session. For an attachment, the report writer check admits
+only the report owner or an approved admin and rejects archived reports. For a standalone
+homepage image, the uploader or an approved admin can edit it. A signed-out caller gets 401;
+an unapproved or unauthorized caller gets 403; an absent photo gets 404; a database failure
+gets 500. Delete permissions remain admin-only. The v1 photo response supplies `canEdit` for
+display, but PATCH checks permission again on the server. The UI invalidates both gallery
+caches after success and preserves the form after a failed save.
+
+`updateSiteInspectionAnswers` retains its server owner/admin/approval check. Approved admins
+can correct historic reports without supplying all fields required by the current form.
+Steward owner edits retain required-field validation. New report validation is unchanged.
+A missing visit answer is loaded from `form_responses.inspection_date` when available. Editing
+does not autofill profile values or today's date; a blank update date retains the saved header
+date. No schema change is required.

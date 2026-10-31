@@ -572,3 +572,32 @@ The Winter 2026 team kept their matrix in a spreadsheet. We keep the link for re
 not update it for Fall 2026.
 
 [View the Winter 2026 Traceability Matrix](https://docs.google.com/spreadsheets/d/1lidLGHJA07vB-MdxcdPFwCnxkWpWXxtmATjuhJUGd7k/edit?usp=sharing)
+
+## V3 production feedback — October 31, 2026
+
+The IDs below refer to the client's numbered feedback, not new course story numbers. Items
+10–12 refer to the three future improvements that the user asked to include. Jest uses mocked
+Supabase and S3. Browser checks are read-only; the release record is in
+[SAPAA Dev Production](sapaa-dev-production-deployment.md).
+
+| Feedback / AT | Expected result and failure case | Test path | Status |
+| --- | --- | --- | --- |
+| V3-01 AT1 | List defaults to A–Z; an invalid sort falls back to A–Z | `webapp/__tests__/app/v2/siteControls.test.tsx` | Automated |
+| V3-02 AT1 | Visible sort changes the order; other filters remain | `webapp/__tests__/app/v2/siteControls.test.tsx` | Automated |
+| V3-03 AT1 | Z–A reverses name order; source data is not changed | `webapp/__tests__/app/v2/siteControls.test.tsx` | Automated |
+| V3-04 AT1 | Approved admin can correct an incomplete historic report | `webapp/__tests__/components/queries.report-writes.test.ts`, `webapp/__tests__/pages/UserEditSiteInspectionForm.test.tsx` | Automated |
+| V3-04 AT2 | Another user or unapproved admin cannot write; owner required-field validation remains | `webapp/__tests__/components/queries.report-writes.test.ts`, `webapp/__tests__/pages/UserEditSiteInspectionForm.test.tsx` (4.0.4 AT2/AT3) | Automated |
+| V3-05 AT1 | Map list defaults to A–Z; invalid sort cannot select urgency by accident | `webapp/__tests__/app/v2/siteControls.test.tsx` | Automated |
+| V3-06 AT1 | Clear all removes carried search, county, view, boundary, and selection; map mode remains | `webapp/__tests__/app/v2/siteControls.test.tsx`, `webapp/__tests__/app/v2/map.test.tsx` | Automated |
+| V3-07 AT1 | Area filters use a centered modal; closing does not change selections | `webapp/__tests__/components/MapAreaFilters.test.tsx` | Automated |
+| V3-08 AT1 | Content links open separately; email/phone schemes remain valid | `webapp/__tests__/components/MarkdownText.test.tsx` | Automated |
+| V3-09 AT1 | Missing visit answer uses report date; an existing answer is preserved | `webapp/__tests__/components/queries.report-writes.test.ts` | Automated |
+| V3-09 AT2 | Edit does not fill current account/date values; unknown historic fields remain blank | `webapp/__tests__/app/v2/reportFormRetention.test.tsx` | Automated |
+| V3-10 AT1 | Explicit action copies shared photo fields; captions stay separate and incomplete uploads remain blocked | `webapp/__tests__/components/UploadImages.test.tsx` | Automated |
+| V3-11 AT1 | Missing required answers have text and invalid state; correction clears the state; new-report autofill remains | `webapp/__tests__/app/v2/reportFormRetention.test.tsx` | Automated |
+| V3-12 AT1 | Owner/admin can edit photo fields; both photo lists refresh | `webapp/__tests__/app/api/photo-metadata.test.ts`, `webapp/__tests__/app/v2/photoActions.test.tsx` | Automated |
+| V3-12 AT2 | Other users, unapproved callers, invalid fields/dates, missing rows, and save errors cannot produce a false success | `webapp/__tests__/app/api/photo-metadata.test.ts`, `webapp/__tests__/app/v2/photoActions.test.tsx` | Automated |
+
+No Cypress test was run or added to the production release checks. Repository rules prohibit
+running Cypress because its tasks write to the shared production database. React interaction
+tests cover the changed controls. Physical phone and real data write checks remain human checks.
