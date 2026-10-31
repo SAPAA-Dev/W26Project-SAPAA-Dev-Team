@@ -104,7 +104,7 @@ function SitesMapView() {
   const [dir, setDir] = useState<1 | -1>(1);
   const [cover, setCover] = useState(120);
   const chrome = useRef<HTMLDivElement>(null);
-  const chromeH = useHeight(chrome);
+  const chromeH = useHeight(chrome, !desktop);
   const restoreFocus = useRef<{ slug: string | null } | null>(null);
   const previewFocus = useRef<HTMLElement | null>(null);
   const expandFocus = useRef<HTMLButtonElement | null>(null);

@@ -590,6 +590,7 @@ Supabase and S3. Browser checks are read-only; the release record is in
 | V3-05 AT1 | Map list defaults to A–Z; invalid sort cannot select urgency by accident | `webapp/__tests__/app/v2/siteControls.test.tsx` | Automated |
 | V3-06 AT1 | Clear all removes carried search, county, view, boundary, and selection; map mode remains | `webapp/__tests__/app/v2/siteControls.test.tsx`, `webapp/__tests__/app/v2/map.test.tsx` | Automated |
 | V3-07 AT1 | Area filters use a centered modal; closing does not change selections | `webapp/__tests__/components/MapAreaFilters.test.tsx` | Automated |
+| V3-07 AT2 | Toolbar measurement starts after desktop-to-phone resize; absent controls do not set a false height | `webapp/__tests__/app/v2/mapSheet.test.tsx` | Automated |
 | V3-08 AT1 | Content links open separately; email/phone schemes remain valid | `webapp/__tests__/components/MarkdownText.test.tsx` | Automated |
 | V3-09 AT1 | Missing visit answer uses report date; an existing answer is preserved | `webapp/__tests__/components/queries.report-writes.test.ts` | Automated |
 | V3-09 AT2 | Edit does not fill current account/date values; unknown historic fields remain blank | `webapp/__tests__/app/v2/reportFormRetention.test.tsx` | Automated |

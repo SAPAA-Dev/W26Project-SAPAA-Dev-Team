@@ -1,6 +1,6 @@
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import MapSheet from '@/app/v2/_components/map/MapSheet';
+import MapSheet, { useHeight } from '@/app/v2/_components/map/MapSheet';
 
 const mockAnimate = jest.fn();
 const mockStart = jest.fn();
@@ -77,4 +77,17 @@ it('lets a swipe expand the list and a downward swipe dismiss selected details',
   expect(dismiss).not.toHaveBeenCalled();
   act(() => mockDragEnd(null, { offset: { y: 100 }, velocity: { y: 0 } }));
   expect(dismiss).toHaveBeenCalledWith(false);
+});
+
+
+it('(V3-07 AT2) measures controls that mount after switching to mobile', () => {
+  function Controls({ mobile }: { mobile: boolean }) {
+    const ref = React.useRef<HTMLDivElement>(null);
+    const height = useHeight(ref, mobile);
+    return <>{mobile && <div ref={ref}>Phone controls</div>}<output aria-label="Control height">{height}</output></>;
+  }
+  const view = render(<Controls mobile={false} />);
+  expect(screen.getByLabelText('Control height')).toHaveTextContent('0');
+  view.rerender(<Controls mobile />);
+  expect(screen.getByLabelText('Control height')).toHaveTextContent('64');
 });

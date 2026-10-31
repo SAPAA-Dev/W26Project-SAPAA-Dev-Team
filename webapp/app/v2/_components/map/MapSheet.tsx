@@ -16,15 +16,15 @@ const SPRING = { type: 'spring', stiffness: 420, damping: 42, mass: 0.9 } as con
 const ORDER: Detent[] = ['peek', 'half', 'full'];
 
 /** Element height, kept current with a ResizeObserver (transforms don't count). */
-export function useHeight(ref: RefObject<HTMLElement | null>) {
+export function useHeight(ref: RefObject<HTMLElement | null>, enabled = true) {
   const [h, setH] = useState(0);
   useLayoutEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!enabled || !el) return;
     const ro = new ResizeObserver(() => setH(el.offsetHeight));
     ro.observe(el);
     return () => ro.disconnect();
-  }, [ref]);
+  }, [ref, enabled]);
   return h;
 }
 
