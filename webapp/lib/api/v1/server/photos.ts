@@ -25,13 +25,14 @@ interface PhotoRow {
   identifier: string | null;
   photographer: string | null;
   date: string | null;
-  created_at: string;
 }
 
 // A report owner can hide one answer (US 1.0.3); the photo answer's pictures go with it. Same rule as
 // app/api/sites/[siteId]/gallery: only an admin or the report's owner still sees them.
 interface ReportVisibility {
   user_id: string | null;
+  inspection_date?: string | null;
+  created_at?: string | null;
   answers?: { question_id: number; is_hidden: boolean | null }[] | null;
 }
 interface AttachmentRow extends PhotoRow {
@@ -39,7 +40,7 @@ interface AttachmentRow extends PhotoRow {
   form_responses: ReportVisibility | ReportVisibility[] | null;
 }
 
-const COLUMNS = 'id, site_id, storage_key, caption, identifier, photographer, date, created_at';
+const COLUMNS = 'id, site_id, storage_key, caption, identifier, photographer, date';
 
 /**
  * Report photos (active, non-archived reports, like the site gallery) and homepage uploads on
@@ -53,7 +54,7 @@ export async function listPhotos(caller: Caller, siteId?: number, includeInactiv
     fetchAll<AttachmentRow>((from, to) => {
       let q = db()
         .from('attachments')
-        .select(`${COLUMNS}, question_id, form_responses!inner(archived_at, is_active, user_id, answers(question_id, is_hidden))`)
+        .select(`${COLUMNS}, question_id, form_responses!inner(archived_at, is_active, user_id, inspection_date, created_at, answers(question_id, is_hidden))`)
         .is('form_responses.archived_at', null)
         .eq('form_responses.is_active', true)
         .in('content_type', IMAGE_TYPES);
@@ -73,13 +74,13 @@ export async function listPhotos(caller: Caller, siteId?: number, includeInactiv
       const report = Array.isArray(row.form_responses) ? row.form_responses[0] : row.form_responses;
       const hidden = report?.answers?.some((a) => a.question_id === row.question_id && a.is_hidden === true) ?? false;
       const canRead = caller.isAdmin || report?.user_id === caller.userId;
-      return hidden && !canRead ? [] : [{ row, kind: 'attachments' as const, hidden }];
+      return hidden && !canRead ? [] : [{ row, kind: 'attachments' as const, hidden, date: row.date ?? report?.inspection_date ?? report?.created_at?.slice(0, 10) ?? null }];
     }),
-    ...uploads.map((row) => ({ row, kind: 'homepage_image_uploads' as const, hidden: false })),
+    ...uploads.map((row) => ({ row, kind: 'homepage_image_uploads' as const, hidden: false, date: row.date ?? null })),
   ].filter(({ row }) => row.site_id !== null && siteName.has(row.site_id));
 
   const photos = await Promise.all(
-    tagged.map(async ({ row, kind, hidden }): Promise<Photo | null> => {
+    tagged.map(async ({ row, kind, hidden, date }): Promise<Photo | null> => {
       try {
         const url = await getSignedUrl(s3, new GetObjectCommand({ Bucket: BUCKET, Key: row.storage_key }), { expiresIn: 3600 });
         return {
@@ -89,7 +90,7 @@ export async function listPhotos(caller: Caller, siteId?: number, includeInactiv
           caption: row.caption,
           identifier: row.identifier,
           photographer: row.photographer,
-          date: row.date ?? row.created_at.slice(0, 10),
+          date,
           siteId: row.site_id,
           siteName: siteName.get(row.site_id!) ?? null,
           ...(hidden ? { isHidden: true } : {}),
