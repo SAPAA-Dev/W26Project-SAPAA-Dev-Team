@@ -49,6 +49,12 @@ jobs:
       E2E_SPECS: cypress/e2e/logout.cy.ts,cypress/e2e/profile.cy.ts,cypress/e2e/authorized_check.cy.ts,cypress/e2e/add_site.cy.ts,cypress/e2e/archive_report.cy.ts,cypress/e2e/deactivate_site.cy.ts,cypress/e2e/map_filter.cy.ts,cypress/e2e/map_site_popup.cy.ts,cypress/e2e/edit_own_report.cy.ts,cypress/e2e/password_reset_wrong_code.cy.ts
     steps:
       - uses: actions/checkout@v4
+      - name: Install Linux browser dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo -n apt-get update
+          sudo -n apt-get install -y xvfb libatk1.0-0t64 libatk-bridge2.0-0t64 libnss3 libxss1 libasound2t64 libgbm1 libgtk-3-0t64
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -76,10 +82,10 @@ jobs:
         with:
           version: 2.118.0
 
-      # Only the services the app uses: Postgres, Auth, PostgREST and the Kong gateway.
+      # GPX seed data needs local Storage as well as the database and Auth.
       - name: Start local Supabase (applies migrations and seed.sql)
         if: env.DEPLOYED_URL == ''
-        run: supabase start -x studio,postgres-meta,edge-runtime,storage-api,imgproxy,logflare,vector,mailpit,realtime,supavisor
+        run: supabase start -x studio,postgres-meta,edge-runtime,logflare,vector,mailpit,realtime,supavisor
 
       - uses: actions/cache@v4
         with:
