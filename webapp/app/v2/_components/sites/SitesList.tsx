@@ -20,7 +20,7 @@ import Overview from './Overview';
 import { Sheet, useOpenKey } from '../flows/ui';
 import { BASE_QUERY, fmtDate, HEADING, shortCounty, sinceVisit, siteHref, TNUM } from './ui';
 
-const SORT_NOTE = { urgency: 'most urgent first', name: 'A to Z', recent: 'recently visited first' } as const;
+const SORT_NOTE = { urgency: 'most urgent first', name: 'A to Z', 'name-desc': 'Z to A', recent: 'recently visited first' } as const;
 const inspectHref = (slug: string) => `${siteHref(slug)}/inspect`;
 const listBox = 'mx-4 rounded-[var(--radius-l)] border border-[var(--line)] bg-[var(--surface)] md:mx-0';
 const HERO = 'h-[300px] md:h-[340px]';

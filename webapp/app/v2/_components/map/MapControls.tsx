@@ -151,10 +151,12 @@ export function PinGlyph({ status, scale = 1 }: { status: InspectionStatus; scal
 
 export function MapKey({
   placement = 'below',
+  compact = false,
   align = 'left',
   className = '',
 }: {
   placement?: 'below' | 'above';
+  compact?: boolean;
   align?: 'left' | 'right';
   className?: string;
 }) {
@@ -182,7 +184,7 @@ export function MapKey({
         onClick={() => setOpen((o) => !o)}
         className={`press flex h-11 items-center gap-2 rounded-full pr-4 pl-3 text-[13px] font-bold ${CHROME}`}
       >
-        <span className="flex items-center gap-1" aria-hidden>
+        <span className={compact ? 'hidden' : 'flex items-center gap-1'} aria-hidden>
           {KEY.map((k) => (
             <PinGlyph key={k.status} status={k.status} scale={0.75} />
           ))}

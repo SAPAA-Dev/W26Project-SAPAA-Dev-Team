@@ -10,7 +10,8 @@ import { TNUM } from './ui';
 const STATUSES: InspectionStatus[] = ['overdue', 'due', 'never', 'recent'];
 const SORTS: { key: SortKey; label: string }[] = [
   { key: 'urgency', label: 'Most urgent' },
-  { key: 'name', label: 'Name' },
+  { key: 'name', label: 'Name (A–Z)' },
+  { key: 'name-desc', label: 'Name (Z–A)' },
   { key: 'recent', label: 'Recently visited' },
 ];
 
@@ -30,6 +31,7 @@ interface Props {
   query: SiteQuery;
   onApply: (f: Filters) => void;
   onClose: () => void;
+  onClear: () => void;
 }
 
 /** Mounted on first open, kept for the exit slide, and remounted on each open so staging starts from the URL. */
@@ -39,7 +41,7 @@ export default function FilterSheet(props: Props) {
 }
 
 /** Changes are staged here and applied by "Show N sites", so the list never jumps behind the sheet. */
-function Filters({ open, sites, me, query, onApply, onClose }: Props) {
+function Filters({ open, sites, me, query, onApply, onClose, onClear }: Props) {
   const [status, setStatus] = useState(query.status);
   const [county, setCounty] = useState(query.county);
   const [sort, setSort] = useState(query.sort);
@@ -61,6 +63,7 @@ function Filters({ open, sites, me, query, onApply, onClose }: Props) {
   return (
     <Sheet
       open={open}
+      centered={query.mode === 'map'}
       title="Filter sites"
       onClose={onClose}
       footer={
@@ -68,10 +71,8 @@ function Filters({ open, sites, me, query, onApply, onClose }: Props) {
           <button
             type="button"
             onClick={() => {
-              setStatus([]);
-              setCounty([]);
-              setSort('urgency');
-              setBoundary(undefined);
+              onClear();
+              onClose();
             }}
             className="press h-12 rounded-full px-4 text-[15px] font-semibold text-[var(--ink)] underline-offset-4 hover:underline"
           >

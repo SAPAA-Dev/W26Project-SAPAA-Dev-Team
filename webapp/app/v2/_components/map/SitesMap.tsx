@@ -12,7 +12,7 @@ import { api, ApiError } from '@/lib/api/v1/client';
 import { applySiteQuery, STATUS_LABEL, useSiteQuery } from '../../_lib/siteQuery';
 import { useApi } from '../../_lib/useApi';
 import MotionProvider from '../../_lib/MotionProvider';
-import QueryBar from '../sites/QueryBar';
+import QueryBar, { SiteSort } from '../sites/QueryBar';
 import SiteRow from '../sites/SiteRow';
 import { TNUM } from '../sites/ui';
 import { prefetchSite } from '../sites/useSites';
@@ -30,7 +30,7 @@ import MapSearchInput from '@/components/map/MapSearchInput';
 import { boundaryFilterOptions, defaultMapStatuses, filterBoundaryFeatures, MAP_STATUS_OPTIONS, type BoundaryFilterSelection } from '@/lib/map/boundaryFilters';
 import type { BoundaryFeature } from '@/lib/map/boundaries';
 
-const SORT_NOTE = { urgency: 'most urgent first', name: 'A to Z', recent: 'recently visited first' } as const;
+const SORT_NOTE = { urgency: 'most urgent first', name: 'A to Z', 'name-desc': 'Z to A', recent: 'recently visited first' } as const;
 
 // MapLibre is most of the map's code. Loading it on its own lets the search, sheet and list paint at once;
 // the canvas fills in behind them (preloadMap usually has it ready by then).
@@ -194,7 +194,7 @@ function SitesMapView() {
           onPick={(area) => { setBoundaryDetails(null); update({ selected: null }); setFocusedArea(area); }}
         />
       </div>
-      {hasAreaFilters && <button type="button" onClick={clearFilters} className="min-h-11 px-2 text-sm font-semibold">Clear area filters</button>}
+      {(hasAreaFilters || query.q || query.view !== 'all' || query.status.length > 0 || query.county.length > 0 || query.boundary || query.selected) && <button type="button" onClick={clearFilters} className="min-h-11 px-2 text-sm font-semibold">Clear all</button>}
       <MapAreaFilters
         types={areaOptions.types} subtypes={areaOptions.subtypes} counties={areaOptions.counties} statuses={MAP_STATUS_OPTIONS}
         selectedTypes={areaFilters.types} selectedSubtypes={areaFilters.subtypes} selectedCounties={areaFilters.counties} selectedStatuses={areaFilters.statuses}
@@ -361,7 +361,7 @@ function SitesMapView() {
         {canvas}
         <div style={expanded ? { display: 'none' } : undefined} className="pointer-events-none absolute top-3 bottom-[92px] left-3 z-20 flex w-[380px] flex-col gap-3 xl:bottom-3">
           <div className="pointer-events-auto">
-            <QueryBar tone="floating" />
+            <QueryBar onClearFilters={clearFilters} tone="floating" />
             {areaTools}
           </div>
           <section
@@ -420,11 +420,12 @@ function SitesMapView() {
       {canvas}
       <div ref={chrome} style={expanded ? { display: 'none' } : undefined} className="pointer-events-none absolute inset-x-0 top-0 z-20 px-3 pt-[max(8px,env(safe-area-inset-top))]">
         <div className="pointer-events-auto">
-          <QueryBar tone="floating" compact={!toolsOpen} />
+          <QueryBar onClearFilters={clearFilters} tone="floating" compact={!toolsOpen} />
           {toolsOpen && areaTools}
           <div className="mt-2 flex items-center justify-between gap-2">
-            <button type="button" aria-expanded={toolsOpen} onClick={() => setToolsOpen((value) => !value)} className={`press flex h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold ${CHROME}`}><SlidersHorizontal size={17} aria-hidden />{toolsOpen ? 'Hide filters' : 'Filters'}</button>
-            <MapKey />
+            <button type="button" aria-expanded={toolsOpen} onClick={() => setToolsOpen((value) => !value)} className={`press flex h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold ${CHROME}`}><SlidersHorizontal size={17} aria-hidden /><span className="sr-only">{toolsOpen ? 'Hide filters' : 'Filters'}</span></button>
+            <SiteSort />
+            <MapKey compact align="right" />
             {!expanded && expandButton}
           </div>
         </div>

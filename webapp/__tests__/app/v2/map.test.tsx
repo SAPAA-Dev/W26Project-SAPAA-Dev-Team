@@ -14,14 +14,14 @@ jest.mock('next/dynamic', () => () => function Canvas(props: { sites: { name: st
 jest.mock('motion/react', () => ({ AnimatePresence: ({ children }: React.PropsWithChildren) => children, useReducedMotion: () => true }));
 jest.mock('motion/react-m', () => ({ div: ({ children }: React.PropsWithChildren) => <div>{children}</div> }));
 jest.mock('@/app/v2/_lib/MotionProvider', () => ({ __esModule: true, default: ({ children }: React.PropsWithChildren) => children }));
-jest.mock('@/app/v2/_components/sites/QueryBar', () => ({ __esModule: true, default: () => null }));
+jest.mock('@/app/v2/_components/sites/QueryBar', () => ({ __esModule: true, default: () => null, SiteSort: () => null }));
 jest.mock('@/app/v2/_components/sites/SiteRow', () => ({ __esModule: true, default: ({ site }: { site: { name: string } }) => <span>{site.name}</span> }));
 jest.mock('@/app/v2/_components/sites/useSites', () => ({ prefetchSite: jest.fn() }));
 jest.mock('@/app/v2/_components/map/MapControls', () => ({ MapButtons: () => null, MapKey: () => null, CHROME: '' }));
 jest.mock('@/app/v2/_components/map/MapSheet', () => ({ __esModule: true, default: ({ children, preview, mode }: React.PropsWithChildren<{ preview: React.ReactNode; mode: string }>) => <>{mode === 'card' && preview}{children}</>, useHeight: () => 0 }));
 jest.mock('@/components/map/OfflineSavePanel', () => ({ __esModule: true, default: () => null }));
 jest.mock('@/app/v2/_lib/siteQuery', () => ({
-  useSiteQuery: () => ({ query: { sort: 'name', q: '', selected: mockSelected }, update: mockUpdate }),
+  useSiteQuery: () => ({ query: { mode: 'map', view: 'all', status: [], county: [], sort: 'name', q: '', selected: mockSelected }, update: mockUpdate }),
   applySiteQuery: (sites: unknown[]) => sites,
   STATUS_LABEL: { due: 'Due' },
 }));
@@ -44,6 +44,8 @@ jest.mock('@/app/v2/_components/map/SiteCard', () => ({ __esModule: true, defaul
 import SitesMap from '@/app/v2/_components/map/SitesMap';
 
 beforeEach(() => {
+  HTMLDialogElement.prototype.showModal = function () { this.setAttribute('open', ''); };
+  HTMLDialogElement.prototype.close = function () { this.removeAttribute('open'); };
   jest.clearAllMocks();
   mockRole = 'steward';
   mockSelected = null;
@@ -59,7 +61,7 @@ it('filters polygons, pins and list rows together, then clears the area filter',
   expect(screen.getByTestId('canvas')).toHaveTextContent('Reserve:1');
   expect(screen.queryByText('Natural', { selector: 'span' })).not.toBeInTheDocument();
   expect(screen.getByText('Reserve', { selector: 'span' })).toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: 'Clear area filters' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Clear all' }));
   expect(screen.getByTestId('canvas')).toHaveTextContent('Natural,Reserve:2');
 });
 

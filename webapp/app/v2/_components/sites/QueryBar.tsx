@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { ChevronLeft, ChevronRight, List, Map as MapIcon, Search, SlidersHorizontal, X } from 'lucide-react';
-import { applySiteQuery, useSiteQuery, type SavedView } from '../../_lib/siteQuery';
+import { applySiteQuery, useSiteQuery, type SavedView, type SortKey } from '../../_lib/siteQuery';
 import { useSites } from './useSites';
 import FilterSheet from './FilterSheet';
 import { TNUM } from './ui';
@@ -27,7 +27,7 @@ const FLOATING = {
   '--on-accent': 'var(--canopy)',
 } as CSSProperties;
 
-export default function QueryBar({ tone, compact = false }: { tone: 'paper' | 'floating'; compact?: boolean }) {
+export default function QueryBar({ tone, compact = false, onClearFilters }: { tone: 'paper' | 'floating'; compact?: boolean; onClearFilters?: () => void }) {
   const { query, update } = useSiteQuery();
   const { sites, me, meSettled } = useSites();
   const [filterOpen, setFilterOpen] = useState(false);
@@ -67,7 +67,7 @@ export default function QueryBar({ tone, compact = false }: { tone: 'paper' | 'f
       ) as Record<SavedView, number>),
     [sites, me, query],
   );
-  const filterCount = query.status.length + query.county.length + (query.sort === 'urgency' ? 0 : 1) + (query.boundary ? 1 : 0);
+  const filterCount = query.status.length + query.county.length + (query.boundary ? 1 : 0);
 
   const floating = tone === 'floating';
   const lift = floating ? 'shadow-[0_4px_14px_rgba(18,42,28,0.35)]' : '';
@@ -156,6 +156,7 @@ export default function QueryBar({ tone, compact = false }: { tone: 'paper' | 'f
           Filter
           {filterCount > 0 && <span className={`font-bold ${TNUM}`}>{filterCount}</span>}
         </button>
+        <SiteSort />
         {VIEWS.filter((v) => v.key !== 'mine' || hasMine).map((v) => {
           const on = query.view === v.key;
           return (
@@ -174,6 +175,7 @@ export default function QueryBar({ tone, compact = false }: { tone: 'paper' | 'f
         me={me}
         query={query}
         onApply={(f) => update(f)}
+        onClear={() => { clearTimeout(timer.current); setText(''); if (onClearFilters) onClearFilters(); else update({ q: '', view: 'all', status: [], county: [], boundary: undefined, selected: null }); }}
         onClose={() => setFilterOpen(false)}
       />
     </div>
@@ -248,4 +250,14 @@ function ChipRail({ padY, children }: { padY: boolean; children: React.ReactNode
       {more.end && edge(1)}
     </div>
   );
+}
+
+export function SiteSort() {
+  const { query, update } = useSiteQuery();
+  return <label className="flex min-h-11 shrink-0 items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--surface)] px-2 text-sm font-semibold text-[var(--ink)]">
+    <span className="sr-only">Sort sites</span>
+    <select aria-label="Sort sites" value={query.sort} onChange={(event) => update({ sort: event.target.value as SortKey })} className="max-w-36 bg-transparent py-2">
+      <option value="name">Name (A–Z)</option><option value="name-desc">Name (Z–A)</option><option value="urgency">Most urgent</option><option value="recent">Recently visited</option>
+    </select>
+  </label>;
 }

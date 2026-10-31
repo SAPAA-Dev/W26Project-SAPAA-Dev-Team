@@ -12,7 +12,7 @@ export const BASE_QUERY: SiteQuery = {
   view: 'all',
   status: [],
   county: [],
-  sort: 'urgency',
+  sort: 'name',
   selected: null,
 };
 

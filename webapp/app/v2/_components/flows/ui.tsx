@@ -257,6 +257,7 @@ export function Sheet({
   description,
   children,
   footer,
+  centered = false,
 }: {
   open: boolean;
   onClose: () => void;
@@ -264,6 +265,7 @@ export function Sheet({
   description?: string;
   children: ReactNode;
   footer?: ReactNode;
+  centered?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -279,7 +281,7 @@ export function Sheet({
         onClose();
       }}
       onClick={(e) => e.target === ref.current && onClose()}
-      className={`m-0 mt-auto max-h-[92dvh] w-full max-w-none rounded-t-[var(--radius-l)] bg-[var(--surface)] p-0 text-[var(--ink)] shadow-[0_-12px_48px_rgba(10,24,16,0.28)] backdrop:bg-[rgba(10,24,16,0.55)] flex-col open:flex md:m-auto md:max-h-[86dvh] md:max-w-lg md:rounded-[var(--radius-l)] ${SHEET_MOTION}`}
+      className={`${centered ? 'm-auto rounded-[var(--radius-l)]' : 'm-0 mt-auto rounded-t-[var(--radius-l)]'} max-h-[92dvh] w-full max-w-none bg-[var(--surface)] p-0 text-[var(--ink)] shadow-[0_-12px_48px_rgba(10,24,16,0.28)] backdrop:bg-[rgba(10,24,16,0.55)] flex-col open:flex md:m-auto md:max-h-[86dvh] md:max-w-lg md:rounded-[var(--radius-l)] ${SHEET_MOTION}`}
     >
       <Fragment key={key}>
         <div aria-hidden className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-[var(--lichen)] md:hidden" />

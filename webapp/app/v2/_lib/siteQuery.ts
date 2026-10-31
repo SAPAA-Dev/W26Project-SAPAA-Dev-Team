@@ -9,7 +9,7 @@ import type { InspectionStatus, Me, SiteSummary } from '@/lib/api/v1/types';
  * List <-> Map, going back, or sharing a link keeps search, filters, sort and selection.
  */
 export type SavedView = 'all' | 'mine' | 'overdue' | 'never';
-export type SortKey = 'urgency' | 'name' | 'recent';
+export type SortKey = 'urgency' | 'name' | 'name-desc' | 'recent';
 export type ViewMode = 'list' | 'map';
 
 export interface SiteQuery {
@@ -37,7 +37,7 @@ export function useSiteQuery() {
       view: (params.get('view') as SavedView) ?? 'all',
       status: LIST(params.get('status')) as InspectionStatus[],
       county: LIST(params.get('county')),
-      sort: (params.get('sort') as SortKey) ?? 'urgency',
+      sort: ['name', 'name-desc', 'urgency', 'recent'].includes(params.get('sort') ?? '') ? params.get('sort') as SortKey : 'name',
       selected: params.get('sel'),
       boundary: ['with', 'without'].includes(params.get('boundary') ?? '') ? (params.get('boundary') as 'with' | 'without') : undefined,
     }),
@@ -53,7 +53,7 @@ export function useSiteQuery() {
       if (next.view !== 'all') p.set('view', next.view);
       if (next.status.length) p.set('status', next.status.join(','));
       if (next.county.length) p.set('county', next.county.join(','));
-      if (next.sort !== 'urgency') p.set('sort', next.sort);
+      if (next.sort !== 'name') p.set('sort', next.sort);
       if (next.boundary) p.set('boundary', next.boundary);
       if (next.selected) p.set('sel', next.selected);
       const s = p.toString();
@@ -105,6 +105,7 @@ function filterSites(sites: SiteSummary[], query: SiteQuery, me: Me | null): Sit
   });
   const byName = (a: SiteSummary, b: SiteSummary) => a.name.localeCompare(b.name);
   if (query.sort === 'name') return out.sort(byName);
+  if (query.sort === 'name-desc') return out.sort((a, b) => byName(b, a));
   if (query.sort === 'recent')
     return out.sort((a, b) => (a.daysSince ?? Infinity) - (b.daysSince ?? Infinity) || byName(a, b));
   return out.sort(
