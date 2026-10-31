@@ -297,6 +297,11 @@ function SitesMapView() {
           Area outlines didn’t load.
         </Notice>
       )}
+      {tracks.error && (
+        <Notice action={<button type="button" onClick={tracks.refetch} className="press flex h-11 items-center gap-1 px-3 font-bold text-[var(--honey)]"><RotateCw size={14} aria-hidden />Retry tracks</button>}>
+          Visit tracks didn’t load.
+        </Notice>
+      )}
     </>
   );
 

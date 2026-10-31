@@ -3,6 +3,8 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import type { BoundaryProperties } from '@/lib/map/boundaries';
 
 const mockUpdate = jest.fn();
+const mockRefetchTracks = jest.fn();
+let mockTrackError: Error | null = null;
 let mockSelected: string | null = null;
 const mockSiteArrays: unknown[] = [];
 let mockRole: 'steward' | 'admin' = 'steward';
@@ -36,7 +38,7 @@ const mockAreas = mockSites.map((site, index) => ({
   geometry: { type: 'MultiPolygon', coordinates: [] },
 }));
 jest.mock('@/app/v2/_lib/useApi', () => ({
-  useApi: (key: string) => ({ data: key === 'sites:map' ? mockSites : key === 'boundaries' ? { type: 'FeatureCollection', features: mockAreas } : key === 'me' ? { role: mockRole } : undefined }),
+  useApi: (key: string) => ({ error: key === 'tracks' ? mockTrackError : null, refetch: mockRefetchTracks, data: key === 'sites:map' ? mockSites : key === 'boundaries' ? { type: 'FeatureCollection', features: mockAreas } : key === 'me' ? { role: mockRole } : undefined }),
 }));
 
 jest.mock('@/app/v2/_components/map/SiteCard', () => ({ __esModule: true, default: () => <div>Full site details</div> }));
@@ -44,6 +46,7 @@ jest.mock('@/app/v2/_components/map/SiteCard', () => ({ __esModule: true, defaul
 import SitesMap from '@/app/v2/_components/map/SitesMap';
 
 beforeEach(() => {
+  mockTrackError = null; mockRefetchTracks.mockClear();
   HTMLDialogElement.prototype.showModal = function () { this.setAttribute('open', ''); };
   HTMLDialogElement.prototype.close = function () { this.removeAttribute('open'); };
   jest.clearAllMocks();
@@ -128,4 +131,15 @@ it('focuses the compact site preview for keyboard users', () => {
   expect(screen.getByRole('link', { name: 'Natural' })).toHaveFocus();
   fireEvent.keyDown(screen.getByRole('link', { name: 'Natural' }), { key: 'ArrowRight' });
   expect(mockUpdate).toHaveBeenCalledWith({ selected: 'Reserve' });
+});
+
+
+it('(2.0.1 AT2) shows a failed track read and offers a retry without hiding the map', () => {
+  mockTrackError = new Error('Network down');
+  const view = render(<SitesMap />);
+  expect(screen.getByText('Visit tracks didn’t load.')).toBeInTheDocument();
+  expect(screen.getByTestId('canvas')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Retry tracks' })); expect(mockRefetchTracks).toHaveBeenCalledTimes(1);
+  mockTrackError = null; view.rerender(<SitesMap />);
+  expect(screen.queryByText('Visit tracks didn’t load.')).not.toBeInTheDocument();
 });
