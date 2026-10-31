@@ -102,3 +102,10 @@ describe('MarkdownText', () => {
     });
   });
 });
+
+
+it.each(['mailto:orgbio@gmail.com', 'tel:+17805551234'])('(V3-08 AT1) preserves %s and opens it separately', (url) => {
+  render(<MarkdownText content={`[Contact](${url})`} />);
+  expect(screen.getByRole('link')).toHaveAttribute('href', url);
+  expect(screen.getByRole('link')).toHaveAttribute('target', '_blank');
+});

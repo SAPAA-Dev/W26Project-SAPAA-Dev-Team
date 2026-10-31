@@ -76,6 +76,12 @@ export async function middleware(request: NextRequest) {
     return withAuthCookies(NextResponse.json({ error: 'Your account is awaiting admin approval.' }, { status: 403 }))
   }
 
+  if (user?.app_metadata?.authenticated === true && request.method === 'GET' && path === '/sites') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/v2/sites'
+    return withAuthCookies(NextResponse.redirect(url))
+  }
+
   return supabaseResponse
 }
 

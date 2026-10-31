@@ -104,6 +104,7 @@ export default function EditReportPage() {
       Record<number, { caption: string | null; identifier: string | null }>
   >({});
 
+  const [validationAttempted, setValidationAttempted] = useState(false);
   const [showRequiredPopup, setShowRequiredPopup] = useState(false);
   const [missingRequiredQuestionNumbers, setMissingRequiredQuestionNumbers] = useState<string[]>([]);
   const [missingImageMetadataDetails, setMissingImageMetadataDetails] = useState<string[]>([]);
@@ -325,11 +326,12 @@ export default function EditReportPage() {
   // ── Submit handler ────────────────────────────────────────────────────────
 
   const handleSubmit = async () => {
+    setValidationAttempted(true);
     // 1. Required-fields check (exclude image questions - existing images count)
     const questionNumberMap = buildQuestionNumberMap(questions);
     const missingRequired = questions
       .filter((q) => {
-        if (q.is_required !== true) return false;
+        if (currentUser?.role === 'admin' || q.is_required !== true) return false;
         if (q.question_type.trim() === 'image') {
           const hasLocal = isAnswered(responses[q.id]);
           const hasExisting = existingAttachments.some((a) => a.question_id === q.id);
@@ -619,6 +621,8 @@ export default function EditReportPage() {
 
       {/* Form - same MainContent as new-report, extended with existing-attachment props */}
       <MainContent
+        editing
+        showValidation={validationAttempted}
         responses={responses}
         onResponsesChange={setResponses}
         onSectionStateChange={handleSectionStateChange}

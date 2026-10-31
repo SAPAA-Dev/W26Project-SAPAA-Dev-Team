@@ -1,0 +1,1000 @@
+The goal I goal, or the release goal, and why can I not see anything?
+Yeah.
+Why is it not appearing?
+Yep.
+And then the 2nd thing is to, uh, assuming that we resolve that, to pivot into the proof of concept, and I'll give you guys an update from my side, seeing how you guys somehow think being out partying for Halloween is more important in my meetings, and I'm just saying.
+Oh, yeah, I'm not judging much.
+Uh, and uh, uh, yeah.
+And actually, I think that I think the proof of concept is coming along well.
+And, um, it's probably just as well that I'm meeting with the panel. on Sunday to sort of kick that off and then we'll bring you guys in.
+Uh, even, you know, every group needs a chance to form.
+You guys ever heard the expression to form, storm, norm, and perform?
+The what?
+You guys know that?.
+Okay.
+In group theory, there's 4 stages.
+You form, so you guys came together as a group.
+You did probably, you may or may not, you may or may not have known anyone in the group, right?
+So you got thrown together. that you need to store.
+Part of that storming was, so Sonia was picked as the leader.
+You know, other people may have said, oh, pick me, and other people may have said, oh, my God, I'm so glad I dodged that bullet.
+Uh, And that's often where the conflicts, the initial conflicts come out as your roles are identified.
+And then you move into the, uh, so form, storm, uh, a norm and norm is where you come up.
+You come up with group norms, you understand what your individual roles are, where your strengths are and who is doing what.
+That's the normalization period. then perform is actually, when you, uh, you started to deliver.
+Assuming that you get past the storm and the norm fix.
+Some groups never get past the storm and the norm phase.
+So, uh, there you go.
+That's your group theory for the day.
+Did I buy you enough time, son?
+Yes, thank you so much.
+Okay.
+I'm gonna share my screen.
+And yes, we're gonna about what you said.
+We actually have a plausible reason for why you cannot see it, and we sort of wanted to run that by you 1st rather than just sort of shooting everything down and then realizing this is not what I always expecting.
+But yeah, um, On to it.
+All right.
+So, um, let me see.
+For some reason, just give me a second.
+Okay.
+Perfect.
+Can you see the, can you see what's going on?
+Yeah.
+Perfect.
+So, um, So, uh, just an update.
+So sprint 3, we are done with sprint 3 and sprint 4 is underway.
+Can you just...
+Yeah.
+Yeah.
+Yes.
+Okay, so...
+These people have devices.
+Can't they log in to their device?
+Um, yeah, but then like everyone is just gonna get the whole echoing thing.
+Yeah, and everybody goes on mute and then it's like a CV radio.
+Is it really over?
+Or like, I think...
+No, we can, yeah.
+Or, I guess I'll be fine.
+I think we'll be fine, right?
+Okay.
+Okay.
+Sure yeah.
+Okay, but So what we changed for last Friday, we're going to talk about 3 things as usual.
+So what comes out next, what we need from you.
+And what is new since last Friday.
+And card number 2 is particularly important to us right now is because we don't know what's coming next because we finished everything and we need like we need your input on like what do we need to do next?
+And I feel like the proof of concept is a good way to start, but it's not really, I don't know if it's really like software engineering work.
+So I guess we'll have to check that out.
+But yeah, so...
+Perfect.
+So we'll see where we'll see what's new since last Friday.
+And again, Sprint 3 has been released.
+We have done all the testing.
+And so what I'm going to do right now is I'm going to quickly run you through these slides and then the main thing is that we're going to be looking at the new new like vision that we have for our like website.
+So the reason why I'm going quickly is that we can spend more time on that.
+But yeah, so we did most of our testing.
+And the weird thing is that 3 of our tests fail, but I think it's it's it's pretty much solvable and we're like working to fix that right now.
+And the next thing is people management.
+So, uh, all these like uh, profile history has been implemented.
+You can see like part of a gamification has also been implemented.
+You can see all your activity totals and the password reset also finally works.
+And I think Alyssa and Jaden were the one working on, yeah.
+So Alyssa and Jaden did finish the password reset and we did show it to RTA Alex and he said that it was working perfectly.
+So that's all sorted.
+We're just using super pace.
+Yes, exactly.
+So we're only using Superbase right now, but we're not using the we're not using the Google provider, right?
+We're not using any provider.
+Yeah.
+We're not using a provider at this moment, but yeah, that's the update of the password reset. about maps.
+So me and Chris were mainly involved in working with the entire map functionality.
+So you can finally look at polluted like GPX files and like it just won't take any polluted GPX files.
+Offline maps works now.
+And we wanted to talk to you about this weird offline thing, right, Chris, because we showed it to Alex and he was like, this might not be what Frank is looking for.
+Oh, yeah, we can go.
+We can, we can, like, sort of go over that as well.
+But, but yeah, that's pretty much it.
+That's what we've been doing for the past 2 weeks.
+Most of our most of our user story points for this sprint were for the maps and I feel like we nailed all of them down and yeah.
+So, um, yeah, so GP expert site has been implemented.
+Uh, you can uh, you can link one GP extract to a visit. once you get the GPX track, obviously, and you can also, the terms and conditions, yeah, the email that you sent has also been, has also been done.
+So proof of concept.
+We still have like after your meeting, we can start like diving into the proof of concept.
+What comes next?
+Okay.
+So we need to fix the 2 acceptance tests because we did not try to accept.
+Which 2 tests fail on which on which enhancements do they fail?
+They don't fail.
+We just didn't write the acceptance test, because we have a criteria to write acceptance tests, and we just described them for, I think, I think it was one of the shows for maps, and one of them was for the past recent, but we didn't, we didn't really complete them.
+So we're going to ride them as soon as possible and we'll see.
+Hopefully, like, they should, they should pass.
+It's not too much of the big team.
+But, uh, the map legend.
+Okay, what's up with the map legend?
+I see.
+Probably since it's.
+No, we should be should, a question.
+I think that's where...
+The pop-up link is like when you click on sites on a map.
+It just gives you the info.
+That's a problem.
+Yeah, okay, so we want to ask you, like, do you want something more in the pop-up link apart from just the side info?
+Let's say you click on a map.
+Do you want something more?
+Oh, well, maybe this is, uh, is this a good time to, for me to share my screen and go to, uh, what I'm seeing and then, uh, like before we get into a specific, I think there's a couple more profound questions to ask.
+Okay, okay, yeah.
+You can send that link in the chat.
+Yeah.
+The thing I sent in.
+Okay, yeah.
+Yeah.
+Okay.
+So, yes, you can go ahead and share your screen.
+We'll I'll stop sharing right now.
+Great.
+Hey.
+Okay, so, uh, let me actually do it this way.
+Uh, I'm gonna get out of there.
+Can you send me the link?
+Oh yeah.
+I just want make sure that this works.
+So, uh, so this is the link that, uh, Harvier's team had, uh, given me, so, which is linked to this button.
+So I click on the button, and you're gonna see very briefly the, um, the thing come up.
+Yep.
+Yeah.
+So it was gonna go past there.
+And we're now into the production app.
+Let's go to River Lot.
+Yeah.
+Okay.
+So this looks pretty much like what it was before.
+Yeah, we haven't updated that, and we have, like, we wanted to talk to you about that.
+Okay, so the question is, is the mapping thing here?
+No, the mapping thing is not here, but it's been, it's on another instance.
+So, you know, remember I sent you a link, like a specific, like, garbage link that you were having trouble accessing, and then you could finally access it.
+Right.
+So, but so what went into the release on Tuesday?
+Was the was maps part of the release?
+Yes. was code.
+Sorry?
+Okay.
+Like, the release was the current base, but we studied...
+Yeah, the release was the code base and that instance that we had, but it was not this.
+And it's because it had the new UI, and we wanted to sort of like let you know about the new year, and then after this meeting, we can just like sort of shoot it down to the new app.
+Okay, so I guess maybe that's the problem.
+What is the link to the production instance?
+What's the link I distributed to everyone to say, you go here?
+Because they don't, because the average user doesn't care about the blah, blah, blah.
+They just want the link.
+Okay.
+I'm sending you the link in the Google chat.
+You should be able to access it pretty easily.
+And to be clear, that link is the new production link.
+Is that correct?
+Oh, okay.
+That, okay, that's not the new, so it's not going to be linked to the Versell app, but it's a different, like, it's pre-production.
+It's like just one stage before the production.
+Okay.
+So then maps has not been released into production.
+Into what you're seeing right now?
+No, no, not yet.
+And that's why one of anyone else.
+Yeah.
+Yeah.
+Yeah.
+And that was fundamentally my question was, okay, I was kind of expecting to see a math thing magic here.
+Yeah.
+Is there a, you know, where's the map segment?
+Yeah, no.
+Do you want to just like let you know about the new features 1st and then we can, then we can, as soon as the meeting gets over, it's pretty much an easy task.
+Friend can also see this new year if he wants to on his other, you know?
+So if you access that, we'll give you send you the password and the username and then you can see the new UI and yeah.
+Again, the same thing.
+Your internet, right?
+What do we do?
+You get the same thing?
+Oh, if you clicks on the link? click on it and then there should be a pop-up.
+Like, yeah, if you click on the URL.
+That might just be...
+Is it just blocking raw URLs?
+That's pretty weird.
+Did you do something last time?
+How did he make it work last time?
+Yeah, I think I turned off my...
+If it presses details, my firewall, to be honest with you.
+I think I turned off my firewall and my virus.
+Could you do that?
+For, like, for, like, 20 minutes and then...
+I was trying to press detail around again.
+Yeah, can you scroll down to the details?
+Let's see if that works.
+Yeah, it's I think it's the firewall that's... yeah.
+It works on all of us because like we don't have the firewall thing.
+I can, um, I can quickly, probably cut one.
+Well, so maybe let's do this a little differently here.
+Here is the thing.
+We say this as a production system.
+The nice thing about this production system is there really ain't anyone in it at the moment.
+You know, and because we haven't been pushing it.
+Uh, you know, for people to come in, and I think I have one, I have one, um, uh, faults were forging there, and I think I have one, uh, you know, one more real report, uh, that has, uh, has come through.
+So, you know, I'm okay to hold my nose and say, push this to production, because then we don't have to worry about this.
+Okay.
+And can you push that production while we're in the meeting, or is that something you want to do after the meeting? we'd want to do after the meeting?
+But I guess what I can do right now, since, like, you wouldn't have to, like, do all this stuff with the firewall, I can share my skin and then you can walk me.
+Yes.
+Yeah.
+I can do that.
+Why is it?
+And the reason why I'm really pushing this, funny, is I want the most current version available to me for Sunday night when I do a demo.
+Yes, yes, yes.
+We'll get that we'll get that done by today.
+So we don't have to worry about that.
+You can click the link in the chat.
+Are you showing the current one?
+No, I'm just trying to figure out the damn display.
+Okay.
+Uh...
+That's fine. okay, okay, okay.
+You have to like...
+There you go.
+Okay, perfect.
+Can we see it?
+Uh, yeah.
+Oh, you'll need to change the...
+I'm gonna change that to D2, yeah.
+It's what...
+You just need to.
+Here?
+Uh, yeah.
+Perfect.
+Okay.
+So, this is our version two.
+And this is what we wanted to show you.
+And this is the new UI and it sort of looks better, right?
+Okay.
+So where do you want to start first?
+Anyway, anything is going to start out, see if he is.
+Sure.
+Let's start off with the map.
+You can tell me what to like, what to pick on and then we can sort of explore that.
+Okay, so this has a subset of data, right?
+Well, it's the same thing that we had in our like testing, but it's like, it's literally this, it's the same.
+It's the UI change and everything.
+Yeah.
+Okay, well, we probably don't have to spend a whole lot of time because we did go through this last week, but so what's what's the delta?
+Come here.
+What, what, sorry.
+My, I'm down here in Calgary and my son has a new puppy.
+It's okay.
+Who goes crazy.
+I think the door is closed up there, so I mean, totally.
+So what has changed from what you demonstrated last week, Chris?
+Um, just the entire UI, really.
+Because last week we showed the older one.
+We've decided to remodel the UI, so it's a lot, you know, is there a way you could open the inspector, so I could show them about it?
+Okay, so it really is just a skin. that has changed.
+The skin, but also just its useability and mobile because we added a lot of mapping features, but the LDI, There is a lot of just different troubles with actually using it on the phone, and obviously our main target isn't, you know, the desktop.
+It's people going out there and actually, yeah, going into a field.
+So if you open the maps view there.
+We're mainly just working on making it a lot more useable for the average mobile user.
+So they're able to actually see the site information a lot more, start their inspections a lot easier.
+But also from the map.
+So this is, again, you can go through this list view, but if you don't want to use the list view, if you're a more visual type of person, you can actually use this map view and achieve everything you could in the regular app.
+Okay.
+But ultimately, there is new functionality really is user experience.
+That's strange.
+Uh, yeah, the main offline maps and like the all the other features that we implemented in Sprint 3 are all in here.
+Yeah, and we saw that last time, the offline maps, which was great.
+So, at this point, I'm kind of gonna say, push it to production, guys.
+Yeah, that's what we just want to, we just want to get go for it.
+And we're going to do it right now.
+So there's no way.
+Okay.
+Yeah, there's going to be no one out in the next 3 days sitting in a whirlpool.
+I can tell you that or anything. right now.
+So, um, uh, so just just make it happen.
+Okay, perfect.
+Okay.
+Okay.
+Do you wanna check out something else?
+Actually, I want to have that new UI anyway for the meeting.
+Okay.
+Um, you know, because uh, that will probably help with the um, you know, with the panel discussion.
+Yeah.
+So is there any new functionality you want to show me?
+Oh, it's just our main thing is really just quality of life.
+I mean, we were trying to use the older mobile experience and it just, it didn't follow a lot of, at least psychology practises when making UIs.
+It wasn't very intuitive to the user.
+So we just decided to, again, make it a lot easier.
+Everything was kind of now self-explanatory, but it's functionality.
+It's a lot easier for anyone to pick it up, use it, you know, get inspecting.
+Great.
+So you were, you basically said, um, it was cheaper and easier and better to cut your losses with the old UI, jumped in the new UI so that we can keep on moving forward.
+Oh, Correct.
+And but we did.
+So just for the release on production, we've kept 2 versions running on the same app.
+So if there is an issue with this new UI, you can easily just use the other.
+So if you if you noticed, I just sort of like wrote a V2 here and then it like took me to version two.
+So that's sort of what Chris actually means.
+So please don't, you know, to a large extent, I don't care.
+Okay.
+Um, you know, to a large extent, it's I will probably get a testing environment.
+You were gonna say, you know, I'll sign off testing, and then I just want production.
+You know, please for, for God.
+You guys have as many instances as you like behind the scenes.
+I just want production.
+Okay.
+Okay. do that.
+Please don't confuse me with, you know, with many instances.
+All right, love it.
+Make it happen.
+Send me a note.
+Looking forward to having the maps. perfect.
+Is there anything else you want to show me on version 3 before we jump to the POC?
+No, well, the slides, it's really just covered like the same thing, but we just wanted like, I feel like the main topic of discussion was the POC, so.
+Okay, let's jump into that.
+We got half an hour here.
+Can you pull up the email that I sent you?
+Yes, just give me a second.
+So, and just why Sonya is doing that.
+I will review over there.
+Now go find the thing.
+So, uh, as Sonia is finding the email, um, Chris, you have to do the count.
+Who actually, uh, uh, who read the design document?
+So Chris, look around, tummy, hummy, hands are up.
+How many of us have read the design, I have half of it.
+You read half?
+I got one per half.
+I read I briefly read over it.
+I haven't really fully just close wishes which, but yeah.
+Okay.
+So let me go see her.
+There we go.
+Uh Oh, that's one.
+I'm looking forward.
+So, so, uh, so we're we're kind of coming into this meeting then uh, with uh, with limited uh, knowledge of uh, what's in the design.
+So, uh, so just zoom in a little bit and tell me, tell me what the 1st question was there.
+Yeah, thank you.
+Okay, so what one thing from the system design document could you implement as part as part V3.one prior to November 23rd?
+Okay, let me, let me take a look.
+Because I haven't had the time to sort of read it.
+So, and that's a good start.
+If you want to bring up the design document.
+In some respects, guys, you're getting a 2 for one deal here.
+Everything up until today was Brownfield.
+Now, you guys are not Greenfield, you're actually Virgin Forestfield.
+Right.
+You know, you know, uh, so you actually get 2 projects for the price of one.
+Uh, for this as a, um, uh, as an opportunity.
+Now, uh, you guys are going to be, this is going to be a very a challenge as well, because, you know, in version three, you got reasonably baked requirements.
+Yeah.
+I can't give you those baked requirements.
+The whole point of the proof of concept is to flesh out those requirements that go with it.
+Okay.
+So, so maybe what I'll do is, uh, um, what's better for me to share my screen or you to share your screen?
+I can share my screen.
+Give me a second.
+Yeah.
+Yeah.
+So let's bring open the actual Google Doc.
+Okay, well, can we see it?
+Yeah.
+And let's actually just do a quick whirlwind tour of this.
+So I'll tell you when to stop.
+So just go down to the table content, see if you can.
+Okay, so let's take a look at the table contents.
+One of the things with this document.
+It's serving multiple purposes.
+It's for you guys.
+Great.
+But it's also for the panel.
+Great.
+But it's also for next semester student team.
+Great.
+And it's also maybe for a granting agency to give us a bag of money.
+Great.
+So, if you're looking at this and you're thinking, well, why, I don't understand from design perspective, why it's in here, remember there are multiple audiences.
+And I don't really want to write 5 different documents. and then have to maintain them.
+And so, um, the background we'll talk about in a second.
+For the most part, you guys should know that.
+We know we've talked about it.
+Who wants free soft, uh, uh, uh, free software, is about the panel itself.
+And that's so that you guys have a good appreciation of those user stories.
+You basically have, to some extent, a whole new set of use cases.
+And they're in the format of the panel itself.
+What are the business processes?
+So this is the high level model of what it looks like.
+We talk about the panels, and we talk about what happens if the POC fails.
+So, um, This is your little resume thing.
+You're applying for a job in a startup? in the drawbad that says must have experience in in startups.
+This is an opportunity for you to say, I legitimately have experience in a startup, because failure with a proof of concept is success.
+If we can't build this damn thing, we can't figure it out.
+Not because of, you know, of, um...
+Not because of laziness or stupidity, or some of that, because, uh, well, that's gonna be the case.
+But if we technically cannot get it going.
+That's success, guys.
+Because it means we really don't understand what we, what we're trying to get to, or we really don't understand the business requirements.
+Then there's a bunch of annexes, and some of those annexes will be of greater or lesser value to you.
+So just scroll down a little bit. background on how we got here.
+You guys know basically know all this stuff.
+Yeah.
+Okay.
+Yeah.
+Okay.
+So we talk about version three.
+The one thing is, we are leaving.
+You guys need to have a conceptual awareness that we are leaving the individual steward, and we're going to something called an organizational steward.
+They're the same but different.
+Uh, so the organization that runs River Lot 56 only has one site.
+But lots of people coming to that site using the app.
+The individual steward is about a lot of people going, is about one person going to a lot of different sites, okay?
+So the POC is discussion, and then beyond, which is, um, what, you know, providing some of that context.
+Um, just scroll down.
+Who wants the next section who wants for a free sample?
+This is also where I begin to, um, uh, expose my hand a little bit to say, this is more than just the Werner Lens.
+This is more than just the sites that you guys have inside of the current application.
+Because, for example, the Edmonton area land trust bunch ferry site is not in your application.
+But that's why I need the ability to demonstrate that we can add that as a site, and we can upload that polygon.
+Even though it's not, even though it's not part of the worder.
+So you see how version 3 is feeding into POC.
+Okay, yeah, that makes sense.
+Okay.
+Um, so then, uh, using Sursapa now, um, so the Wagners and Riblots could kind of use it, but no, it wouldn't be great.
+Um, yeah, so, uh, the, uh, I have a set of data that says, I have about 180 organizations that are potentially peers, you just scroll down a little bit to the graphic that's there.
+Okay.
+This is where you guys take off your techie hat and you put on your business analyst or your startup hat.
+This is my market.
+This is my market analysis. of organizations that potentially use this site.
+Why is that important to you?
+You guys are going to be focussing on the 7 panellists, but you need to also keep in the back of your mind that I got 25 to 70 other organizations that are going to be potentially using this, okay?
+The organizational Stewart framework is just my explanation of how I'm thinking about this.
+Is that critical to you?
+No, it really isn't a technical thing.
+But you're sitting in a job interview, and the CEO just throws a comment out, well, tell me about, what are you done with market analysis and systems development?
+This is market analysis in system development.
+I applied a marketing rubric.
+So is to develop a system.
+Okay, yeah.
+That's what you guys are looking at right there.
+And why did I pick the organizations are Why did I, um, go after the organizations?
+Because they're in the green box.
+Okay?
+And so, for example, just scroll down a little bit to the green box there.
+Yeah, so, um, anything that's in that line green is a primo organizational steward, whereas the other stuff, yeah, they're kind of on the bubble.
+And so River Lot 56.
+They have temporary tenure.
+They're in an urban area.
+They have developed infrastructure, they have volunteer operations, and they have public access.
+That's why they're in the group.
+So, Sonia.
+I have not talked about technology yet.
+I've been exclusively talking about the business side.
+We're almost at the technology.
+Oh.
+So just go down to the next page.
+These are the entities you've got to make happy for the POC.
+And they, each one of them is distinct and different in their own way.
+And that's on purpose.
+So you kind of know about River Lot 56. you were there.
+We talked about it a lot.
+Wegner is kind of like River Lot 56, except for where it's different.
+You know, so each one of these are going to be coming with very different perspectives.
+And from a PLC perspective, you guys be ready to figure out what is the commonality and what is the uniqueness that goes with this?
+And we're not going to be able to knock off the uniqueness for all these, but hopefully we can at least get the commonalties.
+All right.
+So we are almost at the point at which you guys will say, well, yeah, but what do I need to care about?
+Okay?
+So scroll down a little bit, a little bit further, which is what are the business processes?
+Uh, I got a blank page there. and just go down to the input processes.
+Yeah, go.
+It was empty.
+Yeah, yeah, I'll delete that page.
+Go down one more page, yeah.
+Oh, zoom in a bit.
+This is, everything up to this point is, is either you want to be a business analyst and you care deeply, or you only want to be a propeller head sitting in a back room, and it's blah, blah, blah, blah.
+This is now where the propeller hit in the back room, in the business analyst, Tarti, to get together.
+These are the high level business processes that I need technology for.
+So key resources and contacts inventory, track key resources such as volunteer staff members, da da.
+Kind of sounds like the work you were doing on version two, doesn't it?
+Sort of yeah.
+Okay.
+Secondary resource details, as applicable track, secondary details, um, pick your volunteers, for example, emergency contact, other demographics.
+Okay.
+Volunteer hours?
+Uh, so this is net new.
+So when, and we'll get down to how these hours are generated, but if Bob is out there in River Lot 56 with a chainsaw clearing a trail, And he has recorded inside the app that he was there for 3 hours.
+How do we know it's Bob?
+Well, that's key resorts.
+Um, we'll see down below in the process is, how do we know what he was doing?
+Well, he has a work order.
+How do we know how many hours?
+Because he somehow started the clock and then somehow closed the clock.
+Volunteer skills?
+Bob only gets to hold the chainsaws.
+If he's has a certified, a certificate that says he can hold a chainsaw.
+Okay?
+Bob, no, I mean, Bob can bring his own chainsaw and whatever, but from, uh, for a lot of reasons, we can't let Bob use his own chainsaw, if he's on our work party.
+Hmm, right.
+Okay, okay, okay.
+Okay, so the equipment inventory, we own that chainsaw, huh?
+Uh, okay.
+Number one.
+Hey, we own a chainsaw.
+Okay.
+Where do we start?
+What did we buy it?
+Uh, where is it?
+You know, doesn't eat maintenance.
+So the equipment inventory.
+And that's, you know, those are really things you can carry around.
+Like a quad or a chainsaw or a brush cutter.
+The side assets are much more about, remember, we walked through that gate, and there were the 3 signs there.
+That gate is an asset. each one of those signs is an asset.
+The trail itself is an asset.
+Hmm, okay, okay, okay, okay.
+That makes sense.
+So, okay, so just to clarify, I think you mentioned this before, but we are not building any of this, right?
+We're just laying the foundation, right?
+Well, I don't know, think I said that.
+Uh, I'm expecting you guys to uh, to be amazing me and uh, uh, building some of this.
+Even if it's not an issue, yeah.
+Yeah.
+But remember, this is proof of concept.
+It doesn't have to be perfect.
+It doesn't have to be bulletproof.
+Well, my favourite question was...
+Yeah, go ahead.
+I think my question was leaning towards, we nailed down the proof of concept correctly to a design document, right?
+And then we sort of, uh, then we can proceed on, like how do we just, do we just start like creatively like brainstorming stuff like on the website?
+How does that work?
+So here's the thing.
+We, uh, like you guys, you guys are basically done November 29th, like the end of November, you guys, December, December 5th or 6th, maybe.
+Yeah.
+Okay.
+So, I have 30 +5 I have 35 production days, how do you?
+Uh-huh.
+Right?
+Um, I want as much of, so, so, uh, maybe let's take a step back.
+What is the proof of concept?
+The proof of concept is to give those 7 panellists the sense of, Aha.
+Now I understand, what you're saying.
+Okay, now I understand that when that tree is down in River Lot 56, somebody reports that, they create a work order.
+Okay, we pull together a work order, we pull together 18.
+We have a first aider, we have a chainsaw guy, we have some labourers.
+They go out.
+They, um, they put in their hours, they, they clear the trail. and they close the work order.
+But so that's easy to say, but there's a lot of infrastructure underneath there.
+Yeah, well, I was wondering how we're going to be solidifying this entire proof of concept.
+And uh, And I guess like another like question that I have is how much liberty do we have? 100% liberty.
+Thank you so much.
+Perfect.
+Yeah, 100% liberty.
+You can't have such production.
+Yeah, of course, of course.
+But, no, you got I only have your 35 days.
+I'm turning you guys loose.
+Okay, yeah.
+Okay.
+Like, don't make this shit happen.
+Surprise me.
+Yeah, you have seven bulls on the loose, yeah.
+Yeah, make it happen.
+Have fun with this.
+And you know what, have fun with this?
+Like, how often do you get an opportunity?
+This is a hackathon.
+Okay, okay.
+If you're thinking of the marathon, then, okay, then I think I'm just gonna, Yeah, okay, that makes sense, too.
+I feel like that's a good word.
+Okay.
+Yeah, yeah, I'm using proof of concept.
+No, this is a this is the mother of all hack of...
+Okay, perfect.
+Thank you.
+Okay, I think I've heard all I need to hear.
+Okay.
+That's good.
+Yeah, and here's the thing.
+I don't care about security at this point.
+Okay, as long as long as I don't have to fiddle with my firewall.
+Yeah, yeah, yeah. you know, and that type of crap.
+Don't worry about security.
+Worry about functionality.
+We can make.
+We can make.
+Yeah.
+Chris is always smiling.
+If there's no security worries, we can make something pretty good.
+If there's no security because security is like half of our concern at this point.
+Like, that's why we were scared of like deploying it to broad.
+That's why we were so scared.
+So, no, no.
+And you guys will figure out how do you... you know, how do you take the as is prod?
+Put it over here into the hackathon environment?
+Okay.
+And then turn off the security rules in the hack of that environment.
+Going haywire then.
+Okay, nice.
+Okay.
+Because we're only going to give the link out to 7 people.
+And we're going to expire the link on January the 31st anyway.
+Oh, um, we can just deploy it on some beer and leave it running.
+Just given Siberians?
+Yeah.
+Fireball?
+No, I mean, no security, right?
+Okay, yeah.
+All goody.
+Okay.
+Yep.
+Okay.
+Okay, so anyway, utility management allowed activities.
+So there's a bunch of blah, blah, blah here.
+Okay.
+So these are the things that are coming in.
+The next page is actually the more interesting page.
+These are the processes.
+So what kind of condition is this site?
+So I'm going to spend a little bit more time on this one.
+So we are in River Lot 56.
+I go to that gate, and I am able to say there's only 2 there's only 2 signs here.
+How do I do that?
+Remember we were standing at that gate at the very beginning?
+Um, there were 3 signs.
+Let's pretend there was only two.
+How do I, how do I know there was supposed to be three?
+And how do I record that there's only two?
+Okay.
+Okay, okay, okay, yeah.
+You know, and everything that requires someone to do something needs to generate a work order.
+And probably what's not in here is maybe even the amalgamation of work orders because the person may say, well, one of the signs blew down and then they walk 50 metres and they say, oh, we probably need a chainsaw here and they walk another 20 metres.
+Oh, there's another sign.
+Well, don't send out 3 crews.
+Send out one crew.
+You know, to do those 3 things.
+So I can see a standing work order and like a normal work order, right?
+So how does that like, do you want that as like something that's separate or how does that work?
+Yes.
+Yeah.
+So is there any work order is, um, is something that's happening over and over again?
+So a work order might be Frank agrees to go walk the trails once a week.
+Mm-hmm.
+And when Frank gets to the trail, he turns on the app and, uh, and it records the fact that he's walked the trails and, you know, he may have noticed some things, but otherwise, the site's in great shape.
+That's a tiny work order.
+It's going to happen over and over and over again.
+In the course of walking the trail, he discovers that there's a broken gate.
+Okay.
+So that broken gate is then a one off and ad hoc work order.
+Okay.
+And that has to be action.
+Someone has to go out there with a wrench and fix the gate.
+Okay.
+Okay, okay, yeah.
+Yeah, whereas Frank walking the trails.
+You know, uh, he walks the trails, he walks in again next week, walks into the week after.
+Uh, there was a resort certification.
+That's the tough one, guys, because this is where we're bringing in the, um, we're bringing in the person dimension.
+And we're saying that Chris is a person, who has a chain, who has Chainsaw 3.
+So therefore can do this piece of work on this work order.
+If you don't have Chainsaw 3, you can't do this piece of work.
+Hmm, okay, okay.
+Yeah that makes sense.
+Okay.
+Sonia, once it will drive the quad.
+Sonya doesn't have an ATV certification.
+Sonia can't drive the club.
+I can.
+Say again.
+You don't have a server.
+Well, you will, because you will make this shit up in the system.
+Yeah, but I have a question.
+I have a question about that How do you want your certification?
+Like, like, obviously, they'd have to upload their own certification or do we make like our own, like, custom template for a certification?
+How does that work?
+Uh, so let's just go down because I think I have a mock-up of that.
+Uh, go down to a page. uh 16.
+Okay.
+Well, actually, here, let's go a little before that.
+Go down to page 50.
+Top of 50.
+There we are.
+Yeah, so I've done some rough and ready mockups here, okay?
+So here is a mock cup of volunteer profile page.
+Well, it's pretty much what you guys have in version three, except maybe we'll have a couple other fields.
+The side condition to scroll down.
+So this is where someone has said, oh, that tree has fallen down.
+So the bottom of page 15.
+Yeah.
+So do you see how someone has said, oh, we need to fix this thing here?
+Do you already have a, do you already have a Google Sheets?
+Yes, I do. and it's in that G drive that I sent up.
+Okay, perfect.
+Then we'll sort of just take that as mock data or like real data.
+I't know what that is, but yeah, we'll do that.
+Perfect.
+Yeah, and I mean, it really is rough and ready mockup.
+Okay, guys.
+Okay.
+Or let's go down a little bit further.
+To the work order page.
+Mm-hmm.
+There you are.
+So this is where on this, so this is, so up to this point, somebody has said, hey, there's a tree that's fallen down.
+We need to clear it.
+Now the organization has said, oh, okay, we're going to put together a work order, a work party.
+Okay.
+So, um, the work party is going to happen on January the 23rd from 10 till three.
+Bob is in charge of it, and call an ambulance is the 1st aid you assigned.
+Okay?
+And these are the roles that we have, and then the people who are um, who are assigned to it.
+Uh, Okay.
+And and again, just a follow-up to that, the work order would, okay, it does have the certificate stuff.
+Okay.
+And again, in the in the app, you'd obviously have to have a check for that certificate, right?
+Like, people with alert.
+Yeah, okay, okay.
+Yeah, So this is scroll down a little bit more.
+So there's kind of like the list of certificates.
+Uh-huh.
+And, uh, do you have a, okay, so what I feel like is a certificate would be something like a PDF or like, And uh, how do you have a temperate for that certificate or how do we, how do we work?
+No?
+No, but I'm willing to bet if you Googled it.
+You could probably...
+It was the best.
+Okay, okay.
+Yeah.
+Just scrape a screenshot off some other person's app because this is basically a safety app.
+Can we make our own, like, can we make our own version of the certificate?
+Is that okay?
+Yeah, yep.
+Okay, good.
+Okay, perfect.
+Good.
+Okay. fair enough.
+Yeah.
+And so those are the mockups that I had.
+Because that's really the core, like, that's really the core business process that I want to walk through.
+Okay.
+Yeah, that makes sense.
+And so if you think about it from Hackathon perspective.
+Uh, we're, sometime in November or December, we're going to go out to River Lot 56.
+We're going to pretend there's a tree down.
+We're gonna take our phones out.
+And we're gonna walk, 1st of all, and in the proof of concept, say, oh, here we are.
+Oh, look at that, we got 2 signs.
+Oh, we better make a note of that.
+And we're going to pretend that we are, you know, doing the observation.
+And then we're going to go back to the gate.
+And we're going to walk through again.
+We're gonna, uh, we're going to have a cardboard chainsaw or something.
+And then we're gonna be in the work party.
+Can we take a picture of the carpet chainsaw?
+Absolutely.
+Okay, perfect.
+Nice.
+Yeah, I think I think this, I feel like this does make a lot of sense and I, and I do feel happy about this.
+I feel like Chris is also like, he's not smiling, but yeah.
+I think he's happy about it.
+And I feel like Aaron and Abina Abina's been celebrating.
+So yeah, I think I think we like this.
+I think we like where we're going.
+Or like we like where we're going to go from here. because I feel like I feel like we completely dive into the agile methodology.
+So like we go agile maxing.
+So we barely like care about like stuff and we implement and implement and implement.
+We leave the rest of the nitty gritty details to the next team, I guess.
+Perfect.
+Because here's how this POC is going to end up.
+We're going to get to the end of it.
+And actually, maybe just scroll up on your thing.
+Uh, and uh, just just before the annexes.
+Sorry, I don't know what page it is.
+This is...
+Yes.
+Yeah.
+And there we go.
+Yeah, just zoom in.
+So what happens if the POC fails?
+Um, PC fails.
+That's wonderful.
+That's that's great.
+Um, can we do, can we?
+Okay, so can we make a copy of this POC and can we make changes if we find something that is that's like sort of, hey, Frank, this might be a little bit weird to implement.
+Can we sort of change that?
+A copy of it at least.
+Okay Yeah.
+No, update the master version.
+Okay, perfect.
+Okay.
+Yeah.
+Like, this is a living, breathing document.
+Okay, okay, good.
+Um, this is a living breathing document.
+And, uh, you know, I want your excitement and hopefully the excitement from the panellist. to, you know, uh, to wind each other up.
+And my job is to say, you know, is to say for the 1st week or 2 gate, you know, um, uh, more, more, more, you know, exciting.
+And then about, um, November the 20th or so, probably a little early in that, I'm then going to say, okay, start shredding it down.
+And then this is, and then when we do the field test, say, uh, on the weekend of December 5th, six, then the PLC is locked.
+I guess I do have a concern.
+It's not really, it's not really too big of a concern, but I'm wondering how we're going to be like showing this to Alex.
+Because the entire thing about the these prints are that you need to meet certain criteria and the agile maxing hackathon thing is not really going, might not really go well with the sprint criteria.
+Do you think?
+What do you think?
+We could probably, I figure, would have to be allowed to make our own user stories to show.
+But we'd have to write acceptance tests.
+We can, we can make them.
+E especially if it's hack.
+I mean, it's just the, it's just the client.
+Yeah, it'll be fine.
+Okay.
+Yeah.
+So, uh, here is my, here is what I'll say to that.
+I will call Markup at any time. and say, come on, man.
+This is cool shit.
+Like, uh, I get it.
+You have a marking rubric and you're trying to make, you know, make it happen.
+You're trying to fit things within it, but this is better.
+You know, I'll, yeah, it's better.
+The hackadone is much more fun than the software engineering.
+Yeah, but yeah.
+Yes.
+Oh, and or you know what, guys?
+Um, I'm gonna tell you a little secret.
+When you, when you're in university, never do the assignment that's given to you.
+Ever.
+Never do that, assignment.
+If it's a big assignment.
+I mean, if it's a little one, forget it, but never do the assignment is given to you, always do something slightly different and slightly better.
+Yeah, but they're going to be giving us the grade.
+Yeah, that's okay.
+Make up some bullshit that if it's into the rubric, you know, like, I'm telling you, Do whatever you need to do to make this fit into the rubric.
+Great.
+You know, Mark has a rubric.
+Make it happen.
+Yeah, I don't think that should be a big problem.
+But I guess, I guess we'll, I think, I think we'll have to convince Alex to be, to be a bit more lenient with our, like, Mark.
+And you escalate to me, okay?
+Perfect, yeah, perfect.
+I think I think you'll need to help us out a bit here if like if things go sideways.
+But yeah.
+Yeah.
+And I know Mark, you know, he's going to say, well, you know what?
+I got to grade these people.
+I got to grade them against a rubric.
+Yeah, yeah.
+And, and, um, I will go to Mark and I'll say, okay, well, let's make sure that we are meeting the spirit and the intention of the rubric rather than the, uh, the letter of the law, the rubric.
+Yeah, the word, the word by word thing.
+Okay, yeah, yeah.
+Okay.
+Okay.
+Perfect.
+Uh, think.
+I think everyone's happy with this, right?
+Guys, be all happy.
+Yeah, and and our cycle on this is probably going to be a little bit faster because, um, you know, uh, feel free to uh, mid-week.
+Shoot me a version to say, okay, we did the certification thing.
+Go take a look.
+What do you think?
+Okay.
+Is this what you were thinking?
+And, uh, okay, so for that, I think I need to, like, let you know that we're only going to be showing you that weird link and you'd have to turn off your firework for that.
+Okay, yeah, and all right.
+I will deal with it.
+Uh, you know, that's uh, that's the price I'll pay.
+Okay.
+But I think I think me and Chris can try to figure out how to, like, fix that firewall thing.
+It's, it's, it's a very like weird issue because sometimes you have it, sometimes you don't.
+But yeah, we'll try to like knock that down. yeah.
+Okay.
+Perfect.
+All right, so, setting aside, Alex, and your grade and your entire academic future. setting aside those minor things.
+Very minor things, yeah.
+Yeah, yeah.
+Are you excited?
+Does it look like a fun?
+It looks like fun?
+Pretty excited.
+Like, I love hacketon, so I think this would be a really big hacketon, but it would be a nice one.
+So yeah.
+Yeah.
+Don't use Hackathon with Alex and Mark.
+Use proof of concept.
+Use my language.
+Yeah, yeah, of course.
+Okay, perfect.
+Thank you so much, Frank.
+Yeah, we'll use Hackathon.
+You'll use proof of concept.
+And, um, and by the way, show Alex's document because uh, methologically, you know, uh, it's a pretty solid document.
+Okay.
+That's good.
+And we have your get go.
+I mean, like, we already do, but like, we're gonna send, we're gonna deploy.
+Oh, the trigger.
+Make it happen.
+Okay, perfect.
+We're gonna we're gonna send this one to Broad, by the way, like what we showed you right now.
+Yeah.
+Make it happen.
+Okay, nice.
+Bye.
+Okay.
+Okay.
+Anything else you want to do?
+Guys, no.
+Yeah, everyone's smiling.
+That's good.
+Yeah, perfect.
+Thank you so much.
+The one thing I do need, though, and I need it this weekend. is if we do a field test. do you want to do it?
+Do you want to do it the November, the 20, whatever that last weekend, November is, or do you want to do it the December 5th and 6th?
+Because I need to get back to Vancouver for a birthday party.
+Not December for me because I have finals. in November?
+Are we are we landing on November? right after the reading?
+Everyone has finals, I guess, so no one can show up in December.
+So November 29th or 28th or 28th or 29th?
+Yeah, should be fine.
+I mean, like, I guess, someone's gonna back out, but I guess it's fine.
+Yeah.
+Okay.
+And I mean, the one thing about the December was, it gave us a little bit more runway.
+Um, but on the other hand, though, on November 29th, that means you guys are done.
+Other than putting things away.
+At the end of the, uh, reading week weekend.
+Okay, Frank, how do we think about end of reading week?
+Sorry.
+But when is reading week?
+Yeah, he doesn't know.
+When is when is the end of reading week?
+Come on man. 15th or 16th?
+Does that work?
+Okay, but that's like 2 weeks, guys.
+Oh, yeah.
+We have a bunch of robots that are helping us.
+We can try.
+We can try.
+I mean, we can try.
+Oh, uh, well, well, let me throw data first.
+Can we do the 28th or the 29th?
+Does that is that off? the 29 should be good, right?
+Yeah, no.
+Yep, I guess I guess it should be good.
+At least one of us should show up.
+Yeah.
+Okay, and is Saturday Bear or Sunday?
+Saturday.
+For sure.
+For sure.
+Saturday.
+Okay, it is November 28th from 10 till 2 and uh, we'll um, uh, we'll have double the number of French fries.
+Thank you.
+I was gonna I was gonna ask about DQ.
+Yeah, no, absolutely.
+We'll do something like that.
+We'll do something better.
+Okay, perfect.
+Okay, November, November 28th from 10 in total two, and then we go celebrate after.
+Okay, nice.
+Perfect.
+Nice.
+Okay.
+Okay, perfect.
+That means I can go to Vancouver for my grandson's birthday the following weekend.
+Cool.
+Uh...
+Okay, gents, we're 5 minutes over.
+My apologies.
+Love it.
+And ladies, folks?
+Yeah.
+Yeah.
+Have fun.
+Have fun with this.
+Enjoy it, guys.
+And go.
+And whatever you want to be.
+Okay, anyway, on that politically sensitive note, I'm going to leave.
+Top player, guys.
+See you, thanks.
+Bye bye.
+Bye bye.
+

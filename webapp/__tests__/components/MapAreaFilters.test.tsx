@@ -122,3 +122,17 @@ describe('MapAreaFilters (US 2.0.6)', () => {
     expect(within(countyGroup).getByText('1 selected')).toBeInTheDocument();
   });
 });
+
+
+beforeEach(() => {
+  HTMLDialogElement.prototype.showModal = function () { this.setAttribute('open', ''); };
+  HTMLDialogElement.prototype.close = function () { this.removeAttribute('open'); };
+});
+
+it('(V3-07 AT1) opens a centered area filter dialog and closes it without changing a selection', async () => {
+  const user = userEvent.setup(); render(<Harness />);
+  await user.click(screen.getByRole('button', { name: 'Filter' }));
+  expect(screen.getByRole('dialog', { name: 'Filter protected areas' })).toHaveClass('m-auto');
+  await user.click(screen.getByRole('button', { name: 'Close area filters' }));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+});

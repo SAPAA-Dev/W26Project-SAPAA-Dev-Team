@@ -48,10 +48,8 @@ sequenceDiagram
     participant Loader as Import server action<br/>importProtectedAreasFromStorage<br/>(utils/kml-import-actions.ts)
     participant DB as Supabase DB<br/>protected_areas
     participant Pages as Map and admin pages
-    participant Geo as /api/geocode route<br/>(approved admin only)
-    participant OC as OpenCage API
 
-    Note over Admin,OC: Covers US 6.0.1. The KML/KMZ import exists (#152). The Admin uploads the SAPAA-Map .kml/.kmz export.<br/>sites_pa has no geometry columns. The boundaries are in protected_areas, keyed by UNIQUE (folder, fid).<br/>"(proposed)" = the step is not in the code today.
+    Note over Admin,Pages: Covers US 6.0.1. The KML/KMZ import exists (#152). The Admin uploads the SAPAA-Map .kml/.kmz export.<br/>sites_pa has no geometry columns. The boundaries are in protected_areas, keyed by UNIQUE (folder, fid).<br/>"(proposed)" = the step is not in the code today.
 
     Admin->>Modal: Select "Upload Site Data". Choose the SAPAA-Map .kml/.kmz export
     Modal->>Modal: Check the file type and the size (50 MB or less)
@@ -84,7 +82,7 @@ sequenceDiagram
     end
 
     %% Not merged. protected_areas.site_id was dropped in 20261006010000, so the match needs a new link column.
-    opt Match each active site to a boundary (proposed, AT 1 to AT 3)
+    opt Link each active site to a boundary (proposed, AT 1 to AT 3)
         Loader->>DB: Read active sites_pa rows (proposed)
         DB-->>Loader: Active sites
         loop Each active site
@@ -98,41 +96,12 @@ sequenceDiagram
     end
     opt Open unmatched sites list (proposed)
         Admin->>Pages: Open unmatched sites list (proposed)
-        Pages->>DB: Read active sites_pa rows with no link (proposed)
-        DB-->>Pages: Unmatched sites (the AT 3 list)
+        Pages->>DB: Read active sites_pa rows with no link (proposed, AT 3, AT 4)
+        DB-->>Pages: Sites with no boundary (the AT 3 list)
         Pages-->>Admin: Show sites for an Admin to fix
     end
 
-    opt A site has no point and fallback geocoding is used (AT 4)
-        Pages->>Geo: GET /api/geocode?q=site name (exists. Today the only caller is<br/>admin/dashboard/page.tsx, which geocodes every site by name in a loop)
-        Geo->>Geo: Check approved admin. 401 or 403 otherwise (exists)
-        Geo->>Geo: Look for a cached result for this name (proposed)
-        alt Cached result exists
-            Geo-->>Pages: lat, lng from the cache. No OpenCage request
-        else No cached result
-            Geo->>Geo: Read the OpenCage request count for today (proposed)
-            alt Count has reached the daily limit of 2,500
-                Geo-->>Pages: No result. No OpenCage request
-            else Count is less than the limit
-                Geo->>OC: Geocode request, 8 s timeout (exists). Add 1 to the count for today (proposed)
-                alt External API returns a result
-                    OC-->>Geo: lat, lng
-                    Geo->>Geo: Store the result in the cache (proposed)
-                    Geo-->>Pages: { latitude, longitude }
-                else No match
-                    OC-->>Geo: No result
-                    Geo-->>Pages: { latitude: null, longitude: null }
-                else External API refuses the request, times out or its quota is exhausted
-                    OC-->>Geo: Error
-                    Geo-->>Pages: 500 with the error message
-                end
-            end
-        end
-    end
-
     Steward->>Pages: Open the map (proposed)
-    Pages->>DB: Read protected_areas.geometry (proposed). No centre point column now
+    Pages->>DB: Read protected_areas.geometry through the link (proposed)
     DB-->>Pages: Geometry
     Pages-->>Steward: Draw site on the map
-
-    Note over Pages,OC: Open question: where the geocode cache and the daily request count are stored,<br/>for example a database table or server memory. The proposed ER diagram does not show them yet.<br/>StewardLog calls OpenCage separately from the phone. If it uses the same key, its requests also count.

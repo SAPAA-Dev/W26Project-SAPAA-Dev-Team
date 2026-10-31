@@ -125,6 +125,7 @@ classDiagram
             <<route /api/site-images>>
             +GET(siteid, responseid) items
             +DELETE(id, kind) deleted, storageCleanupComplete
+            +PATCH(id, kind, body) updated
         }
         class SiteGalleryRoute {
             <<route /api/sites/[siteId]/gallery>>

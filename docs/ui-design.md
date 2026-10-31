@@ -1838,3 +1838,33 @@ The following responsive changes were applied across the application:
 **Document Version:** 3.0   
 **Last Updated:** March 2026     
 **Prepared for:** Stewards of Alberta's Protected Areas Association     
+
+## V3 production feedback changes — October 31, 2026
+
+These changes apply to the v2 web interface and its shared report/upload forms.
+
+- **User control and consistency:** List and Map use Name (A–Z) by default. Both offer Name
+  (Z–A), Most urgent, and Recently visited. The quick sort and filter dialog use the same URL
+  state. Clear all removes search, selection, saved view, county/status, and boundary filters.
+- **Visible system state:** the list header states the selected order. Missing required form
+  answers show “Required — answer missing” and `aria-invalid`; the mark clears on correction.
+  Admin edits to historic reports do not show required badges for unavailable answers.
+- **Error prevention:** edit forms retain saved values and do not fill the current date or
+  current account into historic fields. Photo metadata edits retain the stored file. Copying
+  batch metadata requires an explicit button and leaves individual captions unchanged.
+- **Map space:** mobile controls keep icon-only Filters/Expand, a visible sort select, and a
+  compact labelled Map key. The legend opens toward the inside of the viewport. The area
+  filter is a native centered dialog with a bounded scrolling body. The site filter dialog
+  is centered in map mode. The selected-site panel remains compact until Details opens.
+- **Keyboard:** native select/radio/checkbox controls support keyboard input. Dialogs contain
+  focus, support Escape, and return focus to the trigger. Buttons retain visible focus styles.
+  Photo previous/next controls now have accessible names. Closing nested photo forms does not
+  propagate Escape or arrow keys to the surrounding photo viewer.
+- **Contrast:** existing forest, paper, honey, and error colours are retained. Required labels
+  use dark red `#B91C1C` on pale red `#FEE2E2`; the error state also has text, so colour is not
+  its only signal. Standard controls keep their existing text/background tokens and a minimum
+  44-pixel target height.
+
+See the V3 feedback section in [Traceability](traceability-matrix.md) for interaction tests.
+Cypress is excluded because repository rules prohibit production-writing tests. Browser phone
+emulation is a release check; it does not replace testing on a physical phone.

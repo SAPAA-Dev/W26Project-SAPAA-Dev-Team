@@ -29,7 +29,7 @@ import {
 } from '@/components/map/offlineProtocol';
 import OfflineSavePanel from '@/components/map/OfflineSavePanel';
 
-const STYLE_URL = 'https://api.protomaps.com/styles/v5/light/en.json';
+import { readApiKey, protomapsStyleUrl } from '@/lib/map/basemap';
 
 // Alberta's provincial extent. The map fits this box on load, so the whole province
 // and every boundary are visible at the widest practical zoom.
@@ -95,22 +95,10 @@ const SELECTED: ['boolean', ['feature-state', 'selected'], boolean] = [
   false,
 ];
 
-// Values a developer leaves in .env.local before the real key arrives.
-const PLACEHOLDER_KEYS = new Set([
-  'your_api_key',
-  'your-protomaps-key',
-  'your-protomaps-api-key',
-  'changeme',
-]);
-
 const BOX_CLASSES =
   'h-[70vh] min-h-[420px] w-full rounded-2xl border-2 border-[#E4EBE4] overflow-hidden bg-white';
 
-function readApiKey(): string | null {
-  const value = process.env.NEXT_PUBLIC_PROTOMAPS_API_KEY?.trim();
-  if (!value || PLACEHOLDER_KEYS.has(value.toLowerCase())) return null;
-  return value;
-}
+
 
 interface SiteMapProps {
   /** Boundaries to draw. The page loads them when the map view opens. */
@@ -128,6 +116,8 @@ interface SiteMapProps {
   onBoundarySelect?: (areaId: number) => void;
   /** GPX tracks of the selected site, drawn as lines over the boundaries. */
   gpxTracks?: GpxTrackLineFeatureCollection | null;
+  /** Set when the track load failed, so an empty map is not mistaken for success. */
+  gpxTracksError?: string | null;
 }
 
 interface BoundaryColorEditor {
@@ -555,7 +545,7 @@ function createColorSection(properties: unknown, editor: BoundaryColorEditor): H
  * The card keeps the linked site and the protected-area boundary apart: the site name
  * comes from sites_pa.namesite, and the boundary name comes from protected_areas.
  */
-function createPopupContent(
+export function createPopupContent(
   properties: unknown,
   colorEditor?: BoundaryColorEditor
 ): HTMLElement {
@@ -579,6 +569,7 @@ export default function SiteMap({
   selectedAreaId,
   onBoundarySelect,
   gpxTracks,
+  gpxTracksError,
 }: SiteMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -589,7 +580,7 @@ export default function SiteMap({
   const selectedAreaIdRef = useRef<number | null>(null);
   const missingTilesRef = useRef(0);
   const apiKey = readApiKey();
-  const styleUrl = `${STYLE_URL}?key=${encodeURIComponent(apiKey ?? '')}`;
+  const styleUrl = protomapsStyleUrl() ?? '';
 
   const [isOnline, setIsOnline] = useState(() =>
     typeof navigator === 'undefined' ? true : navigator.onLine
@@ -1112,16 +1103,26 @@ export default function SiteMap({
     );
   }
 
-  // The map still works without the boundaries, so the two states are a note on top
-  // of the canvas rather than a replacement for it.
-  const status = boundariesError ?? (boundariesLoading ? 'Loading boundaries…' : null);
+  // The map still works without the boundaries and tracks, so the states are notes
+  // on top of the canvas rather than a replacement for it.
+  const statusNotes = [
+    boundariesError ?? (boundariesLoading ? 'Loading boundaries…' : null),
+    gpxTracksError ?? null,
+  ].filter((note): note is string => note !== null);
 
   return (
     <div className="relative">
       <div ref={containerRef} className={BOX_CLASSES} />
-      {status !== null && (
-        <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-[#E4EBE4] bg-white/95 px-3 py-1.5 text-xs font-medium text-[#254431] shadow-sm">
-          {status}
+      {statusNotes.length > 0 && (
+        <div className="pointer-events-none absolute left-4 top-4 flex flex-col gap-1.5">
+          {statusNotes.map((note) => (
+            <div
+              key={note}
+              className="rounded-full border border-[#E4EBE4] bg-white/95 px-3 py-1.5 text-xs font-medium text-[#254431] shadow-sm"
+            >
+              {note}
+            </div>
+          ))}
         </div>
       )}
       {!saveMode && (

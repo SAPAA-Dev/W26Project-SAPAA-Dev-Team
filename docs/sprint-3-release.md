@@ -48,14 +48,14 @@ Cypress or native mobile build was run.
 | Database rules and site links | 4 local database suites, 36 tests passed. They use the real local Supabase. The migration-safety suite runs each check inside a rolled-back transaction. This is not evidence that production migrations ran. |
 | Focused acceptance suites | 14 suites, 357 tests passed. The map reconnection test is in `SiteMap.test.tsx`. |
 | Clean production build | Passed with local placeholder settings on an isolated source copy. Compilation and build type checking passed. |
-| Full unit suite on this branch | Passed: 1895 tests, 36 skipped, 0 failed (131 passing suites). The four database suites skip in this run and were run separately (row above). Type check and full lint passed on the same source. The production build, docs build and hook tests were checked on the source before these test additions. |
+| Full unit suite on this branch | Passed: 1900 tests, 36 skipped, 0 failed (131 passing suites; rerun on `main` at `45f1cf99` on October 27, see the [local run](test-plan.md#local-run-october-27-2026)). The four database suites skip in this run and were run separately (row above). Type check and full lint passed on the same source. The production build, docs build and hook tests were checked on the source before these test additions. |
 
 The prior sprint CI run ([40403404181](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/actions/runs/40403404181)) failed the profile query-count and date tests. The combined local run above includes their fixes. Do not use the older CI run as release evidence.
 
-The test plan and traceability matrix cover **50 ATs: 47 covered, 3 partial and 0 with no test**.
+The test plan and traceability matrix cover **50 ATs: 48 covered, 2 partial and 0 with no test**.
 The partial rows are active-site map filtering (2.0.1 AT1) and every view after a report edit
-(4.0.4 AT4). The profile-history row details (1.0.3 AT1) and the activity count (1.0.4 AT2) now
-have labelled tests. Coverage counts are not a claim that the full suite or production acceptance
+(4.0.4 AT4). The profile-history row (1.0.3 AT1) and the activity count (1.0.4 AT2) have labelled
+tests, so they are covered. Coverage counts are not a claim that the full suite or production acceptance
 passed.
 
 Three Sprint 3 Cypress specs are in the CI spec list: `map_site_popup.cy.ts` (2.0.8),

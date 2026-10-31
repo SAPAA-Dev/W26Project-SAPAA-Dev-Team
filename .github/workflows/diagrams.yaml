@@ -47,6 +47,12 @@ jobs:
             echo "last_is_bot=true" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Install Linux browser dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo -n apt-get update
+          sudo -n apt-get install -y xvfb libatk1.0-0t64 libatk-bridge2.0-0t64 libnss3 libxss1 libasound2t64 libgbm1 libgtk-3-0t64
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22

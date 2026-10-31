@@ -66,7 +66,7 @@ The full story set is in [User Stories](user-stories.md): 43 user stories in sev
 
 | Feature area | Sprint 1 | Sprint 2 | Sprint 3 | Sprint 4 | Sprint 5 | Unscheduled | Won't Have |
 |---|---|---|---|---|---|---|---|
-| 1 - People Management | - | 1.0.1 (5, M) ✓, 1.0.2 (3, M) ✓ | 1.0.3 (2, S) ~, 1.0.4 (2, M) ~, 1.0.6 (2, S) ✓ | 1.0.5 (5, C) | - | - | - |
+| 1 - People Management | - | 1.0.1 (5, M) ✓, 1.0.2 (3, M) ✓ | 1.0.3 (2, S) ✓, 1.0.4 (2, M) ✓, 1.0.6 (2, S) ✓ | 1.0.5 (5, C) | - | - | - |
 | 2 - Place Management | - | 2.0.2 (3, M) ✓, 2.0.3 (3, S) ✓, 2.0.4 (8, M) ✓, 2.0.5 (5, M) ✓, 2.0.6 (5, S) ✓, 2.0.10 (1, M) ✓ | 2.0.1 (8, S) ~, 2.0.8 (3, M) ✓, 2.0.9 (5, M) ✓, 2.0.12 (8, C) ✓, 2.0.13 (3, C) ✓, 2.0.14 (2, S) ✓ | - | - | - | 2.0.11 (5, W) |
 | 3 - Admin Persona | - | 3.0.2 (5, S) ✓ | 3.0.3 (8, M) ✓ | - | - | - | 3.0.4 (3, W) |
 | 4 - General Features | - | 4.0.6 (1, M) ✓ | 4.0.2 (13, S) ✓, 4.0.4 (5, S) ~ | - | - | - | 4.0.5 (5, W), 4.0.7 (5, W) |
@@ -82,8 +82,8 @@ freeze. All 16 Sprint 2 stories are done. See [Sprint 2 status](#sprint-2-status
 
 Sprint 3, as of October 26, 2026 (`sprint-3` merged into `main` in PR #319): ✓ = merged, and the
 [traceability matrix](traceability-matrix.md) shows every AT covered. ~ = merged, but at least one
-AT is only partly covered or has no test (1.0.3 AT1, 1.0.4 AT2, 2.0.1 AT1 and 4.0.4 AT4). 10 stories
-(51 points) are ✓ and 4 stories (17 points) are ~. The code of 4.0.2 and 5.0.2 is ✓, but their
+AT is only partly covered or has no test (2.0.1 AT1 and 4.0.4 AT4). 12 stories
+(55 points) are ✓ and 2 stories (13 points) are ~. Updated October 27: 1.0.3 AT1 and 1.0.4 AT2 have labelled tests, so 1.0.3 and 1.0.4 moved to ✓. The code of 4.0.2 and 5.0.2 is ✓, but their
 production setup is not checked (see [Sprint 3 release checks](sprint-3-release.md)).
 
 The **Committed points** row gives the story points of the stories placed in each sprint. The
@@ -188,7 +188,7 @@ story. During Sprint 3, Frank removed US 2.0.11, US 4.0.5 and US 4.0.7 from scop
 |---|---|---|---|---|
 | Sprint 1 | 0 | 0 | 0 | Documentation and discovery. No stories. |
 | Sprint 2 | 63 | 63 | 9.0 | 51 points (7.3 per person) were done on October 9. The last 12 points (2.0.6, 5.0.4 and 7.0.6) were done on October 10 and 11. |
-| Sprint 3 | 68 | 51 (68 merged) | 7.3 (9.7 merged) | As of October 26, 2026. All 14 stories are merged on `sprint-3`. Done counts only the stories whose ATs are all covered; 1.0.3, 1.0.4, 2.0.1 and 4.0.4 (17 points) have a partly covered AT. US 3.0.4 (3 points) was removed on October 26 and is not counted. |
+| Sprint 3 | 68 | 55 (68 merged) | 7.9 (9.7 merged) | As of October 27, 2026. All 14 stories are merged on `sprint-3`. Done counts only the stories whose ATs are all covered; 2.0.1 and 4.0.4 (13 points) have a partly covered AT. US 3.0.4 (3 points) was removed on October 26 and is not counted. |
 
 Sprint 2 by team. A team's points are the points of the stories that the plan gave to it. Some
 PRs were written by members of another team: 2.0.3 by Jayden ([PR #150](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/pull/150)), 7.0.5 by Chris
@@ -238,17 +238,17 @@ Made on October 26, 2026, from `sprint-3` at the merge of PR #319. The formula i
 | Measure | Arithmetic | Points per person per week |
 |---|---|---|
 | Merged | 68 / 7 / 2 | 4.86 |
-| Done, every AT covered | 51 / 7 / 2 | 3.64 |
-| **Planning rate** (midpoint of 51 and 68 = 59.5 points) | 59.5 / 7 / 2 | **4.25** |
+| Done, every AT covered | 55 / 7 / 2 | 3.93 |
+| **Planning rate** (midpoint of 55 and 68 = 61.5 points) | 61.5 / 7 / 2 | **4.39** |
 
-The planning rate is a little above the Sprint 2 rate of 4.07. The midpoint is used for the same reason as in Sprint 2: the merged figure includes four stories that still have a partly covered AT. The load was also uneven. Saumya and Chris made 87 of the 124 non-merge commits since October 14 (see [Teamwork](teamwork.md#sprint-3-contributions)), so the team cannot plan on the 68 as an even rate.
+The planning rate is a little above the Sprint 2 rate of 4.07. The midpoint is used for the same reason as in Sprint 2: the merged figure includes two stories that still have a partly covered AT. The load was also uneven. Saumya and Chris made 87 of the 124 non-merge commits since October 14 (see [Teamwork](teamwork.md#sprint-3-contributions)), so the team cannot plan on the 68 as an even rate.
 
 | Sprint | Dates | Working weeks | Arithmetic | Re-estimate | Committed | Difference | Plan |
 |---|---|---|---|---|---|---|---|
-| Sprint 4 | Oct 28 to Nov 17 | 2 (3 weeks minus reading week) | 4.25 × 7 × 2 | 59 | 39 | 20 free | Room for the Sprint 3 gaps (17 points of stories with a partly covered AT, mostly tests) and for new access-request work. |
-| Sprint 5 | Nov 18 to Dec 1 | 2 | 4.25 × 7 × 2 | 59 | 0 | 59 free | 30 points for new client stories. The other 29 are for deployment, final polish and fixes from the December field test. |
+| Sprint 4 | Oct 28 to Nov 17 | 2 (3 weeks minus reading week) | 4.39 × 7 × 2 | 61 | 39 | 22 free | Room for the Sprint 3 gaps (13 points of stories with a partly covered AT, mostly tests) and for new access-request work. |
+| Sprint 5 | Nov 18 to Dec 1 | 2 | 4.39 × 7 × 2 | 61 | 0 | 61 free | 30 points for new client stories. The other 31 are for deployment, final polish and fixes from the December field test. |
 
-Sprint 4 and Sprint 5 are 2 points higher than the October 12 estimate of 57. The Sprint 4 Product Owner (Zanab) should spread the load across the three teams. Sprint 3 gave Red 47 of 68 points.
+Sprint 4 and Sprint 5 are 4 points higher than the October 12 estimate of 57. The Sprint 4 Product Owner (Zanab) should spread the load across the three teams. Sprint 3 gave Red 47 of 68 points.
 
 **Sprint 3 scope change.** The three removed stories are not carry-over to Sprint 4.
 Their tasks are excluded from the current plan. US 3.0.4 was also removed on October 26; it is not carry-over.
@@ -919,7 +919,7 @@ The acceptance tests are in [User Stories](user-stories.md).
 |US 5.0.9 - View My Access-Request Status|3|
 |US 7.0.3 - See All Inspections in One View|5|
 
-**Committed:** 39 points. **Re-estimate:** 59 points (see [Re-estimate after Sprint 3](#re-estimate-after-sprint-3)).
+**Committed:** 39 points. **Re-estimate:** 61 points (see [Re-estimate after Sprint 3](#re-estimate-after-sprint-3)).
 
 Sprint 4 is left open on purpose. The team waits for Frank's other versions of the requirements and plans the sprint from what he says, so the story issues are not written yet. One Sprint 4 issue exists ([#306](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/306), for 5.0.8). The five access-request stories are Frank's new
 version 3.0 request. They use the capacity that was reserved for new client requests. The sprint
@@ -938,14 +938,14 @@ All three have Should Have priority.
 |[#329](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/329)|US 2.0.1 AT1: draw the sites that have no boundary|-|Saumya|Open|
 |[#330](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/330)|US 2.0.14: add a map legend for the site-type colors|-|Saumya|Open|
 |[#331](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/331)|US 2.0.8 AT3: align the popup link with the AT|-|To confirm|Open|
-|[#332](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/332)|US 1.0.3 AT1 and US 4.0.4 AT4: cover the partly tested ATs|-|To confirm|Open|
+|[#332](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/332)|US 1.0.3 AT1 and US 4.0.4 AT4: cover the partly tested ATs (1.0.3 AT1 has been covered since October 27, so only 4.0.4 AT4 is left)|-|To confirm|Open|
 |[#333](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/333)|US 2.0.12: ask Frank to confirm the priority formula|-|Zanab (Product Owner)|Open|
 |[#334](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/334)|New story from Frank (October 23): last 5 GPX files of a site, tied to a visit|-|Zanab (Product Owner)|Open|
 |[#335](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/335)|Remove the leftover `empty.md` and `mock_data.sqlite`|-|To confirm|Open|
 
 The seven issues #329 to #335 were written on October 26 from the Sprint 3 review. Assignees marked "To confirm" are set at Sprint 4 planning (October 28).
 
-**Sprint 3 gaps that carry into Sprint 4.** These are ATs of Sprint 3 stories, not new stories, and they have no new points: 1.0.3 AT1 (the profile lists every previous inspection), 1.0.4 AT2 (no test; the test is in [#325](https://github.com/UAlberta-CMPUT401/F26project-SAPAA/issues/325)), 2.0.1 AT1 (sites without a boundary are not drawn) and 4.0.4 AT4 (every view after an edit is not rechecked). **Proposed story, not yet pointed.** On October 23 Frank asked for a new story (action 1 of [Meeting #11](meeting-minutes.md)): show only the last 5 GPX files of a site by default, with older ones on request, and tie each GPX upload to a site visit. It has no number, points or priority yet, and it is not in the totals above. It changes US 2.0.9 and US 2.0.1. Frank and the Sprint 4 Product Owner (Zanab) decide the points and the priority when Sprint 4 is planned.
+**Sprint 3 gaps that carry into Sprint 4.** These are ATs of Sprint 3 stories, not new stories, and they have no new points: 2.0.1 AT1 (sites without a boundary are not drawn) and 4.0.4 AT4 (every view after an edit is not rechecked). **Proposed story, not yet pointed.** On October 23 Frank asked for a new story (action 1 of [Meeting #11](meeting-minutes.md)): show only the last 5 GPX files of a site by default, with older ones on request, and tie each GPX upload to a site visit. It has no number, points or priority yet, and it is not in the totals above. It changes US 2.0.9 and US 2.0.1. Frank and the Sprint 4 Product Owner (Zanab) decide the points and the priority when Sprint 4 is planned.
 
 The issues for the Sprint 4 stories are written when Frank's other versions are in and the Product Owner has confirmed the scope and the assignees. Each issue then gets the ATs from [User Stories](user-stories.md), labels, the Sprint 4 milestone and an assignee.
 
@@ -1153,3 +1153,27 @@ a workspace we do not have access to.
 |Finalize Sprint 5 acceptance tests|All US|Everyone|Mar 30th|
 |Project Portal Upload|Documentation|Harveer|Mar 29th|
 |Finalize documentation|Documentation|Everyone|Mar 31st|
+
+## V3 production feedback release — October 31, 2026
+
+Owner for this fix set: Tars, at the user's request. The independent code/security reviewer
+approved the implementation after the photo owner lazy-loading guard was corrected. Human
+acceptance remains with the SAPAA team. No new issue or pull request was opened.
+
+| Task | Status | Evidence |
+| --- | --- | --- |
+| Default A–Z, quick sort, and Z–A in list and map | Implemented; automated checks passed | V3-01, V3-02, V3-03, V3-05 in the traceability matrix |
+| Clear carried filters and center map filter dialogs | Implemented; automated checks passed | V3-06, V3-07 |
+| Admin corrections to incomplete historic reports | Implemented; mocked checks | V3-04; owner and approval guards retained |
+| Keep saved report values and visit date | Implemented; mocked checks | V3-09; no edit autofill |
+| Open content links separately | Checked and email/phone URL handling corrected | V3-08 |
+| Copy shared fields across a photo batch | Implemented; mocked checks | V3-10; explicit button, captions stay separate |
+| Show missing required fields | Implemented; mocked checks | V3-11; text and invalid state |
+| Edit photo fields as owner/admin | Implemented; mocked checks | V3-12; Delete remains admin-only |
+| Restore photo loading against current production schema | Deployed and real images read | `bfba34f9`; removed nonexistent photo-table `created_at` projection |
+| Deployment guide with verified database usernames and screenshots | Written; documentation build checked | [Production guide](sapaa-dev-production-deployment.md) |
+
+The release does not change production data as a test. In particular, the example Dussault Lake
+email correction in the client's note is a reproduction case. The implementation permits that
+correction; the release check does not change the saved report. Real uploads, imports, and field
+acceptance on physical devices remain team checks.

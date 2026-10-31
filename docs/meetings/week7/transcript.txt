@@ -1,0 +1,968 @@
+Play the admin pages as well.
+So users can never take the admin approaches.
+So if you do share this with other people, you don't have to worry about an ice cream issue.
+Yeah, so, obviously, uh, one thing, one draper evaluation.
+We got the maps implemented for you.
+You can upload multiple, it was F, which file again?
+It was?
+You can upload multiple KMLs at once too, just makes it a lot easier for the user and archiving and deleting sites is safe.
+So we've verified that, let's say, you delete a site, it won't actually delete another site because of a bug or anything.
+I think, for what's next, obviously, we're gonna be doing...
+Well, I can't remember for last week.
+Did you want us to still go through with implementing the safety information on the website or no?
+Uh, no, is I make sure you have a different key?
+Okay.
+Yeah.
+And, and actually, I'll be speaking to that as well.
+I said that this time, but I'll drop a, uh, a late kit when you're done there.
+That's awesome.
+We'll, we'll walk through what the back is.
+Sounds good to me.
+And then, yeah, for sprint three, we're working at a test plan, you know, making sure we're ready to start implementing all those user stories.
+And, uh, yeah, just kind of making sure one good ground.
+The big thing is we're just doing testing, testing, testing, again, making sure issues never go backwards.
+There's never a problem that pops up, an issue just stops randomly working.
+So that way the next team's ready to use it.
+And then, yeah, we also cleaned up the report system as well.
+We have a separate reports page.
+When you click on it, it will take you directly to that report with all the information, just a lot more easier for adminster view.
+And then, um, we're also gonna be working on linking the sites to government boundaries.
+I believe that's for sprint 3.
+So yeah, just a lot of tidy up, really.
+Whoa, whoa, whoa.
+Uh, when's the even with games?
+It's probably on that slide.
+Oh, yeah, here you go..
+For this one, I think we actually have the dates here.
+So this is kind of the path we're taking there.
+So obviously, we've been working on the, uh, well, again, test plan leading up to today, the database review, which we've completed as well, just making sure, again, that when we do do the transition, like when this is released, it doesn't mess up anything on the production database.
+And yeah, for tomorrow's the 17th, correct?
+Where's my up?
+So yeah, for tomorrow, we're going to be kind of looking into the, you know, the sites also going to be working on getting GPXs loaded and stored as well.
+Other than the KMLs.
+And then the safety fields, as you said, we won't worry about those for now, and then we'll hear from you after.
+And then we're also gonna try to work on the password reset system.
+Because right now, from my understanding, it's if they need a password reset, it has to go through you, right?
+And it's just a lot of tedia.
+Okay, yeah.
+So we want to simplify that for you.
+Yeah, and and I think that was just a piece of functionality.
+The, uh, our beers team simply didn't get to games.
+Oh, yeah.
+And then, uh, yeah, again, the view and map will, uh, we'll get to this when we go into the demo, but we're kind of making an alternative view because obviously you have the old list view of all the reports and site information.
+But with the map thing, we've been making a lot more of a, well, I guess a better looking and dynamic view.
+So on the map, when you click on a site, you can actually seal the report information, everything.
+But will it get to that during the demo?
+And then, yeah, safety information, again, we'll hear about that later.
+Password resets, past reports open. discuss that.
+I say details.
+Oh yeah, and then one thing we're also gonna work on for the maps on 22nd.
+Right now it does require internet connection, but that's just because we were getting the basic maps implemented.
+So we're going to officially make it work offline.
+So let's say someone gets somewhere, they still have their internet connection, they can press, you know, download this region of the map, and then when they're offline, they'll still be able to see their location and whatnot.
+Let me open safe from it.
+And then, yeah, this is kind of just going over the stuff we're going and again, what it applies to on the website specifically.
+There he is.
+Each by site.
+Yeah, kind of...
+And yeah, this is more so going into the map decisions, which we also discussed.
+So we're using Open Street Map through what was the specific name?
+Oh, yeah, so we're using something called proto maps.
+So one of the issue is, is obviously cost, right?
+You don't want to be paying a fee every time someone uses the maps.
+So we decide to use something called proto maps, which is, again, built on open street maps.
+It basically just means if you had 50 gigs or whatever, which cost nothing for storage, you can host it on your own website and you can, or, I mean, we could host it on the website for you, and it will just be a lot cheaper to use the map system.
+So everything will kind of be owned by you.
+Okay.
+So, and that would be a potential replaceable for my existing, there is also that my existing Google Maps.
+Oh, yep, correct.
+If you wanted to, we could replace it on the other one as well. keep the extracts.
+And then, I mean, just one more thing to that.
+The plus with it too is, depending on what type of map format you want, since it's open source, people have satellite maps or really detailed, you know, I guess trail maps and forests.
+You can also actually replace the map.
+So again, as the years go on, a new groups look at this project and maps get updated, it's just literally drag and drop maps updated.
+You're all good to go.
+Okay.
+And then the date of view, this goes back to the user stuff.
+You know, we're kind of gonna be looking into that scoreboard, starting our game vacation, obviously, this week, just making it a lot more fun for the user to use.
+Yeah, this is kind of the calendar pass, we're going down.
+Again, kind of we, yeah, we'll write down our discovery planning.
+And so yeah, for spread 3, it's again, all about maps, history, gamification, and just making sure everything's very polished, especially for the maps.
+We're just...
+Yeah, yeah, yeah, I think I'm making it look clean.
+And then, yeah, for sprint 4 and 5, again, at this point, there'll definitely be room for requests.
+So after the meeting, I'll also send you a link.
+You can play around with what we've done so far.
+And if you see any little changes or something you want different, we can start adding those to sprint 4 and 5 plan for you.
+December fix.
+And yeah, this is kind of reiterating the past one, you know, sprint 3, sprint 4, sprint 5, Christie, the main one.
+And yeah, again, we have so when we get to the demonstration, we have one of the KMLs already ready to show you, so you can kind of get your input on that.
+So they, for the fields, the fields are edible or editable, I believe, right?
+We can add custom fields or?
+For the, like, boundary data?
+Uh, I guess just for...
+TML data had some fields on there just about like the type, subtype, and like some notes on there.
+So we ingested all of those and like showed them onto the map so that when you click on a, uh, on the site, you'll see those same details that you would see on like the SAPO website.
+Um, and then, yeah.
+So they would not be editable, but for the existing sites that, like right now, appear as cards, like we can set the direct link to the geometry on that map.
+So that we could like filter for both those cards and them.
+Again, this one...
+Like, I mean, you need to see it, but carry on.
+And then 3 or 4 just kind of iterating things we discussed last week.
+Four, I don't believe, will need yet.
+This should just kind of hear, in case we need it, we might shoot you an email, you know, later next week if we do need help with the GPX.
+Although on the track we're going so far, I mean, things have been pretty good.
+We've had no trouble implementing the parser.
+I think we're even handling some edge cases too already, so...
+I mean, uh, yeah, I know I'm a, I'm a lot faster with the slides than last time, but are there any questions you have in the presentation or would you like to ask them after we kind of do a demo for you?
+Well, let's do the gym, like, because I'm like, Ryan, but...
+Just to see what what is infected.
+You go ahead and I don't think there's...
+What's happening?
+Oh, yeah, and I can also send a link for you too.
+So in case again, just in case you wanted to try it beside us as we walk home, sure.
+And then also, again, this one's using sample data right now, but I can just give you the login and password.
+Sure, yeah.
+Yeah, well, you've been doing... cool.
+So I guess to start with there, we're going to start with the map view.
+Alyssa, do you actually want to block through the maps?
+Oh yeah, sure.
+Or who worked on them?
+Okay, you can both walk through, yeah.
+The show, Frank.
+Okay.
+Okay, I'll just say.
+Um, so, I'm gonna set up, like, this now, which you can, like, zoom in on, and then it's also, like, you can drag it this way to, like, view it, like, a different way.
+And then all these green sites here are the uploaded, like, KML boundaries.
+And if you click on them, like, you'll see the name, like, all of those details that were part of that data set up.
+And then, um, it doesn't show the county right now, since we still have to work on that link to, like, our, the site on this view.
+But we have, like, a workaround to kind of set that county for now. while we wait for the automated, like, way to link it.
+Um, the filters we have are types... and subtype, so small is...
+No, how do you do it?
+Oh, this is expandible, too, so you can...
+Oh, okay.
+Exchand the filters that way.
+So since we're on the user view right now, we can only filter on the types of type in County, but if we were on the admin view, we could also filter by, like, inactive or active sites.
+Okay.
+So we'll just filter by, like, recreation.
+And then it'll show just the smile.
+That's crazy.
+I'm, like, pretty zoomed Apple, but...
+Oh, that makes sense.
+That's just the dog, each other.
+And then, which is how...
+Oh, yeah, yeah.
+So we haven't replaced this site, heat map in case you wanted it, but, like, if you want, we can add that.
+It was just a wasteful stuff in the last...
+So, this is the admin view?
+Looks pretty much the same.
+It just has, like, that additional filter here.
+And the option to upload the site data, it should be in.
+So there is the...
+So to, like, we did it so that you could bulk upload the site. and just through here.
+So we like already uploaded the KML and then that's how it generated like all of these site boundaries.
+Okay.
+And then our workaround for linking right now is just, like, setting the protected area on here.
+So if I just stop this to, like, Lakeland...
+Oh, I see, to the county.
+Yeah.
+Then I can search for, like, backpack showing, which is our demo count.
+All right, all right.
+And then go on the...
+And then we should be able to...
+You have, like, a couple of, I thought about, like, you know, real clean, like, any message.
+Oh, there was time.
+Like, you'll feel like a research class one, and then it shows like the, like, I can't say that word, okay.
+No.
+And then I showed the, like, site boundary to battle.
+No.
+Is there anything else we need?
+Oh, yeah, that should cover the functionality for the sprint.
+Yep.
+And then, again, going to just, you know, turn out cleanup as well.
+We can, uh, go to, okay, we can go see the current reports.
+Let's say we want to look at this one right here.
+We'll thick it, it will take us to this page, and then, I don't know, we've got a major book, so there's still a sort of, like, interacting, or also for a job to do all that.
+Oh, there you are.
+So yeah, it'll open the section for you, kind of show you all the details about that report, so you can just very easily go through and then give them.
+Where is it?
+And then, yeah, we would show you images right now.
+It's just an issue on my machine, we'll show you with one after that works, but just the images aren't loading on mine.
+But again, this is just an issue with my MacBook right now.
+Okay.
+Also, how you doing, swimming?
+What else we have to show?
+I know there's a lot more.
+I'm just trying to recall them off the top of the head.
+Oh, yeah, the profile, right? okay.
+See, I know we're on the Edmund account, but you can edit your profile.
+You can set your display name. can do skills.
+So let's say your skill is, I don't know, let's say my skill is hiking. sorry, and jumping.
+Let's say those, right?
+I can set focus areas, which should be our focus area.
+Which one?
+Box me.
+Leccha?otany.
+Bad?
+Yeah.
+Okay, that's true.
+We'll dude, cross some trees.
+That's our focus area.
+Yeah, you consider another phone number, personal websites, you know, kind of going back to their social aspect to just share with others, you know, what your vote.
+If we save the changes, they're up, well, let me just...
+Okay, here's my...
+And so as you could see, the skill attributes, right? skills, hiking, jumping.
+Focus areas, true.
+And then one thing we should note about for the UI too, we were actually thinking about also redesigning some of the Eli because you may agree with us that some of it's, well, there must be a way to make it at least a bit more engaging, you know?
+A bit more a bit more clean.
+So like the UI definitely isn't final.
+We were thinking maybe this friend, our next friend just going through and kind of cleaning things up a little bit, too.
+What else we got to show?
+Exporting, exporting the site.
+Like the PDFs of them or?
+Yeah, the PDF.
+So one of the things on your BFE were to be able to hide certain questions in the PDF exports.
+And I think what the last team implemented was just hiding like complete sections.
+So now, if you...
+Oh, yeah.
+So you could do it for an individual site report or do like the bulk PDF export?
+If you click on advanced options...
+Um, still keep the sections there so you can still hide and...
+Sorry?
+This is used to read you a button.
+Oh, yeah.
+Yeah.
+And then right now, we only have, like, for our demo data, the 4 questions, so it only shows 4 there.
+But yeah.
+I mean, yeah, you can do select them expert.
+Did you want to see the exported PDF or is that fine for me?
+I'm sure you guys can...
+I hope so.
+What else we got?
+Our Stewart.
+Oh, yeah.
+Where I can address links on the 2nd page.
+So the site page, let's say we click on the...
+Or we have to go to the other page, right?
+Yeah, I think if you cook view as user.
+I'd say, if I want to edit the site page, I can go here, I can put a link there, you know, say, I don't know, we'll just rename it to specifics.
+You can set us an eye naturalist page, kind of...
+You can also just an experience, which we'll get to that in a bit when you save it there, and it'll update right here.
+Okay, so it's in the banner and that's where the links are.
+Oh, yeah.
+And again, it's up to changing too, whatever you think.
+Like, this would be the best time for you to kind of share your UI thoughts and then we can start to readjust things as well.
+And then you could also assign stewards to the sites as well.
+So if we go, I think this one's off.
+I do.
+Well, I thought it was...
+Guys.
+Where was this one again for Assigning Stewards?
+It was?
+It was in the same spot.
+Yeah.
+Oh, the, like, sorry.
+So that's my bad. you can assign your steward gear.
+Right now we only have one test to go.
+Or sorry, their name's Stewart.
+Yeah, what's that?
+I search up store.
+Here, so you can sign sample Stewart there, and then that will be the design they used to right there.
+Which you can then click and obviously view their information now.
+So I can see if they had contact information, how to email them, call them, that sort of thing.
+Yep.
+Like the site, and that's going reacted...
+That's good.
+And then, for the...
+I think so.
+Oh, yeah, we do.
+It was brutal.
+What else?
+Well, because we have....
+No, no.
+That's why it's even...
+And then, yeah, for their sakes too, you can decide if you want to hide them from the users or not.
+So we could set this as inactive.
+And then I could switch, but I'll just stay on this to make a bit quicker.
+So if you were on the user page, that site would disappear. then we could show it again.
+And then for deletion two, I'm not going to delete this site just because I only have one demo ready.
+But if you archive it right there, it's an archive site. and then enable to delete it, you then have to go to archive and hit the delete button.
+So we just, again, added an extra step to purposefully make this a bit more difficult.
+Yeah, no, that's good.
+The store.
+Okay.
+And what else we got?
+You can have your new site there, especially at the, so again, we have the one county, Quicacio.
+I think for this one, we're discussed for it.
+Yeah, I know.
+Anything, like, and then let some site there.
+And then, let's say, reassign a lot of these regions we upload to.
+Let's say, we're, you know, Ching Ling, Medanta, like, we can add the site there.
+And now we have the new site that users can go and start writing reports on too.
+So it's just very simple to add new sites as well.
+Also, no too far.
+Yep.
+And then, yeah, I mean, this one is a more simpler one, but no 2 sites can ever have the same name as well.
+So there can never be accidental confusion or extal creation of duplicates.
+So when you when you push this up?
+Oh, should be like, yeah, to the public version, correct?
+Yeah.
+There should be something we could probably do. again, starting early next week, I would say.
+So the weekend, the 24th, I don't think.
+Yeah, yeah, sounds right.
+Yeah, because we have...
+Is your really final week, or?
+So it would actually be preferably during the weekdays.
+It's just that since Somia was obviously sick this week, we just weren't able to get to the full release yet.
+But yeah, it would mostly be early in the week.
+Okay, um, yeah, you know, if you guys have done your testing, I like what I've seen.
+It's different moving the ball forward.
+Um, a lot of the study for me, definitely, is about my version 3, um, buy list.
+Uh, so that's, uh, that's good.
+Oh my god.
+No, no, what else do we have now?
+So I do have some other questions here.
+Hey.
+Okay, so we transferred blendable bean fraud.
+How long Colby are they about? those maps to match what's in the website.
+So, actually, yeah, Alyssa was just discussing that before the call.
+We were actually, we were actually just discussing that we're gonna add colour coding, and we knew that was actually something we were gonna bring up.
+So we'll probably have that done by the spring.
+Oh, yeah.
+Yeah, so just use the map standards. came from a former board member.
+It's good enough.
+Okay.
+Yeah, the key thing is, for example, the differentiate, provincial parks, or recreation, whereas...
+Okay, sounds good.
+So, with that, with things I can see, you go back into the user's room, do that into your green dress?
+Oh, yep, there he is.
+Okay, so that's just free text, is that all works? drop down or...
+Oh.
+So for the initial demo, it's pretext, although we set it up in such a way that we were kind of planning, we could easily just make it a dropdown instead.
+So you could have, like, very specific skills to have.
+Yeah, because, you know, what happens with free tech?
+Yeah.
+Someone taking notes of this?
+Do you have a phone?
+Could someone take a drop down with a other bill?
+No, I...
+Anyone know where it is?
+Oh, yeah, did you want something like that, or...?
+Oh, yeah, we can do something like that, for sure.
+Did he won?
+So for the other one, again, you were speaking about just having ram and text.
+Did he want it to have to be like approved by the admin when they do that? or she would just send it through?
+She pursued the circus area.
+Yeah.
+Yeah, for special focus, you're at whatever length you have is, you drop down on ice, we'll bring you a bottle. orientation, construction, and... you know, take, take, take, take... other enter...
+What are you up to?
+Makes sense.
+And that way, you know, and then with the other inner value, there's always, like, having that in way.
+Oh, my God.
+You know, so if somebody enters in, like, this chain sawing, because they missed, um...
+Yeah, like, uh, treatsaw operation.
+You know, I'm able to, like, you know, cute branch or merge or something like that.
+Oh yeah, not makes sense.
+No, we can definitely, especially when they're typing that in too, we'll try to have like a similar match thing.
+And if they do miss it, yeah, we'll make it so you can edit it.
+Did you also, since we're doing free text, then, did you want us to add the ability to not let someone add skills or no?
+Like, to block someone from creating skills?
+No, I would say at this point, it's self declaration.
+Okay.
+And I see your comment, Sonya, I'm not going to get to come up with that initialness discussion.
+Okay.
+Sounds good.
+Good, so...
+My heart?
+Yeah, always very questionable.
+I wish.
+So, I mean, we have a signs too, I mean, can you have someone who doesn't have an account?
+So, so talk to me about the age of the Marvel Stewart.
+Oh, I'm not gonna answer anything, and I'm up here.
+It's all the way.
+But we still need his name. in the list.
+So, at the moment, it does require to have an account, but we could definitely just add the option where the admin could put just a...
+I guess not plain text, but they could add like, you know, like this is the steward's email, phone number, et cetera, instead of sending them to a profile page.
+Yeah, and and Sonia, that's exactly what I was thinking.
+As long as the event can have person, that's the critical thing.
+You know, as long as the person doesn't have to do the email there, ancient being and all those things.
+What was the event?
+Yeah, I love you, Alberta.
+And then pick the box.
+That's the only thing that happened.
+Sounds good.
+Oh, maybe not that well.
+So, and the man will probably even add in, box your awful rebound. phone number or those kind of things.
+It's just bugs your uncle, we choose never to use the eye.
+Makes it reasonable.
+No, yeah, we could we could definitely do that.
+That shouldn't be too difficult to implement. order mailing. you doing Don't you be very quietly?
+Kind of nice, isn't it?
+All right, no, I like it.
+I found a...
+And then I guess...
+Is there anything else?
+Maybe, Lil, last minute features, or no?
+I mean, there's definitely more changes in there.
+It's just, again, a lot of it was especially just quality and light.
+So, I'm sure if we went hunting, but the big thing is we'll give you access to this after, and then again, you can kind of go through the app as well, and let us know your thoughts on what we've done so far.
+Okay, we'll try to break.
+Oh yeah. for the better, for sure.
+Can you give me access to one that has data?
+Is that possible?
+Oh, yeah, so this is the one that has data.
+Okay, ready?
+So it's a pre-production on that city one, but which, uh, so it was pre-production and pre-production and non-production data.
+I'm going to be able to meet the email and the password.
+Yeah, I think.
+Oh, yeah, yeah. giving those right now.
+All right, yeah, so it's, yeah, it's just, we don't have any production data.
+Right now, it's a lot of test data that was purposefully trying to break it in the 1st place.
+Right.
+So as long as, you know, if I if I have a link and I'm poking around, I just don't want to drop production days.
+Oh, no, no, this is not touching production in any names.
+No, you can feel free if you could break it, it's for the better so we can fix it.
+I would honestly prefer if you find a way to break it.
+Oh, yeah.
+Yeah, we can name by that for sure.
+See, I guess we'll get back to presentation here.
+Shams have too many to go.
+But...
+Yes, I went back on the...
+No, it's not...
+I just...
+Yeah, I guess did we have any, well, I guess we could save that for the round table, right?
+Oh, no, from that one.
+See, this is kind of what we discussed on the side then.
+So obviously, again, finished version one. one.
+We finished all the issues we had planned for this week as well.
+So, or sorry, last week as well.
+So, again, no problems at all.
+We got through them all.
+I think we even ended up adding a few extras to just, like, you know, bug fixes tidying up.
+Next week we have the plans, obviously, linking the sites directly to the boundaries.
+All sites on one map, I believe.
+Would that be like?
+I guess you could explain that better.
+For the All-States on one map?
+I think we have that right.
+Oh, yeah.
+I think it's just like having the link and then linking the site and their inspections to the map.
+Yeah, makes sense.
+So yeah, then again, like those sites of one up, just kind of, you know, adding onto the current thing we have, showing more site information.
+GPX upload, upload will have done.
+Safety info, password reset again, just a nice quality of life.
+And then, again, we have a basic upcoming there.
+We'll definitely have space for any issues you'd find too.
+Demo free already, Dad.
+I guess, yeah.
+We'll just jump straight into the round table, then.
+Jaden, you would like to search.
+I don't have much to say, but we're meeting the very time, and I hope we liked our demo.
+Yep, absolutely.
+I hope you like the product that we have right now, and like we can go through it.
+Maybe when falls, if you, Yeah, like that that's all.
+Okay.
+Xana?
+Hi, Frank, I would just like to say that we're gonna be waiting for your suggestions after you do the table yourself.
+And, um, hopefully we'll be in, we'll be able to incorporate everything that you said, um, in sprinting.
+Yeah, I knew all... to.
+Right, right.
+Thank you.
+I hope you liked the... so far.
+If there's anything that you want to pick, we're willing to listen and get it fixed right away. not that.
+Okay.
+Um, yeah, like the others said, we really appreciate your feedback, and I'm glad that it was mostly positive, and we'll definitely work on the things that you called out.
+Also, one of the things that weren't on the slide is, like, the, we talked about it last week, how Project 3 had a naturalist, like, component, and during our, like, field trip, you mentioned wanting the users to be able to choose, like, image uploads from their I naturalist account.
+And to also see like the top 5 kind of observations for a site.
+So that is something that we are looking at for Sprint 3 to complete.
+Okay.
+So wait until you see what I'm gonna present to the moment for version 4 and 5, is it kind of incorporates that?
+Okay.
+And so take a look at it holistically before, uh, jumping in, so that specifically, is it, is that?
+Yeah, sounds good.
+Would you like to take it out of this print, then, and then we can add the things that you brought up this morning?
+Let me do the walkthrough, what I see in business, for apply.
+Um, I think that's a question you guys, like, when you see what's been 4 or 5, um, uh, one of the things you're gonna need to do is the business analysis functions.
+Oh, I'm like, what the hell is I'm talking about?
+And then went to the winds before and five. you know, what is 4 or 5 would like?
+So, so, so that's let's manage it that way, is uh, is that further reason?
+Yeah, for sure.
+We'll just hold on back then.
+Okay.
+Yeah, I guess going back to it, I again, please poke around with the website, try to break it as best as you can.
+Again, the more issues that are broken, the more we can add more test cases, make sure that does not happen in the future.
+Um, and then just please really nitpick the UI.
+Like if there's really any UI element you just don't like, you know, this looks ugly.
+Just let us know because we're really planning on just reworking it and trying to make it, well, more modernized, more cleaner and more intuitive.
+And that's all for me.
+Yeah, I I would say the UI...
+Plan, it's 4 o'clock, web-based, a very face, but beautiful, like, stressful. development of blue eyes, so, you know, that's responsible for them.
+They look nice.
+Yeah.
+And that's because, you know, let's let's get to that, but working really, pretty well.
+And I always should be able to conat so that I only have one technology base that I'm dealing with at a contract.
+Makes sense.
+Hey, Sonia, do you want a sound language?
+Okay.
+That is amazing.
+This is on the side.
+Okay, Chris, if you're driving, hopefully you can follow a second.
+Or do we miss?
+Here, one sec.
+Sorry, what was that?
+You said?
+I heard the go to the website.
+Uh, do we, did we get a remote in the game of, uh, in the Ramsey World?
+Yep, we did.
+Did get everyone.
+In fact, usually we use some cars, so that it's...
+One sec.
+This is redirecting the other one.
+And then did you want to go to that regular woman?
+No, no, no.
+Okay.
+So, on the regular side, wherever the aviations are, there's source of power, version 4 and 5 and counties.
+Literally was both...
+So this is a, you know, highlighting movement.
+Okay.
+And, and, you know, highlight...
+So I accept this to Sonya.
+Today, I don't forget...
+Well, I wouldn't mind doing it, particularly a few minutes, and just walk...
+That's fine. then then get you, get you guys to, too familiar with stuff.
+And I with the body?
+No.
+All right, so let's take it from the top. down here a bit past the table contents.
+Okay.
+So, hang on, is it another?
+Because I'm using this, this host for multiple things, you may say, Well, why are you telling me what's in version two and three?
+We know what's inversion two, three.
+But one of the reasons is, is I'm gonna be sending this to external arguments.
+And they don't know what's in virtually...
+So there's multiple audiences, right?
+I just wanted to know that as context, okay?
+Yeah, so version two, Christian Management, Balfashment.
+That's where we're demoing.
+So that's, that's, that's fine.
+The one of the things in there?
+Yeah, so, despite management that last order, where Apple, before the initial one, where...
+That's the site management stuff, that you're getting at them last night.
+Okay, so...
+So that version 2 and 3 is basically what you guys are already doing.
+Just scroll down, now, of course. so version is So, yeah, he said, up to this point, had the model...
+He drove 101ers.
+He got out of his vehicle, he went to a site.
+He's never been to the pictures, he played in a waffle.
+And he may never be, like, a stand where he liked that.
+That was everything that you've been working on is for that...
+Let me pause your...
+Does that make sense?
+Does that resonate with you?
+Yeah, I don't want that way.
+So the next section, I'm looking at this. is a ball.
+The next big iteration.
+And that's because... some of the supplies, whatever, mostly, are not looking at the actual organizations.
+And an example, where we're gonna use people, there's a real lawyer, there's an, of which I'm noticed, however...
+Some order of sites are actually bad.
+There's some examples there.
+All of these things are...
+So, the things being, for real, though, 56 has trails and has signs and it has gates and it has ardours kind of go, right?
+Gorgeous, they're playing.
+A volunteer for this type of organization.
+When they go to Riverlock 56, they're gonna have, it's a Venn diagram.
+Some of the things you're going to be looking for are in the current app.
+But some of the things they are looking for are not going to turn out.
+And some of the things I have got over on, okay?
+So, here's an example.
+Do you remember when we were in River Lot 56 when we came out of the washroom, and we walked past that gate, and we all took that step past the gate, and there was a sign there?
+Yeah, this game?
+What happens if that sign is missing?
+Yes, they has to be replaced.
+I know that.
+Right, but how do you know the sign is missing?
+You don't.
+Right.
+So back to the former one.
+Frank goes out, where Chris goes out, drives 100 kilometres, because there's a vehicle, and he sees a sign.
+And he says, I see a sign.
+That's part of the report.
+I see a boundary son.
+So that's positive evidence, right?
+How does Chris know, when he's driven 100 kilometres, gets out of his car, that he's not seeing a sign that just blew down five minutes earlier?
+I mean, unless we had a map that showed something, he wouldn't.
+Right.
+So do you see the difference?
+The, the, the, the, the nature of the business is now different, isn't it?
+In this case, it's managing assets.
+Is that sign still there?
+Yes.
+Is it still in good condition?
+Yes.
+Do I need to do anything today?
+No.
+Okay?
+Is that gate still there?
+Yes.
+Is it in good condition?
+No.
+You know, the post has rotted out and has fallen on the ground.
+We need to replace it.
+So, I'm belabouring this a little bit, to really bring home the idea that this version 4 and 5 are about essentially organizations that own an area, that own River Lot 56.
+And they're out there looking to see if what needs to be done.
+So let me pause there.
+Is that difference making sense to you?
+Is a resident?
+Help me help you, Chris.
+Look around, check the body language.
+Is it resonating or are people going, I don't know what you're talking about?
+No, I think it's resonating from, from like what I'm kind of understanding is you want, like, I know we have an admin, but you want organizations to kind of be able to set up their own, their own system in the same thing with their own sites. their own markers.
+Like, is that kind of what you're getting too?
+Or...
+Right.
+So you guys roll out at River Lot 56.
+Let's pretend that you are now on the River Lot 56 society.
+And you agree to go out once a week and assess the state of the area.
+So you go walk the trail, you go check the gates, you go check the signs, you go pick up some litter, maybe, and those kind of things.
+That's what version 4 and 5 need to be interested in.
+Okay.
+Now, you may check that sign, it goes, blick, it falls on the ground, but you don't have a grell.
+You don't have screws.
+So, therefore, you're gonna need to put in a work order.
+We need to replace this sign.
+Here is the location.
+Does that make sense, Chris?
+Yep, I think so.
+Okay, so just scroll down a little bit.
+So the high level requirements.
+So the, the first high level requirement is the fact that, we need to know why, an organization that needs one of these pages.
+River Lot 56 has a crown lease and a management plan.
+The Canadian Berkebeiner Society has a permit, but not a crown lease.
+The Edmonton area Land Trust owns the land.
+It's not part of the Werner system.
+So that's what's in that legal structure is, and this is a database thing.
+So this is at the database level.
+You know, we need that legal structure.
+I'm gonna go all the way down, and I'll come back up to the top, okay?
+Uh, like, scroll down right now?
+No, no, no, no, no.
+I will go through the high level requirements and then I'll come back to the 1st market.
+Okay, so the tailored management experience, River Lot 56. is different than the Wagner Natural Area.
+Group of Log 56, partners with Stansky.
+Stanske goes in there, and they sent trails.
+Wegner, Natural Area, doesn't have cross country skis, and it maintains his own trails.
+Uh, in addition.
+So there's, uh, what is in, uh, a page has to be responsive to the business needs of the organization.
+Okay.
+Uh, the person management, which is uh, kind of what you guys have been working on, uh, but some users are going to have different rights within a page.
+So, Chris is joining the River Lot 56 board.
+He's the sub-administrator for Riverlock 56 site management.
+He allows Abby to be also a site, you know, to be involved in site management. and at some level.
+So there's going to have to be a personal management function there.
+Okay?
+Uh, media assets in GIS.
+So once again, this is what you guys have already been working on.
+Uh, But volunteers need more information.
+We're returning this on an example.
+What does the sign look like?
+You know, where was it?
+What was his GIS?
+How was it secured?
+So, um, oh, sorry, yeah.
+So that's an example of an asset record.
+What is the asset?
+It is a bench.
+What is the asset?
+Is a gate?
+What is the asset?
+It's a shelter.
+What is the asset?
+It is a sign.
+What is the asset?
+It's a trail.
+And so that's the description of the asset.
+And then over here, what is the condition of that bench?
+Good.
+Is there a work order against it?
+No.
+What is the condition of that gate?
+Tour.
+Is there a work order?
+Yes, replace the post.
+Uh, so volunteers, AT and work management, that's where, you know, we're kind of looking back into, and then more in-depth biophysical monitoring.
+So at least that's where the eye naturalist now comes in.
+So let me pause here.
+Those are the high level requirements.
+Of that list, Jaden, let's pick on Jaden.
+Which one makes the absolute most sense?
+Which one is the easiest one and you're going, okay, yeah, I get that.
+There is no problem whatsoever.
+Uh, I think the, the person management would also just be like adding, uh, another, like, type of admin with different, uh, type of rights.
+Yeah, that's pretty, like, straightforward.
+Yeah, it really is the more granular level of the existing amin functions, right?
+Yeah.
+Yes.
+Yeah, and it's granular and it's also contextualized.
+It's not for the entire app, it's only for this page.
+Yeah.
+Okay, um, so let's let's go to, uh, Zendek.
+What?
+Uh, Zion out.
+What is the one that you're looking at and you're going, I have no idea what you got the moment?
+This is a mystery.
+That would be... let me just say Um, either the gift, biophysical monitoring, or the legal structure?
+It's 10.
+Okay, so you guys say that again. a legal structure sounds kind of weird.
+Okay?
+We got that from this on you.
+I didn't ask you, son.
+You can't talk anyway.
+What the hell are you doing, jumping?
+Anyway.
+Sorry, say that again, I couldn't quite hear you.
+That would be a legal structure, or in-depth bi physical monitoring?
+Okay, yeah.
+And I agree with Sonya, actually.
+You know, probably for the initial cut, we're going to need a legal structure, but there's not going to be a lot in it.
+But we need to have we need to be aware of it from a data modelling perspective.
+Even if it's going to be relatively straightforward.
+The in-depth is where we're bringing in, initially at least, a naturalist.
+And what does that look like?
+What does it do to my Amazon allocation?
+And those kind of things.
+You know, if I bring in whatever the number was, 100,000 observations for my naturalist, you know, have I just blown my free Amazon out of the water?
+Or my fruit soupa base out of the water, wherever that data starts.
+Okay, that's good.
+All right, so let's see, what haven't I picked on yet?
+Aaron, did I pick on you yet?
+No.
+Okay, you get to pick easy or hard?
+Easy, hard or really interesting?
+Like, based on a topic, which is not as easy, which is...
+Yeah, of the high level requirements.
+I would say...
+I think Taylor...
+Person management, maybe, would be lazy.
+Hard would be to... to the depth.
+One year, the biology, vice.
+Uh, wiring, medium, I would say...
+Taylor man has been more experience, maybe.
+Okay, yeah, because how do we build that?
+Do we, you know, is it a, is it a form that we drag and drop peels into and then put it out?
+You know, uh, how do we do that?
+All right, good.
+So just scroll down, Chris, to beyond the crown links, to the next section there.
+Once again, uh...
+So, I'll, I'll come back to that soon, yeah.
+So, be on the crowd leads to, once again, there's a little bit of repetition here.
+You guys already know some of this.
+We're in our phase one to three is in purpose.
+You guys already know that.
+This isn't for you, it's for other people, okay?
+The site management phase, version four, maybe version five.
+I don't know how it's going to fall up. helping organizations for the crown lease meet their obligations and monitor the health or respectful sites.
+The next set of bullets are beyond version 4 and 5.
+And there's a reason why I have them here, and I'll get to it in a second.
+Um, one of them is the volunteer capacity.
+So that may be in version 4 and 5, or it may be standalone.
+And the determination will talk about it in a second.
+Connected for conservation, which is a little bit of a tie in to the one above, but it's also saying, well, there's a lot of other sources.
+So up above, we're definitely focussed on my naturalist.
+Down here, do we, can we bring any birds?
+Can we bring in Merlin?
+You know, can we bring in nature watch?
+You know, so there's there's a lot of other sources, and what does that look like and how do we use them?
+The knowledge keeper is where we're using the app more as a content management tool than as a reporting tool.
+Okay?
+So, you know, what are the experiences people have had in this site?
+You know, what are the key management documents that go with it? and those kinds of things?
+And then the last 2 are beyond public land.
+I guess we go over there.
+So, up to this point, it's going to be Alberta public land or crown land.
+Uh, that bullet there is to say, okay, but can we get beyond it?
+Like, could this be Edmonton area Land Trust?
+Could this be nature conservancy?
+And then beyond Alberta, it's, you know, doesn't have to be over.
+I'm gonna stop you guys from panicking right now.
+Because I know you're thinking, holy shit, Frank, that's a lot of things to do between now and Christmas.
+This is a roadmap for probably two to three years of development.
+And it's, and it's in a order of priority.
+It is not what I need from you guys between now and Christmas.
+Okay?
+So let's talk about what I need from you guys.
+This is worries would be fun for you guys.
+You're gonna have a lot of fun with this.
+I need a working proof of concept.
+I don't need a system.
+You guys get to, uh, be a little bit creative with this.
+So just scroll down a bit there, okay?
+First thing I'm gonna do is I'm gonna pull a advisory panel together. so that your aunt just talking to Frank.
+The next thing we're gonna do with the proof of concept focus, uh, is initially it will be for a crown lease.
+Um, the organizations, we could OHS.
+Um, So, so these are the, uh, these are the priorities inside the proof of concept.
+And as we go from one to six, 6 is less important than one.
+Five is less important than two, and in that order.
+And then here's the proof of concept plan, just scroll down a bit, Lucris.
+So what is the business problem?
+So, I've been steering a lot here.
+Let's actually do a little bit of a recap.
+So what's the problem we're trying to solve, solve?
+How does a small nonprofit continue to maintain a site?
+Open to the public, despite the costs and risks that continue to escalate year over year. 12 resources diminish.
+We talked about this when we visited our naturalist, or we visited Bridlock 56, right?
+How has it curly been solved?
+Not great.
+The question, how can an app help?
+And the answer to that question may be, and now it can't help.
+I'm okay with that answer, okay?
+From the proof of concept.
+What were the results at the end of the project?
+And it's important to recognize, when you read those bullets, those two bullets under four, that's my hypothesis.
+So I have asked a question, and this is my working hypothesis, what the results are gonna be.
+What are the next steps?
+We are going to build the proof of concept out.
+You guys, we're gonna go back all the rubelog 56.
+Hopefully we have the advisory panel out there with you, and you guys are going to double it, and they're going to give you feedback.
+From that, you're going to write a requirements document.
+What is the future vision and what is possible and that's just more, you know, blue sky?
+So, Chris, on his scale, one to five, five being, I have no idea what you're talking about, Frank, you confuse the heck out of me.
+And one B, or actually, that's one.
+And 5 being, okay, I get it.
+I got to build a proof of concept.
+And, uh, you know, and Frank has given me the parameters of what to include or not include based on resources.
+Scale of one to five, how much have I confused you?
+One completely?
+Five.
+I know where you're going or some point in between.
+Go ahead, Chris.
+It's in the floor.
+Anybody wanna be a one?
+Anyone brave enough to be one?
+How about a two?
+See any hands up, Chris, for two?
+No.
+Any hands up for three?
+Yeah.
+The one, three.
+Okay.
+And what's the biggest?
+I have no idea what you're talking about Frank. thought.
+You're not going to Lisa?
+I think, for, like, the proof of concept, like, um, I see why Chris created a four, but for the stuff above, like, on this page, like, there's probably, like, a lot of questions that's going to be asked for us to build a piece of things.
+Yeah, I've given you the 50,000 foot requirement.
+And you definitely don't have the 40, 30, 20, or 10,000 foot requirement for this.
+Okay.
+So, so I'm actually glad you made that comment, Lisa, because you shouldn't know what you're going to be doing.
+Uh, because I haven't given you sort of enough information.
+You should know what direction we're going, but not necessarily what the specifics are.
+Is that is that fair for what you're thinking?
+Okay, so we're a little bit over timed here.
+I do have a question I'm going to ask on behalf of Sonya.
+What do you guys think?
+Does this look like fun?
+Yeah, yeah, definitely.
+Yeah, it looks interesting.
+I definitely think we could hit some of the points before the end of semester.
+I don't know much about the legal stuff, but we could at least handle some of the implementation with the organizations and whatnot.
+Okay.
+And you know, the best thing is, you guys don't have to deliver a production app.
+Yeah.
+This is a this is a proof a proof of concept.
+I mean, it may be in the prod environment, but it would be a working proof of concept.
+Good.
+Yeah, and I understand.
+And here's the thing, Sonya and Company.
+I really need that advisory panel.
+Like, I need to be explaining this over and over again.
+Partly so I understand what the heck I'm trying to say.
+And I also need someone from Wagner, Les, or Burkey, or somewhere to be saying, yeah, but what about this?
+And then for you guys to be fleshing that up, The other thing is, uh, Sonya and Company?
+This is a really good chance for you guys to test your business ambulance, Trumps.
+Travis.
+Uh, things, you know, to, you know, it's not a technical fact.
+It's a fuzzy business spec.
+And, you know, you know, as a, this is where you put on your resume that you did a business on that disfunction as well.
+No, I'm gonna join Mark Mad because Mark follows the waterfall model. you got to start your year and then here and then here.
+So, but, uh, so this proof of concept basically is saying version 2 and 3 follows a waterfall, and this one is going to follow a lot more address.
+Uh, quick open mic, any comments?
+I have a question about the sound.
+I guess one question, is this, like, is the idea to build a new app or is the idea to build a prototype on the existing app?
+I'm thinking it's the latter.
+Because why wouldn't we use all the same databases and the commonality?
+But what we need to prove a concept is say, yeah, that's a really bad idea.
+Nope.
+Ralph is done.
+Any other comments?
+So is this something that we would dip for?
+Token like a... good for you.
+Like, is this something you would want deployed on, like, a separate?
+Fundamentally, version 4 and 5 is not your problem other than the proof of console.
+This is the next semester's problem.
+That's just you're just saying, like, a really, you know, just a really rough shell that the other semester can then start from.
+Like they'll have something to work from.
+Yeah, and I'm hoping it's more than rough.
+But it doesn't have to be perfect.
+Here's the thing.
+I can articulate this to a bunch of organizations, but they won't get it.
+I need to say, here is the app.
+Go use it.
+Okay.
+And I need them to say, this is a pile junk I will never, ever use them.
+That's okay.
+Or I need them to say, This is pretty good, but you need to fix this.
+Yeah, I mean, I feel like as long as we, like, I know there's a lot of points, as long as we kind of had, like, focus areas to start building off of, to experiment, then we could flesh it out more.
+Because with the current specification, it is informative, but it's kind of difficult to know which one thing to really focus on.
+So I feel like if we just had this one thing, it would end up, like again, very prototypey, where we kind of do a little bit of everything spread out.
+So if we had like a more focussed document, I feel like it would be a better place to start building from and working on this prototype.
+I Yeah, and I needed to build this document to get to that document, if that makes sense.
+Okay.
+Is okay if you guys chew on this one for the next week?
+Sounds good to me.
+Everyone get that?
+Yeah.
+Yeah.
+And I agree with you.
+Like, um, at the bottom of one of these bullets, uh, this starts to get way beyond, you know, so far.
+And in addition, you know, one of the questions I'm going to be asking when we get to the bottom is, all right, you guys build a great work order management tool.
+Can I go buy it right now?
+Like, does one exist right now?
+And, you know, that will be part of your recommendations.
+This is say, yeah, we built this, we now know the requirements, but oh, by the way, you can go buy 15 different flavours.
+There's 15 different vendors on, you know, in the market.
+Or you may come back and say, this is really niche.
+You know, there's nobody else who is doing this. number.
+Okay.
+Okay, my apologies were 6 minutes over, so Sonia has an email from me about December.
+My question is, which weekend works best if we did a field trip?
+Um, I have to be in Vancouver to switch a 7 year old. who's, well, just want your grandson who's turning 7th.
+And so I just need to know which weekend did I book the file, okay?
+Okay.
+Yeah, we could, uh...
+Again, we'll probably have some, yeah, send you an email then early next week and we're gonna figure out which time works best.
+Yeah, any of our poker is fine.
+Sounds good.
+Okay.
+I'm excited about for proof of concept.
+Like, I think you guys are gonna have a blast with us.
+I think you guys, we're gonna turn you loose a little bit.
+And I'm really looking forward to seeing what you guys come up with.
+Sonia, I know we had Verblock 56.
+I said, yeah, I don't trust you guys.
+Why would I?
+I don't know you.
+My trust level was much harder.
+You know?
+So let's, let's go do this, you know, and let's have some fun, and, you know, let's go wow some people.
+Sounds good with me?
+Okay.
+Okay, Chris, I'm good.
+Sounds good.
+Then, yeah, I guess we'll, uh, want it off there, and again, we'll, uh, we'll update you next week if we need to. better than that, we'll see you next Friday.
+Okay, perfect.
+Okay, well soon, Sonya.
+Lousy.
+Bye for now.
+You guys stay away from Sonya?
+See you.
+Don't get sick, just saying.
+Bye. 

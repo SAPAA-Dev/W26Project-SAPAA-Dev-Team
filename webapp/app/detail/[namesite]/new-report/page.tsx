@@ -110,6 +110,7 @@ export default function NewReportPage() {
   const [currentUser, setCurrentUser] = useState<{ email: string; role: string; name: string; avatar: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStewardUser, setIsStewardUser] = useState(false);
+  const [validationAttempted, setValidationAttempted] = useState(false);
   const [showRequiredPopup, setShowRequiredPopup] = useState(false);
   const [missingRequiredQuestionNumbers, setMissingRequiredQuestionNumbers] = useState<string[]>([]);
   const [missingImageMetadataDetails, setMissingImageMetadataDetails] = useState<string[]>([]);
@@ -492,6 +493,7 @@ export default function NewReportPage() {
 
 
   const handleSubmit = async () => {
+    setValidationAttempted(true);
     // Prevent multiple submissions
     if (isSubmitting) return;
     
@@ -941,6 +943,7 @@ export default function NewReportPage() {
 
       {/* --- MAIN LAYOUT --- */}
       <MainContent
+        showValidation={validationAttempted}
         responses={responses}
         onResponsesChange={handleResponsesChange}
         onSectionStateChange={handleSectionStateChange}

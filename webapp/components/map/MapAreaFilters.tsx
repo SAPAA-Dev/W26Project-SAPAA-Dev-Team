@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 import { toggleAllCategoryValues, toggleCategoryValue } from '@/lib/map/boundaryFilters';
 
 interface FilterSectionProps {
@@ -130,6 +130,7 @@ export default function MapAreaFilters({
 }: MapAreaFiltersProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const disabled =
     types.length === 0 &&
     subtypes.length === 0 &&
@@ -138,14 +139,8 @@ export default function MapAreaFilters({
     siteBoundaries.length === 0;
 
   useEffect(() => {
-    if (!open) return;
-
-    const handlePointerDown = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
-    };
-
-    document.addEventListener('mousedown', handlePointerDown);
-    return () => document.removeEventListener('mousedown', handlePointerDown);
+    if (open) dialogRef.current?.showModal();
+    else dialogRef.current?.close();
   }, [open]);
 
   return (
@@ -153,7 +148,7 @@ export default function MapAreaFilters({
       <button
         type="button"
         aria-expanded={open}
-        aria-haspopup="true"
+        aria-haspopup="dialog"
         disabled={disabled}
         onClick={() => setOpen((current) => !current)}
         className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border-2 border-[#E4EBE4] rounded-xl text-[#254431] font-medium hover:bg-[#F7F2EA] hover:border-[#86A98A] transition-all shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
@@ -161,8 +156,9 @@ export default function MapAreaFilters({
         Filter
         <ChevronDown className="w-4 h-4" />
       </button>
-      {open && (
-        <div className="absolute right-0 z-20 mt-2 w-80 max-h-[calc(80vh-8rem)] overflow-y-auto rounded-xl border-2 border-[#E4EBE4] bg-white shadow-xl">
+      <dialog ref={dialogRef} aria-label="Filter protected areas" onCancel={(event) => { event.preventDefault(); setOpen(false); }} onClick={(event) => { if (event.target === dialogRef.current) setOpen(false); }} className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-sm max-h-[85dvh] overflow-y-auto rounded-xl border-2 border-[#E4EBE4] bg-white p-0 text-[#254431] shadow-xl backdrop:bg-black/50">
+        <div className="flex items-center justify-between px-3 py-2"><h2 className="font-bold">Filter protected areas</h2><button type="button" aria-label="Close area filters" onClick={() => setOpen(false)} className="grid min-h-11 min-w-11 place-items-center"><X aria-hidden size={20} /></button></div>
+        {open && <>
           {types.length > 0 && (
             <FilterSection label="Type" options={types} selected={selectedTypes} onChange={onTypesChange} />
           )}
@@ -198,8 +194,8 @@ export default function MapAreaFilters({
               onChange={onSiteBoundariesChange}
             />
           )}
-        </div>
-      )}
+        </>}
+      </dialog>
     </div>
   );
 }

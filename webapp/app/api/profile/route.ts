@@ -237,13 +237,16 @@ export async function GET(request: NextRequest) {
   };
 
   // Count sites in the database because loading every report only to count it is slow.
-  const [historyResult, { data: siteCount, error: siteCountError }] =
+  const [historyResult, { data: siteCount, error: siteCountError }, aggregateResult] =
     await Promise.all([
       activeReports('id, site_id, inspection_date, created_at, sites_pa(id, namesite, archived_at, is_active)', { count: 'exact' })
         .order('inspection_date', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
         .range(from, to)
         .overrideTypes<InspectionRow[], { merge: false }>(),
       admin.rpc('get_distinct_inspected_site_count', { p_user_id: profile.auth_user_id }),
+      fetchAggregateReports(),
     ]);
 
   let { data: inspections, error: inspectionsError, count } = historyResult;
@@ -260,7 +263,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unable to load inspection history.' }, { status: 500 });
   }
 
-  const { data: aggregateReports, error: aggregateError } = await fetchAggregateReports();
+  const { data: aggregateReports, error: aggregateError } = aggregateResult;
   if (aggregateError || !aggregateReports) {
     return NextResponse.json({ error: 'Unable to load profile activity.' }, { status: 500 });
   }
@@ -271,6 +274,9 @@ export async function GET(request: NextRequest) {
     id: inspection.id,
     siteId: inspection.site_id,
     siteName: inspection.sites_pa?.namesite ?? 'Unknown site',
+    siteSlug: inspection.sites_pa?.namesite ?? '',
+    date: (inspection.inspection_date ?? inspection.created_at)?.slice(0, 10) ?? null,
+    canOpen: !!inspection.sites_pa && inspection.sites_pa.archived_at == null && inspection.sites_pa.is_active !== false,
     // Archived sites are hidden from the app, so the profile lists their reports
     // without linking to the site page.
     siteArchived: inspection.sites_pa?.archived_at != null,

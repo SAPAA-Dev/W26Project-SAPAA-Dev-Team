@@ -21,9 +21,10 @@ jest.mock('next/image', () => ({
 
 // - Queries
 jest.mock('@/utils/supabase/queries');
+let mockRole = 'steward';
 jest.mock('@/utils/supabase/client', () => ({
   createClient: () => ({
-    auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'user-123' } } }) },
+    auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'user-123', app_metadata: { role: mockRole } } } }) },
   }),
 }));
 
@@ -593,6 +594,7 @@ const mockResponses: Awaited<ReturnType<typeof queries.getFormResponseById>> = {
   };
 
 beforeEach(() => {
+  mockRole = 'steward';
   // Default mock returns - override per test as needed
   (queries.getQuestionsOnline as jest.Mock).mockResolvedValue([]);
   (queries.getFormResponseById as jest.Mock).mockResolvedValue({});
@@ -859,4 +861,19 @@ describe('W26 US 1.0.22 – (User) Edit My Site Inspections Form', () => {
         const answersArray = (queries.updateSiteInspectionAnswers as jest.Mock).mock.calls[0][1];
         expect(answersArray).toContainEqual(expect.objectContaining({ question_id: 32, is_hidden: true }));
     });
+});
+
+
+it('(V3-04 AT1) lets an admin save a historic correction without filling new required answers', async () => {
+  mockRole = 'admin';
+  (queries.getQuestionsOnline as jest.Mock).mockResolvedValue(mockQuestions);
+  (queries.getFormResponseById as jest.Mock).mockResolvedValue(mockResponses);
+  render(<EditReportPage />);
+  const email = await screen.findByTestId('question-input-32');
+  fireEvent.change(email, { target: { value: 'orgbio@gmail.com' } });
+  fireEvent.click(await screen.findByRole('button', { name: /Close/i }));
+  const save = screen.getByRole('button', { name: /Save Changes/i });
+  await waitFor(() => expect(save).toBeEnabled()); fireEvent.click(save);
+  await waitFor(() => expect(queries.updateSiteInspectionAnswers).toHaveBeenCalled());
+  expect(screen.queryByText('Required Questions Missing')).not.toBeInTheDocument();
 });

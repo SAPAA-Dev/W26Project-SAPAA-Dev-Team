@@ -35,8 +35,9 @@ function generateFilename(site: Site | null, date: string, who: string, identifi
   return parts.join("-") + ".jpg";
 }
 
-export default function UploadImages() {
+export default function UploadImages({ open, onClose, onUploaded }: { open?: boolean; onClose?: () => void; onUploaded?: () => void } = {}) {
   const [modalOpen, setModalOpen] = useState(false);
+  const isOpen = open ?? modalOpen;
   const [allSites, setAllSites] = useState<Site[]>([]);
   const [files, setFiles] = useState<FileEntry[]>([]);
   const [dragging, setDragging] = useState(false);
@@ -49,23 +50,23 @@ export default function UploadImages() {
   const router = useRouter();
 
   useEffect(() => {
-    document.body.style.overflow = modalOpen ? "hidden" : "";
+    document.body.style.overflow = isOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [modalOpen]);
+  }, [isOpen]);
 
-  const handleOpen = async () => {
-    setModalOpen(true);
-    const data = await getSitesOnline();
-    setAllSites(
-      (data ?? []).map((s) => ({
-        id: s.id,
-        name: s.namesite,
-        county: s.county ?? undefined,
-      }))
-    );
-  };
+  const handleOpen = () => setModalOpen(true);
+  useEffect(() => {
+    if (!isOpen) return;
+    let active = true;
+    getSitesOnline().then((data) => {
+      if (active) setAllSites((data ?? []).map((site) => ({ id: site.id, name: site.namesite, county: site.county ?? undefined })));
+    }).catch(() => { if (active) setUploadError('The site list did not load. Close this form and try again.'); });
+    return () => { active = false; };
+  }, [isOpen]);
 
   const handleClose = () => {
+    if (isSubmitting) return;
+    onClose?.();
     setModalOpen(false);
     setFiles([]);
     setCurrentIndex(0);
@@ -108,6 +109,12 @@ export default function UploadImages() {
     setFiles((prev) =>
       prev.map((f, i) => (i === currentIndex ? { ...f, [field]: value } : f))
     );
+  };
+
+  const carryForward = () => {
+    setFiles((previous) => previous.map((entry, index) => index <= currentIndex ? entry : {
+      ...entry, site: previous[currentIndex].site, siteSearch: '', date: previous[currentIndex].date, who: previous[currentIndex].who,
+    }));
   };
 
   const removeCurrentFile = () => {
@@ -218,7 +225,9 @@ export default function UploadImages() {
       setModalOpen(false);
       setFiles([]);
       setCurrentIndex(0);
-      router.push(`/sites?image-upload=true`);
+      onUploaded?.();
+      onClose?.();
+      if (!onUploaded) router.push(`/sites?image-upload=true`);
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Upload failed";
       setUploadError(msg);
@@ -247,17 +256,16 @@ export default function UploadImages() {
 
   return (
     <>
-      {/* FAB */}
-      <button
+      {open === undefined && <button
         onClick={handleOpen}
         className="fixed bottom-8 right-8 z-50 flex items-center gap-2 px-5 py-3.5 bg-gradient-to-r from-[#356B43] to-[#254431] hover:from-[#254431] hover:to-[#356B43] text-white text-sm font-semibold rounded-full shadow-lg transition-all hover:-translate-y-0.5"
       >
         <Upload size={16} />
         Upload Images
-      </button>
+      </button>}
 
       {/* Modal */}
-      {modalOpen && (
+      {isOpen && (
         <div
           className="fixed inset-0 z-[200] flex items-center justify-center bg-[#254431]/60 backdrop-blur-md p-4"
           onClick={(e) => e.target === e.currentTarget && handleClose()}
@@ -335,6 +343,7 @@ export default function UploadImages() {
                       <button
                         onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
                         disabled={currentIndex === 0}
+                        aria-label="Previous upload photo"
                         className="w-7 h-7 flex items-center justify-center rounded-lg border-2 border-[#E4EBE4] text-[#254431] hover:bg-[#E4EBE4] disabled:opacity-30 transition-colors"
                       >
                         <ChevronLeft size={14} />
@@ -345,6 +354,7 @@ export default function UploadImages() {
                       <button
                         onClick={() => setCurrentIndex((i) => Math.min(files.length - 1, i + 1))}
                         disabled={currentIndex === files.length - 1}
+                        aria-label="Next upload photo"
                         className="w-7 h-7 flex items-center justify-center rounded-lg border-2 border-[#E4EBE4] text-[#254431] hover:bg-[#E4EBE4] disabled:opacity-30 transition-colors"
                       >
                         <ChevronRight size={14} />
@@ -542,6 +552,7 @@ export default function UploadImages() {
                   <p className="text-sm text-[#B91C1C]">{uploadError}</p>
                 </div>
               )}
+              {currentIndex < files.length - 1 && <button type="button" disabled={isSubmitting} onClick={carryForward} className="mb-3 w-full rounded-xl border border-[#356B43] px-4 py-3 text-sm font-semibold text-[#254431]">Copy site, date and photographer to remaining photos</button>}
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm text-[#5B655D] shrink-0">
                   {files.length > 0 ? (

@@ -6,6 +6,8 @@ import { s3Client } from "@/lib/s3/client";
 import { deleteObjectsByKeys } from "@/utils/media/s3Delete";
 import { isAllowedStorageKey } from "@/utils/media/storageKeys";
 
+import { requireReportWriter } from "@/utils/supabase/queries";
+
 const BUCKET = process.env.AWS_S3_BUCKET_NAME!;
 
 const IMAGE_TABLES = ["attachments", "homepage_image_uploads"] as const;
@@ -203,5 +205,54 @@ export async function DELETE(request: Request) {
       { error: "Failed to delete site image" },
       { status: 500 }
     );
+  }
+}
+
+
+export async function PATCH(request: Request) {
+  try {
+    const client = await createClient();
+    const { data: { user }, error: authError } = await client.auth.getUser();
+    if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (user.app_metadata?.authenticated !== true) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const { searchParams } = new URL(request.url);
+    const imageId = Number(searchParams.get('id'));
+    const kind = searchParams.get('kind');
+    if (!Number.isSafeInteger(imageId) || imageId < 1 || !IMAGE_TABLES.includes(kind as ImageTable)) {
+      return NextResponse.json({ error: 'Provide a valid image id and kind.' }, { status: 400 });
+    }
+    const body = await request.json().catch(() => null);
+    const limits = { caption: 10000, identifier: 200, photographer: 200, date: 10 } as const;
+    if (!body || typeof body !== 'object' || Array.isArray(body) || !Object.keys(body).length || Object.keys(body).some((field) => !Object.hasOwn(limits, field))) {
+      return NextResponse.json({ error: 'Provide photo fields only.' }, { status: 400 });
+    }
+    const fields: Record<string, string | null> = {};
+    for (const field of Object.keys(limits) as (keyof typeof limits)[]) {
+      if (!(field in body)) continue;
+      if (body[field] !== null && (typeof body[field] !== 'string' || body[field].length > limits[field])) {
+        return NextResponse.json({ error: `Invalid ${field}.` }, { status: 400 });
+      }
+      fields[field] = body[field]?.trim() || null;
+    }
+    if (fields.date && (!/^\d{4}-\d{2}-\d{2}$/.test(fields.date) || Number.isNaN(Date.parse(fields.date)) || new Date(fields.date).toISOString().slice(0, 10) !== fields.date)) {
+      return NextResponse.json({ error: 'Enter a valid date.' }, { status: 400 });
+    }
+    const admin = createServerSupabase();
+    const table = kind as ImageTable;
+    const { data: photo, error: readError } = await admin.from(table).select(table === 'attachments' ? 'id, response_id' : 'id, user_id').eq('id', imageId).maybeSingle();
+    if (readError) throw readError;
+    if (!photo) return NextResponse.json({ error: 'Photo not found.' }, { status: 404 });
+    if (table === 'attachments') {
+      try { await requireReportWriter('response_id' in photo ? photo.response_id : 0); }
+      catch { return NextResponse.json({ error: 'Forbidden' }, { status: 403 }); }
+    } else if (user.app_metadata?.role !== 'admin' && (!('user_id' in photo) || photo.user_id !== user.id)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    const { data: updated, error } = await admin.from(table).update(fields).eq('id', imageId).select('id').single();
+    if (error || !updated) throw error || new Error('Photo not saved');
+    return NextResponse.json({ updated: true });
+  } catch (error) {
+    console.error('site-images metadata error:', error);
+    return NextResponse.json({ error: 'Photo details were not saved. Try again.' }, { status: 500 });
   }
 }

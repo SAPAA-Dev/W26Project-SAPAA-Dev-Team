@@ -1168,6 +1168,24 @@ describe('SiteMap (US 2.0.6)', () => {
 
       expect(screen.queryByText('Loading boundaries…')).not.toBeInTheDocument();
     });
+
+    it('shows the track error note when the tracks fail', () => {
+      render(<SiteMap gpxTracksError="Visit tracks could not load." />);
+
+      expect(screen.getByText('Visit tracks could not load.')).toBeInTheDocument();
+    });
+
+    it('stacks the boundary and track notes instead of overlapping them', () => {
+      render(
+        <SiteMap
+          boundariesError="Site boundaries could not load."
+          gpxTracksError="Visit tracks could not load."
+        />
+      );
+
+      expect(screen.getByText('Site boundaries could not load.')).toBeInTheDocument();
+      expect(screen.getByText('Visit tracks could not load.')).toBeInTheDocument();
+    });
   });
 
   describe('offline tiles', () => {

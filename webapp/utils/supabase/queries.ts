@@ -282,6 +282,7 @@ export async function requireReportWriter(responseId: number, errorMessage = REP
   userId: string;
   siteId: number;
   createdAt: string | null;
+  inspectionDate: string | null;
 }> {
   const caller = await requireApprovedCaller(errorMessage);
   validateResponseId(responseId);
@@ -289,7 +290,7 @@ export async function requireReportWriter(responseId: number, errorMessage = REP
   const supabase = createServerSupabase();
   const { data, error } = await supabase
     .from('form_responses')
-    .select('user_id, site_id, created_at')
+    .select('user_id, site_id, created_at, inspection_date')
     .eq('id', responseId)
     .is('archived_at', null)
     .maybeSingle();
@@ -298,7 +299,7 @@ export async function requireReportWriter(responseId: number, errorMessage = REP
   if (!data || (!caller.isAdmin && data.user_id !== caller.userId)) {
     throw new Error(errorMessage);
   }
-  return { ...caller, siteId: data.site_id, createdAt: data.created_at ?? null };
+  return { ...caller, siteId: data.site_id, createdAt: data.created_at ?? null, inspectionDate: data.inspection_date ?? null };
 }
 
 // The new-report page rolls back a report when its answers or photos fail to save.
@@ -1999,7 +2000,7 @@ export async function getAllSiteReports(): Promise<SiteReportSummary[]> {
 // ready to drop straight into the form's `responses` state.
 export async function getFormResponseById(responseId: number): Promise<Record<string | number, string | string[]>> {
   // The answers go only to the owner or an admin, and never for an archived report.
-  await requireReportWriter(responseId, REPORT_VIEW_DENIED);
+  const report = await requireReportWriter(responseId, REPORT_VIEW_DENIED);
   const supabase = createServerSupabase();
 
   const { data, error } = await supabase
@@ -2042,6 +2043,10 @@ export async function getFormResponseById(responseId: number): Promise<Record<st
     }
   }
 
+  if (report.inspectionDate) {
+    const visitQuestionId = await getDateOfVisitQuestionId();
+    if (!map[visitQuestionId]) map[visitQuestionId] = report.inspectionDate.slice(0, 10);
+  }
   return map;
 }
 
@@ -2092,48 +2097,51 @@ export async function updateAttachmentMetadata(
 export async function updateSiteInspectionAnswers(
   responseId: number,
   batchArray: Omit<SupabaseAnswer, 'response_id'>[],
-  inspectionDate: string,
+  inspectionDate: string | undefined,
 ) {
-  await requireReportWriter(responseId);
+  const report = await requireReportWriter(responseId);
   const supabase = createServerSupabase();
 
-  const { data: requiredQuestions, error: requiredQuestionsError } = await supabase
-    .from('questions')
-    .select('id, form_question, question_type')
-    .eq('is_active', true)
-    .eq('is_required', true);
+  if (!report.isAdmin) {
+    const { data: requiredQuestions, error: requiredQuestionsError } = await supabase
+      .from('questions')
+      .select('id, form_question, question_type')
+      .eq('is_active', true)
+      .eq('is_required', true);
 
-  if (requiredQuestionsError) {
-    throw new Error(requiredQuestionsError.message || 'Failed to validate required questions');
-  }
+    if (requiredQuestionsError) {
+      throw new Error(requiredQuestionsError.message || 'Failed to validate required questions');
+    }
 
-  const missingRequiredQuestions = ((requiredQuestions ?? []) as Array<{
-    id: number;
-    form_question: string | null;
-    question_type: string;
-  }>).filter((question) => {
-    // Images are attachments, not answer rows. The edit page validates required
-    // image questions before it sends the answer update.
-    if (question.question_type.trim() === 'image') return false;
+    const missingRequiredQuestions = ((requiredQuestions ?? []) as Array<{
+      id: number;
+      form_question: string | null;
+      question_type: string;
+    }>).filter((question) => {
+      // Images are attachments, not answer rows. The edit page validates required
+      // image questions before it sends the answer update.
+      if (question.question_type.trim() === 'image') return false;
 
-    return !batchArray.some((answer) =>
-      answer.question_id === question.id &&
-      Boolean(answer.obs_value?.trim() || answer.obs_comm?.trim())
-    );
-  });
+      return !batchArray.some((answer) =>
+        answer.question_id === question.id &&
+        Boolean(answer.obs_value?.trim() || answer.obs_comm?.trim())
+      );
+    });
 
-  if (missingRequiredQuestions.length > 0) {
-    const labels = missingRequiredQuestions.map((question) =>
-      question.form_question?.trim() || `Question ${question.id}`
-    );
-    throw new Error(`Required questions are missing: ${labels.join(', ')}`);
+    if (missingRequiredQuestions.length > 0) {
+      const labels = missingRequiredQuestions.map((question) =>
+        question.form_question?.trim() || `Question ${question.id}`
+      );
+      throw new Error(`Required questions are missing: ${labels.join(', ')}`);
+    }
+
   }
 
   // Do not change answers while the report is in the archive.
   const { error: updateDateError } = await supabase
     .from('form_responses')
     .update({
-      inspection_date: inspectionDate,
+      inspection_date: inspectionDate?.trim() || report.inspectionDate,
     })
     .eq('id', responseId)
     .is('archived_at', null)

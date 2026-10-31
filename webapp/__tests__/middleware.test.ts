@@ -63,6 +63,23 @@ describe('middleware approval gate (US 3.0.8, #5)', () => {
     expect(res).toEqual({ type: 'next' });
   });
 
+  it('opens the new sites page for an approved user and keeps the query and auth cookie', async () => {
+    signedInAs(approved, true);
+    const response = await middleware(makeRequest('/sites?view=map'));
+    expect(response).toEqual({ type: 'redirect', location: 'http://localhost/v2/sites?view=map' });
+    expect(response.cookies.getAll()).toEqual([expect.objectContaining({ name: 'sb-auth', value: 'rotated' })]);
+  });
+
+  it('lets an approved user load the new sites page without another redirect', async () => {
+    signedInAs(approved);
+    expect(await middleware(makeRequest('/v2/sites'))).toEqual({ type: 'next' });
+  });
+
+  it('does not redirect a server action on the old sites page', async () => {
+    signedInAs(approved);
+    expect(await middleware(makeRequest('/sites', 'POST'))).toEqual({ type: 'next' });
+  });
+
   it('lets an unapproved user load /sites, which shows the awaiting-approval screen', async () => {
     signedInAs(unapproved);
     const res = await middleware(makeRequest('/sites'));
