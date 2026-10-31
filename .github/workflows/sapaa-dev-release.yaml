@@ -27,8 +27,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-          persist-credentials: false
+          fetch-depth: 0
           path: course
+      - name: Fetch the private course release branch
+        working-directory: course
+        run: git fetch origin refs/heads/prod:refs/heads/prod
       - name: Create deployment repository token
         id: token
         uses: actions/create-github-app-token@v2
@@ -50,7 +53,7 @@ jobs:
         working-directory: deployment
         env:
           SOURCE_COMMIT: ${{ github.event.workflow_run.head_sha }}
-        run: bash ../course/.github/scripts/sync-sapaa-dev.sh https://github.com/UAlberta-CMPUT401/F26project-SAPAA.git "$SOURCE_COMMIT"
+        run: bash ../course/.github/scripts/sync-sapaa-dev.sh ../course "$SOURCE_COMMIT"
       - name: Record the release step
         env:
           SOURCE_COMMIT: ${{ github.event.workflow_run.head_sha }}

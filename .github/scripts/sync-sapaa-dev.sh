@@ -5,7 +5,8 @@ source_repository=${1:?Source repository is required}
 source_commit=${2:?Source commit is required}
 [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || { echo 'Invalid source commit.' >&2; exit 1; }
 
-# The course repository is public. Do not send the deployment credential to it.
+[ -d "$source_repository/.git" ] || { echo 'A local course checkout is required.' >&2; exit 1; }
+# Each checkout has its own credential. Copy source objects locally between them.
 git -c http.extraheader= -c http.https://github.com/.extraheader= fetch "$source_repository" \
   refs/heads/main:refs/remotes/course/main \
   refs/heads/prod:refs/remotes/course/prod

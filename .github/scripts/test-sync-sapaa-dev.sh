@@ -69,4 +69,7 @@ test "$(git --git-dir="$test_directory/deployment.git" rev-parse main)" = "$dest
 if bash "$script_directory/sync-sapaa-dev.sh" "$test_directory/course" 'invalid'; then
   echo 'An invalid commit was accepted.' >&2; exit 1
 fi
-echo '(release AT2) Failure cases: destination changes and invalid input are preserved/rejected.'
+if bash "$script_directory/sync-sapaa-dev.sh" https://github.com/example/private.git "$release_commit"; then
+  echo 'A network source was accepted.' >&2; exit 1
+fi
+echo '(release AT2) Failure cases: destination changes, invalid input, and network sources are rejected.'

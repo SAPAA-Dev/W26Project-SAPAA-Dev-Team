@@ -618,7 +618,7 @@ and clears the error after a successful read. See [Branch Integration Audit](bra
 | --- | --- | --- |
 | release AT1 | `.github/scripts/test-sync-sapaa-dev.sh`: exact forward copy succeeds; old CI result is skipped without a rollback | Local test passed |
 | release AT2 | Same test: a commit in course main can sync; unmerged source, divergent destination, and invalid input are rejected | Local test passed |
-| release AT3 | Same test: anonymous source fetch clears the checkout authorization header; destination authorization is retained | Local test passed |
-| release AT4 | Vercel Production tracks SAPAA-Dev main, automatic domain assignment disabled; release requires manual promotion | Settings verified; new App push and staged build need live verification |
+| release AT3 | Same test: local private-source fetch clears the checkout authorization header; destination authorization is retained | Local test passed |
+| release AT4 | Vercel Production tracks SAPAA-Dev main, automatic domain assignment disabled; release requires manual promotion | Settings verified; restricted App authentication and scope verified; full prod run and staged build need live verification |
 
 This is a release configuration change with no app UI change. No Cypress test applies. The workflow is checked with `actionlint`; the full cross-repository run also requires the App installation and a reviewed workflow on course main.
