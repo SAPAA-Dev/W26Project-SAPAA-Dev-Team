@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { freshReads } from '@/lib/api/v1/client';
 
 interface Props {
   open: boolean;
@@ -13,7 +14,10 @@ interface Props {
 export function EditReportSheet({ open, report }: Props) {
   const href = `/detail/${encodeURIComponent(report.siteName)}/edit-report/${report.id}`;
   useEffect(() => {
-    if (open) window.location.assign(href);
+    if (open) {
+      freshReads();
+      window.location.assign(href);
+    }
   }, [open, href]);
   return open ? <a href={href}>Open report editor</a> : null;
 }

@@ -3,38 +3,53 @@
 import { useEffect, useState } from 'react';
 import { freshReads } from '@/lib/api/v1/client';
 
-// ponytail: tiny stale-while-revalidate cache keyed by string; swap for TanStack Query if the app outgrows it.
-const cache = new Map<string, unknown>();
-const inflight = new Map<string, Promise<unknown>>();
-/** Mounted hooks, so invalidate() can refresh what is on screen, not only the next read. */
+const FRESH_MS = 30_000;
+const cache = new Map<string, { data: unknown; savedAt: number }>();
+const generations = new Map<string, number>();
+const inflight = new Map<string, { promise: Promise<unknown>; generation: number }>();
 const live = new Set<(prefix: string) => void>();
 
+function read<T>(key: string, fetcher: () => Promise<T>) {
+  const generation = generations.get(key) ?? 0;
+  const cached = cache.get(key);
+  if (cached && Date.now() - cached.savedAt < FRESH_MS) {
+    return { promise: Promise.resolve(cached.data), generation };
+  }
+  const existing = inflight.get(key);
+  if (existing) return existing;
+  const pending = { promise: fetcher() as Promise<unknown>, generation };
+  pending.promise = pending.promise.then((data) => {
+    if ((generations.get(key) ?? 0) === generation) cache.set(key, { data, savedAt: Date.now() });
+    return data;
+  }).finally(() => {
+    if (inflight.get(key) === pending) inflight.delete(key);
+  });
+  inflight.set(key, pending);
+  return pending;
+}
+
 export function useApi<T>(key: string | null, fetcher: () => Promise<T>) {
-  const [entry, setEntry] = useState(() => ({ key, data: key ? cache.get(key) as T | undefined : undefined }));
+  const [entry, setEntry] = useState(() => ({ key, data: key ? cache.get(key)?.data as T | undefined : undefined }));
   const [failure, setFailure] = useState<{ key: string | null; error: Error | null }>({ key, error: null });
-  const data = entry.key === key ? entry.data : key ? cache.get(key) as T | undefined : undefined;
+  const data = entry.key === key ? entry.data : key ? cache.get(key)?.data as T | undefined : undefined;
   const error = failure.key === key ? failure.error : null;
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (!key) return;
-    let live = true;
-    const p = inflight.get(key) ?? fetcher().finally(() => inflight.delete(key));
-    inflight.set(key, p);
-    p.then(
-      (d) => {
-        cache.set(key, d);
-        if (live) {
-          setEntry({ key, data: d as T });
-          setFailure({ key, error: null });
-        }
+    let active = true;
+    const pending = read(key, fetcher);
+    const current = () => active && (generations.get(key) ?? 0) === pending.generation;
+    pending.promise.then(
+      (value) => {
+        if (!current()) return;
+        setEntry({ key, data: value as T });
+        setFailure({ key, error: null });
       },
-      (e) => live && setFailure({ key, error: e }),
+      (error) => { if (current()) setFailure({ key, error }); },
     );
-    return () => {
-      live = false;
-    };
-    // fetcher is recreated each render; the key identifies the request.
+    return () => { active = false; };
+    // The key identifies the request; fetcher is recreated on each render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, attempt]);
 
@@ -43,39 +58,26 @@ export function useApi<T>(key: string | null, fetcher: () => Promise<T>) {
     const revalidate = (prefix: string) => {
       if (!key.startsWith(prefix)) return;
       setFailure({ key, error: null });
-      setAttempt((n) => n + 1); // keeps the current data on screen until the new read lands
+      setAttempt((number) => number + 1);
     };
     live.add(revalidate);
-    return () => {
-      live.delete(revalidate);
-    };
+    return () => { live.delete(revalidate); };
   }, [key]);
 
-  /** Re-run the request (error retry, pull to refresh). */
-  const refetch = () => {
-    freshReads();
-    if (key) cache.delete(key);
-    setFailure({ key, error: null });
-    setAttempt((n) => n + 1);
-  };
-
-  return { data, error, loading: !data && !error, refetch };
+  return { data, error, loading: !data && !error, refetch: () => { if (key) invalidate(key); } };
 }
 
-/** Drop cached entries (e.g. after submitting a report) and refetch the ones on screen. */
 export function invalidate(prefix: string) {
-  freshReads(); // and past the browser's HTTP cache, which still holds the old answers
-  for (const k of cache.keys()) if (k.startsWith(prefix)) cache.delete(k);
+  freshReads();
+  for (const key of new Set([...cache.keys(), ...inflight.keys()])) {
+    if (!key.startsWith(prefix)) continue;
+    generations.set(key, (generations.get(key) ?? 0) + 1);
+    cache.delete(key);
+    inflight.delete(key);
+  }
   for (const revalidate of live) revalidate(prefix);
 }
 
-/**
- * Start a read before any screen asks for it (tap intent, idle warm-up). A screen that mounts later paints
- * from the cache or joins the request in flight. Failures are left for that screen to retry and show.
- */
 export function prefetch<T>(key: string, fetcher: () => Promise<T>) {
-  if (cache.has(key) || inflight.has(key)) return;
-  const p = fetcher().finally(() => inflight.delete(key));
-  inflight.set(key, p);
-  p.then((d) => cache.set(key, d), () => {});
+  void read(key, fetcher).promise.catch(() => {});
 }

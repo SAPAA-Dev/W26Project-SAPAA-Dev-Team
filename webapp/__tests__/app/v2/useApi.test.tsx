@@ -36,3 +36,53 @@ it('joins a prefetched read, reports errors, and retries without keeping the old
   cached.unmount();
   failed.unmount();
 });
+
+
+it('reuses completed reads for 30 seconds and refreshes expired data', async () => {
+  let now = Date.now();
+  const clock = jest.spyOn(Date, 'now').mockImplementation(() => now);
+  const fetcher = jest.fn().mockResolvedValue('cached');
+  const first = renderHook(() => useApi('ttl:record', fetcher));
+  await waitFor(() => expect(first.result.current.data).toBe('cached'));
+  first.unmount();
+  const second = renderHook(() => useApi('ttl:record', fetcher));
+  await waitFor(() => expect(second.result.current.data).toBe('cached'));
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  second.unmount();
+  now += 30_001;
+  fetcher.mockResolvedValue('fresh');
+  const third = renderHook(() => useApi('ttl:record', fetcher));
+  await waitFor(() => expect(third.result.current.data).toBe('fresh'));
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  third.unmount();
+  clock.mockRestore();
+});
+
+it('does not reuse a pending response from before a write', async () => {
+  let old: (value: string) => void = () => {};
+  let updated: (value: string) => void = () => {};
+  const fetcher = jest.fn()
+    .mockImplementationOnce(() => new Promise<string>((resolve) => { old = resolve; }))
+    .mockImplementationOnce(() => new Promise<string>((resolve) => { updated = resolve; }));
+  const view = renderHook(() => useApi('race:record', fetcher));
+  act(() => invalidate('race:record'));
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  await act(async () => updated('after write'));
+  expect(view.result.current.data).toBe('after write');
+  await act(async () => old('before write'));
+  expect(view.result.current.data).toBe('after write');
+  view.unmount();
+  const next = renderHook(() => useApi('race:record', fetcher));
+  await waitFor(() => expect(next.result.current.data).toBe('after write'));
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  next.unmount();
+});
+
+it('retries a failed intent prefetch when its screen opens', async () => {
+  const fetcher = jest.fn().mockRejectedValueOnce(new Error('Offline')).mockResolvedValue('available');
+  await act(async () => prefetch('intent:retry', fetcher));
+  const view = renderHook(() => useApi('intent:retry', fetcher));
+  await waitFor(() => expect(view.result.current.data).toBe('available'));
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  view.unmount();
+});
